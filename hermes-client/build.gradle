@@ -1,0 +1,13 @@
+dependencies {
+    provided group: 'io.dropwizard.metrics', name: 'metrics-core', version: '3.1.1'
+    provided group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
+    provided group: 'org.springframework', name: 'spring-web', version: '4.1.4.RELEASE'
+}
+
+apply plugin: 'idea'
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [configurations.provided]
+    }
+}

@@ -1,0 +1,92 @@
+
+plugins {
+    id 'java'
+    id 'pl.allegro.tech.build.axion-release' version '1.2.1'
+}
+
+scmVersion {
+    tag {
+        prefix = 'hermes'
+    }
+
+    versionCreator 'versionWithBranch'
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+
+    group = 'pl.allegro.tech.hermes'
+    version = scmVersion.version
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    project.ext.versions = [
+            guava   : '16.0.1',
+            jackson : '2.5.1',
+            jersey  : '2.12',
+            curator : '2.7.0',
+            wiremock: '1.47',
+            fongo   : '1.6.1',
+            spock   : '1.0-groovy-2.4'
+    ]
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testCompile group: 'junit', name: 'junit', version: '4.11'
+        testCompile group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.2'
+        testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
+        testCompile group: 'org.assertj', name: 'assertj-core', version: '1.5.0'
+        testCompile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
+        testCompile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
+    }
+}
+
+subprojects {
+    configurations {
+        all*.exclude group: "org.slf4j", module: "slf4j-log4j12"
+        all*.exclude group: "log4j", module: "log4j"
+    }
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked,deprecation"
+    }
+
+    test {
+        testLogging {
+            exceptionFormat = 'full'
+        }
+    }
+
+    tasks.withType(FindBugs) {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+    }
+
+    project.configurations {
+        provided {
+            description = 'Provided dependencies'
+            transitive = true
+        }
+    }
+
+    project.sourceSets {
+        main {
+            compileClasspath += project.configurations.provided
+        }
+        test {
+            compileClasspath += project.configurations.provided
+            runtimeClasspath += project.configurations.provided
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
+}

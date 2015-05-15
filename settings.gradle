@@ -1,0 +1,11 @@
+rootProject.name='hermes'
+
+include 'hermes-common', 
+        'hermes-frontend',
+        'hermes-management',
+        'hermes-consumers',
+        'hermes-api',
+        'hermes-client',
+        'integration',
+        'hermes-test-helper'
+

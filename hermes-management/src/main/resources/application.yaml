@@ -1,0 +1,27 @@
+zookeeper:
+  enabled: false
+
+kafka:
+  clusters:
+    -
+      clusterName: kafkaPrimary
+      connectionString: localhost:2181
+      connectionTimeout: 3000
+
+storage:
+  connectionString: localhost:2181
+  connectionTimeout: 3000
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/hermes
+  jersey:
+    type: servlet
+
+server:
+  port: 8090
+  servlet-path: /status
+
+management:
+  context-path: /

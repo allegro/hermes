@@ -1,0 +1,16 @@
+build
+.gradle
+classes
+.idea
+*.iml
+*.ipr
+*.iws
+/data
+
+.nb-gradle/
+.nb-gradle*
+
+**/*.log
+
+# sphinx
+_build

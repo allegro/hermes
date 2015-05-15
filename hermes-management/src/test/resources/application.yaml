@@ -1,0 +1,15 @@
+application:
+  name: hermes-management
+
+zookeeper:
+  enabled: false
+
+storage:
+  pathPrefix: /hermes
+  connectionString: localhost:42182
+
+# this is a hack to make /status/* endpoints work with Jersey
+server:
+  servletPath: /status
+management:
+  context-path: /

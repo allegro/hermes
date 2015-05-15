@@ -1,0 +1,40 @@
+application:
+  name: hermes-management
+
+zookeeper:
+  enabled: false
+
+kafka:
+  clusters:
+    -
+      clusterName: primary
+      connectionString: localhost:14192/kafka
+      connectionTimeout: 10000
+    -
+      clusterName: secondary
+      connectionString: localhost:14192/secondaryKafka
+      connectionTimeout: 10000
+
+topic:
+  replicationFactor: 1
+  partitions: 2
+  allowRemoval: true
+
+storage:
+  pathPrefix: /hermes
+  connectionString: localhost:14192
+
+auth:
+  oauthServerUrl: http://localhost:19999
+
+metrics:
+  graphiteHttpUri: http://localhost:18089/
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/hermesMessages
+  jersey:
+    type: filter
+
+spring.groovy.template.check-template-location: false

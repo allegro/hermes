@@ -1,0 +1,13 @@
+FROM java:8
+
+MAINTAINER Allegro
+
+RUN apt-get update && apt-get install -y unzip
+
+ENV HERMES_FRONTEND_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/frontend.properties
+ADD conf/frontend.properties /etc/frontend.properties
+ADD build/hermes-frontend-*.zip hermes-frontend.zip
+RUN unzip hermes-frontend.zip -d /opt
+RUN mv /opt/hermes-frontend-* /opt/hermes-frontend
+
+CMD /opt/hermes-frontend/bin/hermes-frontend

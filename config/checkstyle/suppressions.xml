@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Puppy Crawl//DTD Suppressions 1.1//EN"
+        "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+
+<suppressions>
+    <!-- Suppress all checks in test helpers -->
+    <suppress checks="[a-zA-Z0-9]*"
+              files="test\/helper\/"
+            />
+    
+    <!-- Suppress magic strings in default properties -->
+    <suppress checks="MagicNumber"
+              files="[/\\]src[/\\](main)[/\\]java[/\\].+Properties\.java$"
+            />
+
+    <!-- Suppressions for unit (test|integration)ing code -->
+    <suppress checks="MagicNumber"
+              files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
+            />
+    <suppress checks="JavadocMethod"
+              files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
+            />
+    <suppress checks="JavadocVariable"
+              files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
+            />
+    <suppress checks="JavadocType"
+              files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
+            />
+    <suppress checks="IllegalThrows"
+              files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
+            />
+    <suppress checks="ImportControl"
+              files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
+            />
+    <suppress checks="VisibilityModifier"
+              files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
+            />
+</suppressions>

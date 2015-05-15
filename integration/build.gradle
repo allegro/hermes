@@ -1,0 +1,68 @@
+
+repositories {
+    maven { url 'http://repository.jboss.org/nexus/content/groups/public' }
+}
+
+dependencies {
+    compile project(':hermes-common')
+    compile project(':hermes-consumers')
+    compile project(':hermes-frontend')
+    compile project(':hermes-management')
+    compile project(':hermes-client')
+
+    testCompile project(':hermes-test-helper')
+    testCompile group: 'org.testng', name: 'testng', version: '6.8.8'
+    testCompile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-client', version: '9.1.3.v20140225'
+    testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
+    testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
+    testCompile group: 'org.springframework', name: 'spring-web', version: '4.1.4.RELEASE'
+
+    testCompile(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
+        exclude module: 'hornetq-native'
+    }
+}
+
+project.configurations {
+    integration {
+        extendsFrom project.configurations.testRuntime
+        description = 'Dependencies for integration tests'
+        transitive = true
+        visible = true
+    }
+}
+
+project.sourceSets {
+    integration {
+        java.srcDir project.file('src/integration/java')
+
+        resources.srcDir project.file('src/integration/resources')
+        resources.srcDir project.sourceSets.test.resources
+        resources.srcDir project.sourceSets.main.resources
+
+        project.plugins.withType(GroovyPlugin) {
+            groovy.srcDir project.file('src/integration/groovy')
+        }
+
+        compileClasspath = project.sourceSets.main.output +
+                project.configurations.testRuntime +
+                project.configurations.integration
+        runtimeClasspath = output + compileClasspath + project.configurations.testRuntime
+    }
+}
+
+task integrationTest(type: Test) {
+    group = 'Verification'
+    description = 'Runs the integration tests.'
+
+    testClassesDir = project.sourceSets.integration.output.classesDir
+    classpath = project.sourceSets.integration.runtimeClasspath
+
+    useTestNG()
+
+    testLogging {
+        exceptionFormat = 'full'
+        events "passed", "skipped", "failed", "standardError"
+    }
+}
+

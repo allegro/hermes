@@ -1,0 +1,31 @@
+application:
+  name: hermes-management
+
+zookeeper:
+  enabled: false
+
+discovery:
+  enabled: false
+  register: false
+
+kafka:
+  connectionString: zk:2181
+
+storage:
+  pathPrefix: /run/hermes
+  connectionString: zk:2181
+
+topic:
+  replicationFactor: 1
+
+metrics:
+  graphite:
+    host: graphite
+  graphiteHttpUri: http://graphite:80
+  enabled: true
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mongo:27017/hermes
+    type: filter
