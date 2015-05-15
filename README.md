@@ -8,7 +8,7 @@ Hermes is an asynchronous message broker built on top of [Kafka](http://kafka.ap
 We provide reliable, fault tolerant REST interface for message publishing and adaptive push
 mechanisms for message sending.
 
-See our 10-minute getting started guide with docker:
+See our 10-minute getting started guide with docker: [Getting started](http://hermes-pubsub.readthedocs.org/en/latest/contents/tutorials/01_getting_started.html)
 
 Visit our page: [hermes.allegrotech.io](http://hermes.allegrotech.io)
 
