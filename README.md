@@ -12,7 +12,7 @@ See our 10-minute getting started guide with docker:
 
 Visit our page: [hermes.allegrotech.io](http://hermes.allegrotech.io)
 
-See our documentation:
+See our documentation: [http://hermes-pubsub.readthedocs.org/en/latest/](http://hermes-pubsub.readthedocs.org/en/latest/)
 
 
 ## License
