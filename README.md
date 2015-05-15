@@ -1,6 +1,9 @@
 Hermes
 ======
 
+[![Documentation Status](https://readthedocs.org/projects/hermes-pubsub/badge/?version=latest)](https://readthedocs.org/projects/hermes-pubsub/?badge=latest)
+
+
 Hermes is an asynchronous message broker built on top of [Kafka](http://kafka.apache.org/).
 We provide reliable, fault tolerant REST interface for message publishing and adaptive push
 mechanisms for message sending.
