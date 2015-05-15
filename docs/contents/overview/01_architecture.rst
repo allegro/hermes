@@ -9,7 +9,7 @@ Architecture
 
 |
 
-Hermes is build on top of `Apache Kafka <http://kafka.apache.org/>`_ which implements `publish-subscribe pattern <http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern>`_.
+Hermes is built on top of `Apache Kafka <http://kafka.apache.org/>`_ which implements `publish-subscribe pattern <http://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern>`_.
 
 Messages in Hermes are published on topics and each topic can have many subscribing services.
 Publishing messages, managing topics & subscriptions is done via REST API.
@@ -36,7 +36,7 @@ Hermes frontend
 Hermes-frontend is an entry point for publishing messages.
 
 Frontend is designed to receive messages from publishers via HTTP protocol and send them to broker/Kafka.
-Speed and low overhead was one of our main goals, therefor we decided to use `undertow <http://undertow.io/>`_  as an http server.
+Speed and low overhead was one of our main goals, therefore we decided to use `undertow <http://undertow.io/>`_  as an http server.
 Messages are read asynchronously thanks to servlet API 3.0. After message is fully read it is sent to Kafka via Kafka producer.
 
 Kafka producers
@@ -67,7 +67,7 @@ publisher at most after 65ms, giving us means to enforce strict SLA guarantees (
 If Kafka brokers are able to acknowledge message before request timeout, we send 201 Created response. If not, we still
 contact publisher, sending him 202 Accepted status instead. This means, that we will try to deilver message to Kafka
 asynchronously. Message lives in Kafka buffer and will be there until brokers acknowledge it. Our metrics indicate, that
-only as little as 1% of messages receives 202 Accepted status, but this strongly depends on Kafka cluster perfromance.
+only as little as 1% of messages receives 202 Accepted status, but this strongly depends on Kafka cluster performance.
 
 
 Using 250Mb buffer, we are able to sustain ~1h Kafka outage with 3k requests per second. This of course varies depending
@@ -89,7 +89,7 @@ Subscriptions are managed by hermes-management module and persisted in metadata 
 Consumers supervisor is notified about every change on subscriptions.
 
 When consumers supervisor is notified about new subscription, it creates new instance of Consumer. Each consumer operates
-in separate thread, handling putting messages on send queue, retries and output rate adaptation.
+in a separate thread, handling putting messages on send queue, retries and output rate adaptation.
 
 Consumer
 ^^^^^^^^
@@ -126,12 +126,14 @@ algorithm to figure out sending speed that is right for subscriber. There are th
 * slow - send one request per second
 * heartbeat - send one request per minute, poke if subscriber comes alive
 
-Switching between modes is done using simple state machine as described below::
+Switching between modes is done using simple state machine as described below:
+
 
 .. image:: /_static/consumer_state_machine.png
-   :height: 250px
-   :width: 400px
-   :align: center
+    :height: 250px
+    :width: 400px
+    :align: center
+
 
 Hermes management
 -----------------
@@ -147,7 +149,7 @@ Every Hermes module uses `Apache Zookeeper <https://zookeeper.apache.org//>`_ as
 
 * Frontend module checks if topic exists basing on cached data from Zookeeper
 * Consumers supervisor is notified about subscription changes. As a result it can do its work.
-  Kafka consumers uses Zookeeper to (re)balance load from topics
+* Kafka consumers uses Zookeeper to (re)balance load from topics
 * Management persists data in Zookeeper
 * Broker/Apache Kafka also stores data in Zookeeper and uses it's notification mechanism about data changes
 
