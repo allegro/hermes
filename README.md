@@ -1,6 +1,7 @@
 Hermes
 ======
 
+[![Build Status](https://travis-ci.org/allegro/hermes.svg)](https://travis-ci.org/allegro/hermes)
 [![Documentation Status](https://readthedocs.org/projects/hermes-pubsub/badge/?version=latest)](https://readthedocs.org/projects/hermes-pubsub/?badge=latest)
 
 
@@ -12,7 +13,7 @@ See our 10-minute getting started guide with docker: [Getting started](http://he
 
 Visit our page: [hermes.allegrotech.io](http://hermes.allegrotech.io)
 
-See our documentation: [http://hermes-pubsub.readthedocs.org/en/latest/](http://hermes-pubsub.readthedocs.org/en/latest/)
+See our full documentation: [http://hermes-pubsub.readthedocs.org/en/latest/](http://hermes-pubsub.readthedocs.org/en/latest/)
 
 
 ## License
