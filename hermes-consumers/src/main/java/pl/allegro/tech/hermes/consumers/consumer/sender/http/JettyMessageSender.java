@@ -37,7 +37,7 @@ public class JettyMessageSender extends ConcurrentRequestsLimitingMessageSender 
                     .method(HttpMethod.POST)
                     .header(HttpHeader.KEEP_ALIVE.toString(), "true")
                     .header(MessageMetadataHeaders.MESSAGE_ID.getName(),
-                            MessageId.forTopicAndOffset(message.getTopic(), message.getOffset()))
+                            message.getId().orElse(MessageId.forTopicAndOffset(message.getTopic(), message.getOffset())))
                     .header(HttpHeader.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)
                     .timeout(timeout, TimeUnit.MILLISECONDS)
                     .content(new BytesContentProvider(message.getData())).send(new Adapter() {
