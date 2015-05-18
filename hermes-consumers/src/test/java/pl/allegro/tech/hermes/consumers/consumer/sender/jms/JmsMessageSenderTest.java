@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 
-import com.google.common.util.concurrent.SettableFuture;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,13 +19,12 @@ import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.JMSRuntimeException;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JmsMessageSenderTest {
@@ -58,7 +56,7 @@ public class JmsMessageSenderTest {
 
     @Test
     public void shouldReturnTrueWhenMessageSuccessfullyPublished() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
 
         messageSender.sendMessage(SOME_MESSAGE, future);
 
@@ -70,7 +68,7 @@ public class JmsMessageSenderTest {
 
     @Test
     public void shouldReleaseSemaphoreWhenMessageSuccessfullyPublished() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
 
         messageSender.sendMessage(SOME_MESSAGE, future);
 
@@ -81,7 +79,7 @@ public class JmsMessageSenderTest {
 
     @Test
     public void shouldReturnFalseWhenOnExceptionCalledOnListener() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
 
         messageSender.sendMessage(SOME_MESSAGE, future);
 
@@ -93,7 +91,7 @@ public class JmsMessageSenderTest {
 
     @Test
     public void shouldReleaseSemaphoreWhenOnExceptionCalledOnListener() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
 
         messageSender.sendMessage(SOME_MESSAGE, future);
 
@@ -104,7 +102,7 @@ public class JmsMessageSenderTest {
 
     @Test
     public void shouldReturnFalseWhenJMSThrowsCheckedException() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
         doThrow(new JMSException("test")).when(messageMock).writeBytes(SOME_MESSAGE.getData());
 
         messageSender.sendMessage(SOME_MESSAGE, future);
@@ -114,7 +112,7 @@ public class JmsMessageSenderTest {
 
     @Test
     public void shouldReturnFalseWhenJMSThrowsRuntimeException() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
         doThrow(new JMSRuntimeException("test")).when(jmsContextMock).createProducer();
 
         messageSender.sendMessage(SOME_MESSAGE, future);
