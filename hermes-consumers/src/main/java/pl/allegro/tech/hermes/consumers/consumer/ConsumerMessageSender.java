@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.LatencyTimer;
@@ -13,16 +11,19 @@ import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
-import java.util.concurrent.ExecutionException;
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 
 public class ConsumerMessageSender {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerMessageSender.class);
 
     private final ExecutorService retrySingleThreadExecutor;
     private final ExecutorService deliveryReportingExecutor;
@@ -32,6 +33,8 @@ public class ConsumerMessageSender {
     private final MessageSender messageSender;
     private final Semaphore inflightSemaphore;
     private final HermesMetrics hermesMetrics;
+    private final ScheduledExecutorService asyncTimeoutScheduler;
+    private final int asyncTimeoutMs;
 
     private Subscription subscription;
 
@@ -39,7 +42,7 @@ public class ConsumerMessageSender {
 
     public ConsumerMessageSender(Subscription subscription, MessageSender messageSender, SuccessHandler successHandler,
                                  ErrorHandler errorHandler, ConsumerRateLimiter rateLimiter, ExecutorService deliveryReportingExecutor,
-                                 Semaphore inflightSemaphore, HermesMetrics hermesMetrics) {
+                                 Semaphore inflightSemaphore, HermesMetrics hermesMetrics, int asyncTimeoutMs) {
         this.deliveryReportingExecutor = deliveryReportingExecutor;
         this.successHandler = successHandler;
         this.errorHandler = errorHandler;
@@ -48,7 +51,10 @@ public class ConsumerMessageSender {
         this.subscription = subscription;
         this.inflightSemaphore = inflightSemaphore;
         this.retrySingleThreadExecutor = Executors.newSingleThreadExecutor();
+        this.asyncTimeoutScheduler = Executors.newScheduledThreadPool(1,
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ConsumerAsyncTimeout-%d").build());
         this.hermesMetrics = hermesMetrics;
+        this.asyncTimeoutMs = asyncTimeoutMs;
     }
 
     public void shutdown() {
@@ -82,9 +88,22 @@ public class ConsumerMessageSender {
 
     private void submitAsyncSendMessageRequest(final Message message, final LatencyTimer latencyTimer) {
         rateLimiter.acquire();
-        final ListenableFuture<MessageSendingResult> response = messageSender.send(message);
-        response.addListener(new DeliveryCountersReportingListener(message, response), deliveryReportingExecutor);
-        response.addListener(new ResponseHandlingListener(message, response, latencyTimer), retrySingleThreadExecutor);
+        final CompletableFuture<MessageSendingResult> response = within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
+        response.thenAcceptAsync(new DeliveryCountersReportingListener(message), deliveryReportingExecutor);
+        response.thenAcceptAsync(new ResponseHandlingListener(message, latencyTimer), retrySingleThreadExecutor);
+    }
+
+    private CompletableFuture<MessageSendingResult> within(CompletableFuture<MessageSendingResult> future, Duration duration) {
+        return future.applyToEither(failAfter(duration), Function.identity());
+    }
+
+    private CompletableFuture<MessageSendingResult> failAfter(Duration duration) {
+        final CompletableFuture<MessageSendingResult> promise = new CompletableFuture<>();
+        asyncTimeoutScheduler.schedule(() -> {
+            TimeoutException ex = new TimeoutException("Timeout after " + duration);
+            return promise.complete(MessageSendingResult.failedResult(ex));
+        }, duration.toMillis(), TimeUnit.MILLISECONDS);
+        return promise;
     }
 
     private boolean isTtlExceeded(Message message) {
@@ -116,28 +135,16 @@ public class ConsumerMessageSender {
         return !result.succeeded() && (!result.isClientError() || subscription.getSubscriptionPolicy().isRetryClientErrors());
     }
 
-    private MessageSendingResult fetchResult(ListenableFuture<MessageSendingResult> result) {
-        try {
-            return result.get();
-        } catch (InterruptedException | ExecutionException e) {
-            LOGGER.debug("Problem while sending message", e);
-            return failedResult(e);
-        }
-    }
-
-    class DeliveryCountersReportingListener implements Runnable {
+    class DeliveryCountersReportingListener implements java.util.function.Consumer<MessageSendingResult> {
 
         private final Message message;
-        private final ListenableFuture<MessageSendingResult> result;
 
-        public DeliveryCountersReportingListener(Message message, ListenableFuture<MessageSendingResult> res) {
+        public DeliveryCountersReportingListener(Message message) {
             this.message = message;
-            this.result = res;
         }
 
         @Override
-        public void run() {
-            MessageSendingResult result = fetchResult(this.result);
+        public void accept(MessageSendingResult result) {
             if (result.succeeded()) {
                 rateLimiter.registerSuccessfulSending();
             } else {
@@ -146,21 +153,18 @@ public class ConsumerMessageSender {
         }
     }
 
-    class ResponseHandlingListener implements Runnable {
+    class ResponseHandlingListener implements java.util.function.Consumer<MessageSendingResult> {
 
-        private final ListenableFuture<MessageSendingResult> response;
         private final Message message;
         private final LatencyTimer latencyTimer;
 
-        public ResponseHandlingListener(Message message, ListenableFuture<MessageSendingResult> response, LatencyTimer latencyTimer) {
+        public ResponseHandlingListener(Message message, LatencyTimer latencyTimer) {
             this.message = message;
-            this.response = response;
             this.latencyTimer = latencyTimer;
         }
 
         @Override
-        public void run() {
-            MessageSendingResult result = fetchResult(response);
+        public void accept(MessageSendingResult result) {
             latencyTimer.stop();
             if (result.succeeded()) {
                 handleMessageSendingSuccess(message);

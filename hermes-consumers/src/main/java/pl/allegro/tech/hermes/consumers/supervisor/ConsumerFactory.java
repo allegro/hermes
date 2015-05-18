@@ -83,7 +83,8 @@ public class ConsumerFactory {
         Semaphore inflightSemaphore = new Semaphore(configFactory.getIntProperty(Configs.CONSUMER_INFLIGHT_SIZE));
 
         ConsumerMessageSender sender = new ConsumerMessageSender(subscription, messageSender, successHandler, errorHandler,
-                consumerRateLimiter, rateLimiterReportingExecutor, inflightSemaphore, hermesMetrics);
+                consumerRateLimiter, rateLimiterReportingExecutor, inflightSemaphore, hermesMetrics,
+                configFactory.getIntProperty(Configs.CONSUMER_SENDER_ASYNC_TIMEOUT_MS));
 
         return new Consumer(splitMessagesReceiver, hermesMetrics, subscription, consumerRateLimiter,
                 partitionOffsetHelper, sender, inflightSemaphore, trackers);
