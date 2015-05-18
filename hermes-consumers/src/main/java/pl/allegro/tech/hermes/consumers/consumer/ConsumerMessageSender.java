@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.LatencyTimer;
@@ -10,16 +9,13 @@ import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.utils.FutureAsyncTimeout;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
 
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 
@@ -33,7 +29,7 @@ public class ConsumerMessageSender {
     private final MessageSender messageSender;
     private final Semaphore inflightSemaphore;
     private final HermesMetrics hermesMetrics;
-    private final ScheduledExecutorService asyncTimeoutScheduler;
+    private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
 
     private Subscription subscription;
@@ -51,8 +47,7 @@ public class ConsumerMessageSender {
         this.subscription = subscription;
         this.inflightSemaphore = inflightSemaphore;
         this.retrySingleThreadExecutor = Executors.newSingleThreadExecutor();
-        this.asyncTimeoutScheduler = Executors.newScheduledThreadPool(1,
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ConsumerAsyncTimeout-%d").build());
+        this.async = new FutureAsyncTimeout<>(MessageSendingResult::failedResult);
         this.hermesMetrics = hermesMetrics;
         this.asyncTimeoutMs = asyncTimeoutMs;
     }
@@ -88,22 +83,9 @@ public class ConsumerMessageSender {
 
     private void submitAsyncSendMessageRequest(final Message message, final LatencyTimer latencyTimer) {
         rateLimiter.acquire();
-        final CompletableFuture<MessageSendingResult> response = within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
+        final CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
         response.thenAcceptAsync(new DeliveryCountersReportingListener(message), deliveryReportingExecutor);
         response.thenAcceptAsync(new ResponseHandlingListener(message, latencyTimer), retrySingleThreadExecutor);
-    }
-
-    private CompletableFuture<MessageSendingResult> within(CompletableFuture<MessageSendingResult> future, Duration duration) {
-        return future.applyToEither(failAfter(duration), Function.identity());
-    }
-
-    private CompletableFuture<MessageSendingResult> failAfter(Duration duration) {
-        final CompletableFuture<MessageSendingResult> promise = new CompletableFuture<>();
-        asyncTimeoutScheduler.schedule(() -> {
-            TimeoutException ex = new TimeoutException("Timeout after " + duration);
-            return promise.complete(MessageSendingResult.failedResult(ex));
-        }, duration.toMillis(), TimeUnit.MILLISECONDS);
-        return promise;
     }
 
     private boolean isTtlExceeded(Message message) {

@@ -10,7 +10,7 @@ public abstract class CompletableFutureAwareMessageSender implements MessageSend
     @Override
     public CompletableFuture<MessageSendingResult> send(Message message) {
         try {
-            final CompletableFuture<MessageSendingResult> resultFuture = new CompletableFuture<>();
+            CompletableFuture<MessageSendingResult> resultFuture = new CompletableFuture<>();
             sendMessage(message, resultFuture);
             return resultFuture;
         } catch (Exception e) {
