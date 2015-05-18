@@ -1,158 +1,139 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import com.google.common.util.concurrent.SettableFuture;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.google.common.util.concurrent.ListenableFuture;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentProvider;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.client.api.Result;
-import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.util.HttpCookieStore;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
+import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.eclipse.jetty.client.api.Response.Listener.Adapter;
+import static java.lang.String.format;
+import static javax.ws.rs.core.Response.Status.ACCEPTED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JettyMessageSenderTest {
 
+    private static final String MESSAGE_BODY = "aaaaaaaaaaaaaaaa";
     private static final Message SOME_MESSAGE = new Message(
-            Optional.of("id"), 0, 0, "topic", "aaaaaaaaaaaaaaaa".getBytes(), Optional.of(2134144L), Optional.of(21341445L)
+        Optional.of("id"), 0, 0, "topic", MESSAGE_BODY.getBytes(), Optional.of(2134144L), Optional.of(21341445L)
     );
+    private static final int ENDPOINT_PORT = 23215;
+    private static final EndpointAddress ENDPOINT = EndpointAddress.of(format("http://localhost:%d/", ENDPOINT_PORT));
 
-    private static final EndpointAddress ENDPOINT = EndpointAddress.of("whatever");
+    private static HttpClient client;
+    private static WireMockServer wireMockServer;
 
-    @Mock
-    private HttpClient clientMock;
-
-    @Mock
-    private Request requestMock;
-
-    @Mock
-    private Result resultMock;
-
-    @Mock
-    private Response responseMock;
-
+    private RemoteServiceEndpoint remoteServiceEndpoint;
     private JettyMessageSender messageSender;
+
+    @BeforeClass
+    public static void setupEnvironment() throws Exception {
+        wireMockServer = new WireMockServer(ENDPOINT_PORT);
+        wireMockServer.start();
+
+        client = new HttpClient();
+        client.setExecutor(Executors.newFixedThreadPool(10));
+        client.setCookieStore(new HttpCookieStore.Empty());
+        client.start();
+    }
+
+    @AfterClass
+    public static void cleanEnvironment() {
+        wireMockServer.shutdown();
+    }
 
     @Before
     public void setUp() throws Exception {
+        remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
         ResolvableEndpointAddress address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver());
-        messageSender = new JettyMessageSender(clientMock, address, 1);
-
-        when(clientMock.newRequest(any(URI.class))).thenReturn(requestMock);
-        when(requestMock.method(any(HttpMethod.class))).thenReturn(requestMock);
-        when(requestMock.header(anyString(), anyString())).thenReturn(requestMock);
-        when(requestMock.timeout(anyInt(), any(TimeUnit.class))).thenReturn(requestMock);
-        when(requestMock.content(any(ContentProvider.class))).thenReturn(requestMock);
+        messageSender = new JettyMessageSender(client, address, 1000);
     }
 
     @Test
-    public void shouldReturnTrueWhenMessageSuccessfullySent() throws Exception {
+    public void shouldSendMessageSuccessfully() throws Exception {
         // given
-        SettableFuture<MessageSendingResult> future = SettableFuture.create();
-        when(resultMock.isFailed()).thenReturn(false);
-        when(resultMock.getResponse()).thenReturn(responseMock);
-        when(responseMock.getStatus()).thenReturn(200);
+        remoteServiceEndpoint.expectMessages(MESSAGE_BODY);
 
         // when
-        messageSender.sendMessage(SOME_MESSAGE, future);
+        ListenableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
         // then
-        ArgumentCaptor<Adapter> adapterCaptor = ArgumentCaptor.forClass(Adapter.class);
-        verify(requestMock).send(adapterCaptor.capture());
-        adapterCaptor.getValue().onComplete(resultMock);
+        remoteServiceEndpoint.waitUntilReceived();
         assertTrue(future.get(1, TimeUnit.SECONDS).succeeded());
     }
 
     @Test
     public void shouldReturnTrueWhenOtherSuccessfulCodeReturned() throws Exception {
         // given
-        SettableFuture<MessageSendingResult> future = SettableFuture.create();
-        when(resultMock.isFailed()).thenReturn(false);
-        when(resultMock.getResponse()).thenReturn(responseMock);
-        when(responseMock.getStatus()).thenReturn(203);
+        remoteServiceEndpoint.setReturnedStatusCode(ACCEPTED.getStatusCode());
+        remoteServiceEndpoint.expectMessages(MESSAGE_BODY);
 
         // when
-        messageSender.sendMessage(SOME_MESSAGE, future);
+        ListenableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
         // then
-        ArgumentCaptor<Adapter> adapterCaptor = ArgumentCaptor.forClass(Adapter.class);
-        verify(requestMock).send(adapterCaptor.capture());
-        adapterCaptor.getValue().onComplete(resultMock);
         assertTrue(future.get(1, TimeUnit.SECONDS).succeeded());
-    }
-
-    @Test
-    public void shouldReleaseSemaphoreWhenMessageSuccessfullySent() throws Exception {
-        // given
-        SettableFuture<MessageSendingResult> future = SettableFuture.create();
-        when(resultMock.isFailed()).thenReturn(false);
-        when(resultMock.getResponse()).thenReturn(responseMock);
-        when(responseMock.getStatus()).thenReturn(200);
-
-        // when
-        messageSender.sendMessage(SOME_MESSAGE, future);
-
-        // then
-        ArgumentCaptor<Adapter> adapterCaptor = ArgumentCaptor.forClass(Adapter.class);
-        verify(requestMock).send(adapterCaptor.capture());
-        adapterCaptor.getValue().onComplete(resultMock);
     }
 
     @Test
     public void shouldReturnFalseWhenSendingFails() throws Exception {
         // given
-        SettableFuture<MessageSendingResult> future = SettableFuture.create();
-        when(resultMock.isFailed()).thenReturn(false);
-        when(resultMock.getResponse()).thenReturn(responseMock);
-        when(responseMock.getStatus()).thenReturn(500);
+        remoteServiceEndpoint.setReturnedStatusCode(INTERNAL_SERVER_ERROR.getStatusCode());
+        remoteServiceEndpoint.expectMessages(MESSAGE_BODY);
 
         // when
-        messageSender.sendMessage(SOME_MESSAGE, future);
+        ListenableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
         // then
-        ArgumentCaptor<Adapter> adapterCaptor = ArgumentCaptor.forClass(Adapter.class);
-        verify(requestMock).send(adapterCaptor.capture());
-        adapterCaptor.getValue().onComplete(resultMock);
+        remoteServiceEndpoint.waitUntilReceived();
         assertFalse(future.get(1, TimeUnit.SECONDS).succeeded());
     }
 
+
     @Test
-    public void shouldReleaseSemaphoreWhenSendingFails() throws Exception {
+    public void shouldSendMessageIdHeader() {
         // given
-        SettableFuture<MessageSendingResult> future = SettableFuture.create();
-        when(resultMock.isFailed()).thenReturn(true);
-        when(resultMock.getResponse()).thenReturn(responseMock);
-        when(responseMock.getStatus()).thenReturn(500);
+        remoteServiceEndpoint.expectMessages(MESSAGE_BODY);
 
         // when
-        messageSender.sendMessage(SOME_MESSAGE, future);
+        messageSender.send(SOME_MESSAGE);
 
         // then
-        ArgumentCaptor<Adapter> adapterCaptor = ArgumentCaptor.forClass(Adapter.class);
-        verify(requestMock).send(adapterCaptor.capture());
-        adapterCaptor.getValue().onComplete(resultMock);
+        remoteServiceEndpoint.waitUntilReceived();
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader(MESSAGE_ID.getName())).isEqualTo("id");
+    }
+
+    @Test
+    public void shouldSendGeneratedMessageIdInHeader() {
+        // given
+        remoteServiceEndpoint.expectMessages(MESSAGE_BODY);
+
+        // when
+        messageSender.send(new Message(Optional.empty(), 0, 0, "topic", MESSAGE_BODY.getBytes(), Optional.of(2134144L), Optional.empty()));
+
+        // then
+        remoteServiceEndpoint.waitUntilReceived();
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader(MESSAGE_ID.getName())).isNotEmpty();
     }
 
     private static final class SimpleEndpointAddressResolver implements EndpointAddressResolver {
