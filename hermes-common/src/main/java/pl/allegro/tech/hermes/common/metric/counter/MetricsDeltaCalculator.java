@@ -27,4 +27,8 @@ public class MetricsDeltaCalculator {
             previousValues.put(metricName, previousValue - delta);
         }
     }
+
+    public void clear() {
+        previousValues.clear();
+    }
 }

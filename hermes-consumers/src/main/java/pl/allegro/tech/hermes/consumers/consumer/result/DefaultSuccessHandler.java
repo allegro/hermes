@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.result;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.offset.PartitionOffsetHelper;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
 
@@ -13,7 +13,7 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
 
     private final Trackers trackers;
 
-    public DefaultSuccessHandler(PartitionOffsetHelper offsetHelper, HermesMetrics hermesMetrics, Trackers trackers) {
+    public DefaultSuccessHandler(SubscriptionOffsetCommitQueues offsetHelper, HermesMetrics hermesMetrics, Trackers trackers) {
         super(offsetHelper, hermesMetrics);
         this.trackers = trackers;
     }

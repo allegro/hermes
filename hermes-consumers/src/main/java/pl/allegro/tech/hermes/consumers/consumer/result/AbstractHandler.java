@@ -4,14 +4,14 @@ import org.joda.time.Duration;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Metrics;
-import pl.allegro.tech.hermes.consumers.consumer.offset.PartitionOffsetHelper;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 
 public abstract class AbstractHandler {
-    protected PartitionOffsetHelper offsetHelper;
+    protected SubscriptionOffsetCommitQueues offsetHelper;
     protected HermesMetrics hermesMetrics;
 
-    public AbstractHandler(PartitionOffsetHelper offsetHelper, HermesMetrics hermesMetrics) {
+    public AbstractHandler(SubscriptionOffsetCommitQueues offsetHelper, HermesMetrics hermesMetrics) {
         this.offsetHelper = offsetHelper;
         this.hermesMetrics = hermesMetrics;
     }

@@ -75,6 +75,8 @@ public enum Configs {
     CONSUMER_RATE_CONVERGENCE_FACTOR("consumer.rate.convergence.factor", 0.2),
     CONSUMER_RATE_FAILURES_RATIO_THRESHOLD("consumer.rate.failures.ratio.threshold", 0.01),
     CONSUMER_OFFSET_MONITOR_ENABLED("consumer.offset.monitor.enabled", true),
+    CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD("consumer.offset.commit.queue.alert.minimal.idle.period", 3600),
+    CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE("consumer.offset.commit.queue.alert.size", 20_000),
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
 
     GRAPHITE_HOST("graphite.host", "localhost"),

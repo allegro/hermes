@@ -131,6 +131,15 @@ public class HermesMetrics {
         return metricRegistry.counter(Metrics.getOffsetLagPath(subscription, partition, environmentName, graphitePrefix));
     }
 
+    public Counter counterForOffsetCommitIdlePeriod(Subscription subscription, int partition) {
+        return metricRegistry.counter(Metrics.getOffsetCommitIdlePeriodPath(graphitePrefix, subscription, partition));
+    }
+
+    public void removeCounterForOffsetCommitIdlePeriod(Subscription subscription, int partition) {
+        metricRegistry.remove(Metrics.getOffsetCommitIdlePeriodPath(graphitePrefix, subscription, partition));
+    }
+
+
     public Histogram histogramForOffsetTimeLag(Subscription subscription, int partition) {
         return metricRegistry.histogram(Metrics.getOffsetTimeLagPath(subscription, partition, environmentName, graphitePrefix));
     }

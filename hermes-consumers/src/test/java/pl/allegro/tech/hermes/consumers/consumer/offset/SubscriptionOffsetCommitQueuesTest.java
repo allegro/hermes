@@ -1,6 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionPolicy;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.test.Wait;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
@@ -10,18 +18,38 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PartitionOffsetHelperTest {
+public class SubscriptionOffsetCommitQueuesTest {
 
     private static final int FIRST_PARTITION = 0;
     private static final int SECOND_PARTITION = 1;
     public static final String SOME_TOPIC = "topic";
 
-    PartitionOffsetHelper offsetHelper = new PartitionOffsetHelper(100);
+    private Subscription subscription = Subscription.Builder.subscription()
+            .applyDefaults().withSubscriptionPolicy(
+                    SubscriptionPolicy.Builder.subscriptionPolicy()
+                            .applyDefaults().withRate(1000).withMessageTtl(5).build()
+            ).build();
+
+    private HermesMetrics hermesMetrics = Mockito.mock(HermesMetrics.class);
+
+    private ConfigFactory configFactory = Mockito.mock(ConfigFactory.class);
+
+    private SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues =
+            new SubscriptionOffsetCommitQueues(subscription, hermesMetrics, new SystemClock(), configFactory);
+
+    @Before
+    public void setUp() {
+
+        Mockito.when(configFactory.getIntProperty(Configs.CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE)).thenReturn(100);
+        Mockito.when(configFactory.getIntProperty(Configs.CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD)).thenReturn(10);
+
+        subscriptionOffsetCommitQueues = new SubscriptionOffsetCommitQueues(subscription, hermesMetrics, new SystemClock(), configFactory);
+    }
 
     @Test
     public void shouldReturnNullForEmptyHelper() {
         //when
-        List<PartitionOffset> offsets = offsetHelper.getAllLastFullyRead();
+        List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
 
         //then
         assertThat(offsets).isEmpty();
@@ -33,7 +61,7 @@ public class PartitionOffsetHelperTest {
         partition(FIRST_PARTITION).addOffsets(0).finishOffsets(0);
 
         //when
-        List<PartitionOffset> offsets = offsetHelper.getAllLastFullyRead();
+        List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
 
         // then
         assertThat(offsets).containsOnlyOnce(new PartitionOffset(0, FIRST_PARTITION));
@@ -45,7 +73,7 @@ public class PartitionOffsetHelperTest {
         partition(FIRST_PARTITION).addOffsets(1, 2, 3);
 
         //when
-        List<PartitionOffset> offsets = offsetHelper.getAllLastFullyRead();
+        List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
 
         //then
         assertThat(offsets).isEmpty();
@@ -57,7 +85,7 @@ public class PartitionOffsetHelperTest {
         partition(FIRST_PARTITION).addOffsets(1).finishOffsets(1);
 
         // when
-        List<PartitionOffset> offsets = offsetHelper.getAllLastFullyRead();
+        List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
 
         // then
         assertThat(offsets).containsOnly(new PartitionOffset(1, FIRST_PARTITION));
@@ -70,7 +98,7 @@ public class PartitionOffsetHelperTest {
         partition(SECOND_PARTITION).addOffsets(2).finishOffsets(2);
 
         // when
-        List<PartitionOffset> offsets = offsetHelper.getAllLastFullyRead();
+        List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
 
         // then
         assertThat(offsets).containsExactly(new PartitionOffset(1, FIRST_PARTITION), new PartitionOffset(2, SECOND_PARTITION));
@@ -82,9 +110,9 @@ public class PartitionOffsetHelperTest {
         partition(FIRST_PARTITION).addOffsets(1).finishOffsets(1);
 
         //when
-        offsetHelper.getAllLastFullyRead();
+        subscriptionOffsetCommitQueues.getOffsetsToCommit();
         Wait.forCacheInvalidation();
-        List<PartitionOffset> offsets = offsetHelper.getAllLastFullyRead();
+        List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
 
         //then
         assertThat(offsets).isEmpty();
@@ -97,13 +125,13 @@ public class PartitionOffsetHelperTest {
         partition.addOffsets(1).finishOffsets(1);
 
         //when
-        offsetHelper.getAllLastFullyRead();
+        subscriptionOffsetCommitQueues.getOffsetsToCommit();
         Wait.forCacheInvalidation();
         partition.addOffsets(2).finishOffsets(2);
 
 
         //then
-        List<PartitionOffset> offsets = offsetHelper.getAllLastFullyRead();
+        List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
         assertThat(offsets).containsOnly(new PartitionOffset(2, FIRST_PARTITION));
     }
 
@@ -121,7 +149,7 @@ public class PartitionOffsetHelperTest {
 
         public Partition addOffsets(long... offsets) {
             for (long offset : offsets) {
-                offsetHelper.put(new Message(Optional.of("id"), offset, partition, SOME_TOPIC, new byte[partition],
+                subscriptionOffsetCommitQueues.put(new Message(Optional.of("id"), offset, partition, SOME_TOPIC, new byte[partition],
                         Optional.of(213123L), Optional.of(2131234L)));
             }
             return this;
@@ -129,7 +157,7 @@ public class PartitionOffsetHelperTest {
 
         private Partition finishOffsets(long... offsets) {
             for (long offset : offsets) {
-                offsetHelper.decrement(partition, offset);
+                subscriptionOffsetCommitQueues.decrement(partition, offset);
             }
             return this;
         }
