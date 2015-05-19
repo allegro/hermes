@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.hermes.management.api.CORSFilter;
 import pl.allegro.tech.hermes.management.api.auth.AllowAllSecurityContextProvider;
 import pl.allegro.tech.hermes.management.api.auth.AuthorizationFilter;
 import pl.allegro.tech.hermes.management.api.auth.SecurityContextProvider;
@@ -26,6 +27,7 @@ public class EndpointConfiguration extends ResourceConfig {
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         register(ObjectMapperContextResolver.class);
         register(AuthorizationFilter.class);
+        register(CORSFilter.class);
         register(RolesAllowedDynamicFeature.class);
     }
 
