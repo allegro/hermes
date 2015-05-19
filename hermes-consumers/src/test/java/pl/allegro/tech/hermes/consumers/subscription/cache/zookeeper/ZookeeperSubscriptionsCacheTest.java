@@ -42,11 +42,7 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
 
     @Before
     public void setUp() throws Exception {
-        zookeeperClient.create().forPath("/hermes");
-        zookeeperClient.create().forPath(
-                "/hermes/groups",
-                objectMapper.writeValueAsBytes(NodePassword.fromString(configFactory.getStringProperty(Configs.ADMIN_PASSWORD)))
-        );
+        zookeeperClient.create().creatingParentsIfNeeded().forPath("/hermes/groups");
         ZookeeperPaths paths = new ZookeeperPaths("/hermes");
         
         groupRepository = new ZookeeperGroupRepository(zookeeperClient, objectMapper, paths);

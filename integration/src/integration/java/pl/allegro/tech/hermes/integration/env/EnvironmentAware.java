@@ -29,8 +29,6 @@ public interface EnvironmentAware {
 
     String MANAGEMENT_ENDPOINT_URL = "http://localhost:" + MANAGEMENT_PORT + "/";
     
-    String ADMIN_PASSWORD = CONFIG_FACTORY.getStringProperty(Configs.ADMIN_PASSWORD);
-
     int GRAPHITE_HTTP_SERVER_PORT = 18089;
 
     int GRAPHITE_SERVER_PORT = 18023;

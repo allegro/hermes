@@ -88,7 +88,6 @@ public enum Configs {
     METRICS_CONSOLE_REPORTER("metrics.console.reporter", false),
     METRICS_COUNTER_EXPIRE_AFTER_ACCESS("metrics.counter.expire.after.access", 72),
 
-    ADMIN_PASSWORD("superuser.password", "hermes123"),
     ADMIN_REAPER_INTERAL_MS("admin.reaper.interval.ms", 30000),
 
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),

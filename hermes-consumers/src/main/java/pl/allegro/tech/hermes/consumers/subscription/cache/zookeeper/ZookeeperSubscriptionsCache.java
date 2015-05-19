@@ -22,7 +22,7 @@ class ZookeeperSubscriptionsCache extends ZookeeperCacheBase implements Subscrip
             ConfigFactory configFactory,
             ObjectMapper objectMapper) {
 
-        super(configFactory, curatorClient, objectMapper);
+        super(configFactory, curatorClient);
 
         groupsNodeCache = new GroupsNodeCache(curatorClient, objectMapper, paths.groupsPath(), executorService);
     }

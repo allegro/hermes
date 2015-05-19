@@ -30,8 +30,8 @@ public class OffsetManipulationTest extends HermesIntegrationEnvironment {
     @BeforeClass
     public void initialize() {
         this.publisher = new HermesPublisher(FRONTEND_URL);
-        HermesEndpoints endpoints = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, ADMIN_PASSWORD);
-        this.operations = new HermesAPIOperations(endpoints, ADMIN_PASSWORD);
+        HermesEndpoints endpoints = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL);
+        this.operations = new HermesAPIOperations(endpoints);
         this.wait = new Waiter(endpoints, SharedServices.services().zookeeper(), services().kafkaZookeeper());
         this.consumers = SharedServices.services().consumers();
     }
