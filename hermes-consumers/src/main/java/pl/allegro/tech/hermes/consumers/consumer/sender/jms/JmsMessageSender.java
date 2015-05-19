@@ -42,7 +42,7 @@ public class JmsMessageSender extends AbstractMessageSender {
             BytesMessage message = jmsContext.createBytesMessage();
             message.writeBytes(msg.getData());
             message.setStringProperty(TOPIC_NAME.getCamelCaseName(), msg.getTopic());
-            message.setStringProperty(MESSAGE_ID.getCamelCaseName(), messageId(msg));
+            message.setStringProperty(MESSAGE_ID.getCamelCaseName(), msg.getId().orElse("unavailable"));
 
             CompletionListener asyncListener = new CompletionListener() {
                 @Override

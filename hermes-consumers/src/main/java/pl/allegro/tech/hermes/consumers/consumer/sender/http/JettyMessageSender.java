@@ -34,7 +34,7 @@ public class JettyMessageSender extends AbstractMessageSender {
             client.newRequest(endpoint.resolveFor(message))
                 .method(HttpMethod.POST)
                 .header(HttpHeader.KEEP_ALIVE.toString(), "true")
-                .header(MESSAGE_ID.getName(), messageId(message))
+                .header(MESSAGE_ID.getName(), message.getId().orElse("unavailable"))
                 .header(HttpHeader.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)
                 .timeout(timeout, TimeUnit.MILLISECONDS)
                 .content(new BytesContentProvider(message.getData()))
