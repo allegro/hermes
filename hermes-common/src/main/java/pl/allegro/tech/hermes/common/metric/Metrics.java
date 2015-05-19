@@ -117,6 +117,15 @@ public final class Metrics {
         return String.format("%s.%d.timeLag", getOffsetPath(subscription, environmentName, graphite), partition);
     }
 
+    public static String getOffsetCommitIdlePeriodPath(String graphitePrefix, Subscription subscription, int partition) {
+        return String.format("%s.consumer.%s.offset-commit-idle.%s.%s.%s.%d",
+                graphitePrefix, ESCAPED_HOSTNAME,
+                escapeDots(subscription.getTopicName().getGroupName()),
+                escapeDots(subscription.getTopicName().getName()),
+                escapeDots(subscription.getName()),
+                partition);
+    }
+
     public static String getPublisherStatusCodePath(int statusCode, String graphitePrefix) {
         return String.format("%s.producer.%s.http-status-codes.code%d", graphitePrefix, ESCAPED_HOSTNAME, statusCode);
     }

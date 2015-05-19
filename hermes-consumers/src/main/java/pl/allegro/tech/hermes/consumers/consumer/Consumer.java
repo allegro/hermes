@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Metrics;
-import pl.allegro.tech.hermes.consumers.consumer.offset.PartitionOffsetHelper;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SplitMessagesReceiver;
@@ -19,10 +19,12 @@ import java.util.concurrent.Semaphore;
 
 public class Consumer implements Runnable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
+
     private final SplitMessagesReceiver messageReceiver;
     private final HermesMetrics hermesMetrics;
     private final ConsumerRateLimiter rateLimiter;
-    private final PartitionOffsetHelper partitionOffsetHelper;
+    private final SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues;
     private final Semaphore inflightSemaphore;
     private final Trackers trackers;
     private final ConsumerMessageSender sender;
@@ -31,16 +33,14 @@ public class Consumer implements Runnable {
 
     private volatile boolean consuming = true;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
-
     public Consumer(SplitMessagesReceiver messageReceiver, HermesMetrics hermesMetrics, Subscription subscription,
-                    ConsumerRateLimiter rateLimiter, PartitionOffsetHelper partitionOffsetHelper, ConsumerMessageSender sender,
+                    ConsumerRateLimiter rateLimiter, SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues, ConsumerMessageSender sender,
                     Semaphore inflightSemaphore, Trackers trackers) {
         this.messageReceiver = messageReceiver;
         this.hermesMetrics = hermesMetrics;
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
-        this.partitionOffsetHelper = partitionOffsetHelper;
+        this.subscriptionOffsetCommitQueues = subscriptionOffsetCommitQueues;
         this.sender = sender;
         this.inflightSemaphore = inflightSemaphore;
         this.trackers = trackers;
@@ -82,7 +82,7 @@ public class Consumer implements Runnable {
 
     private void sendMessages(List<Message> messages) {
         for (Message message : messages) {
-            partitionOffsetHelper.put(message);
+            subscriptionOffsetCommitQueues.put(message);
 
             hermesMetrics.incrementInflightCounter(subscription);
             trackers.get(subscription).logInflight(message, subscription);
@@ -98,7 +98,7 @@ public class Consumer implements Runnable {
     }
 
     public List<PartitionOffset> getOffsetsToCommit() {
-        return partitionOffsetHelper.getAllLastFullyRead();
+        return subscriptionOffsetCommitQueues.getOffsetsToCommit();
     }
 
     public Subscription getSubscription() {

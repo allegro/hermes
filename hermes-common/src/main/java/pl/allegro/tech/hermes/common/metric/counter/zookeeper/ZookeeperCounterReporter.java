@@ -68,7 +68,6 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
 
         CounterMatcher matcher = new CounterMatcher(graphitePrefix, counterName);
         if (!matcher.matches()) {
-            LOGGER.warn("Unknown counter {}", counterName);
             return;
         }
 

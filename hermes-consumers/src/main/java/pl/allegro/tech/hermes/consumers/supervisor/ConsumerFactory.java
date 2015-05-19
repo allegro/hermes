@@ -1,14 +1,15 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
-import com.yammer.metrics.core.Clock;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.time.Clock;
+import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSender;
-import pl.allegro.tech.hermes.consumers.consumer.offset.PartitionOffsetHelper;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
@@ -28,7 +29,8 @@ import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+
+import static com.yammer.metrics.core.Clock.defaultClock;
 
 public class ConsumerFactory {
 
@@ -69,14 +71,15 @@ public class ConsumerFactory {
     Consumer createConsumer(Subscription subscription) {
         MessageReceiver messageReceiver = messageReceiverFactory.createMessageReceiver(subscription);
 
-        PartitionOffsetHelper partitionOffsetHelper
-                = new PartitionOffsetHelper(toMillis(configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_CACHE_EXPIRATION)));
+        Clock clock = new SystemClock();
+
+        SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues = new SubscriptionOffsetCommitQueues(subscription, hermesMetrics, clock, configFactory);
         ConsumerRateLimiter consumerRateLimiter = new ConsumerRateLimiter(subscription, outputRateCalculator, hermesMetrics,
                 consumerRateLimitSupervisor);
         MessageSender messageSender = messageSenderFactory.create(subscription);
-        SuccessHandler successHandler = new DefaultSuccessHandler(partitionOffsetHelper, hermesMetrics, trackers);
-        ErrorHandler errorHandler = new DefaultErrorHandler(partitionOffsetHelper, hermesMetrics, undeliveredMessageLog,
-                Clock.defaultClock(), trackers, configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME));
+        SuccessHandler successHandler = new DefaultSuccessHandler(subscriptionOffsetCommitQueues, hermesMetrics, trackers);
+        ErrorHandler errorHandler = new DefaultErrorHandler(subscriptionOffsetCommitQueues, hermesMetrics, undeliveredMessageLog,
+                defaultClock(), trackers, configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME));
 
         SplitMessagesReceiver splitMessagesReceiver = new SplitMessagesReceiver(messageReceiver, messageSplitter);
 
@@ -86,10 +89,7 @@ public class ConsumerFactory {
                 consumerRateLimiter, rateLimiterReportingExecutor, inflightSemaphore, hermesMetrics);
 
         return new Consumer(splitMessagesReceiver, hermesMetrics, subscription, consumerRateLimiter,
-                partitionOffsetHelper, sender, inflightSemaphore, trackers);
+                subscriptionOffsetCommitQueues, sender, inflightSemaphore, trackers);
     }
 
-    private long toMillis(int seconds) {
-        return TimeUnit.MILLISECONDS.convert(seconds, TimeUnit.SECONDS);
-    }
 }
