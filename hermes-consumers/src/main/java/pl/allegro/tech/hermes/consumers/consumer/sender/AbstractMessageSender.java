@@ -5,7 +5,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 
-public abstract class ConcurrentRequestsLimitingMessageSender implements MessageSender {
+public abstract class AbstractMessageSender implements MessageSender {
 
     @Override
     public ListenableFuture<MessageSendingResult> send(Message message) {
