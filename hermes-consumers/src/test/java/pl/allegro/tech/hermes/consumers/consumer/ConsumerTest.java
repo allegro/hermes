@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.offset.PartitionOffsetHelper;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SplitMessagesReceiver;
@@ -76,7 +76,7 @@ public class ConsumerTest {
     private ConsumerRateLimiter consumerRateLimiter;
 
     @Mock
-    private PartitionOffsetHelper partitionOffsetHelper;
+    private SubscriptionOffsetCommitQueues partitionOffsetHelper;
 
     @Mock
     private ListenableFuture<MessageSendingResult> messageSendingResult;
