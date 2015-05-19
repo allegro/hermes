@@ -33,8 +33,8 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
     @BeforeClass
     public void initialize() {
         publisher = new HermesPublisher(FRONTEND_URL);
-        endpoints = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, ADMIN_PASSWORD);
-        operations = new HermesAPIOperations(endpoints, ADMIN_PASSWORD);
+        endpoints = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL);
+        operations = new HermesAPIOperations(endpoints);
         wait = new Waiter(endpoints, services().zookeeper(), services().kafkaZookeeper());
     }
 

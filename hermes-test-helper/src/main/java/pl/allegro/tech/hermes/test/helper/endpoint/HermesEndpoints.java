@@ -15,9 +15,8 @@ public class HermesEndpoints {
 
     private final SubscriptionEndpoint subscriptionEndpoint;
 
-    public HermesEndpoints(String hermesFrontendUrl, String password) {
+    public HermesEndpoints(String hermesFrontendUrl) {
         Hermes hermes = new Hermes(hermesFrontendUrl)
-                .withPassword(password)
                 .withManagementConfig(integrationTestsConfig())
                 .withPublisherConfig(integrationTestsConfig());
         this.groupEndpoint = hermes.createGroupEndpoint();
