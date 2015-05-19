@@ -8,7 +8,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.LatencyTimer;
+import pl.allegro.tech.hermes.common.metric.ConsumerLatencyTimer;
+import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
@@ -27,7 +28,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
-import static pl.allegro.tech.hermes.common.metric.Metrics.Meter.CONSUMER_FAILED_METER;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 
@@ -55,7 +55,7 @@ public class ConsumerMessageSenderTest {
     private HermesMetrics hermesMetrics;
 
     @Mock
-    private LatencyTimer latencyTimer;
+    private ConsumerLatencyTimer consumerLatencyTimer;
 
     @Mock
     private Meter failedMeter;
@@ -73,8 +73,8 @@ public class ConsumerMessageSenderTest {
     }
 
     private void setUpMetrics(Subscription subscription) {
-        when(hermesMetrics.latencyTimer(subscription)).thenReturn(latencyTimer);
-        when(hermesMetrics.meter(CONSUMER_FAILED_METER, subscription.getTopicName(), subscription.getName())).thenReturn(failedMeter);
+        when(hermesMetrics.latencyTimer(subscription)).thenReturn(consumerLatencyTimer);
+        when(hermesMetrics.meter(Meters.CONSUMER_FAILED_METER, subscription.getTopicName(), subscription.getName())).thenReturn(failedMeter);
     }
 
     @Test
@@ -260,7 +260,7 @@ public class ConsumerMessageSenderTest {
 
     private void verifyLatencyTimersCountedTimes(int count) {
         verify(hermesMetrics, times(count)).latencyTimer(subscription);
-        verify(latencyTimer, times(count)).stop();
+        verify(consumerLatencyTimer, times(count)).stop();
     }
 
     private Subscription subscriptionWithTtl(int ttl) {

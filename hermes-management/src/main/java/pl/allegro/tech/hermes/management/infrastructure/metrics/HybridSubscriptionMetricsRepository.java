@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics;
 import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
-import static pl.allegro.tech.hermes.common.metric.Metrics.escapeDots;
+import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 @Component
 public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsRepository {
@@ -59,7 +59,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
     private String metricPath(TopicName topicName, String subscriptionName) {
         return String.format(SUBSCRIPTION_RATE_PATTERN,
-            metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
+                metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
         );
     }
 }

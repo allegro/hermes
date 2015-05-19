@@ -129,8 +129,8 @@ public class MetricsTest extends IntegrationTest {
         operations.buildSubscription("lagMetricGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
         wait.untilSubscriptionIsCreated("lagMetricGroup", "topic", "subscription");
         remoteService.expectMessages(TestMessage.simple().body());
-        graphiteServer.expectMetric(metricNameWithPrefix("consumer.offset.dev.lagMetricGroup.topic.subscription.[0-9].lag.count"), 1);
-        graphiteServer.expectMetric(metricNameWithPrefix("consumer.offset.dev.lagMetricGroup.topic.subscription.[0-9].timeLag.count"), 1);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.offset.lagMetricGroup.topic.subscription.[0-9].lag.count"), 1);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.offset.lagMetricGroup.topic.subscription.[0-9].timeLag.count"), 1);
 
         //when
         publisher.publish("lagMetricGroup.topic", TestMessage.simple().body());

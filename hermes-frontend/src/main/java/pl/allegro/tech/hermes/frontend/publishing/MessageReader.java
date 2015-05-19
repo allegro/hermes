@@ -4,7 +4,7 @@ import com.codahale.metrics.Timer;
 import com.google.common.base.Function;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Metrics;
+import pl.allegro.tech.hermes.common.metric.Timers;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
@@ -83,8 +83,8 @@ public class MessageReader implements ReadListener {
     }
 
     private void initParsingTimers() {
-        this.parsingTimerPerTopic = hermesMetrics.timer(Metrics.Timer.PRODUCER_PARSING_REQUEST, topicName).time();
-        this.parsingTimer = hermesMetrics.timer(Metrics.Timer.PRODUCER_PARSING_REQUEST).time();
+        this.parsingTimerPerTopic = hermesMetrics.timer(Timers.PRODUCER_TOPIC_PARSING_REQUEST, topicName).time();
+        this.parsingTimer = hermesMetrics.timer(Timers.PRODUCER_PARSING_REQUEST).time();
     }
 
     private void closeParsingTimers() {

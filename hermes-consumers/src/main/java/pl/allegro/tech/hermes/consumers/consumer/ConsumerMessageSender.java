@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.metric.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.LatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
@@ -62,12 +62,12 @@ public class ConsumerMessageSender {
      */
     public void sendMessage(final Message message) {
         while (consumerIsConsuming) {
-            final LatencyTimer latencyTimer = hermesMetrics.latencyTimer(subscription);
+            final ConsumerLatencyTimer consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
             try {
-                submitAsyncSendMessageRequest(message, latencyTimer);
+                submitAsyncSendMessageRequest(message, consumerLatencyTimer);
                 return;
             } catch (RuntimeException e) {
-                latencyTimer.stop();
+                consumerLatencyTimer.stop();
                 handleFailedSending(message, failedResult(e));
                 if (isTtlExceeded(message)) {
                     handleMessageDiscarding(message, failedResult(e));
@@ -81,11 +81,11 @@ public class ConsumerMessageSender {
         this.subscription = newSubscription;
     }
 
-    private void submitAsyncSendMessageRequest(final Message message, final LatencyTimer latencyTimer) {
+    private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
         rateLimiter.acquire();
         final CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
         response.thenAcceptAsync(new DeliveryCountersReportingListener(message), deliveryReportingExecutor);
-        response.thenAcceptAsync(new ResponseHandlingListener(message, latencyTimer), retrySingleThreadExecutor);
+        response.thenAcceptAsync(new ResponseHandlingListener(message, consumerLatencyTimer), retrySingleThreadExecutor);
     }
 
     private boolean isTtlExceeded(Message message) {
@@ -138,16 +138,16 @@ public class ConsumerMessageSender {
     class ResponseHandlingListener implements java.util.function.Consumer<MessageSendingResult> {
 
         private final Message message;
-        private final LatencyTimer latencyTimer;
+        private final ConsumerLatencyTimer consumerlatencyTimer;
 
-        public ResponseHandlingListener(Message message, LatencyTimer latencyTimer) {
+        public ResponseHandlingListener(Message message, ConsumerLatencyTimer consumerlatencyTimer) {
             this.message = message;
-            this.latencyTimer = latencyTimer;
+            this.consumerlatencyTimer = consumerlatencyTimer;
         }
 
         @Override
         public void accept(MessageSendingResult result) {
-            latencyTimer.stop();
+            consumerlatencyTimer.stop();
             if (result.succeeded()) {
                 handleMessageSendingSuccess(message);
             } else if (!isTtlExceeded(message) && shouldRetrySending(result)) {
