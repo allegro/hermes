@@ -1,10 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 
-import com.google.common.util.concurrent.SettableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
-import pl.allegro.tech.hermes.consumers.consumer.sender.AbstractMessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 import javax.jms.BytesMessage;
@@ -12,13 +11,14 @@ import javax.jms.CompletionListener;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
+import java.util.concurrent.CompletableFuture;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 
-public class JmsMessageSender extends AbstractMessageSender {
+public class JmsMessageSender extends CompletableFutureAwareMessageSender {
 
     private static final Logger logger = LoggerFactory.getLogger(JmsMessageSender.class);
 
@@ -37,7 +37,7 @@ public class JmsMessageSender extends AbstractMessageSender {
     }
 
     @Override
-    protected void sendMessage(Message msg, final SettableFuture<MessageSendingResult> resultFuture) {
+    protected void sendMessage(Message msg, final CompletableFuture<MessageSendingResult> resultFuture) {
         try {
             BytesMessage message = jmsContext.createBytesMessage();
             message.writeBytes(msg.getData());
@@ -47,20 +47,20 @@ public class JmsMessageSender extends AbstractMessageSender {
             CompletionListener asyncListener = new CompletionListener() {
                 @Override
                 public void onCompletion(javax.jms.Message message) {
-                    resultFuture.set(succeededResult());
+                    resultFuture.complete(succeededResult());
                 }
 
                 @Override
                 public void onException(javax.jms.Message message, Exception exception) {
                     logger.warn(String.format("Exception while sending message to topic %s", topicName), exception);
-                    resultFuture.set(failedResult(exception));
+                    resultFuture.complete(failedResult(exception));
                 }
             };
             jmsContext.createProducer()
                     .setAsync(asyncListener)
                     .send(jmsContext.createTopic(topicName), message);
         } catch (JMSException | JMSRuntimeException e) {
-            resultFuture.set(failedResult(e));
+            resultFuture.complete(failedResult(e));
         }
     }
 

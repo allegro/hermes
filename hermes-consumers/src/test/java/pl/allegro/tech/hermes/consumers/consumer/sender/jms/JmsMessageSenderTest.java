@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +19,7 @@ import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.JMSRuntimeException;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
@@ -60,7 +60,7 @@ public class JmsMessageSenderTest {
     @Test
     public void shouldReturnTrueWhenMessageSuccessfullyPublished() throws Exception {
         // when
-        ListenableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
         // then
         ArgumentCaptor<CompletionListener> listenerCaptor = ArgumentCaptor.forClass(CompletionListener.class);
@@ -72,7 +72,7 @@ public class JmsMessageSenderTest {
     @Test
     public void shouldReturnFalseWhenOnExceptionCalledOnListener() throws Exception {
         // when
-        ListenableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
         // then
         ArgumentCaptor<CompletionListener> listenerCaptor = ArgumentCaptor.forClass(CompletionListener.class);
@@ -87,7 +87,7 @@ public class JmsMessageSenderTest {
         doThrow(new JMSException("test")).when(messageMock).writeBytes(SOME_MESSAGE.getData());
 
         // when
-        ListenableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
         // then
         assertFalse(future.get(1, TimeUnit.SECONDS).succeeded());
@@ -95,11 +95,10 @@ public class JmsMessageSenderTest {
 
     @Test
     public void shouldReturnFalseWhenJMSThrowsRuntimeException() throws Exception {
-        // given
         doThrow(new JMSRuntimeException("test")).when(jmsContextMock).createProducer();
 
         // when
-        ListenableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
         // then
         assertFalse(future.get(1, TimeUnit.SECONDS).succeeded());

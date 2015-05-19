@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.google.common.util.concurrent.ListenableFuture;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.junit.AfterClass;
@@ -19,6 +18,7 @@ import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -75,7 +75,7 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(MESSAGE_BODY);
 
         // when
-        ListenableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
@@ -89,7 +89,7 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(MESSAGE_BODY);
 
         // when
-        ListenableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
         // then
         assertTrue(future.get(1, TimeUnit.SECONDS).succeeded());
@@ -102,7 +102,7 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(MESSAGE_BODY);
 
         // when
-        ListenableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
