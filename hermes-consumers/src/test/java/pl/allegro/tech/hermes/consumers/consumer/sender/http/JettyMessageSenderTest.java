@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import com.google.common.util.concurrent.SettableFuture;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentProvider;
 import org.eclipse.jetty.client.api.Request;
@@ -21,14 +20,13 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpo
 
 import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.eclipse.jetty.client.api.Response.Listener.Adapter;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -70,7 +68,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldReturnTrueWhenMessageSuccessfullySent() throws Exception {
         // given
-        SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
         when(resultMock.isFailed()).thenReturn(false);
         when(resultMock.getResponse()).thenReturn(responseMock);
         when(responseMock.getStatus()).thenReturn(200);
@@ -88,7 +86,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldReturnTrueWhenOtherSuccessfulCodeReturned() throws Exception {
         // given
-        SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
         when(resultMock.isFailed()).thenReturn(false);
         when(resultMock.getResponse()).thenReturn(responseMock);
         when(responseMock.getStatus()).thenReturn(203);
@@ -106,7 +104,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldReleaseSemaphoreWhenMessageSuccessfullySent() throws Exception {
         // given
-        SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
         when(resultMock.isFailed()).thenReturn(false);
         when(resultMock.getResponse()).thenReturn(responseMock);
         when(responseMock.getStatus()).thenReturn(200);
@@ -123,7 +121,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldReturnFalseWhenSendingFails() throws Exception {
         // given
-        SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
         when(resultMock.isFailed()).thenReturn(false);
         when(resultMock.getResponse()).thenReturn(responseMock);
         when(responseMock.getStatus()).thenReturn(500);
@@ -141,7 +139,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldReleaseSemaphoreWhenSendingFails() throws Exception {
         // given
-        SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
         when(resultMock.isFailed()).thenReturn(true);
         when(resultMock.getResponse()).thenReturn(responseMock);
         when(responseMock.getStatus()).thenReturn(500);
