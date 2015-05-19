@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.offset.PartitionOffsetHelper;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
@@ -44,7 +44,7 @@ public class DefaultErrorHandlerTest {
     private HermesMetrics hermesMetrics;
 
     @Mock
-    private PartitionOffsetHelper offsetHelper;
+    private SubscriptionOffsetCommitQueues offsetHelper;
 
     @Mock
     private UndeliveredMessageLog undeliveredMessageLog;
