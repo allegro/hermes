@@ -89,7 +89,7 @@ public class ConsumerMessageSender {
     }
 
     private boolean isTtlExceeded(Message message) {
-        return message.isTttlExceeded(subscription.getSubscriptionPolicy().getMessageTtl());
+        return message.isTtlExceeded(subscription.getSubscriptionPolicy().getMessageTtl());
     }
 
     private void handleFailedSending(Message message, MessageSendingResult result) {

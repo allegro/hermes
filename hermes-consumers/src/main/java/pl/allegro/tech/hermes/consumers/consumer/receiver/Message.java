@@ -57,7 +57,7 @@ public class Message {
         return topic;
     }
 
-    public boolean isTttlExceeded(int ttlSeconds) {
+    public boolean isTtlExceeded(int ttlSeconds) {
 
         long currentTimestamp = System.currentTimeMillis();
 

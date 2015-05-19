@@ -6,7 +6,7 @@ import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.RequestListener;
 import com.github.tomakehurst.wiremock.http.Response;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.jayway.awaitility.Duration;
 import org.slf4j.Logger;
@@ -29,13 +29,15 @@ public class RemoteServiceEndpoint {
 
     private static final Logger logger = LoggerFactory.getLogger(RemoteServiceEndpoint.class);
 
-    private final List<String> receivedMessages = Collections.synchronizedList(new ArrayList<>());
+    private final List<LoggedRequest> receivedRequests = Collections.synchronizedList(new ArrayList<>());
 
     private int expectedMessagesCount = 0;
 
     private final String path;
 
     private final WireMock listener;
+
+    private int returnedStatusCode = 200;
 
     public RemoteServiceEndpoint(WireMockServer service) {
         this(service, "/");
@@ -48,19 +50,14 @@ public class RemoteServiceEndpoint {
             @Override
             public void requestReceived(Request request, Response response) {
                 if (path.equals(request.getUrl())) {
-                    receivedMessages.add(LoggedRequest.createFrom(request).getBodyAsString());
+                    receivedRequests.add(LoggedRequest.createFrom(request));
                 }
             }
         });
     }
 
     public void expectMessages(TestMessage... messages) {
-        expectMessages(Lists.transform(Arrays.asList(messages), new Function<TestMessage, String>() {
-            @Override
-            public String apply(TestMessage input) {
-                return input.body();
-            }
-        }));
+        expectMessages(Lists.transform(Arrays.asList(messages), input -> input.body()));
     }
 
     public void expectMessages(String... messages) {
@@ -68,11 +65,11 @@ public class RemoteServiceEndpoint {
     }
 
     public void expectMessages(List<String> messages) {
-        receivedMessages.clear();
+        receivedRequests.clear();
         for (String message : messages) {
             listener.register(post(urlEqualTo(path))
                             .willReturn(aResponse()
-                                            .withStatus(200)
+                                            .withStatus(returnedStatusCode)
                                             .withHeader("Content-Type", "application/json")
                                             .withBody(message)
                             )
@@ -81,9 +78,13 @@ public class RemoteServiceEndpoint {
         expectedMessagesCount = messages.size();
     }
 
+    public void setReturnedStatusCode(int statusCode) {
+        returnedStatusCode = statusCode;
+    }
+
     public void waitUntilReceived(long seconds) {
         logger.info("Expecting to receive {} messages", expectedMessagesCount);
-        await().atMost(new Duration(seconds, TimeUnit.SECONDS)).until(() -> receivedMessages.size() == expectedMessagesCount);
+        await().atMost(new Duration(seconds, TimeUnit.SECONDS)).until(() -> receivedRequests.size() == expectedMessagesCount);
     }
 
     public void waitUntilReceived() {
@@ -97,6 +98,10 @@ public class RemoteServiceEndpoint {
         } catch (InterruptedException exception) {
             logger.info("Who interrupted me?!", exception);
         }
-        assertThat(receivedMessages).isEmpty();
+        assertThat(receivedRequests).isEmpty();
+    }
+
+    public LoggedRequest getLastReceivedRequest() {
+        return Iterables.getLast(receivedRequests);
     }
 }

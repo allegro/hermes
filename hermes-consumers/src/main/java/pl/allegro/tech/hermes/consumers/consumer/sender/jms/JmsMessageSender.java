@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
-import pl.allegro.tech.hermes.common.util.MessageId;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -15,6 +13,8 @@ import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
 import java.util.concurrent.CompletableFuture;
 
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 
@@ -41,9 +41,8 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
         try {
             BytesMessage message = jmsContext.createBytesMessage();
             message.writeBytes(msg.getData());
-            message.setStringProperty(MessageMetadataHeaders.TOPIC_NAME.getCamelCaseName(), msg.getTopic());
-            message.setStringProperty(MessageMetadataHeaders.MESSAGE_ID.getCamelCaseName(),
-                                      MessageId.forTopicAndOffset(msg.getTopic(), msg.getOffset()));
+            message.setStringProperty(TOPIC_NAME.getCamelCaseName(), msg.getTopic());
+            message.setStringProperty(MESSAGE_ID.getCamelCaseName(), msg.getId().orElse("unavailable"));
 
             CompletionListener asyncListener = new CompletionListener() {
                 @Override
