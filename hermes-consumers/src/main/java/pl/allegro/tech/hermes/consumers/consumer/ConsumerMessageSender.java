@@ -51,7 +51,7 @@ public class ConsumerMessageSender {
         this.subscription = subscription;
         this.inflightSemaphore = inflightSemaphore;
         this.retrySingleThreadExecutor = Executors.newSingleThreadExecutor();
-        this.async = new FutureAsyncTimeout<>(MessageSendingResult::failedResult);
+        this.async = new FutureAsyncTimeout<>(MessageSendingResult::loggedFailResult);
         this.hermesMetrics = hermesMetrics;
         this.asyncTimeoutMs = asyncTimeoutMs;
     }
@@ -162,8 +162,8 @@ public class ConsumerMessageSender {
         }
 
         private void retrySending(MessageSendingResult result) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(
+            if (result.isLoggable()) {
+                logger.info(
                     format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
                         subscription.getEndpoint().getEndpoint(), message.getId().orElse("unknown"), message.getOffset(), message.getPartition(),
                         subscription.getId(), result.getRootCause()),
