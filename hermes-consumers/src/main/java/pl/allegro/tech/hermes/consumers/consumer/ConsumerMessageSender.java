@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.LatencyTimer;
@@ -17,10 +19,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
+import static java.lang.String.format;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 
 public class ConsumerMessageSender {
 
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerMessageSender.class);
     private final ExecutorService retrySingleThreadExecutor;
     private final ExecutorService deliveryReportingExecutor;
     private final SuccessHandler successHandler;
@@ -151,10 +155,21 @@ public class ConsumerMessageSender {
             if (result.succeeded()) {
                 handleMessageSendingSuccess(message);
             } else if (!isTtlExceeded(message) && shouldRetrySending(result)) {
-                sendMessage(message);
+                retrySending(result);
             } else {
                 handleMessageDiscarding(message, result);
             }
+        }
+
+        private void retrySending(MessageSendingResult result) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                    format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
+                        subscription.getEndpoint().getEndpoint(), message.getId().orElse("unknown"), message.getOffset(), message.getPartition(),
+                        subscription.getId(), result.getRootCause()),
+                    result.getFailure());
+            }
+            sendMessage(message);
         }
     }
 }
