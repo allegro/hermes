@@ -24,7 +24,14 @@ import java.util.concurrent.Semaphore;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.api.EndpointAddress.of;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.common.metric.Metrics.Meter.CONSUMER_FAILED_METER;
@@ -264,11 +271,24 @@ public class ConsumerMessageSenderTest {
     }
 
     private Subscription subscriptionWithTtl(int ttl) {
-        return subscription().withName("subscription").withSubscriptionPolicy(subscriptionPolicy().withMessageTtl(ttl).build()).build();
+        return subscriptionBuilderWithTestValues()
+            .withSubscriptionPolicy(subscriptionPolicy()
+                    .withMessageTtl(ttl)
+                    .build())
+            .build();
     }
 
     private Subscription subscriptionWithTtlAndClientErrorRetry(int ttl) {
-        return subscription().withName("subscription2").withSubscriptionPolicy(subscriptionPolicy().applyDefaults().withMessageTtl(ttl).withClientErrorRetry().build()).build();
+        return subscriptionBuilderWithTestValues()
+            .withSubscriptionPolicy(subscriptionPolicy()
+                    .withMessageTtl(ttl)
+                    .withClientErrorRetry()
+                    .build())
+            .build();
+    }
+
+    private Subscription.Builder subscriptionBuilderWithTestValues() {
+        return subscription().withTopicName("group.topic").withName("subscription").withEndpoint(of("http://localhost:8008"));
     }
 
     private RuntimeException exception() {

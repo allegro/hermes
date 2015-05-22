@@ -14,6 +14,7 @@ import static javax.ws.rs.core.Response.Status.Family.familyOf;
 public class MessageSendingResult {
     public static final String UNKNOWN_CAUSE = "unknown";
     private Throwable failure;
+    private boolean loggable = false;
     private Response.Status.Family responseFamily;
 
     public MessageSendingResult() {
@@ -21,6 +22,11 @@ public class MessageSendingResult {
 
     public MessageSendingResult(Throwable failure) {
         this.failure = failure;
+    }
+
+    public MessageSendingResult(Throwable failure, boolean loggable) {
+        this.failure = failure;
+        this.loggable = loggable;
     }
 
     public MessageSendingResult(Result result) {
@@ -66,6 +72,10 @@ public class MessageSendingResult {
         return failure != null ? Throwables.getRootCause(failure).getMessage() : UNKNOWN_CAUSE;
     }
 
+    public boolean isLoggable() {
+        return loggable;
+    }
+
     public static MessageSendingResult succeededResult() {
         return new MessageSendingResult();
     }
@@ -76,5 +86,9 @@ public class MessageSendingResult {
 
     public static MessageSendingResult failedResult(int statusCode) {
         return new MessageSendingResult(statusCode);
+    }
+
+    public static MessageSendingResult loggedFailResult(Throwable cause) {
+        return new MessageSendingResult(cause, true);
     }
 }
