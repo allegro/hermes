@@ -17,19 +17,19 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import javax.inject.Inject;
 
 import static pl.allegro.tech.hermes.common.metric.PathContext.pathContext;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.$GROUP;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.$HOSTNAME;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.$SUBSCRIPTION;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.$TOPIC;
+import static pl.allegro.tech.hermes.common.metric.PathsCompiler.GROUP;
+import static pl.allegro.tech.hermes.common.metric.PathsCompiler.HOSTNAME;
+import static pl.allegro.tech.hermes.common.metric.PathsCompiler.SUBSCRIPTION;
+import static pl.allegro.tech.hermes.common.metric.PathsCompiler.TOPIC;
 
 public class ZookeeperCounterStorage implements CounterStorage {
 
-    static final String TOPIC_PUBLISHED = "/groups/" + $GROUP + "/topics/" + $TOPIC + "/metrics/published";
-    static final String SUBSCRIPTION_DELIVERED = "/groups/" + $GROUP + "/topics/" +$TOPIC +"/subscriptions/" + $SUBSCRIPTION + "/metrics/delivered";
-    static final String SUBSCRIPTION_DISCARDED = "/groups/" + $GROUP + "/topics/" +$TOPIC +"/subscriptions/" + $SUBSCRIPTION + "/metrics/discarded";
+    static final String TOPIC_PUBLISHED = "/groups/" + GROUP + "/topics/" + TOPIC + "/metrics/published";
+    static final String SUBSCRIPTION_DELIVERED = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/delivered";
+    static final String SUBSCRIPTION_DISCARDED = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/discarded";
     static final String CONSUMER_BASE_PATH = "/consumers";
-    static final String SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH = "/groups/" + $GROUP + "/topics/" + $TOPIC + "/subscriptions/" + $SUBSCRIPTION + "/metrics/inflight";
-    static final String SUBSCRIPTION_INFLIGHT_FULL_PATH = CONSUMER_BASE_PATH + "/" + $HOSTNAME + SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH;
+    static final String SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH = "/groups/" + GROUP + "/topics/" + TOPIC + "/subscriptions/" + SUBSCRIPTION + "/metrics/inflight";
+    static final String SUBSCRIPTION_INFLIGHT_FULL_PATH = CONSUMER_BASE_PATH + "/" + HOSTNAME + SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperCounterStorage.class);
 
