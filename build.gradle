@@ -136,8 +136,11 @@ subprojects {
 
 nexusStaging {
     packageGroup = "pl.allegro"
+
+    numberOfRetries = 15
+    delayBetweenRetriesInMillis = 5000
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.3'
+    gradleVersion = '2.4'
 }
