@@ -1,9 +1,6 @@
 plugins {
     id 'groovy'
-    id 'application'
 }
-
-mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
 
 dependencies {
     compile project(':hermes-api')

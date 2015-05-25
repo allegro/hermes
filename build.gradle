@@ -58,9 +58,40 @@ allprojects {
     }
 }
 
-subprojects {
+configure(subprojects - project(':integration')) {
     apply plugin: 'com.bmuschko.nexus'
-    
+
+    modifyPom {
+        project {
+            name project.name
+            description 'Fast and reliable message broker built on top of Kafka.'
+            url 'https://github.com/allegro/hermes'
+            inceptionYear '2015'
+
+            scm {
+                url 'https://github.com/allegro/hermes'
+                connection 'scm:git@github.com:allegro/hermes.git'
+                developerConnection 'scm:git@github.com:allegro/hermes.git'
+            }
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                }
+            }
+
+            developers {
+                developer {
+                    id 'skylab'
+                    name 'Team Skylab'
+                }
+            }
+        }
+    }
+}
+
+subprojects {
     configurations {
         all*.exclude group: "org.slf4j", module: "slf4j-log4j12"
         all*.exclude group: "log4j", module: "log4j"
@@ -100,34 +131,7 @@ subprojects {
         }
     }
 
-    modifyPom {
-        project {
-            name project.name
-            description 'Fast and reliable message broker built on top of Kafka.'
-            url 'https://github.com/allegro/hermes'
-            inceptionYear '2015'
-
-            scm {
-                url 'https://github.com/allegro/hermes'
-                connection 'scm:git@github.com:allegro/hermes.git'
-                developerConnection 'scm:git@github.com:allegro/hermes.git'
-            }
-
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                }
-            }
-
-            developers {
-                developer {
-                    id 'skylab'
-                    name 'Team Skylab'
-                }
-            }
-        }
-    }
+    
 }
 
 nexusStaging {
