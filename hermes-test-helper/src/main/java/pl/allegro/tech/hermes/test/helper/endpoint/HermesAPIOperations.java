@@ -16,11 +16,9 @@ import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 public class HermesAPIOperations {
 
     private final HermesEndpoints endpoints;
-    private final String adminPassword;
 
-    public HermesAPIOperations(HermesEndpoints endpoints, String adminPassword) {
+    public HermesAPIOperations(HermesEndpoints endpoints) {
         this.endpoints = endpoints;
-        this.adminPassword = adminPassword;
     }
 
     public Response createGroup(String group, String supportTeam) {
@@ -56,12 +54,12 @@ public class HermesAPIOperations {
     }
 
     public void buildTopic(String group, String topic) {
-        createGroup(group, adminPassword);
+        createGroup(group);
         createTopic(group, topic);
     }
 
     public void buildTopic(Topic topic) {
-        createGroup(topic.getName().getGroupName(), adminPassword);
+        createGroup(topic.getName().getGroupName());
         createTopic(topic);
     }
 

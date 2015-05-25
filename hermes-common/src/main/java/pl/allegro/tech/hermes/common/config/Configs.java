@@ -60,6 +60,7 @@ public enum Configs {
 
     CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 20),
     CONSUMER_COMMIT_OFFSET_CACHE_EXPIRATION("consumer.commit.offset.cache.expiration", 10),
+    CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),
     CONSUMER_THREAD_POOL_SIZE("consumer.thread.pool.size", 500),
     CONSUMER_HTTP_CLIENT_REQUEST_TIMEOUT("consumer.http.client.request.timeout", 1000),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE("consumer.http.client.thread.pool.size", 30),
@@ -74,6 +75,8 @@ public enum Configs {
     CONSUMER_RATE_CONVERGENCE_FACTOR("consumer.rate.convergence.factor", 0.2),
     CONSUMER_RATE_FAILURES_RATIO_THRESHOLD("consumer.rate.failures.ratio.threshold", 0.01),
     CONSUMER_OFFSET_MONITOR_ENABLED("consumer.offset.monitor.enabled", true),
+    CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD("consumer.offset.commit.queue.alert.minimal.idle.period", 3600),
+    CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE("consumer.offset.commit.queue.alert.size", 20_000),
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
 
     GRAPHITE_HOST("graphite.host", "localhost"),
@@ -87,7 +90,6 @@ public enum Configs {
     METRICS_CONSOLE_REPORTER("metrics.console.reporter", false),
     METRICS_COUNTER_EXPIRE_AFTER_ACCESS("metrics.counter.expire.after.access", 72),
 
-    ADMIN_PASSWORD("superuser.password", "hermes123"),
     ADMIN_REAPER_INTERAL_MS("admin.reaper.interval.ms", 30000),
 
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),

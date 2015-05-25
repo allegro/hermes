@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import com.codahale.metrics.Meter;
-import com.google.common.util.concurrent.SettableFuture;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +17,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
@@ -31,6 +31,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.api.EndpointAddress.of;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.common.metric.Metrics.Meter.CONSUMER_FAILED_METER;
@@ -40,6 +41,7 @@ import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingRes
 @RunWith(MockitoJUnitRunner.class)
 public class ConsumerMessageSenderTest {
 
+    public static final int ASYNC_TIMEOUT_MS = 2000;
     private Subscription subscription = subscriptionWithTtl(10);
 
     private Subscription subscriptionWith4xxRetry = subscriptionWithTtlAndClientErrorRetry(10);
@@ -74,6 +76,7 @@ public class ConsumerMessageSenderTest {
         setUpMetrics(subscription);
         setUpMetrics(subscriptionWith4xxRetry);
         inflightSemaphore = new Semaphore(0);
+        sender = consumerMessageSender(subscription);
     }
 
     private void setUpMetrics(Subscription subscription) {
@@ -84,7 +87,6 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldHandleSuccessfulSending() {
         // given
-        sender = consumerMessageSender(subscription);
         Message message = message();
         when(messageSender.send(message)).thenReturn(success());
 
@@ -103,7 +105,6 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldKeepTryingToSendMessageFailedSending() throws InterruptedException {
         // given
-        sender = consumerMessageSender(subscription);
         Message message = message();
         doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
 
@@ -122,7 +123,6 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldKeepTryingToSendMessageOnRuntimeExceptionFromSender() throws InterruptedException {
         // given
-        sender = consumerMessageSender(subscription);
         RuntimeException exception = exception();
         Message message = message();
         doThrow(exception).doThrow(exception).doReturn(success()).when(messageSender).send(message);
@@ -142,7 +142,6 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldDiscardMessageWhenTTLIsExceeded() {
         // given
-        sender = consumerMessageSender(subscription);
         RuntimeException exception = exception();
         Message message = messageWithTimestamp(System.currentTimeMillis() - 11000);
         doThrow(exception).when(messageSender).send(message);
@@ -160,7 +159,6 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldNotKeepTryingToSendMessageFailedWithStatusCode4xx() throws InterruptedException {
         // given
-        sender = consumerMessageSender(subscription);
         Message message = message();
         doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
@@ -177,7 +175,7 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldKeepTryingToSendMessageFailedWithStatusCode4xxForSubscriptionWith4xxRetry() throws InterruptedException {
         // given
-        sender = consumerMessageSender(subscriptionWith4xxRetry);
+        ConsumerMessageSender sender = consumerMessageSender(subscriptionWith4xxRetry);
         Message message = message();
         doReturn(failure(403)).doReturn(failure(403)).doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
@@ -193,7 +191,6 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldNotReduceSendingRateLimitOn4xxResponseForSubscriptionWithNo4xxRetry() {
         // given
-        sender = consumerMessageSender(subscription);
         Message message = message();
         doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
@@ -208,7 +205,6 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldReduceSendingRateLimitOnErrorResponseOtherThan4xxForSubscriptionWithNo4xxRetry() {
         // given
-        sender = consumerMessageSender(subscription);
         Message message = message();
         doReturn(failure(500)).doReturn(success()).when(messageSender).send(message);
 
@@ -223,7 +219,7 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldReduceSendingRateLimitOn4xxResponseForSubscriptionWith4xxRetry() {
         // given
-        sender = consumerMessageSender(subscriptionWith4xxRetry);
+        ConsumerMessageSender sender = consumerMessageSender(subscriptionWith4xxRetry);
         Message message = message();
         doReturn(failure(403)).doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
@@ -235,9 +231,22 @@ public class ConsumerMessageSenderTest {
         verifyRateLimiterSuccessfulSendingCountedTimes(1);
     }
 
+    @Test
+    public void shouldRaiseTimeoutWhenSenderNotCompletesResult() {
+        // given
+        Message message = message();
+        when(messageSender.send(message)).thenReturn(new CompletableFuture<>());
+
+        // when
+        sender.sendMessage(message);
+
+        // then
+        verifyErrorHandlerHandleFailed(message, subscription, 1, 3000);
+    }
+
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
         return new ConsumerMessageSender(subscription, messageSender, successHandler, errorHandler, rateLimiter,
-                Executors.newSingleThreadExecutor(), inflightSemaphore, hermesMetrics);
+                Executors.newSingleThreadExecutor(), inflightSemaphore, hermesMetrics, ASYNC_TIMEOUT_MS);
     }
 
     private void verifyRateLimiterSuccessfulSendingCountedTimes(int count) {
@@ -249,7 +258,11 @@ public class ConsumerMessageSenderTest {
     }
 
     private void verifyErrorHandlerHandleFailed(Message message, Subscription subscription, int times) {
-        verify(errorHandler, timeout(1000).times(times)).handleFailed(eq(message), eq(subscription), any(MessageSendingResult.class));
+        verifyErrorHandlerHandleFailed(message, subscription, times, 1000);
+    }
+
+    private void verifyErrorHandlerHandleFailed(Message message, Subscription subscription, int times, int timeout) {
+        verify(errorHandler, timeout(timeout).times(times)).handleFailed(eq(message), eq(subscription), any(MessageSendingResult.class));
     }
 
     private void verifyLatencyTimersCountedTimes(int count) {
@@ -258,33 +271,40 @@ public class ConsumerMessageSenderTest {
     }
 
     private Subscription subscriptionWithTtl(int ttl) {
-        return subscription().withName("subscription").withSubscriptionPolicy(subscriptionPolicy().withMessageTtl(ttl).build()).build();
+        return subscriptionBuilderWithTestValues()
+            .withSubscriptionPolicy(subscriptionPolicy()
+                    .withMessageTtl(ttl)
+                    .build())
+            .build();
     }
 
     private Subscription subscriptionWithTtlAndClientErrorRetry(int ttl) {
-        return subscription().withName("subscription2").withSubscriptionPolicy(subscriptionPolicy().applyDefaults().withMessageTtl(ttl).withClientErrorRetry().build()).build();
+        return subscriptionBuilderWithTestValues()
+            .withSubscriptionPolicy(subscriptionPolicy()
+                    .withMessageTtl(ttl)
+                    .withClientErrorRetry()
+                    .build())
+            .build();
+    }
+
+    private Subscription.Builder subscriptionBuilderWithTestValues() {
+        return subscription().withTopicName("group.topic").withName("subscription").withEndpoint(of("http://localhost:8008"));
     }
 
     private RuntimeException exception() {
         return new RuntimeException("problem");
     }
 
-    private SettableFuture<MessageSendingResult> success() {
-        SettableFuture<MessageSendingResult> toBeReturned = SettableFuture.create();
-        toBeReturned.set(succeededResult());
-        return toBeReturned;
+    private CompletableFuture<MessageSendingResult> success() {
+        return CompletableFuture.completedFuture(succeededResult());
     }
 
-    private SettableFuture<MessageSendingResult> failure() {
-        SettableFuture<MessageSendingResult> toBeReturned = SettableFuture.create();
-        toBeReturned.set(failedResult(exception()));
-        return toBeReturned;
+    private CompletableFuture<MessageSendingResult> failure() {
+        return CompletableFuture.completedFuture(failedResult(exception()));
     }
 
-    private SettableFuture<MessageSendingResult> failure(int statusCode) {
-        SettableFuture<MessageSendingResult> toBeReturned = SettableFuture.create();
-        toBeReturned.set(failedResult(statusCode));
-        return toBeReturned;
+    private CompletableFuture<MessageSendingResult> failure(int statusCode) {
+        return CompletableFuture.completedFuture(failedResult(statusCode));
     }
 
     private void verifySemaphoreReleased() {

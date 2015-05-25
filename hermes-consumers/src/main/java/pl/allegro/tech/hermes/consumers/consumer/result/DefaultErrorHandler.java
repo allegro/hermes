@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.offset.PartitionOffsetHelper;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
@@ -26,7 +26,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     private final Trackers trackers;
     private final String cluster;
 
-    public DefaultErrorHandler(PartitionOffsetHelper offsetHelper, HermesMetrics hermesMetrics,
+    public DefaultErrorHandler(SubscriptionOffsetCommitQueues offsetHelper, HermesMetrics hermesMetrics,
                                UndeliveredMessageLog undeliveredMessageLog, Clock clock, Trackers trackers, String cluster) {
         super(offsetHelper, hermesMetrics);
         this.undeliveredMessageLog = undeliveredMessageLog;

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 
-import com.google.common.util.concurrent.SettableFuture;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +19,7 @@ import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.JMSRuntimeException;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JmsMessageSenderTest {
@@ -58,10 +59,10 @@ public class JmsMessageSenderTest {
 
     @Test
     public void shouldReturnTrueWhenMessageSuccessfullyPublished() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        // when
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
-        messageSender.sendMessage(SOME_MESSAGE, future);
-
+        // then
         ArgumentCaptor<CompletionListener> listenerCaptor = ArgumentCaptor.forClass(CompletionListener.class);
         verify(jmsProducerMock).setAsync(listenerCaptor.capture());
         listenerCaptor.getValue().onCompletion(messageMock);
@@ -69,22 +70,11 @@ public class JmsMessageSenderTest {
     }
 
     @Test
-    public void shouldReleaseSemaphoreWhenMessageSuccessfullyPublished() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
-
-        messageSender.sendMessage(SOME_MESSAGE, future);
-
-        ArgumentCaptor<CompletionListener> listenerCaptor = ArgumentCaptor.forClass(CompletionListener.class);
-        verify(jmsProducerMock).setAsync(listenerCaptor.capture());
-        listenerCaptor.getValue().onCompletion(messageMock);
-    }
-
-    @Test
     public void shouldReturnFalseWhenOnExceptionCalledOnListener() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        // when
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
-        messageSender.sendMessage(SOME_MESSAGE, future);
-
+        // then
         ArgumentCaptor<CompletionListener> listenerCaptor = ArgumentCaptor.forClass(CompletionListener.class);
         verify(jmsProducerMock).setAsync(listenerCaptor.capture());
         listenerCaptor.getValue().onException(messageMock, new RuntimeException());
@@ -92,33 +82,34 @@ public class JmsMessageSenderTest {
     }
 
     @Test
-    public void shouldReleaseSemaphoreWhenOnExceptionCalledOnListener() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
-
-        messageSender.sendMessage(SOME_MESSAGE, future);
-
-        ArgumentCaptor<CompletionListener> listenerCaptor = ArgumentCaptor.forClass(CompletionListener.class);
-        verify(jmsProducerMock).setAsync(listenerCaptor.capture());
-        listenerCaptor.getValue().onException(messageMock, new RuntimeException());
-    }
-
-    @Test
     public void shouldReturnFalseWhenJMSThrowsCheckedException() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
+        // given
         doThrow(new JMSException("test")).when(messageMock).writeBytes(SOME_MESSAGE.getData());
 
-        messageSender.sendMessage(SOME_MESSAGE, future);
+        // when
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
+        // then
         assertFalse(future.get(1, TimeUnit.SECONDS).succeeded());
     }
 
     @Test
     public void shouldReturnFalseWhenJMSThrowsRuntimeException() throws Exception {
-        final SettableFuture<MessageSendingResult> future = SettableFuture.create();
         doThrow(new JMSRuntimeException("test")).when(jmsContextMock).createProducer();
 
-        messageSender.sendMessage(SOME_MESSAGE, future);
+        // when
+        CompletableFuture<MessageSendingResult> future = messageSender.send(SOME_MESSAGE);
 
+        // then
         assertFalse(future.get(1, TimeUnit.SECONDS).succeeded());
+    }
+
+    @Test
+    public void shouldSetMessageIdInProperty() throws JMSException {
+        // when
+        messageSender.send(SOME_MESSAGE);
+
+        // then
+        verify(messageMock).setStringProperty(MESSAGE_ID.getCamelCaseName(), "id");
     }
 }

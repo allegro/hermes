@@ -21,9 +21,9 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
 
     @BeforeClass
     public void initializeIntegrationTest() {
-        this.management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, ADMIN_PASSWORD);
+        this.management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL);
         this.publisher = new HermesPublisher(FRONTEND_URL);
-        this.operations = new HermesAPIOperations(management, ADMIN_PASSWORD);
+        this.operations = new HermesAPIOperations(management);
         this.wait = new Waiter(management, services().zookeeper(), services().kafkaZookeeper());
     }
 

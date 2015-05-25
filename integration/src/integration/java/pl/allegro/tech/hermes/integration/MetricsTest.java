@@ -144,7 +144,7 @@ public class MetricsTest extends IntegrationTest {
     public void shouldNotCreateNewTopicWhenAskingForNonExistingMetrics() {
         //given
         TopicName newTopic = new TopicName("auto-topic-bug", "not-existing");
-        operations.createGroup(newTopic.getGroupName(), ADMIN_PASSWORD);
+        operations.createGroup(newTopic.getGroupName());
 
         //when
         management.topic().getMetrics(newTopic.qualifiedName());

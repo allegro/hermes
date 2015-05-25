@@ -9,7 +9,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.offset.PartitionOffsetHelper;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
@@ -32,7 +32,7 @@ public class DefaultSuccessHandlerTest {
     private static final String MESSAGE_CONTENT = "test";
 
     @Mock
-    private PartitionOffsetHelper offsetHelper;
+    private SubscriptionOffsetCommitQueues offsetHelper;
 
     private Message message = new Message(
             Optional.of("id"), OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), Optional.of(241243123L), Optional.of(2412431234L)
