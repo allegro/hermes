@@ -1,13 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.result;
 
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
-
-import static pl.allegro.tech.hermes.common.metric.Metrics.Counter.CONSUMER_DELIVERED;
-import static pl.allegro.tech.hermes.common.metric.Metrics.Meter.CONSUMER_METER;
 
 public class DefaultSuccessHandler extends AbstractHandler implements SuccessHandler {
 
@@ -21,7 +20,14 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
     @Override
     public void handle(Message message, Subscription subscription) {
         offsetHelper.decrement(message.getPartition(), message.getOffset());
-        updateMetrics(CONSUMER_DELIVERED, CONSUMER_METER, message, subscription);
+        updateMeters(subscription);
+        updateMetrics(Counters.CONSUMER_DELIVERED, message, subscription);
         trackers.get(subscription).logSent(message, subscription);
+    }
+
+    private void updateMeters(Subscription subscription) {
+        hermesMetrics.meter(Meters.CONSUMER_METER).mark();
+        hermesMetrics.meter(Meters.CONSUMER_TOPIC_METER, subscription.getTopicName()).mark();
+        hermesMetrics.meter(Meters.CONSUMER_SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark();
     }
 }

@@ -17,14 +17,14 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
     private MetricsPaths paths = new MetricsPaths("stats")
 
     private SharedCounter sharedCounter = Stub(SharedCounter)
-    
+
     private DistributedEphemeralCounter distributedCounter = Stub(DistributedEphemeralCounter)
 
     private ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes")
-    
-    private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(client, paths, 
+
+    private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(client, paths,
             sharedCounter, distributedCounter, zookeeperPaths)
-    
+
     def "should read subscription metrics from multiple places"() {
         given:
         String rate = 'sumSeries(stats.consumer.*.meter.group.topic.subscription.m1_rate)'
@@ -33,10 +33,10 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
         sharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 100
         sharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 1
         distributedCounter.getValue('/hermes/consumers', '/groups/group/topics/topic/subscriptions/subscription/metrics/inflight') >> 5
-        
+
         when:
         SubscriptionMetrics metrics = repository.loadMetrics(new TopicName('group', 'topic'), 'subscription')
-        
+
         then:
         metrics.rate == '10'
         metrics.delivered == 100

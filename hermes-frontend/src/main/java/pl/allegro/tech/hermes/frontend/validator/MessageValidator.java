@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicCallback;
 
 import javax.inject.Inject;
@@ -25,7 +26,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static pl.allegro.tech.hermes.common.metric.Metrics.Timer.PRODUCER_VALIDATION_LATENCY;
 
 public class MessageValidator implements TopicCallback {
 
@@ -78,8 +78,8 @@ public class MessageValidator implements TopicCallback {
             return ImmutableList.of();
         }
 
-        Timer.Context validationTimer = hermesMetrics.timer(PRODUCER_VALIDATION_LATENCY).time();
-        Timer.Context validationTimerPerTopic = hermesMetrics.timer(PRODUCER_VALIDATION_LATENCY, topicName).time();
+        Timer.Context validationTimer = hermesMetrics.timer(Timers.PRODUCER_VALIDATION_LATENCY).time();
+        Timer.Context validationTimerPerTopic = hermesMetrics.timer(Timers.PRODUCER_VALIDATION_TOPIC_LATENCY, topicName).time();
 
         List<String> errors = validate(jsonSchema, message);
 

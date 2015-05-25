@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Metrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
+import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SplitMessagesReceiver;
@@ -74,7 +74,7 @@ public class Consumer implements Runnable {
     }
 
     private List<Message> readMessages() {
-        Timer.Context ctx = hermesMetrics.timer(Metrics.Timer.CONSUMER_READ_LATENCY).time();
+        Timer.Context ctx = hermesMetrics.timer(Timers.CONSUMER_READ_LATENCY).time();
         List<Message> messages = messageReceiver.next();
         ctx.close();
         return messages;

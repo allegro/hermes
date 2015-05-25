@@ -14,16 +14,19 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.metric.PathsCompiler;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
+import pl.allegro.tech.hermes.common.util.HostnameResolver;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hermes.common.metric.Metrics.Counter.CONSUMER_DELIVERED;
-import static pl.allegro.tech.hermes.common.metric.Metrics.Counter.CONSUMER_DISCARDED;
-import static pl.allegro.tech.hermes.common.metric.Metrics.Counter.PRODUCER_PUBLISHED;
+import static pl.allegro.tech.hermes.common.metric.Counters.CONSUMER_DELIVERED;
+import static pl.allegro.tech.hermes.common.metric.Counters.CONSUMER_DISCARDED;
+import static pl.allegro.tech.hermes.common.metric.Counters.PRODUCER_PUBLISHED;
+import static pl.allegro.tech.hermes.common.metric.PathContext.pathContext;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZookeeperCounterReporterTest {
@@ -32,21 +35,25 @@ public class ZookeeperCounterReporterTest {
     public static final SortedMap<String, Meter> EMPTY_METERS = null;
     public static final SortedMap<String, Histogram> EMPTY_HISTOGRAMS = null;
     public static final SortedMap<String, Gauge> EMPTY_GAUGES = null;
-    public static final String GROUP_NAME_UNDERSCORE = "my_group";
-    public static final String GROUP_NAME = "my.group";
+    public static final String GROUP_NAME_UNDERSCORE = "pl_allegro_tech_skylab";
+    public static final String GROUP_NAME = "pl.allegro.tech.skylab";
     public static final String TOPIC_NAME = "topic1";
     public static final String SUBSCRIPTION_NAME_UNDERSCORE = "subscription_name";
     public static final String SUBSCRIPTION_NAME = "subscription.name";
     public static final TopicName QUALIFIED_TOPIC_NAME = new TopicName(GROUP_NAME, TOPIC_NAME);
     public static final long COUNT = 100L;
     public static final String GRAPHITE_PREFIX = "tech.hermes";
-    public static final String METRIC_NAME_FOR_PUBLISHED =
-        PRODUCER_PUBLISHED.displayName(GRAPHITE_PREFIX) + "." + GROUP_NAME_UNDERSCORE + "." + TOPIC_NAME;
-    public static final String METRIC_NAME_FOR_DELIVERED = CONSUMER_DELIVERED.displayName(GRAPHITE_PREFIX) + "."
-                + GROUP_NAME_UNDERSCORE + "." + TOPIC_NAME + "." + SUBSCRIPTION_NAME_UNDERSCORE;
-    public static final String METRIC_NAME_FOR_DISCARDED =
-        CONSUMER_DISCARDED.displayName(GRAPHITE_PREFIX) + "." + GROUP_NAME_UNDERSCORE + "." + TOPIC_NAME
-                + "." + SUBSCRIPTION_NAME_UNDERSCORE;
+
+    private static PathsCompiler pathsCompiler = new PathsCompiler("localhost");
+
+    public static final String METRIC_NAME_FOR_PUBLISHED = pathsCompiler.compile(PRODUCER_PUBLISHED,
+            pathContext().withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME).build());
+
+    public static final String METRIC_NAME_FOR_DELIVERED = pathsCompiler.compile(CONSUMER_DELIVERED,
+            pathContext().withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME).withSubscription(SUBSCRIPTION_NAME_UNDERSCORE).build());
+
+    public static final String METRIC_NAME_FOR_DISCARDED = pathsCompiler.compile(CONSUMER_DISCARDED,
+            pathContext().withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME).withSubscription(SUBSCRIPTION_NAME_UNDERSCORE).build());
 
     @Mock
     private CounterStorage counterStorage;
@@ -60,25 +67,28 @@ public class ZookeeperCounterReporterTest {
     @Mock
     private ConfigFactory configFactory;
 
+    @Mock
+    private HostnameResolver hostnameResolver;
+
     private ZookeeperCounterReporter zookeeperCounterReporter;
+
+
 
     @Before
     public void before() {
         when(configFactory.getStringProperty(Configs.GRAPHITE_PREFIX)).thenReturn(GRAPHITE_PREFIX);
-        zookeeperCounterReporter = new ZookeeperCounterReporter(metricRegistry, counterStorage, configFactory);
+        when(hostnameResolver.resolve()).thenReturn("localhost");
+        zookeeperCounterReporter = new ZookeeperCounterReporter(metricRegistry, counterStorage, hostnameResolver, configFactory);
     }
 
     @Test
     public void shouldReportPublishedMessages() {
-        // given
         SortedMap<String, Counter> counters = prepareCounters(METRIC_NAME_FOR_PUBLISHED);
         when(counter.getCount()).thenReturn(COUNT);
 
-        // when
         zookeeperCounterReporter.report(EMPTY_GAUGES, counters, EMPTY_HISTOGRAMS, EMPTY_METERS, EMPTY_TIMERS);
 
-        // then
-        verify(counterStorage).setTopicCounter(QUALIFIED_TOPIC_NAME, PRODUCER_PUBLISHED, COUNT);
+        verify(counterStorage).setTopicPublishedCounter(QUALIFIED_TOPIC_NAME, COUNT);
     }
 
     @Test
@@ -88,7 +98,7 @@ public class ZookeeperCounterReporterTest {
 
         zookeeperCounterReporter.report(EMPTY_GAUGES, counters, EMPTY_HISTOGRAMS, EMPTY_METERS, EMPTY_TIMERS);
 
-        verify(counterStorage).setSubscriptionCounter(QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME, CONSUMER_DELIVERED, COUNT);
+        verify(counterStorage).setSubscriptionDeliveredCounter(QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME, COUNT);
     }
 
     @Test
@@ -98,8 +108,8 @@ public class ZookeeperCounterReporterTest {
 
         zookeeperCounterReporter.report(EMPTY_GAUGES, counters, EMPTY_HISTOGRAMS, EMPTY_METERS, EMPTY_TIMERS);
 
-        verify(counterStorage).setSubscriptionCounter(
-                QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME, CONSUMER_DISCARDED, COUNT
+        verify(counterStorage).setSubscriptionDiscardedCounter(
+                QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME, COUNT
         );
     }
 

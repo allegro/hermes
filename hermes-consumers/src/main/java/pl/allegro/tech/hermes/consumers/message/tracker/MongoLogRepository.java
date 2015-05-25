@@ -7,7 +7,9 @@ import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.tracker.LogSchemaAware;
+import pl.allegro.tech.hermes.common.metric.Gauges;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 
@@ -15,15 +17,13 @@ import javax.inject.Inject;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FAILED;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.SUCCESS;
 import static pl.allegro.tech.hermes.common.config.Configs.TRACKER_MONGODB_COMMIT_INTERVAL;
 import static pl.allegro.tech.hermes.common.config.Configs.TRACKER_MONGODB_QUEUE_CAPACITY;
-import static pl.allegro.tech.hermes.common.message.tracker.QueueMetrics.registerCurrentSizeGauge;
-import static pl.allegro.tech.hermes.common.message.tracker.QueueMetrics.registerRemainingCapacityGauge;
 import static pl.allegro.tech.hermes.common.message.tracker.mongo.MongoQueueCommitter.scheduleCommitAtFixedRate;
-import static pl.allegro.tech.hermes.common.metric.Metrics.Gauge.CONSUMER_TRACKER_QUEUE_SIZE;
-import static pl.allegro.tech.hermes.common.metric.Metrics.Gauge.CONSUMER_TRACKER_REMAINING_CAPACITY;
-import static pl.allegro.tech.hermes.common.metric.Metrics.Timer.CONSUMER_TRACKER_COMMIT_LATENCY;
 
 public class MongoLogRepository implements LogRepository, LogSchemaAware {
 
@@ -44,10 +44,12 @@ public class MongoLogRepository implements LogRepository, LogSchemaAware {
         this.clock = clock;
         this.queue = new LinkedBlockingQueue<>(queueSize);
         this.clusterName = clusterName;
-        registerCurrentSizeGauge(queue, CONSUMER_TRACKER_QUEUE_SIZE, metrics);
-        registerRemainingCapacityGauge(queue, CONSUMER_TRACKER_REMAINING_CAPACITY, metrics);
+
+        metrics.registerGauge(Gauges.CONSUMER_TRACKER_QUEUE_SIZE, () -> queue.size());
+        metrics.registerGauge(Gauges.CONSUMER_TRACKER_REMAINING_CAPACITY, () -> queue.remainingCapacity());
+
         scheduleCommitAtFixedRate(queue, COLLECTION_SENT_NAME, database,
-                metrics.timer(CONSUMER_TRACKER_COMMIT_LATENCY), commitInterval);
+                metrics.timer(Timers.CONSUMER_TRACKER_COMMIT_LATENCY), commitInterval);
     }
 
     @Override

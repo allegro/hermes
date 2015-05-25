@@ -1,9 +1,13 @@
 package pl.allegro.tech.hermes.frontend.publishing;
 
-import com.codahale.metrics.Timer;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Metrics;
+import pl.allegro.tech.hermes.common.metric.Meters;
+import pl.allegro.tech.hermes.common.metric.ProducerAckAllLatencyTimer;
+import pl.allegro.tech.hermes.common.metric.ProducerAckLeaderLatencyTimer;
+import pl.allegro.tech.hermes.common.metric.ProducerLatencyTimer;
 
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
@@ -14,15 +18,22 @@ import static javax.ws.rs.core.Response.Status.Family;
 
 class MetricsAsyncListener implements AsyncListener {
 
-    private HermesMetrics hermesMetrics;
-    private TopicName topicName;
-    private Timer.Context latencyTimer;
-    private Timer.Context latencyTimerPerTopic;
+    private final HermesMetrics hermesMetrics;
+    private final TopicName topicName;
+    private final ProducerLatencyTimer producerLatencyTimer;
 
-    MetricsAsyncListener(HermesMetrics hermesMetrics, TopicName topicName) {
+    MetricsAsyncListener(HermesMetrics hermesMetrics, TopicName topicName, Topic.Ack ack) {
         this.hermesMetrics = hermesMetrics;
         this.topicName = topicName;
-        initLatencyTimers();
+        this.producerLatencyTimer = latencyTimer(hermesMetrics, topicName, ack);
+    }
+
+    private ProducerLatencyTimer latencyTimer(HermesMetrics hermesMetrics, TopicName topicName, Topic.Ack ack) {
+        if (Topic.Ack.ALL.equals(ack)) {
+            return new ProducerAckAllLatencyTimer(hermesMetrics, topicName);
+        } else {
+            return new ProducerAckLeaderLatencyTimer(hermesMetrics, topicName);
+        }
     }
 
     @Override
@@ -33,9 +44,9 @@ class MetricsAsyncListener implements AsyncListener {
         hermesMetrics.httpStatusCodeMeter(responseStatus, topicName).mark();
 
         if (Family.SUCCESSFUL != Family.familyOf(responseStatus)) {
-            hermesMetrics.meter(Metrics.Meter.PRODUCER_FAILED_METER).mark();
-            hermesMetrics.meter(Metrics.Meter.PRODUCER_FAILED_METER, topicName).mark();
-            hermesMetrics.counter(Metrics.Counter.PRODUCER_UNPUBLISHED, topicName).inc();
+            hermesMetrics.meter(Meters.PRODUCER_FAILED_METER).mark();
+            hermesMetrics.meter(Meters.PRODUCER_FAILED_TOPIC_METER, topicName).mark();
+            hermesMetrics.counter(Counters.PRODUCER_UNPUBLISHED, topicName).inc();
         }
     }
 
@@ -53,12 +64,6 @@ class MetricsAsyncListener implements AsyncListener {
     }
 
     private void closeLatencyTimers() {
-        hermesMetrics.close(latencyTimer, latencyTimerPerTopic);
+        producerLatencyTimer.close();
     }
-
-    private void initLatencyTimers() {
-        this.latencyTimer = hermesMetrics.timer(Metrics.Timer.PRODUCER_LATENCY).time();
-        this.latencyTimerPerTopic = hermesMetrics.timer(Metrics.Timer.PRODUCER_LATENCY, topicName).time();
-    }
-
 }
