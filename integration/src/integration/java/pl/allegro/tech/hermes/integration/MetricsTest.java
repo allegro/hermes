@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import com.googlecode.catchexception.CatchException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
@@ -13,6 +14,10 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.integration.helper.graphite.GraphiteMockServer;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 
+import javax.ws.rs.BadRequestException;
+import java.util.UUID;
+
+import static com.googlecode.catchexception.CatchException.catchException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MetricsTest extends IntegrationTest {
@@ -75,6 +80,23 @@ public class MetricsTest extends IntegrationTest {
         assertThat(metrics.getDelivered()).isEqualTo(2); //we have same instance of metric registry in frontend and consumer, so metrics reporting is duplicated
         assertThat(metrics.getDiscarded()).isEqualTo(0);
         assertThat(metrics.getInflight()).isEqualTo(0);
+    }
+
+    @Test
+    public void shouldNotCreateNewSubscriptionWhenAskedForNonExistingMetrics() {
+        //given
+        TopicName topic = new TopicName("pl.group.sub.bug", "topic");
+        operations.buildTopic(topic.getGroupName(), topic.getName());
+        String randomSubscription = UUID.randomUUID().toString();
+
+        //when
+        catchException(management.subscription())
+                .getMetrics(topic.qualifiedName(), randomSubscription);
+
+        //then
+        assertThat(management.subscription().list(topic.qualifiedName())).doesNotContain(randomSubscription);
+        assertThat(CatchException.<BadRequestException>caughtException())
+                .isInstanceOf(BadRequestException.class);
     }
 
     @Test
