@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import com.googlecode.catchexception.CatchException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
@@ -16,6 +17,7 @@ import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import javax.ws.rs.BadRequestException;
 import java.util.UUID;
 
+import static com.googlecode.catchexception.CatchException.catchException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MetricsTest extends IntegrationTest {
@@ -88,13 +90,13 @@ public class MetricsTest extends IntegrationTest {
         String randomSubscription = UUID.randomUUID().toString();
 
         //when
-        try {
-            management.subscription()
-                    .getMetrics(topic.qualifiedName(), randomSubscription);
-        } catch (BadRequestException ex) {}
+        catchException(management.subscription())
+                .getMetrics(topic.qualifiedName(), randomSubscription);
 
         //then
         assertThat(management.subscription().list(topic.qualifiedName())).doesNotContain(randomSubscription);
+        assertThat(CatchException.<BadRequestException>caughtException())
+                .isInstanceOf(BadRequestException.class);
     }
 
     @Test
