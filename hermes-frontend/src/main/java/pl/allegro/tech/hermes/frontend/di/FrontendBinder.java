@@ -28,7 +28,7 @@ public class FrontendBinder extends AbstractBinder {
 
     @Override
     protected void configure() {
-        bind(HermesServer.class).to(HermesServer.class);
+        bind(HermesServer.class).to(HermesServer.class).in(Singleton.class);
         bind(PublishingServlet.class).to(PublishingServlet.class).in(Singleton.class);
         bind(Preconditions.class).to(Preconditions.class);
         bind(MessageContentWrapper.class).to(MessageContentWrapper.class);

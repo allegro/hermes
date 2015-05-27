@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +41,7 @@ public final class HermesFrontend {
             hooksHandler.addShutdownHook(gracefulShutdownHook());
         }
 
+        hooksHandler.addStartupHook(() -> serviceLocator.getService(HealthCheckService.class).startup());
         hooksHandler.addShutdownHook(defaultShutdownHook());
     }
 
