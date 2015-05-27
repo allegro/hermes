@@ -9,7 +9,11 @@ discovery:
   register: false
 
 kafka:
-  connectionString: zk:2181
+  clusters:
+    -
+      clusterName: primary
+      connectionString: zk:2181
+      connectionTimeout: 3000
 
 storage:
   pathPrefix: /run/hermes
