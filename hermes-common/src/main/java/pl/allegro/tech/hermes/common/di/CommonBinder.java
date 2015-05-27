@@ -24,11 +24,9 @@ import pl.allegro.tech.hermes.common.di.factories.SimpleConsumerPoolFactory;
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionOffsetChangeIndicatorFactory;
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
-import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.message.tracker.MongoDbFactory;
-import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.PathsCompiler;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
@@ -68,7 +66,6 @@ public class CommonBinder extends AbstractBinder {
         bind(ZookeeperCounterStorage.class).to(CounterStorage.class).in(Singleton.class);
 
         bind(ZookeeperBrokerStorage.class).to(BrokerStorage.class).in(Singleton.class);
-        bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
 
         bind(SystemClock.class).to(Clock.class).in(Singleton.class);
 
