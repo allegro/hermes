@@ -11,15 +11,14 @@ import static PathsCompiler.SUBSCRIPTION
 import static PathsCompiler.TOPIC
 import static pl.allegro.tech.hermes.common.metric.PathContext.pathContext
 
-
 class PathsCompilerTest extends Specification {
 
     @Shared
-    def pathsCompiler = new PathsCompiler("localhost")
+    def pathsCompiler = new PathsCompiler("localhost.localdomain")
 
     def "should compile path with hostname"() {
         expect:
-        pathsCompiler.compile(HOSTNAME + ".counter") == "localhost.counter"
+        pathsCompiler.compile(HOSTNAME + ".counter") == "localhost_localdomain.counter"
     }
 
     def "should compile path with path context"() {
