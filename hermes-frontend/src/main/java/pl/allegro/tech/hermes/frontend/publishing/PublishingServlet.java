@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.message.tracker.Trackers;
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.BrokerListenersPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.HttpPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
@@ -36,8 +35,6 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 public class PublishingServlet extends HttpServlet {
 
-    private final BrokerMessageProducer producer;
-
     private final HermesMetrics hermesMetrics;
     private final ErrorSender errorSender;
     private final Trackers trackers;
@@ -53,7 +50,6 @@ public class PublishingServlet extends HttpServlet {
 
     @Inject
     public PublishingServlet(TopicsCache topicsCache,
-                             BrokerMessageProducer brokerMessageProducer,
                              HermesMetrics hermesMetrics,
                              ObjectMapper objectMapper,
                              ConfigFactory configFactory,
@@ -68,7 +64,6 @@ public class PublishingServlet extends HttpServlet {
         this.clock = clock;
         this.messagePublisher = messagePublisher;
         this.errorSender = new ErrorSender(objectMapper);
-        this.producer = brokerMessageProducer;
         this.hermesMetrics = hermesMetrics;
         this.trackers = trackers;
         this.listeners = listeners;
