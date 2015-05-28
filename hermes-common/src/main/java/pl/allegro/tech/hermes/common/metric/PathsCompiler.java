@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.common.metric;
 
 import org.apache.commons.lang.text.StrBuilder;
 
+import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
+
 public class PathsCompiler {
 
     public static final String HOSTNAME = "$hostname";
@@ -14,7 +16,7 @@ public class PathsCompiler {
     private final String hostname;
 
     public PathsCompiler(String hostname) {
-        this.hostname = hostname;
+        this.hostname = escapeDots(hostname);
     }
 
     public String compile(String path) {

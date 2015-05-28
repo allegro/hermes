@@ -37,7 +37,6 @@ public class HermesMetrics {
     private final PathsCompiler pathCompiler;
     private final HostnameResolver hostnameResolver;
 
-
     @Inject
     public HermesMetrics(
             ConfigFactory configFactory,
