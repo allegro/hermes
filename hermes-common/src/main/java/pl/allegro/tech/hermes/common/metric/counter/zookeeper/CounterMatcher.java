@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
 import java.util.Optional;
 
+import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
+
 class CounterMatcher {
 
     private final String counterName;
@@ -10,7 +12,7 @@ class CounterMatcher {
     private Optional<String> subscription;
 
     public CounterMatcher(String counterName, String hostname) {
-        this.hostname = hostname;
+        this.hostname = escapeDots(hostname);
         this.counterName = counterName;
         parseCounter(counterName);
     }
