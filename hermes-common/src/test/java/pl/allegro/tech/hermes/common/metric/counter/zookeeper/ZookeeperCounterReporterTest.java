@@ -44,7 +44,7 @@ public class ZookeeperCounterReporterTest {
     public static final long COUNT = 100L;
     public static final String GRAPHITE_PREFIX = "tech.hermes";
 
-    private static PathsCompiler pathsCompiler = new PathsCompiler("localhost");
+    private static PathsCompiler pathsCompiler = new PathsCompiler("localhost.domain");
 
     public static final String METRIC_NAME_FOR_PUBLISHED = pathsCompiler.compile(PRODUCER_PUBLISHED,
             pathContext().withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME).build());
@@ -77,7 +77,7 @@ public class ZookeeperCounterReporterTest {
     @Before
     public void before() {
         when(configFactory.getStringProperty(Configs.GRAPHITE_PREFIX)).thenReturn(GRAPHITE_PREFIX);
-        when(hostnameResolver.resolve()).thenReturn("localhost");
+        when(hostnameResolver.resolve()).thenReturn("localhost.domain");
         zookeeperCounterReporter = new ZookeeperCounterReporter(metricRegistry, counterStorage, hostnameResolver, configFactory);
     }
 

@@ -6,8 +6,8 @@ class CounterMatcherTest extends Specification {
 
     def "should match topic published"() {
         given:
-        def counterName = "producer.localhost.published.lagMetricGroup.topic"
-        def counterMatcher = new CounterMatcher(counterName, "localhost")
+        def counterName = "producer.localhost_domain.published.lagMetricGroup.topic"
+        def counterMatcher = new CounterMatcher(counterName, "localhost.domain")
 
         when:
         def isTopic = counterMatcher.isTopicPublished()
@@ -20,8 +20,8 @@ class CounterMatcherTest extends Specification {
 
     def "should match subscription delivered"() {
         given:
-        def counterName = "consumer.localhost.delivered.lagMetricGroup.topic.subscription"
-        def counterMatcher = new CounterMatcher(counterName, "localhost")
+        def counterName = "consumer.localhost_domain.delivered.lagMetricGroup.topic.subscription"
+        def counterMatcher = new CounterMatcher(counterName, "localhost.domain")
 
         when:
         def isSubscription = counterMatcher.isSubscriptionDelivered()
@@ -36,8 +36,8 @@ class CounterMatcherTest extends Specification {
 
     def "should match subscription discarded"() {
         given:
-        def counterName = "consumer.localhost.discarded.lagMetricGroup.topic.subscription"
-        def counterMatcher = new CounterMatcher(counterName, "localhost")
+        def counterName = "consumer.localhost_domain.discarded.lagMetricGroup.topic.subscription"
+        def counterMatcher = new CounterMatcher(counterName, "localhost.domain")
 
         when:
         def isSubscription = counterMatcher.isSubscriptionDiscarded()
@@ -52,8 +52,8 @@ class CounterMatcherTest extends Specification {
 
     def "should match inflight counter"() {
         given:
-        def counterName = "consumer.localhost.inflight.group.topic.subscription"
-        def counterMatcher = new CounterMatcher(counterName, "localhost")
+        def counterName = "consumer.localhost_domain.inflight.group.topic.subscription"
+        def counterMatcher = new CounterMatcher(counterName, "localhost.domain")
 
         when:
         def isInflight = counterMatcher.isSubscriptionInflight()
