@@ -32,6 +32,7 @@ public class PathsCompiler {
         context.getSubscription().ifPresent(s -> pathBuilder.replaceAll(SUBSCRIPTION, s));
         context.getPartition().ifPresent(p -> pathBuilder.replaceAll(PARTITION, p.toString()));
         context.getHttpCode().ifPresent(c -> pathBuilder.replaceAll(HTTP_CODE, c.toString()));
+        context.getExecutorName().ifPresent(c -> pathBuilder.replaceAll(EXECUTOR_NAME, c.toString()));
 
         pathBuilder.replaceAll(HOSTNAME, hostname);
 
