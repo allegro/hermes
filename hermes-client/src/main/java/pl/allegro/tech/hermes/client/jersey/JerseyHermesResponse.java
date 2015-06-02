@@ -6,9 +6,11 @@ import javax.ws.rs.core.Response;
 
 class JerseyHermesResponse implements HermesResponse {
     private final Response response;
+    private final String body;
 
     public JerseyHermesResponse(Response response) {
         this.response = response;
+        this.body = response.readEntity(String.class);
     }
 
     @Override
@@ -18,7 +20,7 @@ class JerseyHermesResponse implements HermesResponse {
 
     @Override
     public String getBody() {
-        return response.readEntity(String.class);
+        return body;
     }
 
     @Override
