@@ -3,7 +3,10 @@ package pl.allegro.tech.hermes.consumers.di;
 import org.eclipse.jetty.client.HttpClient;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
+import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
 import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
+import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.consumer.health.HealthCheckServer;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
@@ -25,9 +28,9 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSen
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.message.tracker.LogRepository;
-import pl.allegro.tech.hermes.consumers.message.tracker.SendingMessageTracker;
 import pl.allegro.tech.hermes.consumers.message.tracker.MongoLogRepository;
 import pl.allegro.tech.hermes.consumers.message.tracker.NoOperationSendingTracker;
+import pl.allegro.tech.hermes.consumers.message.tracker.SendingMessageTracker;
 import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.cache.zookeeper.ZookeeperSubscriptionsCacheFactory;
@@ -72,6 +75,9 @@ public class ConsumersBinder extends AbstractBinder {
         bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class);
         bindFactory(AsyncOffsetMonitorFactory.class).in(Singleton.class).to(AsyncOffsetMonitor.class);
         bindFactory(ZookeeperSubscriptionsCacheFactory.class).to(SubscriptionsCache.class).in(Singleton.class);
+
+        bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
+        bindSingleton(UndeliveredMessageLogPersister.class);
     }
 
     private <T> void bindSingleton(Class<T> clazz) {

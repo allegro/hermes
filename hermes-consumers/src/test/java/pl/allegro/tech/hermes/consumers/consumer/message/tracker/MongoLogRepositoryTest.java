@@ -12,13 +12,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
+import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.common.message.tracker.LogSchemaAware;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Metrics;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.message.TestMessage;
 import pl.allegro.tech.hermes.consumers.message.tracker.LogRepository;
-import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.consumers.message.tracker.MongoLogRepository;
 
 import java.util.Date;
@@ -51,7 +50,7 @@ public class MongoLogRepositoryTest implements LogSchemaAware {
     @Before
     public void setUp() {
         when(clock.getDate()).thenReturn(new Date(1234567));
-        when(metrics.timer(any(Metrics.Timer.class))).thenReturn(new Timer());
+        when(metrics.timer(any(String.class))).thenReturn(new Timer());
         
         logRepository = new MongoLogRepository(database, clock, metrics, 1000, 100, "cluster");
     }

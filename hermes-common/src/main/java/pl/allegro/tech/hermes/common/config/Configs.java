@@ -98,7 +98,8 @@ public enum Configs {
 
     TRACKER_MONGODB_URI("tracker.mongodb.uri", "mongodb://localhost:27017/hermesMessages"),
     TRACKER_MONGODB_COMMIT_INTERVAL("tracker.mongodb.commit.interval", 1000),
-    TRACKER_MONGODB_QUEUE_CAPACITY("tracker.mongodb.queue.capacity", 100 * 1000);
+    TRACKER_MONGODB_QUEUE_CAPACITY("tracker.mongodb.queue.capacity", 100 * 1000),
+    UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 
     private final String name;
 

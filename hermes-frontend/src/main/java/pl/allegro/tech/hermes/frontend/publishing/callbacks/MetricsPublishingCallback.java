@@ -2,8 +2,10 @@ package pl.allegro.tech.hermes.frontend.publishing.callbacks;
 
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Metrics;
+import pl.allegro.tech.hermes.common.metric.Meters;
+import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.frontend.publishing.Message;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 
@@ -15,8 +17,8 @@ public class MetricsPublishingCallback implements PublishingCallback {
 
     public MetricsPublishingCallback(HermesMetrics hermesMetrics, Topic topic) {
         this.hermesMetrics = hermesMetrics;
-        latencyTimer = hermesMetrics.timer(Metrics.Timer.PRODUCER_BROKER_LATENCY).time();
-        latencyTimerPerTopic = hermesMetrics.timer(Metrics.Timer.PRODUCER_BROKER_LATENCY, topic.getName()).time();
+        latencyTimer = hermesMetrics.timer(Timers.PRODUCER_BROKER_LATENCY).time();
+        latencyTimerPerTopic = hermesMetrics.timer(Timers.PRODUCER_BROKER_TOPIC_LATENCY, topic.getName()).time();
     }
 
     @Override
@@ -27,8 +29,8 @@ public class MetricsPublishingCallback implements PublishingCallback {
     @Override
     public void onPublished(Message message, Topic topic) {
         HermesMetrics.close(latencyTimer, latencyTimerPerTopic);
-        hermesMetrics.meter(Metrics.Meter.PRODUCER_METER).mark();
-        hermesMetrics.meter(Metrics.Meter.PRODUCER_METER, topic.getName()).mark();
-        hermesMetrics.counter(Metrics.Counter.PRODUCER_PUBLISHED, topic.getName()).inc();
+        hermesMetrics.meter(Meters.PRODUCER_METER).mark();
+        hermesMetrics.meter(Meters.PRODUCER_TOPIC_METER, topic.getName()).mark();
+        hermesMetrics.counter(Counters.PRODUCER_PUBLISHED, topic.getName()).inc();
     }
 }

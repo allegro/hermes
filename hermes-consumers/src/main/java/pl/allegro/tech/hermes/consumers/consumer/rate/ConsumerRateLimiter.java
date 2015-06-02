@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate;
 
-import com.codahale.metrics.Gauge;
 import com.google.common.util.concurrent.RateLimiter;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -36,12 +35,7 @@ public class ConsumerRateLimiter {
 
     public void initialize() {
         adjustConsumerRate();
-        hermesMetrics.registerOutputRateGauge(subscription.getTopicName(), subscription.getName(), new Gauge<Double>() {
-            @Override
-            public Double getValue() {
-                return rateLimiter.getRate();
-            }
-        });
+        hermesMetrics.registerOutputRateGauge(subscription.getTopicName(), subscription.getName(), () -> rateLimiter.getRate());
         rateLimitSupervisor.register(this);
     }
 

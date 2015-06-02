@@ -7,6 +7,7 @@ public interface LogSchemaAware {
     String MESSAGE_ID = "messageId";
     String CREATED_AT = "createdAt";
     String TIMESTAMP = "timestamp";
+    String PUBLISH_TIMESTAMP = "publish_timestamp";
     String STATUS = "status";
     String TOPIC_NAME = "topicName";
     String SUBSCRIPTION = "subscription";

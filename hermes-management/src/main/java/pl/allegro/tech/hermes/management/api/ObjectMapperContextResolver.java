@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.config;
+package pl.allegro.tech.hermes.management.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;

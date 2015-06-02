@@ -20,6 +20,7 @@ public class HermesShutdownHandler extends GracefulShutdownHandler {
 
     public void handleShutdown() throws InterruptedException {
         shutdown();
+        LOGGER.info("Waiting for existing requests to complete");
         awaitShutdown();
         LOGGER.info("Awaiting buffer flush");
         awaitBufferFlush();

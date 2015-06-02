@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
+import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.AsyncOffsetMonitor;
@@ -86,6 +87,9 @@ public class ConsumersSupervisorTest {
     @Mock
     private HermesMetrics hermesMetrics;
 
+    @Mock
+    private UndeliveredMessageLogPersister undeliveredMessageLogPersister;
+
     private ConfigFactory configFactory = new ConfigFactory();
 
     private ConsumersSupervisor consumersSupervisor;
@@ -98,7 +102,8 @@ public class ConsumersSupervisorTest {
 
         consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository,
                 subscriptionOffsetChangeIndicator, executorService, consumerFactory,
-            messageCommitter, brokerStorage, subscriptionsCache, hermesMetrics, asyncOffsetMonitor, adminCache);
+                messageCommitter, brokerStorage, subscriptionsCache, hermesMetrics, asyncOffsetMonitor,
+                adminCache, undeliveredMessageLogPersister);
     }
 
     @Test

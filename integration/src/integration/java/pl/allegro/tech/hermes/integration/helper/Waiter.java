@@ -136,7 +136,7 @@ public class Waiter {
     }
 
     public void untilMessageDiscarded() {
-        sleep(2);
+        sleep(5);
     }
 
     public void untilMessageTraceLogged(final DBCollection collection, final PublishedMessageTraceStatus status) {

@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.admin.AdminOperationsCallback;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.AsyncOffsetMonitor;
@@ -51,6 +52,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
     private final SubscriptionLocks subscriptionsLocks;
 
     private final String brokersClusterName;
+    private final UndeliveredMessageLogPersister undeliveredMessageLogPersister;
 
     @Inject
     public ConsumersSupervisor(ConfigFactory configFactory,
@@ -63,7 +65,8 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                                SubscriptionsCache subscriptionsCache,
                                HermesMetrics hermesMetrics,
                                AsyncOffsetMonitor asyncOffsetMonitor,
-                               ZookeeperAdminCache adminCache) {
+                               ZookeeperAdminCache adminCache,
+                               UndeliveredMessageLogPersister undeliveredMessageLogPersister) {
         this.subscriptionRepository = subscriptionRepository;
         this.subscriptionOffsetChangeIndicator = subscriptionOffsetChangeIndicator;
         this.executor = executor;
@@ -73,12 +76,12 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
         this.subscriptionsCache = subscriptionsCache;
         this.adminCache = adminCache;
         this.hermesMetrics = hermesMetrics;
+        this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
 
         this.subscriptionsLocks = new SubscriptionLocks();
 
         consumerHolder = new ConsumerHolder();
         offsetCommitter = new OffsetCommitter(consumerHolder, messageCommitter, configFactory, asyncOffsetMonitor);
-        offsetCommitter.start();
 
         brokersClusterName = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
     }
@@ -165,6 +168,8 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
         subscriptionsCache.start(ImmutableList.of(this));
         adminCache.start();
         adminCache.addCallback(this);
+        offsetCommitter.start();
+        undeliveredMessageLogPersister.start();
     }
 
     public void shutdown() throws InterruptedException {
@@ -172,8 +177,8 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
             consumer.stopConsuming();
         }
         executor.shutdown();
-
         offsetCommitter.shutdown();
+        undeliveredMessageLogPersister.shutdown();
     }
 
     private void createAndExecuteConsumerIfNotExists(Subscription subscription) {
