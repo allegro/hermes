@@ -78,6 +78,7 @@ public class MongoLogRepository implements LogRepository, LogSchemaAware {
                 .append(MESSAGE_ID, message.getId().get())
                 .append(CREATED_AT, clock.getDate())
                 .append(TIMESTAMP, timestamp)
+                .append(PUBLISH_TIMESTAMP, message.getPublishingTimestamp())
                 .append(TOPIC_NAME, topicName)
                 .append(SUBSCRIPTION, subscriptionName)
                 .append(PARTITION, message.getPartition())
