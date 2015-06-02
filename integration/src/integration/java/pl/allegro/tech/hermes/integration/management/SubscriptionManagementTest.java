@@ -5,6 +5,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -54,7 +56,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        Assertions.assertThat(management.subscription().list("subscribeGroup.topic")).containsExactly("subscription");
+        Assertions.assertThat(management.subscription().list("subscribeGroup.topic", false)).containsExactly("subscription");
         Assertions.assertThat(management.subscription().get("subscribeGroup.topic", "subscription").getState())
                 .isEqualTo(Subscription.State.PENDING);
     }
@@ -93,7 +95,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         
         // then
         assertThat(response).hasStatus(Response.Status.OK);
-        assertThat(management.subscription().list("removeSubscriptionGroup.topic")).doesNotContain("subscription");
+        assertThat(management.subscription().list("removeSubscriptionGroup.topic", false)).doesNotContain("subscription");
     }
 
     @Test
@@ -124,6 +126,31 @@ public class SubscriptionManagementTest extends IntegrationTest {
         assertThat(traces.get(1)).containsEntry("status", "INFLIGHT").containsKey("cluster");
         assertThat(traces.get(2)).containsEntry("status", "SUCCESS").containsKey("cluster");
         traces.forEach(trace -> assertThat(trace).containsEntry("cluster", Configs.KAFKA_CLUSTER_NAME.getDefaultValue()));
+    }
+
+    @Test
+    public void shouldReturnSubscriptionsThatAreCurrentlyTrackedForGivenTopic() {
+        // given
+        TopicName topic = new TopicName("tracked", "topic");
+        SubscriptionName subscription = createTrackedSubscription(topic);
+        operations.createSubscription(topic.getGroupName(), topic.getName(), "sub2", HTTP_ENDPOINT_URL);
+
+        // when
+        List<String> tracked = management.subscription().list(topic.qualifiedName(), true);
+
+        // then
+        assertThat(tracked).containsExactly(subscription.getName());
+    }
+
+    private SubscriptionName createTrackedSubscription(TopicName topic) {
+        SubscriptionName subscription = new SubscriptionName("sub", topic);
+        operations.createGroup(topic.getGroupName());
+        operations.createTopic(topic.getGroupName(), topic.getName());
+        operations.createSubscription(topic.getGroupName(), topic.getName(),
+                subscription().withName(subscription.getName()).withTopicName(topic)
+                        .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL))
+                        .withTrackingEnabled(true).build());
+        return subscription;
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
