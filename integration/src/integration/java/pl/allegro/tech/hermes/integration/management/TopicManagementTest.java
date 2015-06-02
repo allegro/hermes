@@ -138,10 +138,7 @@ public class TopicManagementTest extends IntegrationTest {
     private TopicName createTrackedTopic(String group, String name) {
         TopicName topic = new TopicName(group, name);
         operations.createGroup(topic.getGroupName());
-        operations.createTopic(topic.getGroupName(), topic.getName());
-        operations.updateTopic(topic, Topic.Builder.topic()
-                .withName(topic)
-                .withTrackingEnabled(true).build());
+        operations.createTopic(topic().withName(topic).withTrackingEnabled(true).build());
         return topic;
     }
 }
