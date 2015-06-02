@@ -70,7 +70,7 @@ public class ConsumerFactory {
 
     private ExecutorService createRateLimiterReportingExecutor(int size) {
         ExecutorService wrapped = Executors.newFixedThreadPool(size);
-        return new InstrumentedExecutorService(wrapped, hermesMetrics.getMetricRegistry(), hermesMetrics.getThreadPoolName("rate-limiter-reporting"));
+        return new InstrumentedExecutorService(wrapped, hermesMetrics, "rate-limiter-reporter");
     }
 
     Consumer createConsumer(Subscription subscription) {

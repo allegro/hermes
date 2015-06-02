@@ -243,11 +243,19 @@ public class HermesMetrics {
         metricRegistry.register(name.displayName(graphitePrefix), gauge);
     }
 
-    public MetricRegistry getMetricRegistry() {
-        return metricRegistry;
+    public Meter executorMeter(String executorName, String metricName) {
+        return metricRegistry.meter(Metrics.getExecutorMetricPath(graphitePrefix, executorName, metricName));
     }
 
-    public String getThreadPoolName(String name) {
-        return HostnameResolver.detectHostname() + ".executors." + name;
+    public Timer executorTimer(String executorName, String metricName) {
+        return metricRegistry.timer(Metrics.getExecutorMetricPath(graphitePrefix, executorName, metricName));
+    }
+
+    public Counter executorCounter(String executorName, String metricName) {
+        return metricRegistry.counter(Metrics.getExecutorMetricPath(graphitePrefix, executorName, metricName));
+    }
+
+    private String getExecutorMetricPath(String executorName, String metricName) {
+        return Metrics.getExecutorMetricPath(graphitePrefix, executorName, metricName);
     }
 }

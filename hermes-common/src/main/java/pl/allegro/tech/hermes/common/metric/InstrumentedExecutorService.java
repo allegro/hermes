@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.common.metric;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
 import java.util.ArrayList;
@@ -14,51 +13,34 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This is a modified copy of InstrumentedExecutorService from https://github.com/dropwizard/metrics.
  *
  * An {@link java.util.concurrent.ExecutorService} that monitors the number of tasks submitted, running,
  * completed and also keeps a {@link com.codahale.metrics.Timer} for the task duration.
- * <p/>
+ *
  * It will register the metrics using the given (or auto-generated) name as classifier, e.g:
  * "your-executor-service.submitted", "your-executor-service.running", etc.
  */
 public class InstrumentedExecutorService implements ExecutorService {
-    private static final AtomicLong nameCounter = new AtomicLong();
 
     private final ExecutorService delegate;
+
     private final Meter submitted;
     private final Counter running;
     private final Meter completed;
     private final Timer duration;
     private final Timer waiting;
 
-    /**
-     * Wraps an {@link ExecutorService} uses an auto-generated default name.
-     *
-     * @param delegate {@link ExecutorService} to wrap.
-     * @param registry {@link com.codahale.metrics.MetricRegistry} that will contain the metrics.
-     */
-    public InstrumentedExecutorService(ExecutorService delegate, MetricRegistry registry) {
-        this(delegate, registry, "instrumented-delegate-" + nameCounter.incrementAndGet());
-    }
-
-    /**
-     * Wraps an {@link ExecutorService} with an explicit name.
-     *
-     * @param delegate {@link ExecutorService} to wrap.
-     * @param registry {@link MetricRegistry} that will contain the metrics.
-     * @param name     name for this executor service.
-     */
-    public InstrumentedExecutorService(ExecutorService delegate, MetricRegistry registry, String name) {
+    public InstrumentedExecutorService(ExecutorService delegate, HermesMetrics hermesMetrics, String name) {
         this.delegate = delegate;
-        this.submitted = registry.meter(MetricRegistry.name(name, "submitted"));
-        this.running = registry.counter(MetricRegistry.name(name, "running"));
-        this.completed = registry.meter(MetricRegistry.name(name, "completed"));
-        this.duration = registry.timer(MetricRegistry.name(name, "duration"));
-        this.waiting = registry.timer(MetricRegistry.name(name, "waiting"));
+
+        this.submitted = hermesMetrics.executorMeter(name, "submitted");
+        this.running = hermesMetrics.executorCounter(name, "running");
+        this.completed = hermesMetrics.executorMeter(name, "completed");
+        this.duration = hermesMetrics.executorTimer(name, "duration");
+        this.waiting = hermesMetrics.executorTimer(name, "waiting");
     }
 
     /**

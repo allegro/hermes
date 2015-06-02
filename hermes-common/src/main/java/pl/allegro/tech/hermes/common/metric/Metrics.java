@@ -126,6 +126,13 @@ public final class Metrics {
                 partition);
     }
 
+    public static String getExecutorMetricPath(String graphitePrefix, String executorName, String metricName) {
+        return String.format("%s.consumer.%s.executors.%s.%s",
+                graphitePrefix, ESCAPED_HOSTNAME,
+                executorName,
+                metricName);
+    }
+
     public static String getPublisherStatusCodePath(int statusCode, String graphitePrefix) {
         return String.format("%s.producer.%s.http-status-codes.code%d", graphitePrefix, ESCAPED_HOSTNAME, statusCode);
     }
