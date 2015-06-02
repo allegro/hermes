@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import com.googlecode.catchexception.CatchException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
@@ -13,6 +14,10 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.integration.helper.graphite.GraphiteMockServer;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 
+import javax.ws.rs.BadRequestException;
+import java.util.UUID;
+
+import static com.googlecode.catchexception.CatchException.catchException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MetricsTest extends IntegrationTest {
@@ -78,6 +83,23 @@ public class MetricsTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldNotCreateNewSubscriptionWhenAskedForNonExistingMetrics() {
+        //given
+        TopicName topic = new TopicName("pl.group.sub.bug", "topic");
+        operations.buildTopic(topic.getGroupName(), topic.getName());
+        String randomSubscription = UUID.randomUUID().toString();
+
+        //when
+        catchException(management.subscription())
+                .getMetrics(topic.qualifiedName(), randomSubscription);
+
+        //then
+        assertThat(management.subscription().list(topic.qualifiedName())).doesNotContain(randomSubscription);
+        assertThat(CatchException.<BadRequestException>caughtException())
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
     public void shouldReadSubscriptionDeliveryRate() {
         operations.buildSubscription("pl.allegro.tech.hermes", "topic", "pl.allegro.tech.hermes.subscription", HTTP_ENDPOINT_URL);
         wait.untilSubscriptionIsCreated("pl.allegro.tech.hermes", "topic", "pl.allegro.tech.hermes.subscription");
@@ -129,8 +151,8 @@ public class MetricsTest extends IntegrationTest {
         operations.buildSubscription("lagMetricGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
         wait.untilSubscriptionIsCreated("lagMetricGroup", "topic", "subscription");
         remoteService.expectMessages(TestMessage.simple().body());
-        graphiteServer.expectMetric(metricNameWithPrefix("consumer.offset.dev.lagMetricGroup.topic.subscription.[0-9].lag.count"), 1);
-        graphiteServer.expectMetric(metricNameWithPrefix("consumer.offset.dev.lagMetricGroup.topic.subscription.[0-9].timeLag.count"), 1);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.offset.lagMetricGroup.topic.subscription.[0-9].lag.count"), 1);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.offset.lagMetricGroup.topic.subscription.[0-9].timeLag.count"), 1);
 
         //when
         publisher.publish("lagMetricGroup.topic", TestMessage.simple().body());

@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
+import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
@@ -24,7 +25,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
-import static pl.allegro.tech.hermes.common.metric.Metrics.Counter.CONSUMER_INFLIGHT;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -96,7 +96,7 @@ public class DefaultErrorHandlerTest {
     @Test
     public void shouldAddDiscardedEventToUndeliveredMessageLogWhenPolicyExhausted() {
         //given
-        when(hermesMetrics.counter(CONSUMER_INFLIGHT, QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME)).thenReturn(counter);
+        when(hermesMetrics.counter(Counters.CONSUMER_INFLIGHT, QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME)).thenReturn(counter);
         InternalProcessingException cause = new InternalProcessingException("Test cause.");
 
         //when

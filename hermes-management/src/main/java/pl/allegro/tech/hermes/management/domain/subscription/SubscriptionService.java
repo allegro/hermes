@@ -85,6 +85,7 @@ public class SubscriptionService {
     }
 
     public SubscriptionMetrics getSubscriptionMetrics(TopicName topicName, String subscriptionName) {
+        subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
         return metricsRepository.loadMetrics(topicName, subscriptionName);
     }
 

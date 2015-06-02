@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
-import com.codahale.metrics.Gauge;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +26,7 @@ public class ConsumersExecutorService {
 
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize, threadFactory);
 
-        hermesMetrics.registerConsumersThreadGauge(new Gauge<Integer>() {
-            @Override
-            public Integer getValue() {
-                return executor.getActiveCount();
-            }
-        });
+        hermesMetrics.registerConsumersThreadGauge(() -> executor.getActiveCount());
     }
 
     public void execute(Consumer consumer) {

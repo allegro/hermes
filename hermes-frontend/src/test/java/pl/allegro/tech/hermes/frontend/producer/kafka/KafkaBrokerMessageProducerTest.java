@@ -81,8 +81,7 @@ public class KafkaBrokerMessageProducerTest {
         //then
         List<ProducerRecord<byte[], byte[]>> records = leaderConfirmsProducer.history();
         assertThat(records.size()).isEqualTo(1);
-        assertThat(records.get(0))
-                .isEqualToComparingFieldByField(new ProducerRecord("group.topic", CONTENT));
+        assertThat(records.get(0)).isEqualToComparingFieldByField(new ProducerRecord<>("group.topic", CONTENT));
 
         latch.await();
     }
@@ -111,8 +110,7 @@ public class KafkaBrokerMessageProducerTest {
         //then
         List<ProducerRecord<byte [], byte[]>> records = everyoneConfirmProducer.history();
         assertThat(records.size()).isEqualTo(1);
-        assertThat(records.get(0))
-                .isEqualToComparingFieldByField(new ProducerRecord("group.all", CONTENT));
+        assertThat(records.get(0)).isEqualToComparingFieldByField(new ProducerRecord<>("group.all", CONTENT));
     }
 
     private Map<String, Object> firstMessage(MockProducer producer) throws IOException {

@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics;
 import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
-import static pl.allegro.tech.hermes.management.stub.MetricsPaths.escapeDots;
+import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 @Component
 public class HybridTopicMetricsRepository implements TopicMetricsRepository {
