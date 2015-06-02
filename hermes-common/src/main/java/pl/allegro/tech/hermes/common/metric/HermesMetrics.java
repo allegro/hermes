@@ -19,6 +19,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
+import pl.allegro.tech.hermes.common.util.HostnameResolver;
 
 import javax.inject.Inject;
 import java.net.InetSocketAddress;
@@ -240,5 +241,13 @@ public class HermesMetrics {
 
     public void registerGauge(Metrics.Gauge name, Gauge<?> gauge) {
         metricRegistry.register(name.displayName(graphitePrefix), gauge);
+    }
+
+    public MetricRegistry getMetricRegistry() {
+        return metricRegistry;
+    }
+
+    public String getThreadPoolName(String name) {
+        return HostnameResolver.detectHostname() + ".executors." + name;
     }
 }

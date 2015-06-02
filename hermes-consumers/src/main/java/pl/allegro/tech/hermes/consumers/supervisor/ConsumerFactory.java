@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.InstrumentedExecutorService;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
@@ -29,7 +30,6 @@ import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import static com.yammer.metrics.core.Clock.defaultClock;
 
@@ -65,8 +65,12 @@ public class ConsumerFactory {
         this.consumerRateLimitSupervisor = consumerRateLimitSupervisor;
         this.outputRateCalculator = outputRateCalculator;
         this.trackers = trackers;
-        this.rateLimiterReportingExecutor
-                = Executors.newFixedThreadPool(configFactory.getIntProperty(Configs.CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE));
+        this.rateLimiterReportingExecutor = createRateLimiterReportingExecutor(configFactory.getIntProperty(Configs.CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE));
+    }
+
+    private ExecutorService createRateLimiterReportingExecutor(int size) {
+        ExecutorService wrapped = Executors.newFixedThreadPool(size);
+        return new InstrumentedExecutorService(wrapped, hermesMetrics.getMetricRegistry(), hermesMetrics.getThreadPoolName("rate-limiter-reporting"));
     }
 
     Consumer createConsumer(Subscription subscription) {
