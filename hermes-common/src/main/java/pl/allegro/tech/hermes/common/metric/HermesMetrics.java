@@ -247,20 +247,24 @@ public class HermesMetrics {
         return pathCompiler.compile(metricDisplayName);
     }
 
-    public Meter executorMeter(String executorName, String metricName) {
-        return metricRegistry.meter(Metrics.getExecutorMetricPath(graphitePrefix, executorName, metricName));
+    public Timer executorDurationTimer(String executorName) {
+        return metricRegistry.timer(pathCompiler.compile(Timers.CONSUMER_EXECUTOR_DURATION, pathContext().withExecutorName(executorName).build()));
     }
 
-    public Timer executorTimer(String executorName, String metricName) {
-        return metricRegistry.timer(Metrics.getExecutorMetricPath(graphitePrefix, executorName, metricName));
+    public Timer executorWaitingTimer(String executorName) {
+        return metricRegistry.timer(pathCompiler.compile(Timers.CONSUMER_EXECUTOR_WAITING, pathContext().withExecutorName(executorName).build()));
     }
 
-    public Counter executorCounter(String executorName, String metricName) {
-        return metricRegistry.counter(Metrics.getExecutorMetricPath(graphitePrefix, executorName, metricName));
+    public Meter executorCompletedMeter(String executorName) {
+        return metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_EXECUTOR_COMPLETED, pathContext().withExecutorName(executorName).build()));
     }
 
-    private String getExecutorMetricPath(String executorName, String metricName) {
-        return Metrics.getExecutorMetricPath(graphitePrefix, executorName, metricName);
+    public Meter executorSubmittedMeter(String executorName) {
+        return metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_EXECUTOR_SUBMITTED, pathContext().withExecutorName(executorName).build()));
     }
+    public Counter executorRunningCounter(String executorName) {
+        return metricRegistry.counter(pathCompiler.compile(Counters.CONSUMER_EXECUTOR_RUNNING, pathContext().withExecutorName(executorName).build()));
+    }
+
 }
 

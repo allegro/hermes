@@ -11,7 +11,8 @@ public class PathsCompiler {
     public static final String TOPIC = "$topic";
     public static final String SUBSCRIPTION = "$subscription";
     public static final String PARTITION = "$partition";
-    public static final String HTTP_CODE = "http_code";
+    public static final String HTTP_CODE = "$http_code";
+    public static final String EXECUTOR_NAME = "$executor_name";
 
     private final String hostname;
 

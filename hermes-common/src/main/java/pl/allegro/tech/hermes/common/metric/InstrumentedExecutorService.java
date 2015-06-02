@@ -36,11 +36,11 @@ public class InstrumentedExecutorService implements ExecutorService {
     public InstrumentedExecutorService(ExecutorService delegate, HermesMetrics hermesMetrics, String name) {
         this.delegate = delegate;
 
-        this.submitted = hermesMetrics.executorMeter(name, "submitted");
-        this.running = hermesMetrics.executorCounter(name, "running");
-        this.completed = hermesMetrics.executorMeter(name, "completed");
-        this.duration = hermesMetrics.executorTimer(name, "duration");
-        this.waiting = hermesMetrics.executorTimer(name, "waiting");
+        this.submitted = hermesMetrics.executorSubmittedMeter(name);
+        this.running = hermesMetrics.executorRunningCounter(name);
+        this.completed = hermesMetrics.executorCompletedMeter(name);
+        this.duration = hermesMetrics.executorDurationTimer(name);
+        this.waiting = hermesMetrics.executorWaitingTimer(name);
     }
 
     /**
