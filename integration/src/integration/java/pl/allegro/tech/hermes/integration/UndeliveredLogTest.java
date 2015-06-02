@@ -15,7 +15,6 @@ import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscription
 public class UndeliveredLogTest extends IntegrationTest {
 
     private static final String INVALID_ENDPOINT_URL = "http://localhost:60000";
-    private static final TestMessage MESSAGE = TestMessage.of("hello", "world");
 
     @Test
     public void shouldLogUndeliveredMessage() {
@@ -24,13 +23,13 @@ public class UndeliveredLogTest extends IntegrationTest {
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
                 .withTrackingEnabled(true)
-                .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(3).build())
+                .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(0).build())
                 .build();
 
         operations.createSubscription("logUndelivered", "topic", subscription);
 
         // when
-        publisher.publish("logUndelivered.topic", MESSAGE.body());
+        publisher.publish("logUndelivered.topic", TestMessage.simple().body());
         wait.untilMessageDiscarded();
         Response response = management.subscription().getLatestUndeliveredMessage("logUndelivered.topic", "subscription");
 
