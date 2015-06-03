@@ -94,7 +94,7 @@ public class MetricsTest extends IntegrationTest {
                 .getMetrics(topic.qualifiedName(), randomSubscription);
 
         //then
-        assertThat(management.subscription().list(topic.qualifiedName())).doesNotContain(randomSubscription);
+        assertThat(management.subscription().list(topic.qualifiedName(), false)).doesNotContain(randomSubscription);
         assertThat(CatchException.<BadRequestException>caughtException())
                 .isInstanceOf(BadRequestException.class);
     }
@@ -172,7 +172,7 @@ public class MetricsTest extends IntegrationTest {
         management.topic().getMetrics(newTopic.qualifiedName());
 
         //then
-        assertThat(management.topic().list(newTopic.getGroupName())).doesNotContain(newTopic.qualifiedName());
+        assertThat(management.topic().list(newTopic.getGroupName(), false)).doesNotContain(newTopic.qualifiedName());
     }
 
     @Test

@@ -122,4 +122,20 @@ public class TopicService {
     public String fetchSingleMessage(String brokersClusterName, TopicName topicName, Integer partition, Long offset) {
         return multiDCAwareService.readMessage(brokersClusterName, topicName, partition, offset);
     }
+
+    public List<String> listTrackedTopicNames() {
+        return groupService.listGroups().stream()
+                .map(topicRepository::listTopics)
+                .flatMap(List::stream)
+                .filter(Topic::isTrackingEnabled)
+                .map(Topic::getQualifiedName)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> listTrackedTopicNames(String groupName) {
+        return listTopics(groupName).stream()
+                .filter(Topic::isTrackingEnabled)
+                .map(Topic::getQualifiedName)
+                .collect(Collectors.toList());
+    }
 }
