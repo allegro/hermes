@@ -262,8 +262,13 @@ public class HermesMetrics {
     public Meter executorSubmittedMeter(String executorName) {
         return metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_EXECUTOR_SUBMITTED, pathContext().withExecutorName(executorName).build()));
     }
+
     public Counter executorRunningCounter(String executorName) {
         return metricRegistry.counter(pathCompiler.compile(Counters.CONSUMER_EXECUTOR_RUNNING, pathContext().withExecutorName(executorName).build()));
+    }
+
+    public Counter scheduledExecutorOverrun(String executorName) {
+        return metricRegistry.counter(pathCompiler.compile(Counters.CONSUMER_SCHEDULED_EXECUTOR_OVERRUN, pathContext().withExecutorName(executorName).build()));
     }
 
 }

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.result;
 
-import com.yammer.metrics.core.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -8,6 +7,7 @@ import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
+import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -45,7 +45,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
         updateMeters(subscription);
         updateMetrics(Counters.CONSUMER_DISCARDED, message, subscription);
 
-        undeliveredMessageLog.add(createUndeliveredMessage(subscription, new String(message.getData()), result.getFailure(), clock.time(),
+        undeliveredMessageLog.add(createUndeliveredMessage(subscription, new String(message.getData()), result.getFailure(), clock.getTime(),
                 message.getPartition(), message.getOffset(), cluster));
 
         trackers.get(subscription).logDiscarded(message, subscription, result.getRootCause());
