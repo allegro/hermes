@@ -14,7 +14,7 @@ public class Meters {
     PRODUCER_FAILED_METER = "producer." + HOSTNAME + ".failed-meter",
             PRODUCER_FAILED_TOPIC_METER = PRODUCER_FAILED_METER + "." + GROUP + "." + TOPIC,
 
-    PRODUCER_STATUS_CODES = "producer." + HOSTNAME + ".http-status-codes.codes" + HTTP_CODE,
+    PRODUCER_STATUS_CODES = "producer." + HOSTNAME + ".http-status-codes.code" + HTTP_CODE,
             PRODUCER_TOPIC_STATUS_CODES = "producer." + HOSTNAME + ".http-status-codes." + GROUP + "." + TOPIC + ".code" + HTTP_CODE,
 
     CONSUMER_METER = "consumer." + HOSTNAME + ".meter",
