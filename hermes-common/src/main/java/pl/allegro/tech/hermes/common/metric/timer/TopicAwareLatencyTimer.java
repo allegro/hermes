@@ -1,13 +1,13 @@
-package pl.allegro.tech.hermes.common.metric;
+package pl.allegro.tech.hermes.common.metric.timer;
 
 import com.codahale.metrics.Timer;
 
-public abstract class ProducerLatencyTimer {
+abstract class TopicAwareLatencyTimer {
 
     protected final Timer.Context timer;
     protected final Timer.Context timerPerTopic;
 
-    ProducerLatencyTimer(Timer timer, Timer timerPerTopic) {
+    TopicAwareLatencyTimer(Timer timer, Timer timerPerTopic) {
         this.timer = timer.time();
         this.timerPerTopic = timerPerTopic.time();
     }

@@ -5,9 +5,9 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
-import pl.allegro.tech.hermes.common.metric.ProducerAckAllLatencyTimer;
-import pl.allegro.tech.hermes.common.metric.ProducerAckLeaderLatencyTimer;
-import pl.allegro.tech.hermes.common.metric.ProducerLatencyTimer;
+import pl.allegro.tech.hermes.common.metric.timer.ProducerAckAllLatencyTimer;
+import pl.allegro.tech.hermes.common.metric.timer.ProducerAckLeaderLatencyTimer;
+import pl.allegro.tech.hermes.common.metric.timer.ProducerLatencyTimer;
 
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;

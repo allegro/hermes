@@ -1,6 +1,8 @@
-package pl.allegro.tech.hermes.common.metric;
+package pl.allegro.tech.hermes.common.metric.timer;
 
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.Timers;
 
 public class ProducerAckAllLatencyTimer extends ProducerLatencyTimer {
 

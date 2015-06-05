@@ -8,8 +8,12 @@ import static pl.allegro.tech.hermes.common.metric.PathsCompiler.TOPIC;
 public class Timers {
 
     public static final String
-            PRODUCER_BROKER_LATENCY = "producer." + HOSTNAME + ".broker-latency",
-            PRODUCER_BROKER_TOPIC_LATENCY = PRODUCER_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
+
+    PRODUCER_ACK_ALL_BROKER_LATENCY = "producer." + HOSTNAME + ".ack-all.broker-latency",
+            PRODUCER_ACK_ALL_BROKER_TOPIC_LATENCY = PRODUCER_ACK_ALL_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
+
+    PRODUCER_ACK_LEADER_BROKER_LATENCY = "producer." + HOSTNAME + ".ack-leader.broker-latency",
+            PRODUCER_ACK_LEADER_BROKER_TOPIC_LATENCY = PRODUCER_ACK_LEADER_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
 
     PRODUCER_PARSING_REQUEST = "producer." + HOSTNAME + ".parsing-request",
             PRODUCER_TOPIC_PARSING_REQUEST = PRODUCER_PARSING_REQUEST + "." + GROUP + "." + TOPIC,
