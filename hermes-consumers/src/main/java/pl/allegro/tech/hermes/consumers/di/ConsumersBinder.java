@@ -1,11 +1,16 @@
 package pl.allegro.tech.hermes.consumers.di;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
 import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
+import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
+import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeoutFactory;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.consumer.health.HealthCheckServer;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
@@ -71,7 +76,9 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(SendingMessageTracker.class);
         bindSingleton(NoOperationSendingTracker.class);
         bindSingleton(Trackers.class);
+        bindSingleton(ConsumerMessageSenderFactory.class);
 
+        bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class).to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
         bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class);
         bindFactory(AsyncOffsetMonitorFactory.class).in(Singleton.class).to(AsyncOffsetMonitor.class);
         bindFactory(ZookeeperSubscriptionsCacheFactory.class).to(SubscriptionsCache.class).in(Singleton.class);

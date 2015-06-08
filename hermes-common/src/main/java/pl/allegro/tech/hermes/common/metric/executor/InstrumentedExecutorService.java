@@ -1,8 +1,9 @@
-package pl.allegro.tech.hermes.common.metric;
+package pl.allegro.tech.hermes.common.metric.executor;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,11 +28,11 @@ public class InstrumentedExecutorService implements ExecutorService {
 
     private final ExecutorService delegate;
 
-    private final Meter submitted;
-    private final Counter running;
-    private final Meter completed;
-    private final Timer duration;
-    private final Timer waiting;
+    protected final Meter submitted;
+    protected final Counter running;
+    protected final Meter completed;
+    protected final Timer duration;
+    protected final Timer waiting;
 
     public InstrumentedExecutorService(ExecutorService delegate, HermesMetrics hermesMetrics, String name) {
         this.delegate = delegate;
@@ -157,7 +158,7 @@ public class InstrumentedExecutorService implements ExecutorService {
         return delegate.awaitTermination(l, timeUnit);
     }
 
-    private class InstrumentedRunnable implements Runnable {
+    protected class InstrumentedRunnable implements Runnable {
         private final Runnable task;
         private final Timer.Context waitingDurationTimerContext;
 
@@ -181,7 +182,7 @@ public class InstrumentedExecutorService implements ExecutorService {
         }
     }
 
-    private class InstrumentedCallable<T> implements Callable<T> {
+    protected class InstrumentedCallable<T> implements Callable<T> {
         private final Callable<T> callable;
         private final Timer.Context waitingDurationTimerContext;
 

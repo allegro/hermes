@@ -61,6 +61,7 @@ public enum Configs {
     CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 20),
     CONSUMER_COMMIT_OFFSET_CACHE_EXPIRATION("consumer.commit.offset.cache.expiration", 10),
     CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),
+    CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE("consumer.sender.async.timeout.thread.pool.size", 32),
     CONSUMER_THREAD_POOL_SIZE("consumer.thread.pool.size", 500),
     CONSUMER_HTTP_CLIENT_REQUEST_TIMEOUT("consumer.http.client.request.timeout", 1000),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE("consumer.http.client.thread.pool.size", 30),

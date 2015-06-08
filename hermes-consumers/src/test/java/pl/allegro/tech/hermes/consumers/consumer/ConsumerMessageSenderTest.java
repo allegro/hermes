@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -246,7 +247,8 @@ public class ConsumerMessageSenderTest {
 
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
         return new ConsumerMessageSender(subscription, messageSender, successHandler, errorHandler, rateLimiter,
-                Executors.newSingleThreadExecutor(), inflightSemaphore, hermesMetrics, ASYNC_TIMEOUT_MS);
+                Executors.newSingleThreadExecutor(), inflightSemaphore, hermesMetrics, ASYNC_TIMEOUT_MS,
+                new FutureAsyncTimeout<>(MessageSendingResult::loggedFailResult, Executors.newSingleThreadScheduledExecutor()));
     }
 
     private void verifyRateLimiterSuccessfulSendingCountedTimes(int count) {
