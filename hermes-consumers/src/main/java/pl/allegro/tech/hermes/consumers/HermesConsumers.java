@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers;
 
 import com.google.common.collect.Lists;
-import org.eclipse.jetty.client.HttpClient;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
@@ -18,12 +17,9 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderPro
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class HermesConsumers {
 
@@ -32,27 +28,25 @@ public class HermesConsumers {
     private final HooksHandler hooksHandler;
     private final ConsumersSupervisor consumersSupervisor;
     private final HealthCheckServer healthCheckServer;
-    private final HttpClient httpClient;
     private final MessageSenderProviders messageSendersProviders;
-    private final MultiMap<String, Function<HttpClient, ProtocolMessageSenderProvider>> httpClientMessageSenderProviders;
+    private final ServiceLocator serviceLocator;
 
     public static void main(String... args) {
         consumers().build().start();
     }
 
-    private HermesConsumers(HooksHandler hooksHandler, List<Binder> binders, MultiMap<String, Function<HttpClient, ProtocolMessageSenderProvider>> httpClientMessageSenderProviders) {
+    private HermesConsumers(HooksHandler hooksHandler, List<Binder> binders, MultiMap<String, Supplier<ProtocolMessageSenderProvider>> httpClientMessageSenderProvidersSuppliers) {
 
         this.hooksHandler = hooksHandler;
-        this.httpClientMessageSenderProviders = httpClientMessageSenderProviders;
-        final ServiceLocator serviceLocator = createDIContainer(binders);
+        this.serviceLocator = createDIContainer(binders);
+
         consumersSupervisor = serviceLocator.getService(ConsumersSupervisor.class);
         healthCheckServer = serviceLocator.getService(HealthCheckServer.class);
-        httpClient = serviceLocator.getService(HttpClient.class);
         messageSendersProviders = serviceLocator.getService(MessageSenderProviders.class);
 
-        httpClientMessageSenderProviders.entrySet().stream().forEach(entry -> {
-            entry.getValue().stream().forEach( creator -> {
-                messageSendersProviders.put(entry.getKey(), creator.apply(httpClient));
+        httpClientMessageSenderProvidersSuppliers.entrySet().stream().forEach(entry -> {
+            entry.getValue().stream().forEach( supplier -> {
+                messageSendersProviders.put(entry.getKey(), supplier.get());
             });
         });
 
@@ -86,6 +80,14 @@ public class HermesConsumers {
         return ServiceLocatorUtilities.bind(uniqueName, binders.toArray(new Binder[binders.size()]));
     }
 
+    public <T> T getService(Class<T> clazz) {
+        return serviceLocator.getService(clazz);
+    }
+
+    public <T> T getService(Class<T> clazz, String name) {
+        return serviceLocator.getService(clazz, name);
+    }
+
     public static Builder consumers() {
         return new Builder();
     }
@@ -93,7 +95,7 @@ public class HermesConsumers {
     public static final class Builder {
         private final HooksHandler hooksHandler = new HooksHandler();
         private final MessageSenderProviders messageSendersProviders = new MessageSenderProviders();
-        private final MultiMap<String, Function<HttpClient, ProtocolMessageSenderProvider>> httpClientMessageSenderProviders = new MultiMap<>();
+        private final MultiMap<String, Supplier<ProtocolMessageSenderProvider>> httpClientMessageSenderProvidersSuppliers = new MultiMap<>();
 
         private final List<Binder> binders = Lists.newArrayList(
                 new CommonBinder(),
@@ -110,13 +112,8 @@ public class HermesConsumers {
             return this;
         }
 
-        public Builder withMessageSenderProvider(String protocol, ProtocolMessageSenderProvider protocolMessageSenderFactory) {
-            messageSendersProviders.put(protocol, protocolMessageSenderFactory);
-            return this;
-        }
-
-        public HermesConsumers.Builder withHttpClientMessageSenderProvider(String protocol, Function<HttpClient, ProtocolMessageSenderProvider> messageSenderProviderConstructor) {
-            this.httpClientMessageSenderProviders.add(protocol, messageSenderProviderConstructor);
+        public HermesConsumers.Builder withMessageSenderProvider(String protocol, Supplier<ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
+            this.httpClientMessageSenderProvidersSuppliers.add(protocol, messageSenderProviderSupplier);
             return this;
         }
 
@@ -136,7 +133,7 @@ public class HermesConsumers {
         }
 
         public HermesConsumers build() {
-            return new HermesConsumers(hooksHandler, binders, httpClientMessageSenderProviders);
+            return new HermesConsumers(hooksHandler, binders, httpClientMessageSenderProvidersSuppliers);
         }
 
         private final class ProtocolMessageSenderProvidersBinder extends AbstractBinder {
