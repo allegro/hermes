@@ -28,6 +28,7 @@ public class HermesConsumers {
     private final HooksHandler hooksHandler;
     private final ConsumersSupervisor consumersSupervisor;
     private final HealthCheckServer healthCheckServer;
+    private MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
     private final MessageSenderProviders messageSendersProviders;
     private final ServiceLocator serviceLocator;
 
@@ -35,20 +36,15 @@ public class HermesConsumers {
         consumers().build().start();
     }
 
-    private HermesConsumers(HooksHandler hooksHandler, List<Binder> binders, MultiMap<String, Supplier<ProtocolMessageSenderProvider>> httpClientMessageSenderProvidersSuppliers) {
+    private HermesConsumers(HooksHandler hooksHandler, List<Binder> binders, MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers) {
 
         this.hooksHandler = hooksHandler;
+        this.messageSenderProvidersSuppliers = messageSenderProvidersSuppliers;
         this.serviceLocator = createDIContainer(binders);
 
         consumersSupervisor = serviceLocator.getService(ConsumersSupervisor.class);
         healthCheckServer = serviceLocator.getService(HealthCheckServer.class);
         messageSendersProviders = serviceLocator.getService(MessageSenderProviders.class);
-
-        httpClientMessageSenderProvidersSuppliers.entrySet().stream().forEach(entry -> {
-            entry.getValue().stream().forEach( supplier -> {
-                messageSendersProviders.put(entry.getKey(), supplier.get());
-            });
-        });
 
         hooksHandler.addShutdownHook(() -> {
             try {
@@ -63,6 +59,13 @@ public class HermesConsumers {
 
     public void start() {
         try {
+
+            messageSenderProvidersSuppliers.entrySet().stream().forEach(entry -> {
+                entry.getValue().stream().forEach( supplier -> {
+                    messageSendersProviders.put(entry.getKey(), supplier.get());
+                });
+            });
+
             consumersSupervisor.start();
             healthCheckServer.start();
             hooksHandler.startup();
@@ -95,7 +98,7 @@ public class HermesConsumers {
     public static final class Builder {
         private final HooksHandler hooksHandler = new HooksHandler();
         private final MessageSenderProviders messageSendersProviders = new MessageSenderProviders();
-        private final MultiMap<String, Supplier<ProtocolMessageSenderProvider>> httpClientMessageSenderProvidersSuppliers = new MultiMap<>();
+        private final MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers = new MultiMap<>();
 
         private final List<Binder> binders = Lists.newArrayList(
                 new CommonBinder(),
@@ -113,7 +116,7 @@ public class HermesConsumers {
         }
 
         public HermesConsumers.Builder withMessageSenderProvider(String protocol, Supplier<ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
-            this.httpClientMessageSenderProvidersSuppliers.add(protocol, messageSenderProviderSupplier);
+            this.messageSenderProvidersSuppliers.add(protocol, messageSenderProviderSupplier);
             return this;
         }
 
@@ -133,7 +136,7 @@ public class HermesConsumers {
         }
 
         public HermesConsumers build() {
-            return new HermesConsumers(hooksHandler, binders, httpClientMessageSenderProvidersSuppliers);
+            return new HermesConsumers(hooksHandler, binders, messageSenderProvidersSuppliers);
         }
 
         private final class ProtocolMessageSenderProvidersBinder extends AbstractBinder {
