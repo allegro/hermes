@@ -5,7 +5,7 @@ import org.eclipse.jetty.util.HttpCookieStore;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.InstrumentedExecutorService;
+import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorService;
 
 import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;

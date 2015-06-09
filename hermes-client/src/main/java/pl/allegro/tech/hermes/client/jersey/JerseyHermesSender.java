@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
 import static javax.ws.rs.client.Entity.text;
+import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 
 public class JerseyHermesSender implements HermesSender {
     private final Client client;
@@ -25,14 +26,22 @@ public class JerseyHermesSender implements HermesSender {
         client.target(uri).request().async().post(text(message.getBody()), new InvocationCallback<Response>() {
             @Override
             public void completed(Response response) {
-                future.complete(new JerseyHermesResponse(response));
+                future.complete(fromJerseyResponse(response));
             }
 
             @Override
-            public void failed(Throwable throwable) {
-                future.completeExceptionally(throwable);
+            public void failed(Throwable exception) {
+                future.completeExceptionally(exception);
             }
         });
         return future;
+    }
+
+    private HermesResponse fromJerseyResponse(Response response) {
+        return hermesResponse()
+                .withHttpStatus(response.getStatus())
+                .withBody(response.readEntity(String.class))
+                .withHeaderSupplier(header -> response.getHeaderString(header))
+                .build();
     }
 }

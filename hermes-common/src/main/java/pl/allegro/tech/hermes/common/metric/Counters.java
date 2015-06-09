@@ -17,5 +17,6 @@ public class Counters {
             CONSUMER_OFFSET_LAG = "consumer.offset" + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + "." + PARTITION + ".lag",
             CONSUMER_OFFSET_COMMIT_IDLE = "consumer." + HOSTNAME + ".offset-commit-idle." + GROUP + "." + TOPIC + "." + SUBSCRIPTION
                     + "." + PARTITION,
-            CONSUMER_EXECUTOR_RUNNING = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".running";
+            CONSUMER_EXECUTOR_RUNNING = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".running",
+            CONSUMER_SCHEDULED_EXECUTOR_OVERRUN = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".overrun";
 }

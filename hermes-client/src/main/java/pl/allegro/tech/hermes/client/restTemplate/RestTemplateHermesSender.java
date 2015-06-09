@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 
 public class RestTemplateHermesSender implements HermesSender {
     private final AsyncRestTemplate template;
@@ -33,32 +34,33 @@ public class RestTemplateHermesSender implements HermesSender {
         template.postForEntity(uri, new HttpEntity<>(message.getBody(), headers), String.class)
                 .addCallback(new ListenableFutureCallback<ResponseEntity>() {
                     @Override
-                    public void onSuccess(ResponseEntity result) {
-                        future.complete(new RestTemplateHermesResponse(result));
+                    public void onSuccess(ResponseEntity response) {
+                        future.complete(fromRestTemplateResponse(response));
                     }
                     @Override
-                    public void onFailure(Throwable ex) {
-                        if (ex instanceof HttpStatusCodeException) {
-                            future.complete(getResponseForException((HttpStatusCodeException) ex));
+                    public void onFailure(Throwable exception) {
+                        if (exception instanceof HttpStatusCodeException) {
+                            future.complete(fromHttpStatusCodeException((HttpStatusCodeException) exception));
                         } else {
-                            future.completeExceptionally(ex);
+                            future.completeExceptionally(exception);
                         }
                     }
                 });
         return future;
     }
 
-    private HermesResponse getResponseForException(HttpStatusCodeException ex) {
-        return new HermesResponse() {
-            @Override
-            public int getHttpStatus() {
-                return ex.getStatusCode().value();
-            }
+    private HermesResponse fromRestTemplateResponse(ResponseEntity response) {
+        return hermesResponse()
+                .withHttpStatus(response.getStatusCode().value())
+                .withBody(response.toString())
+                .withHeaderSupplier(header -> response.getHeaders().toSingleValueMap().getOrDefault(header, null))
+                .build();
+    }
 
-            @Override
-            public String getBody() {
-                return ex.getResponseBodyAsString();
-            }
-        };
+    private HermesResponse fromHttpStatusCodeException(HttpStatusCodeException exception) {
+        return hermesResponse()
+                .withHttpStatus(exception.getStatusCode().value())
+                .withBody(exception.getResponseBodyAsString())
+                .build();
     }
 }
