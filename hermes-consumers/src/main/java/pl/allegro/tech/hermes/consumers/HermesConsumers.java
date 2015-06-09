@@ -5,6 +5,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.jvnet.hk2.component.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
@@ -18,6 +19,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public class HermesConsumers {
 
@@ -26,17 +28,23 @@ public class HermesConsumers {
     private final HooksHandler hooksHandler;
     private final ConsumersSupervisor consumersSupervisor;
     private final HealthCheckServer healthCheckServer;
+    private MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
+    private final MessageSenderProviders messageSendersProviders;
+    private final ServiceLocator serviceLocator;
 
     public static void main(String... args) {
         consumers().build().start();
     }
 
-    private HermesConsumers(HooksHandler hooksHandler, List<Binder> binders) {
+    private HermesConsumers(HooksHandler hooksHandler, List<Binder> binders, MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers) {
 
         this.hooksHandler = hooksHandler;
-        final ServiceLocator serviceLocator = createDIContainer(binders);
+        this.messageSenderProvidersSuppliers = messageSenderProvidersSuppliers;
+        this.serviceLocator = createDIContainer(binders);
+
         consumersSupervisor = serviceLocator.getService(ConsumersSupervisor.class);
         healthCheckServer = serviceLocator.getService(HealthCheckServer.class);
+        messageSendersProviders = serviceLocator.getService(MessageSenderProviders.class);
 
         hooksHandler.addShutdownHook(() -> {
             try {
@@ -51,6 +59,13 @@ public class HermesConsumers {
 
     public void start() {
         try {
+
+            messageSenderProvidersSuppliers.entrySet().stream().forEach(entry -> {
+                entry.getValue().stream().forEach( supplier -> {
+                    messageSendersProviders.put(entry.getKey(), supplier.get());
+                });
+            });
+
             consumersSupervisor.start();
             healthCheckServer.start();
             hooksHandler.startup();
@@ -68,6 +83,14 @@ public class HermesConsumers {
         return ServiceLocatorUtilities.bind(uniqueName, binders.toArray(new Binder[binders.size()]));
     }
 
+    public <T> T getService(Class<T> clazz) {
+        return serviceLocator.getService(clazz);
+    }
+
+    public <T> T getService(Class<T> clazz, String name) {
+        return serviceLocator.getService(clazz, name);
+    }
+
     public static Builder consumers() {
         return new Builder();
     }
@@ -75,6 +98,7 @@ public class HermesConsumers {
     public static final class Builder {
         private final HooksHandler hooksHandler = new HooksHandler();
         private final MessageSenderProviders messageSendersProviders = new MessageSenderProviders();
+        private final MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers = new MultiMap<>();
 
         private final List<Binder> binders = Lists.newArrayList(
                 new CommonBinder(),
@@ -91,8 +115,8 @@ public class HermesConsumers {
             return this;
         }
 
-        public Builder withMessageSenderProvider(String protocol, ProtocolMessageSenderProvider protocolMessageSenderFactory) {
-            messageSendersProviders.put(protocol, protocolMessageSenderFactory);
+        public HermesConsumers.Builder withMessageSenderProvider(String protocol, Supplier<ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
+            this.messageSenderProvidersSuppliers.add(protocol, messageSenderProviderSupplier);
             return this;
         }
 
@@ -112,7 +136,7 @@ public class HermesConsumers {
         }
 
         public HermesConsumers build() {
-            return new HermesConsumers(hooksHandler, binders);
+            return new HermesConsumers(hooksHandler, binders, messageSenderProvidersSuppliers);
         }
 
         private final class ProtocolMessageSenderProvidersBinder extends AbstractBinder {

@@ -1,6 +1,4 @@
-package pl.allegro.tech.hermes.consumers.utils;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+package pl.allegro.tech.hermes.consumers.consumer.sender.timeout;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -18,9 +16,8 @@ public class FutureAsyncTimeout<T> {
     private final ScheduledExecutorService executor;
     private final Function<TimeoutException, T> failure;
 
-    public FutureAsyncTimeout(Function<TimeoutException, T> failure) {
-        this.executor = Executors.newScheduledThreadPool(1,
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ConsumerAsyncTimeout-%d").build());
+    public FutureAsyncTimeout(Function<TimeoutException, T> failure, ScheduledExecutorService scheduledExecutorService) {
+        this.executor = scheduledExecutorService;
         this.failure = failure;
     }
 
@@ -37,4 +34,7 @@ public class FutureAsyncTimeout<T> {
         return promise;
     }
 
+    public void shutdown() {
+        executor.shutdown();
+    }
 }

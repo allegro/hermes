@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.result;
 
 import com.codahale.metrics.Counter;
-import com.yammer.metrics.core.Clock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +13,7 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
@@ -71,7 +71,7 @@ public class DefaultErrorHandlerTest {
     public void setUp() {
         when(subscription.getName()).thenReturn(SUBSCRIPTION_NAME);
         when(subscription.getTopicName()).thenReturn(QUALIFIED_TOPIC_NAME);
-        when(clock.time()).thenReturn(CURRENT_TIME);
+        when(clock.getTime()).thenReturn(CURRENT_TIME);
         trackers = new TestTrackers();
         defaultErrorHandler = new DefaultErrorHandler(offsetHelper, hermesMetrics, undeliveredMessageLog, clock, trackers, CLUSTER);
         reset(hermesMetrics);

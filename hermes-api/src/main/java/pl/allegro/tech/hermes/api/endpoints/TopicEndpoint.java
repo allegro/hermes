@@ -23,7 +23,9 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public interface TopicEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
-    List<String> list(@DefaultValue("") @QueryParam("groupName") String groupName);
+    List<String> list(
+            @DefaultValue("") @QueryParam("groupName") String groupName,
+            @DefaultValue("false") @QueryParam("tracked") boolean tracked);
 
     @POST
     @Consumes(APPLICATION_JSON)
@@ -64,4 +66,5 @@ public interface TopicEndpoint {
                    @PathParam("brokersClusterName") String brokersClusterName,
                    @PathParam("partition") Integer partition,
                    @PathParam("offset") Long offset);
+
 }

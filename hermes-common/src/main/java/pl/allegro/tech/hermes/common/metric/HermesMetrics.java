@@ -247,5 +247,30 @@ public class HermesMetrics {
     private String metricRegistryName(String metricDisplayName) {
         return pathCompiler.compile(metricDisplayName);
     }
+
+    public Timer executorDurationTimer(String executorName) {
+        return metricRegistry.timer(pathCompiler.compile(Timers.CONSUMER_EXECUTOR_DURATION, pathContext().withExecutorName(executorName).build()));
+    }
+
+    public Timer executorWaitingTimer(String executorName) {
+        return metricRegistry.timer(pathCompiler.compile(Timers.CONSUMER_EXECUTOR_WAITING, pathContext().withExecutorName(executorName).build()));
+    }
+
+    public Meter executorCompletedMeter(String executorName) {
+        return metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_EXECUTOR_COMPLETED, pathContext().withExecutorName(executorName).build()));
+    }
+
+    public Meter executorSubmittedMeter(String executorName) {
+        return metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_EXECUTOR_SUBMITTED, pathContext().withExecutorName(executorName).build()));
+    }
+
+    public Counter executorRunningCounter(String executorName) {
+        return metricRegistry.counter(pathCompiler.compile(Counters.CONSUMER_EXECUTOR_RUNNING, pathContext().withExecutorName(executorName).build()));
+    }
+
+    public Counter scheduledExecutorOverrun(String executorName) {
+        return metricRegistry.counter(pathCompiler.compile(Counters.CONSUMER_SCHEDULED_EXECUTOR_OVERRUN, pathContext().withExecutorName(executorName).build()));
+    }
+
 }
 

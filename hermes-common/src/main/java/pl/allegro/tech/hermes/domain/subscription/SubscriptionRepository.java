@@ -25,5 +25,5 @@ public interface SubscriptionRepository {
 
     List<Subscription> listSubscriptions(TopicName topicName);
 
-
+    List<String> listTrackedSubscriptionNames(TopicName topicName);
 }

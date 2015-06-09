@@ -47,6 +47,10 @@ public class SubscriptionService {
         return subscriptionRepository.listSubscriptionNames(topicName);
     }
 
+    public List<String> listTrackedSubscriptionNames(TopicName topicName) {
+        return subscriptionRepository.listTrackedSubscriptionNames(topicName);
+    }
+
     public List<Subscription> listSubscriptions(TopicName topicName) {
         return subscriptionRepository.listSubscriptions(topicName);
     }

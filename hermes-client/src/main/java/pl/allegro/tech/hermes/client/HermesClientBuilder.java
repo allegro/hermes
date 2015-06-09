@@ -6,14 +6,11 @@ import pl.allegro.tech.hermes.client.metrics.MetricsHermesSender;
 import java.net.URI;
 import java.util.function.Predicate;
 
-import static java.net.HttpURLConnection.HTTP_CLIENT_TIMEOUT;
-
 public class HermesClientBuilder {
     private HermesSender sender;
     private URI uri = URI.create("http://localhost:8080");
     private int retries = 0;
-    private Predicate<HermesResponse> retryCondition = (res) ->
-            res.getHttpStatus() == HTTP_CLIENT_TIMEOUT || res.getHttpStatus() / 100 == 5;
+    private Predicate<HermesResponse> retryCondition = new HermesClientBasicRetryCondition();
 
     public HermesClientBuilder(HermesSender sender) {
         this.sender = sender;

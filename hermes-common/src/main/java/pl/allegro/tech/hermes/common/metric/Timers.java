@@ -1,9 +1,7 @@
 package pl.allegro.tech.hermes.common.metric;
 
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.GROUP;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.HOSTNAME;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.SUBSCRIPTION;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.TOPIC;
+import static pl.allegro.tech.hermes.common.metric.PathsCompiler.*;
+import static pl.allegro.tech.hermes.common.metric.PathsCompiler.EXECUTOR_NAME;
 
 public class Timers {
 
@@ -33,5 +31,9 @@ public class Timers {
             CONSUMER_SUBSCRIPTION_LATENCY = CONSUMER_LATENCY + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
 
     CONSUMER_READ_LATENCY = "consumer." + HOSTNAME + ".read-latency",
-            CONSUMER_TRACKER_COMMIT_LATENCY = "consumer." + HOSTNAME + ".tracker-commit-latency";
+            CONSUMER_TRACKER_COMMIT_LATENCY = "consumer." + HOSTNAME + ".tracker-commit-latency",
+
+    CONSUMER_EXECUTOR_DURATION = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".duration",
+            CONSUMER_EXECUTOR_WAITING = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".waiting";
+
 }

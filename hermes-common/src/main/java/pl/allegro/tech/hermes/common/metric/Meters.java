@@ -5,6 +5,7 @@ import static pl.allegro.tech.hermes.common.metric.PathsCompiler.HOSTNAME;
 import static pl.allegro.tech.hermes.common.metric.PathsCompiler.HTTP_CODE;
 import static pl.allegro.tech.hermes.common.metric.PathsCompiler.SUBSCRIPTION;
 import static pl.allegro.tech.hermes.common.metric.PathsCompiler.TOPIC;
+import static pl.allegro.tech.hermes.common.metric.PathsCompiler.EXECUTOR_NAME;
 
 public class Meters {
 
@@ -25,5 +26,8 @@ public class Meters {
 
     CONSUMER_DISCARDED_METER = "consumer." + HOSTNAME + ".discarded-meter",
             CONSUMER_DISCARDED_TOPIC_METER = CONSUMER_DISCARDED_METER + "." + GROUP + "." + TOPIC,
-            CONSUMER_DISCARDED_SUBSCRIPTION_METER = CONSUMER_DISCARDED_TOPIC_METER + "." + SUBSCRIPTION;
+            CONSUMER_DISCARDED_SUBSCRIPTION_METER = CONSUMER_DISCARDED_TOPIC_METER + "." + SUBSCRIPTION,
+
+    CONSUMER_EXECUTOR_SUBMITTED = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".submitted",
+    CONSUMER_EXECUTOR_COMPLETED = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".completed";
 }

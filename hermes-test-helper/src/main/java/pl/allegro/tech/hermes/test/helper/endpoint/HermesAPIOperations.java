@@ -72,6 +72,11 @@ public class HermesAPIOperations {
         createSubscription(group, topic, subscription, endpoint);
     }
 
+    public void buildSubscription(TopicName topic, Subscription subscription) {
+        buildTopic(topic.getGroupName(), topic.getName());
+        createSubscription(topic.getGroupName(), topic.getName(), subscription);
+    }
+
     public Response suspendSubscription(String group, String topic, String subscription) {
         return endpoints.subscription().updateState(group + "." + topic, subscription, Subscription.State.SUSPENDED);
     }

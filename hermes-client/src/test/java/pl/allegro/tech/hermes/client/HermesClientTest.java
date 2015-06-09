@@ -8,6 +8,7 @@ import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
@@ -18,9 +19,9 @@ import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 public class HermesClientTest {
 
     private static final String HERMES_URI = "http://localhost:9999";
-    
+
     private static final String TOPIC = "my.group.topicName";
-    
+
     private static final String CONTENT = "{}";
 
     @Test
@@ -39,6 +40,8 @@ public class HermesClientTest {
         // then
         assertThat(response.wasPublished()).isTrue();
         assertThat(response.wasAccepted()).isTrue();
+        assertThat(response.isSuccess()).isTrue();
+        assertThat(response.isFailure()).isFalse();
         assertThat(response.getHttpStatus()).isEqualTo(status);
     }
 
@@ -54,6 +57,7 @@ public class HermesClientTest {
         // then
         assertThat(response.wasPublished()).isFalse();
         assertThat(response.wasAccepted()).isTrue();
+        assertThat(response.isSuccess()).isTrue();
         assertThat(response.getHttpStatus()).isEqualTo(202);
     }
 
@@ -62,15 +66,17 @@ public class HermesClientTest {
         asList(203, 204, 400, 401, 404, 500).forEach(
             // given
             status -> {
-            HermesClient client = hermesClient((uri, msg) -> completedFuture(() -> status)).withURI(create(HERMES_URI)).build();
+                HermesClient client = hermesClient((uri, msg) -> completedFuture(() -> status)).withURI(create(HERMES_URI)).build();
 
-            // when
-            HermesResponse response = client.publish(TOPIC, CONTENT).join();
+                // when
+                HermesResponse response = client.publish(TOPIC, CONTENT).join();
 
-            // then
-            assertThat(response.wasPublished()).isFalse();
-            assertThat(response.wasAccepted()).isFalse();
-        });
+                // then
+                assertThat(response.wasPublished()).isFalse();
+                assertThat(response.wasAccepted()).isFalse();
+                assertThat(response.isSuccess()).isFalse();
+                assertThat(response.isFailure()).isTrue();
+            });
     }
 
     @Test
@@ -106,19 +112,35 @@ public class HermesClientTest {
     }
 
     @Test
-    public void shouldRetryOnFailure() {
+     public void shouldRetryOnHttpFailure() {
         asList(408, 500, 501, 502, 503, 504, 505).forEach(
             status -> {
-            // given
-            final CountDownLatch latch = new CountDownLatch(5);
-            HermesClient client = hermesClient(getCountDownSender(latch, status)).withRetries(5).build();
+                // given
+                final CountDownLatch latch = new CountDownLatch(5);
+                HermesClient client = hermesClient(getCountDownSender(latch, status)).withRetries(5).build();
 
-            // when
-            client.publish(TOPIC, CONTENT).join();
+                // when
+                client.publish(TOPIC, CONTENT).join();
 
-            // then
-            assertThat(latch.getCount()).isEqualTo(0);
-        });
+                // then
+                assertThat(latch.getCount()).isEqualTo(0);
+            });
+    }
+
+    @Test
+    public void shouldRetryOnSenderException() {
+        IntStream.range(0, 10).forEach(
+            attempt -> {
+                // given
+                final CountDownLatch latch = new CountDownLatch(5);
+                HermesClient client = hermesClient(getExceptionallyFailingCountDownSender(latch)).withRetries(5).build();
+
+                // when
+                client.publish(TOPIC, CONTENT).join();
+
+                // then
+                assertThat(latch.getCount()).isEqualTo(0);
+            });
     }
 
     @Test
@@ -148,15 +170,24 @@ public class HermesClientTest {
         assertThat(latch.getCount()).isEqualTo(2);
     }
 
-    private HermesSender getCountDownSender(CountDownLatch latch, Supplier<Integer> status) {
+    private HermesSender getExceptionallyFailingCountDownSender(CountDownLatch latch) {
         return (uri, msg) -> {
             latch.countDown();
-            return completedFuture(status::get);
+            CompletableFuture<HermesResponse> future = new CompletableFuture<>();
+            future.completeExceptionally(new RuntimeException("Sending failed"));
+            return future;
         };
     }
 
     private HermesSender getCountDownSender(CountDownLatch latch, int status) {
         return getCountDownSender(latch, () -> status);
+    }
+
+    private HermesSender getCountDownSender(CountDownLatch latch, Supplier<Integer> status) {
+        return (uri, msg) -> {
+            latch.countDown();
+            return completedFuture(status::get);
+        };
     }
 
     private void silence(Runnable runnable) {

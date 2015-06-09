@@ -53,7 +53,18 @@ public class TopicsEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "List topics from group", response = List.class, httpMethod = HttpMethod.GET)
-    public List<String> list(@DefaultValue("") @QueryParam("groupName") String groupName) {
+    public List<String> list(
+            @DefaultValue("") @QueryParam("groupName") String groupName,
+            @DefaultValue("false") @QueryParam("tracked") boolean tracked) {
+
+        return tracked? listTracked(groupName) : listNames(groupName);
+    }
+
+    public List<String> listTracked(String groupName) {
+        return isNullOrEmpty(groupName) ? topicService.listTrackedTopicNames() : topicService.listTrackedTopicNames(groupName);
+    }
+
+    public List<String> listNames(String groupName) {
         return isNullOrEmpty(groupName) ? topicService.listQualifiedTopicNames() : topicService.listQualifiedTopicNames(groupName);
     }
 
