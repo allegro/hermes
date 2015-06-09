@@ -16,7 +16,9 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.message.tracker.consumers.LogRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -99,6 +101,7 @@ public class HermesConsumers {
         private final HooksHandler hooksHandler = new HooksHandler();
         private final MessageSenderProviders messageSendersProviders = new MessageSenderProviders();
         private final MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers = new MultiMap<>();
+        private final List<LogRepository> logRepositories = new ArrayList<>();
 
         private final List<Binder> binders = Lists.newArrayList(
                 new CommonBinder(),
@@ -120,6 +123,11 @@ public class HermesConsumers {
             return this;
         }
 
+        public HermesConsumers.Builder withLogRepository(LogRepository logRepository) {
+            logRepositories.add(logRepository);
+            return this;
+        }
+
         public <T> Builder withBinding(T instance, Class<T> clazz) {
             return withBinding(instance, clazz, clazz.getName());
         }
@@ -136,6 +144,13 @@ public class HermesConsumers {
         }
 
         public HermesConsumers build() {
+            binders.add(new AbstractBinder() {
+                @Override
+                protected void configure() {
+
+                }
+            });
+
             return new HermesConsumers(hooksHandler, binders, messageSenderProvidersSuppliers);
         }
 

@@ -5,6 +5,7 @@ plugins {
 dependencies {
     compile project(':hermes-api')
     compile project(':hermes-common')
+    compile project(':hermes-tracker')
 
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.2.0.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-jersey', version: '1.2.0.RELEASE'

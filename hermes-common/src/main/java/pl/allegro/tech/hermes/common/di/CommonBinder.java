@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.common.di;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.DB;
 import com.yammer.metrics.core.HealthCheckRegistry;
 import org.apache.curator.framework.CuratorFramework;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -26,7 +25,6 @@ import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
-import pl.allegro.tech.hermes.common.message.tracker.MongoDbFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.PathsCompiler;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
@@ -69,7 +67,6 @@ public class CommonBinder extends AbstractBinder {
 
         bind(SystemClock.class).to(Clock.class).in(Singleton.class);
 
-        bindFactory(MongoDbFactory.class).in(Singleton.class).to(DB.class);
         bindFactory(MetricRegistryFactory.class).in(Singleton.class).to(MetricRegistry.class);
         bindFactory(ZookeeperPathsFactory.class).in(Singleton.class).to(ZookeeperPaths.class);
         bindFactory(GroupRepositoryFactory.class).in(Singleton.class).to(GroupRepository.class);
