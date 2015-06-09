@@ -11,8 +11,10 @@ import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.time.TimeFormatter;
 
 import javax.annotation.security.RolesAllowed;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -38,17 +40,20 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 public class SubscriptionsEndpoint {
 
     private final SubscriptionService subscriptionService;
-
     private final ApiPreconditions preconditions;
     private final MultiDCAwareService multiDCAwareService;
+    private final TimeFormatter timeFormatter;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
                                  ApiPreconditions preconditions,
-                                 MultiDCAwareService multiDCAwareService) {
+                                 MultiDCAwareService multiDCAwareService,
+                                 TimeFormatter timeFormatter) {
+
         this.subscriptionService = subscriptionService;
         this.preconditions = preconditions;
         this.multiDCAwareService = multiDCAwareService;
+        this.timeFormatter = timeFormatter;
     }
 
     @GET
@@ -171,8 +176,13 @@ public class SubscriptionsEndpoint {
     @ApiOperation(value = "Update subscription offset", httpMethod = HttpMethod.PUT)
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,
-                               Long timestamp) {
-        multiDCAwareService.moveOffset(TopicName.fromQualifiedName(qualifiedTopicName), subscriptionName, timestamp);
+                               @NotNull String formattedTime) {
+
+        multiDCAwareService.moveOffset(
+            TopicName.fromQualifiedName(qualifiedTopicName),
+            subscriptionName,
+            timeFormatter.parse(formattedTime));
+
         return responseStatus(OK);
     }
 
