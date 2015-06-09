@@ -4,12 +4,10 @@ import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.ErrorCode;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 
 import javax.ws.rs.core.Response;
-
 import java.util.List;
 
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
@@ -112,13 +110,13 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnTopicsThatAreCurrentlyTracked() {
         // given
-        TopicName topic = createTrackedTopic("tracked", "topic");
+        TopicName topic = createTrackedTopic("groupWithTrackedTopic", "topic");
 
         // when
         List<String> tracked = management.topic().list("", true);
 
         // then
-        assertThat(tracked).containsOnly(topic.qualifiedName());
+        assertThat(tracked).contains(topic.qualifiedName());
     }
 
     @Test
@@ -139,6 +137,9 @@ public class TopicManagementTest extends IntegrationTest {
         TopicName topic = new TopicName(group, name);
         operations.createGroup(topic.getGroupName());
         operations.createTopic(topic().withName(topic).withTrackingEnabled(true).build());
+
+        wait.untilTopicIsCreated(group, name);
+
         return topic;
     }
 }
