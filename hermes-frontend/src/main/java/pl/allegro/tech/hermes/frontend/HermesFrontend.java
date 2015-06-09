@@ -10,13 +10,16 @@ import pl.allegro.tech.hermes.common.di.CommonBinder;
 import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.frontend.di.FrontendBinder;
+import pl.allegro.tech.hermes.frontend.di.TrackersBinder;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerAcknowledgeListener;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
+import pl.allegro.tech.hermes.message.tracker.frontend.LogRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -98,9 +101,11 @@ public final class HermesFrontend {
         private final HooksHandler hooksHandler = new HooksHandler();
         private final List<Binder> binders = Lists.newArrayList(new CommonBinder(), new FrontendBinder());
         private final BrokerListeners listeners = new BrokerListeners();
+        private final List<LogRepository> logRepositories = new ArrayList<>();
 
         public HermesFrontend build() {
             withDefaultRankBinding(listeners, BrokerListeners.class);
+            binders.add(new TrackersBinder(logRepositories));
             return new HermesFrontend(hooksHandler, binders);
         }
 
@@ -121,6 +126,11 @@ public final class HermesFrontend {
 
         public Builder withBrokerAcknowledgeListener(BrokerAcknowledgeListener brokerAcknowledgeListener) {
             listeners.addAcknowledgeListener(brokerAcknowledgeListener);
+            return this;
+        }
+
+        public Builder withLogRepository(LogRepository logRepository) {
+            logRepositories.add(logRepository);
             return this;
         }
 

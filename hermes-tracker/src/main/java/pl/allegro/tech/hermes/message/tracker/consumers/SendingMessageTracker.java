@@ -5,8 +5,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import java.time.Clock;
 import java.util.List;
 
-
-public class SendingMessageTracker implements SendingTracker {
+class SendingMessageTracker implements SendingTracker {
     private final List<LogRepository> repositories;
     private final Clock clock;
 

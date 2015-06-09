@@ -54,7 +54,7 @@ public class MongoLogRepository extends AbstractLogRepository implements LogRepo
     private BasicDBObject subscriptionLog(MessageMetadata message, long timestamp, String topicName, String subscriptionName,
                                           SentMessageTraceStatus status) {
         return new BasicDBObject()
-                .append(MESSAGE_ID, message.getId().get())
+                .append(MESSAGE_ID, message.getId())
                 .append(CREATED_AT, clock.millis())
                 .append(TIMESTAMP, timestamp)
                 .append(PUBLISH_TIMESTAMP, message.getPublishingTimestamp().orElseGet(null))

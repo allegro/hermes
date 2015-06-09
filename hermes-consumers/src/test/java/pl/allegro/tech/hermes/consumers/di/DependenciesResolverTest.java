@@ -53,7 +53,7 @@ public class DependenciesResolverTest {
     @Test
     public void shouldGetAllServicesWithoutAnyExceptions() {
         ServiceLocator serviceLocator = ServiceLocatorUtilities.bind("serviceLocatorTestName1",
-                new CommonBinder(), new ConsumersBinder(), new TestBinder(configFactory)
+                new CommonBinder(), new ConsumersBinder(), new TestBinder(configFactory), new TrackersBinder()
         );
 
         serviceLocator.getAllServices(d -> true);

@@ -1,10 +1,11 @@
-package pl.allegro.tech.hermes.management.infrastructure.mongo
+package pl.allegro.tech.hermes.message.tracker.management
 
 import com.github.fakemongo.Fongo
 import com.mongodb.BasicDBObject
 import com.mongodb.DB
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus
-import pl.allegro.tech.hermes.common.message.tracker.LogSchemaAware
+import pl.allegro.tech.hermes.message.tracker.mongo.LogSchemaAware
+import pl.allegro.tech.hermes.message.tracker.mongo.management.MongoLogRepository
 import spock.lang.Specification
 
 class MongoLogRepositoryTest extends Specification implements LogSchemaAware {

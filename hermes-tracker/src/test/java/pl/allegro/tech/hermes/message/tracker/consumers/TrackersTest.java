@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.message.tracker;
+package pl.allegro.tech.hermes.message.tracker.consumers;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

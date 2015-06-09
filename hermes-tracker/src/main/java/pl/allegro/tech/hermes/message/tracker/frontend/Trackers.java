@@ -2,12 +2,19 @@ package pl.allegro.tech.hermes.message.tracker.frontend;
 
 import pl.allegro.tech.hermes.api.Topic;
 
+import java.time.Clock;
+import java.util.List;
+
 public class Trackers {
 
     private final PublishingMessageTracker publishingMessageTracker;
     private final NoOperationPublishingTracker noOperationPublishingTracker;
 
-    public Trackers(PublishingMessageTracker publishingMessageTracker, NoOperationPublishingTracker noOperationPublishingTracker) {
+    public Trackers(List<LogRepository> logRepositories) {
+        this(new PublishingMessageTracker(logRepositories, Clock.systemUTC()), new NoOperationPublishingTracker());
+    }
+
+    Trackers(PublishingMessageTracker publishingMessageTracker, NoOperationPublishingTracker noOperationPublishingTracker) {
         this.publishingMessageTracker = publishingMessageTracker;
         this.noOperationPublishingTracker = noOperationPublishingTracker;
     }
