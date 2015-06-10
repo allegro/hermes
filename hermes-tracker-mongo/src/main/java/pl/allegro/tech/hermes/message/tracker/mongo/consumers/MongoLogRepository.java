@@ -8,24 +8,17 @@ import pl.allegro.tech.hermes.message.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.message.tracker.mongo.AbstractLogRepository;
 import pl.allegro.tech.hermes.message.tracker.mongo.LogSchemaAware;
 
-import java.time.Clock;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FAILED;
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.SUCCESS;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
 import static pl.allegro.tech.hermes.message.tracker.mongo.MongoQueueCommitter.scheduleCommitAtFixedRate;
 
 public class MongoLogRepository extends AbstractLogRepository implements LogRepository, LogSchemaAware {
 
-    private final Clock clock;
     private final String clusterName;
 
-    public MongoLogRepository(final DB database, Clock clock, int queueSize, int commitInterval,
-                              String clusterName) {
+    public MongoLogRepository(final DB database, int queueSize, int commitInterval, String clusterName) {
         super(new LinkedBlockingQueue<>(queueSize));
-        this.clock = clock;
         this.clusterName = clusterName;
 
         scheduleCommitAtFixedRate(queue, COLLECTION_SENT_NAME, database, commitInterval);
@@ -55,7 +48,6 @@ public class MongoLogRepository extends AbstractLogRepository implements LogRepo
                                           SentMessageTraceStatus status) {
         return new BasicDBObject()
                 .append(MESSAGE_ID, message.getId())
-                .append(CREATED_AT, clock.millis())
                 .append(TIMESTAMP, timestamp)
                 .append(PUBLISH_TIMESTAMP, message.getPublishingTimestamp().orElseGet(null))
                 .append(TOPIC_NAME, topicName)

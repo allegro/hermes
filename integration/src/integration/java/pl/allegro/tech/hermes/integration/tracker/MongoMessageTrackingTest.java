@@ -50,7 +50,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
 
     @BeforeClass
     public void initialize() {
-        DB mongo = FongoFactory.getInstance().getDB("hermesMessages");
+        DB mongo = FongoFactory.hermesDB();
         this.publishedMessages = mongo.getCollection(LogSchemaAware.COLLECTION_PUBLISHED_NAME);
         this.sentMessages = mongo.getCollection(LogSchemaAware.COLLECTION_SENT_NAME);
     }

@@ -31,9 +31,6 @@ metrics:
   graphiteHttpUri: http://localhost:18089/
 
 spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/hermesMessages
   jersey:
     type: filter
 

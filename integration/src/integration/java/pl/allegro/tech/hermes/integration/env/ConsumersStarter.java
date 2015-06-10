@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.integration.env;
 
-import com.mongodb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
+import pl.allegro.tech.hermes.message.tracker.mongo.consumers.MongoLogRepository;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 
 public class ConsumersStarter implements Starter<HermesConsumers> {
@@ -19,8 +19,9 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
     public void start() throws Exception {
         LOGGER.info("Starting Hermes Consumers");
         consumers = HermesConsumers.consumers()
-            .withBinding(new FongoFactory().provide(), DB.class)
             .withBinding(configFactory, ConfigFactory.class)
+            .withLogRepository(
+                    new MongoLogRepository(FongoFactory.hermesDB(), 10, 1000, configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME)))
             .build();
 
         consumers.start();

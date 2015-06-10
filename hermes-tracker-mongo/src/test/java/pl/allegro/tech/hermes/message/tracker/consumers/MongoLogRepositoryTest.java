@@ -37,7 +37,7 @@ public class MongoLogRepositoryTest implements LogSchemaAware {
 
     @Before
     public void setUp() {
-        logRepository = new MongoLogRepository(database, clock, 1000, 100, "cluster");
+        logRepository = new MongoLogRepository(database, 1000, 100, "cluster");
     }
 
     @Test
