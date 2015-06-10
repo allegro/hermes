@@ -1,13 +1,11 @@
 package pl.allegro.tech.hermes.integration;
 
-import com.mongodb.DB;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
-import pl.allegro.tech.hermes.integration.env.FongoFactory;
 import pl.allegro.tech.hermes.integration.env.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 
@@ -26,7 +24,6 @@ public abstract class AbstractFrontendShutdownTest extends IntegrationTest {
         ConfigFactory configFactory = new MutableConfigFactory().overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
 
         hermesFrontend = HermesFrontend.frontend()
-                .withBinding(new FongoFactory().provide(), DB.class)
                 .withBinding(configFactory, ConfigFactory.class)
                 .build();
 

@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integration.env;
 
 import com.jayway.awaitility.Duration;
-import com.mongodb.DB;
 import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,6 @@ public class FrontendStarter implements Starter<HermesFrontend> {
     public void start() throws Exception {
         LOGGER.info("Starting Hermes Frontend");
         hermesFrontend = HermesFrontend.frontend()
-            .withBinding(new FongoFactory().provide(), DB.class)
             .withBinding(configFactory, ConfigFactory.class)
             .build();
 

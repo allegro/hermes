@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integration;
+package pl.allegro.tech.hermes.integration.tracker;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -16,12 +16,13 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
-import pl.allegro.tech.hermes.common.message.tracker.LogSchemaAware;
+import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.FongoFactory;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
+import pl.allegro.tech.hermes.integration.test.HermesAssertions;
+import pl.allegro.tech.hermes.message.tracker.mongo.LogSchemaAware;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
-import pl.allegro.tech.hermes.integration.test.HermesAssertions;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -37,7 +38,7 @@ import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscription
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 
-public class MessageTrackingTest extends IntegrationTest {
+public class MongoMessageTrackingTest extends IntegrationTest {
 
     public static final String INVALID_ENDPOINT_URL = "http://localhost:60000";
     public static final TestMessage MESSAGE = TestMessage.of("hello", "world");
