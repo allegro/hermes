@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
@@ -54,24 +55,47 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
 
         operations.buildSubscription(topicName, subscription, HTTP_ENDPOINT_URL);
         wait.untilSubscriptionIsCreated(topicName, subscription);
-        remoteService.expectMessages(simpleMessages(6));
 
         sendMessagesOnTopic(topicName.qualifiedName(), 4);
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
         String dateTime = dateFormat.format(new Date());
-        Thread.sleep(1000);
         sendMessagesOnTopic(topicName.qualifiedName(), 2);
-        remoteService.waitUntilReceived();
         wait.untilConsumerCommitsOffset();
 
         // when
         remoteService.expectMessages(simpleMessages(2));
-        Response response = endpoints.subscription().retransmit(topicName.qualifiedName(), subscription, dateTime);
+        Response response = endpoints.subscription().retransmit(topicName.qualifiedName(), subscription, false, dateTime);
         wait.untilSubscriptionEndsReiteration(topicName, subscription);
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);
         remoteService.waitUntilReceived();
+    }
+
+    @Test
+    public void shouldMoveOffsetInDryRunMode() throws InterruptedException {
+        // given
+        TopicName topicName = new TopicName("resetOffsetGroup", "topicDryRun");
+        String subscription = "subscription";
+
+        operations.buildSubscription(topicName, subscription, HTTP_ENDPOINT_URL);
+        wait.untilSubscriptionIsCreated(topicName, subscription);
+
+        sendMessagesOnTopic(topicName.qualifiedName(), 4);
+        Thread.sleep(1000); //wait 1s because our date time format has seconds precision
+        String dateTime = dateFormat.format(new Date());
+        sendMessagesOnTopic(topicName.qualifiedName(), 2);
+        wait.untilConsumerCommitsOffset();
+
+        // when
+        Response response = endpoints.subscription().retransmit(topicName.qualifiedName(), subscription, true, dateTime);
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+        MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
+
+        assertThat(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME).get(0).getOffset()).isEqualTo(2);
+        remoteService.makeSureNoneReceived();
     }
 
     private void sendMessagesOnTopic(String qualifiedName, int n) {
@@ -80,6 +104,7 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
             publisher.publish(qualifiedName, message.body());
         }
         remoteService.waitUntilReceived();
+        remoteService.reset();
     }
 }
 
