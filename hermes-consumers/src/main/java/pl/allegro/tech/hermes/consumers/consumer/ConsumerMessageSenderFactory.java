@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorService;
@@ -51,8 +52,9 @@ public class ConsumerMessageSenderFactory {
         this.clock = clock;
 
 
-        rateLimiterReportingExecutor = createRateLimiterReportingExecutor(configFactory.getIntProperty(
-                CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE));
+        rateLimiterReportingExecutor = createRateLimiterReportingExecutor(
+                configFactory.getIntProperty(CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE),
+                configFactory.getBooleanProperty(Configs.CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_MONITORING));
     }
 
     public ConsumerMessageSender create(Subscription subscription, ConsumerRateLimiter consumerRateLimiter,
@@ -74,9 +76,13 @@ public class ConsumerMessageSenderFactory {
                 futureAsyncTimeout);
     }
 
-    private ExecutorService createRateLimiterReportingExecutor(int size) {
-        ExecutorService wrapped = Executors.newFixedThreadPool(size);
-        return new InstrumentedExecutorService(wrapped, hermesMetrics, "rate-limiter-reporter");
+    private ExecutorService createRateLimiterReportingExecutor(int size, boolean monitoringEnabled) {
+        ExecutorService executor = Executors.newFixedThreadPool(size);
+        if (monitoringEnabled) {
+            return new InstrumentedExecutorService(executor, hermesMetrics, "rate-limiter-reporter");
+        } else {
+            return executor;
+        }
     }
 
 }

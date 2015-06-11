@@ -36,8 +36,12 @@ public class HttpClientFactory implements Factory<HttpClient> {
     }
 
     private ExecutorService getExecutor() {
-        ExecutorService wrapped = Executors.newFixedThreadPool(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE));
-        return new InstrumentedExecutorService(wrapped, hermesMetrics, "jetty-http-client");
+        ExecutorService executor = Executors.newFixedThreadPool(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE));
+        if (configFactory.getBooleanProperty(CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING)) {
+            return new InstrumentedExecutorService(executor, hermesMetrics, "jetty-http-client");
+        } else {
+            return executor;
+        }
     }
 
 
