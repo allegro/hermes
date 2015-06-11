@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorService;
+import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
 
 import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE;
@@ -41,7 +40,7 @@ public class ConsumerMessageSenderFactory {
     @Inject
     public ConsumerMessageSenderFactory(ConfigFactory configFactory, HermesMetrics hermesMetrics, MessageSenderFactory messageSenderFactory,
                                         Trackers trackers, FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
-                                        UndeliveredMessageLog undeliveredMessageLog, Clock clock) {
+                                        UndeliveredMessageLog undeliveredMessageLog, Clock clock, InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory) {
 
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
@@ -50,10 +49,7 @@ public class ConsumerMessageSenderFactory {
         this.futureAsyncTimeout = futureAsyncTimeout;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.clock = clock;
-
-
-        rateLimiterReportingExecutor = createRateLimiterReportingExecutor(
-                configFactory.getIntProperty(CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE),
+        this.rateLimiterReportingExecutor = instrumentedExecutorServiceFactory.getExecutorService("rate-limiter-reporter", configFactory.getIntProperty(CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE),
                 configFactory.getBooleanProperty(Configs.CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_MONITORING));
     }
 
@@ -74,15 +70,6 @@ public class ConsumerMessageSenderFactory {
                 hermesMetrics,
                 configFactory.getIntProperty(CONSUMER_SENDER_ASYNC_TIMEOUT_MS),
                 futureAsyncTimeout);
-    }
-
-    private ExecutorService createRateLimiterReportingExecutor(int size, boolean monitoringEnabled) {
-        ExecutorService executor = Executors.newFixedThreadPool(size);
-        if (monitoringEnabled) {
-            return new InstrumentedExecutorService(executor, hermesMetrics, "rate-limiter-reporter");
-        } else {
-            return executor;
-        }
     }
 
 }
