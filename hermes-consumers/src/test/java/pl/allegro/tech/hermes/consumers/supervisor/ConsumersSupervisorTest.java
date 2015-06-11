@@ -16,11 +16,10 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
-import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
-import pl.allegro.tech.hermes.consumers.consumer.offset.AsyncOffsetMonitor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
+import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
@@ -35,16 +34,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
-import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
-import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
-import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
+import static pl.allegro.tech.hermes.api.Subscription.State.*;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -56,7 +48,7 @@ public class ConsumersSupervisorTest {
 
     @Mock
     private SubscriptionRepository subscriptionRepository;
-    
+
     @Mock
     private SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
 
@@ -74,9 +66,6 @@ public class ConsumersSupervisorTest {
 
     @Mock
     private MessageCommitter messageCommitter;
-
-    @Mock
-    private AsyncOffsetMonitor asyncOffsetMonitor;
 
     @Mock
     private ZookeeperAdminCache adminCache;
@@ -102,7 +91,7 @@ public class ConsumersSupervisorTest {
 
         consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository,
                 subscriptionOffsetChangeIndicator, executorService, consumerFactory,
-                messageCommitter, brokerStorage, subscriptionsCache, hermesMetrics, asyncOffsetMonitor,
+                messageCommitter, brokerStorage, subscriptionsCache, hermesMetrics,
                 adminCache, undeliveredMessageLogPersister);
     }
 
