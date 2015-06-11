@@ -15,7 +15,7 @@ import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
-import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
+import pl.allegro.tech.hermes.message.tracker.consumers.Trackers;
 
 import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;

@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.metric.PathContext;
-import pl.allegro.tech.hermes.common.metric.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.PathContext;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.MetricsDeltaCalculator;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
@@ -16,11 +16,11 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 
 import javax.inject.Inject;
 
-import static pl.allegro.tech.hermes.common.metric.PathContext.pathContext;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.GROUP;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.HOSTNAME;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.SUBSCRIPTION;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.TOPIC;
+import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.HOSTNAME;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 
 public class ZookeeperCounterStorage implements CounterStorage {
 

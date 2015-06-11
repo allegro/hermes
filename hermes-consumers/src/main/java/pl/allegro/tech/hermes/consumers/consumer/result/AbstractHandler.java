@@ -28,5 +28,4 @@ public abstract class AbstractHandler {
     private long calculateTimeLagInSeconds(Long messageTimestamp) {
         return new Duration(messageTimestamp, System.currentTimeMillis()).getStandardSeconds();
     }
-
 }

@@ -21,21 +21,14 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SplitMessagesReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
+import pl.allegro.tech.hermes.message.tracker.consumers.Trackers;
 
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 
 @RunWith(MockitoJUnitRunner.class)

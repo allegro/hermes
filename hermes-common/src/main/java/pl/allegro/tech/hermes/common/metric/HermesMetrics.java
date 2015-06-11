@@ -17,6 +17,8 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
+import pl.allegro.tech.hermes.metrics.PathContext;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import javax.inject.Inject;
 import java.net.InetSocketAddress;
@@ -26,7 +28,7 @@ import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_EVERYONE_CONF
 import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_LEADER_CONFIRMS_BUFFER_TOTAL_BYTES;
-import static pl.allegro.tech.hermes.common.metric.PathContext.pathContext;
+import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 public class HermesMetrics {
 
