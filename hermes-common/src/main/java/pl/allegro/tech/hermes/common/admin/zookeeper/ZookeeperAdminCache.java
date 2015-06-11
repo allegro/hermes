@@ -37,6 +37,7 @@ public class ZookeeperAdminCache extends PathChildrenCache implements PathChildr
                     for (AdminOperationsCallback adminCallback : adminCallbacks) {
                         adminCallback.onRetransmissionStarts(subscriptionName);
                     }
+                    client.delete().forPath(event.getData().getPath());
                 }
                 break;
             default:
