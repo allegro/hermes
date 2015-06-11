@@ -9,5 +9,6 @@ include 'hermes-common',
         'integration',
         'hermes-test-helper',
         'hermes-tracker',
-        'hermes-tracker-mongo'
+        'hermes-tracker-mongo',
+        'hermes-metrics'
 

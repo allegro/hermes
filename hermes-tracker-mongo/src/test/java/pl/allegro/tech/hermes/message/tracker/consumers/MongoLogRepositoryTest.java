@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.message.tracker.consumers;
 
+import com.codahale.metrics.MetricRegistry;
 import com.github.fakemongo.Fongo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -14,6 +15,7 @@ import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.message.tracker.mongo.LogSchemaAware;
 import pl.allegro.tech.hermes.message.tracker.mongo.consumers.MongoLogRepository;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import java.time.Clock;
 import java.util.List;
@@ -23,7 +25,9 @@ import java.util.stream.StreamSupport;
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_SECOND;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.SUCCESS;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MongoLogRepositoryTest implements LogSchemaAware {
@@ -37,7 +41,7 @@ public class MongoLogRepositoryTest implements LogSchemaAware {
 
     @Before
     public void setUp() {
-        logRepository = new MongoLogRepository(database, 1000, 100, "cluster");
+        logRepository = new MongoLogRepository(database, 1000, 100, "cluster", new MetricRegistry(), new PathsCompiler("localhost"));
     }
 
     @Test

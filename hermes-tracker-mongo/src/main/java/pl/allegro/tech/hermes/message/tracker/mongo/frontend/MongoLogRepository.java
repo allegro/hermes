@@ -1,26 +1,34 @@
 package pl.allegro.tech.hermes.message.tracker.mongo.frontend;
 
+import com.codahale.metrics.MetricRegistry;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.message.tracker.frontend.LogRepository;
 import pl.allegro.tech.hermes.message.tracker.mongo.AbstractLogRepository;
 import pl.allegro.tech.hermes.message.tracker.mongo.LogSchemaAware;
+import pl.allegro.tech.hermes.message.tracker.mongo.metrics.Gauges;
+import pl.allegro.tech.hermes.message.tracker.mongo.metrics.Timers;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
-import java.util.concurrent.LinkedBlockingQueue;
-
-import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.*;
-import static pl.allegro.tech.hermes.message.tracker.mongo.MongoQueueCommitter.scheduleCommitAtFixedRate;
+import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
+import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.INFLIGHT;
+import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
 
 public class MongoLogRepository extends AbstractLogRepository implements LogRepository, LogSchemaAware {
 
-    private String clusterName;
+    public MongoLogRepository(DB database,
+                              int queueSize,
+                              int commitIntervalMs,
+                              String clusterName,
+                              MetricRegistry metricRegistry,
+                              PathsCompiler pathsCompiler) {
+        super(database, queueSize, commitIntervalMs, clusterName, metricRegistry, pathsCompiler);
 
-    public MongoLogRepository(final DB database, int queueSize, int commitIntervalMs, String clusterName) {
-        super(new LinkedBlockingQueue<>(queueSize));
-        this.clusterName = clusterName;
+        registerQueueSizeGauge(Gauges.PRODUCER_TRACKER_QUEUE_SIZE);
+        registerRemainingCapacityGauge(Gauges.PRODUCER_TRACKER_REMAINING_CAPACITY);
 
-        scheduleCommitAtFixedRate(queue, COLLECTION_PUBLISHED_NAME, database, commitIntervalMs);
+        scheduleCommitAtFixedRate(COLLECTION_PUBLISHED_NAME, Timers.PRODUCER_TRACKER_COMMIT_LATENCY);
     }
 
     @Override

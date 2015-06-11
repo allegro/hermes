@@ -1,6 +1,7 @@
 dependencies {
     compile project(':hermes-common')
     compile project(':hermes-tracker')
+    compile project(':hermes-metrics')
 
     compile group: 'org.glassfish.jersey.connectors', name: 'jersey-jetty-connector', version: versions.jersey
 

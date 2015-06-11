@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration.env;
 
+import com.codahale.metrics.MetricRegistry;
 import com.jayway.awaitility.Duration;
 import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.message.tracker.mongo.frontend.MongoLogRepository;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 
 import java.util.concurrent.ExecutionException;
@@ -34,8 +36,12 @@ public class FrontendStarter implements Starter<HermesFrontend> {
         LOGGER.info("Starting Hermes Frontend");
         hermesFrontend = HermesFrontend.frontend()
             .withBinding(configFactory, ConfigFactory.class)
-            .withLogRepository(
-                    new MongoLogRepository(FongoFactory.hermesDB(), 10, 1000, configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME)))
+            .withLogRepository(serviceLocator -> new MongoLogRepository(FongoFactory.hermesDB(),
+                    10,
+                    1000,
+                    configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
+                    serviceLocator.getService(MetricRegistry.class),
+                    serviceLocator.getService(PathsCompiler.class)))
             .build();
 
         hermesFrontend.start();

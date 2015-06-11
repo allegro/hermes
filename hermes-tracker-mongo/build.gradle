@@ -1,7 +1,8 @@
 dependencies {
     compile project(':hermes-tracker')
-    compile 'org.slf4j:slf4j-api:1.7.12'
+    compile project(':hermes-metrics')
 
+    compile 'org.slf4j:slf4j-api:1.7.12'
     compile group: 'org.mongodb', name: 'mongo-java-driver', version: '2.12.4'
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
