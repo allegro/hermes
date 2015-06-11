@@ -11,6 +11,7 @@ public class MessageConverter {
                 message.getOffset(),
                 message.getPartition(),
                 message.getTopic(),
+                subscription.getName(),
                 message.getPublishingTimestamp(),
                 message.getReadingTimestamp());
     }
