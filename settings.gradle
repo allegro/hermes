@@ -1,6 +1,6 @@
 rootProject.name='hermes'
 
-include 'hermes-common',
+include 'hermes-common', 
         'hermes-frontend',
         'hermes-management',
         'hermes-consumers',
@@ -10,5 +10,6 @@ include 'hermes-common',
         'hermes-test-helper',
         'hermes-tracker',
         'hermes-tracker-mongo',
+        'hermes-metrics',
         'hermes-tracker-elasticsearch'
 

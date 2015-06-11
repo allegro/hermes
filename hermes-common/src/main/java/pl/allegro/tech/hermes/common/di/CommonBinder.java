@@ -26,7 +26,7 @@ import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.time.Clock;

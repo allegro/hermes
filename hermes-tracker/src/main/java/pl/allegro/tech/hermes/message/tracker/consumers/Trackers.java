@@ -23,4 +23,7 @@ public class Trackers {
         return subscription.isTrackingEnabled() ? sendingMessageTracker : noOperationDeliveryTracker;
     }
 
+    public void add(LogRepository logRepository) {
+        sendingMessageTracker.add(logRepository);
+    }
 }

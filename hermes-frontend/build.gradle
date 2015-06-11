@@ -2,6 +2,7 @@
 dependencies {
     compile project(':hermes-common')
     compile project(':hermes-tracker')
+    compile project(':hermes-metrics')
 
     compile (group: 'com.github.fge', name: 'json-schema-validator', version: '2.2.6') {
         exclude group: 'net.sf.jopt-simple'

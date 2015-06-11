@@ -1,15 +1,11 @@
 package pl.allegro.tech.hermes.common.metric
 
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Shared
 import spock.lang.Specification
 
-import static PathsCompiler.GROUP
-import static PathsCompiler.HOSTNAME
-import static PathsCompiler.HTTP_CODE
-import static PathsCompiler.PARTITION
-import static PathsCompiler.SUBSCRIPTION
-import static PathsCompiler.TOPIC
-import static pl.allegro.tech.hermes.common.metric.PathContext.pathContext
+import static pl.allegro.tech.hermes.metrics.PathContext.pathContext
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.*
 
 class PathsCompilerTest extends Specification {
 

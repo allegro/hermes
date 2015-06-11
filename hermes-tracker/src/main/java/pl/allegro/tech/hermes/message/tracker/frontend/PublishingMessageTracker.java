@@ -29,4 +29,8 @@ public class PublishingMessageTracker implements PublishingTracker {
     public void logError(final String messageId, final TopicName topicName, final String reason) {
         repositories.forEach(r -> r.logError(messageId, clock.millis(), topicName.qualifiedName(), reason));
     }
+
+    public void add(LogRepository logRepository) {
+        repositories.add(logRepository);
+    }
 }

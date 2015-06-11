@@ -1,10 +1,10 @@
-package pl.allegro.tech.hermes.common.metric;
+package pl.allegro.tech.hermes.metrics;
 
 import org.apache.commons.lang.text.StrBuilder;
 
-import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
-
 public class PathsCompiler {
+
+    public static final String REPLACEMENT_CHAR = "_";
 
     public static final String HOSTNAME = "$hostname";
     public static final String GROUP = "$group";
@@ -32,10 +32,14 @@ public class PathsCompiler {
         context.getSubscription().ifPresent(s -> pathBuilder.replaceAll(SUBSCRIPTION, s));
         context.getPartition().ifPresent(p -> pathBuilder.replaceAll(PARTITION, p.toString()));
         context.getHttpCode().ifPresent(c -> pathBuilder.replaceAll(HTTP_CODE, c.toString()));
-        context.getExecutorName().ifPresent(c -> pathBuilder.replaceAll(EXECUTOR_NAME, c.toString()));
+        context.getExecutorName().ifPresent(c -> pathBuilder.replaceAll(EXECUTOR_NAME, c));
 
         pathBuilder.replaceAll(HOSTNAME, hostname);
 
         return pathBuilder.toString();
+    }
+
+    private String escapeDots(String value) {
+        return value.replaceAll("\\.", REPLACEMENT_CHAR);
     }
 }

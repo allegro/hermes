@@ -1,27 +1,33 @@
 package pl.allegro.tech.hermes.message.tracker.mongo.consumers;
 
+import com.codahale.metrics.MetricRegistry;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.message.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.message.tracker.consumers.MessageMetadata;
-import pl.allegro.tech.hermes.message.tracker.mongo.BatchingLogRepository;
+import pl.allegro.tech.hermes.message.tracker.mongo.AbstractLogRepository;
 import pl.allegro.tech.hermes.message.tracker.mongo.LogSchemaAware;
-
-import java.util.concurrent.LinkedBlockingQueue;
+import pl.allegro.tech.hermes.message.tracker.mongo.metrics.Gauges;
+import pl.allegro.tech.hermes.message.tracker.mongo.metrics.Timers;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
-import static pl.allegro.tech.hermes.message.tracker.mongo.MongoQueueCommitter.scheduleCommitAtFixedRate;
 
-public class MongoLogRepository extends BatchingLogRepository implements LogRepository, LogSchemaAware {
+public class MongoLogRepository extends AbstractLogRepository implements LogRepository, LogSchemaAware {
 
-    private final String clusterName;
+    public MongoLogRepository(DB database,
+                              int queueSize,
+                              int commitInterval,
+                              String clusterName,
+                              MetricRegistry metricRegistry,
+                              PathsCompiler pathsCompiler) {
+        super(database, queueSize, commitInterval, clusterName, metricRegistry, pathsCompiler);
 
-    public MongoLogRepository(final DB database, int queueSize, int commitInterval, String clusterName) {
-        super(new LinkedBlockingQueue<>(queueSize));
-        this.clusterName = clusterName;
+        registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_QUEUE_SIZE);
+        registerRemainingCapacityGauge(Gauges.CONSUMER_TRACKER_REMAINING_CAPACITY);
 
-        scheduleCommitAtFixedRate(queue, COLLECTION_SENT_NAME, database, commitInterval);
+        scheduleCommitAtFixedRate(COLLECTION_SENT_NAME, Timers.CONSUMER_TRACKER_COMMIT_LATENCY);
     }
 
     @Override

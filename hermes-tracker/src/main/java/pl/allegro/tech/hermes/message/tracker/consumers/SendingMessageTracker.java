@@ -34,4 +34,8 @@ class SendingMessageTracker implements SendingTracker {
     public void logInflight(MessageMetadata message, Subscription subscription) {
         repositories.forEach(r -> r.logInflight(message, clock.millis(), subscription.getQualifiedTopicName(), subscription.getName()));
     }
+
+    void add(LogRepository logRepository) {
+        repositories.add(logRepository);
+    }
 }

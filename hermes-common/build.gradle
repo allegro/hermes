@@ -2,6 +2,7 @@ apply plugin: 'groovy'
 
 dependencies {
     compile project(':hermes-api')
+    compile project(':hermes-metrics')
 
     compile group: 'com.netflix.archaius', name: 'archaius-core', version: '0.6.0'
 

@@ -23,4 +23,7 @@ public class Trackers {
         return topic.isTrackingEnabled() ? publishingMessageTracker : noOperationPublishingTracker;
     }
 
+    public void add(LogRepository logRepository) {
+        publishingMessageTracker.add(logRepository);
+    }
 }
