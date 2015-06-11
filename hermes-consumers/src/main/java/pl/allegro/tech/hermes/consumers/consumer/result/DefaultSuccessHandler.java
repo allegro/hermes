@@ -24,7 +24,7 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
         offsetHelper.decrement(message.getPartition(), message.getOffset());
         updateMeters(subscription);
         updateMetrics(Counters.CONSUMER_DELIVERED, message, subscription);
-        trackers.get(subscription).logSent(toMessageMetadata(message), subscription);
+        trackers.get(subscription).logSent(toMessageMetadata(message, subscription));
     }
 
     private void updateMeters(Subscription subscription) {

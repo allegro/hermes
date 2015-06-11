@@ -31,33 +31,32 @@ public class MongoLogRepository extends AbstractLogRepository implements LogRepo
     }
 
     @Override
-    public void logSuccessful(MessageMetadata message, long timestamp, String topicName, String subscriptionName) {
-        queue.offer(subscriptionLog(message, timestamp, topicName, subscriptionName, SUCCESS));
+    public void logSuccessful(MessageMetadata message, long timestamp) {
+        queue.offer(subscriptionLog(message, timestamp, SUCCESS));
     }
 
     @Override
-    public void logFailed(MessageMetadata message, long timestamp, String topicName, String subscriptionName, String reason) {
-        queue.offer(subscriptionLog(message, timestamp, topicName, subscriptionName, FAILED).append(REASON, reason));
+    public void logFailed(MessageMetadata message, long timestamp, String reason) {
+        queue.offer(subscriptionLog(message, timestamp, FAILED).append(REASON, reason));
     }
 
     @Override
-    public void logDiscarded(MessageMetadata message, long timestamp, String topicName, String subscriptionName, String reason) {
-        queue.offer(subscriptionLog(message, timestamp, topicName, subscriptionName, DISCARDED).append(REASON, reason));
+    public void logDiscarded(MessageMetadata message, long timestamp, String reason) {
+        queue.offer(subscriptionLog(message, timestamp, DISCARDED).append(REASON, reason));
     }
 
     @Override
-    public void logInflight(MessageMetadata message, long timestamp, String topicName, String subscriptionName) {
-        queue.offer(subscriptionLog(message, timestamp, topicName, subscriptionName, INFLIGHT));
+    public void logInflight(MessageMetadata message, long timestamp) {
+        queue.offer(subscriptionLog(message, timestamp, INFLIGHT));
     }
 
-    private BasicDBObject subscriptionLog(MessageMetadata message, long timestamp, String topicName, String subscriptionName,
-                                          SentMessageTraceStatus status) {
+    private BasicDBObject subscriptionLog(MessageMetadata message, long timestamp, SentMessageTraceStatus status) {
         return new BasicDBObject()
                 .append(MESSAGE_ID, message.getId())
                 .append(TIMESTAMP, timestamp)
-                .append(PUBLISH_TIMESTAMP, message.getPublishingTimestamp().orElseGet(null))
-                .append(TOPIC_NAME, topicName)
-                .append(SUBSCRIPTION, subscriptionName)
+                .append(PUBLISH_TIMESTAMP, message.getPublishingTimestamp().orElse(null))
+                .append(TOPIC_NAME, message.getTopic())
+                .append(SUBSCRIPTION, message.getSubscription())
                 .append(PARTITION, message.getPartition())
                 .append(OFFSET, message.getOffset())
                 .append(STATUS, status.toString())

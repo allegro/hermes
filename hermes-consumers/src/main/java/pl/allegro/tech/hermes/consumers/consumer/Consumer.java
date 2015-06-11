@@ -87,7 +87,7 @@ public class Consumer implements Runnable {
             subscriptionOffsetCommitQueues.put(message);
 
             hermesMetrics.incrementInflightCounter(subscription);
-            trackers.get(subscription).logInflight(toMessageMetadata(message), subscription);
+            trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));
 
             sender.sendMessage(message);
         }

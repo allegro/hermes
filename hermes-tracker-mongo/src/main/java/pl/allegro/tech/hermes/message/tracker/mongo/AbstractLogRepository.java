@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public abstract class AbstractLogRepository {
+public  class AbstractLogRepository {
 
     protected final MetricRegistry metricRegistry;
     protected final PathsCompiler pathsCompiler;

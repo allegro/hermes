@@ -1,18 +1,17 @@
-package pl.allegro.tech.hermes.message.tracker.elasticsearch.frontend;
+package pl.allegro.tech.hermes.message.tracker.elasticsearch.consumers;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
+import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.message.tracker.elasticsearch.LogSchemaAware;
-import pl.allegro.tech.hermes.message.tracker.frontend.AbstractLogRepositoryTest;
-import pl.allegro.tech.hermes.message.tracker.frontend.LogRepository;
+import pl.allegro.tech.hermes.message.tracker.consumers.AbstractLogRepositoryTest;
+import pl.allegro.tech.hermes.message.tracker.consumers.LogRepository;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -37,8 +36,8 @@ public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest im
         elastic = NodeBuilder.nodeBuilder().local(true).settings(settings).build();
         elastic.start();
         client = elastic.client();
-        client.admin().indices().prepareCreate(PUBLISHED_INDEX).execute().actionGet();
-        client.admin().cluster().prepareHealth(PUBLISHED_INDEX).setWaitForActiveShards(1).execute().actionGet();
+        client.admin().indices().prepareCreate(SENT_INDEX).execute().actionGet();
+        client.admin().cluster().prepareHealth(SENT_INDEX).setWaitForActiveShards(1).execute().actionGet();
     }
 
     @AfterClass
@@ -47,39 +46,23 @@ public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest im
     }
 
     @Override
-    protected LogRepository createRepository() {
+    protected LogRepository createLogRepository() {
         return new ElasticsearchLogRepository(client, CLUSTER_NAME);
     }
 
     @Override
-    protected void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status, String reason) throws Exception {
-        awaitUntilMessageIsIndexed(
-                boolQuery()
-                        .should(matchQuery(TOPIC_NAME, topic))
-                        .should(matchQuery(MESSAGE_ID, id))
-                        .should(matchQuery(STATUS, status.toString()))
-                        .should(matchQuery(REASON, reason))
-                        .should(matchQuery(CLUSTER, CLUSTER_NAME)));
-    }
-
-    @Override
-    protected void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status) throws Exception {
-        awaitUntilMessageIsIndexed(
-                boolQuery()
-                        .should(matchQuery(TOPIC_NAME, topic))
-                        .should(matchQuery(MESSAGE_ID, id))
-                        .should(matchQuery(STATUS, status.toString()))
-                        .should(matchQuery(CLUSTER, CLUSTER_NAME)));
-    }
-
-    private void awaitUntilMessageIsIndexed(QueryBuilder query) {
+    protected void awaitUntilMessageIsPersisted(String topic, String subscription, String id, SentMessageTraceStatus status) throws Exception {
         await().atMost(FIVE_SECONDS).until(() -> {
-            SearchResponse response = client.prepareSearch(PUBLISHED_INDEX)
-                    .setTypes(PUBLISHED_TYPE)
-                    .setQuery(query)
+            SearchResponse response = client.prepareSearch(SENT_INDEX)
+                    .setTypes(SENT_TYPE)
+                    .setQuery(boolQuery()
+                        .should(matchQuery(TOPIC_NAME, topic))
+                        .should(matchQuery(SUBSCRIPTION, subscription))
+                        .should(matchQuery(MESSAGE_ID, id))
+                        .should(matchQuery(STATUS, status.toString()))
+                        .should(matchQuery(CLUSTER, CLUSTER_NAME)))
                     .execute().get();
             return response.getHits().getTotalHits() == 1;
         });
     }
-
 }

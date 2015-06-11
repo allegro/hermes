@@ -8,15 +8,17 @@ public class MessageMetadata {
     private final long offset;
     private final int partition;
     private final String topic;
+    private final String subscription;
     private final Optional<Long> publishingTimestamp;
     private final Optional<Long> readingTimestamp;
 
-    public MessageMetadata(String id, long offset, int partition, String topic, Optional<Long> publishingTimestamp,
-                           Optional<Long> readingTimestamp) {
+    public MessageMetadata(String id, long offset, int partition, String topic, String subscription,
+                           Optional<Long> publishingTimestamp, Optional<Long> readingTimestamp) {
         this.id = id;
         this.offset = offset;
         this.partition = partition;
         this.topic = topic;
+        this.subscription = subscription;
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
     }
@@ -35,6 +37,10 @@ public class MessageMetadata {
 
     public String getTopic() {
         return topic;
+    }
+
+    public String getSubscription() {
+        return subscription;
     }
 
     public Optional<Long> getPublishingTimestamp() {

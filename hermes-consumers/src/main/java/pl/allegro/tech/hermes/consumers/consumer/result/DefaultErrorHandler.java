@@ -49,7 +49,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
         undeliveredMessageLog.add(createUndeliveredMessage(subscription, new String(message.getData()), result.getFailure(), clock.getTime(),
                 message.getPartition(), message.getOffset(), cluster));
 
-        trackers.get(subscription).logDiscarded(toMessageMetadata(message), subscription, result.getRootCause());
+        trackers.get(subscription).logDiscarded(toMessageMetadata(message, subscription), subscription, result.getRootCause());
     }
 
 
@@ -64,6 +64,6 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     public void handleFailed(Message message, Subscription subscription, MessageSendingResult result) {
         hermesMetrics.meter(Meters.CONSUMER_FAILED_METER, subscription.getTopicName(), subscription.getName()).mark();
 
-        trackers.get(subscription).logFailed(toMessageMetadata(message), subscription, result.getRootCause());
+        trackers.get(subscription).logFailed(toMessageMetadata(message, subscription), subscription, result.getRootCause());
     }
 }
