@@ -7,15 +7,11 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.message.tracker.mongo.LogSchemaAware;
 import pl.allegro.tech.hermes.message.tracker.mongo.consumers.MongoLogRepository;
 
-import java.time.Clock;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -25,11 +21,7 @@ import static com.jayway.awaitility.Duration.ONE_SECOND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class MongoLogRepositoryTest implements LogSchemaAware {
-
-    @Mock
-    private Clock clock;
 
     private final DB database = new Fongo("trace").getDB("test");
     

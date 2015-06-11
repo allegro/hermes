@@ -1,11 +1,12 @@
-package pl.allegro.tech.hermes.message.tracker.mongo;
+package pl.allegro.tech.hermes.message.tracker.elasticsearch;
 
 public interface LogSchemaAware {
 
-    String COLLECTION_PUBLISHED_NAME = "published_messages";
-    String COLLECTION_SENT_NAME = "sent_messages";
+    String PUBLISHED_INDEX = "published_messages";
+    String PUBLISHED_TYPE = "published_message";
+    String SENT_INDEX = "sent_messages";
     String MESSAGE_ID = "messageId";
-    String TIMESTAMP = "timestamp";
+    String TIMESTAMP = "allegro_timestamp";
     String PUBLISH_TIMESTAMP = "publish_timestamp";
     String STATUS = "status";
     String TOPIC_NAME = "topicName";

@@ -1,14 +1,12 @@
 package pl.allegro.tech.hermes.message.tracker.mongo;
 
-import com.mongodb.DBObject;
-
 import java.util.concurrent.BlockingQueue;
 
-public abstract class AbstractLogRepository {
+public abstract class BatchingLogRepository<T> {
 
-    protected BlockingQueue<DBObject> queue;
+    protected BlockingQueue<T> queue;
 
-    public AbstractLogRepository(BlockingQueue<DBObject> queue) {
+    public BatchingLogRepository(BlockingQueue<T> queue) {
         this.queue = queue;
     }
 

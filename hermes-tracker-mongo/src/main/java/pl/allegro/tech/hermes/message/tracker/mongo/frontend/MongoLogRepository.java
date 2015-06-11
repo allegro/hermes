@@ -2,9 +2,10 @@ package pl.allegro.tech.hermes.message.tracker.mongo.frontend;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBObject;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.message.tracker.frontend.LogRepository;
-import pl.allegro.tech.hermes.message.tracker.mongo.AbstractLogRepository;
+import pl.allegro.tech.hermes.message.tracker.mongo.BatchingLogRepository;
 import pl.allegro.tech.hermes.message.tracker.mongo.LogSchemaAware;
 
 import java.util.concurrent.LinkedBlockingQueue;
@@ -12,7 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.*;
 import static pl.allegro.tech.hermes.message.tracker.mongo.MongoQueueCommitter.scheduleCommitAtFixedRate;
 
-public class MongoLogRepository extends AbstractLogRepository implements LogRepository, LogSchemaAware {
+public class MongoLogRepository extends BatchingLogRepository<DBObject> implements LogRepository, LogSchemaAware {
 
     private String clusterName;
 
