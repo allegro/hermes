@@ -6,12 +6,17 @@ class NormalModeOutputRateCalculator implements ModeOutputRateCalculator {
 
     private final double rateConvergenceFactor;
     private final double slowModeRate;
-    private final double failuresRatioThreshold;
+    private final double failuresSpeedupToleranceRatio;
+    private final double failuresNochangeToleranceRatio;
 
-    NormalModeOutputRateCalculator(double rateConvergenceFactor, double slowModeRate, double failuresRatioThreshold) {
+    NormalModeOutputRateCalculator(double rateConvergenceFactor, 
+                                   double slowModeRate,
+                                   double failuresSpeedupToleranceRatio,
+                                   double failuresNochangeToleranceRatio) {
         this.rateConvergenceFactor = rateConvergenceFactor;
         this.slowModeRate = slowModeRate;
-        this.failuresRatioThreshold = failuresRatioThreshold;
+        this.failuresSpeedupToleranceRatio = failuresSpeedupToleranceRatio;
+        this.failuresNochangeToleranceRatio = failuresNochangeToleranceRatio;
     }
 
     @Override
@@ -19,13 +24,13 @@ class NormalModeOutputRateCalculator implements ModeOutputRateCalculator {
         double calculatedRate = currentRate;
         OutputRateCalculator.Mode calculatedMode = OutputRateCalculator.Mode.NORMAL;
 
-        if (counters.noFailures() && currentRate < maximumOutputRate) {
+        if (!counters.failuresRatioExceeds(failuresSpeedupToleranceRatio) && currentRate < maximumOutputRate) {
             double rateAddOn = (maximumOutputRate - currentRate) * rateConvergenceFactor;
             calculatedRate = Math.min(maximumOutputRate, currentRate + rateAddOn);
         } else if (counters.majorityOfFailures()) {
             calculatedRate = slowModeRate;
             calculatedMode = OutputRateCalculator.Mode.SLOW;
-        } else if (counters.failuresRatioExceeds(failuresRatioThreshold)) {
+        } else if (counters.failuresRatioExceeds(failuresNochangeToleranceRatio)) {
             calculatedRate = Math.max(slowModeRate, currentRate * (1 - rateConvergenceFactor));
         }
 
