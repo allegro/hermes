@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
 import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
-import pl.allegro.tech.hermes.consumers.consumer.health.HealthCheckServer;
+import pl.allegro.tech.hermes.consumers.health.HealthCheckServer;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
@@ -28,7 +28,7 @@ public class HermesConsumers {
     private final HooksHandler hooksHandler;
     private final ConsumersSupervisor consumersSupervisor;
     private final HealthCheckServer healthCheckServer;
-    private MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
+    private final MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
     private final MessageSenderProviders messageSendersProviders;
     private final ServiceLocator serviceLocator;
 

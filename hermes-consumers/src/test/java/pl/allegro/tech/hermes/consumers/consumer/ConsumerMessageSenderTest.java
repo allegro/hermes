@@ -11,14 +11,12 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -318,6 +316,6 @@ public class ConsumerMessageSenderTest {
     }
 
     private Message messageWithTimestamp(long timestamp) {
-        return new Message(Optional.of("id"), 10, 0, "topic", "{\"username\":\"ala\"}".getBytes(), Optional.of(122424L), Optional.of(timestamp));
+        return new Message("id", 10, 0, "topic", "{\"username\":\"ala\"}".getBytes(), 122424L, timestamp);
     }
 }

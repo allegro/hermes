@@ -18,6 +18,8 @@ dependencies {
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: versions.jersey
 
+    compile group: 'org.apache.avro', name: 'avro', version: '1.7.7'
+
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
     compile group: 'com.google.guava', name: 'guava', version: versions.guava

@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.common.metric.Gauges;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.common.time.Clock;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import javax.inject.Inject;
 import java.util.concurrent.BlockingQueue;
@@ -75,10 +75,10 @@ public class MongoLogRepository implements LogRepository, LogSchemaAware {
     private BasicDBObject subscriptionLog(Message message, long timestamp, String topicName, String subscriptionName,
                                           SentMessageTraceStatus status) {
         return new BasicDBObject()
-                .append(MESSAGE_ID, message.getId().get())
+                .append(MESSAGE_ID, message.getId())
                 .append(CREATED_AT, clock.getDate())
                 .append(TIMESTAMP, timestamp)
-                .append(PUBLISH_TIMESTAMP, message.getPublishingTimestamp().orElseGet(null))
+                .append(PUBLISH_TIMESTAMP, message.getPublishingTimestamp())
                 .append(TOPIC_NAME, topicName)
                 .append(SUBSCRIPTION, subscriptionName)
                 .append(PARTITION, message.getPartition())

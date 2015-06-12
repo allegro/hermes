@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
-import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPoolConfig;
 import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
@@ -45,7 +45,7 @@ public class KafkaConfiguration {
     ObjectMapper mapper;
 
     @Autowired
-    MessageContentWrapper messageContentWrapper;
+    JsonMessageContentWrapper messageContentWrapper;
 
     @Autowired
     SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;

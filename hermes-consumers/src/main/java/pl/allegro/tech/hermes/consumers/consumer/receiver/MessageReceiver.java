@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver;
 
-import pl.allegro.tech.hermes.consumers.consumer.message.RawMessage;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 public interface MessageReceiver {
 
-    RawMessage next();
+    Message next();
     void stop();
 
 }

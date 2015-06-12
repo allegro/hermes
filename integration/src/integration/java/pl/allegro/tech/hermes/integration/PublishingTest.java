@@ -12,10 +12,9 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.integration.client.SlowClient;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.Assertions;
+import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
-import pl.allegro.tech.hermes.test.helper.message.TestMessageSet;
-import pl.allegro.tech.hermes.integration.shame.Unreliable;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
@@ -29,6 +28,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.glassfish.jersey.client.ClientProperties.REQUEST_ENTITY_PROCESSING;
 import static org.glassfish.jersey.client.RequestEntityProcessing.CHUNKED;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.api.Topic.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class PublishingTest extends IntegrationTest {
@@ -84,22 +84,7 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldPublishAndConsumeMessageSet() {
-        // given
-        operations.buildSubscription("publishMessageSetGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-
-        TestMessageSet messages = TestMessageSet.of(TestMessage.of("hello", "world"), TestMessage.of("hello1", "world"));
-        remoteService.expectMessages(TestMessage.of("hello", "world").body(), TestMessage.of("hello1", "world").body());
-
-        // when
-        publisher.publish("publishMessageSetGroup.topic", messages.body());
-
-        // then
-        remoteService.waitUntilReceived();
-    }
-
-    @Test
-    public void shouldNotConsumeMessagesWhenSubscriptionIsSuspended() throws InterruptedException {
+    public void shouldNotConsumeMessagesWhenSubscriptionIsSuspended() {
         // given
         String group = "publishSuspendedGroup";
         String topic = "publishingTestTopic";
@@ -179,7 +164,7 @@ public class PublishingTest extends IntegrationTest {
 
     @Unreliable
     @Test(enabled = false)
-    public void shouldTreatMessageWithInvalidInterpolationAsUndelivered() throws Exception {
+    public void shouldTreatMessageWithInvalidInterpolationAsUndelivered() {
         // given
         Subscription subscription = Subscription.Builder.subscription().applyDefaults().withName("subscription").withEndpoint(
                 EndpointAddress.of(HTTP_ENDPOINT_URL + "{template}/")
@@ -201,23 +186,6 @@ public class PublishingTest extends IntegrationTest {
         wait.untilMessageDiscarded();
         long discarded = management.subscription().getMetrics("publishInvalidInterpolatedGroup.topic", "subscription").getDiscarded();
         assertThat(discarded).isEqualTo(1);
-    }
-
-    @Unreliable
-    @Test(enabled = false)
-    public void shouldWrapMessageWithMetadata() throws IOException {
-        // given
-        operations.buildSubscription("publishWrapMessageWithMetadataGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-
-        TestMessage message = TestMessage.of("hello", "world");
-        remoteService.expectMessages(message.body());
-
-        // when
-        Response response = publisher.publish("publishWrapMessageWithMetadataGroup.topic", message.body());
-
-        // then
-        assertThat(response).hasStatus(CREATED);
-        remoteService.waitUntilReceived();
     }
 
     @Test
@@ -282,7 +250,8 @@ public class PublishingTest extends IntegrationTest {
     public void shouldPublishValidMessageWithJsonSchema() {
         //given
         String message = "{\"id\": 6}";
-        operations.buildTopic(topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).build());
+        operations.buildTopic(
+            topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
 
         //when
         Response response = publisher.publish("schema.topic", message);
@@ -295,7 +264,8 @@ public class PublishingTest extends IntegrationTest {
     public void shouldNotPublishInvalidMessageWithJsonSchema() {
         // given
         String messageInvalidWithSchema = "{\"id\": \"shouldBeNumber\"}";
-        operations.buildTopic(topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).build());
+        operations.buildTopic(
+            topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
 
         //when
         Response response = publisher.publish("schema.topic", messageInvalidWithSchema);

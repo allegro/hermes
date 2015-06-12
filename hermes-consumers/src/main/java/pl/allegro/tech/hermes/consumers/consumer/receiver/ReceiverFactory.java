@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver;
 
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 
 public interface ReceiverFactory {
 
-    MessageReceiver createMessageReceiver(Subscription subscription);
+    MessageReceiver createMessageReceiver(Topic.ContentType receivingContentType, Subscription subscription);
 
 }

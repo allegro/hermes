@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.assertj.core.data.MapEntry;
-import org.boon.json.JsonFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,10 +11,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
-import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperProvider;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.publishing.Message;
+import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,12 +46,14 @@ public class KafkaBrokerMessageProducerTest {
     private ObjectMapper mapper = new ObjectMapper();
 
     @Mock
-    HermesMetrics hermesMetrics;
+    private HermesMetrics hermesMetrics;
 
     @Before
     public void before() {
-        MessageContentWrapper contentWrapper = new MessageContentWrapper(CONTENT_ROOT, METADATA_ROOT, JsonFactory.create());
-        producer = new KafkaBrokerMessageProducer(producers, contentWrapper, hermesMetrics);
+        JsonMessageContentWrapper jsonContentWrapper = new JsonMessageContentWrapper(CONTENT_ROOT, METADATA_ROOT, mapper);
+        MessageContentWrapperProvider contentWrapperProvider = new MessageContentWrapperProvider(jsonContentWrapper, null);
+
+        producer = new KafkaBrokerMessageProducer(producers, contentWrapperProvider, hermesMetrics);
     }
 
     @After

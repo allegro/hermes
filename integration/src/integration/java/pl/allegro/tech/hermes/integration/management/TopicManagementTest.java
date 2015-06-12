@@ -76,6 +76,41 @@ public class TopicManagementTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldNotAllowCreatingAvroTopicWithoutSchema() {
+        // given
+        operations.createGroup("createAvroGroup");
+        wait.untilGroupIsCreated("createAvroGroup");
+
+        // when
+        Response response = management.topic().create(topic()
+                .withName("createAvroGroup", "topic")
+                .applyDefaults()
+                .withContentType(Topic.ContentType.AVRO)
+                .build());
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void shouldNotAllowCreatingTopicWithInvalidAvroSchema() {
+        // given
+        operations.createGroup("createAvroInvalidSchemaGroup");
+        wait.untilGroupIsCreated("createAvroInvalidSchemaGroup");
+
+        // when
+        Response response = management.topic().create(topic()
+                .withName("createAvroInvalidSchemaGroup", "topic")
+                .applyDefaults()
+                .withContentType(Topic.ContentType.AVRO)
+                .withMessageSchema("invalidSchema")
+                .build());
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+    }
+
+    @Test
     public void shouldRecreateTopicAfterDeletion() {
         // given
         operations.createGroup("recreateTopicGroup");
