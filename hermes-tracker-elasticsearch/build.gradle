@@ -4,6 +4,5 @@ dependencies {
     compile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.6.0'
 
     testCompile project(path: ":hermes-tracker", configuration: "testArtifacts")
-    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
-    testCompile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.6.0', classifier: 'tests'
+
 }
