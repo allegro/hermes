@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.frontend.publishing.callbacks.BrokerListenersPubli
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.HttpPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
-import pl.allegro.tech.hermes.frontend.validator.MessageValidator;
+import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.inject.Inject;
@@ -39,7 +39,7 @@ public class PublishingServlet extends HttpServlet {
     private final ErrorSender errorSender;
     private final Trackers trackers;
     private final TopicsCache topicsCache;
-    private final MessageValidator messageValidator;
+    private final MessageValidators messageValidators;
     private final Clock clock;
     private final MessagePublisher messagePublisher;
     private final BrokerListeners listeners;
@@ -54,13 +54,13 @@ public class PublishingServlet extends HttpServlet {
                              ObjectMapper objectMapper,
                              ConfigFactory configFactory,
                              Trackers trackers,
-                             MessageValidator messageValidator,
+                             MessageValidators messageValidators,
                              Clock clock,
                              MessagePublisher messagePublisher,
                              BrokerListeners listeners) {
 
         this.topicsCache = topicsCache;
-        this.messageValidator = messageValidator;
+        this.messageValidators = messageValidators;
         this.clock = clock;
         this.messagePublisher = messagePublisher;
         this.errorSender = new ErrorSender(objectMapper);
@@ -101,7 +101,7 @@ public class PublishingServlet extends HttpServlet {
                 messageContent -> {
                     try {
                         Message message = new Message(messageId, messageContent, clock.getTime());
-                        messageValidator.check(topic.getName(), messageContent);
+                        messageValidators.check(topic.getName(), messageContent);
 
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 

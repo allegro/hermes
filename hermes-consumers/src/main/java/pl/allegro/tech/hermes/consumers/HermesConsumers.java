@@ -7,7 +7,7 @@ import org.jvnet.hk2.component.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
-import pl.allegro.tech.hermes.consumers.consumer.health.HealthCheckServer;
+import pl.allegro.tech.hermes.consumers.health.HealthCheckServer;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
@@ -28,7 +28,7 @@ public class HermesConsumers {
     private final HealthCheckServer healthCheckServer;
     private final Trackers trackers;
     private final List<Function<ServiceLocator, LogRepository>> logRepositories;
-    private MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
+    private final MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
     private final MessageSenderProviders messageSendersProviders;
     private final ServiceLocator serviceLocator;
 

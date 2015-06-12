@@ -1,9 +1,7 @@
 package pl.allegro.tech.hermes.consumers.test;
 
 
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
-
-import java.util.Optional;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 public final class MessageBuilder {
 
@@ -18,6 +16,6 @@ public final class MessageBuilder {
     }
 
     public Message build() {
-        return new Message(Optional.of("213"), 123, 1, "whatever", content.getBytes(), Optional.of(123L), Optional.of(123L));
+        return new Message("213", 123, 1, "whatever", content.getBytes(), 123L, 123L);
     }
 }

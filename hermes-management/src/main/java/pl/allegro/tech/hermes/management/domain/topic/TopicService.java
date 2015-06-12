@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -28,7 +29,7 @@ public class TopicService {
     private final GroupService groupService;
 
     private final TopicMetricsRepository metricRepository;
-    private final SchemaValidator schemaValidator;
+    private final SchemaValidatorProvider schemaValidatorProvider;
     private final MultiDCAwareService multiDCAwareService;
 
     @Inject
@@ -37,19 +38,20 @@ public class TopicService {
                         GroupService groupService,
                         TopicProperties topicProperties,
                         TopicMetricsRepository metricRepository,
-                        SchemaValidator schemaValidator) {
+                        SchemaValidatorProvider schemaValidatorProvider) {
         this.multiDCAwareService = multiDCAwareService;
         this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
         this.groupService = groupService;
         this.metricRepository = metricRepository;
-        this.schemaValidator = schemaValidator;
+        this.schemaValidatorProvider = schemaValidatorProvider;
     }
 
     public void createTopic(Topic topic) {
-        if (!isNullOrEmpty(topic.getMessageSchema())) {
-            schemaValidator.check(topic.getMessageSchema());
+        if (topic.isSchemaValidationRequired()) {
+            schemaValidatorProvider.provide(topic.getContentType()).check(topic.getMessageSchema());
         }
+
         topicRepository.createTopic(topic);
 
         try {
@@ -80,8 +82,8 @@ public class TopicService {
         Topic modified = Patch.apply(retrieved, topic);
 
         if (!retrieved.equals(modified)) {
-            if (!isNullOrEmpty(modified.getMessageSchema())) {
-                schemaValidator.check(modified.getMessageSchema());
+            if (topic.isSchemaValidationRequired()) {
+                schemaValidatorProvider.provide(topic.getContentType()).check(modified.getMessageSchema());
             }
 
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {

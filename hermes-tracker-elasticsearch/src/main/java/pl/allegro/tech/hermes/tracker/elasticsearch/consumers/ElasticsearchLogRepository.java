@@ -68,7 +68,7 @@ public class ElasticsearchLogRepository extends BatchingLogRepository<XContentBu
                 .startObject()
                 .field(MESSAGE_ID, message.getId())
                 .field(TIMESTAMP, timestamp)
-                .field(PUBLISH_TIMESTAMP, message.getPublishingTimestamp().orElse(null))
+                .field(PUBLISH_TIMESTAMP, message.getPublishingTimestamp())
                 .field(TOPIC_NAME, message.getTopic())
                 .field(SUBSCRIPTION, message.getSubscription())
                 .field(STATUS, status)

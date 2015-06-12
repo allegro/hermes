@@ -1,23 +1,18 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit;
 
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
-import pl.allegro.tech.hermes.common.json.UnwrappedMessageContent;
+import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
-
-import java.util.Optional;
 
 class KafkaTimestampExtractor {
 
     private final TopicName topic;
     private final int partition;
     private final KafkaSingleMessageReader kafkaSingleMessageReader;
-    private final MessageContentWrapper messageContentWrapper;
-
-    private static final String TIMESTAMP = "timestamp";
+    private final JsonMessageContentWrapper messageContentWrapper;
 
     KafkaTimestampExtractor(TopicName topic, int partition, KafkaSingleMessageReader kafkaSingleMessageReader,
-                            MessageContentWrapper messageContentWrapper) {
+                            JsonMessageContentWrapper messageContentWrapper) {
 
         this.topic = topic;
         this.partition = partition;
@@ -25,10 +20,9 @@ class KafkaTimestampExtractor {
         this.messageContentWrapper = messageContentWrapper;
     }
 
-    public Optional<Long> extract(Long offset) {
+    public long extract(Long offset) {
         String message = kafkaSingleMessageReader.readMessage(topic, partition, offset);
-        UnwrappedMessageContent unwrappedMessage = messageContentWrapper.unwrapContent(message.getBytes());
-        return unwrappedMessage.getLongFromMetadata(TIMESTAMP);
+        return messageContentWrapper.unwrapContent(message.getBytes()).getMessageMetadata().getTimestamp();
     }
 
 }

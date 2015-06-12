@@ -1,12 +1,11 @@
 package pl.allegro.tech.hermes.management.config;
 
-import org.boon.json.JsonFactory;
-import org.boon.json.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 
 @Configuration
 @EnableConfigurationProperties(MessageProperties.class)
@@ -16,14 +15,14 @@ public class MessageConfiguration {
     MessageProperties messageProperties;
 
     @Bean
-    ObjectMapper fastObjectMapper() {
-        return JsonFactory.create();
+    ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 
     @Bean
-    MessageContentWrapper messageContentWrapper() {
-        return new MessageContentWrapper(messageProperties.getContentRoot(),
+    JsonMessageContentWrapper messageContentWrapper() {
+        return new JsonMessageContentWrapper(messageProperties.getContentRoot(),
                 messageProperties.getMetadataContentRoot(),
-                fastObjectMapper());
+                objectMapper());
     }
 }

@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 import javax.jms.BytesMessage;
@@ -18,7 +18,6 @@ import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.JMSRuntimeException;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -32,9 +31,7 @@ import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_
 @RunWith(MockitoJUnitRunner.class)
 public class JmsMessageSenderTest {
 
-    private static final Message SOME_MESSAGE = new Message(
-            Optional.of("id"), 0, 0, "topic", "aaaaaaaaaaaaaaaa".getBytes(), Optional.of(1214323L), Optional.of(12143234L)
-    );
+    private static final Message SOME_MESSAGE = new Message("id", 0, 0, "topic", "aaaaaaaaaaaaaaaa".getBytes(), 1214323L, 12143234L);
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private JMSContext jmsContextMock;

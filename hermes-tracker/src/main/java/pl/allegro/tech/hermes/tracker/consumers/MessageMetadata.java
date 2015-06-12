@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.tracker.consumers;
 
-import java.util.Optional;
-
 public class MessageMetadata {
 
     private final String id;
@@ -9,11 +7,11 @@ public class MessageMetadata {
     private final int partition;
     private final String topic;
     private final String subscription;
-    private final Optional<Long> publishingTimestamp;
-    private final Optional<Long> readingTimestamp;
+    private final long publishingTimestamp;
+    private final long readingTimestamp;
 
     public MessageMetadata(String id, long offset, int partition, String topic, String subscription,
-                           Optional<Long> publishingTimestamp, Optional<Long> readingTimestamp) {
+                           long publishingTimestamp, long readingTimestamp) {
         this.id = id;
         this.offset = offset;
         this.partition = partition;
@@ -43,11 +41,11 @@ public class MessageMetadata {
         return subscription;
     }
 
-    public Optional<Long> getPublishingTimestamp() {
+    public long getPublishingTimestamp() {
         return publishingTimestamp;
     }
 
-    public Optional<Long> getReadingTimestamp() {
+    public long getReadingTimestamp() {
         return readingTimestamp;
     }
 }

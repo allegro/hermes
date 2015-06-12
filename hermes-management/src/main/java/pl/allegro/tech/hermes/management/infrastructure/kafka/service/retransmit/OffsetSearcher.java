@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmi
 
 import com.google.common.collect.Range;
 
-import java.util.Optional;
-
 class OffsetSearcher {
 
     private final KafkaTimestampExtractor timestampExtractor;
@@ -18,9 +16,9 @@ class OffsetSearcher {
 
         while (left + 1 < right) {
             long half = (left + right) / 2;
-            Optional<Long> extractedTimestamp = timestampExtractor.extract(half);
+            long extractedTimestamp = timestampExtractor.extract(half);
 
-            if (!extractedTimestamp.isPresent() || timestamp > extractedTimestamp.get()) {
+            if (timestamp > extractedTimestamp) {
                 left = half;
             } else {
                 right = half;

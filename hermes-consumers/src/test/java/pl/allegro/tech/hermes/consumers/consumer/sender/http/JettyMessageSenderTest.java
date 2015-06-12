@@ -10,14 +10,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import java.net.URI;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -34,9 +33,7 @@ import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_
 public class JettyMessageSenderTest {
 
     private static final String MESSAGE_BODY = "aaaaaaaaaaaaaaaa";
-    private static final Message SOME_MESSAGE = new Message(
-        Optional.of("id"), 0, 0, "topic", MESSAGE_BODY.getBytes(), Optional.of(2134144L), Optional.of(21341445L)
-    );
+    private static final Message SOME_MESSAGE = new Message("id", 0, 0, "topic", MESSAGE_BODY.getBytes(), 2134144L, 21341445L);
     private static final int ENDPOINT_PORT = 23215;
     private static final EndpointAddress ENDPOINT = EndpointAddress.of(format("http://localhost:%d/", ENDPOINT_PORT));
 
@@ -121,19 +118,6 @@ public class JettyMessageSenderTest {
         // then
         remoteServiceEndpoint.waitUntilReceived();
         assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader(MESSAGE_ID.getName())).isEqualTo("id");
-    }
-
-    @Test
-    public void shouldSendGeneratedMessageIdInHeader() {
-        // given
-        remoteServiceEndpoint.expectMessages(MESSAGE_BODY);
-
-        // when
-        messageSender.send(new Message(Optional.empty(), 0, 0, "topic", MESSAGE_BODY.getBytes(), Optional.of(2134144L), Optional.empty()));
-
-        // then
-        remoteServiceEndpoint.waitUntilReceived();
-        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader(MESSAGE_ID.getName())).isNotEmpty();
     }
 
     private static final class SimpleEndpointAddressResolver implements EndpointAddressResolver {

@@ -7,11 +7,9 @@ import kafka.api.PartitionOffsetRequestInfo;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.OffsetResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
-import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
@@ -25,14 +23,14 @@ public class KafkaRetransmissionService implements RetransmissionService {
 
     private final BrokerStorage brokerStorage;
     private final KafkaSingleMessageReader kafkaSingleMessageReader;
-    private final MessageContentWrapper messageContentWrapper;
+    private final JsonMessageContentWrapper messageContentWrapper;
     private final SubscriptionOffsetChangeIndicator subscriptionOffsetChange;
     private final SimpleConsumerPool simpleConsumerPool;
 
     public KafkaRetransmissionService(
             BrokerStorage brokerStorage,
             KafkaSingleMessageReader kafkaSingleMessageReader,
-            MessageContentWrapper messageContentWrapper,
+            JsonMessageContentWrapper messageContentWrapper,
             SubscriptionOffsetChangeIndicator subscriptionOffsetChange,
             SimpleConsumerPool simpleConsumerPool) {
 
@@ -65,7 +63,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
         return search(topic, partition, offsetRange, timestamp);
     }
 
-    private Long search(TopicName topic, int partition, Range<Long> offsetRange, long timestamp) {
+    private long search(TopicName topic, int partition, Range<Long> offsetRange, long timestamp) {
         OffsetSearcher searcher = new OffsetSearcher(
                 new KafkaTimestampExtractor(topic, partition, kafkaSingleMessageReader, messageContentWrapper)
         );

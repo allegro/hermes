@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.resolver;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.InterpolationException;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import javax.inject.Inject;
 import java.net.URI;

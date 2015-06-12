@@ -42,7 +42,7 @@ public class DataInitializer implements LogSchemaAware {
                 .startObject()
                 .field(MESSAGE_ID, messageMetadata.getId())
                 .field(TIMESTAMP, timestamp)
-                .field(PUBLISH_TIMESTAMP, messageMetadata.getPublishingTimestamp().get())
+                .field(PUBLISH_TIMESTAMP, messageMetadata.getPublishingTimestamp())
                 .field(TOPIC_NAME, messageMetadata.getTopic())
                 .field(SUBSCRIPTION, messageMetadata.getSubscription())
                 .field(STATUS, status)
