@@ -7,7 +7,7 @@ public interface LogSchemaAware {
     String SENT_INDEX = "sent_messages";
     String SENT_TYPE = "sent_message";
     String MESSAGE_ID = "messageId";
-    String TIMESTAMP = "allegro_timestamp";
+    String TIMESTAMP = "timestamp";
     String PUBLISH_TIMESTAMP = "publish_timestamp";
     String STATUS = "status";
     String TOPIC_NAME = "topicName";
