@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.message.tracker.frontend.AbstractLogRepositoryTest
 import pl.allegro.tech.hermes.message.tracker.frontend.LogRepository;
 
 import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.FIVE_SECONDS;
+import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 
@@ -48,7 +48,7 @@ public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest im
     }
 
     private void awaitUntilMessageIsIndexed(QueryBuilder query) {
-        await().atMost(FIVE_SECONDS).until(() -> {
+        await().atMost(ONE_MINUTE).until(() -> {
             SearchResponse response = elasticsearch.client().prepareSearch(PUBLISHED_INDEX)
                     .setTypes(PUBLISHED_TYPE)
                     .setQuery(query)

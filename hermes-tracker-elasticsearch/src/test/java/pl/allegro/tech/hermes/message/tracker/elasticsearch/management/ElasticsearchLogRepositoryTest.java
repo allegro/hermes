@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.FIVE_SECONDS;
+import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
 
@@ -66,7 +66,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private List<SentMessageTrace> fetchUndelivered(MessageMetadata messageMetadata) {
         final List<SentMessageTrace> lastUndelivered = new ArrayList();
 
-        await().atMost(FIVE_SECONDS).until(() -> {
+        await().atMost(ONE_MINUTE).until(() -> {
             lastUndelivered.clear();
             lastUndelivered.addAll(logRepository.getLastUndeliveredMessages(messageMetadata.getTopic(), messageMetadata.getSubscription(), 10));
             return lastUndelivered.size() == 1;
@@ -77,7 +77,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private List<MessageTrace> fetchMessageStatus(MessageMetadata messageMetadata) {
         List<MessageTrace> status = new ArrayList<>();
 
-        await().atMost(FIVE_SECONDS).until(() -> {
+        await().atMost(ONE_MINUTE).until(() -> {
             status.clear();
             status.addAll(logRepository.getMessageStatus(messageMetadata.getTopic(), messageMetadata.getSubscription(), messageMetadata.getId()));
             return status.size() == 2;

@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.message.tracker.elasticsearch.ElasticsearchResourc
 import pl.allegro.tech.hermes.message.tracker.elasticsearch.LogSchemaAware;
 
 import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.FIVE_SECONDS;
+import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 
@@ -27,7 +27,7 @@ public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest im
 
     @Override
     protected void awaitUntilMessageIsPersisted(String topic, String subscription, String id, SentMessageTraceStatus status) throws Exception {
-        await().atMost(FIVE_SECONDS).until(() -> {
+        await().atMost(ONE_MINUTE).until(() -> {
             SearchResponse response = elasticsearch.client().prepareSearch(SENT_INDEX)
                     .setTypes(SENT_TYPE)
                     .setQuery(boolQuery()
