@@ -34,8 +34,8 @@ public class HermesAPIOperations {
                 topic().withName(group, topic).withRetentionTime(1000).withDescription("Test topic").build());
     }
 
-    public void createTopic(Topic topic) {
-        endpoints.topic().create(topic);
+    public Response createTopic(Topic topic) {
+        return endpoints.topic().create(topic);
     }
 
     public Response createSubscription(String group, String topic, String subscriptionName, String endpoint) {

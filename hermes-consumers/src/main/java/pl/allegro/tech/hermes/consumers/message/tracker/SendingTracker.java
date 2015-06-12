@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.message.tracker;
 
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 public interface SendingTracker {
     void logSent(Message message, Subscription subscription);

@@ -16,15 +16,14 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.SplitMessagesReceiver;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
 
-import java.util.Collections;
-import java.util.Optional;
 import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,10 +41,10 @@ import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 public class ConsumerTest {
 
     private static final Message MESSAGE = new Message(
-            Optional.of("id"), 10, 0, 
+            "id", 10, 0,
             "topic", "{\"username\":\"ala\"}".getBytes(),
-            Optional.of(122424L),
-            Optional.of(1224245L));
+            122424L,
+            1224245L);
 
     private static final Subscription SUBSCRIPTION = Subscription.Builder.subscription()
             .withTopicName(new TopicName("group", "topic"))
@@ -58,7 +57,7 @@ public class ConsumerTest {
     private ConfigFactory configFactory;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private SplitMessagesReceiver messageReceiver;
+    private MessageReceiver messageReceiver;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private HermesMetrics hermesMetrics;
@@ -95,7 +94,7 @@ public class ConsumerTest {
         when(configFactory.getIntProperty(Configs.REPORT_PERIOD)).thenReturn(10);
         when(configFactory.getIntProperty(Configs.CONSUMER_INFLIGHT_SIZE)).thenReturn(50);
         consumer = spy(new Consumer(messageReceiver, hermesMetrics, SUBSCRIPTION,
-                consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers));
+                consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, new NoOperationMessageConverter()));
     }
 
     @Test
@@ -114,8 +113,8 @@ public class ConsumerTest {
     @SuppressWarnings("unchecked")
     public void shouldSendUnwrappedMessageThroughMessageSender() {
         // given
-        doReturn(true).doReturn(true).doReturn(false).when(consumer).isConsuming();
-        when(messageReceiver.next()).thenReturn(Collections.singletonList(MESSAGE), Collections.<Message>emptyList());
+        doReturn(true).doReturn(false).when(consumer).isConsuming();
+        when(messageReceiver.next()).thenReturn(MESSAGE);
 
         // when
         consumer.run();
@@ -126,10 +125,9 @@ public class ConsumerTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void shouldSkipEmptyMessage() {
-        doReturn(true).doReturn(true).doReturn(true).doReturn(false).when(consumer).isConsuming();
-        when(messageReceiver.next()).thenReturn(Collections.<Message>emptyList(), Collections.singletonList(MESSAGE),
-                Collections.<Message>emptyList());
+    public void shouldKeepReadingMessagesAfterTimeout() {
+        doReturn(true).doReturn(true).doReturn(false).when(consumer).isConsuming();
+        when(messageReceiver.next()).thenThrow(new MessageReceivingTimeoutException("timeout")).thenReturn(MESSAGE);
 
         consumer.run();
 
@@ -139,7 +137,7 @@ public class ConsumerTest {
     @Test
     public void shouldIncrementInflightWhenSendingMessage() {
         //given
-        when(messageReceiver.next()).thenReturn(Collections.singletonList(MESSAGE));
+        when(messageReceiver.next()).thenReturn(MESSAGE);
         doReturn(true).doReturn(false).when(consumer).isConsuming();
 
         //when

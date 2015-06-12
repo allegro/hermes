@@ -11,10 +11,10 @@ class OffsetSearcherTest extends Specification {
 
     def "should find offset for given timestamp"() {
         given:
-        extractor.extract(4L) >> Optional.of(800L)
-        extractor.extract(7L) >> Optional.of(1100L)
-        extractor.extract(5L) >> Optional.of(900L)
-        extractor.extract(6L) >> Optional.of(1000L)
+        extractor.extract(4L) >> 800L
+        extractor.extract(7L) >> 1100L
+        extractor.extract(5L) >> 900L
+        extractor.extract(6L) >> 1000L
         
         expect:
         searcher.search(Range.closed(0L, 10L), 1000L) == 6L
@@ -22,23 +22,13 @@ class OffsetSearcherTest extends Specification {
     
     def "should find offset nearest to given timestamp"() {
         given:
-        extractor.extract(4L) >> Optional.of(800L)
-        extractor.extract(7L) >> Optional.of(1100L)
-        extractor.extract(5L) >> Optional.of(999L)
-        extractor.extract(6L) >> Optional.of(1001L)
+        extractor.extract(4L) >> 800L
+        extractor.extract(7L) >> 1100L
+        extractor.extract(5L) >> 999L
+        extractor.extract(6L) >> 1001L
         
         expect:
         searcher.search(Range.closed(0L, 10L), 1000L) == 6L
     }
 
-    def "should find offset when event has no timestamp"() {
-        given:
-        extractor.extract(4L) >> Optional.empty()
-        extractor.extract(7L) >> Optional.of(1100L)
-        extractor.extract(5L) >> Optional.of(999L)
-        extractor.extract(6L) >> Optional.of(1001L)
-
-        expect:
-        searcher.search(Range.closed(0L, 10L), 1000L) == 6L
-    }
 }

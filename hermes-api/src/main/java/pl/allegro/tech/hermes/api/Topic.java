@@ -9,6 +9,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 public class Topic {
     @Valid @NotNull
     private TopicName name;
@@ -21,8 +23,14 @@ public class Topic {
 
     private Ack ack;
 
-    public static enum Ack {
+    private ContentType contentType;
+
+    public enum Ack {
         NONE, LEADER, ALL
+    }
+
+    public enum ContentType {
+        JSON, AVRO
     }
 
     @Valid
@@ -33,7 +41,7 @@ public class Topic {
     private Topic() { }
 
     public Topic(TopicName name, String description, RetentionTime retentionTime, String messageSchema,
-                 boolean validationEnabled, Ack ack, boolean trackingEnabled) {
+                 boolean validationEnabled, Ack ack, boolean trackingEnabled, ContentType contentType) {
         this.name = name;
         this.description = description;
         this.retentionTime = retentionTime;
@@ -41,6 +49,7 @@ public class Topic {
         this.validationEnabled = validationEnabled;
         this.ack = ack;
         this.trackingEnabled = trackingEnabled;
+        this.contentType = contentType;
     }
 
     @JsonCreator
@@ -51,9 +60,11 @@ public class Topic {
             @JsonProperty("messageSchema") String messageSchema,
             @JsonProperty("validation") boolean validationEnabled,
             @JsonProperty("ack") Ack ack,
-            @JsonProperty("trackingEnabled") boolean trackingEnabled) {
+            @JsonProperty("trackingEnabled") boolean trackingEnabled,
+            @JsonProperty("contentType") ContentType contentType) {
 
-        this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, messageSchema, validationEnabled, ack, trackingEnabled);
+        this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, messageSchema, validationEnabled, ack,
+             trackingEnabled, contentType);
     }
 
     public RetentionTime getRetentionTime() {
@@ -62,7 +73,7 @@ public class Topic {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, retentionTime);
+        return Objects.hash(name, description, retentionTime, messageSchema, validationEnabled, trackingEnabled, ack, contentType);
     }
 
     @Override
@@ -81,7 +92,8 @@ public class Topic {
             && Objects.equals(this.messageSchema, other.messageSchema)
             && Objects.equals(this.validationEnabled, other.validationEnabled)
             && Objects.equals(this.trackingEnabled, other.trackingEnabled)
-            && Objects.equals(this.getAck(), other.getAck());
+            && Objects.equals(this.ack, other.ack)
+            && Objects.equals(this.contentType, other.contentType);
     }
 
     @JsonProperty("name")
@@ -112,11 +124,15 @@ public class Topic {
 
     @JsonProperty("validation")
     public boolean isValidationEnabled() {
-        return validationEnabled;
+        return validationEnabled || ContentType.AVRO == contentType;
     }
 
     public Ack getAck() {
         return ack;
+    }
+
+    public ContentType getContentType() {
+        return contentType;
     }
 
     public boolean isTrackingEnabled() {
@@ -126,6 +142,11 @@ public class Topic {
     @JsonIgnore
     public boolean isReplicationConfirmRequired() {
         return getAck() == Ack.ALL;
+    }
+
+    @JsonIgnore
+    public boolean isSchemaValidationRequired() {
+        return Topic.ContentType.AVRO == contentType || !isNullOrEmpty(messageSchema);
     }
 
     public static class Builder {
@@ -189,6 +210,7 @@ public class Topic {
 
         public Builder applyDefaults() {
             topic.retentionTime = new RetentionTime(1);
+            topic.contentType = ContentType.JSON;
             return this;
         }
 
@@ -198,6 +220,11 @@ public class Topic {
 
         public Builder withTrackingEnabled(boolean enabled) {
             topic.trackingEnabled = enabled;
+            return this;
+        }
+
+        public Builder withContentType(ContentType contentType) {
+            topic.contentType = contentType;
             return this;
         }
 

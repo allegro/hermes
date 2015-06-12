@@ -17,7 +17,7 @@ import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.validator.MessageValidator;
+import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 
 import javax.inject.Inject;
 import javax.servlet.Servlet;
@@ -39,7 +39,7 @@ public class HermesServer {
 
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configFactory;
-    private final MessageValidator messageValidator;
+    private final MessageValidators messageValidators;
     private final TopicsCache topicsCache;
     private final PublishingServlet publishingServlet;
     private final HealthCheckService healthCheckService;
@@ -51,13 +51,13 @@ public class HermesServer {
             TopicsCache topicsCache,
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
-            MessageValidator messageValidator,
+            MessageValidators messageValidators,
             PublishingServlet publishingServlet,
             HealthCheckService healthCheckService) {
 
         this.topicsCache = topicsCache;
         this.configFactory = configFactory;
-        this.messageValidator = messageValidator;
+        this.messageValidators = messageValidators;
         this.hermesMetrics = hermesMetrics;
         this.publishingServlet = publishingServlet;
         this.healthCheckService = healthCheckService;
@@ -67,7 +67,7 @@ public class HermesServer {
     }
 
     public void start() {
-        topicsCache.start(ImmutableList.of(messageValidator));
+        topicsCache.start(ImmutableList.of(messageValidators));
         configureServer().start();
     }
 

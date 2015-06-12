@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.message.tracker;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.time.Clock;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import javax.inject.Inject;
 

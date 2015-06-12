@@ -9,12 +9,11 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.SystemClock;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.test.Wait;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -149,8 +148,8 @@ public class SubscriptionOffsetCommitQueuesTest {
 
         public Partition addOffsets(long... offsets) {
             for (long offset : offsets) {
-                subscriptionOffsetCommitQueues.put(new Message(Optional.of("id"), offset, partition, SOME_TOPIC, new byte[partition],
-                        Optional.of(213123L), Optional.of(2131234L)));
+                subscriptionOffsetCommitQueues.put(new Message("id", offset, partition, SOME_TOPIC, new byte[partition],
+                        213123L, 2131234L));
             }
             return this;
         }
