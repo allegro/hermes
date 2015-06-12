@@ -71,6 +71,15 @@ frontend.io.threads.count                  number of Undertow IO threads        
 frontend.worker.threads.count              number of worker threads                                                                         200
 frontend.request.chunk.size                chunk size in bytes                                                                              1024
 frontend.graceful.shutdown.initial.wait.ms when shutting down, period before setting status endpoint to DOWN and performing actual shutdown 10000 ms
+frontend.http2.enabled                     enables HTTP/2 listener (requires setting all frontend.ssl.* properties)                         false
+frontend.ssl.port                          secure port to listen on (enabled along with HTTP/2)                                             8443
+frontend.ssl.protocol                      SSL protocol                                                                                     TLS
+frontend.ssl.keystore.location             keystore location, prefixed with classpath: or file:                                             classpath:server.keystore
+frontend.ssl.keystore.password             password required to access keystore                                                             password
+frontend.ssl.keystore.format               keystore format                                                                                  JKS
+frontend.ssl.truststore.location           truststore location, prefixed with classpath: or file:                                           classpath:server.keystore
+frontend.ssl.truststore.password           password required to access truststore                                                           password
+frontend.ssl.truststore.format             truststore format                                                                                JKS
 ========================================== ================================================================================================ ==============
 
 The **idle.timeout** and **long.idle.timeout** timeouts are counted from the time the request has been parsed till
