@@ -30,7 +30,8 @@ public class OutputRateCalculator {
                 new NormalModeOutputRateCalculator(
                         configFactory.getDoubleProperty(Configs.CONSUMER_RATE_CONVERGENCE_FACTOR),
                         1.0 / configFactory.getIntProperty(Configs.CONSUMER_RATE_LIMITER_SLOW_MODE_DELAY),
-                        configFactory.getDoubleProperty(Configs.CONSUMER_RATE_FAILURES_RATIO_THRESHOLD))
+                        configFactory.getDoubleProperty(Configs.CONSUMER_RATE_FAILURES_SPEEDUP_TOLERANCE_RATIO),
+                        configFactory.getDoubleProperty(Configs.CONSUMER_RATE_FAILURES_NOCHANGE_TOLERANCE_RATIO))
         );
         modeCalculators.put(Mode.SLOW,
                 new SlowModeOutputRateCalculator(

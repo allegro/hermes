@@ -67,7 +67,7 @@ public final class HermesConsumersBuilder {
     }
 
     public HermesConsumers build() {
-        binders.add(new TrackersBinder(new ArrayList()));
+        binders.add(new TrackersBinder(new ArrayList<>()));
         return new HermesConsumers(hooksHandler, binders, messageSenderProvidersSuppliers, logRepositories);
     }
 
