@@ -28,7 +28,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private static final String REASON_MESSAGE = "Bad Request";
 
     @ClassRule
-    public static ElasticsearchResource elasticsearch = new ElasticsearchResource(SENT_INDEX);
+    public static ElasticsearchResource elasticsearch = new ElasticsearchResource(SENT_INDEX, PUBLISHED_INDEX);
 
     private DataInitializer dataInitializer = new DataInitializer(elasticsearch.client(), CLUSTER_NAME);
     private LogRepository logRepository = new ElasticsearchLogRepository(elasticsearch.client(), CLUSTER_NAME);
@@ -64,7 +64,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     }
 
     private List<SentMessageTrace> fetchUndelivered(MessageMetadata messageMetadata) {
-        final List<SentMessageTrace> lastUndelivered = new ArrayList();
+        final List<SentMessageTrace> lastUndelivered = new ArrayList<>();
 
         await().atMost(ONE_MINUTE).until(() -> {
             lastUndelivered.clear();
