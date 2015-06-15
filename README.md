@@ -1,7 +1,7 @@
 Hermes
 ======
 
-[![Build Status](https://img.shields.io/travis/allegro/hermes.svg?style=flat)](https://travis-ci.org/allegro/hermes)
+[![Build Status](https://img.shields.io/travis/allegro/hermes/master.svg?style=flat)](https://travis-ci.org/allegro/hermes)
 [![Documentation Status](https://readthedocs.org/projects/hermes-pubsub/badge/?version=latest)](https://readthedocs.org/projects/hermes-pubsub/?badge=latest)
 
 
