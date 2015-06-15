@@ -18,6 +18,7 @@ public class DistributedEphemeralCounterTest extends ZookeeperBaseTest {
 
         // then
         assertThat(counter.getValue("/increment", "/metric")).isEqualTo(10);
+        assertThat(counter.countOccurrences("/increment", "/metric")).isEqualTo(1);
     }
 
     @Test
