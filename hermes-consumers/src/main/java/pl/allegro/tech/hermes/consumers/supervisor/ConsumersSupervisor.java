@@ -11,12 +11,11 @@ import pl.allegro.tech.hermes.common.admin.AdminOperationsCallback;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
-import pl.allegro.tech.hermes.consumers.consumer.offset.AsyncOffsetMonitor;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
+import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionCallback;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
@@ -27,9 +26,7 @@ import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChang
 import javax.inject.Inject;
 import java.util.List;
 
-import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
-import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
-import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
+import static pl.allegro.tech.hermes.api.Subscription.State.*;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class ConsumersSupervisor implements SubscriptionCallback, AdminOperationsCallback {
@@ -64,7 +61,6 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                                BrokerStorage brokerStorage,
                                SubscriptionsCache subscriptionsCache,
                                HermesMetrics hermesMetrics,
-                               AsyncOffsetMonitor asyncOffsetMonitor,
                                ZookeeperAdminCache adminCache,
                                UndeliveredMessageLogPersister undeliveredMessageLogPersister) {
         this.subscriptionRepository = subscriptionRepository;
@@ -81,7 +77,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
         this.subscriptionsLocks = new SubscriptionLocks();
 
         consumerHolder = new ConsumerHolder();
-        offsetCommitter = new OffsetCommitter(consumerHolder, messageCommitter, configFactory, asyncOffsetMonitor);
+        offsetCommitter = new OffsetCommitter(consumerHolder, messageCommitter, configFactory);
 
         brokersClusterName = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
     }

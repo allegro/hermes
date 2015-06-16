@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.common.metric;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -22,10 +21,7 @@ import javax.inject.Inject;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_LEADER_CONFIRMS_BUFFER_TOTAL_BYTES;
+import static pl.allegro.tech.hermes.common.metric.Gauges.*;
 import static pl.allegro.tech.hermes.common.metric.PathContext.pathContext;
 
 public class HermesMetrics {
@@ -125,14 +121,6 @@ public class HermesMetrics {
         return metricRegistry.counter(metricRegistryName(metric, topicName, name));
     }
 
-    public Counter counterForOffsetLag(Subscription subscription, int partition) {
-        return metricRegistry.counter(pathCompiler.compile(Counters.CONSUMER_OFFSET_LAG, pathContext()
-                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
-                .withTopic(escapeDots(subscription.getTopicName().getName()))
-                .withSubscription(escapeDots(subscription.getName()))
-                .withPartition(partition).build()));
-    }
-
     public Counter counterForOffsetCommitIdlePeriod(Subscription subscription, int partition) {
         String path = pathForConsumerOffsetCommitIdle(subscription, partition);
 
@@ -152,14 +140,6 @@ public class HermesMetrics {
                 .withSubscription(escapeDots(subscription.getName()))
                 .withPartition(partition)
                 .build());
-    }
-
-    public Histogram histogramForOffsetTimeLag(Subscription subscription, int partition) {
-        return metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMER_OFFSET_TIME_LAG, pathContext()
-                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
-                .withTopic(escapeDots(subscription.getTopicName().getName()))
-                .withSubscription(escapeDots(subscription.getName()))
-                .withPartition(partition).build()));
     }
 
     public void registerConsumersThreadGauge(Gauge<Integer> gauge) {

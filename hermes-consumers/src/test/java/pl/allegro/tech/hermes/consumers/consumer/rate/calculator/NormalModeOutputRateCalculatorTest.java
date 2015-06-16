@@ -9,14 +9,15 @@ public class NormalModeOutputRateCalculatorTest {
 
     private static final int SLOW_RATE = 5;
 
-    private final NormalModeOutputRateCalculator calculator = new NormalModeOutputRateCalculator(0.5, SLOW_RATE, 0.4);
+    private final NormalModeOutputRateCalculator calculator = new NormalModeOutputRateCalculator(0.5, SLOW_RATE, 0.1, 0.4);
 
     private final DeliveryCounters counters = new DeliveryCounters();
 
     @Test
-    public void shouldIncreaseRateWhenNoFailuresOccuredAndNotAboveMaximumRate() {
+    public void shouldIncreaseRateWhenFailuresBelowToleranceOccuredAndNotAboveMaximumRate() {
         // given
-        counters.incrementSuccesses();
+        NormalModeOutputRateCalculator calculator = new NormalModeOutputRateCalculator(0.5, SLOW_RATE, 0.4, 0.5);
+        counters.incrementSuccesses().incrementSuccesses().incrementFailures();
 
         // when then
         assertThat(calculator.calculateOutputRate(10, 20, counters).rate()).isEqualTo(15);
@@ -34,7 +35,7 @@ public class NormalModeOutputRateCalculatorTest {
     @Test
     public void shouldNotSlowDownWhenRatioOfFailuresIsBelowGivenThreshold() {
         // given
-        NormalModeOutputRateCalculator calculator = new NormalModeOutputRateCalculator(0.5, SLOW_RATE, 0.38);
+        NormalModeOutputRateCalculator calculator = new NormalModeOutputRateCalculator(0.5, SLOW_RATE, 0.0, 0.38);
         counters.incrementSuccesses().incrementSuccesses()
                 .incrementFailures();
 
@@ -45,7 +46,7 @@ public class NormalModeOutputRateCalculatorTest {
     @Test
     public void shouldSlowDownWhenRatioOfFailuresExceedsGivenThreshold() {
         // given
-        NormalModeOutputRateCalculator calculator = new NormalModeOutputRateCalculator(0.5, SLOW_RATE, 0.38);
+        NormalModeOutputRateCalculator calculator = new NormalModeOutputRateCalculator(0.5, SLOW_RATE, 0.1, 0.38);
         counters.incrementSuccesses().incrementSuccesses().incrementSuccesses()
                 .incrementFailures().incrementFailures();
 
