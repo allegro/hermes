@@ -21,6 +21,6 @@ public class ElasticsearchClientFactory {
     }
 
     public void close() {
-        client.close();
+        if (client != null) client.close();
     }
 }
