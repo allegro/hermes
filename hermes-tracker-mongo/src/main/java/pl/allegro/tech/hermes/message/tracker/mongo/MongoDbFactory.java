@@ -31,4 +31,8 @@ public class MongoDbFactory {
         }
     }
 
+    public void close() {
+        mongoClient.close();
+    }
+
 }
