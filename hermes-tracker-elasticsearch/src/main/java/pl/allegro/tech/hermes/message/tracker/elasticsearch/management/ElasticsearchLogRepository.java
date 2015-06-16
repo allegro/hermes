@@ -5,6 +5,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.SortOrder;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
@@ -27,11 +28,9 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
 
     private static final int LIMIT = 1000;
     private final Client elasticClient;
-    private final String clusterName;
 
-    public ElasticsearchLogRepository(Client elasticClient, String clusterName) {
+    public ElasticsearchLogRepository(Client elasticClient) {
         this.elasticClient = elasticClient;
-        this.clusterName = clusterName;
     }
 
     @Override
@@ -68,8 +67,7 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
 
     private BoolQueryBuilder createQuery(String topicName) {
         return boolQuery()
-                .must(matchQuery(TOPIC_NAME, topicName))
-                .must(matchQuery(CLUSTER, clusterName));
+                .must(matchQuery(TOPIC_NAME, topicName));
     }
 
     private BoolQueryBuilder createQuery(String topicName, String subscriptionName) {
@@ -82,6 +80,7 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
                 .addFields(MESSAGE_ID, TIMESTAMP, SUBSCRIPTION, TOPIC_NAME, STATUS, REASON, PARTITION, OFFSET, CLUSTER)
                 .setTypes(SENT_TYPE)
                 .setQuery(query)
+                .addSort(TIMESTAMP, SortOrder.ASC)
                 .setSize(limit)
                 .execute()
                 .get();
@@ -92,6 +91,7 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
                 .addFields(MESSAGE_ID, TIMESTAMP, TOPIC_NAME, STATUS, REASON, CLUSTER)
                 .setTypes(PUBLISHED_TYPE)
                 .setQuery(query)
+                .addSort(TIMESTAMP, SortOrder.ASC)
                 .setSize(limit)
                 .execute()
                 .get();
@@ -113,7 +113,7 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
                 h.field(SUBSCRIPTION).getValue(),
                 h.field(TOPIC_NAME).getValue(),
                 SentMessageTraceStatus.valueOf(h.field(STATUS).getValue()),
-                h.field(REASON).getValue(),
+                h.getFields().containsKey(REASON) ? h.field(REASON).getValue() : null,
                 null,
                 h.field(PARTITION).getValue(),
                 h.field(OFFSET).<Number>getValue().longValue(),

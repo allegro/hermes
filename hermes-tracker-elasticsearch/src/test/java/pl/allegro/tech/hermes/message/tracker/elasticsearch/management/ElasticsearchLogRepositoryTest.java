@@ -31,7 +31,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     public static ElasticsearchResource elasticsearch = new ElasticsearchResource(SENT_INDEX, PUBLISHED_INDEX);
 
     private DataInitializer dataInitializer = new DataInitializer(elasticsearch.client(), CLUSTER_NAME);
-    private LogRepository logRepository = new ElasticsearchLogRepository(elasticsearch.client(), CLUSTER_NAME);
+    private LogRepository logRepository = new ElasticsearchLogRepository(elasticsearch.client());
 
     @Test
     public void shouldGetLastUndelivered() throws Exception {
