@@ -8,7 +8,8 @@ dependencies {
     compile group: 'io.undertow', name: 'undertow-servlet', version: '1.2.7.Final'
     compile group: 'org.apache.kafka', name: 'kafka-clients', version: '0.8.2.0'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
-    compile group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: '1.1.2.v20150522'
+
+    provided group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 
 
     testCompile project(':hermes-test-helper')
