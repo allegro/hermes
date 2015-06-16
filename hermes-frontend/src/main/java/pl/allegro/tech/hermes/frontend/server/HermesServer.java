@@ -20,17 +20,8 @@ import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidator;
 
 import javax.inject.Inject;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.SecureRandom;
 
 import static io.undertow.Handlers.path;
 import static io.undertow.Handlers.redirect;
@@ -96,24 +87,24 @@ public class HermesServer {
 
     private Undertow configureServer() {
         gracefulShutdown = new HermesShutdownHandler(deployAndStart(), hermesMetrics);
-
-        this.undertow = Undertow.builder()
+        Undertow.Builder builder = Undertow.builder()
                 .addHttpListener(port, host)
-                .addHttpsListener(portSSL, host, prepareSSLContext())
                 .setServerOption(REQUEST_PARSE_TIMEOUT, configFactory.getIntProperty(FRONTEND_REQUEST_PARSE_TIMEOUT))
                 .setServerOption(MAX_HEADERS, configFactory.getIntProperty(FRONTEND_MAX_HEADERS))
                 .setServerOption(MAX_PARAMETERS, configFactory.getIntProperty(FRONTEND_MAX_PARAMETERS))
                 .setServerOption(MAX_COOKIES, configFactory.getIntProperty(FRONTEND_MAX_COOKIES))
                 .setServerOption(ALWAYS_SET_KEEP_ALIVE, configFactory.getBooleanProperty(FRONTEND_SET_KEEP_ALIVE))
-                .setServerOption(ENABLE_HTTP2, configFactory.getBooleanProperty(FRONTEND_HTTP2))
                 .setSocketOption(BACKLOG, configFactory.getIntProperty(FRONTEND_BACKLOG_SIZE))
                 .setSocketOption(READ_TIMEOUT, configFactory.getIntProperty(FRONTEND_READ_TIMEOUT))
                 .setIoThreads(configFactory.getIntProperty(FRONTEND_IO_THREADS_COUNT))
                 .setWorkerThreads(configFactory.getIntProperty(FRONTEND_WORKER_THREADS_COUNT))
                 .setBufferSize(configFactory.getIntProperty(FRONTEND_BUFFER_SIZE))
-                .setHandler(gracefulShutdown)
-                .build();
-
+                .setHandler(gracefulShutdown);
+        if (configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED)) {
+             builder.setServerOption(ENABLE_HTTP2, true)
+                    .addHttpsListener(portSSL, host, new SSLContextSupplier(configFactory).get());
+        }
+        this.undertow = builder.build();
         return undertow;
     }
 
@@ -153,45 +144,5 @@ public class HermesServer {
 
     private boolean isEnabled(Configs property) {
         return configFactory.getBooleanProperty(property);
-    }
-
-    private SSLContext prepareSSLContext() {
-        try {
-            return createSSLContext(loadKeyStore(configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_LOCATION),
-                                                 configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_PASSWORD),
-                                                 configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_FORMAT)),
-                                    loadKeyStore(configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_LOCATION),
-                                                 configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_PASSWORD),
-                                                 configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_FORMAT)));
-        } catch (Exception e) {
-            throw new IllegalStateException("Something went wrong with setting up SSL context.", e);
-        }
-    }
-
-    private KeyStore loadKeyStore(String name, String password, String format) throws Exception {
-        try (InputStream stream = HermesServer.class.getClassLoader().getResourceAsStream(name)) {
-            KeyStore loadedKeystore = KeyStore.getInstance(format);
-            loadedKeystore.load(stream, password.toCharArray());
-            return loadedKeystore;
-        }
-    }
-
-    private SSLContext createSSLContext(final KeyStore keyStore, final KeyStore trustStore) throws Exception {
-        KeyManager[] keyManagers;
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        char[] pass = configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_PASSWORD).toCharArray();
-        keyManagerFactory.init(keyStore, pass);
-        keyManagers = keyManagerFactory.getKeyManagers();
-
-        TrustManager[] trustManagers;
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        trustManagerFactory.init(trustStore);
-        trustManagers = trustManagerFactory.getTrustManagers();
-
-        SSLContext sslContext;
-        sslContext = SSLContext.getInstance(configFactory.getStringProperty(FRONTEND_SSL_PROTOCOL));
-        sslContext.init(keyManagers, trustManagers, SecureRandom.getInstanceStrong());
-
-        return sslContext;
     }
 }

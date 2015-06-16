@@ -7,7 +7,10 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
+import pl.allegro.tech.hermes.client.okhttp.OkHttpSender;
 import pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender;
+import pl.allegro.tech.hermes.frontend.server.KeystoreProperties;
+import pl.allegro.tech.hermes.frontend.server.SSLContextSupplier;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.net.URI;
@@ -23,6 +26,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
 
     private TopicName topic = new TopicName("hermesClientGroup", "topic");
     private URI topicURI = create("http://localhost:" + FRONTEND_PORT);
+    private URI topicURI_SSL = create("https://localhost:" + FRONTEND_PORT_SSL);
 
     @BeforeClass
     public void initialize() throws InterruptedException {
@@ -42,6 +46,27 @@ public class HermesClientPublishingTest extends IntegrationTest {
     public void shouldPublishUsingRestTemplate() {
         // given
         HermesClient client = hermesClient(new RestTemplateHermesSender(new AsyncRestTemplate())).withURI(topicURI).build();
+
+        // when & then
+        runTestSuiteForHermesClient(client);
+    }
+
+    @Test
+    public void shouldPublishUsingOkHttpClient() {
+        // given
+        HermesClient client = hermesClient(new OkHttpSender()).withURI(topicURI).build();
+
+        // when & then
+        runTestSuiteForHermesClient(client);
+    }
+
+    @Test
+    public void shouldPublishUsingOkHttpClientUsingSSL() {
+        // given
+        KeystoreProperties keystore = new KeystoreProperties("client.keystore", "JKS", "password");
+        KeystoreProperties truststore = new KeystoreProperties("client.truststore", "JKS", "password");
+        SSLContextSupplier sslSupplier = new SSLContextSupplier("TLS", keystore, truststore);
+        HermesClient client = hermesClient(new OkHttpSender(sslSupplier.get())).withURI(topicURI_SSL).build();
 
         // when & then
         runTestSuiteForHermesClient(client);

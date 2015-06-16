@@ -18,8 +18,10 @@ public interface EnvironmentAware {
     String HTTP_ENDPOINT_URL = "http://localhost:" + HTTP_ENDPOINT_PORT + "/";
 
     int FRONTEND_PORT = CONFIG_FACTORY.getIntProperty(Configs.FRONTEND_PORT);
-    
+
     String FRONTEND_URL = "http://localhost:" + FRONTEND_PORT + "/";
+
+    int FRONTEND_PORT_SSL = CONFIG_FACTORY.getIntProperty(Configs.FRONTEND_SSL_PORT);
 
     String CLIENT_FRONTEND_URL = "http://localhost:" + FRONTEND_PORT;
 

@@ -57,9 +57,9 @@ public enum Configs {
     FRONTEND_REQUEST_CHUNK_SIZE("frontend.request.chunk.size", 1024),
     FRONTEND_GRACEFUL_SHUTDOWN_ENABLED("frontend.graceful.shutdown.enabled", true),
     FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
-    FRONTEND_HTTP2("frontend.http2", true),
+    FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
 
-    FRONTEND_SSL_PORT("frontend.ssl.port", 8081),
+    FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
     FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
     FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "server.keystore"),
     FRONTEND_SSL_KEYSTORE_PASSWORD("frontend.ssl.keystore.password", "password"),
