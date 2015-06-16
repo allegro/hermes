@@ -63,13 +63,24 @@ public class HermesClientPublishingTest extends IntegrationTest {
     @Test
     public void shouldPublishUsingOkHttpClientUsingSSL() {
         // given
-        KeystoreProperties keystore = new KeystoreProperties("client.keystore", "JKS", "password");
-        KeystoreProperties truststore = new KeystoreProperties("client.truststore", "JKS", "password");
-        SSLContextSupplier sslSupplier = new SSLContextSupplier("TLS", keystore, truststore);
+        SSLContextSupplier sslSupplier = getSslContextSupplier();
         HermesClient client = hermesClient(new OkHttpSender(sslSupplier.get())).withURI(topicURI_SSL).build();
 
         // when & then
         runTestSuiteForHermesClient(client);
+    }
+
+    @Test
+    public void shouldCommunicateWithHermesUsingHttp2() {
+        // given
+        SSLContextSupplier sslSupplier = getSslContextSupplier();
+        HermesClient client = hermesClient(new OkHttpSender(sslSupplier.get())).withURI(topicURI_SSL).build();
+
+        // when
+        HermesResponse response = client.publish(topic.qualifiedName(), message.body()).join();
+
+        // then
+        assertThat(response.getHeader("OkHttp-Selected-Protocol")).isEqualTo("h2");
     }
 
     private void runTestSuiteForHermesClient(HermesClient client) {
@@ -95,5 +106,11 @@ public class HermesClientPublishingTest extends IntegrationTest {
 
         // then
         assertThat(response.wasPublished()).isFalse();
+    }
+
+    private SSLContextSupplier getSslContextSupplier() {
+        KeystoreProperties keystore = new KeystoreProperties("client.keystore", "JKS", "password");
+        KeystoreProperties truststore = new KeystoreProperties("client.truststore", "JKS", "password");
+        return new SSLContextSupplier("TLS", keystore, truststore);
     }
 }
