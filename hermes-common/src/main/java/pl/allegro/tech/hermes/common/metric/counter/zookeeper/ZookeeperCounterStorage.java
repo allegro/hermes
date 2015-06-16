@@ -99,7 +99,7 @@ public class ZookeeperCounterStorage implements CounterStorage {
     public int countInflightNodes(TopicName topicName, String subscriptionName) {
         return distributedCounter.countOccurrences(
                 appendRootPath(CONSUMER_BASE_PATH),
-                pathsCompiler.compile(SUBSCRIPTION_INFLIGHT_FULL_PATH, subscriptionPathContext(topicName, subscriptionName))
+                pathsCompiler.compile(SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH, subscriptionPathContext(topicName, subscriptionName))
         );
     }
 

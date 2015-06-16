@@ -4,12 +4,9 @@ import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.ErrorCode;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 
 import javax.ws.rs.core.Response;
-
 import java.util.List;
 
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
@@ -112,33 +109,27 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnTopicsThatAreCurrentlyTracked() {
         // given
-        TopicName topic = createTrackedTopic("tracked", "topic");
+        operations.buildTopic(topic().withName("trackedGroup", "topic").withTrackingEnabled(true).build());
+        operations.buildTopic(topic().withName("untrackedGroup", "topic").withTrackingEnabled(false).build());
 
         // when
         List<String> tracked = management.topic().list("", true);
 
         // then
-        assertThat(tracked).containsOnly(topic.qualifiedName());
+        assertThat(tracked).contains("trackedGroup.topic").doesNotContain("untrackedGroup.topic");
     }
 
     @Test
     public void shouldReturnTopicsThatAreCurrentlyTrackedForGivenGroup() {
         // given
-        TopicName topic1 = createTrackedTopic("tracked1", "topic1");
-        TopicName topic2 = createTrackedTopic("tracked2", "topic2");
+        operations.buildTopic(topic().withName("mixedTrackedGroup", "trackedTopic").withTrackingEnabled(true).build());
+        operations.buildTopic(topic().withName("mixedTrackedGroup", "untrackedTopic").withTrackingEnabled(false).build());
 
         // when
-        List<String> tracked = management.topic().list(topic1.getGroupName(), true);
+        List<String> tracked = management.topic().list("mixedTrackedGroup", true);
 
         // then
-        assertThat(tracked).contains(topic1.qualifiedName())
-                           .doesNotContain(topic2.qualifiedName());
-    }
-
-    private TopicName createTrackedTopic(String group, String name) {
-        TopicName topic = new TopicName(group, name);
-        operations.createGroup(topic.getGroupName());
-        operations.createTopic(topic().withName(topic).withTrackingEnabled(true).build());
-        return topic;
+        assertThat(tracked).contains("mixedTrackedGroup.trackedTopic")
+                           .doesNotContain("mixedTrackedGroup.untrackedTopic");
     }
 }

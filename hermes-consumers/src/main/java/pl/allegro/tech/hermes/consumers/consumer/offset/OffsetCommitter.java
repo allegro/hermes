@@ -24,19 +24,14 @@ public class OffsetCommitter implements Runnable {
     private final ConsumerHolder consumerHolder;
     private final MessageCommitter messageCommitter;
     private final ConfigFactory configFactory;
-    private final AsyncOffsetMonitor asyncOffsetMonitor;
 
     public OffsetCommitter(
             ConsumerHolder consumerHolder,
             MessageCommitter messageCommitter,
-            ConfigFactory configFactory,
-            AsyncOffsetMonitor asyncOffsetMonitor) {
-
+            ConfigFactory configFactory) {
         this.consumerHolder = consumerHolder;
         this.messageCommitter = messageCommitter;
         this.configFactory = configFactory;
-        this.asyncOffsetMonitor = asyncOffsetMonitor;
-
     }
 
     public void start() {
@@ -59,7 +54,6 @@ public class OffsetCommitter implements Runnable {
                     offsetsPerSubscription.put(subscription, partitionOffset);
                 }
             }
-            asyncOffsetMonitor.process(offsetsPerSubscription);
         } catch (Exception e) {
             LOGGER.error("Failed to commit offsets", e);
         }
