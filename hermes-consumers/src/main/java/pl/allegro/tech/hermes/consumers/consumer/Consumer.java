@@ -6,16 +6,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.common.metric.Timers;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SplitMessagesReceiver;
-import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
+import pl.allegro.tech.hermes.message.tracker.consumers.Trackers;
 
 import java.util.List;
 import java.util.concurrent.Semaphore;
+
+import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class Consumer implements Runnable {
 
@@ -85,7 +87,7 @@ public class Consumer implements Runnable {
             subscriptionOffsetCommitQueues.put(message);
 
             hermesMetrics.incrementInflightCounter(subscription);
-            trackers.get(subscription).logInflight(message, subscription);
+            trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));
 
             sender.sendMessage(message);
         }

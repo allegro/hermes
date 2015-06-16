@@ -59,7 +59,6 @@ public enum Configs {
     FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
 
     CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 20),
-    CONSUMER_COMMIT_OFFSET_CACHE_EXPIRATION("consumer.commit.offset.cache.expiration", 10),
     CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE("consumer.sender.async.timeout.thread.pool.size", 32),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING("consumer.sender.async.timeout.thread.pool.monitoring", false),
@@ -101,9 +100,6 @@ public enum Configs {
     METADATA_CONTENT_ROOT("message.content.root", "metadata"),
     GRAPHITE_PREFIX("graphite.prefix", "stats.tech.hermes"),
 
-    TRACKER_MONGODB_URI("tracker.mongodb.uri", "mongodb://localhost:27017/hermesMessages"),
-    TRACKER_MONGODB_COMMIT_INTERVAL("tracker.mongodb.commit.interval", 1000),
-    TRACKER_MONGODB_QUEUE_CAPACITY("tracker.mongodb.queue.capacity", 100 * 1000),
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 
     private final String name;
