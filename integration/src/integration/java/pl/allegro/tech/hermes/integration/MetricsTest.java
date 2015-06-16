@@ -146,23 +146,6 @@ public class MetricsTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldSendLagMetricsToGraphite() {
-        //given
-        operations.buildSubscription("lagMetricGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated("lagMetricGroup", "topic", "subscription");
-        remoteService.expectMessages(TestMessage.simple().body());
-        graphiteServer.expectMetric(metricNameWithPrefix("consumer.offset.lagMetricGroup.topic.subscription.[0-9].lag.count"), 1);
-        graphiteServer.expectMetric(metricNameWithPrefix("consumer.offset.lagMetricGroup.topic.subscription.[0-9].timeLag.count"), 1);
-
-        //when
-        publisher.publish("lagMetricGroup.topic", TestMessage.simple().body());
-
-        //then
-        remoteService.waitUntilReceived();
-        graphiteServer.waitUntilReceived();
-    }
-
-    @Test
     public void shouldNotCreateNewTopicWhenAskingForNonExistingMetrics() {
         //given
         TopicName newTopic = new TopicName("auto-topic-bug", "not-existing");

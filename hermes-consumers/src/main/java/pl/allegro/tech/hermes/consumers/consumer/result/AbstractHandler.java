@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.result;
 
-import org.joda.time.Duration;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
@@ -18,15 +17,5 @@ public abstract class AbstractHandler {
     protected void updateMetrics(String counterToUpdate, Message message, Subscription subscription) {
         hermesMetrics.counter(counterToUpdate, subscription.getTopicName(), subscription.getName()).inc();
         hermesMetrics.decrementInflightCounter(subscription);
-
-        if (message.getPublishingTimestamp().isPresent()) {
-            long timeLag = calculateTimeLagInSeconds(message.getPublishingTimestamp().get());
-            hermesMetrics.histogramForOffsetTimeLag(subscription, message.getPartition()).update(timeLag);
-        }
     }
-
-    private long calculateTimeLagInSeconds(Long messageTimestamp) {
-        return new Duration(messageTimestamp, System.currentTimeMillis()).getStandardSeconds();
-    }
-
 }
