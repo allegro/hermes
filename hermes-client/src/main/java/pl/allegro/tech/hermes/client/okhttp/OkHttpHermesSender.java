@@ -5,30 +5,20 @@ import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.HermesSender;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
 import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 
-public class OkHttpSender implements HermesSender {
+public class OkHttpHermesSender implements HermesSender {
 
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private final OkHttpClient client;
 
-    public OkHttpSender() {
-        this(new OkHttpClient());
-    }
-
-    public OkHttpSender(OkHttpClient client) {
+    public OkHttpHermesSender(OkHttpClient client) {
         this.client = client;
-    }
-
-    public OkHttpSender(SSLContext sslContext) {
-        this();
-        this.client.setSslSocketFactory(sslContext.getSocketFactory());
     }
 
     @Override

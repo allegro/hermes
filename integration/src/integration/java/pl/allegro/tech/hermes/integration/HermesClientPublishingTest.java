@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import com.squareup.okhttp.OkHttpClient;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -7,7 +8,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
-import pl.allegro.tech.hermes.client.okhttp.OkHttpSender;
+import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender;
 import pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender;
 import pl.allegro.tech.hermes.frontend.server.KeystoreProperties;
 import pl.allegro.tech.hermes.frontend.server.SSLContextSupplier;
@@ -38,7 +39,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
     public void shouldPublishUsingJerseyClient() {
         // given
         HermesClient client = hermesClient(new JerseyHermesSender(newClient())).withURI(topicURI).build();
-        
+
         // when & then
         runTestSuiteForHermesClient(client);
     }
@@ -55,7 +56,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
     @Test
     public void shouldPublishUsingOkHttpClient() {
         // given
-        HermesClient client = hermesClient(new OkHttpSender()).withURI(topicURI).build();
+        HermesClient client = hermesClient(new OkHttpHermesSender(new OkHttpClient())).withURI(topicURI).build();
 
         // when & then
         runTestSuiteForHermesClient(client);
@@ -64,7 +65,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
     @Test
     public void shouldPublishUsingOkHttpClientUsingSSL() {
         // given
-        HermesClient client = hermesClient(new OkHttpSender(getSslContext())).withURI(sslTopicUri).build();
+        HermesClient client = hermesClient(new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured())).withURI(sslTopicUri).build();
 
         // when & then
         runTestSuiteForHermesClient(client);
@@ -73,7 +74,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
     @Test
     public void shouldCommunicateWithHermesUsingHttp2() {
         // given
-        HermesClient client = hermesClient(new OkHttpSender(getSslContext())).withURI(sslTopicUri).build();
+        HermesClient client = hermesClient(new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured())).withURI(sslTopicUri).build();
 
         // when
         HermesResponse response = client.publish(topic.qualifiedName(), message.body()).join();
@@ -105,6 +106,12 @@ public class HermesClientPublishingTest extends IntegrationTest {
 
         // then
         assertThat(response.wasPublished()).isFalse();
+    }
+
+    private OkHttpClient getOkHttpClientWithSslContextConfigured() {
+        OkHttpClient okHttpClient = new OkHttpClient();
+        okHttpClient.setSslSocketFactory(getSslContext().getSocketFactory());
+        return okHttpClient;
     }
 
     private SSLContext getSslContext() {
