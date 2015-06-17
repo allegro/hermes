@@ -10,24 +10,27 @@ public class ConsumerLatencyTimer {
     private final Timer latencyTimer;
     private final Timer subscriptionLatencyTimer;
 
-    private Timer.Context latencyTimerContext;
-    private Timer.Context subscriptionLatencyTimerContext;
-
     public ConsumerLatencyTimer(HermesMetrics hermesMetrics, TopicName topicName, String subscriptionName) {
         latencyTimer = hermesMetrics.timer(Timers.CONSUMER_LATENCY);
         subscriptionLatencyTimer = hermesMetrics.timer(Timers.CONSUMER_SUBSCRIPTION_LATENCY, topicName, subscriptionName);
     }
 
-    public void start() {
-        latencyTimerContext = latencyTimer.time();
-        subscriptionLatencyTimerContext = subscriptionLatencyTimer.time();
+    public Context time() {
+        return new Context();
     }
 
-    public void stop() {
-        if (latencyTimerContext != null) {
-            latencyTimerContext.close();
+    public class Context {
+
+        private Timer.Context latencyTimerContext;
+        private Timer.Context subscriptionLatencyTimerContext;
+
+        private Context() {
+            latencyTimerContext = latencyTimer.time();
+            subscriptionLatencyTimerContext = subscriptionLatencyTimer.time();
         }
-        if (subscriptionLatencyTimerContext != null) {
+
+        public void stop() {
+            latencyTimerContext.close();
             subscriptionLatencyTimerContext.close();
         }
     }
