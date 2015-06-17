@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.frontend.server.KeystoreProperties;
 import pl.allegro.tech.hermes.frontend.server.SSLContextSupplier;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import javax.net.ssl.SSLContext;
 import java.net.URI;
 
 import static java.net.URI.create;
@@ -26,7 +27,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
 
     private TopicName topic = new TopicName("hermesClientGroup", "topic");
     private URI topicURI = create("http://localhost:" + FRONTEND_PORT);
-    private URI topicURI_SSL = create("https://localhost:" + FRONTEND_PORT_SSL);
+    private URI sslTopicUri = create("https://localhost:" + FRONTEND_SSL_PORT);
 
     @BeforeClass
     public void initialize() throws InterruptedException {
@@ -63,8 +64,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
     @Test
     public void shouldPublishUsingOkHttpClientUsingSSL() {
         // given
-        SSLContextSupplier sslSupplier = getSslContextSupplier();
-        HermesClient client = hermesClient(new OkHttpSender(sslSupplier.get())).withURI(topicURI_SSL).build();
+        HermesClient client = hermesClient(new OkHttpSender(getSslContext())).withURI(sslTopicUri).build();
 
         // when & then
         runTestSuiteForHermesClient(client);
@@ -73,8 +73,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
     @Test
     public void shouldCommunicateWithHermesUsingHttp2() {
         // given
-        SSLContextSupplier sslSupplier = getSslContextSupplier();
-        HermesClient client = hermesClient(new OkHttpSender(sslSupplier.get())).withURI(topicURI_SSL).build();
+        HermesClient client = hermesClient(new OkHttpSender(getSslContext())).withURI(sslTopicUri).build();
 
         // when
         HermesResponse response = client.publish(topic.qualifiedName(), message.body()).join();
@@ -108,9 +107,9 @@ public class HermesClientPublishingTest extends IntegrationTest {
         assertThat(response.wasPublished()).isFalse();
     }
 
-    private SSLContextSupplier getSslContextSupplier() {
+    private SSLContext getSslContext() {
         KeystoreProperties keystore = new KeystoreProperties("client.keystore", "JKS", "password");
         KeystoreProperties truststore = new KeystoreProperties("client.truststore", "JKS", "password");
-        return new SSLContextSupplier("TLS", keystore, truststore);
+        return new SSLContextSupplier("TLS", keystore, truststore).get();
     }
 }

@@ -44,7 +44,7 @@ public class HermesServer {
     private final PublishingServlet publishingServlet;
     private final HealthCheckService healthCheckService;
     private final int port;
-    private final int portSSL;
+    private final int sslPort;
     private final String host;
 
     @Inject
@@ -64,7 +64,7 @@ public class HermesServer {
         this.healthCheckService = healthCheckService;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
-        this.portSSL = configFactory.getIntProperty(FRONTEND_SSL_PORT);
+        this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
         this.host = configFactory.getStringProperty(FRONTEND_HOST);
     }
 
@@ -100,9 +100,9 @@ public class HermesServer {
                 .setWorkerThreads(configFactory.getIntProperty(FRONTEND_WORKER_THREADS_COUNT))
                 .setBufferSize(configFactory.getIntProperty(FRONTEND_BUFFER_SIZE))
                 .setHandler(gracefulShutdown);
-        if (configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED)) {
+        if (configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED))  {
              builder.setServerOption(ENABLE_HTTP2, true)
-                    .addHttpsListener(portSSL, host, new SSLContextSupplier(configFactory).get());
+                    .addHttpsListener(sslPort, host, new SSLContextSupplier(configFactory).get());
         }
         this.undertow = builder.build();
         return undertow;
