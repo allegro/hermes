@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.message.tracker.consumers.Trackers;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import static java.lang.String.format;
 import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;

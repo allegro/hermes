@@ -17,8 +17,8 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.message.tracker.frontend.LogRepository;
-import pl.allegro.tech.hermes.message.tracker.frontend.Trackers;
+import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
+import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.util.ArrayList;
 import java.util.List;

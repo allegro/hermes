@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
-import pl.allegro.tech.hermes.message.tracker.management.LogRepository;
+import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.Collections;
 import java.util.List;

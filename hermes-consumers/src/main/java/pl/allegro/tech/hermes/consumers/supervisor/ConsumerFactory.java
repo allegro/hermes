@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalcu
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageSplitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SplitMessagesReceiver;
-import pl.allegro.tech.hermes.message.tracker.consumers.Trackers;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import javax.inject.Inject;
 import java.util.concurrent.Semaphore;

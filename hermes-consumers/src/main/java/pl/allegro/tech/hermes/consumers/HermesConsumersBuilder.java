@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
 import pl.allegro.tech.hermes.consumers.di.TrackersBinder;
-import pl.allegro.tech.hermes.message.tracker.consumers.LogRepository;
+import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 
 import java.util.ArrayList;
 import java.util.List;

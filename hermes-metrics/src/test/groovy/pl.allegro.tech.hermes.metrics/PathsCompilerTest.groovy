@@ -1,6 +1,5 @@
-package pl.allegro.tech.hermes.common.metric
+package pl.allegro.tech.hermes.metrics
 
-import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Shared
 import spock.lang.Specification
 

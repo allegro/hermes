@@ -120,19 +120,6 @@ zookeeper.base.sleep.time        base time between connection retries, grows on 
 zookeeper.cache.thread.pool.size size of thread pool used ot manage topics cache            5
 ================================ ========================================================== ==============
 
-Message tracker
-^^^^^^^^^^^^^^^
-
-These options configure message tracking (for debug purpose mostly). Make sure they are the same as on Management and Consumer nodes.
-
-=============================== ===================================================================== ========================================
-Property                        Description                                                           Default value
-=============================== ===================================================================== ========================================
-tracker.mongodb.uri             mongo URI                                                             mongodb://localhost:27017/hermesMessages
-tracker.mongodb.commit.interval push tracking messages to Mongo once per interval                     1000 ms
-tracker.mongodb.queue.capacity  capacity of tracking messages queue - overflow messages are discarded 100 000
-=============================== ===================================================================== ========================================
-
 Metrics
 ^^^^^^^
 

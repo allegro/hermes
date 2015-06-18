@@ -20,7 +20,7 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.FongoFactory;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.test.HermesAssertions;
-import pl.allegro.tech.hermes.message.tracker.mongo.LogSchemaAware;
+import pl.allegro.tech.hermes.tracker.mongo.LogSchemaAware;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 

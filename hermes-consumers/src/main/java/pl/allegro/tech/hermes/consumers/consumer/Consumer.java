@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SplitMessagesReceiver;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
-import pl.allegro.tech.hermes.message.tracker.consumers.Trackers;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
 import java.util.concurrent.Semaphore;

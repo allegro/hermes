@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
-import pl.allegro.tech.hermes.message.tracker.mongo.frontend.MongoLogRepository;
+import pl.allegro.tech.hermes.tracker.mongo.frontend.MongoLogRepository;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 

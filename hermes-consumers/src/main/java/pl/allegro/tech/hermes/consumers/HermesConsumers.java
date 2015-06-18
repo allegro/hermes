@@ -11,8 +11,8 @@ import pl.allegro.tech.hermes.consumers.consumer.health.HealthCheckServer;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.message.tracker.consumers.LogRepository;
-import pl.allegro.tech.hermes.message.tracker.consumers.Trackers;
+import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
 import java.util.UUID;

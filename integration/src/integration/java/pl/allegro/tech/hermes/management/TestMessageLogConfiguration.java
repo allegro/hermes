@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.integration.env.FongoFactory;
-import pl.allegro.tech.hermes.message.tracker.management.LogRepository;
-import pl.allegro.tech.hermes.message.tracker.mongo.management.MongoLogRepository;
+import pl.allegro.tech.hermes.tracker.management.LogRepository;
+import pl.allegro.tech.hermes.tracker.mongo.management.MongoLogRepository;
 
 @Configuration
 public class TestMessageLogConfiguration {

@@ -21,7 +21,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SplitMessagesReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.message.tracker.consumers.Trackers;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.Collections;
 import java.util.Optional;

@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.frontend.di;
 
 import com.google.common.collect.ImmutableList;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import pl.allegro.tech.hermes.message.tracker.frontend.LogRepository;
-import pl.allegro.tech.hermes.message.tracker.frontend.Trackers;
+import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
+import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.util.List;
 

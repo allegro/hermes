@@ -15,7 +15,7 @@ import pl.allegro.tech.hermes.frontend.publishing.callbacks.HttpPublishingCallba
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidator;
-import pl.allegro.tech.hermes.message.tracker.frontend.Trackers;
+import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.inject.Inject;
 import javax.servlet.AsyncContext;
