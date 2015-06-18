@@ -88,6 +88,7 @@ public class ConsumerMessageSender {
 
     private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
         rateLimiter.acquire();
+        consumerLatencyTimer.start();
         final CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
         response.thenAcceptAsync(new ResponseHandlingListener(message, consumerLatencyTimer), deliveryReportingExecutor);
     }

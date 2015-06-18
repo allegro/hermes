@@ -7,16 +7,28 @@ import pl.allegro.tech.hermes.common.metric.Timers;
 
 public class ConsumerLatencyTimer {
 
-    private Timer.Context latencyTimer;
-    private Timer.Context subscriptionLatencyTimer;
+    private final Timer latencyTimer;
+    private final Timer subscriptionLatencyTimer;
+
+    private Timer.Context latencyTimerContext;
+    private Timer.Context subscriptionLatencyTimerContext;
 
     public ConsumerLatencyTimer(HermesMetrics hermesMetrics, TopicName topicName, String subscriptionName) {
-        latencyTimer = hermesMetrics.timer(Timers.CONSUMER_LATENCY).time();
-        subscriptionLatencyTimer = hermesMetrics.timer(Timers.CONSUMER_SUBSCRIPTION_LATENCY, topicName, subscriptionName).time();
+        latencyTimer = hermesMetrics.timer(Timers.CONSUMER_LATENCY);
+        subscriptionLatencyTimer = hermesMetrics.timer(Timers.CONSUMER_SUBSCRIPTION_LATENCY, topicName, subscriptionName);
+    }
+
+    public void start() {
+        latencyTimerContext = latencyTimer.time();
+        subscriptionLatencyTimerContext = subscriptionLatencyTimer.time();
     }
 
     public void stop() {
-        latencyTimer.close();
-        subscriptionLatencyTimer.close();
+        if (latencyTimerContext != null) {
+            latencyTimerContext.close();
+        }
+        if (subscriptionLatencyTimerContext != null) {
+            subscriptionLatencyTimerContext.close();
+        }
     }
 }
