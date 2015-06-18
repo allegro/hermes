@@ -61,10 +61,10 @@ public enum Configs {
 
     FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
     FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
-    FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "server.keystore"),
+    FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "classpath:server.keystore"),
     FRONTEND_SSL_KEYSTORE_PASSWORD("frontend.ssl.keystore.password", "password"),
     FRONTEND_SSL_KEYSTORE_FORMAT("frontend.ssl.keystore.format", "JKS"),
-    FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "server.truststore"),
+    FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "classpath:server.truststore"),
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
 

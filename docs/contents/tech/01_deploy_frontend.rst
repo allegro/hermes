@@ -74,10 +74,10 @@ frontend.graceful.shutdown.initial.wait.ms when shutting down, period before set
 frontend.http2.enabled                     enables HTTP/2 listener (requires setting all frontend.ssl.* properties)                         false
 frontend.ssl.port                          secure port to listen on (enabled along with HTTP/2)                                             8443
 frontend.ssl.protocol                      SSL protocol                                                                                     TLS
-frontend.ssl.keystore.location             keystore location (searched in classpath)                                                        server.keystore
+frontend.ssl.keystore.location             keystore location, prefixed with classpath: or file:                                             classpath:server.keystore
 frontend.ssl.keystore.password             password required to access keystore                                                             password
 frontend.ssl.keystore.format               keystore format                                                                                  JKS
-frontend.ssl.truststore.location           truststore location (searched in classpath)                                                      server.keystore
+frontend.ssl.truststore.location           truststore location, prefixed with classpath: or file:                                           classpath:server.keystore
 frontend.ssl.truststore.password           password required to access truststore                                                           password
 frontend.ssl.truststore.format             truststore format                                                                                JKS
 ========================================== ================================================================================================ ==============

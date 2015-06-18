@@ -115,8 +115,8 @@ public class HermesClientPublishingTest extends IntegrationTest {
     }
 
     private SSLContext getSslContext() {
-        KeystoreProperties keystore = new KeystoreProperties("client.keystore", "JKS", "password");
-        KeystoreProperties truststore = new KeystoreProperties("client.truststore", "JKS", "password");
+        KeystoreProperties keystore = new KeystoreProperties("classpath:client.keystore", "JKS", "password");
+        KeystoreProperties truststore = new KeystoreProperties("classpath:client.truststore", "JKS", "password");
         return new SSLContextSupplier("TLS", keystore, truststore).get();
     }
 }

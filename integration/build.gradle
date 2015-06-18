@@ -13,6 +13,12 @@ project.configurations {
     alpnboot
 }
 
+
+/*
+    This is required for proper http2 integration testing. We only need one version at a time but it's rather
+    impossible to know which update of Java8 developers are running so we're trying to support all common use cases;
+    code refers to: http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-versions
+ */
 def getAlpnVersion() {
     def version = System.getProperty("java.version")
     version = version.contains("_")? version.split("_")[1] as Integer : 0
