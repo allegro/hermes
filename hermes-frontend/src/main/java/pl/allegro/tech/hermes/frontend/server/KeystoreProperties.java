@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.frontend.server;
 
 
+import java.net.URI;
+
 public class KeystoreProperties {
     private final String location;
     private final String format;
@@ -22,5 +24,9 @@ public class KeystoreProperties {
 
     public String getPassword() {
         return password;
+    }
+
+    public URI getLocationAsURI() {
+        return URI.create(getLocation());
     }
 }

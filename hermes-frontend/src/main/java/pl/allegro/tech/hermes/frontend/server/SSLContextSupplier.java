@@ -8,9 +8,16 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.URI;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
 import java.util.function.Supplier;
 
 public class SSLContextSupplier implements Supplier<SSLContext> {
@@ -46,14 +53,22 @@ public class SSLContextSupplier implements Supplier<SSLContext> {
     }
 
     private KeyStore loadKeyStore(KeystoreProperties props) throws Exception {
-        try (InputStream stream = SSLContextSupplier.class.getClassLoader().getResourceAsStream(props.getLocation())) {
+        try (InputStream stream = getResourceAsInputStream(props.getLocationAsURI())) {
             KeyStore loadedKeystore = KeyStore.getInstance(props.getFormat());
             loadedKeystore.load(stream, props.getPassword().toCharArray());
             return loadedKeystore;
         }
     }
 
-    private SSLContext createSSLContext(final KeyStore keyStore, final KeyStore trustStore) throws Exception {
+    private InputStream getResourceAsInputStream(URI location) throws FileNotFoundException {
+        if ("classpath".equalsIgnoreCase(location.getScheme())) {
+             return SSLContextSupplier.class.getClassLoader().getResourceAsStream(location.getSchemeSpecificPart());
+        }
+        return new FileInputStream(location.getSchemeSpecificPart());
+    }
+
+    private SSLContext createSSLContext(final KeyStore keyStore, final KeyStore trustStore)
+            throws NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, KeyManagementException {
         KeyManager[] keyManagers;
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         char[] pass = keyStoreProperties.getPassword().toCharArray();
