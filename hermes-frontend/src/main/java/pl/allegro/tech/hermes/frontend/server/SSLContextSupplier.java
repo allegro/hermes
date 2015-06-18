@@ -71,21 +71,18 @@ public class SSLContextSupplier implements Supplier<SSLContext> {
 
     private SSLContext createSSLContext(final KeyStore keyStore, final KeyStore trustStore)
             throws NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, KeyManagementException {
-        KeyManager[] keyManagers;
+
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         char[] pass = keyStoreProperties.getPassword().toCharArray();
         keyManagerFactory.init(keyStore, pass);
-        keyManagers = keyManagerFactory.getKeyManagers();
+        KeyManager[] keyManagers = keyManagerFactory.getKeyManagers();
 
-        TrustManager[] trustManagers;
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(trustStore);
-        trustManagers = trustManagerFactory.getTrustManagers();
+        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
 
-        SSLContext sslContext;
-        sslContext = SSLContext.getInstance(protocol);
+        SSLContext sslContext = SSLContext.getInstance(protocol);
         sslContext.init(keyManagers, trustManagers, SecureRandom.getInstanceStrong());
-
         return sslContext;
     }
 }
