@@ -37,8 +37,8 @@ Gradle
         compile group: 'pl.allegro.tech.hermes', name: 'hermes-client', version: '|version|'
     }
 
-Initalization
-^^^^^^^^^^^^^
+Initialization
+^^^^^^^^^^^^^^
 
 Spring - AsyncRestTemplate
 ''''''''''''''''''''''''''
@@ -72,6 +72,28 @@ Requirement: dependency ``com.squareup.okhttp:okhttp`` must be provided at runti
     HermesClient client = HermesClientBuilder.hermesClient(new OkHttpHermesSender(new OkHttpClient()))
         .withURI(URI.create("http://localhost:8080"))
         .build();
+
+HTTP2 support:
+''''''''''''''
+Requirements:
+
+1. JVM configured with `ALPN support <http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-starting>`_:
+
+.. code-block::
+
+    java -Xbootclasspath/p:<path_to_alpn_boot_jar> ...
+
+2. OkHttp Client configured with SSL support (`OkHttp Wiki <https://github.com/square/okhttp/wiki/HTTPS>`_):
+
+.. code-block:: java
+
+    OkHttpClient okHttpClient = new OkHttpClient();
+    okHttpClient.setSslSocketFactory(getSslContext().getSocketFactory());
+    HermesClient client = HermesClientBuilder.hermesClient(new OkHttpHermesSender(okHttpClient))
+        .withURI(URI.create("https://localhost:8443"))
+        .build();
+
+..
 
 Publishing
 ^^^^^^^^^^
