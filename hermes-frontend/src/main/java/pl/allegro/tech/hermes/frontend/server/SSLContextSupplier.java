@@ -20,6 +20,8 @@ import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.util.function.Supplier;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 public class SSLContextSupplier implements Supplier<SSLContext> {
     private final String protocol;
     private final KeystoreProperties keyStoreProperties;
@@ -64,7 +66,7 @@ public class SSLContextSupplier implements Supplier<SSLContext> {
         if ("classpath".equalsIgnoreCase(location.getScheme())) {
              return SSLContextSupplier.class.getClassLoader().getResourceAsStream(location.getSchemeSpecificPart());
         }
-        return new FileInputStream(location.getSchemeSpecificPart());
+        return new FileInputStream(isNullOrEmpty(location.getPath()) ? location.getSchemeSpecificPart() : location.getPath());
     }
 
     private SSLContext createSSLContext(final KeyStore keyStore, final KeyStore trustStore)
