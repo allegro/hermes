@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.tracker.consumers;
 
-
 public interface LogRepository {
 
     void logSuccessful(MessageMetadata message, long timestamp);

@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.frontend;
 
+import com.codahale.metrics.MetricRegistry;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.junit.ClassRule;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
 import pl.allegro.tech.hermes.tracker.frontend.AbstractLogRepositoryTest;
@@ -23,7 +25,7 @@ public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest im
 
     @Override
     protected LogRepository createRepository() {
-        return new ElasticsearchLogRepository(elasticsearch.client(), CLUSTER_NAME);
+        return new ElasticsearchLogRepository(elasticsearch.client(), CLUSTER_NAME, 1000, 100, new MetricRegistry(), new PathsCompiler("localhost"));
     }
 
     @Override

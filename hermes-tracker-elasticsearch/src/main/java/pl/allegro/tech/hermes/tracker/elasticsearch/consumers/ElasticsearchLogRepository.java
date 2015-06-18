@@ -1,51 +1,64 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.consumers;
 
+import com.codahale.metrics.MetricRegistry;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
-import pl.allegro.tech.hermes.tracker.elasticsearch.AbstractLogRepository;
+import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchQueueCommitter;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
+import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Gauges;
+import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Timers;
 
 import java.io.IOException;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.DocumentBuilder.build;
 
-public class ElasticsearchLogRepository extends AbstractLogRepository implements LogRepository, LogSchemaAware {
+public class ElasticsearchLogRepository extends BatchingLogRepository<XContentBuilder> implements LogRepository, LogSchemaAware {
 
-    public ElasticsearchLogRepository(Client elasticClient, String clusterName) {
-        super(elasticClient, clusterName, SENT_INDEX, SENT_TYPE);
+    public ElasticsearchLogRepository(Client elasticClient, String clusterName,
+                                      int queueSize, int commitInterval,
+                                      MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
+        super(queueSize, clusterName, metricRegistry, pathsCompiler);
+
+        registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
+        registerRemainingCapacityGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY);
+
+        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, SENT_INDEX, SENT_TYPE, elasticClient,
+                metricRegistry.timer(pathsCompiler.compile(Timers.CONSUMER_TRACKER_ELASTICSEARCH_COMMIT_LATENCY)), commitInterval);
     }
 
     @Override
     public void logSuccessful(MessageMetadata message, long timestamp) {
-        indexDocument(() -> document(message, timestamp, SUCCESS));
+        queue.offer(document(message, timestamp, SUCCESS));
     }
 
     @Override
     public void logFailed(MessageMetadata message, long timestamp, String reason) {
-        indexDocument(() -> document(message, timestamp, FAILED, reason));
+        queue.offer(document(message, timestamp, FAILED, reason));
     }
 
     @Override
     public void logDiscarded(MessageMetadata message, long timestamp, String reason) {
-        indexDocument(() -> document(message, timestamp, DISCARDED, reason));
+        queue.offer(document(message, timestamp, DISCARDED, reason));
     }
 
     @Override
     public void logInflight(MessageMetadata message, long timestamp) {
-        indexDocument(() -> document(message, timestamp, INFLIGHT));
+        queue.offer(document(message, timestamp, INFLIGHT));
     }
 
-    private XContentBuilder document(MessageMetadata message, long createdAt, SentMessageTraceStatus status) throws IOException {
-        return notEndedDocument(message, createdAt, status.toString()).endObject();
+    private XContentBuilder document(MessageMetadata message, long createdAt, SentMessageTraceStatus status) {
+        return build(() -> notEndedDocument(message, createdAt, status.toString()).endObject());
     }
 
-    private XContentBuilder document(MessageMetadata message, long timestamp, SentMessageTraceStatus status, String reason)
-            throws IOException {
-        return notEndedDocument(message, timestamp, status.toString()).field(REASON, reason).endObject();
+    private XContentBuilder document(MessageMetadata message, long timestamp, SentMessageTraceStatus status, String reason) {
+        return build(() -> notEndedDocument(message, timestamp, status.toString()).field(REASON, reason).endObject());
     }
 
     protected XContentBuilder notEndedDocument(MessageMetadata message, long timestamp, String status)
