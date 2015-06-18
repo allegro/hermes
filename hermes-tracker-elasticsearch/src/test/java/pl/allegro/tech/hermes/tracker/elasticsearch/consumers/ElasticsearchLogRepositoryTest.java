@@ -14,13 +14,14 @@ import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.TypedIndex.SENT_MESSAGES;
 
 public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest implements LogSchemaAware {
 
     private static final String CLUSTER_NAME = "primary";
 
     @ClassRule
-    public static ElasticsearchResource elasticsearch = new ElasticsearchResource(SENT_INDEX);
+    public static ElasticsearchResource elasticsearch = new ElasticsearchResource(SENT_MESSAGES);
 
     @Override
     protected LogRepository createLogRepository() {
