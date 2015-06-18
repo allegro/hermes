@@ -66,6 +66,9 @@ public class ConsumerMessageSenderTest {
     private ConsumerLatencyTimer consumerLatencyTimer;
 
     @Mock
+    private ConsumerLatencyTimer.Context consumerLatencyTimerContext;
+
+    @Mock
     private Meter failedMeter;
 
     private Semaphore inflightSemaphore;
@@ -82,6 +85,7 @@ public class ConsumerMessageSenderTest {
 
     private void setUpMetrics(Subscription subscription) {
         when(hermesMetrics.latencyTimer(subscription)).thenReturn(consumerLatencyTimer);
+        when(consumerLatencyTimer.time()).thenReturn(consumerLatencyTimerContext);
         when(hermesMetrics.meter(Meters.CONSUMER_FAILED_METER, subscription.getTopicName(), subscription.getName())).thenReturn(failedMeter);
     }
 
@@ -98,7 +102,7 @@ public class ConsumerMessageSenderTest {
         // then
         verifySemaphoreReleased();
         verifyRateLimiterSuccessfulSendingCountedTimes(1);
-        verifyLatencyTimersCountedTimes(1);
+        verifyLatencyTimersCountedTimes(1, 1);
         verifyZeroInteractions(errorHandler);
         verifyZeroInteractions(failedMeter);
     }
@@ -115,7 +119,7 @@ public class ConsumerMessageSenderTest {
 
         // then
         verifySemaphoreReleased();
-        verifyLatencyTimersCountedTimes(3);
+        verifyLatencyTimersCountedTimes(3, 3);
         verifyRateLimiterFailedSendingCountedTimes(2);
         verifyRateLimiterSuccessfulSendingCountedTimes(1);
         verifyErrorHandlerHandleFailed(message, subscription, 2);
@@ -134,7 +138,7 @@ public class ConsumerMessageSenderTest {
 
         // then
         verifySemaphoreReleased();
-        verifyLatencyTimersCountedTimes(3);
+        verifyLatencyTimersCountedTimes(3, 1);
         verifyRateLimiterFailedSendingCountedTimes(2);
         verifyRateLimiterSuccessfulSendingCountedTimes(1);
         verifyErrorHandlerHandleFailed(message, subscription, 2);
@@ -153,7 +157,7 @@ public class ConsumerMessageSenderTest {
         // then
         verifySemaphoreReleased();
         verifyZeroInteractions(successHandler);
-        verifyLatencyTimersCountedTimes(1);
+        verifyLatencyTimersCountedTimes(1, 0);
         verifyRateLimiterFailedSendingCountedTimes(1);
     }
 
@@ -170,7 +174,7 @@ public class ConsumerMessageSenderTest {
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
         verifySemaphoreReleased();
         verifyZeroInteractions(successHandler);
-        verifyLatencyTimersCountedTimes(1);
+        verifyLatencyTimersCountedTimes(1, 1);
     }
 
     @Test
@@ -267,9 +271,10 @@ public class ConsumerMessageSenderTest {
         verify(errorHandler, timeout(timeout).times(times)).handleFailed(eq(message), eq(subscription), any(MessageSendingResult.class));
     }
 
-    private void verifyLatencyTimersCountedTimes(int count) {
-        verify(hermesMetrics, times(count)).latencyTimer(subscription);
-        verify(consumerLatencyTimer, times(count)).stop();
+    private void verifyLatencyTimersCountedTimes(int timeCount, int closeCount) {
+        verify(hermesMetrics, times(1)).latencyTimer(subscription);
+        verify(consumerLatencyTimer, times(timeCount)).time();
+        verify(consumerLatencyTimerContext, times(closeCount)).stop();
     }
 
     private Subscription subscriptionWithTtl(int ttl) {
