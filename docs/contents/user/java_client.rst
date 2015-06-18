@@ -74,16 +74,16 @@ Requirement: dependency ``com.squareup.okhttp:okhttp`` must be provided at runti
         .build();
 
 HTTP2 support:
-''''''''''''''
+++++++++++++++
 Requirements:
 
-1. JVM configured with `ALPN support <http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-starting>`_:
+JVM configured with `ALPN support <http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-starting>`_:
 
 .. code-block::
 
     java -Xbootclasspath/p:<path_to_alpn_boot_jar> ...
 
-2. OkHttp Client configured with SSL support (`OkHttp Wiki <https://github.com/square/okhttp/wiki/HTTPS>`_):
+OkHttp Client configured with SSL support (`OkHttp Wiki <https://github.com/square/okhttp/wiki/HTTPS>`_):
 
 .. code-block:: java
 
