@@ -14,7 +14,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.metric.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.common.metric.Counters.CONSUMER_DELIVERED;
 import static pl.allegro.tech.hermes.common.metric.Counters.CONSUMER_DISCARDED;
 import static pl.allegro.tech.hermes.common.metric.Counters.PRODUCER_PUBLISHED;
-import static pl.allegro.tech.hermes.common.metric.PathContext.pathContext;
+import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZookeeperCounterReporterTest {

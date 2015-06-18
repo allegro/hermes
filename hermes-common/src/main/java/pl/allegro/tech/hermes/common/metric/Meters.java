@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.common.metric;
 
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.GROUP;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.HOSTNAME;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.HTTP_CODE;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.SUBSCRIPTION;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.TOPIC;
-import static pl.allegro.tech.hermes.common.metric.PathsCompiler.EXECUTOR_NAME;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.HOSTNAME;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.HTTP_CODE;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.EXECUTOR_NAME;
 
 public class Meters {
 

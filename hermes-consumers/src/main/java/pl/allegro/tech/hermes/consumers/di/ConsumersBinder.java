@@ -29,11 +29,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeoutFactory;
-import pl.allegro.tech.hermes.consumers.message.tracker.LogRepository;
-import pl.allegro.tech.hermes.consumers.message.tracker.MongoLogRepository;
-import pl.allegro.tech.hermes.consumers.message.tracker.NoOperationSendingTracker;
-import pl.allegro.tech.hermes.consumers.message.tracker.SendingMessageTracker;
-import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.cache.zookeeper.ZookeeperSubscriptionsCacheFactory;
@@ -53,7 +48,6 @@ public class ConsumersBinder extends AbstractBinder {
         bind(KafkaMessageReceiverFactory.class).in(Singleton.class).to(ReceiverFactory.class);
         bind(KafkaMessageCommitter.class).in(Singleton.class).to(MessageCommitter.class);
         bind(MessageBodyInterpolator.class).in(Singleton.class).to(UriInterpolator.class);
-        bind(MongoLogRepository.class).to(LogRepository.class).in(Singleton.class);
         bind(InterpolatingEndpointAddressResolver.class).to(EndpointAddressResolver.class).in(Singleton.class);
         bind(JmsHornetQMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
                 .in(Singleton.class).named("defaultJmsMessageSenderProvider");
@@ -70,9 +64,6 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(SubscriptionSuspender.class);
         bindSingleton(ConsumersExecutorService.class);
         bindSingleton(ZookeeperAdminCache.class);
-        bindSingleton(SendingMessageTracker.class);
-        bindSingleton(NoOperationSendingTracker.class);
-        bindSingleton(Trackers.class);
         bindSingleton(InstrumentedExecutorServiceFactory.class);
         bindSingleton(ConsumerMessageSenderFactory.class);
 

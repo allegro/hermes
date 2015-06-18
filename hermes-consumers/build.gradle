@@ -1,5 +1,7 @@
 dependencies {
     compile project(':hermes-common')
+    compile project(':hermes-tracker')
+    compile project(':hermes-metrics')
 
     compile group: 'org.glassfish.jersey.connectors', name: 'jersey-jetty-connector', version: versions.jersey
 
@@ -15,7 +17,6 @@ dependencies {
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
     testCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.1'
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
-    testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
 
     testCompile(group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock) {
         exclude group: 'org.mortbay.jetty', module: 'servlet-api'

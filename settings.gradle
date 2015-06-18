@@ -7,5 +7,9 @@ include 'hermes-common',
         'hermes-api',
         'hermes-client',
         'integration',
-        'hermes-test-helper'
+        'hermes-test-helper',
+        'hermes-tracker',
+        'hermes-tracker-mongo',
+        'hermes-metrics',
+        'hermes-tracker-elasticsearch'
 

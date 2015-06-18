@@ -20,10 +20,7 @@ import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
 import java.util.Optional;
 
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 
@@ -62,7 +59,7 @@ public class DefaultErrorHandlerTest {
     @Mock
     private Counter counter;
 
-    private TestTrackers trackers;
+    private TestTrackers trackers = new TestTrackers();
 
     private DefaultErrorHandler defaultErrorHandler;
 
@@ -72,7 +69,6 @@ public class DefaultErrorHandlerTest {
         when(subscription.getName()).thenReturn(SUBSCRIPTION_NAME);
         when(subscription.getTopicName()).thenReturn(QUALIFIED_TOPIC_NAME);
         when(clock.getTime()).thenReturn(CURRENT_TIME);
-        trackers = new TestTrackers();
         defaultErrorHandler = new DefaultErrorHandler(offsetHelper, hermesMetrics, undeliveredMessageLog, clock, trackers, CLUSTER);
         reset(hermesMetrics);
     }
