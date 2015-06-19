@@ -42,6 +42,7 @@ public class ElasticsearchResource extends ExternalResource implements LogSchema
                     .prepareCreate(index.getIndex())
                     .addMapping(index.getType(), ImmutableMap.of("properties", ImmutableMap.of(TIMESTAMP, ImmutableMap.of("type", "long"))))
                     .execute().actionGet();
+            client.admin().cluster().prepareHealth(index.getIndex()).setWaitForActiveShards(1).execute().actionGet();
         }
     }
 
