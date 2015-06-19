@@ -21,8 +21,8 @@ import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.TypedIndex.PUBLISHED_MESSAGES;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.TypedIndex.SENT_MESSAGES;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.PUBLISHED_MESSAGES;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.SENT_MESSAGES;
 
 public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
 

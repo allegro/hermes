@@ -18,6 +18,7 @@ import java.io.IOException;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.DocumentBuilder.build;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.SENT_MESSAGES;
 
 public class ElasticsearchLogRepository extends BatchingLogRepository<XContentBuilder> implements LogRepository, LogSchemaAware {
 
@@ -29,7 +30,7 @@ public class ElasticsearchLogRepository extends BatchingLogRepository<XContentBu
         registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
         registerRemainingCapacityGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY);
 
-        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, SENT_INDEX, SENT_TYPE, elasticClient,
+        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, SENT_MESSAGES, elasticClient,
                 metricRegistry.timer(pathsCompiler.compile(Timers.CONSUMER_TRACKER_ELASTICSEARCH_COMMIT_LATENCY)), commitInterval);
     }
 

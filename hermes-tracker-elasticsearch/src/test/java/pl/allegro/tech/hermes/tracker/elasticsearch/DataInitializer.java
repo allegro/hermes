@@ -9,6 +9,8 @@ import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import java.io.IOException;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.PUBLISHED_MESSAGES;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.SENT_MESSAGES;
 
 public class DataInitializer implements LogSchemaAware {
 
@@ -30,7 +32,7 @@ public class DataInitializer implements LogSchemaAware {
                 .field(CLUSTER, clusterName)
                 .endObject();
 
-        client.prepareIndex(PUBLISHED_INDEX, PUBLISHED_TYPE)
+        client.prepareIndex(PUBLISHED_MESSAGES.getIndex(), PUBLISHED_MESSAGES.getType())
                 .setSource(publishedContent)
                 .execute();
     }
@@ -50,7 +52,7 @@ public class DataInitializer implements LogSchemaAware {
                 .field(REASON, reason)
                 .endObject();
 
-        client.prepareIndex(SENT_INDEX, SENT_TYPE)
+        client.prepareIndex(SENT_MESSAGES.getIndex(), SENT_MESSAGES.getType())
                 .setSource(content)
                 .execute();
     }

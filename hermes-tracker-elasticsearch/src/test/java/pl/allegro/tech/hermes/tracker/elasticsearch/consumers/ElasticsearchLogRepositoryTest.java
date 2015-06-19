@@ -14,7 +14,7 @@ import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.TypedIndex.SENT_MESSAGES;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.SENT_MESSAGES;
 
 public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest implements LogSchemaAware {
 
@@ -31,8 +31,8 @@ public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest im
     @Override
     protected void awaitUntilMessageIsPersisted(String topic, String subscription, String id, SentMessageTraceStatus status) throws Exception {
         await().atMost(ONE_MINUTE).until(() -> {
-            SearchResponse response = elasticsearch.client().prepareSearch(SENT_INDEX)
-                    .setTypes(SENT_TYPE)
+            SearchResponse response = elasticsearch.client().prepareSearch("sent_messages")
+                    .setTypes("sent_message")
                     .setQuery(boolQuery()
                         .should(matchQuery(TOPIC_NAME, topic))
                         .should(matchQuery(SUBSCRIPTION, subscription))
