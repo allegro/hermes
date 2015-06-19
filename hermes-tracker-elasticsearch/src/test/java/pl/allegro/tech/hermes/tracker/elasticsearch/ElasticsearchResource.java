@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch;
 
+import com.google.common.collect.ImmutableMap;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.io.FileSystemUtils;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -13,12 +14,12 @@ import java.nio.file.Files;
 
 public class ElasticsearchResource extends ExternalResource implements LogSchemaAware {
 
-    private final String[] indices;
+    private final TypedIndex[] indices;
     private Node elastic;
     private Client client;
     private File dataDir;
 
-    public ElasticsearchResource(String... indices) {
+    public ElasticsearchResource(TypedIndex... indices) {
         this.indices = indices;
     }
 
@@ -36,10 +37,12 @@ public class ElasticsearchResource extends ExternalResource implements LogSchema
     }
 
     private void createIndices() {
-        for (String index : indices) {
+        for (TypedIndex index : indices) {
             client.admin().indices()
-                    .prepareCreate(index)
+                    .prepareCreate(index.getIndex())
+                    .addMapping(index.getType(), ImmutableMap.of("properties", ImmutableMap.of(TIMESTAMP, ImmutableMap.of("type", "long"))))
                     .execute().actionGet();
+            client.admin().cluster().prepareHealth(index.getIndex()).setWaitForActiveShards(1).execute().actionGet();
         }
     }
 

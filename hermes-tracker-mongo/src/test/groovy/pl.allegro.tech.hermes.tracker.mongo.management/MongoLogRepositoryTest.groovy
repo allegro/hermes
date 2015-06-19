@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.message.tracker.management
+package pl.allegro.tech.hermes.tracker.management
 
 import com.github.fakemongo.Fongo
 import com.mongodb.BasicDBObject

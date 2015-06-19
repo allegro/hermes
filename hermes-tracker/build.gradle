@@ -1,5 +1,6 @@
 dependencies {
     compile project(':hermes-api')
+    compile project(':hermes-metrics')
 }
 
 configurations {

@@ -3,18 +3,20 @@ package pl.allegro.tech.hermes.tracker.mongo.consumers;
 import com.codahale.metrics.MetricRegistry;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBObject;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
-import pl.allegro.tech.hermes.tracker.mongo.AbstractLogRepository;
+import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
 import pl.allegro.tech.hermes.tracker.mongo.LogSchemaAware;
+import pl.allegro.tech.hermes.tracker.mongo.MongoQueueCommitter;
 import pl.allegro.tech.hermes.tracker.mongo.metrics.Gauges;
 import pl.allegro.tech.hermes.tracker.mongo.metrics.Timers;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
 
-public class MongoLogRepository extends AbstractLogRepository implements LogRepository, LogSchemaAware {
+public class MongoLogRepository extends BatchingLogRepository<DBObject> implements LogRepository, LogSchemaAware {
 
     public MongoLogRepository(DB database,
                               int queueSize,
@@ -22,12 +24,13 @@ public class MongoLogRepository extends AbstractLogRepository implements LogRepo
                               String clusterName,
                               MetricRegistry metricRegistry,
                               PathsCompiler pathsCompiler) {
-        super(database, queueSize, commitInterval, clusterName, metricRegistry, pathsCompiler);
+        super(queueSize, clusterName, metricRegistry, pathsCompiler);
 
-        registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_QUEUE_SIZE);
-        registerRemainingCapacityGauge(Gauges.CONSUMER_TRACKER_REMAINING_CAPACITY);
+        registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_MONGO_QUEUE_SIZE);
+        registerRemainingCapacityGauge(Gauges.CONSUMER_TRACKER_MONGO_REMAINING_CAPACITY);
 
-        scheduleCommitAtFixedRate(COLLECTION_SENT_NAME, Timers.CONSUMER_TRACKER_COMMIT_LATENCY);
+        MongoQueueCommitter.scheduleCommitAtFixedRate(queue, COLLECTION_SENT_NAME, database,
+                metricRegistry.timer(pathsCompiler.compile(Timers.CONSUMER_TRACKER_MONGO_COMMIT_LATENCY)), commitInterval);
     }
 
     @Override

@@ -2,10 +2,6 @@ package pl.allegro.tech.hermes.tracker.elasticsearch;
 
 public interface LogSchemaAware {
 
-    String PUBLISHED_INDEX = "published_messages";
-    String PUBLISHED_TYPE = "published_message";
-    String SENT_INDEX = "sent_messages";
-    String SENT_TYPE = "sent_message";
     String MESSAGE_ID = "messageId";
     String TIMESTAMP = "timestamp";
     String PUBLISH_TIMESTAMP = "publish_timestamp";
@@ -17,4 +13,24 @@ public interface LogSchemaAware {
     String REASON = "reason";
     String CLUSTER = "cluster";
 
+    enum TypedIndex implements LogSchemaAware {
+
+        PUBLISHED_MESSAGES("published_messages", "published_message"), SENT_MESSAGES("sent_messages", "sent_message");
+
+        private final String index;
+        private final String type;
+
+        TypedIndex(String index, String type) {
+            this.index = index;
+            this.type = type;
+        }
+
+        public String getIndex() {
+            return index;
+        }
+
+        public String getType() {
+            return type;
+        }
+    }
 }

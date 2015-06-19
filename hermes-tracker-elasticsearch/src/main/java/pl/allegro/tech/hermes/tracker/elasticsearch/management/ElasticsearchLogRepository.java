@@ -23,6 +23,8 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.PUBLISHED_MESSAGES;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.SENT_MESSAGES;
 
 public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware {
 
@@ -76,9 +78,9 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     }
 
     private SearchResponse searchSentMessages(int limit, QueryBuilder query) throws InterruptedException, ExecutionException {
-        return elasticClient.prepareSearch(SENT_INDEX)
+        return elasticClient.prepareSearch(SENT_MESSAGES.getIndex())
                 .addFields(MESSAGE_ID, TIMESTAMP, SUBSCRIPTION, TOPIC_NAME, STATUS, REASON, PARTITION, OFFSET, CLUSTER)
-                .setTypes(SENT_TYPE)
+                .setTypes(SENT_MESSAGES.getType())
                 .setQuery(query)
                 .addSort(TIMESTAMP, SortOrder.ASC)
                 .setSize(limit)
@@ -87,9 +89,9 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     }
 
     private SearchResponse searchPublishedMessages(int limit, QueryBuilder query) throws InterruptedException, ExecutionException {
-        return elasticClient.prepareSearch(PUBLISHED_INDEX)
+        return elasticClient.prepareSearch(PUBLISHED_MESSAGES.getIndex())
                 .addFields(MESSAGE_ID, TIMESTAMP, TOPIC_NAME, STATUS, REASON, CLUSTER)
-                .setTypes(PUBLISHED_TYPE)
+                .setTypes(PUBLISHED_MESSAGES.getType())
                 .setQuery(query)
                 .addSort(TIMESTAMP, SortOrder.ASC)
                 .setSize(limit)
