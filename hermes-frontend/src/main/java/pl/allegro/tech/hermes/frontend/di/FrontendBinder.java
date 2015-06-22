@@ -5,11 +5,6 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.zookeeper.ZookeeperTopicsCacheFactory;
-import pl.allegro.tech.hermes.frontend.message.tracker.LogRepository;
-import pl.allegro.tech.hermes.frontend.message.tracker.MongoLogRepository;
-import pl.allegro.tech.hermes.frontend.message.tracker.NoOperationPublishingTracker;
-import pl.allegro.tech.hermes.frontend.message.tracker.PublishingMessageTracker;
-import pl.allegro.tech.hermes.frontend.message.tracker.Trackers;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
@@ -36,13 +31,9 @@ public class FrontendBinder extends AbstractBinder {
         bind(MessageValidator.class).to(MessageValidator.class).in(Singleton.class);
 
         bind(HealthCheckService.class).to(HealthCheckService.class).in(Singleton.class);
-        bind(MongoLogRepository.class).to(LogRepository.class).in(Singleton.class);
 
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
         bindFactory(ZkClientFactory.class).to(ZkClient.class).in(Singleton.class);
-        bindSingleton(PublishingMessageTracker.class);
-        bindSingleton(NoOperationPublishingTracker.class);
-        bindSingleton(Trackers.class);
         bindFactory(ZookeeperTopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
         bindSingleton(MessagePublisher.class);
     }

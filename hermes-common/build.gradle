@@ -2,6 +2,7 @@ apply plugin: 'groovy'
 
 dependencies {
     compile project(':hermes-api')
+    compile project(':hermes-metrics')
 
     compile group: 'com.netflix.archaius', name: 'archaius-core', version: '0.6.0'
 
@@ -26,8 +27,6 @@ dependencies {
     compile group: 'io.fastjson', name: 'boon', version: '0.28'
 
     compile group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: '3.1.1'
-
-    compile group: 'org.mongodb', name: 'mongo-java-driver', version: '2.12.4'
 
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.0'
 

@@ -13,9 +13,6 @@ storage:
   connectionTimeout: 3000
 
 spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/hermes
   jersey:
     type: servlet
 

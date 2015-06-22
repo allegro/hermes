@@ -8,7 +8,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.metric.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
@@ -42,7 +42,7 @@ public class ZookeeperCounterStorageTest {
     @Before
     public void initialize() {
         when(configFactory.getStringProperty(Configs.ZOOKEEPER_ROOT)).thenReturn("/hermes");
-        pathCompiler = new PathsCompiler("localhost");
+        pathCompiler = new PathsCompiler("my-host-example.net");
         storage = new ZookeeperCounterStorage(sharedCounter, ephemeralCounter, subscriptionRepository, pathCompiler, configFactory);
     }
 
@@ -94,7 +94,7 @@ public class ZookeeperCounterStorageTest {
         storage.setInflightCounter(TopicName.fromQualifiedName("test.topic"), "sub", 10);
 
         // then
-        verify(ephemeralCounter).setCounterValue("/hermes/consumers/localhost/groups/test/topics/topic/subscriptions/sub/metrics/inflight", 10);
+        verify(ephemeralCounter).setCounterValue("/hermes/consumers/my-host-example_net/groups/test/topics/topic/subscriptions/sub/metrics/inflight", 10);
     }
 
     @Test
@@ -108,6 +108,19 @@ public class ZookeeperCounterStorageTest {
 
         // then
         assertThat(value).isEqualTo(10);
+    }
+
+    @Test
+    public void shouldCountInflightNodes() throws Exception {
+        // given
+        when(ephemeralCounter.countOccurrences("/hermes/consumers", "/groups/test/topics/topic/subscriptions/sub/metrics/inflight"))
+                .thenReturn(16);
+
+        // when
+        long value = storage.countInflightNodes(TopicName.fromQualifiedName("test.topic"), "sub");
+
+        // then
+        assertThat(value).isEqualTo(16);
     }
 
     @Test

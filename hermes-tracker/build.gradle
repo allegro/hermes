@@ -1,0 +1,17 @@
+dependencies {
+    compile project(':hermes-api')
+    compile project(':hermes-metrics')
+}
+
+configurations {
+    testArtifacts
+}
+
+task testJar (type: Jar) {
+    classifier = 'tests'
+    from sourceSets.test.output
+}
+
+artifacts {
+    testArtifacts testJar
+}

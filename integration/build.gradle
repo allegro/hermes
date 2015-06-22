@@ -38,6 +38,8 @@ dependencies {
     compile project(':hermes-frontend')
     compile project(':hermes-management')
     compile project(':hermes-client')
+    compile project(':hermes-tracker')
+    compile project(':hermes-tracker-mongo')
 
     testCompile project(':hermes-test-helper')
     testCompile group: 'org.testng', name: 'testng', version: '6.8.8'

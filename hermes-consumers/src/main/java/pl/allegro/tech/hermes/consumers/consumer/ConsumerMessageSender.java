@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.ConsumerLatencyTimer;
+import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
@@ -89,8 +89,7 @@ public class ConsumerMessageSender {
     private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
         rateLimiter.acquire();
         final CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
-        response.thenAcceptAsync(new DeliveryCountersReportingListener(message), deliveryReportingExecutor);
-        response.thenAcceptAsync(new ResponseHandlingListener(message, consumerLatencyTimer), retrySingleThreadExecutor);
+        response.thenAcceptAsync(new ResponseHandlingListener(message, consumerLatencyTimer), deliveryReportingExecutor);
     }
 
     private boolean isTtlExceeded(Message message) {
@@ -122,24 +121,6 @@ public class ConsumerMessageSender {
         return !result.succeeded() && (!result.isClientError() || subscription.getSubscriptionPolicy().isRetryClientErrors());
     }
 
-    class DeliveryCountersReportingListener implements java.util.function.Consumer<MessageSendingResult> {
-
-        private final Message message;
-
-        public DeliveryCountersReportingListener(Message message) {
-            this.message = message;
-        }
-
-        @Override
-        public void accept(MessageSendingResult result) {
-            if (result.succeeded()) {
-                rateLimiter.registerSuccessfulSending();
-            } else {
-                handleFailedSending(message, result);
-            }
-        }
-    }
-
     class ResponseHandlingListener implements java.util.function.Consumer<MessageSendingResult> {
 
         private final Message message;
@@ -154,11 +135,15 @@ public class ConsumerMessageSender {
         public void accept(MessageSendingResult result) {
             consumerlatencyTimer.stop();
             if (result.succeeded()) {
+                rateLimiter.registerSuccessfulSending();
                 handleMessageSendingSuccess(message);
-            } else if (!isTtlExceeded(message) && shouldRetrySending(result)) {
-                retrySending(result);
             } else {
-                handleMessageDiscarding(message, result);
+                handleFailedSending(message, result);
+                if (!isTtlExceeded(message) && shouldRetrySending(result)) {
+                    retrySingleThreadExecutor.execute(() -> retrySending(result));
+                } else {
+                    handleMessageDiscarding(message, result);
+                }
             }
         }
 

@@ -6,7 +6,9 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
-import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
+
+import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class DefaultSuccessHandler extends AbstractHandler implements SuccessHandler {
 
@@ -22,7 +24,7 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
         offsetHelper.decrement(message.getPartition(), message.getOffset());
         updateMeters(subscription);
         updateMetrics(Counters.CONSUMER_DELIVERED, message, subscription);
-        trackers.get(subscription).logSent(message, subscription);
+        trackers.get(subscription).logSent(toMessageMetadata(message, subscription));
     }
 
     private void updateMeters(Subscription subscription) {

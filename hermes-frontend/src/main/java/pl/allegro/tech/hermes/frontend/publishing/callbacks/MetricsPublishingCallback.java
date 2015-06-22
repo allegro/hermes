@@ -1,34 +1,41 @@
 package pl.allegro.tech.hermes.frontend.publishing.callbacks;
 
-import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
-import pl.allegro.tech.hermes.common.metric.Timers;
+import pl.allegro.tech.hermes.common.metric.timer.BrokerAckAllLatencyTimer;
+import pl.allegro.tech.hermes.common.metric.timer.BrokerAckLeaderLatencyTimer;
+import pl.allegro.tech.hermes.common.metric.timer.BrokerLatencyTimer;
 import pl.allegro.tech.hermes.frontend.publishing.Message;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 
 public class MetricsPublishingCallback implements PublishingCallback {
 
     private final HermesMetrics hermesMetrics;
-    private final Timer.Context latencyTimer;
-    private final Timer.Context latencyTimerPerTopic;
+    private final BrokerLatencyTimer brokerLatencyTimer;
 
     public MetricsPublishingCallback(HermesMetrics hermesMetrics, Topic topic) {
         this.hermesMetrics = hermesMetrics;
-        latencyTimer = hermesMetrics.timer(Timers.PRODUCER_BROKER_LATENCY).time();
-        latencyTimerPerTopic = hermesMetrics.timer(Timers.PRODUCER_BROKER_TOPIC_LATENCY, topic.getName()).time();
+        this.brokerLatencyTimer = brokerLatencyTimer(topic);
+    }
+
+    private BrokerLatencyTimer brokerLatencyTimer(Topic topic) {
+        if (Topic.Ack.ALL.equals(topic.getAck())) {
+            return new BrokerAckAllLatencyTimer(hermesMetrics, topic.getName());
+        } else {
+            return new BrokerAckLeaderLatencyTimer(hermesMetrics, topic.getName());
+        }
     }
 
     @Override
     public void onUnpublished(Exception exception) {
-        HermesMetrics.close(latencyTimer, latencyTimerPerTopic);
+        brokerLatencyTimer.close();
     }
 
     @Override
     public void onPublished(Message message, Topic topic) {
-        HermesMetrics.close(latencyTimer, latencyTimerPerTopic);
+        brokerLatencyTimer.close();
         hermesMetrics.meter(Meters.PRODUCER_METER).mark();
         hermesMetrics.meter(Meters.PRODUCER_TOPIC_METER, topic.getName()).mark();
         hermesMetrics.counter(Counters.PRODUCER_PUBLISHED, topic.getName()).inc();

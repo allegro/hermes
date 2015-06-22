@@ -1,6 +1,8 @@
 
 dependencies {
     compile project(':hermes-common')
+    compile project(':hermes-tracker')
+    compile project(':hermes-metrics')
 
     compile (group: 'com.github.fge', name: 'json-schema-validator', version: '2.2.6') {
         exclude group: 'net.sf.jopt-simple'
@@ -13,7 +15,6 @@ dependencies {
 
 
     testCompile project(':hermes-test-helper')
-    testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
     testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
         exclude group: 'com.jayway.jsonpath', module: 'json-path'
     }

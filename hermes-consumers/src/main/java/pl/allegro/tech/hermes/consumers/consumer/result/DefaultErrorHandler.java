@@ -11,10 +11,11 @@ import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import static java.lang.String.format;
 import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
+import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler {
 
@@ -48,8 +49,10 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
         undeliveredMessageLog.add(createUndeliveredMessage(subscription, new String(message.getData()), result.getFailure(), clock.getTime(),
                 message.getPartition(), message.getOffset(), cluster));
 
-        trackers.get(subscription).logDiscarded(message, subscription, result.getRootCause());
+        trackers.get(subscription).logDiscarded(toMessageMetadata(message, subscription), result.getRootCause());
     }
+
+
 
     private void updateMeters(Subscription subscription) {
         hermesMetrics.meter(Meters.CONSUMER_DISCARDED_METER).mark();
@@ -61,6 +64,6 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     public void handleFailed(Message message, Subscription subscription, MessageSendingResult result) {
         hermesMetrics.meter(Meters.CONSUMER_FAILED_METER, subscription.getTopicName(), subscription.getName()).mark();
 
-        trackers.get(subscription).logFailed(message, subscription, result.getRootCause());
+        trackers.get(subscription).logFailed(toMessageMetadata(message, subscription), result.getRootCause());
     }
 }
