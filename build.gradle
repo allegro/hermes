@@ -41,7 +41,8 @@ allprojects {
             curator : '2.7.0',
             wiremock: '1.47',
             fongo   : '1.6.1',
-            spock   : '1.0-groovy-2.4'
+            spock   : '1.0-groovy-2.4',
+            alpn_api: '1.1.2.v20150522'
     ]
 
     repositories {
@@ -96,7 +97,7 @@ subprojects {
         all*.exclude group: "org.slf4j", module: "slf4j-log4j12"
         all*.exclude group: "log4j", module: "log4j"
     }
-    
+
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:unchecked,deprecation"
     }
@@ -131,7 +132,7 @@ subprojects {
         }
     }
 
-    
+
 }
 
 nexusStaging {

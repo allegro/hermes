@@ -3,6 +3,35 @@ repositories {
     maven { url 'http://repository.jboss.org/nexus/content/groups/public' }
 }
 
+project.configurations {
+    integration {
+        extendsFrom project.configurations.testRuntime
+        description = 'Dependencies for integration tests'
+        transitive = true
+        visible = true
+    }
+    alpnboot
+}
+
+
+/*
+    This is required for proper http2 integration testing. We only need one version at a time but it's rather
+    impossible to know which update of Java8 developers are running so we're trying to support all common use cases;
+    code refers to: http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-versions
+ */
+def getAlpnVersion() {
+    def version = System.getProperty("java.version")
+    version = version.contains("_")? version.split("_")[1] as Integer : 0
+    switch(version) {
+        case 0..24:
+            return '8.1.0.v20141016'
+        case 25..30:
+            return '8.1.2.v20141202'
+        default:
+            return '8.1.3.v20150130'
+    }
+}
+
 dependencies {
     compile project(':hermes-common')
     compile project(':hermes-consumers')
@@ -19,19 +48,14 @@ dependencies {
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
     testCompile group: 'org.springframework', name: 'spring-web', version: '4.1.4.RELEASE'
+    testCompile group: 'com.squareup.okhttp', name: 'okhttp', version: '2.4.0'
 
     testCompile(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
-}
 
-project.configurations {
-    integration {
-        extendsFrom project.configurations.testRuntime
-        description = 'Dependencies for integration tests'
-        transitive = true
-        visible = true
-    }
+    testCompile group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
+    alpnboot group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: getAlpnVersion()
 }
 
 project.sourceSets {
@@ -54,6 +78,7 @@ project.sourceSets {
 }
 
 task integrationTest(type: Test) {
+    jvmArgs "-Xbootclasspath/p:" + project.configurations.alpnboot.asPath
     group = 'Verification'
     description = 'Runs the integration tests.'
 

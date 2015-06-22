@@ -44,6 +44,7 @@ public class HermesServer {
     private final PublishingServlet publishingServlet;
     private final HealthCheckService healthCheckService;
     private final int port;
+    private final int sslPort;
     private final String host;
 
     @Inject
@@ -63,6 +64,7 @@ public class HermesServer {
         this.healthCheckService = healthCheckService;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
+        this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
         this.host = configFactory.getStringProperty(FRONTEND_HOST);
     }
 
@@ -85,8 +87,7 @@ public class HermesServer {
 
     private Undertow configureServer() {
         gracefulShutdown = new HermesShutdownHandler(deployAndStart(), hermesMetrics);
-
-        this.undertow = Undertow.builder()
+        Undertow.Builder builder = Undertow.builder()
                 .addHttpListener(port, host)
                 .setServerOption(REQUEST_PARSE_TIMEOUT, configFactory.getIntProperty(FRONTEND_REQUEST_PARSE_TIMEOUT))
                 .setServerOption(MAX_HEADERS, configFactory.getIntProperty(FRONTEND_MAX_HEADERS))
@@ -98,9 +99,12 @@ public class HermesServer {
                 .setIoThreads(configFactory.getIntProperty(FRONTEND_IO_THREADS_COUNT))
                 .setWorkerThreads(configFactory.getIntProperty(FRONTEND_WORKER_THREADS_COUNT))
                 .setBufferSize(configFactory.getIntProperty(FRONTEND_BUFFER_SIZE))
-                .setHandler(gracefulShutdown)
-                .build();
-
+                .setHandler(gracefulShutdown);
+        if (configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED))  {
+             builder.setServerOption(ENABLE_HTTP2, true)
+                    .addHttpsListener(sslPort, host, new SSLContextSupplier(configFactory).get());
+        }
+        this.undertow = builder.build();
         return undertow;
     }
 
