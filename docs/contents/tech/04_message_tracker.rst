@@ -39,7 +39,8 @@ Configuration
 -------------
 
 To enable message tracking you have to configure at least one ``LogRepository`` from ``hermes-tracker`` module. Out of the box we provide two implementations:
-`MongoDB <https://www.mongodb.org/>`_ and `Elasticsearch <https://www.elastic.co/products/elasticsearch>`_, and it's really simple to write your own.
+`MongoDB <https://www.mongodb.org/>`_ and `Elasticsearch <https://www.elastic.co/products/elasticsearch>`_, and it's really simple to write your own. These
+implementations extend `BatchingLogRepository` so message traces are not stored immediately, but queued and processed in batches for performance.
 
 Here is a sample ``HermesFronted`` wiring with Elasticsearch log repository enabled:
 
@@ -55,7 +56,10 @@ Here is a sample ``HermesFronted`` wiring with Elasticsearch log repository enab
             final ElasticsearchClientFactory elasticSearchClientFactory = new ElasticsearchClientFactory(9300, "my-elastic-cluster", "hy-cluster-host");
             HermesFronted frontend = HermesFronted.fronted()
                 .withShutdownHook(elasticSearchClientFactory::close)
-                .withLogRepository(serviceLocator -> new ElasticsearchLogRepository(elasticsearchClientFactory.client(), "primary"))
+                .withLogRepository(serviceLocator -> new ElasticsearchLogRepository(elasticsearchClientFactory.client(), "primary",
+                                                                                    1000, 30000,
+                                                                                    serviceLocator.getService(MetricRegistry.class),
+                                                                                    serviceLocator.getService(PathsCompiler.class)))
                 .build();
             frontend.start();
         }
@@ -63,7 +67,7 @@ Here is a sample ``HermesFronted`` wiring with Elasticsearch log repository enab
 
 Configuration of ``HermesConsumer`` is similar.
 
-To read message trace from
+To read message trace from management api, you need to configure read-only `LogRepository` via Spring `@Configuration`:
 
 .. code-block:: java
 
