@@ -48,7 +48,7 @@ public final class TestMessage {
         StringBuilder builder = new StringBuilder();
         builder.append("{");
         for (Entry<String, String> entry : content.entrySet()) {
-            builder.append('"').append(entry.getKey()).append("\": ").append('"').append(entry.getValue()).append("\",");
+            builder.append('"').append(entry.getKey()).append("\":").append('"').append(entry.getValue()).append("\",");
         }
         builder.deleteCharAt(builder.length() - 1);
         builder.append("}");

@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.util.concurrent.CompletableFuture;
 

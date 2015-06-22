@@ -15,12 +15,13 @@ import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
-import java.util.Optional;
-
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 
@@ -49,9 +50,7 @@ public class DefaultErrorHandlerTest {
     @Mock
     private Subscription subscription;
 
-    private final Message message = new Message(
-            Optional.of("id"), OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), Optional.of(213232L), Optional.of(2132323L)
-    );
+    private final Message message = new Message("id", OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), 213232L, 2132323L);
 
     @Mock
     private Clock clock;

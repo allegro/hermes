@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
@@ -42,7 +42,7 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
             BytesMessage message = jmsContext.createBytesMessage();
             message.writeBytes(msg.getData());
             message.setStringProperty(TOPIC_NAME.getCamelCaseName(), msg.getTopic());
-            message.setStringProperty(MESSAGE_ID.getCamelCaseName(), msg.getId().orElse("unavailable"));
+            message.setStringProperty(MESSAGE_ID.getCamelCaseName(), msg.getId());
 
             CompletionListener asyncListener = new CompletionListener() {
                 @Override

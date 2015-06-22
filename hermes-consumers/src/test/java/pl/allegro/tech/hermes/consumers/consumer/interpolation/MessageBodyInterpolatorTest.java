@@ -2,17 +2,16 @@ package pl.allegro.tech.hermes.consumers.consumer.interpolation;
 
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.net.URI;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MessageBodyInterpolatorTest {
 
     private static final Message SAMPLE_MSG = new Message(
-            Optional.of("id"), 0, 0, "some.topic", "{\"a\": \"b\"}".getBytes(), Optional.of(214312123L), Optional.of(2143121233L)
+            "id", 0, 0, "some.topic", "{\"a\": \"b\"}".getBytes(), 214312123L, 2143121233L
     );
 
     @Test
@@ -33,8 +32,7 @@ public class MessageBodyInterpolatorTest {
         EndpointAddress endpoint = EndpointAddress.of("http://some.endpoint.com/{some.object}");
         URI expectedEndpoint = URI.create("http://some.endpoint.com/100");
         String jsonMessage = "{\"some\": {\"object\": 100}}";
-        Message msg = new Message(Optional.of("id"), 0, 0, "some.topic", jsonMessage.getBytes(), Optional.of(121422L),
-                Optional.of(121423L));
+        Message msg = new Message("id", 0, 0, "some.topic", jsonMessage.getBytes(), 121422L, 121423L);
 
         // when
         URI interpolated = new MessageBodyInterpolator().interpolate(endpoint, msg);
@@ -62,8 +60,7 @@ public class MessageBodyInterpolatorTest {
         EndpointAddress endpoint = EndpointAddress.of("http://some.endpoint.com/{some.object}?test={some.test}");
         URI expectedEndpoint = URI.create("http://some.endpoint.com/100?test=hello");
         String jsonMessage = "{\"some\": {\"object\": 100, \"test\": \"hello\"}}";
-        Message msg = new Message(Optional.of("id"), 0, 0, "some.topic", jsonMessage.getBytes(), Optional.of(12323L),
-                Optional.of(123234L));
+        Message msg = new Message("id", 0, 0, "some.topic", jsonMessage.getBytes(), 12323L, 123234L);
 
 
         // when
@@ -97,8 +94,7 @@ public class MessageBodyInterpolatorTest {
         EndpointAddress endpoint = EndpointAddress.of("http://some.endpoint.com/{some.object}?test={some.test}");
         URI expectedEndpoint = URI.create("http://some.endpoint.com/100?test=hello");
         String jsonMessage = "{\"some\": {\"test\": \"hello\", \"object\": 100}}";
-        Message msg = new Message(Optional.of("id"), 0, 0, "some.topic", jsonMessage.getBytes(), Optional.of(1232443L),
-                Optional.of(12324434L));
+        Message msg = new Message("id", 0, 0, "some.topic", jsonMessage.getBytes(), 1232443L, 12324434L);
 
         // when
         URI interpolated = new MessageBodyInterpolator().interpolate(endpoint, msg);

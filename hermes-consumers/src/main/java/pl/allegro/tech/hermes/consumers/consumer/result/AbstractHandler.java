@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.result;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 public abstract class AbstractHandler {
     protected SubscriptionOffsetCommitQueues offsetHelper;

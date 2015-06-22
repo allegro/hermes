@@ -23,12 +23,11 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
 
-    public static final String QUALIFIED_NAME = "group.topic";
     public static final String SUB_NAME = "sub";
-    public static final TopicName TOPIC_NAME = TopicName.fromQualifiedName(QUALIFIED_NAME);
     private ObjectMapper objectMapper = new ObjectMapper();
     private ConfigFactory configFactory = new ConfigFactory();
     private CountingSubscriptionCallback callback = new CountingSubscriptionCallback();
@@ -49,9 +48,6 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
         
         subscriptionCache = new ZookeeperSubscriptionsCache(zookeeperClient, configFactory, objectMapper);
         subscriptionCache.start(ImmutableList.of(callback));
-        
-        groupRepository.createGroup(Group.from("group"));
-        topicRepository.createTopic(topic().applyDefaults().withName(QUALIFIED_NAME).build());
     }
 
     @After
@@ -63,8 +59,9 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     @Test
     public void shouldNotifyOfNewSubscriptions() throws Exception {
         // given
-        subscriptionRepository.createSubscription(subscription().withTopicName(QUALIFIED_NAME).withName(SUB_NAME).build());
-        waitUntilSubscriptionIsCreated(TOPIC_NAME, SUB_NAME);
+        TopicName topicName = createTopic("new.topic");
+        subscriptionRepository.createSubscription(subscription().withTopicName(topicName).withName(SUB_NAME).build());
+        waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
 
         // then
         assertThat(callback.getCreateLatch().await(2000, MILLISECONDS)).isTrue();
@@ -73,11 +70,12 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     @Test
     public void shouldNotifyOfSubscriptionStateChanged() throws Exception {
         // given
-        subscriptionRepository.createSubscription(subscription().withTopicName(QUALIFIED_NAME).withName(SUB_NAME).build());
-        waitUntilSubscriptionIsCreated(TOPIC_NAME, SUB_NAME);
+        TopicName topicName = createTopic("update.topic");
+        subscriptionRepository.createSubscription(subscription().withTopicName(topicName).withName(SUB_NAME).build());
+        waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
 
         // when
-        subscriptionRepository.updateSubscriptionState(TOPIC_NAME, SUB_NAME, Subscription.State.SUSPENDED);
+        subscriptionRepository.updateSubscriptionState(topicName, SUB_NAME, Subscription.State.SUSPENDED);
 
         // then
         assertThat(callback.getChangeLatch().await(5000, MILLISECONDS)).isTrue();
@@ -86,11 +84,12 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     @Test
     public void shouldNotifyOfRemovedTopics() throws Exception {
         // given
-        subscriptionRepository.createSubscription(subscription().withTopicName(QUALIFIED_NAME).withName(SUB_NAME).build());
-        waitUntilSubscriptionIsCreated(TOPIC_NAME, SUB_NAME);
+        TopicName topicName = createTopic("remove.topic");
+        subscriptionRepository.createSubscription(subscription().withTopicName(topicName).withName(SUB_NAME).build());
+        waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
 
         // when
-        subscriptionRepository.removeSubscription(TOPIC_NAME, SUB_NAME);
+        subscriptionRepository.removeSubscription(topicName, SUB_NAME);
 
         // then
         assertThat(callback.getRemoveLatch().await(5000, MILLISECONDS)).isTrue();
@@ -100,6 +99,14 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
         await().until(() -> {
             return subscriptionRepository.subscriptionExists(topicName, subscriptionName);
         });
+    }
+
+    private TopicName createTopic(String qualifiedTopicName) {
+        TopicName topicName = fromQualifiedName(qualifiedTopicName);
+        groupRepository.createGroup(Group.from(topicName.getGroupName()));
+        topicRepository.createTopic(topic().applyDefaults().withName(topicName).build());
+
+        return topicName;
     }
 
 }

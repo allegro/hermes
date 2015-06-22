@@ -57,7 +57,7 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
         return new BasicDBObject()
                 .append(MESSAGE_ID, message.getId())
                 .append(TIMESTAMP, timestamp)
-                .append(PUBLISH_TIMESTAMP, message.getPublishingTimestamp().orElse(null))
+                .append(PUBLISH_TIMESTAMP, message.getPublishingTimestamp())
                 .append(TOPIC_NAME, message.getTopic())
                 .append(SUBSCRIPTION, message.getSubscription())
                 .append(PARTITION, message.getPartition())

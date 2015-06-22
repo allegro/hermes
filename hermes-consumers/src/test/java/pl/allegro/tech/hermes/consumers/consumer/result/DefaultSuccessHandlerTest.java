@@ -10,10 +10,9 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static org.mockito.Mockito.*;
@@ -32,9 +31,7 @@ public class DefaultSuccessHandlerTest {
     @Mock
     private SubscriptionOffsetCommitQueues offsetHelper;
 
-    private Message message = new Message(
-            Optional.of("id"), OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), Optional.of(241243123L), Optional.of(2412431234L)
-    );
+    private Message message = new Message("id", OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), 241243123L, 2412431234L);
 
     @Mock
     private Subscription subscription;

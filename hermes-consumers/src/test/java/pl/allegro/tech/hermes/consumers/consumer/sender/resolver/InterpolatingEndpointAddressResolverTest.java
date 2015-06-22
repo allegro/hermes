@@ -5,7 +5,7 @@ import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.InterpolationException;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.net.URI;
 

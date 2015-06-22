@@ -1,0 +1,18 @@
+{
+    "namespace": "pl.allegro.tech.hermes",
+    "type": "record",
+    "name": "MessageWithMetadata",
+    "fields": [
+        {
+            "name" : "metadata",
+            "type" : {
+                "type" : "record",
+                    "name" : "MessageMetadata",
+                    "fields" : [
+                        {"name": "timestamp", "type": "long"},
+                        {"name": "id", "type": "string"}
+                    ]}
+        },
+        {"name": "message", "type": "bytes"}
+    ]
+}
