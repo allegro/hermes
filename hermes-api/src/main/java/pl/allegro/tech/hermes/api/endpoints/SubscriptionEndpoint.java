@@ -83,7 +83,7 @@ public interface SubscriptionEndpoint {
     @Path("/{subscriptionName}/retransmission")
     Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                         @PathParam("subscriptionName") String subscriptionName,
-                        Long timestamp);
+                        String formattedTime);
 
     @GET
     @Produces(APPLICATION_JSON)

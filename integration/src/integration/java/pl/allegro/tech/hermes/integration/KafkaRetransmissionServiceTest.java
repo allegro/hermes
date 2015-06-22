@@ -4,8 +4,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.time.Clock;
-import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
@@ -16,6 +14,8 @@ import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -28,7 +28,6 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
     private HermesAPIOperations operations;
     private RemoteServiceEndpoint remoteService;
     private Waiter wait;
-    private Clock clock = new SystemClock();
 
     @BeforeClass
     public void initialize() {
@@ -45,7 +44,7 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
 
     @Test(enabled = false)
     @Unreliable
-    public void shouldMoveOffsetNearGivenTimestamp() {
+    public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
         // given
         TopicName topicName = new TopicName("resetOffsetGroup", "topic");
         String subscription = "subscription";
@@ -55,14 +54,16 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         remoteService.expectMessages(simpleMessages(6));
 
         sendMessagesOnTopic(topicName.qualifiedName(), 4);
-        long timestamp = clock.getTime();
+        Thread.sleep(1000); //wait 1s because our date time format has seconds precision
+        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        Thread.sleep(1000);
         sendMessagesOnTopic(topicName.qualifiedName(), 2);
         remoteService.waitUntilReceived();
         wait.untilConsumerCommitsOffset();
 
         // when
         remoteService.expectMessages(simpleMessages(2));
-        Response response = endpoints.subscription().retransmit(topicName.qualifiedName(), subscription, timestamp);
+        Response response = endpoints.subscription().retransmit(topicName.qualifiedName(), subscription, dateTime);
         wait.untilSubscriptionEndsReiteration(topicName, subscription);
 
         // then
