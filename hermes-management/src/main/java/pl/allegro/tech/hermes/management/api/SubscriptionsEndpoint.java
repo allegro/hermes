@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.api;
 
 import com.wordnik.swagger.annotations.ApiOperation;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
@@ -11,10 +12,10 @@ import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.management.infrastructure.time.TimeFormatter;
 
 import javax.annotation.security.RolesAllowed;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -171,19 +172,22 @@ public class SubscriptionsEndpoint {
 
     @PUT
     @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/retransmission")
     @RolesAllowed({Roles.ADMIN})
     @ApiOperation(value = "Update subscription offset", httpMethod = HttpMethod.PUT)
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,
-                               @NotNull String formattedTime) {
+                               @DefaultValue("false") @QueryParam("dryRun") boolean dryRun,
+                               @NotEmpty String formattedTime) {
 
-        multiDCAwareService.moveOffset(
+        MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
             TopicName.fromQualifiedName(qualifiedTopicName),
             subscriptionName,
-            timeFormatter.parse(formattedTime));
+            timeFormatter.parse(formattedTime),
+            dryRun);
 
-        return responseStatus(OK);
+        return Response.status(OK).entity(summary).build();
     }
 
     @GET

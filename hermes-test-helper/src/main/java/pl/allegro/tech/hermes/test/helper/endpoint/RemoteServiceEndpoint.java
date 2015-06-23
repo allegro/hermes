@@ -100,4 +100,8 @@ public class RemoteServiceEndpoint {
     public LoggedRequest getLastReceivedRequest() {
         return Iterables.getLast(receivedRequests);
     }
+
+    public void reset() {
+        receivedRequests.clear();
+    }
 }
