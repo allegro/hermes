@@ -72,12 +72,16 @@ To read message trace from management api, you need to configure read-only `LogR
 .. code-block:: java
 
     @Configuration
+    @EnableConfigurationProperties(ElasticsearchLogRepositoryProperties.class)
     public class ElasticsearchLogRepositoryConfiguration {
+
+        @Autowired
+        ElasticsearchLogRepositoryProperties config
 
         @Bean
         @ConditionalOnProperty("tracker.elasticsearch.enabled")
         LogRepository logRepository(Client client) {
-            return new ElasticsearchLogRepository(client);
+            return new ElasticsearchLogRepository(client, config.getMinScore());
         }
     }
 
