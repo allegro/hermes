@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.common.di;
 
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
-import org.glassfish.hk2.utilities.binding.ServiceBindingBuilder;
 
 import javax.inject.Singleton;
 import java.lang.reflect.ParameterizedType;
@@ -13,8 +12,8 @@ public abstract class AbstractBinder extends org.glassfish.hk2.utilities.binding
         return bind(clazz).in(Singleton.class).to(clazz);
     }
 
-    protected <T> ServiceBindingBuilder<T> bindSingletonFactory(Class<? extends Factory<T>> genericClass) {
-        return bindFactory(genericClass).to(factoryOfType(genericClass)).to(Singleton.class);
+    protected <T> ScopedBindingBuilder<T> bindSingletonFactory(Class<? extends Factory<T>> genericClass) {
+        return bindFactory(genericClass).in(Singleton.class).to(factoryOfType(genericClass));
     }
 
     @SuppressWarnings("unchecked")

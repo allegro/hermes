@@ -12,11 +12,13 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
+import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,14 +49,22 @@ public class KafkaRetransmissionService implements RetransmissionService {
     }
 
     @Override
-    public void indicateOffsetChange(TopicName topic, String subscription, String brokersClusterName, long timestamp) {
+    public List<PartitionOffset> indicateOffsetChange(TopicName topic, String subscription, String brokersClusterName,
+                                                            long timestamp, boolean dryRun) {
+
+        List<PartitionOffset> partitionOffsetList = new ArrayList<>();
         List<Integer> partitionsIds = brokerStorage.readPartitionsIds(topic.qualifiedName());
 
         for (Integer partitionId : partitionsIds) {
             SimpleConsumer consumer = createSimpleConsumer(topic, partitionId);
             long offset = getLastOffset(consumer, topicRepository.getTopicDetails(topic), partitionId, timestamp);
-            subscriptionOffsetChange.setSubscriptionOffset(topic, subscription, brokersClusterName, partitionId, offset);
+            partitionOffsetList.add(new PartitionOffset(offset, partitionId));
+            if (!dryRun) {
+                subscriptionOffsetChange.setSubscriptionOffset(topic, subscription, brokersClusterName, partitionId, offset);
+            }
         }
+
+        return partitionOffsetList;
     }
 
     private SimpleConsumer createSimpleConsumer(TopicName topic, int partition) {

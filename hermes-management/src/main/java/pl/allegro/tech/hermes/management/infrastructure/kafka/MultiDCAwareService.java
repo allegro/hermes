@@ -32,9 +32,17 @@ public class MultiDCAwareService {
             .readMessage(topic, partition, offset);
     }
 
-    public void moveOffset(TopicName topicName, String subscriptionName, Long timestamp) {
-        clusters.forEach(cluster -> cluster.indicateOffsetChange(topicName, subscriptionName, timestamp));
+    public MultiDCOffsetChangeSummary moveOffset(TopicName topicName, String subscriptionName, Long timestamp, boolean dryRun) {
+        MultiDCOffsetChangeSummary multiDCOffsetChangeSummary = new MultiDCOffsetChangeSummary();
 
-        adminTool.retransmit(new SubscriptionName(subscriptionName, topicName));
+        clusters.forEach(cluster -> multiDCOffsetChangeSummary.addPartitionOffsetList(
+                cluster.getClusterName(),
+                cluster.indicateOffsetChange(topicName, subscriptionName, timestamp, dryRun)));
+
+        if (!dryRun) {
+            adminTool.retransmit(new SubscriptionName(subscriptionName, topicName));
+        }
+
+        return multiDCOffsetChangeSummary;
     }
 }

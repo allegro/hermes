@@ -75,6 +75,7 @@ public class MultipleKafkaTest extends IntegrationTest {
     private FrontendStarter setupFrontend() throws Exception {
         FrontendStarter frontend = new FrontendStarter(frontendUrl);
         frontend.overrideProperty(Configs.FRONTEND_PORT, frontendPort);
+        frontend.overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, SECONDARY_KAFKA_CONNECT);
         frontend.overrideProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING, SECONDARY_ZK_KAFKA_CONNECT);
         frontend.overrideProperty(Configs.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
