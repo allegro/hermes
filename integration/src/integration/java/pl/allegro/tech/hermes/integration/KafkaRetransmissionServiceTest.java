@@ -51,7 +51,6 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         String subscription = "subscription";
 
         operations.buildSubscription(topicName, subscription, HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated(topicName, subscription);
         remoteService.expectMessages(simpleMessages(6));
 
         sendMessagesOnTopic(topicName.qualifiedName(), 4);
