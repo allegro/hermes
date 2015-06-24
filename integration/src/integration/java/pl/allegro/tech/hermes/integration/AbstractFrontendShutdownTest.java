@@ -21,7 +21,9 @@ public abstract class AbstractFrontendShutdownTest extends IntegrationTest {
 
     @BeforeClass
     public void setup() throws Exception {
-        ConfigFactory configFactory = new MutableConfigFactory().overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
+        ConfigFactory configFactory = new MutableConfigFactory()
+                .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
+                .overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false);
 
         hermesFrontend = HermesFrontend.frontend()
                 .withBinding(configFactory, ConfigFactory.class)
