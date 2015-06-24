@@ -3,26 +3,35 @@ package pl.allegro.tech.hermes.integration;
 import com.googlecode.catchexception.CatchException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.NotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static java.util.stream.IntStream.range;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;
 
 public class KafkaSingleMessageReaderTest extends IntegrationTest {
 
     private static final int NUMBER_OF_PARTITIONS = 2;
     private RemoteServiceEndpoint remoteService;
 
+    AvroUser avroUser;
+
     @BeforeMethod
-    public void initializeAlways() {
+    public void initializeAlways() throws Exception {
         remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
+        avroUser = new AvroUser();
     }
 
     @Test
@@ -44,6 +53,26 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
 
         // then
         assertThat(previews).hasSize(messages.size()).contains(messages.toArray(new String[messages.size()]));
+    }
+
+    @Test
+    public void shouldFetchSingleAvroMessage() throws IOException {
+        // given
+        Topic topic = topic()
+                .withName("avro.fetch")
+                .withValidation(true)
+                .withMessageSchema(avroUser.getSchema().toString())
+                .withContentType(AVRO).build();
+        operations.buildTopic(topic);
+        wait.untilTopicDetailsAreCreated(topic.getName());
+        assertThat(publisher.publish(topic.getQualifiedName(), avroUser.create("Bob", 50, "blue"))
+                .getStatus()).isEqualTo(CREATED.getStatusCode());
+
+        // when
+        List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10);
+
+        // then
+        assertThat(previews).contains("{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}");
     }
 
     @Test
@@ -94,8 +123,12 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     }
 
     private String unwrap(String wrappedMessage) {
-        String msg = wrappedMessage.split("\"message\":", 2)[1];
-        return msg.substring(0, msg.length() - 1);
+        try {
+            String msg = wrappedMessage.split("\"message\":", 2)[1];
+            return msg.substring(0, msg.length() - 1);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return wrappedMessage;
+        }
     }
 
 }

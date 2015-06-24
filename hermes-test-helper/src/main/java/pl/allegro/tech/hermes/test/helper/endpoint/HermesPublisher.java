@@ -20,6 +20,10 @@ public class HermesPublisher {
     public Response publish(String qualifiedTopicName, String message) {
         return topicEndpoint.publishMessage(qualifiedTopicName, message);
     }
+
+    public Response publish(String qualifiedTopicName, byte[] message) {
+        return topicEndpoint.publishMessage(qualifiedTopicName, message);
+    }
     
     private Hermes hermes(String hermesFrontendUrl) {
         return new Hermes(hermesFrontendUrl).withManagementConfig(integrationTestsConfig()).withPublisherConfig(integrationTestsConfig());

@@ -13,10 +13,12 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPoolConfig;
 import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
@@ -53,6 +55,9 @@ public class KafkaConfiguration {
     @Autowired
     AdminTool adminTool;
 
+    @Autowired
+    TopicRepository topicRepository;
+
     private final List<ZkClient> zkClients = new ArrayList<>();
     private final List<CuratorFramework> curators = new ArrayList<>();
 
@@ -62,13 +67,14 @@ public class KafkaConfiguration {
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties));
             SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
-            KafkaSingleMessageReader singleMessageReader = new KafkaSingleMessageReader(simpleConsumerPool);
+            KafkaSingleMessageReader singleMessageReader = new KafkaSingleMessageReader(simpleConsumerPool, new AvroMessageContentWrapper());
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                 storage,
                 singleMessageReader,
                 messageContentWrapper,
                 subscriptionOffsetChangeIndicator,
-                simpleConsumerPool
+                simpleConsumerPool,
+                topicRepository
             );
 
             return new BrokersClusterService(kafkaProperties.getClusterName(), singleMessageReader, retransmissionService, brokerTopicManagement);

@@ -7,11 +7,13 @@ import kafka.api.PartitionOffsetRequestInfo;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.OffsetResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
 
@@ -26,19 +28,22 @@ public class KafkaRetransmissionService implements RetransmissionService {
     private final JsonMessageContentWrapper messageContentWrapper;
     private final SubscriptionOffsetChangeIndicator subscriptionOffsetChange;
     private final SimpleConsumerPool simpleConsumerPool;
+    private final TopicRepository topicRepository;
 
     public KafkaRetransmissionService(
             BrokerStorage brokerStorage,
             KafkaSingleMessageReader kafkaSingleMessageReader,
             JsonMessageContentWrapper messageContentWrapper,
             SubscriptionOffsetChangeIndicator subscriptionOffsetChange,
-            SimpleConsumerPool simpleConsumerPool) {
+            SimpleConsumerPool simpleConsumerPool,
+            TopicRepository topicRepository) {
 
         this.brokerStorage = brokerStorage;
         this.kafkaSingleMessageReader = kafkaSingleMessageReader;
         this.messageContentWrapper = messageContentWrapper;
         this.subscriptionOffsetChange = subscriptionOffsetChange;
         this.simpleConsumerPool = simpleConsumerPool;
+        this.topicRepository = topicRepository;
     }
 
     @Override
@@ -47,7 +52,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
 
         for (Integer partitionId : partitionsIds) {
             SimpleConsumer consumer = createSimpleConsumer(topic, partitionId);
-            long offset = getLastOffset(consumer, topic, partitionId, timestamp);
+            long offset = getLastOffset(consumer, topicRepository.getTopicDetails(topic), partitionId, timestamp);
             subscriptionOffsetChange.setSubscriptionOffset(topic, subscription, brokersClusterName, partitionId, offset);
         }
     }
@@ -58,27 +63,27 @@ public class KafkaRetransmissionService implements RetransmissionService {
         return simpleConsumerPool.get(leader);
     }
 
-    private long getLastOffset(SimpleConsumer consumer, TopicName topic, int partition, long timestamp) {
+    private long getLastOffset(SimpleConsumer consumer, Topic topic, int partition, long timestamp) {
         Range<Long> offsetRange = getOffsetRange(consumer, topic, partition);
         return search(topic, partition, offsetRange, timestamp);
     }
 
-    private long search(TopicName topic, int partition, Range<Long> offsetRange, long timestamp) {
+    private long search(Topic topic, int partition, Range<Long> offsetRange, long timestamp) {
         OffsetSearcher searcher = new OffsetSearcher(
                 new KafkaTimestampExtractor(topic, partition, kafkaSingleMessageReader, messageContentWrapper)
         );
         return searcher.search(offsetRange, timestamp);
     }
 
-    private Range<Long> getOffsetRange(SimpleConsumer simpleConsumer, TopicName topic, int partition) {
+    private Range<Long> getOffsetRange(SimpleConsumer simpleConsumer, Topic topic, int partition) {
         long earliestOffset = getOffset(simpleConsumer, topic, partition, OffsetRequest.EarliestTime());
         long latestOffset = getOffset(simpleConsumer, topic, partition, OffsetRequest.LatestTime());
 
         return Range.closed(earliestOffset, latestOffset);
     }
 
-    private long getOffset(SimpleConsumer simpleConsumer, TopicName topic, int partition, long whichTime) {
-        TopicAndPartition topicAndPartition = new TopicAndPartition(topic.qualifiedName(), partition);
+    private long getOffset(SimpleConsumer simpleConsumer, Topic topic, int partition, long whichTime) {
+        TopicAndPartition topicAndPartition = new TopicAndPartition(topic.getQualifiedName(), partition);
 
         Map<TopicAndPartition, PartitionOffsetRequestInfo> requestInfo = new HashMap<>();
         requestInfo.put(topicAndPartition, new PartitionOffsetRequestInfo(whichTime, 1));

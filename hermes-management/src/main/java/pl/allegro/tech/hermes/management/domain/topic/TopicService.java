@@ -17,8 +17,6 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
 @Component
 public class TopicService {
 
@@ -122,7 +120,7 @@ public class TopicService {
     }
 
     public String fetchSingleMessage(String brokersClusterName, TopicName topicName, Integer partition, Long offset) {
-        return multiDCAwareService.readMessage(brokersClusterName, topicName, partition, offset);
+        return multiDCAwareService.readMessage(brokersClusterName, getTopicDetails(topicName), partition, offset);
     }
 
     public List<String> listTrackedTopicNames() {

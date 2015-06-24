@@ -1,17 +1,17 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit;
 
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
 
 class KafkaTimestampExtractor {
 
-    private final TopicName topic;
+    private final Topic topic;
     private final int partition;
     private final KafkaSingleMessageReader kafkaSingleMessageReader;
     private final JsonMessageContentWrapper messageContentWrapper;
 
-    KafkaTimestampExtractor(TopicName topic, int partition, KafkaSingleMessageReader kafkaSingleMessageReader,
+    KafkaTimestampExtractor(Topic topic, int partition, KafkaSingleMessageReader kafkaSingleMessageReader,
                             JsonMessageContentWrapper messageContentWrapper) {
 
         this.topic = topic;

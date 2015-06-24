@@ -59,6 +59,12 @@ public interface TopicEndpoint {
     @Path("/{topicName}")
     Response publishMessage(@PathParam("topicName") String qualifiedTopicName, String message);
 
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(APPLICATION_JSON)
+    @Path("/{topicName}")
+    Response publishMessage(@PathParam("topicName") String qualifiedTopicName, byte[] message);
+
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}")
