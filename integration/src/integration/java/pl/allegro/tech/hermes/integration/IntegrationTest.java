@@ -12,11 +12,11 @@ import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 public class IntegrationTest extends HermesIntegrationEnvironment {
 
     protected HermesEndpoints management;
-    
+
     protected HermesPublisher publisher;
-    
+
     protected HermesAPIOperations operations;
-    
+
     protected Waiter wait;
 
     @BeforeClass

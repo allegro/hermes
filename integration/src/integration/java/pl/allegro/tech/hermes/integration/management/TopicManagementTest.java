@@ -19,7 +19,6 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldCreateTopic() {
         // given
         operations.createGroup("createTopicGroup");
-        wait.untilGroupIsCreated("createTopicGroup");
 
         // when
         Response response = management.topic().create(
@@ -27,7 +26,6 @@ public class TopicManagementTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        wait.untilTopicIsCreated("createTopicGroup", "topic");
         Assertions.assertThat(management.topic().get("createTopicGroup.topic")).isNotNull();
     }
 
@@ -35,11 +33,8 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldListTopics() {
         // given
         operations.createGroup("listTopicsGroup");
-        Response r = operations.createTopic("listTopicsGroup", "topic1");
+        operations.createTopic("listTopicsGroup", "topic1");
         operations.createTopic("listTopicsGroup", "topic2");
-        assertThat(r).hasStatus(Response.Status.CREATED);
-        wait.untilTopicIsCreated("listTopicsGroup", "topic1");
-        wait.untilTopicIsCreated("listTopicsGroup", "topic2");
 
         // when then
         Assertions.assertThat(management.topic().list("listTopicsGroup", false)).containsOnlyOnce(

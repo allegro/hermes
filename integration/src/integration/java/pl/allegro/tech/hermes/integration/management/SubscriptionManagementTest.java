@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.net.URI.create;
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
@@ -44,8 +45,9 @@ public class SubscriptionManagementTest extends IntegrationTest {
         client = hermesClient(new JerseyHermesSender(newClient())).withURI(create("http://localhost:" + FRONTEND_PORT)).build();
     }
 
+    @Unreliable
     @Test
-    public void shouldCreateSubscriptionWithPendingStatus() {
+    public void shouldCreateSubscriptionWithActiveStatus() {
         // given
         operations.createGroup("subscribeGroup");
         operations.createTopic("subscribeGroup", "topic");
@@ -56,10 +58,9 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        Assertions.assertThat(management.subscription().list("subscribeGroup.topic", false)).containsExactly(
-                "subscription");
-        Assertions.assertThat(management.subscription().get("subscribeGroup.topic", "subscription").getState())
-                .isEqualTo(Subscription.State.PENDING);
+        wait.untilSubscriptionAdded("subscribeGroup", "topic", "subscription", false);
+        Assertions.assertThat(management.subscription().list("subscribeGroup.topic", false)).containsExactly("subscription");
+        wait.untilSubscriptionIsActivated("subscribeGroup", "topic", "subscription");
     }
     
     @Unreliable
@@ -70,8 +71,6 @@ public class SubscriptionManagementTest extends IntegrationTest {
         operations.createTopic("suspendSubscriptionGroup", "topic");
         operations.createSubscription("suspendSubscriptionGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
 
-        wait.untilSubscriptionIsCreated("suspendSubscriptionGroup", "topic", "subscription");
-
         // when
         Response response = management.subscription().updateState(
                 "suspendSubscriptionGroup.topic",
@@ -79,9 +78,9 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);
-        Assertions.assertThat(
-                management.subscription().get("suspendSubscriptionGroup.topic", "subscription").getState()
-        ).isEqualTo(Subscription.State.SUSPENDED);
+        waitAtMost(Duration.ONE_MINUTE).until(() -> {
+            management.subscription().get("suspendSubscriptionGroup.topic", "subscription").getState().equals(Subscription.State.SUSPENDED);
+        });
     }
 
     @Test

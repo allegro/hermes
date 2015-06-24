@@ -45,7 +45,6 @@ public class OffsetManipulationTest extends HermesIntegrationEnvironment {
     public void shouldReadUncommitedOffsetAfterConsumerStart() {
         // given
         operations.buildSubscription("uncommitedOffsetGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated("uncommitedOffsetGroup", "topic", "subscription");
 
         consumers.stop();
         wait.untilConsumersStop();

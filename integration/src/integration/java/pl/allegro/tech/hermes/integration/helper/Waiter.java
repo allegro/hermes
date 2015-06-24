@@ -4,19 +4,18 @@ import com.jayway.awaitility.Duration;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import org.apache.curator.framework.CuratorFramework;
+import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
+import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminTool;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
-import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.integration.helper.TimeoutAdjuster.adjust;
 
 public class Waiter {
@@ -43,32 +42,12 @@ public class Waiter {
         untilZookeeperNodeCreation(path, zookeeper);
     }
 
-    public void untilKafkaZookeeperNodeCreation(final String path) {
-        untilZookeeperNodeCreation(path, kafkaZookeeper);
-    }
-
     public void untilKafkaZookeeperNodeEmptied(final String path, int seconds) {
         untilZookeeperNodeEmptied(path, seconds, kafkaZookeeper);
     }
 
-    public void untilGroupIsCreated(String groupName) {
-        untilZookeeperNodeCreation(zookeeperPaths.groupPath(groupName));
-    }
-    
     public void untilTopicDetailsAreCreated(TopicName topicName) {
         untilZookeeperNodeCreation(zookeeperPaths.topicPath(topicName));
-    }
-
-    public void untilTopicIsCreated(String groupName, String topicName) {
-        untilZookeeperNodeCreation(zookeeperPaths.topicPath(new TopicName(groupName, topicName)));
-    }
-    
-    public void untilSubscriptionIsCreated(TopicName topicName, String subscription) {
-        untilSubscriptionIsCreated(topicName.getGroupName(), topicName.getName(), subscription);
-    }
-
-    public void untilSubscriptionIsCreated(String group, String topic, String subscription) {
-        untilKafkaZookeeperNodeCreation(subscriptionConsumerPath(group, topic, subscription));
     }
 
     public void untilSubscriptionMetricsIsCreated(TopicName topicName, String subscriptionName) {
@@ -83,19 +62,25 @@ public class Waiter {
         untilKafkaZookeeperNodeEmptied(subscriptionConsumerPath(group, topic, subscription), 60);
     }
 
+    public void untilSubscriptionIsActivated(String group, String topic, String subscription) {
+        waitAtMost(Duration.ONE_MINUTE).until(() -> {
+            endpoints.subscription().get(group + "." + topic, subscription).getState().equals(Subscription.State.ACTIVE);
+        });
+    }
+
     public void untilSubscriptionEndsReiteration(TopicName topicName, String subscription) {
         untilSubscriptionEndsReiteration(topicName.getGroupName(), topicName.getName(), subscription);
     }
 
     public void untilSubscriptionEndsReiteration(final String group, final String topic, final String subscription) {
-        await().atMost(adjust(30), TimeUnit.SECONDS).until(() -> {
+        waitAtMost(adjust(30), TimeUnit.SECONDS).until(() -> {
             Subscription.State state = endpoints.subscription().get(group + "." + topic, subscription).getState();
             return state == Subscription.State.ACTIVE;
         });
     }
 
     public void untilAllOffsetsEqual(final String group, final String topic, final String subscription, final int offset) {
-        await().atMost(adjust(30), TimeUnit.SECONDS).until(() -> {
+        waitAtMost(adjust(30), TimeUnit.SECONDS).until(() -> {
             List<String> partitions = zookeeper.getChildren().forPath(subscriptionOffsetPath(group, topic, subscription));
             for (String partition: partitions) {
                 Long currentOffset = Long.valueOf(new String(
@@ -109,14 +94,10 @@ public class Waiter {
     }
 
     public void untilConsumersRebalance(final String group, final String topic, final String subscription, final int consumerCount) {
-        await().atMost(Duration.ONE_MINUTE).until(() -> {
+        waitAtMost(Duration.ONE_MINUTE).until(() -> {
             List<String> children = zookeeper.getChildren().forPath(subscriptionIdsPath(group, topic, subscription));
             return children != null && children.size() == consumerCount;
         });
-    }
-
-    public void untilNoAdminNodes() {
-        await().atMost(adjust(20), TimeUnit.SECONDS).until(() -> zookeeper.getChildren().forPath(ZookeeperAdminTool.ROOT).size() == 0);
     }
 
     public void untilConsumersStop() {
@@ -140,23 +121,19 @@ public class Waiter {
     }
 
     public void untilMessageTraceLogged(final DBCollection collection, final PublishedMessageTraceStatus status) {
-        await().atMost(adjust(new Duration(30, TimeUnit.SECONDS))).until(() -> collection.find(new BasicDBObject("status", status.toString())).count() > 0);
+        waitAtMost(Duration.ONE_MINUTE).until(() -> collection.find(new BasicDBObject("status", status.toString())).count() > 0);
     }
 
     public void untilMessageTraceLogged(final DBCollection collection, final SentMessageTraceStatus status) {
-        await().atMost(adjust(new Duration(30, TimeUnit.SECONDS))).until(() -> collection.find(new BasicDBObject("status", status.toString())).count() > 0);
+        waitAtMost(Duration.ONE_MINUTE).until(() -> collection.find(new BasicDBObject("status", status.toString())).count() > 0);
     }
 
     public void untilMessageIdLogged(final DBCollection collection, final String messageId) {
-        await().atMost(adjust(new Duration(30, TimeUnit.SECONDS))).until(() -> collection.find(new BasicDBObject("messageId", messageId)).count() > 0);
+        waitAtMost(Duration.ONE_MINUTE).until(() -> collection.find(new BasicDBObject("messageId", messageId)).count() > 0);
     }
 
     public void untilReceivedAnyMessage(final DBCollection collection) {
-        await().atMost(adjust(new Duration(30, TimeUnit.SECONDS))).until(() -> collection.find().count() > 0);
-    }
-
-    public void untilSubscriptionUpdated() {
-        sleep(2);
+        waitAtMost(Duration.ONE_MINUTE).until(() -> collection.find().count() > 0);
     }
 
     private String subscriptionConsumerPath(String group, String topic, String subscription) {
@@ -183,21 +160,23 @@ public class Waiter {
     }
 
     private void untilZookeeperNodeEmptied(final String path, int seconds, final CuratorFramework zookeeper) {
-        await().atMost(adjust(seconds), TimeUnit.SECONDS).until(() -> {
+        waitAtMost(adjust(seconds), TimeUnit.SECONDS).until(() -> {
             List<String> children = zookeeper.getChildren().forPath(path);
             return children == null || children.isEmpty();
         });
     }
 
     private void untilZookeeperNodeCreation(final String path, final CuratorFramework zookeeper) {
-        await().atMost(adjust(20), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath(path) != null);
+        waitAtMost(adjust(20), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath(path) != null);
     }
 
     private void untilZookeeperNodeDeletion(final String path, final CuratorFramework zookeeper) {
-        await().atMost(adjust(Duration.FIVE_SECONDS)).until(() -> zookeeper.checkExists().forPath(path) == null);
+        waitAtMost(adjust(Duration.FIVE_SECONDS)).until(() -> zookeeper.checkExists().forPath(path) == null);
     }
 
-    public void untilTopicUpdated() {
-        sleep(2);
+    public void untilSubscriptionAdded(String group, String topic, String subscription, boolean isTracked) {
+        waitAtMost(Duration.ONE_MINUTE).until(() -> {
+            endpoints.subscription().list(group + "." + topic, isTracked).contains(subscription);
+        });
     }
 }

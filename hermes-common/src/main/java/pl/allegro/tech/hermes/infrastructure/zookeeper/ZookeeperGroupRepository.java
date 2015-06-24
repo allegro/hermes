@@ -45,8 +45,11 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
         logger.info("Creating group {} for path {}", group.getGroupName(), groupPath);
 
         try {
-            zookeeper.create().forPath(groupPath, mapper.writeValueAsBytes(group));
-            zookeeper.create().forPath(paths.topicsPath(group.getGroupName()));
+            zookeeper.inTransaction()
+                    .create().forPath(groupPath, mapper.writeValueAsBytes(group))
+                    .and()
+                    .create().forPath(paths.topicsPath(group.getGroupName()))
+                    .and().commit();
         } catch (KeeperException.NodeExistsException ex) {
             throw new GroupAlreadyExistsException(group.getGroupName(), ex);
         } catch (Exception ex) {
