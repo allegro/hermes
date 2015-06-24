@@ -5,7 +5,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
@@ -69,8 +68,6 @@ public class SubscriptionManagementTest extends IntegrationTest {
         operations.createGroup("suspendSubscriptionGroup");
         operations.createTopic("suspendSubscriptionGroup", "topic");
         operations.createSubscription("suspendSubscriptionGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-
-        wait.untilSubscriptionIsCreated("suspendSubscriptionGroup", "topic", "subscription");
 
         // when
         Response response = management.subscription().updateState(

@@ -27,7 +27,6 @@ public class OffsetCommitTest extends IntegrationTest {
         ConsumersStarter secondConsumer = new ConsumersStarter();
 
         operations.buildSubscription("properCommitOffsetGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated("properCommitOffsetGroup", "topic", "subscription");
         remoteService.expectMessages(TestMessage.simple().body());
 
         //when

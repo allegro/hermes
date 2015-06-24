@@ -124,7 +124,7 @@ public class MessageTrackingTest extends IntegrationTest {
     @Test
     public void shouldFetchUndeliveredMessagesLogs() {
         // given
-        operations.createGroup("fetchUndeliveredMessagesLogs", "test");
+        operations.createGroup("fetchUndeliveredMessagesLogs");
         operations.createTopic(Topic.Builder.topic().withName("fetchUndeliveredMessagesLogs", "topic").withTrackingEnabled(true).build());
 
         Subscription subscription = subscription().withName("subscription")

@@ -4,12 +4,11 @@ import com.jayway.awaitility.Duration;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import org.apache.curator.framework.CuratorFramework;
+import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
+import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminTool;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
-import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
@@ -43,32 +42,12 @@ public class Waiter {
         untilZookeeperNodeCreation(path, zookeeper);
     }
 
-    public void untilKafkaZookeeperNodeCreation(final String path) {
-        untilZookeeperNodeCreation(path, kafkaZookeeper);
-    }
-
     public void untilKafkaZookeeperNodeEmptied(final String path, int seconds) {
         untilZookeeperNodeEmptied(path, seconds, kafkaZookeeper);
     }
 
-    public void untilGroupIsCreated(String groupName) {
-        untilZookeeperNodeCreation(zookeeperPaths.groupPath(groupName));
-    }
-    
     public void untilTopicDetailsAreCreated(TopicName topicName) {
         untilZookeeperNodeCreation(zookeeperPaths.topicPath(topicName));
-    }
-
-    public void untilTopicIsCreated(String groupName, String topicName) {
-        untilZookeeperNodeCreation(zookeeperPaths.topicPath(new TopicName(groupName, topicName)));
-    }
-    
-    public void untilSubscriptionIsCreated(TopicName topicName, String subscription) {
-        untilSubscriptionIsCreated(topicName.getGroupName(), topicName.getName(), subscription);
-    }
-
-    public void untilSubscriptionIsCreated(String group, String topic, String subscription) {
-        untilKafkaZookeeperNodeCreation(subscriptionConsumerPath(group, topic, subscription));
     }
 
     public void untilSubscriptionMetricsIsCreated(TopicName topicName, String subscriptionName) {
@@ -113,10 +92,6 @@ public class Waiter {
             List<String> children = zookeeper.getChildren().forPath(subscriptionIdsPath(group, topic, subscription));
             return children != null && children.size() == consumerCount;
         });
-    }
-
-    public void untilNoAdminNodes() {
-        await().atMost(adjust(20), TimeUnit.SECONDS).until(() -> zookeeper.getChildren().forPath(ZookeeperAdminTool.ROOT).size() == 0);
     }
 
     public void untilConsumersStop() {
