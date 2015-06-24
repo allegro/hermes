@@ -28,12 +28,13 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
 
     private static final String CLUSTER_NAME = "primary";
     private static final String REASON_MESSAGE = "Bad Request";
+    private static final float MIN_SCORE = 0.2f;
 
     @ClassRule
     public static ElasticsearchResource elasticsearch = new ElasticsearchResource(SENT_MESSAGES, PUBLISHED_MESSAGES);
 
     private DataInitializer dataInitializer = new DataInitializer(elasticsearch.client(), CLUSTER_NAME);
-    private LogRepository logRepository = new ElasticsearchLogRepository(elasticsearch.client());
+    private LogRepository logRepository = new ElasticsearchLogRepository(elasticsearch.client(), MIN_SCORE);
 
     @Test
     public void shouldGetLastUndelivered() throws Exception {

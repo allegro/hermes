@@ -29,10 +29,13 @@ import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedI
 public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware {
 
     private static final int LIMIT = 1000;
-    private final Client elasticClient;
 
-    public ElasticsearchLogRepository(Client elasticClient) {
+    private final Client elasticClient;
+    private final float minScore;
+
+    public ElasticsearchLogRepository(Client elasticClient, float minScore) {
         this.elasticClient = elasticClient;
+        this.minScore = minScore;
     }
 
     @Override
@@ -80,9 +83,11 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     private SearchResponse searchSentMessages(int limit, QueryBuilder query) throws InterruptedException, ExecutionException {
         return elasticClient.prepareSearch(SENT_MESSAGES.getIndex())
                 .addFields(MESSAGE_ID, TIMESTAMP, SUBSCRIPTION, TOPIC_NAME, STATUS, REASON, PARTITION, OFFSET, CLUSTER)
+                .setTrackScores(true)
                 .setTypes(SENT_MESSAGES.getType())
                 .setQuery(query)
                 .addSort(TIMESTAMP, SortOrder.ASC)
+                .setMinScore(minScore)
                 .setSize(limit)
                 .execute()
                 .get();
@@ -91,9 +96,11 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     private SearchResponse searchPublishedMessages(int limit, QueryBuilder query) throws InterruptedException, ExecutionException {
         return elasticClient.prepareSearch(PUBLISHED_MESSAGES.getIndex())
                 .addFields(MESSAGE_ID, TIMESTAMP, TOPIC_NAME, STATUS, REASON, CLUSTER)
+                .setTrackScores(true)
                 .setTypes(PUBLISHED_MESSAGES.getType())
                 .setQuery(query)
                 .addSort(TIMESTAMP, SortOrder.ASC)
+                .setMinScore(minScore)
                 .setSize(limit)
                 .execute()
                 .get();
