@@ -20,7 +20,7 @@ public class ZookeeperWaiter {
     }
 
     public void untilZookeeperClientStarted(CuratorFramework client) {
-        await().atMost(2, TimeUnit.SECONDS).until(() -> zookeeper.getState() == CuratorFrameworkState.STARTED);
+        await().atMost(2, TimeUnit.SECONDS).until(() -> client.getState() == CuratorFrameworkState.STARTED);
     }
 
     public void untilZookeeperClientStopped() {
@@ -28,10 +28,14 @@ public class ZookeeperWaiter {
     }
 
     public void untilZookeeperClientStopped(CuratorFramework client) {
-        await().atMost(2, TimeUnit.SECONDS).until(() -> zookeeper.getState() == CuratorFrameworkState.STOPPED);
+        await().atMost(2, TimeUnit.SECONDS).until(() -> client.getState() == CuratorFrameworkState.STOPPED);
     }
 
     public void untilZookeeperPathIsCreated(final String path) {
         await().atMost(2, TimeUnit.SECONDS).until(() -> zookeeper.getData().forPath(path) != null);
+    }
+
+    public void untilZookeeperPathIsEmpty(final String path) {
+        await().atMost(2, TimeUnit.SECONDS).until(() -> zookeeper.getChildren().forPath(path).isEmpty());
     }
 }
