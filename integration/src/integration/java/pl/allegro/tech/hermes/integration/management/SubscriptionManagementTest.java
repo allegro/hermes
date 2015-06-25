@@ -58,7 +58,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        wait.untilSubscriptionAdded("subscribeGroup", "topic", "subscription", false);
+        wait.untilSubscriptionCreated("subscribeGroup", "topic", "subscription", false);
         Assertions.assertThat(management.subscription().list("subscribeGroup.topic", false)).containsExactly("subscription");
         wait.untilSubscriptionIsActivated("subscribeGroup", "topic", "subscription");
     }

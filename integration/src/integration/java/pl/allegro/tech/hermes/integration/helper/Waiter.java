@@ -7,6 +7,7 @@ import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -63,7 +64,7 @@ public class Waiter {
     }
 
     public void untilSubscriptionIsActivated(String group, String topic, String subscription) {
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
             endpoints.subscription().get(group + "." + topic, subscription).getState().equals(Subscription.State.ACTIVE);
         });
     }
@@ -82,7 +83,7 @@ public class Waiter {
     public void untilAllOffsetsEqual(final String group, final String topic, final String subscription, final int offset) {
         waitAtMost(adjust(30), TimeUnit.SECONDS).until(() -> {
             List<String> partitions = zookeeper.getChildren().forPath(subscriptionOffsetPath(group, topic, subscription));
-            for (String partition: partitions) {
+            for (String partition : partitions) {
                 Long currentOffset = Long.valueOf(new String(
                         zookeeper.getData().forPath(subscriptionOffsetPath(group, topic, subscription) + "/" + partition)));
                 if (currentOffset != offset) {
@@ -94,7 +95,7 @@ public class Waiter {
     }
 
     public void untilConsumersRebalance(final String group, final String topic, final String subscription, final int consumerCount) {
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
             List<String> children = zookeeper.getChildren().forPath(subscriptionIdsPath(group, topic, subscription));
             return children != null && children.size() == consumerCount;
         });
@@ -121,19 +122,19 @@ public class Waiter {
     }
 
     public void untilMessageTraceLogged(final DBCollection collection, final PublishedMessageTraceStatus status) {
-        waitAtMost(Duration.ONE_MINUTE).until(() -> collection.find(new BasicDBObject("status", status.toString())).count() > 0);
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> collection.find(new BasicDBObject("status", status.toString())).count() > 0);
     }
 
     public void untilMessageTraceLogged(final DBCollection collection, final SentMessageTraceStatus status) {
-        waitAtMost(Duration.ONE_MINUTE).until(() -> collection.find(new BasicDBObject("status", status.toString())).count() > 0);
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> collection.find(new BasicDBObject("status", status.toString())).count() > 0);
     }
 
     public void untilMessageIdLogged(final DBCollection collection, final String messageId) {
-        waitAtMost(Duration.ONE_MINUTE).until(() -> collection.find(new BasicDBObject("messageId", messageId)).count() > 0);
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> collection.find(new BasicDBObject("messageId", messageId)).count() > 0);
     }
 
     public void untilReceivedAnyMessage(final DBCollection collection) {
-        waitAtMost(Duration.ONE_MINUTE).until(() -> collection.find().count() > 0);
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> collection.find().count() > 0);
     }
 
     private String subscriptionConsumerPath(String group, String topic, String subscription) {
@@ -174,9 +175,25 @@ public class Waiter {
         waitAtMost(adjust(Duration.FIVE_SECONDS)).until(() -> zookeeper.checkExists().forPath(path) == null);
     }
 
-    public void untilSubscriptionAdded(String group, String topic, String subscription, boolean isTracked) {
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
+    public void untilSubscriptionCreated(String group, String topic, Subscription subscription) {
+        untilSubscriptionCreated(group, topic, subscription.getName(), subscription.isTrackingEnabled());
+    }
+
+    public void untilSubscriptionCreated(String group, String topic, String subscription, boolean isTracked) {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
             endpoints.subscription().list(group + "." + topic, isTracked).contains(subscription);
+        });
+    }
+
+    public void untilGroupCreated(String group) {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
+            return endpoints.group().list().contains(group);
+        });
+    }
+
+    public void untilTopicCreated(Topic topic) {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
+            return endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName());
         });
     }
 }

@@ -1,13 +1,13 @@
-package pl.allegro.tech.hermes.test.helper.endpoint;
+package pl.allegro.tech.hermes.integration.helper;
 
 import com.jayway.awaitility.Duration;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -21,9 +21,11 @@ import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 public class HermesAPIOperations {
 
     private final HermesEndpoints endpoints;
+    private final Waiter wait;
 
-    public HermesAPIOperations(HermesEndpoints endpoints) {
+    public HermesAPIOperations(HermesEndpoints endpoints, Waiter wait) {
         this.endpoints = endpoints;
+        this.wait = wait;
     }
 
     public void createGroup(String group) {
@@ -32,9 +34,7 @@ public class HermesAPIOperations {
         }
         assertThat(endpoints.group().create(Group.from(group)).getStatus()).isEqualTo(CREATED.getStatusCode());
 
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
-            return endpoints.group().list().contains(group);
-        });
+        wait.untilGroupCreated(group);
     }
 
     public void createTopic(String group, String topic) {
@@ -42,14 +42,12 @@ public class HermesAPIOperations {
     }
 
     public void createTopic(Topic topic) {
-        if (topics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName())) {
+        if (endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName())) {
             return;
         }
         assertThat(endpoints.topic().create(topic).getStatus()).isEqualTo(CREATED.getStatusCode());
 
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
-            return topics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName());
-        });
+        wait.untilTopicCreated(topic);
     }
 
     public void createSubscription(String group, String topic, String subscriptionName, String endpoint) {
@@ -64,15 +62,13 @@ public class HermesAPIOperations {
     }
 
     public void createSubscription(String group, String topic, Subscription subscription) {
-        if (subscriptions(group, topic, subscription.isTrackingEnabled()).contains(subscription.getName())) {
+        if (endpoints.findSubscriptions(group, topic, subscription.isTrackingEnabled()).contains(subscription.getName())) {
             return;
         }
 
         assertThat(endpoints.subscription().create(group + "." + topic, subscription).getStatus()).isEqualTo(CREATED.getStatusCode());
 
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
-            return subscriptions(group, topic, subscription.isTrackingEnabled()).contains(subscription.getName());
-        });
+        wait.untilSubscriptionCreated(group, topic, subscription);
     }
 
     public void buildTopic(String group, String topic) {
@@ -129,11 +125,5 @@ public class HermesAPIOperations {
         });
     }
 
-    private List<String> topics(Topic topic, boolean tracking) {
-        return endpoints.topic().list(topic.getName().getGroupName(), tracking);
-    }
 
-    private List<String> subscriptions(String group, String topic, boolean tracked) {
-        return endpoints.subscription().list(group + "." + topic, tracked);
-    }
 }
