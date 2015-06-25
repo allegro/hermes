@@ -124,7 +124,7 @@ public class MessageTrackingTest extends IntegrationTest {
     @Test
     public void shouldFetchUndeliveredMessagesLogs() {
         // given
-        operations.createGroup("fetchUndeliveredMessagesLogs", "test");
+        operations.createGroup("fetchUndeliveredMessagesLogs");
         operations.createTopic(Topic.Builder.topic().withName("fetchUndeliveredMessagesLogs", "topic").withTrackingEnabled(true).build());
 
         Subscription subscription = subscription().withName("subscription")
@@ -160,13 +160,11 @@ public class MessageTrackingTest extends IntegrationTest {
         wait.untilMessageIdLogged(publishedMessages, firstTracked);
 
         // when
-        operations.updateTopic(topicName, topic().applyPatch(topic).withTrackingEnabled(false).build());
-        wait.untilTopicUpdated();
+        operations.updateTopic(topicName, topic().applyDefaults().applyPatch(topic).withTrackingEnabled(false).build());
 
         publishMessage("toggleTrackingOnTopic.topic", MESSAGE.body());
 
-        operations.updateTopic(topicName, topic().applyPatch(topic).withTrackingEnabled(true).build());
-        wait.untilTopicUpdated();
+        operations.updateTopic(topicName, topic().applyDefaults().applyPatch(topic).withTrackingEnabled(true).build());
 
         String secondTracked = publishMessage("toggleTrackingOnTopic.topic", MESSAGE.body());
         wait.untilMessageIdLogged(publishedMessages, secondTracked);
@@ -183,8 +181,7 @@ public class MessageTrackingTest extends IntegrationTest {
         operations.buildTopic(topic);
 
         // when
-        operations.updateTopic(topicName, topic().withTrackingEnabled(true).build());
-        wait.untilTopicUpdated();
+        operations.updateTopic(topicName, topic().applyDefaults().applyPatch(topic).withTrackingEnabled(true).build());
 
         Topic updatedTopic = operations.getTopic("ackStaysOnTracking", "topic");
 
@@ -201,6 +198,7 @@ public class MessageTrackingTest extends IntegrationTest {
         Subscription subscription = subscription().applyDefaults().withName("subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
                 .withTrackingEnabled(true)
+                .withTopicName("toggleTrackingOnSubscription", "topic")
                 .build();
 
         operations.createSubscription("toggleTrackingOnSubscription", "topic", subscription);
@@ -210,17 +208,13 @@ public class MessageTrackingTest extends IntegrationTest {
 
         // when
         operations.updateSubscription("toggleTrackingOnSubscription", "topic", "subscription",
-                subscription().applyPatch(subscription).withTrackingEnabled(false).build());
-
-        wait.untilSubscriptionUpdated();
+                subscription().applyDefaults().applyPatch(subscription).withTrackingEnabled(false).build());
 
         publishMessage("toggleTrackingOnSubscription.topic", MESSAGE.body());
         remoteService.waitUntilReceived();
 
         operations.updateSubscription("toggleTrackingOnSubscription", "topic", "subscription",
-                subscription().applyPatch(subscription).withTrackingEnabled(true).build());
-
-        wait.untilSubscriptionUpdated();
+                subscription().applyDefaults().applyPatch(subscription).withTrackingEnabled(true).build());
 
         remoteService.expectMessages(MESSAGE.body());
         String secondTracked = publishMessage("toggleTrackingOnSubscription.topic", MESSAGE.body());

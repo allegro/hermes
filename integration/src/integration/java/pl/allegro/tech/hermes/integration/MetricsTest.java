@@ -40,7 +40,6 @@ public class MetricsTest extends IntegrationTest {
     public void shouldIncreaseTopicMetricsAfterMessageHasBeenPublished() {
         // given
         operations.buildSubscription("topicMetricsGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated("topicMetricsGroup", "topic", "subscription");
         graphiteEndpoint.returnMetricForTopic("topicMetricsGroup", "topic", 10, 15);
 
         remoteService.expectMessages(TestMessage.simple().body());
@@ -63,7 +62,6 @@ public class MetricsTest extends IntegrationTest {
     public void shouldIncreaseSubscriptionDeliveredMetricsAfterMessageDelivered() {
         // given
         operations.buildSubscription("subscriptionMetricsGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated("subscriptionMetricsGroup", "topic", "subscription");
         graphiteEndpoint.returnMetricForSubscription("subscriptionMetricsGroup", "topic", "subscription", 15);
 
         remoteService.expectMessages(TestMessage.simple().body());
@@ -102,7 +100,6 @@ public class MetricsTest extends IntegrationTest {
     @Test
     public void shouldReadSubscriptionDeliveryRate() {
         operations.buildSubscription("pl.allegro.tech.hermes", "topic", "pl.allegro.tech.hermes.subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated("pl.allegro.tech.hermes", "topic", "pl.allegro.tech.hermes.subscription");
         graphiteEndpoint.returnMetricForSubscription("pl_allegro_tech_hermes", "topic", "pl_allegro_tech_hermes_subscription", 15);
 
         SubscriptionMetrics metrics = management.subscription().getMetrics("pl.allegro.tech.hermes.topic", "pl.allegro.tech.hermes.subscription");
@@ -114,7 +111,6 @@ public class MetricsTest extends IntegrationTest {
     public void shouldIncreasePublishedMetricsIncrementallyInMultipleMetricUpdateCycles() {
         // given
         operations.buildSubscription("incrementalMetricsGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated("incrementalMetricsGroup", "topic", "subscription");
         graphiteEndpoint.returnMetricForTopic("incrementalMetricsGroup", "topic", 10, 15);
 
         remoteService.expectMessages(TestMessage.simple().body(), TestMessage.simple().body());
@@ -164,7 +160,6 @@ public class MetricsTest extends IntegrationTest {
         TopicName topicName = TopicName.fromQualifiedName("metricsAfterSubscriptionRemovedGroup.topic");
         String subscriptionName1 = "subscription";
         operations.buildSubscription(topicName.getGroupName(), topicName.getName(), subscriptionName1, HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated(topicName.getGroupName(), topicName.getName(), subscriptionName1);
         remoteService.expectMessages(TestMessage.simple().body());
 
         publisher.publish(topicName.qualifiedName(), TestMessage.simple().body());
@@ -180,7 +175,6 @@ public class MetricsTest extends IntegrationTest {
 
         String subscriptionName2 = "subscription2";
         operations.buildSubscription(topicName.getGroupName(), topicName.getName(), subscriptionName2, HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated(topicName.getGroupName(), topicName.getName(), subscriptionName2);
         management.topic().publishMessage(topicName.qualifiedName(), TestMessage.simple().body());
         wait.untilSubscriptionMetricsIsCreated(topicName, subscriptionName2);
         wait.untilSubscriptionMetricsIsRemoved(topicName, subscriptionName1);
