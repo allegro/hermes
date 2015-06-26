@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
@@ -22,7 +22,11 @@ public class ConsumerHolder implements Iterable<Consumer> {
     }
 
     public synchronized Optional<Consumer> get(TopicName topicName, String subscriptionName) {
-        return Optional.fromNullable(consumers.get(topicName, subscriptionName));
+        return Optional.ofNullable(consumers.get(topicName, subscriptionName));
+    }
+
+    public synchronized boolean contains(TopicName topicName, String subscriptionName) {
+        return consumers.contains(topicName, subscriptionName);
     }
 
     @Override

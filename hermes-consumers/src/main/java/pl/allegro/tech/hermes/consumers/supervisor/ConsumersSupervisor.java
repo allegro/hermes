@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +84,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
 
     @Override
     public void onSubscriptionCreated(Subscription subscription) {
-        synchronized (subscriptionsLocks.getLock(Subscription.getId(subscription.getTopicName(), subscription.getName()))) {
+        synchronized (subscriptionsLocks.getLock(subscription)) {
             try {
                 if (subscription.getState() == PENDING) {
                     createAndExecuteConsumerIfNotExists(subscription);
@@ -92,7 +92,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                 } else if (subscription.getState() == ACTIVE) {
                     createAndExecuteConsumerIfNotExists(subscription);
                 } else {
-                    LOGGER.info("Got subscription created event for inactive subscription {}", subscription.getName());
+                    LOGGER.info("Got subscription created event for inactive subscription {}", subscription.getId());
                 }
             } catch (Exception e) {
                 LOGGER.error("Failed to create subscription " + subscription.getName(), e);
@@ -102,32 +102,31 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
 
     @Override
     public void onSubscriptionRemoved(Subscription subscription) {
-        synchronized (subscriptionsLocks.getLock(Subscription.getId(subscription.getTopicName(), subscription.getName()))) {
+        synchronized (subscriptionsLocks.getLock(subscription)) {
             try {
-                deleteConsumer(subscription, true);
+                deleteConsumerIfExists(subscription, true);
                 hermesMetrics.removeMetrics(subscription);
             } catch (Exception e) {
-                LOGGER.error("Failed to remove subscription " + subscription.getName(), e);
+                LOGGER.error("Failed to remove subscription " + subscription.getId(), e);
             }
         }
     }
 
     @Override
     public void onSubscriptionChanged(Subscription modifiedSubscription) {
-        synchronized (subscriptionsLocks.getLock(Subscription.getId(modifiedSubscription.getTopicName(), modifiedSubscription.getName()))) {
+        synchronized (subscriptionsLocks.getLock(modifiedSubscription)) {
             try {
-                Optional<Consumer> consumer = consumerHolder.get(modifiedSubscription.getTopicName(), modifiedSubscription.getName());
+                Optional<Consumer> consumerOptional = consumerHolder.get(modifiedSubscription.getTopicName(), modifiedSubscription.getName());
 
-                Subscription.State oldState = consumer.isPresent() ? consumer.get().getSubscription().getState() : SUSPENDED;
+                Subscription.State oldState = consumerOptional.map((consumer) -> consumer.getSubscription().getState()).orElse(SUSPENDED);
                 if (subscriptionStateChanged(modifiedSubscription, oldState)) {
                     handleSubscriptionStateChange(oldState, modifiedSubscription.getState(), modifiedSubscription);
                 }
 
-                if (consumer.isPresent()) {
-                    consumer.get().updateSubscription(modifiedSubscription);
-                }
+                consumerOptional.ifPresent((consumer) -> consumer.updateSubscription(modifiedSubscription));
+
             } catch (Exception e) {
-                LOGGER.error("Failed to update subscription " + modifiedSubscription.getName(), e);
+                LOGGER.error("Failed to update subscription " + modifiedSubscription.getId(), e);
             }
         }
     }
@@ -159,7 +158,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                 break;
             case SUSPENDED:
                 if (oldState.equals(ACTIVE)) {
-                    deleteConsumer(modifiedSubscription, false);
+                    deleteConsumerIfExists(modifiedSubscription, false);
                 }
                 break;
             default:
@@ -185,27 +184,25 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
     }
 
     private void createAndExecuteConsumerIfNotExists(Subscription subscription) {
-            Optional<Consumer> maybeConsumer = consumerHolder.get(subscription.getTopicName(), subscription.getName());
-            if (maybeConsumer.isPresent()) {
+            if (consumerHolder.contains(subscription.getTopicName(), subscription.getName())) {
                 LOGGER.warn("Consumer for {} already exists, ignoring", subscription.getId());
             } else {
                 createAndExecuteConsumer(subscription);
             }
     }
 
-    private void deleteConsumer(Subscription subscription, boolean removeOffsets) throws Exception {
+    private void deleteConsumerIfExists(Subscription subscription, boolean removeOffsets) throws Exception {
         deleteConsumerIfExists(subscription.getTopicName(), subscription.getName(), removeOffsets);
     }
 
-    private void deleteConsumer(SubscriptionName subscription, boolean removeOffsets) throws Exception {
+    private void deleteConsumerIfExists(SubscriptionName subscription, boolean removeOffsets) throws Exception {
         deleteConsumerIfExists(subscription.getTopicName(), subscription.getName(), removeOffsets);
     }
 
     private void deleteConsumerIfExists(TopicName topicName, String subscriptionName, boolean removeOffsets) throws Exception {
-        Optional<Consumer> maybeConsumer = consumerHolder.get(topicName, subscriptionName);
-        if (maybeConsumer.isPresent()) {
+        if (consumerHolder.contains(topicName, subscriptionName)) {
             LOGGER.info("Deleting consumer for {}", Subscription.getId(topicName, subscriptionName));
-            Consumer consumer = maybeConsumer.get();
+            Consumer consumer = consumerHolder.get(topicName, subscriptionName).get();
             consumer.stopConsuming();
             consumerHolder.remove(topicName, subscriptionName);
             if (removeOffsets) {
@@ -228,18 +225,18 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
     }
 
     @Override
-    public void onRetransmissionStarts(SubscriptionName subscription) throws Exception {
-        synchronized (subscriptionsLocks.getLock(Subscription.getId(subscription.getTopicName(), subscription.getName()))) {
-            deleteConsumer(subscription, false);
+    public void onRetransmissionStarts(SubscriptionName subscriptionName) throws Exception {
+        synchronized (subscriptionsLocks.getLock(subscriptionName)) {
+            deleteConsumerIfExists(subscriptionName, false);
 
             PartitionOffsets offsets = subscriptionOffsetChangeIndicator.getSubscriptionOffsets(
-                    subscription.getTopicName(), subscription.getName(), brokersClusterName);
+                    subscriptionName.getTopicName(), subscriptionName.getName(), brokersClusterName);
 
             for (PartitionOffset partitionOffset : offsets) {
-                brokerStorage.setSubscriptionOffset(subscription.getTopicName(), subscription.getName(), partitionOffset.getPartition(),
+                brokerStorage.setSubscriptionOffset(subscriptionName.getTopicName(), subscriptionName.getName(), partitionOffset.getPartition(),
                         partitionOffset.getOffset());
             }
-            createAndExecuteConsumer(subscriptionRepository.getSubscriptionDetails(subscription.getTopicName(), subscription.getName()));
+            createAndExecuteConsumer(subscriptionRepository.getSubscriptionDetails(subscriptionName.getTopicName(), subscriptionName.getName()));
         }
     }
 }
