@@ -123,12 +123,8 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     }
 
     private String unwrap(String wrappedMessage) {
-        try {
-            String msg = wrappedMessage.split("\"message\":", 2)[1];
-            return msg.substring(0, msg.length() - 1);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return wrappedMessage;
-        }
+        String msg = wrappedMessage.split("\"message\":", 2)[1];
+        return msg.substring(0, msg.length() - 1);
     }
 
 }

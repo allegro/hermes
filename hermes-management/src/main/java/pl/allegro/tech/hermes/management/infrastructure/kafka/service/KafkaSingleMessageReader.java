@@ -4,7 +4,6 @@ import kafka.api.FetchRequestBuilder;
 import kafka.javaapi.FetchResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
-import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -41,8 +40,7 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
     }
 
     private byte[] convertAvroToJson(String schema, byte[] bytes) {
-        return new AvroToJsonConverter(new Schema.Parser().parse(schema))
-                .convert(avroMessageContentWrapper.unwrapContent(bytes).getContent());
+        return new AvroToJsonConverter(avroMessageContentWrapper.getWrappedSchema(schema)).convert(bytes);
     }
 
     private byte[] readMessage(String topicName, int partition, long offset) {
