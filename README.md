@@ -3,7 +3,7 @@ Hermes
 
 [![Build Status](https://img.shields.io/travis/allegro/hermes/master.svg?style=flat)](https://travis-ci.org/allegro/hermes)
 [![Documentation Status](https://readthedocs.org/projects/hermes-pubsub/badge/?version=latest)](https://readthedocs.org/projects/hermes-pubsub/?badge=latest)
-
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/pl.allegro.tech.hermes/hermes-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/pl.allegro.tech.hermes/hermes-client)
 
 Hermes is an asynchronous message broker built on top of [Kafka](http://kafka.apache.org/).
 We provide reliable, fault tolerant REST interface for message publishing and adaptive push
