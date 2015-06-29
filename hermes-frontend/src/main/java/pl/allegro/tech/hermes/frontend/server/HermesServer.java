@@ -100,9 +100,10 @@ public class HermesServer {
                 .setWorkerThreads(configFactory.getIntProperty(FRONTEND_WORKER_THREADS_COUNT))
                 .setBufferSize(configFactory.getIntProperty(FRONTEND_BUFFER_SIZE))
                 .setHandler(gracefulShutdown);
-        if (configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED))  {
-             builder.setServerOption(ENABLE_HTTP2, true)
-                    .addHttpsListener(sslPort, host, new SSLContextSupplier(configFactory).get());
+
+        if (configFactory.getBooleanProperty(FRONTEND_SSL_ENABLED)) {
+            builder.addHttpsListener(sslPort, host, new SSLContextSupplier(configFactory).get())
+                    .setServerOption(ENABLE_HTTP2, configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED));
         }
         this.undertow = builder.build();
         return undertow;
