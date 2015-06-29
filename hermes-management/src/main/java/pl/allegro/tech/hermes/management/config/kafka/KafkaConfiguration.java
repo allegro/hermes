@@ -21,10 +21,12 @@ import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChang
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
+import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
 
 import javax.annotation.PreDestroy;
@@ -67,7 +69,7 @@ public class KafkaConfiguration {
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties));
             SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
-            KafkaSingleMessageReader singleMessageReader = new KafkaSingleMessageReader(simpleConsumerPool, new AvroMessageContentWrapper());
+            SingleMessageReader singleMessageReader = new KafkaSingleMessageReader(new KafkaRawMessageReader(simpleConsumerPool), new AvroMessageContentWrapper());
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                 storage,
                 singleMessageReader,
