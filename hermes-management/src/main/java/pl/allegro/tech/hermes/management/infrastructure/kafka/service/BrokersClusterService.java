@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
@@ -33,8 +34,8 @@ public class BrokersClusterService {
         manageFunction.accept(brokerTopicManagement);
     }
 
-    public String readMessage(TopicName topicName, Integer partition, Long offset) {
-        return singleMessageReader.readMessage(topicName, partition, offset);
+    public String readMessage(Topic topic, Integer partition, Long offset) {
+        return singleMessageReader.readMessage(topic, partition, offset);
     }
 
     public List<PartitionOffset> indicateOffsetChange(TopicName topicName, String subscriptionName, Long timestamp, boolean dryRun) {
