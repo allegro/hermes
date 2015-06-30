@@ -59,6 +59,7 @@ public enum Configs {
     FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
     FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
 
+    FRONTEND_SSL_ENABLED("frontend.ssl.enabled", false),
     FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
     FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
     FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "classpath:server.keystore"),
