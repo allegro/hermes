@@ -8,25 +8,35 @@ import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
+import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
 import pl.allegro.tech.hermes.tracker.frontend.AbstractLogRepositoryTest;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.PUBLISHED_MESSAGES;
 
 public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest implements LogSchemaAware {
 
     private static final String CLUSTER_NAME = "primary";
 
+    private static final Clock clock = Clock.fixed(LocalDate.of(2000, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
+    private static final FrontendIndexFactory indexFactory = new FrontendDailyIndexFactory(clock);
+
     @ClassRule
-    public static ElasticsearchResource elasticsearch = new ElasticsearchResource(PUBLISHED_MESSAGES);
+    public static ElasticsearchResource elasticsearch = new ElasticsearchResource(indexFactory);
 
     @Override
     protected LogRepository createRepository() {
-        return new ElasticsearchLogRepository(elasticsearch.client(), CLUSTER_NAME, 1000, 100, new MetricRegistry(), new PathsCompiler("localhost"));
+        return new ElasticsearchLogRepository.Builder(elasticsearch.client(), new PathsCompiler("localhost"), new MetricRegistry())
+                .withIndexFactory(indexFactory)
+                .build();
     }
 
     @Override
@@ -52,8 +62,8 @@ public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest im
 
     private void awaitUntilMessageIsIndexed(QueryBuilder query) {
         await().atMost(ONE_MINUTE).until(() -> {
-            SearchResponse response = elasticsearch.client().prepareSearch(PUBLISHED_MESSAGES.getIndex())
-                    .setTypes(PUBLISHED_MESSAGES.getType())
+            SearchResponse response = elasticsearch.client().prepareSearch(indexFactory.createIndex())
+                    .setTypes(SchemaManager.PUBLISHED_TYPE)
                     .setQuery(query)
                     .execute().get();
             return response.getHits().getTotalHits() == 1;

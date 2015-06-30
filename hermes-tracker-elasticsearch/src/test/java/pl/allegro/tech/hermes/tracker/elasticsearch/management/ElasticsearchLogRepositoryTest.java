@@ -12,8 +12,17 @@ import pl.allegro.tech.hermes.tracker.consumers.TestMessageMetadata;
 import pl.allegro.tech.hermes.tracker.elasticsearch.DataInitializer;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
+import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
+import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersIndexFactory;
+import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersDailyIndexFactory;
+import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendDailyIndexFactory;
+import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactory;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +30,6 @@ import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.PUBLISHED_MESSAGES;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.SENT_MESSAGES;
 
 public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
 
@@ -30,11 +37,16 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private static final String REASON_MESSAGE = "Bad Request";
     private static final float MIN_SCORE = 0.2f;
 
-    @ClassRule
-    public static ElasticsearchResource elasticsearch = new ElasticsearchResource(SENT_MESSAGES, PUBLISHED_MESSAGES);
+    private static final Clock clock = Clock.fixed(LocalDate.of(2000, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
+    private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
+    private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
 
-    private DataInitializer dataInitializer = new DataInitializer(elasticsearch.client(), CLUSTER_NAME);
-    private LogRepository logRepository = new ElasticsearchLogRepository(elasticsearch.client(), MIN_SCORE);
+    @ClassRule
+    public static final ElasticsearchResource elasticsearch = new ElasticsearchResource(frontendIndexFactory, consumersIndexFactory);
+
+    private final DataInitializer dataInitializer = new DataInitializer(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, CLUSTER_NAME);
+    private final SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory);
+    private final LogRepository logRepository = new ElasticsearchLogRepository(elasticsearch.client(), MIN_SCORE, schemaManager);
 
     @Test
     public void shouldGetLastUndelivered() throws Exception {

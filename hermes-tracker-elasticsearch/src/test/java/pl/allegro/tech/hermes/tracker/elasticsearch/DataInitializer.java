@@ -5,20 +5,27 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
+import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersIndexFactory;
+import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactory;
 
 import java.io.IOException;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.PUBLISHED_MESSAGES;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex.SENT_MESSAGES;
 
 public class DataInitializer implements LogSchemaAware {
 
     private final Client client;
+    private final FrontendIndexFactory publishedIndexFactory;
+    private final ConsumersIndexFactory sentIndexFactory;
     private final String clusterName;
 
-    public DataInitializer(Client client, String clusterName) {
+    public DataInitializer(Client client,
+                           FrontendIndexFactory publishedIndexFactory,
+                           ConsumersIndexFactory sentIndexFactory,
+                           String clusterName) {
         this.client = client;
+        this.publishedIndexFactory = publishedIndexFactory;
+        this.sentIndexFactory = sentIndexFactory;
         this.clusterName = clusterName;
     }
 
@@ -32,7 +39,7 @@ public class DataInitializer implements LogSchemaAware {
                 .field(CLUSTER, clusterName)
                 .endObject();
 
-        client.prepareIndex(PUBLISHED_MESSAGES.getIndex(), PUBLISHED_MESSAGES.getType())
+        client.prepareIndex(publishedIndexFactory.createIndex(), SchemaManager.PUBLISHED_TYPE)
                 .setSource(publishedContent)
                 .execute();
     }
@@ -52,7 +59,7 @@ public class DataInitializer implements LogSchemaAware {
                 .field(REASON, reason)
                 .endObject();
 
-        client.prepareIndex(SENT_MESSAGES.getIndex(), SENT_MESSAGES.getType())
+        client.prepareIndex(sentIndexFactory.createIndex(), SchemaManager.SENT_TYPE)
                 .setSource(content)
                 .execute();
     }
