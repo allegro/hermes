@@ -3,7 +3,7 @@ Hermes
 
 [![Build Status](https://img.shields.io/travis/allegro/hermes/master.svg?style=flat)](https://travis-ci.org/allegro/hermes)
 [![Documentation Status](https://readthedocs.org/projects/hermes-pubsub/badge/?version=latest)](https://readthedocs.org/projects/hermes-pubsub/?badge=latest)
-
+[![Join the chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/allegro/hermes?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Hermes is an asynchronous message broker built on top of [Kafka](http://kafka.apache.org/).
 We provide reliable, fault tolerant REST interface for message publishing and adaptive push
@@ -15,6 +15,9 @@ Visit our page: [hermes.allegrotech.io](http://hermes.allegrotech.io)
 
 See our full documentation: [http://hermes-pubsub.readthedocs.org/en/latest/](http://hermes-pubsub.readthedocs.org/en/latest/)
 
+Questions?
+ - [gitter](https://gitter.im/allegro/hermes)
+ - [mailing list](https://groups.google.com/forum/#!forum/hermes-pubsub)
 
 ## License
 
