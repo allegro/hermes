@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
+import java.util.function.Function;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -18,6 +19,8 @@ public class Topic {
     private String description;
 
     private String messageSchema;
+
+    private Object compiledSchema;
 
     private boolean validationEnabled;
 
@@ -120,6 +123,13 @@ public class Topic {
 
     public String getMessageSchema() {
         return messageSchema;
+    }
+
+    public <T> T getCompiledSchema(Function<String, T> compiler) {
+        if (compiledSchema == null) {
+            compiledSchema = compiler.apply(getMessageSchema());
+        }
+        return (T) compiledSchema;
     }
 
     @JsonProperty("validation")

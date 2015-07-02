@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing;
 
 
+import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.avro.JsonToAvroMessageConverter;
 
@@ -12,7 +13,7 @@ public class MessageContentTypeEnforcer {
 
     public Message enforce(String messageContentType, Message message, Topic topic) {
         if (APPLICATION_JSON.equalsIgnoreCase(messageContentType) && AVRO == topic.getContentType()) {
-            return messageConverter.convert(message, topic.getMessageSchema());
+            return messageConverter.convert(message, topic.getCompiledSchema(schema -> new Schema.Parser().parse(schema)));
         }
         return message;
     }
