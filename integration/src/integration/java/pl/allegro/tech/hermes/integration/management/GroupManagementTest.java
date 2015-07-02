@@ -93,7 +93,6 @@ public class GroupManagementTest extends IntegrationTest {
         // given
         operations.createGroup("removeNonemptyGroup");
         operations.createTopic(topic().withName("removeNonemptyGroup", "topic").build());
-        wait.untilTopicIsCreated("removeNonemptyGroup", "topic");
 
         // when
         Response response = management.group().delete("removeNonemptyGroup");

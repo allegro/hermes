@@ -4,6 +4,10 @@ This guide walks through setting up a working Hermes environment and making an e
 
 Requirements
 ------------
+
+    We are currently preparing new, pre-built Docker containers. In order for this guide to work, you should checkout ``hermes-0.7.1`` tag.
+
+
 * Java 8
 * `Docker <https://docs.docker.com/installation/#installation>`_ (1.6+) and `Docker compose <https://docs.docker.com/compose/install/>`_
 * curl

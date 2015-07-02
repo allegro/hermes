@@ -66,8 +66,11 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         logger.info("Creating topic for path {}", topicPath);
 
         try {
-            zookeeper.create().forPath(topicPath, mapper.writeValueAsBytes(topic));
-            zookeeper.create().forPath(paths.subscriptionsPath(topic.getName()));
+            zookeeper.inTransaction()
+                    .create().forPath(topicPath, mapper.writeValueAsBytes(topic))
+                    .and()
+                    .create().forPath(paths.subscriptionsPath(topic.getName()))
+                    .and().commit();
         } catch (KeeperException.NodeExistsException ex) {
             throw new TopicAlreadyExistsException(topic.getName(), ex);
         } catch (Exception ex) {

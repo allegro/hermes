@@ -20,7 +20,6 @@ public class JmsConsumingTest extends IntegrationTest {
     public void shouldConsumeMessageOnJMSEndpoint() {
         // given
         operations.buildSubscription("publishJmsGroup", "topic", "subscription", jmsEndpointAddress(JMS_TOPIC_NAME));
-        wait.untilSubscriptionIsCreated("publishJmsGroup", "topic", "subscription");
         jmsEndpoint.expectMessages(TestMessage.of("hello", "world"));
 
         // when
