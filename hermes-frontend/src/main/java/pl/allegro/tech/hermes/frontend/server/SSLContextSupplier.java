@@ -82,7 +82,7 @@ public class SSLContextSupplier implements Supplier<SSLContext> {
         TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
 
         SSLContext sslContext = SSLContext.getInstance(protocol);
-        sslContext.init(keyManagers, trustManagers, SecureRandom.getInstanceStrong());
+        sslContext.init(keyManagers, trustManagers, new SecureRandom());
         return sslContext;
     }
 }
