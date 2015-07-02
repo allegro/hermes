@@ -54,7 +54,7 @@ public interface TopicEndpoint {
     TopicMetrics getMetrics(@PathParam("topicName") String qualifiedTopicName);
 
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
+    @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
     Response publishMessage(@PathParam("topicName") String qualifiedTopicName, String message);
