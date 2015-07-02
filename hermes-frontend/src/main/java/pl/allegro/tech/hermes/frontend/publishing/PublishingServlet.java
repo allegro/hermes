@@ -58,14 +58,13 @@ public class PublishingServlet extends HttpServlet {
                              MessageValidators messageValidators,
                              Clock clock,
                              MessagePublisher messagePublisher,
-                             BrokerListeners listeners,
-                             MessageContentTypeEnforcer contentTypeEnforcer) {
+                             BrokerListeners listeners) {
 
         this.topicsCache = topicsCache;
         this.messageValidators = messageValidators;
         this.clock = clock;
         this.messagePublisher = messagePublisher;
-        this.contentTypeEnforcer = contentTypeEnforcer;
+        this.contentTypeEnforcer = new MessageContentTypeEnforcer();
         this.errorSender = new ErrorSender(objectMapper);
         this.hermesMetrics = hermesMetrics;
         this.trackers = trackers;
