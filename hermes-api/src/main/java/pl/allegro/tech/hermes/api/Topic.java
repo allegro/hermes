@@ -125,6 +125,7 @@ public class Topic {
         return messageSchema;
     }
 
+    @JsonIgnore
     public <T> T getCompiledSchema(Function<String, T> compiler) {
         if (compiledSchema == null) {
             compiledSchema = compiler.apply(getMessageSchema());
