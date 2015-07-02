@@ -2,7 +2,8 @@ package pl.allegro.tech.hermes.integration.env;
 
 import com.codahale.metrics.MetricRegistry;
 import com.jayway.awaitility.Duration;
-import org.eclipse.jetty.client.HttpClient;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -11,9 +12,6 @@ import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.tracker.mongo.frontend.MongoLogRepository;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import static com.jayway.awaitility.Awaitility.await;
 
@@ -24,6 +22,7 @@ public class FrontendStarter implements Starter<HermesFrontend> {
     private final MutableConfigFactory configFactory;
     private final String frontendUrl;
     private HermesFrontend hermesFrontend;
+    private OkHttpClient client;
 
 
     public FrontendStarter(String frontendUrl) {
@@ -44,6 +43,7 @@ public class FrontendStarter implements Starter<HermesFrontend> {
                     serviceLocator.getService(PathsCompiler.class)))
             .build();
 
+        client = new OkHttpClient();
         hermesFrontend.start();
         waitForStartup();
     }
@@ -64,14 +64,13 @@ public class FrontendStarter implements Starter<HermesFrontend> {
     }
 
     private void waitForStartup() throws Exception {
-        final HttpClient httpClient = HttpClientFactory.create();
 
         await().atMost(Duration.TEN_SECONDS).until(() -> {
-            try {
-                return httpClient.GET(frontendUrl).getStatus() == 200;
-            } catch (InterruptedException | ExecutionException | TimeoutException exception) {
-                return false;
-            }
+            Request request = new Request.Builder()
+                    .url(frontendUrl)
+                    .build();
+
+            return client.newCall(request).execute().code() == 200;
         });
     }
 }

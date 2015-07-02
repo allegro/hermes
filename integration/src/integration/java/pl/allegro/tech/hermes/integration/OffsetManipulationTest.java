@@ -6,7 +6,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
+import pl.allegro.tech.hermes.integration.helper.HermesAPIOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -31,8 +31,8 @@ public class OffsetManipulationTest extends HermesIntegrationEnvironment {
     public void initialize() {
         this.publisher = new HermesPublisher(FRONTEND_URL);
         HermesEndpoints endpoints = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL);
-        this.operations = new HermesAPIOperations(endpoints);
         this.wait = new Waiter(endpoints, SharedServices.services().zookeeper(), services().kafkaZookeeper());
+        this.operations = new HermesAPIOperations(endpoints, wait);
         this.consumers = SharedServices.services().consumers();
     }
 
@@ -45,7 +45,6 @@ public class OffsetManipulationTest extends HermesIntegrationEnvironment {
     public void shouldReadUncommitedOffsetAfterConsumerStart() {
         // given
         operations.buildSubscription("uncommitedOffsetGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated("uncommitedOffsetGroup", "topic", "subscription");
 
         consumers.stop();
         wait.untilConsumersStop();
