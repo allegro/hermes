@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
+import pl.allegro.tech.hermes.integration.helper.HermesAPIOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -34,8 +34,8 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
     public void initialize() {
         publisher = new HermesPublisher(FRONTEND_URL);
         endpoints = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL);
-        operations = new HermesAPIOperations(endpoints);
         wait = new Waiter(endpoints, services().zookeeper(), services().kafkaZookeeper());
+        operations = new HermesAPIOperations(endpoints, wait);
     }
 
     @BeforeMethod
@@ -51,7 +51,6 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         String subscription = "subscription";
 
         operations.buildSubscription(topicName, subscription, HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated(topicName, subscription);
         remoteService.expectMessages(simpleMessages(6));
 
         sendMessagesOnTopic(topicName.qualifiedName(), 4);

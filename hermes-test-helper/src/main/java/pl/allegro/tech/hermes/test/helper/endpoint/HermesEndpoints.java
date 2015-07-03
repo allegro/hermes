@@ -2,10 +2,13 @@ package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.test.helper.client.Hermes;
+
+import java.util.List;
 
 public class HermesEndpoints {
 
@@ -49,5 +52,14 @@ public class HermesEndpoints {
         clientConfig.property(ClientProperties.READ_TIMEOUT, 5000);
         return clientConfig;
     }
+
+    public List<String> findTopics(Topic topic, boolean tracking) {
+        return topicEndpoint.list(topic.getName().getGroupName(), tracking);
+    }
+
+    public List<String> findSubscriptions(String group, String topic, boolean tracked) {
+        return subscriptionEndpoint.list(group + "." + topic, tracked);
+    }
+
 }
 

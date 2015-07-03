@@ -106,7 +106,6 @@ public class PublishingTest extends IntegrationTest {
         String subscription = "publishingTestSubscription";
 
         operations.buildSubscription(group, topic, subscription, HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated(group, topic, subscription);
         operations.suspendSubscription(group, topic, subscription);
         wait.untilSubscriptionIsDeactivated(group, topic, subscription);
         
@@ -123,7 +122,6 @@ public class PublishingTest extends IntegrationTest {
     public void shouldSendPendingMessagesAfterSubscriptionIsResumed() {
         // given
         operations.buildSubscription("publishResumedGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsCreated("publishResumedGroup", "topic", "subscription");
         operations.suspendSubscription("publishResumedGroup", "topic", "subscription");
         wait.untilSubscriptionIsDeactivated("publishResumedGroup", "topic", "subscription");
         remoteService.expectMessages(TestMessage.of("hello", "world").body());
@@ -132,7 +130,6 @@ public class PublishingTest extends IntegrationTest {
         publisher.publish("publishResumedGroup.topic", TestMessage.of("hello", "world").body());
 
         operations.activateSubscription("publishResumedGroup", "topic", "subscription");
-        wait.untilSubscriptionIsCreated("publishResumedGroup", "topic", "subscription");
 
         // then
         remoteService.waitUntilReceived();
@@ -142,9 +139,7 @@ public class PublishingTest extends IntegrationTest {
     public void shouldConsumeMessagesOnMultipleSubscriptions() {
         // given
         operations.buildSubscription("publishMultipleGroup", "topic", "subscription1", HTTP_ENDPOINT_URL + "1/");
-        wait.untilSubscriptionIsCreated("publishMultipleGroup", "topic", "subscription1");
         operations.createSubscription("publishMultipleGroup", "topic", "subscription2", HTTP_ENDPOINT_URL + "2/");
-        wait.untilSubscriptionIsCreated("publishMultipleGroup", "topic", "subscription2");
 
         TestMessage message = TestMessage.of("hello", "world");
 
