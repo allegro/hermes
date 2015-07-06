@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -150,7 +149,7 @@ public class ConsumerMessageSender {
             if (result.isLoggable()) {
                 logger.info(
                     format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                        subscription.getEndpoint().getEndpoint(), message.getId().orElse("unknown"), message.getOffset(), message.getPartition(),
+                        subscription.getEndpoint().getEndpoint(), message.getId(), message.getOffset(), message.getPartition(),
                         subscription.getId(), result.getRootCause()),
                     result.getFailure());
             }

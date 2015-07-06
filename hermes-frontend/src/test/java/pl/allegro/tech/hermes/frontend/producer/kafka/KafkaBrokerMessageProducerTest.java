@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.assertj.core.data.MapEntry;
-import org.boon.json.JsonFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,10 +11,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
-import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperProvider;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.publishing.Message;
+import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,7 +34,7 @@ public class KafkaBrokerMessageProducerTest {
     private static final String MESSAGE_ID = "id";
     private static final String CONTENT_ROOT = "message";
     private static final String METADATA_ROOT = "metadata";
-    private static final Topic TOPIC = topic().withName("group.topic").build();
+    private static final Topic TOPIC = topic().applyDefaults().withName("group.topic").build();
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);
     private static final Message MESSAGE = new Message(MESSAGE_ID, CONTENT, TIMESTAMP);
 
@@ -46,12 +46,14 @@ public class KafkaBrokerMessageProducerTest {
     private ObjectMapper mapper = new ObjectMapper();
 
     @Mock
-    HermesMetrics hermesMetrics;
+    private HermesMetrics hermesMetrics;
 
     @Before
     public void before() {
-        MessageContentWrapper contentWrapper = new MessageContentWrapper(CONTENT_ROOT, METADATA_ROOT, JsonFactory.create());
-        producer = new KafkaBrokerMessageProducer(producers, contentWrapper, hermesMetrics);
+        JsonMessageContentWrapper jsonContentWrapper = new JsonMessageContentWrapper(CONTENT_ROOT, METADATA_ROOT, mapper);
+        MessageContentWrapperProvider contentWrapperProvider = new MessageContentWrapperProvider(jsonContentWrapper, null);
+
+        producer = new KafkaBrokerMessageProducer(producers, contentWrapperProvider, hermesMetrics);
     }
 
     @After
@@ -81,7 +83,7 @@ public class KafkaBrokerMessageProducerTest {
         //then
         List<ProducerRecord<byte[], byte[]>> records = leaderConfirmsProducer.history();
         assertThat(records.size()).isEqualTo(1);
-        assertThat(records.get(0)).isEqualToComparingFieldByField(new ProducerRecord<>("group.topic", CONTENT));
+        assertThat(records.get(0).topic()).isEqualTo("group.topic");
 
         latch.await();
     }
@@ -102,7 +104,7 @@ public class KafkaBrokerMessageProducerTest {
     @Test
     public void shouldUseEveryoneConfirmProducerForTopicWithAckAll() {
         //given
-        Topic topic = topic().withName("group.all").withAck(Topic.Ack.ALL).build();
+        Topic topic = topic().applyDefaults().withName("group.all").withAck(Topic.Ack.ALL).build();
 
         //when
         producer.send(MESSAGE, topic, new DoNothing());
@@ -110,7 +112,7 @@ public class KafkaBrokerMessageProducerTest {
         //then
         List<ProducerRecord<byte [], byte[]>> records = everyoneConfirmProducer.history();
         assertThat(records.size()).isEqualTo(1);
-        assertThat(records.get(0)).isEqualToComparingFieldByField(new ProducerRecord<>("group.all", CONTENT));
+        assertThat(records.get(0).topic()).isEqualTo("group.all");
     }
 
     private Map<String, Object> firstMessage(MockProducer producer) throws IOException {

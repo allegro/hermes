@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.ErrorCode;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 
 import javax.ws.rs.core.Response;
@@ -68,6 +69,39 @@ public class TopicManagementTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.FORBIDDEN).hasErrorCode(ErrorCode.TOPIC_NOT_EMPTY);
+    }
+
+    @Test
+    public void shouldNotAllowCreatingAvroTopicWithoutSchema() {
+        // given
+        operations.createGroup("createAvroGroup");
+
+        // when
+        Response response = management.topic().create(topic()
+                .withName("createAvroGroup", "topic")
+                .applyDefaults()
+                .withContentType(Topic.ContentType.AVRO)
+                .build());
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void shouldNotAllowCreatingTopicWithInvalidAvroSchema() {
+        // given
+        operations.createGroup("createAvroInvalidSchemaGroup");
+
+        // when
+        Response response = management.topic().create(topic()
+                .withName("createAvroInvalidSchemaGroup", "topic")
+                .applyDefaults()
+                .withContentType(Topic.ContentType.AVRO)
+                .withMessageSchema("invalidSchema")
+                .build());
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
     }
 
     @Test

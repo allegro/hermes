@@ -3,10 +3,14 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperProvider;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.Timers;
+import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 
@@ -15,26 +19,33 @@ import java.util.Properties;
 
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
-    private ConfigFactory configFactory;
-    private MessageContentWrapper contentWrapper;
+    private final ConfigFactory configFactory;
+    private final MessageContentWrapperProvider messageContentWrapperProvider;
+    private final HermesMetrics hermesMetrics;
+    private final Clock clock;
 
     @Inject
-    public KafkaMessageReceiverFactory(ConfigFactory configFactory, MessageContentWrapper contentWrapper) {
+    public KafkaMessageReceiverFactory(ConfigFactory configFactory, MessageContentWrapperProvider messageContentWrapperProvider,
+                                       HermesMetrics hermesMetrics, Clock clock) {
         this.configFactory = configFactory;
-        this.contentWrapper = contentWrapper;
+        this.messageContentWrapperProvider = messageContentWrapperProvider;
+        this.hermesMetrics = hermesMetrics;
+        this.clock = clock;
     }
 
     @Override
-    public MessageReceiver createMessageReceiver(Subscription subscription) {
-        return create(subscription.getTopicName(), createConsumerConfig(subscription.getId()));
+    public MessageReceiver createMessageReceiver(Topic.ContentType receivingContentType, Subscription subscription) {
+        return create(subscription.getTopicName(), receivingContentType, createConsumerConfig(subscription.getId()));
     }
 
-    MessageReceiver create(TopicName topicName, ConsumerConfig consumerConfig) {
+    MessageReceiver create(TopicName topicName, Topic.ContentType receivingContentType, ConsumerConfig consumerConfig) {
         return new KafkaMessageReceiver(
                 topicName.qualifiedName(),
                 Consumer.createJavaConsumerConnector(consumerConfig),
                 configFactory,
-                contentWrapper);
+                messageContentWrapperProvider.provide(receivingContentType),
+                hermesMetrics.timer(Timers.CONSUMER_READ_LATENCY),
+                clock);
     }
 
     private ConsumerConfig createConsumerConfig(String subscriptionName) {

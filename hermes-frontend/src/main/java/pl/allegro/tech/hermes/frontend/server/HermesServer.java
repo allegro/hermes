@@ -17,7 +17,7 @@ import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.validator.MessageValidator;
+import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 
 import javax.inject.Inject;
 import javax.servlet.Servlet;
@@ -39,11 +39,12 @@ public class HermesServer {
 
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configFactory;
-    private final MessageValidator messageValidator;
+    private final MessageValidators messageValidators;
     private final TopicsCache topicsCache;
     private final PublishingServlet publishingServlet;
     private final HealthCheckService healthCheckService;
     private final int port;
+    private final int sslPort;
     private final String host;
 
     @Inject
@@ -51,23 +52,24 @@ public class HermesServer {
             TopicsCache topicsCache,
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
-            MessageValidator messageValidator,
+            MessageValidators messageValidators,
             PublishingServlet publishingServlet,
             HealthCheckService healthCheckService) {
 
         this.topicsCache = topicsCache;
         this.configFactory = configFactory;
-        this.messageValidator = messageValidator;
+        this.messageValidators = messageValidators;
         this.hermesMetrics = hermesMetrics;
         this.publishingServlet = publishingServlet;
         this.healthCheckService = healthCheckService;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
+        this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
         this.host = configFactory.getStringProperty(FRONTEND_HOST);
     }
 
     public void start() {
-        topicsCache.start(ImmutableList.of(messageValidator));
+        topicsCache.start(ImmutableList.of(messageValidators));
         configureServer().start();
     }
 
@@ -85,8 +87,7 @@ public class HermesServer {
 
     private Undertow configureServer() {
         gracefulShutdown = new HermesShutdownHandler(deployAndStart(), hermesMetrics);
-
-        this.undertow = Undertow.builder()
+        Undertow.Builder builder = Undertow.builder()
                 .addHttpListener(port, host)
                 .setServerOption(REQUEST_PARSE_TIMEOUT, configFactory.getIntProperty(FRONTEND_REQUEST_PARSE_TIMEOUT))
                 .setServerOption(MAX_HEADERS, configFactory.getIntProperty(FRONTEND_MAX_HEADERS))
@@ -98,9 +99,13 @@ public class HermesServer {
                 .setIoThreads(configFactory.getIntProperty(FRONTEND_IO_THREADS_COUNT))
                 .setWorkerThreads(configFactory.getIntProperty(FRONTEND_WORKER_THREADS_COUNT))
                 .setBufferSize(configFactory.getIntProperty(FRONTEND_BUFFER_SIZE))
-                .setHandler(gracefulShutdown)
-                .build();
+                .setHandler(gracefulShutdown);
 
+        if (configFactory.getBooleanProperty(FRONTEND_SSL_ENABLED)) {
+            builder.addHttpsListener(sslPort, host, new SSLContextSupplier(configFactory).get())
+                    .setServerOption(ENABLE_HTTP2, configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED));
+        }
+        this.undertow = builder.build();
         return undertow;
     }
 

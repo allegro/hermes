@@ -71,6 +71,16 @@ frontend.io.threads.count                  number of Undertow IO threads        
 frontend.worker.threads.count              number of worker threads                                                                         200
 frontend.request.chunk.size                chunk size in bytes                                                                              1024
 frontend.graceful.shutdown.initial.wait.ms when shutting down, period before setting status endpoint to DOWN and performing actual shutdown 10000 ms
+frontend.http2.enabled                     enables HTTP/2 (requires enabled ssl)                                                            false
+frontend.ssl.enabled                       enables SSL (requires setting all frontend.ssl.* properties)                                     false
+frontend.ssl.port                          secure port to listen on (enabled along with HTTP/2)                                             8443
+frontend.ssl.protocol                      SSL protocol                                                                                     TLS
+frontend.ssl.keystore.location             keystore location, prefixed with classpath: or file:                                             classpath:server.keystore
+frontend.ssl.keystore.password             password required to access keystore                                                             password
+frontend.ssl.keystore.format               keystore format                                                                                  JKS
+frontend.ssl.truststore.location           truststore location, prefixed with classpath: or file:                                           classpath:server.keystore
+frontend.ssl.truststore.password           password required to access truststore                                                           password
+frontend.ssl.truststore.format             truststore format                                                                                JKS
 ========================================== ================================================================================================ ==============
 
 The **idle.timeout** and **long.idle.timeout** timeouts are counted from the time the request has been parsed till
@@ -119,19 +129,6 @@ zookeeper.max.retires            max connection retries                         
 zookeeper.base.sleep.time        base time between connection retries, grows on each retry  1000 ms
 zookeeper.cache.thread.pool.size size of thread pool used ot manage topics cache            5
 ================================ ========================================================== ==============
-
-Message tracker
-^^^^^^^^^^^^^^^
-
-These options configure message tracking (for debug purpose mostly). Make sure they are the same as on Management and Consumer nodes.
-
-=============================== ===================================================================== ========================================
-Property                        Description                                                           Default value
-=============================== ===================================================================== ========================================
-tracker.mongodb.uri             mongo URI                                                             mongodb://localhost:27017/hermesMessages
-tracker.mongodb.commit.interval push tracking messages to Mongo once per interval                     1000 ms
-tracker.mongodb.queue.capacity  capacity of tracking messages queue - overflow messages are discarded 100 000
-=============================== ===================================================================== ========================================
 
 Metrics
 ^^^^^^^

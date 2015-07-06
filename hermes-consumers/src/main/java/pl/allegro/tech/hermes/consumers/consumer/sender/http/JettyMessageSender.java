@@ -4,7 +4,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
@@ -34,7 +34,7 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
             client.newRequest(endpoint.resolveFor(message))
                 .method(HttpMethod.POST)
                 .header(HttpHeader.KEEP_ALIVE.toString(), "true")
-                .header(MESSAGE_ID.getName(), message.getId().orElse("unavailable"))
+                .header(MESSAGE_ID.getName(), message.getId())
                 .header(HttpHeader.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)
                 .timeout(timeout, TimeUnit.MILLISECONDS)
                 .content(new BytesContentProvider(message.getData()))

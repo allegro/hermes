@@ -12,13 +12,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 
 import java.io.IOException;
 
 import static org.mockito.Mockito.doReturn;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_ZOOKEEPER_CONNECT_STRING;
+import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_CONNECT_STRING;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DependenciesResolverTest {
@@ -44,16 +45,14 @@ public class DependenciesResolverTest {
 
     @Before
     public void setUp() {
-        doReturn(testingServer.getConnectString())
-                .when(configFactory).getStringProperty(Configs.ZOOKEEPER_CONNECT_STRING);
-        doReturn(testingServer.getConnectString())
-                .when(configFactory).getStringProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING);
+        doReturn(testingServer.getConnectString()).when(configFactory).getStringProperty(ZOOKEEPER_CONNECT_STRING);
+        doReturn(testingServer.getConnectString()).when(configFactory).getStringProperty(KAFKA_ZOOKEEPER_CONNECT_STRING);
     }
 
     @Test
     public void shouldGetAllServicesWithoutAnyExceptions() {
         ServiceLocator serviceLocator = ServiceLocatorUtilities.bind("serviceLocatorTestName1",
-                new CommonBinder(), new ConsumersBinder(), new TestBinder(configFactory)
+                new CommonBinder(), new ConsumersBinder(), new TestBinder(configFactory), new TrackersBinder()
         );
 
         serviceLocator.getAllServices(d -> true);

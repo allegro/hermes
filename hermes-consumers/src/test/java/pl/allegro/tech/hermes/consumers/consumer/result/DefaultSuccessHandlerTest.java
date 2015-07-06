@@ -10,15 +10,12 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultSuccessHandlerTest {
@@ -34,9 +31,7 @@ public class DefaultSuccessHandlerTest {
     @Mock
     private SubscriptionOffsetCommitQueues offsetHelper;
 
-    private Message message = new Message(
-            Optional.of("id"), OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), Optional.of(241243123L), Optional.of(2412431234L)
-    );
+    private Message message = new Message("id", OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), 241243123L, 2412431234L);
 
     @Mock
     private Subscription subscription;
@@ -44,7 +39,7 @@ public class DefaultSuccessHandlerTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private HermesMetrics hermesMetrics;
 
-    private TestTrackers trackers;
+    private TestTrackers trackers = new TestTrackers();
 
     private DefaultSuccessHandler defaultRetryHandler;
 
@@ -52,7 +47,6 @@ public class DefaultSuccessHandlerTest {
     public void setUp() {
         when(subscription.getName()).thenReturn(SUBSCRIPTION_NAME);
         when(subscription.getTopicName()).thenReturn(QUALIFIED_TOPIC_NAME);
-        trackers = new TestTrackers();
         defaultRetryHandler = new DefaultSuccessHandler(offsetHelper, hermesMetrics, trackers);
         reset(hermesMetrics);
     }

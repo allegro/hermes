@@ -2,18 +2,11 @@ package pl.allegro.tech.hermes.consumers.consumer.offset;
 
 import org.junit.Test;
 import org.mockito.Mockito;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.time.Clock;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 
 public class OffsetCommitQueueTest {
 
@@ -159,8 +152,7 @@ public class OffsetCommitQueueTest {
 
     private void addOffsets(long ... offsets) {
         for (Long offset : offsets) {
-            queue.put(new Message(Optional.of("id"), offset, 0, "topic", new byte[0], Optional.of(12091212L),
-                    Optional.of(120912123L)).getOffset());
+            queue.put(new Message("id", offset, 0, "topic", new byte[0], 12091212L, 120912123L).getOffset());
         }
     }
 

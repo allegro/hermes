@@ -57,9 +57,20 @@ public enum Configs {
     FRONTEND_REQUEST_CHUNK_SIZE("frontend.request.chunk.size", 1024),
     FRONTEND_GRACEFUL_SHUTDOWN_ENABLED("frontend.graceful.shutdown.enabled", true),
     FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
+    FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
+
+    FRONTEND_SSL_ENABLED("frontend.ssl.enabled", false),
+    FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
+    FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
+    FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "classpath:server.keystore"),
+    FRONTEND_SSL_KEYSTORE_PASSWORD("frontend.ssl.keystore.password", "password"),
+    FRONTEND_SSL_KEYSTORE_FORMAT("frontend.ssl.keystore.format", "JKS"),
+    FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "classpath:server.truststore"),
+    FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
+    FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
+
 
     CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 20),
-    CONSUMER_COMMIT_OFFSET_CACHE_EXPIRATION("consumer.commit.offset.cache.expiration", 10),
     CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE("consumer.sender.async.timeout.thread.pool.size", 32),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING("consumer.sender.async.timeout.thread.pool.monitoring", false),
@@ -101,9 +112,6 @@ public enum Configs {
     METADATA_CONTENT_ROOT("message.content.root", "metadata"),
     GRAPHITE_PREFIX("graphite.prefix", "stats.tech.hermes"),
 
-    TRACKER_MONGODB_URI("tracker.mongodb.uri", "mongodb://localhost:27017/hermesMessages"),
-    TRACKER_MONGODB_COMMIT_INTERVAL("tracker.mongodb.commit.interval", 1000),
-    TRACKER_MONGODB_QUEUE_CAPACITY("tracker.mongodb.queue.capacity", 100 * 1000),
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 
     private final String name;

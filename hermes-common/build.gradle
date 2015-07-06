@@ -2,6 +2,7 @@ apply plugin: 'groovy'
 
 dependencies {
     compile project(':hermes-api')
+    compile project(':hermes-metrics')
 
     compile group: 'com.netflix.archaius', name: 'archaius-core', version: '0.6.0'
 
@@ -18,6 +19,8 @@ dependencies {
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: versions.jersey
 
+    compile group: 'org.apache.avro', name: 'avro', version: '1.7.7'
+
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
     compile group: 'com.google.guava', name: 'guava', version: versions.guava
@@ -26,8 +29,6 @@ dependencies {
     compile group: 'io.fastjson', name: 'boon', version: '0.28'
 
     compile group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: '3.1.1'
-
-    compile group: 'org.mongodb', name: 'mongo-java-driver', version: '2.12.4'
 
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.0'
 
@@ -47,6 +48,7 @@ dependencies {
 
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
+    testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: '1.5.5'
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
 }
