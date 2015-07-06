@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager.schemaManagerWithDailIndexes;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager.schemaManagerWithDailyIndexes;
 
 public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware {
 
@@ -36,7 +36,7 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     private final float minScore;
 
     public ElasticsearchLogRepository(Client elasticClient, float minScore) {
-        this(elasticClient, minScore, schemaManagerWithDailIndexes(elasticClient));
+        this(elasticClient, minScore, schemaManagerWithDailyIndexes(elasticClient));
     }
 
     public ElasticsearchLogRepository(Client elasticClient, float minScore, SchemaManager schemaManager) {

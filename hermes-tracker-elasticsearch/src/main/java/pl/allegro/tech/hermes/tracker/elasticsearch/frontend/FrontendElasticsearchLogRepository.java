@@ -22,16 +22,16 @@ import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.INFLIGHT;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.DocumentBuilder.build;
 
-public class ElasticsearchLogRepository extends BatchingLogRepository<XContentBuilder> implements LogRepository, LogSchemaAware {
+public class FrontendElasticsearchLogRepository extends BatchingLogRepository<XContentBuilder> implements LogRepository, LogSchemaAware {
 
-    private ElasticsearchLogRepository(Client elasticClient,
-                                      String clusterName,
-                                      int queueSize,
-                                      int commitInterval,
-                                      IndexFactory indexFactory,
-                                      String typeName,
-                                      MetricRegistry metricRegistry,
-                                      PathsCompiler pathsCompiler) {
+    private FrontendElasticsearchLogRepository(Client elasticClient,
+                                               String clusterName,
+                                               int queueSize,
+                                               int commitInterval,
+                                               IndexFactory indexFactory,
+                                               String typeName,
+                                               MetricRegistry metricRegistry,
+                                               PathsCompiler pathsCompiler) {
         super(queueSize, clusterName, metricRegistry, pathsCompiler);
 
         registerQueueSizeGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
@@ -125,8 +125,8 @@ public class ElasticsearchLogRepository extends BatchingLogRepository<XContentBu
             return this;
         }
 
-        public ElasticsearchLogRepository build() {
-            return new ElasticsearchLogRepository(elasticClient,
+        public FrontendElasticsearchLogRepository build() {
+            return new FrontendElasticsearchLogRepository(elasticClient,
                     clusterName,
                     queueSize,
                     commitInterval,

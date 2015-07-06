@@ -21,7 +21,7 @@ import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 
-public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest implements LogSchemaAware {
+public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest implements LogSchemaAware {
 
     private static final String CLUSTER_NAME = "primary";
 
@@ -33,7 +33,7 @@ public class ElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest im
 
     @Override
     protected LogRepository createLogRepository() {
-        return new ElasticsearchLogRepository.Builder(elasticsearch.client(), new PathsCompiler("localhost"), new MetricRegistry())
+        return new ConsumersElasticsearchLogRepository.Builder(elasticsearch.client(), new PathsCompiler("localhost"), new MetricRegistry())
                 .withIndexFactory(indexFactory)
                 .build();
     }

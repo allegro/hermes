@@ -24,10 +24,10 @@ import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.SUCCESS;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.DocumentBuilder.build;
 
-public class ElasticsearchLogRepository extends BatchingLogRepository<XContentBuilder> implements LogRepository, LogSchemaAware {
+public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<XContentBuilder> implements LogRepository, LogSchemaAware {
 
-    private ElasticsearchLogRepository(Client elasticClient, String clusterName, int queueSize, int commitInterval,
-                                      IndexFactory indexFactory, String typeName, MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
+    private ConsumersElasticsearchLogRepository(Client elasticClient, String clusterName, int queueSize, int commitInterval,
+                                                IndexFactory indexFactory, String typeName, MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
         super(queueSize, clusterName, metricRegistry, pathsCompiler);
 
         registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
@@ -128,8 +128,8 @@ public class ElasticsearchLogRepository extends BatchingLogRepository<XContentBu
             return this;
         }
 
-        public ElasticsearchLogRepository build() {
-            return new ElasticsearchLogRepository(elasticClient,
+        public ConsumersElasticsearchLogRepository build() {
+            return new ConsumersElasticsearchLogRepository(elasticClient,
                     clusterName,
                     queueSize,
                     commitInterval,

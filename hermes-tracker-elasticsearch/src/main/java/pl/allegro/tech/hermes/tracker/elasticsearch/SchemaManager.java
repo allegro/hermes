@@ -30,7 +30,7 @@ public class SchemaManager {
     private final FrontendIndexFactory frontendIndexFactory;
     private final ConsumersIndexFactory consumersIndexFactory;
 
-    public static SchemaManager schemaManagerWithDailIndexes(Client elasticClient) {
+    public static SchemaManager schemaManagerWithDailyIndexes(Client elasticClient) {
         return new SchemaManager(elasticClient, new FrontendDailyIndexFactory(), new ConsumersDailyIndexFactory());
     }
 
