@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -67,6 +68,24 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void shouldPublishJsonMessageConvertedToAvroForAvroTopics() {
+        // given
+        Topic topic = topic()
+                .withName("avro.topic2")
+                .withValidation(true)
+                .withMessageSchema(user.getSchema().toString())
+                .withContentType(AVRO).build();
+        operations.buildTopic(topic);
+        wait.untilTopicCreated(topic);
+
+        // when
+        Response response = publisher.publish("avro.topic2", "{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}");
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
     }
 
 }

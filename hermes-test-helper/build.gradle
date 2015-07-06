@@ -32,6 +32,6 @@ dependencies {
     }
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.0'
     compile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
-    compile group: 'org.assertj', name: 'assertj-core', version: '1.5.0'
+    compile group: 'org.assertj', name: 'assertj-core', version: '3.1.0'
     compile group: 'junit', name: 'junit', version: '4.11'
 }
