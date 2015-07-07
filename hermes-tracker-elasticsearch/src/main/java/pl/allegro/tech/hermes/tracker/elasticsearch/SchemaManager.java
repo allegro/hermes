@@ -15,13 +15,13 @@ import java.util.concurrent.ExecutionException;
 public class SchemaManager {
 
     public static final String PUBLISHED_INDEX = "published_messages";
-    public static final String PUBLISHED_TYPE = "published_messages";
-    public static final String PUBLISHED_ALIAS_NAME = "alias_publishe_messages";
+    public static final String PUBLISHED_TYPE = "published_message";
+    public static final String PUBLISHED_ALIAS_NAME = "alias_published_messages";
     public static final String PUBLISHED_TEMPLATE_NAME = "template_published_messages";
     public static final String PUBLISHED_INDICES_REG_EXP = "published_messages_*";
 
     public static final String SENT_INDEX = "sent_messages";
-    public static final String SENT_TYPE = "sent_messages";
+    public static final String SENT_TYPE = "sent_message";
     public static final String SENT_ALIAS_NAME = "alias_sent_messages";
     public static final String SENT_TEMPLATE_NAME = "template_sent_messages";
     public static final String SENT_INDICES_REG_EXP = "sent_messages_*";
