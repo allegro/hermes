@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +24,11 @@ import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChang
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Optional;
 
-import static pl.allegro.tech.hermes.api.Subscription.State.*;
+import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
+import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
+import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class ConsumersSupervisor implements SubscriptionCallback, AdminOperationsCallback {
@@ -40,7 +42,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
     private final ConsumersExecutorService executor;
     private final ConsumerFactory consumerFactory;
     private final BrokerStorage brokerStorage;
-    private final MessageCommitter messageCommitter;
+    private final List<MessageCommitter> messageCommitters;
     private final HermesMetrics hermesMetrics;
     private final OffsetCommitter offsetCommitter;
     private final ConsumerHolder consumerHolder;
@@ -57,7 +59,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                                SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
                                ConsumersExecutorService executor,
                                ConsumerFactory consumerFactory,
-                               MessageCommitter messageCommitter,
+                               List<MessageCommitter> messageCommitters,
                                BrokerStorage brokerStorage,
                                SubscriptionsCache subscriptionsCache,
                                HermesMetrics hermesMetrics,
@@ -68,7 +70,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
         this.executor = executor;
         this.consumerFactory = consumerFactory;
         this.brokerStorage = brokerStorage;
-        this.messageCommitter = messageCommitter;
+        this.messageCommitters = messageCommitters;
         this.subscriptionsCache = subscriptionsCache;
         this.adminCache = adminCache;
         this.hermesMetrics = hermesMetrics;
@@ -77,7 +79,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
         this.subscriptionsLocks = new SubscriptionLocks();
 
         consumerHolder = new ConsumerHolder();
-        offsetCommitter = new OffsetCommitter(consumerHolder, messageCommitter, configFactory);
+        offsetCommitter = new OffsetCommitter(consumerHolder, messageCommitters, configFactory);
 
         brokersClusterName = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
     }
@@ -220,7 +222,9 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
 
     private void removeOffsets(TopicName topicName, String subscriptionName, List<PartitionOffset> offsetsToRemove) throws Exception {
         for (PartitionOffset partitionOffset : offsetsToRemove) {
-            messageCommitter.removeOffset(topicName, subscriptionName, partitionOffset.getPartition());
+            for (MessageCommitter messageCommitter: messageCommitters) {
+                messageCommitter.removeOffset(topicName, subscriptionName, partitionOffset.getPartition());
+            }
         }
     }
 

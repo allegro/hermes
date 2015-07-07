@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
 import com.google.common.collect.ImmutableList;
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,7 +92,7 @@ public class ConsumersSupervisorTest {
 
         consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository,
                 subscriptionOffsetChangeIndicator, executorService, consumerFactory,
-                messageCommitter, brokerStorage, subscriptionsCache, hermesMetrics,
+                Lists.newArrayList(messageCommitter), brokerStorage, subscriptionsCache, hermesMetrics,
                 adminCache, undeliveredMessageLogPersister);
     }
 

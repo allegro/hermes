@@ -175,4 +175,11 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         waitAtMost(adjust(Duration.FIVE_SECONDS)).until(() -> zookeeper.checkExists().forPath(path) == null);
     }
 
+    public void untilOffsetsTopicCreated() throws InterruptedException {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
+
+            System.out.println("check");
+            return kafkaZookeeper.checkExists().forPath("/brokers/topics/__consumer_offsets") != null;
+        });
+    }
 }
