@@ -19,8 +19,8 @@ import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
 public class HermesAPIOperations {
 
-    private final HermesEndpoints endpoints;
-    private final Waiter wait;
+    protected final HermesEndpoints endpoints;
+    protected final Waiter wait;
 
     public HermesAPIOperations(HermesEndpoints endpoints, Waiter wait) {
         this.endpoints = endpoints;
