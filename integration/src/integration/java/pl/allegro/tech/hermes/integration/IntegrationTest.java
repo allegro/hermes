@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.integration;
 
 import org.testng.annotations.BeforeClass;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
-import pl.allegro.tech.hermes.integration.helper.HermesAPIOperations;
+import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
