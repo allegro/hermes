@@ -31,3 +31,8 @@ dependencies {
     }
 }
 
+if (project.hasProperty('distribution')) {
+    apply plugin: 'application'
+    mainClassName = 'pl.allegro.tech.hermes.consumers.HermesConsumers'
+}
+

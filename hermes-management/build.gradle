@@ -34,3 +34,8 @@ dependencies {
         exclude group: 'net.sf.jopt-simple'
     }
 }
+
+if (project.hasProperty('distribution')) {
+    apply plugin: 'application'
+    mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
+}
