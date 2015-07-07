@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class Waiter {
 
@@ -19,19 +20,19 @@ public class Waiter {
     }
 
     public void untilSubscriptionCreated(String group, String topic, String subscription, boolean isTracked) {
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
             endpoints.subscription().list(group + "." + topic, isTracked).contains(subscription);
         });
     }
 
     public void untilGroupCreated(String group) {
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
             return endpoints.group().list().contains(group);
         });
     }
 
     public void untilTopicCreated(Topic topic) {
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
             return endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName());
         });
     }

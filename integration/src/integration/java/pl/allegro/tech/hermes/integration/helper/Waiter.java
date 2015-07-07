@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.integration.helper.TimeoutAdjuster.adjust;
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
