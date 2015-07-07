@@ -6,7 +6,6 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import pl.allegro.tech.hermes.tracker.QueueCommitter;
-import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TypedIndex;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -18,25 +17,31 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class ElasticsearchQueueCommitter extends QueueCommitter<XContentBuilder> {
 
-    private final TypedIndex index;
+    private final IndexFactory indexFactory;
     private final Client client;
+    private final String typeName;
 
-    public ElasticsearchQueueCommitter(BlockingQueue<XContentBuilder> queue, Timer timer, TypedIndex index, Client client) {
+    public ElasticsearchQueueCommitter(BlockingQueue<XContentBuilder> queue,
+                                       Timer timer,
+                                       IndexFactory indexFactory,
+                                       String typeName,
+                                       Client client) {
         super(queue, timer);
-        this.index = index;
+        this.indexFactory = indexFactory;
+        this.typeName = typeName;
         this.client = client;
     }
 
     @Override
     protected void processBatch(List<XContentBuilder> batch) throws ExecutionException, InterruptedException {
         BulkRequestBuilder bulk = client.prepareBulk();
-        batch.forEach(entry -> bulk.add(client.prepareIndex(index.getIndex(), index.getType()).setSource(entry)));
+        batch.forEach(entry -> bulk.add(client.prepareIndex(indexFactory.createIndex(), typeName).setSource(entry)));
         bulk.execute().get();
     }
 
-    public static void scheduleCommitAtFixedRate(BlockingQueue<XContentBuilder> queue, TypedIndex index,
-                                                 Client client, Timer timer, int interval) {
-        ElasticsearchQueueCommitter committer = new ElasticsearchQueueCommitter(queue, timer, index, client);
+    public static void scheduleCommitAtFixedRate(BlockingQueue<XContentBuilder> queue, IndexFactory indexFactory, String typeName, Client client,
+                                                 Timer timer, int interval) {
+        ElasticsearchQueueCommitter committer = new ElasticsearchQueueCommitter(queue, timer, indexFactory, typeName, client);
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("elasticsearch-queue-committer-%d").build();
         newSingleThreadScheduledExecutor(factory).scheduleAtFixedRate(committer, interval, interval, MILLISECONDS);
     }

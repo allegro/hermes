@@ -13,24 +13,4 @@ public interface LogSchemaAware {
     String REASON = "reason";
     String CLUSTER = "cluster";
 
-    enum TypedIndex implements LogSchemaAware {
-
-        PUBLISHED_MESSAGES("published_messages", "published_message"), SENT_MESSAGES("sent_messages", "sent_message");
-
-        private final String index;
-        private final String type;
-
-        TypedIndex(String index, String type) {
-            this.index = index;
-            this.type = type;
-        }
-
-        public String getIndex() {
-            return index;
-        }
-
-        public String getType() {
-            return type;
-        }
-    }
 }
