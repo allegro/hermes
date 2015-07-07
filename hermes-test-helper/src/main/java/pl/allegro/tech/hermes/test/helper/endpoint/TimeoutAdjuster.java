@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integration.helper;
+package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import com.jayway.awaitility.Duration;
 

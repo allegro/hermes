@@ -79,7 +79,6 @@ public class PublishingAvroTest extends IntegrationTest {
                 .withMessageSchema(user.getSchema().toString())
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
-        wait.untilTopicCreated(topic);
 
         // when
         Response response = publisher.publish("avro.topic2", "{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}");
