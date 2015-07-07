@@ -1,4 +1,3 @@
-
 dependencies {
     compile project(':hermes-common')
     compile project(':hermes-tracker')
@@ -18,4 +17,9 @@ dependencies {
     testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
         exclude group: 'com.jayway.jsonpath', module: 'json-path'
     }
+}
+
+if (project.hasProperty('distribution')) {
+    apply plugin: 'application'
+    mainClassName = 'pl.allegro.tech.hermes.frontend.HermesFrontend'
 }
