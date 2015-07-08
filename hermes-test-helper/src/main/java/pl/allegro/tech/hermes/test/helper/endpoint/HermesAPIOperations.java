@@ -1,11 +1,10 @@
-package pl.allegro.tech.hermes.integration.helper;
+package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import com.jayway.awaitility.Duration;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
 import javax.ws.rs.core.Response;
 
@@ -20,8 +19,8 @@ import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
 public class HermesAPIOperations {
 
-    private final HermesEndpoints endpoints;
-    private final Waiter wait;
+    protected final HermesEndpoints endpoints;
+    protected final Waiter wait;
 
     public HermesAPIOperations(HermesEndpoints endpoints, Waiter wait) {
         this.endpoints = endpoints;

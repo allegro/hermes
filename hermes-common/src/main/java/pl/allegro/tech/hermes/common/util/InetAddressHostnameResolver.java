@@ -15,7 +15,7 @@ public final class InetAddressHostnameResolver implements HostnameResolver {
     public String resolve() {
         String hostname = "hostname-could-not-be-detected";
         try {
-            hostname = InetAddress.getLocalHost().getHostName();
+            hostname = InetAddress.getLocalHost().getCanonicalHostName();
         } catch (UnknownHostException e) {
             LOGGER.warn("Could not determine hostname");
         }
