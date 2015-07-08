@@ -19,6 +19,7 @@ import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.FongoFactory;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
+import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.integration.test.HermesAssertions;
 import pl.allegro.tech.hermes.tracker.mongo.LogSchemaAware;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -102,7 +103,8 @@ public class MongoMessageTrackingTest extends IntegrationTest {
         assertThat(findAllStatusesByTopic(sentMessages, "logMessageSending.topic")).contains("INFLIGHT", "SUCCESS");
     }
 
-    @Test
+    @Unreliable
+    @Test(enabled = false)
     public void shouldLogMessageDiscarding() {
         // given
         operations.buildTopic("logMessageDiscarding", "topic");
@@ -122,7 +124,8 @@ public class MongoMessageTrackingTest extends IntegrationTest {
         wait.untilMessageTraceLogged(sentMessages, SentMessageTraceStatus.DISCARDED);
     }
 
-    @Test
+    @Unreliable
+    @Test(enabled = false)
     public void shouldFetchUndeliveredMessagesLogs() {
         // given
         operations.createGroup("fetchUndeliveredMessagesLogs");
