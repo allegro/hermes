@@ -2,12 +2,14 @@ FROM java:8
 
 MAINTAINER Allegro
 
-RUN apt-get update && apt-get install -y unzip
+RUN apt-get update && apt-get install -y unzip \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-ENV SPRING_CONFIG_LOCATION="file:///etc/management.yaml"
-ADD conf/management.yaml /etc/management.yaml
-ADD build/hermes-management-*.zip hermes-management.zip
-RUN unzip hermes-management.zip -d /opt
-RUN mv /opt/hermes-management-* /opt/hermes-management
+ENV SPRING_CONFIG_LOCATION="file:///etc/hermes/management.yaml"
+ADD latest/management/management.yaml /etc/hermes/management.yaml
+ADD build/hermes-management-*.zip /tmp/hermes-management.zip
+RUN unzip /tmp/hermes-management.zip -d /opt \
+  && mv /opt/hermes-management-* /opt/hermes-management \
+  && rm /tmp/hermes-management.zip
 
 CMD /opt/hermes-management/bin/hermes-management
