@@ -34,7 +34,6 @@ import pl.allegro.tech.hermes.consumers.subscription.cache.zookeeper.ZookeeperSu
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.utils.SubscriptionSuspender;
 
 import javax.inject.Singleton;
 
@@ -58,7 +57,6 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(ConsumerFactory.class);
         bindSingleton(ConsumerRateLimitSupervisor.class);
         bindSingleton(OutputRateCalculator.class);
-        bindSingleton(SubscriptionSuspender.class);
         bindSingleton(ConsumersExecutorService.class);
         bindSingleton(ZookeeperAdminCache.class);
         bindSingleton(InstrumentedExecutorServiceFactory.class);

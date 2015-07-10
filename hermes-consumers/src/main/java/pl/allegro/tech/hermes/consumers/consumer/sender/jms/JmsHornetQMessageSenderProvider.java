@@ -5,7 +5,7 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.consumers.utils.UriUtils;
+import pl.allegro.tech.hermes.consumers.uri.UriUtils;
 
 import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
