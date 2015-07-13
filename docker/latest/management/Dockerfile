@@ -1,9 +1,8 @@
-FROM java:8
+FROM jeanblanchard/java:8
 
 MAINTAINER Allegro
 
-RUN apt-get update && apt-get install -y unzip wget \
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add unzip wget bash
 
 ENV ARCHIVE_NAME="hermes-management-latest.zip"
 ENV URL="http://box.allegrotech.io/hermes/${ARCHIVE_NAME}"

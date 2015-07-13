@@ -1,9 +1,8 @@
-FROM java:8
+FROM jeanblanchard/java:8
 
 MAINTAINER Allegro
 
-RUN apt-get update && apt-get install -y unzip \
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add unzip bash
 
 ENV HERMES_FRONTEND_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/hermes/frontend.properties"
 ADD latest/frontend/frontend.properties /etc/hermes/frontend.properties
