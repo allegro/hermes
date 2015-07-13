@@ -5,8 +5,14 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.net.URI;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import static java.util.Arrays.asList;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 
 public class EndpointAddressValidator implements ConstraintValidator<ValidAddress, String> {
 
@@ -30,12 +36,18 @@ public class EndpointAddressValidator implements ConstraintValidator<ValidAddres
 
     @Override
     public boolean isValid(String address, ConstraintValidatorContext context) {
-        return AVAILABLE_PROTOCOLS.contains(EndpointAddress.extractProtocolFromAddress(address)) && validateWithTemplate(address, context);
+        return AVAILABLE_PROTOCOLS.contains(EndpointAddress.extractProtocolFromAddress(address)) && isValidUriTemplate(address, context);
     }
 
-    private boolean validateWithTemplate(String address, ConstraintValidatorContext context) {
+    private boolean isValidUriTemplate(String address, ConstraintValidatorContext context) {
         try {
-            UriTemplate.fromTemplate(address).getVariables();
+            UriTemplate template = UriTemplate.fromTemplate(address);
+
+            if (isInvalidHost(template)) {
+                createConstraintMessage(context, "Endpoint contains invalid chars in host name. Underscore is one of them.");
+                return false;
+            }
+
         } catch (Exception e) {
             createConstraintMessage(context, String.format(PROTOCOL_ADDRESS_FORMAT_INVALID, e.getMessage()));
             return false;
@@ -44,9 +56,16 @@ public class EndpointAddressValidator implements ConstraintValidator<ValidAddres
         return true;
     }
 
-    protected void createConstraintMessage(ConstraintValidatorContext context, String message) {
+    private void createConstraintMessage(ConstraintValidatorContext context, String message) {
         context.buildConstraintViolationWithTemplate(message)
                 .addConstraintViolation()
                 .disableDefaultConstraintViolation();
+    }
+
+    private boolean isInvalidHost(UriTemplate template) {
+        Map<String, Object> uriKeysWithEmptyValues = asList(template.getVariables()).stream().collect(toMap(identity(), v -> "empty"));
+
+        //check if host is null due to bug in jdk http://bugs.java.com/view_bug.do?bug_id=6587184
+        return URI.create(template.expand(uriKeysWithEmptyValues)).getHost() == null;
     }
 }
