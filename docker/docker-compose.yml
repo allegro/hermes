@@ -34,8 +34,6 @@ frontend:
   links:
     - zookeeper:zk
     - kafka
-    - consumers
-    - management
     - graphite
     - mongo
 
