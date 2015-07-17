@@ -2,12 +2,14 @@ package pl.allegro.tech.hermes.frontend.publishing;
 
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
+import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import java.io.IOException;
 
-import static pl.allegro.tech.hermes.frontend.publishing.MessageState.State.SENDING_TO_KAFKA;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.SENDING_TO_KAFKA;
 
 public class BrokerTimeoutAsyncListener implements AsyncListener {
 

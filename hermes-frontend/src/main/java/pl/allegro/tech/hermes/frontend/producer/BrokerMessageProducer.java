@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.producer;
 
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
-import pl.allegro.tech.hermes.frontend.publishing.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 public interface BrokerMessageProducer {
 

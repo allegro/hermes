@@ -4,6 +4,7 @@ package pl.allegro.tech.hermes.frontend.publishing;
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.avro.JsonToAvroMessageConverter;
+import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;

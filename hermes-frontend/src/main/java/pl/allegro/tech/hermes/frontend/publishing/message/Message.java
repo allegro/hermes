@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.publishing;
+package pl.allegro.tech.hermes.frontend.publishing.message;
 
 public class Message {
 

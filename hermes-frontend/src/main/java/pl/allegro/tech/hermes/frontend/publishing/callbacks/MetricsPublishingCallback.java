@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.timer.BrokerAckAllLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.timer.BrokerAckLeaderLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.timer.BrokerLatencyTimer;
-import pl.allegro.tech.hermes.frontend.publishing.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 
 public class MetricsPublishingCallback implements PublishingCallback {
