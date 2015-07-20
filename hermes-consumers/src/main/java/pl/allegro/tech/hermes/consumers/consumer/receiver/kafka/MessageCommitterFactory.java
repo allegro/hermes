@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.BlockingChannelFactory;
+import pl.allegro.tech.hermes.common.broker.BlockingChannelFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.BrokerMessageCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.zookeeper.ZookeeperMessageCommitter;
 
@@ -21,7 +21,7 @@ import java.util.List;
 
 public class MessageCommitterFactory implements Factory<List<MessageCommitter>> {
 
-    private final OffsetsStorage offsetsStorage;
+    private final OffsetsStorageType offsetsStorageType;
     private final Clock clock;
     private final CuratorFramework curatorFramework;
     private final HostnameResolver hostnameResolver;
@@ -37,17 +37,17 @@ public class MessageCommitterFactory implements Factory<List<MessageCommitter>> 
         this.clock = clock;
         this.curatorFramework = curatorFramework;
         this.hostnameResolver = hostnameResolver;
-        this.offsetsStorage = OffsetsStorage.valueOf(configFactory.getStringProperty(Configs.KAFKA_CONSUMER_OFFSETS_STORAGE).toUpperCase());
+        this.offsetsStorageType = OffsetsStorageType.valueOf(configFactory.getStringProperty(Configs.KAFKA_CONSUMER_OFFSETS_STORAGE).toUpperCase());
         this.dualCommitEnabled = configFactory.getBooleanProperty(Configs.KAFKA_CONSUMER_DUAL_COMMIT_ENABLED);
     }
 
     @Override
     public List<MessageCommitter> provide() {
         List<MessageCommitter> committers = new ArrayList<>();
-        if (dualCommitEnabled || OffsetsStorage.KAFKA == offsetsStorage) {
+        if (dualCommitEnabled || OffsetsStorageType.KAFKA == offsetsStorageType) {
             committers.add(brokerMessageCommitter(configFactory, clock));
         }
-        if (dualCommitEnabled || OffsetsStorage.ZOOKEEPER == offsetsStorage) {
+        if (dualCommitEnabled || OffsetsStorageType.ZOOKEEPER == offsetsStorageType) {
             committers.add(new ZookeeperMessageCommitter(curatorFramework));
         }
         return committers;

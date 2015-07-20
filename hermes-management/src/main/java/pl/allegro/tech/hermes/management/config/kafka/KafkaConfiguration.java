@@ -7,11 +7,13 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
+import pl.allegro.tech.hermes.common.broker.OffsetsStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
@@ -53,6 +55,14 @@ public class KafkaConfiguration {
 
     @Autowired
     SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
+
+    @Autowired
+    @Qualifier("zookeeperOffsetStorage")
+    OffsetsStorage zookeeperOffsetsStorage;
+
+    @Autowired
+    @Qualifier("kafkaOffsetStorage")
+    OffsetsStorage kafkaOffsetsStorage;
 
     @Autowired
     AdminTool adminTool;

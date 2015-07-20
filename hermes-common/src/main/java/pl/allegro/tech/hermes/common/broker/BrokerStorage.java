@@ -9,8 +9,6 @@ import java.util.Set;
 
 public interface BrokerStorage {
 
-    void setSubscriptionOffset(TopicName topicName, String subscriptionName, int partitionId, Long offset);
-
     int readLeaderForPartition(TopicAndPartition topicAndPartition);
 
     Multimap<Integer, TopicAndPartition> readLeadersForPartitions(Set<TopicAndPartition> topicAndPartitionSet);

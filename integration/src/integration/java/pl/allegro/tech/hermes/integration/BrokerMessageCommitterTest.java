@@ -1,9 +1,13 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.google.common.net.HostAndPort;
+import com.jayway.awaitility.Duration;
 import jersey.repackaged.com.google.common.collect.Lists;
+import kafka.api.ConsumerMetadataRequest;
+import kafka.common.ErrorMapping;
 import kafka.common.OffsetMetadataAndError;
 import kafka.common.TopicAndPartition;
+import kafka.javaapi.ConsumerMetadataResponse;
 import kafka.javaapi.OffsetFetchRequest;
 import kafka.javaapi.OffsetFetchResponse;
 import kafka.network.BlockingChannel;
@@ -14,7 +18,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.BlockingChannelFactory;
+import pl.allegro.tech.hermes.common.broker.BlockingChannelFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.BrokerMessageCommitter;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
@@ -28,40 +32,59 @@ import static org.mockito.Mockito.when;
 
 public class BrokerMessageCommitterTest extends IntegrationTest {
 
-    String groupName = "brokerMessageCommiter";
-    String topicName = "topic";
-    String subscriptionName = "subscription";
+    private final String kafkaHost = "localhost";
+    private final String groupName = "brokerMessageCommiter";
+    private final String topicName = "topic";
+    private final String subscriptionName = "subscription";
+    private Subscription subscription;
+
+    private int readTimeout = 60;
+    private int channelExpTime = 60_000;
 
     private MessageCommitter messageCommiter;
     private int kafkaPort;
 
-    private BlockingChannelFactory blockingChannelFactory;
-
     @BeforeMethod
     public void setUp() throws Exception {
-        HostnameResolver hostnameResolver = mock(HostnameResolver.class);
-        when(hostnameResolver.resolve()).thenReturn("localhost");
+        subscription = new Subscription.Builder().withTopicName(groupName, topicName).withName(subscriptionName).build();
 
-        operations.buildSubscription(groupName, topicName, subscriptionName, HTTP_ENDPOINT_URL);
-        wait.untilOffsetsTopicCreated();
+        HostnameResolver hostnameResolver = mock(HostnameResolver.class);
+        when(hostnameResolver.resolve()).thenReturn(kafkaHost);
 
         KafkaConfig kafkaConfig = SharedServices.services().kafkaStarter().instance().serverConfig();
-
-        int readTimeout = 60;
-        int channelExpTime = 60_000;
-
         kafkaPort = kafkaConfig.port();
-        blockingChannelFactory = new BlockingChannelFactory(HostAndPort.fromParts("localhost", kafkaPort), readTimeout);
-        messageCommiter = new BrokerMessageCommitter(blockingChannelFactory,
-                new SystemClock(),
-                hostnameResolver,
-                channelExpTime);
+
+        operations.buildSubscription(groupName, topicName, subscriptionName, HTTP_ENDPOINT_URL);
+
+        waitUntilConsumerMetadataAvailable();
+
+        BlockingChannelFactory blockingChannelFactory = new BlockingChannelFactory(HostAndPort.fromParts(kafkaHost, kafkaPort), readTimeout);
+        messageCommiter = new BrokerMessageCommitter(blockingChannelFactory, new SystemClock(), hostnameResolver, channelExpTime);
+    }
+
+    private void waitUntilConsumerMetadataAvailable() {
+        BlockingChannel channel = createBlockingChannel();
+        channel.connect();
+
+        wait.until(() -> {
+            channel.send(new ConsumerMetadataRequest(subscription.getId(), ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
+            ConsumerMetadataResponse metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
+            return metadataResponse.errorCode() == ErrorMapping.NoError();
+        }, Duration.ONE_MINUTE);
+
+        channel.disconnect();
+    }
+
+    private BlockingChannel createBlockingChannel() {
+        return new BlockingChannel(kafkaHost, kafkaPort,
+                BlockingChannel.UseDefaultBufferSize(),
+                BlockingChannel.UseDefaultBufferSize(),
+                readTimeout);
     }
 
     @Test
     public void shouldCommitOffset() throws Exception {
         //given
-        Subscription subscription = new Subscription.Builder().withTopicName(groupName, topicName).withName(subscriptionName).build();
         int partition = 0;
         int offset = 10;
         PartitionOffset partitionOffset = new PartitionOffset(offset, partition);
@@ -74,7 +97,7 @@ public class BrokerMessageCommitterTest extends IntegrationTest {
     }
 
     private long readOffset(Subscription subscription, int partition) {
-        BlockingChannel channel = blockingChannelFactory.create(subscription.getId());
+        BlockingChannel channel = createBlockingChannel();
         channel.connect();
 
         TopicAndPartition topicAndPartition = new TopicAndPartition(subscription.getTopicName().qualifiedName(), partition);

@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker;
+package pl.allegro.tech.hermes.common.broker;
 
 import com.google.common.net.HostAndPort;
 import kafka.api.ConsumerMetadataRequest;
@@ -6,7 +6,6 @@ import kafka.cluster.Broker;
 import kafka.common.ErrorMapping;
 import kafka.javaapi.ConsumerMetadataResponse;
 import kafka.network.BlockingChannel;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.ReadingConsumerMetadataException;
 
 public class BlockingChannelFactory {
 

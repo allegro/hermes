@@ -4,6 +4,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
+import pl.allegro.tech.hermes.common.broker.OffsetsStorage;
 import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
@@ -17,6 +18,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageCommitterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.OffsetStoragesFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
@@ -64,6 +66,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(ConsumerMessageSenderFactory.class);
         bindSingleton(MessageConverterFactory.class);
 
+        bindFactory(OffsetStoragesFactory.class).in(Singleton.class).to(new TypeLiteral<List<OffsetsStorage>>() {});
         bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class).to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
         bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class);
         bindFactory(ZookeeperSubscriptionsCacheFactory.class).to(SubscriptionsCache.class).in(Singleton.class);

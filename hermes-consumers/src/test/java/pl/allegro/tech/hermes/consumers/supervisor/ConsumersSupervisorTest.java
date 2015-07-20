@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
+import pl.allegro.tech.hermes.common.broker.OffsetsStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -63,7 +64,7 @@ public class ConsumersSupervisorTest {
     private ConsumerFactory consumerFactory;
 
     @Mock
-    private BrokerStorage brokerStorage;
+    private OffsetsStorage offsetsStorage;
 
     @Mock
     private MessageCommitter messageCommitter;
@@ -92,7 +93,7 @@ public class ConsumersSupervisorTest {
 
         consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository,
                 subscriptionOffsetChangeIndicator, executorService, consumerFactory,
-                Lists.newArrayList(messageCommitter), brokerStorage, subscriptionsCache, hermesMetrics,
+                Lists.newArrayList(messageCommitter), Lists.newArrayList(offsetsStorage), subscriptionsCache, hermesMetrics,
                 adminCache, undeliveredMessageLogPersister);
     }
 
@@ -196,7 +197,7 @@ public class ConsumersSupervisorTest {
         //then
         verify(consumer).stopConsuming();
         verify(subscriptionOffsetChangeIndicator).getSubscriptionOffsets(SOME_TOPIC_NAME, subscriptionName, brokersClusterName);
-        verify(brokerStorage).setSubscriptionOffset(subscription.getTopicName(), subscription.getName(), partitionId, offset);
+        verify(offsetsStorage).setSubscriptionOffset(subscription.getTopicName(), subscription.getName(), partitionId, offset);
     }
 
     @Test

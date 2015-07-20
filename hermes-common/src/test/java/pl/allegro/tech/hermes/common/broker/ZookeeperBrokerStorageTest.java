@@ -17,12 +17,10 @@ import java.util.List;
 import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.common.broker.ZookeeperOffsets.getPartitionOffsetPath;
 
 public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
 
-    private static final TopicName TOPIC_NAME = new TopicName("brokerGroup", "brokerTopic");
-    private static final String SUBSCRIPTION_NAME = "brokerSubscription";
-    
     private final ZookeeperBrokerStorage brokerStorage = new ZookeeperBrokerStorage(zookeeperClient, new ObjectMapper());
 
     @After
@@ -77,21 +75,9 @@ public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
     public void shouldGetErrorWhileReadingBrokerDetails() {
         // when
         catchException(brokerStorage).readBrokerDetails(5);
-        
+
         // then
         assertThat((Exception) caughtException()).isInstanceOf(BrokerInfoNotAvailableException.class);
-    }
-
-    @Test
-    public void shouldSetOffset() throws Exception {
-        // given
-        createOffset(TOPIC_NAME, SUBSCRIPTION_NAME, 0, 100L);
-
-        // when
-        brokerStorage.setSubscriptionOffset(TOPIC_NAME, SUBSCRIPTION_NAME, 0, 50L);
-
-        // then
-        assertOffset(TOPIC_NAME, SUBSCRIPTION_NAME, 0, 50L);
     }
 
     @Test
@@ -136,25 +122,9 @@ public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
         zookeeperClient.setData().forPath(path, data.getBytes());
     }
 
-    private void createOffset(TopicName topicName, String subscriptionName, int partitionId, Long offset) throws Exception {
-        String path = brokerStorage.getPartitionOffsetPath(topicName, subscriptionName, partitionId);
-        zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
-        zookeeperClient.setData().forPath(path, offset.toString().getBytes());
-    }
-
     private void createLeaderForPartition(TopicAndPartition topicAndPartition, int leaderId) throws Exception {
         String path = brokerStorage.getTopicPartitionLeaderPath(topicAndPartition);
         zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
         zookeeperClient.setData().forPath(path, String.format("{\"leader\": %d}", leaderId).getBytes());
     }
-
-    private void assertOffset(TopicName topicName, String subscriptionName, int partitionId, Long expectedOffset)
-            throws Exception {
-
-        byte [] offsetFromZk = zookeeperClient.getData().forPath(
-            brokerStorage.getPartitionOffsetPath(topicName, subscriptionName, partitionId)
-        );
-        assertThat(Long.valueOf(new String(offsetFromZk))).isEqualTo(expectedOffset);
-    }
-
 }

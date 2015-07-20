@@ -3,6 +3,9 @@ package pl.allegro.tech.hermes.integration.helper;
 import com.jayway.awaitility.Duration;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import kafka.api.ConsumerMetadataRequest;
+import kafka.javaapi.ConsumerMetadataResponse;
+import kafka.network.BlockingChannel;
 import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
@@ -14,6 +17,8 @@ import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
@@ -175,11 +180,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         waitAtMost(adjust(Duration.FIVE_SECONDS)).until(() -> zookeeper.checkExists().forPath(path) == null);
     }
 
-    public void untilOffsetsTopicCreated() throws InterruptedException {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
-
-            System.out.println("check");
-            return kafkaZookeeper.checkExists().forPath("/brokers/topics/__consumer_offsets") != null;
-        });
+    public void until(Supplier<Boolean> test, Duration duration) {
+        waitAtMost(adjust(duration)).until(() -> test.get());
     }
 }

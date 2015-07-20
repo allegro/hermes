@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
+package pl.allegro.tech.hermes.common.broker;
 
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.common.exception.HermesException;

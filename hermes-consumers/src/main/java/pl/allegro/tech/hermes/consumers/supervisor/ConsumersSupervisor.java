@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.admin.AdminOperationsCallback;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.common.broker.BrokerStorage;
+import pl.allegro.tech.hermes.common.broker.OffsetsStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
@@ -41,7 +41,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
 
     private final ConsumersExecutorService executor;
     private final ConsumerFactory consumerFactory;
-    private final BrokerStorage brokerStorage;
+    private final List<OffsetsStorage> offsetsStorages;
     private final List<MessageCommitter> messageCommitters;
     private final HermesMetrics hermesMetrics;
     private final OffsetCommitter offsetCommitter;
@@ -60,7 +60,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                                ConsumersExecutorService executor,
                                ConsumerFactory consumerFactory,
                                List<MessageCommitter> messageCommitters,
-                               BrokerStorage brokerStorage,
+                               List<OffsetsStorage> offsetsStorages,
                                SubscriptionsCache subscriptionsCache,
                                HermesMetrics hermesMetrics,
                                ZookeeperAdminCache adminCache,
@@ -69,7 +69,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
         this.subscriptionOffsetChangeIndicator = subscriptionOffsetChangeIndicator;
         this.executor = executor;
         this.consumerFactory = consumerFactory;
-        this.brokerStorage = brokerStorage;
+        this.offsetsStorages = offsetsStorages;
         this.messageCommitters = messageCommitters;
         this.subscriptionsCache = subscriptionsCache;
         this.adminCache = adminCache;
@@ -237,8 +237,9 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                     subscriptionName.getTopicName(), subscriptionName.getName(), brokersClusterName);
 
             for (PartitionOffset partitionOffset : offsets) {
-                brokerStorage.setSubscriptionOffset(subscriptionName.getTopicName(), subscriptionName.getName(), partitionOffset.getPartition(),
-                        partitionOffset.getOffset());
+                offsetsStorages.forEach(s ->
+                                s.setSubscriptionOffset(subscriptionName.getTopicName(), subscriptionName.getName(), partitionOffset.getPartition(), partitionOffset.getOffset())
+                );
             }
             createAndExecuteConsumer(subscriptionRepository.getSubscriptionDetails(subscriptionName.getTopicName(), subscriptionName.getName()));
         }
