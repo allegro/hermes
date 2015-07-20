@@ -101,22 +101,25 @@ public class PublishingServlet extends HttpServlet {
 
         new MessageReader(request, chunkSize, topic.getName(), hermesMetrics, messageState,
                 messageContent -> {
-                    try {
-                        Message message = contentTypeEnforcer.enforce(request.getContentType(),
-                                new Message(messageId, messageContent, clock.getTime()), topic);
+                    asyncContext.start(() -> {
+                        try {
+                            Message message = contentTypeEnforcer.enforce(request.getContentType(),
+                                    new Message(messageId, messageContent, clock.getTime()), topic);
 
-                        messageValidators.check(topic.getName(), message.getData());
+                            messageValidators.check(topic.getName(), message.getData());
 
-                        asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
+                            asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 
-                        messagePublisher.publish(message, topic, messageState,
-                                new HttpPublishingCallback(httpResponder),
-                                new MetricsPublishingCallback(hermesMetrics, topic),
-                                new BrokerListenersPublishingCallback(listeners));
+                            messagePublisher.publish(message, topic, messageState, asyncContext,
+                                    new HttpPublishingCallback(httpResponder),
+                                    new MetricsPublishingCallback(hermesMetrics, topic),
+                                    new BrokerListenersPublishingCallback(listeners));
 
-                    } catch (InvalidMessageException exception) {
-                        httpResponder.badRequest(exception);
-                    }
+                        } catch (InvalidMessageException exception) {
+                            httpResponder.badRequest(exception);
+                        }
+
+                    });
                     return null;
                 },
                 input -> {
