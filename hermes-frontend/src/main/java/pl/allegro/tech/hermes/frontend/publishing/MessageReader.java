@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing;
 
 import com.codahale.metrics.Timer;
-import com.google.common.base.Function;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
@@ -11,6 +10,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import static pl.allegro.tech.hermes.frontend.publishing.ContentLengthChecker.checkContentLength;
 import static pl.allegro.tech.hermes.frontend.publishing.MessageState.State.PARSED;
@@ -26,9 +26,9 @@ public class MessageReader implements ReadListener {
     private Timer.Context parsingTimer;
     private HttpServletRequest request;
     private MessageState messageState;
-    private Function<byte [], Void> onRead;
-    private Function<IllegalStateException, Void> onValidationError;
-    private Function<Throwable, Void> onOtherError;
+    private Consumer<byte []> onRead;
+    private Consumer<IllegalStateException> onValidationError;
+    private Consumer<Throwable> onOtherError;
 
     public MessageReader(
             HttpServletRequest request,
@@ -36,9 +36,9 @@ public class MessageReader implements ReadListener {
             TopicName topicName,
             HermesMetrics hermesMetrics,
             MessageState messageState,
-            Function<byte[], Void> onRead,
-            Function<IllegalStateException, Void> onValidationError,
-            Function<Throwable, Void> onOtherError) throws IOException {
+            Consumer<byte[]> onRead,
+            Consumer<IllegalStateException> onValidationError,
+            Consumer<Throwable> onOtherError) throws IOException {
 
         this.request = request;
         this.messageState = messageState;
@@ -70,16 +70,16 @@ public class MessageReader implements ReadListener {
         closeParsingTimers();
         try {
             checkContentLength(request, messageContent.size(), "Content-Length does not match the header");
-            onRead.apply(messageContent.toByteArray());
+            onRead.accept(messageContent.toByteArray());
         } catch (IllegalStateException e) {
-            onValidationError.apply(e);
+            onValidationError.accept(e);
         }
     }
 
     @Override
     public void onError(Throwable t) {
         closeParsingTimers();
-        onOtherError.apply(t);
+        onOtherError.accept(t);
     }
 
     private void initParsingTimers() {

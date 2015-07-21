@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
+import pl.allegro.tech.hermes.frontend.publishing.callbacks.AsyncContextExecutionCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.BrokerListenersPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.HttpPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
@@ -100,7 +101,7 @@ public class PublishingServlet extends HttpServlet {
         asyncContext.setTimeout(topic.isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout);
 
         new MessageReader(request, chunkSize, topic.getName(), hermesMetrics, messageState,
-                messageContent -> {
+                messageContent -> asyncContext.start(() -> {
                     try {
                         Message message = contentTypeEnforcer.enforce(request.getContentType(),
                                 new Message(messageId, messageContent, clock.getTime()), topic);
@@ -110,23 +111,17 @@ public class PublishingServlet extends HttpServlet {
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 
                         messagePublisher.publish(message, topic, messageState,
-                                new HttpPublishingCallback(httpResponder),
-                                new MetricsPublishingCallback(hermesMetrics, topic),
-                                new BrokerListenersPublishingCallback(listeners));
+                                new AsyncContextExecutionCallback(asyncContext,
+                                        new HttpPublishingCallback(httpResponder),
+                                        new MetricsPublishingCallback(hermesMetrics, topic),
+                                        new BrokerListenersPublishingCallback(listeners)));
 
                     } catch (InvalidMessageException exception) {
                         httpResponder.badRequest(exception);
                     }
-                    return null;
-                },
-                input -> {
-                    httpResponder.badRequest(input, "Validation error");
-                    return null;
-                },
-                throwable -> {
-                    httpResponder.internalError(throwable, "Error while reading request");
-                    return null;
-                });
+                }),
+                input -> httpResponder.badRequest(input, "Validation error"),
+                throwable -> httpResponder.internalError(throwable, "Error while reading request"));
     }
 
     private TopicName parseTopicName(HttpServletRequest request) {
