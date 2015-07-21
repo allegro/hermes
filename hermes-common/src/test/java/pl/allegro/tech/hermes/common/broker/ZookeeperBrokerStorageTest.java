@@ -17,10 +17,12 @@ import java.util.List;
 import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.common.broker.ZookeeperOffsets.getPartitionOffsetPath;
 
 public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
 
+    private static final TopicName TOPIC_NAME = new TopicName("brokerGroup", "brokerTopic");
+    private static final String SUBSCRIPTION_NAME = "brokerSubscription";
+    
     private final ZookeeperBrokerStorage brokerStorage = new ZookeeperBrokerStorage(zookeeperClient, new ObjectMapper());
 
     @After
@@ -75,7 +77,7 @@ public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
     public void shouldGetErrorWhileReadingBrokerDetails() {
         // when
         catchException(brokerStorage).readBrokerDetails(5);
-
+        
         // then
         assertThat((Exception) caughtException()).isInstanceOf(BrokerInfoNotAvailableException.class);
     }

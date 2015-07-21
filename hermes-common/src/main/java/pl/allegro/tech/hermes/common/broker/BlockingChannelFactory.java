@@ -6,11 +6,26 @@ import kafka.cluster.Broker;
 import kafka.common.ErrorMapping;
 import kafka.javaapi.ConsumerMetadataResponse;
 import kafka.network.BlockingChannel;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
+
+import javax.inject.Inject;
+import java.util.Arrays;
 
 public class BlockingChannelFactory {
 
     private final HostAndPort broker;
     private final int readTimeout;
+
+    @Inject
+    public BlockingChannelFactory(ConfigFactory configFactory) {
+        this(HostAndPort.fromString(findAnyBroker(configFactory.getStringProperty(Configs.KAFKA_BROKER_LIST))),
+                configFactory.getIntProperty(Configs.KAFKA_CONSUMER_METADATA_READ_TIMEOUT));
+    }
+
+    private static String findAnyBroker(String brokerList) {
+        return Arrays.stream(brokerList.split(",")).findAny().get();
+    }
 
     public BlockingChannelFactory(HostAndPort broker, int readTimeout) {
         this.broker = broker;
