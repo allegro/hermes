@@ -20,9 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
 
-    private static final TopicName TOPIC_NAME = new TopicName("brokerGroup", "brokerTopic");
-    private static final String SUBSCRIPTION_NAME = "brokerSubscription";
-    
     private final ZookeeperBrokerStorage brokerStorage = new ZookeeperBrokerStorage(zookeeperClient, new ObjectMapper());
 
     @After
@@ -53,7 +50,7 @@ public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
     public void shouldNotReadLeadersDueTooNoDataInZk() {
         //when
         Multimap<Integer, TopicAndPartition> leadersForPartitions = brokerStorage.readLeadersForPartitions(
-            ImmutableSet.of(new TopicAndPartition("topic1", 2))
+                ImmutableSet.of(new TopicAndPartition("topic1", 2))
         );
 
         //then
@@ -77,7 +74,7 @@ public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
     public void shouldGetErrorWhileReadingBrokerDetails() {
         // when
         catchException(brokerStorage).readBrokerDetails(5);
-        
+
         // then
         assertThat((Exception) caughtException()).isInstanceOf(BrokerInfoNotAvailableException.class);
     }

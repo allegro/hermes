@@ -38,10 +38,11 @@ public class BrokerMessageCommitterTest extends IntegrationTest {
     private final String subscriptionName = "subscription";
     private Subscription subscription;
 
-    private int readTimeout = 60;
+    private int readTimeout = 60_000;
     private int channelExpTime = 60_000;
 
     private MessageCommitter messageCommiter;
+    private BlockingChannelFactory blockingChannelFactory;
     private int kafkaPort;
 
     @BeforeMethod
@@ -56,30 +57,10 @@ public class BrokerMessageCommitterTest extends IntegrationTest {
 
         operations.buildSubscription(groupName, topicName, subscriptionName, HTTP_ENDPOINT_URL);
 
-        waitUntilConsumerMetadataAvailable();
+        wait.waitUntilConsumerMetadataAvailable(subscription, kafkaHost, kafkaPort);
 
-        BlockingChannelFactory blockingChannelFactory = new BlockingChannelFactory(HostAndPort.fromParts(kafkaHost, kafkaPort), readTimeout);
+        blockingChannelFactory = new BlockingChannelFactory(HostAndPort.fromParts(kafkaHost, kafkaPort), readTimeout);
         messageCommiter = new BrokerMessageCommitter(blockingChannelFactory, new SystemClock(), hostnameResolver, channelExpTime);
-    }
-
-    private void waitUntilConsumerMetadataAvailable() {
-        BlockingChannel channel = createBlockingChannel();
-        channel.connect();
-
-        wait.until(() -> {
-            channel.send(new ConsumerMetadataRequest(subscription.getId(), ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
-            ConsumerMetadataResponse metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
-            return metadataResponse.errorCode() == ErrorMapping.NoError();
-        }, Duration.ONE_MINUTE);
-
-        channel.disconnect();
-    }
-
-    private BlockingChannel createBlockingChannel() {
-        return new BlockingChannel(kafkaHost, kafkaPort,
-                BlockingChannel.UseDefaultBufferSize(),
-                BlockingChannel.UseDefaultBufferSize(),
-                readTimeout);
     }
 
     @Test
@@ -97,7 +78,7 @@ public class BrokerMessageCommitterTest extends IntegrationTest {
     }
 
     private long readOffset(Subscription subscription, int partition) {
-        BlockingChannel channel = createBlockingChannel();
+        BlockingChannel channel = blockingChannelFactory.create(subscription.getId());
         channel.connect();
 
         TopicAndPartition topicAndPartition = new TopicAndPartition(subscription.getTopicName().qualifiedName(), partition);

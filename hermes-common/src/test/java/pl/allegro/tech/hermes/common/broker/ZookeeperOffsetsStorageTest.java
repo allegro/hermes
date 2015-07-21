@@ -6,14 +6,13 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import static org.assertj.core.api.StrictAssertions.assertThat;
-import static pl.allegro.tech.hermes.common.broker.ZookeeperOffsets.getPartitionOffsetPath;
 
 public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
 
     private static final TopicName TOPIC_NAME = new TopicName("brokerGroup", "brokerTopic");
     private static final String SUBSCRIPTION_NAME = "brokerSubscription";
 
-    private final OffsetsStorage offsetsStorage = new ZookeeperOffsetsStorage(zookeeperClient);
+    private final ZookeeperOffsetsStorage offsetsStorage = new ZookeeperOffsetsStorage(zookeeperClient);
 
     @After
     public void after() throws Exception {
@@ -30,21 +29,13 @@ public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
         offsetsStorage.setSubscriptionOffset(TOPIC_NAME, SUBSCRIPTION_NAME, 0, 50L);
 
         // then
-        assertOffset(TOPIC_NAME, SUBSCRIPTION_NAME, 0, 50L);
+        long offset = offsetsStorage.getSubscriptionOffset(TOPIC_NAME, SUBSCRIPTION_NAME, 0);
+        assertThat(offset).isEqualTo(50L);
     }
 
     private void createOffset(TopicName topicName, String subscriptionName, int partitionId, Long offset) throws Exception {
-        String path = getPartitionOffsetPath(topicName, subscriptionName, partitionId);
+        String path = offsetsStorage.getPartitionOffsetPath(topicName, subscriptionName, partitionId);
         zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
         zookeeperClient.setData().forPath(path, offset.toString().getBytes());
-    }
-
-    private void assertOffset(TopicName topicName, String subscriptionName, int partitionId, Long expectedOffset)
-            throws Exception {
-
-        byte [] offsetFromZk = zookeeperClient.getData().forPath(
-                getPartitionOffsetPath(topicName, subscriptionName, partitionId)
-        );
-        assertThat(Long.valueOf(new String(offsetFromZk))).isEqualTo(expectedOffset);
     }
 }

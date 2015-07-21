@@ -4,6 +4,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.env.ConsumersStarter;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
@@ -20,6 +21,10 @@ public class MultipleKafkaTest extends IntegrationTest {
 
     private final int frontendPort = 6793;
     private final String frontendUrl = "http://localhost:" + frontendPort + "/";
+    private final Subscription subscription = new Subscription.Builder()
+            .withTopicName("secondaryKafka", "topic")
+            .withName("subscription")
+            .build();
 
     private HermesPublisher publisher;
     private RemoteServiceEndpoint remoteService;
@@ -47,7 +52,8 @@ public class MultipleKafkaTest extends IntegrationTest {
     @Test
     public void shouldPublishAndConsumeThroughSecondaryKafka() throws Exception {
         // given
-        operations.buildSubscription("secondaryKafka", "topic", "subscription", HTTP_ENDPOINT_URL);
+        operations.buildSubscription(subscription.getTopicName(), subscription.getName(), HTTP_ENDPOINT_URL);
+        wait.waitUntilConsumerMetadataAvailable(subscription, "localhost", SECONDARY_KAFKA_PORT);
         remoteService.expectMessages("message");
 
         // when
@@ -60,7 +66,6 @@ public class MultipleKafkaTest extends IntegrationTest {
 
     private ConsumersStarter setupConsumers() throws Exception {
         ConsumersStarter consumers = new ConsumersStarter();
-        consumers.overrideProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING, SECONDARY_ZK_KAFKA_CONNECT);
         consumers.overrideProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING, SECONDARY_ZK_KAFKA_CONNECT);
         consumers.overrideProperty(Configs.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         consumers.overrideProperty(Configs.CONSUMER_HEALTH_CHECK_PORT, 7454);

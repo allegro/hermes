@@ -1,9 +1,13 @@
 package pl.allegro.tech.hermes.common.broker;
 
+import jersey.repackaged.com.google.common.collect.Lists;
 import kafka.common.OffsetAndMetadata;
+import kafka.common.OffsetMetadataAndError;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.OffsetCommitRequest;
 import kafka.javaapi.OffsetCommitResponse;
+import kafka.javaapi.OffsetFetchRequest;
+import kafka.javaapi.OffsetFetchResponse;
 import kafka.network.BlockingChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +16,9 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.time.Clock;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class KafkaOffsetsStorage implements OffsetsStorage {
 
@@ -46,6 +52,30 @@ public class KafkaOffsetsStorage implements OffsetsStorage {
         }
 
         channel.disconnect();
+    }
+
+    @Override
+    public long getSubscriptionOffset(TopicName topicName, String subscriptionName, int partitionId) {
+        String groupId = Subscription.getId(topicName, subscriptionName);
+        BlockingChannel channel = blockingChannelFactory.create(groupId);
+        channel.connect();
+
+        TopicAndPartition topicAndPartition = new TopicAndPartition(topicName.qualifiedName(), partitionId);
+        List<TopicAndPartition> partitions = Lists.newArrayList(topicAndPartition);
+
+        OffsetFetchRequest fetchRequest = new OffsetFetchRequest(
+                groupId,
+                partitions,
+                VERSION,
+                CORRELATION_ID,
+                CLIENT_ID);
+
+        channel.send(fetchRequest.underlying());
+        OffsetFetchResponse fetchResponse = OffsetFetchResponse.readFrom(channel.receive().buffer());
+        Map<TopicAndPartition, OffsetMetadataAndError> result = fetchResponse.offsets();
+        OffsetMetadataAndError offset = result.get(topicAndPartition);
+        channel.disconnect();
+        return offset.offset();
     }
 
     private OffsetCommitRequest createCommitRequest(TopicName topicName, String groupId, int partition, long offset) {

@@ -22,7 +22,7 @@ public enum Configs {
     KAFKA_CONSUMER_TIMEOUT_MS("kafka.consumer.timeout.ms", 60000),
     KAFKA_CONSUMER_AUTO_OFFSET_RESET("kafka.consumer.auto.offset.reset", "largest"),
     KAFKA_CONSUMER_OFFSETS_STORAGE("kafka.consumer.offsets.storage", "kafka"),
-    KAFKA_CONSUMER_DUAL_COMMIT_ENABLED("kafka.consumer.dual.commit.enabled", false),
+    KAFKA_CONSUMER_DUAL_COMMIT_ENABLED("kafka.consumer.dual.commit.enabled", true),
     KAFKA_CONSUMER_METADATA_READ_TIMEOUT("kafka.consumers.metadata.read.timeout", 5000),
     KAFKA_CONSUMER_OFFSET_COMMITTER_BROKER_CONNECTION_EXPIRATION("kafka.consumer.offset.commiter.broker.connection.expiration", 60),
 
