@@ -99,6 +99,8 @@ public class ConsumerMessageSender {
     private void handleFailedSending(Message message, MessageSendingResult result) {
         if (shouldReduceSendingRate(result)) {
             rateLimiter.registerFailedSending();
+        } else {
+            rateLimiter.registerSuccessfulSending();
         }
         errorHandler.handleFailed(message, subscription, result);
     }
