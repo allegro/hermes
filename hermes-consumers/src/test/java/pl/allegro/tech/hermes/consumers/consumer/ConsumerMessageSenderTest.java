@@ -190,7 +190,7 @@ public class ConsumerMessageSenderTest {
     }
 
     @Test
-    public void shouldNotReduceSendingRateLimitOn4xxResponseForSubscriptionWithNo4xxRetry() {
+    public void shouldTreat4xxResponseForSubscriptionWithNo4xxRetryAsSuccess() {
         // given
         Message message = message();
         doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
@@ -200,6 +200,7 @@ public class ConsumerMessageSenderTest {
 
         // then
         verifyRateLimiterFailedSendingCountedTimes(0);
+        verifyRateLimiterSuccessfulSendingCountedTimes(1);
         verifyErrorHandlerHandleFailed(message, subscription, 1);
     }
 
