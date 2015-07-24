@@ -55,7 +55,7 @@ public class OffsetCommitter implements Runnable {
                         messageCommitter.commitOffset(subscription, partitionOffset);
                     } catch (Exception e) {
                         LOGGER.error(String.format("Failed to commit offsets using message committer: %s",
-                                messageCommitters.getClass().getSimpleName()), e);
+                                messageCommitter.getClass().getSimpleName()), e);
                     }
                 }
                 offsetsPerSubscription.put(subscription, partitionOffset);
