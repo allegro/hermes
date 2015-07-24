@@ -36,6 +36,10 @@ public enum Configs {
     KAFKA_PRODUCER_ACK_TIMEOUT("kafka.producer.ack.timeout", 1000),
     KAFKA_PRODUCER_BATCH_SIZE("kafka.producer.batch.size", 16 * 1024),
     KAFKA_PRODUCER_TCP_SEND_BUFFER("kafka.producer.tcp.send.buffer", 128 * 1024),
+    KAFKA_PRODUCER_MAX_REQUEST_SIZE("kafka.producer.max.request.size", 1024 * 1024),
+    KAFKA_PRODUCER_LINGER_MS("kafka.producer.linger.ms", 0),
+    KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS("kafka.producer.metrics.sample.window.ms", 30000),
+    KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION("kafka.producer.max.in.flight.requests.per.connection", 5),
 
     KAFKA_STREAM_COUNT("kafka.stream.count", 1),
 
