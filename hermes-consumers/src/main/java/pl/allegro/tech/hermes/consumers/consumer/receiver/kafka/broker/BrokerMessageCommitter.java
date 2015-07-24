@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalNotification;
+import kafka.common.ErrorMapping;
 import kafka.common.OffsetAndMetadata;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.OffsetCommitRequest;
@@ -46,7 +47,7 @@ public class BrokerMessageCommitter implements MessageCommitter {
         this.clientId = clientId(hostnameResolver);
 
         channels = CacheBuilder.newBuilder()
-                .expireAfterWrite(channelExpTime, TimeUnit.SECONDS)
+                .expireAfterAccess(channelExpTime, TimeUnit.SECONDS)
                 .removalListener((RemovalNotification<Subscription, BlockingChannel> notification) -> notification.getValue().disconnect())
                 .build(new CacheLoader<Subscription, BlockingChannel>() {
                     public BlockingChannel load(Subscription key) {
@@ -63,7 +64,13 @@ public class BrokerMessageCommitter implements MessageCommitter {
         OffsetCommitResponse commitResponse = commitOffset(subscription, commitRequest);
 
         if (commitResponse.hasError()) {
-            logger.error("Cannot commit offset, error codes: %s ", new BrokerOffsetCommitErrors(commitResponse.errors()).toString());
+            commitResponse.errors().values()
+                    .stream()
+                    .map(e -> Short.parseShort(e.toString()))
+                    .filter(e -> (e == ErrorMapping.NotCoordinatorForConsumerCode() || e == ErrorMapping.NotCoordinatorForConsumerCode()))
+                    .forEach(e -> channels.invalidate(subscription));
+
+            throw new CannotCommitOffsetToBrokerException(new BrokerOffsetCommitErrors(commitResponse.errors()));
         }
     }
 
