@@ -264,5 +264,10 @@ public class HermesMetrics {
                 .withTopic(topic.getName())
                 .build()));
     }
+
+    public void reportContentSize(int size, TopicName topicName) {
+        messageContentSizeHistogram(topicName).update(size);
+        metricRegistry.histogram(pathCompiler.compile(Histograms.PRODUCER_GLOBAL_MESSAGE_SIZE)).update(size);
+    }
 }
 
