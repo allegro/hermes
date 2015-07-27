@@ -106,6 +106,8 @@ public class PublishingServlet extends HttpServlet {
                         Message message = contentTypeEnforcer.enforce(request.getContentType(),
                                 new Message(messageId, messageContent, clock.getTime()), topic);
 
+                        hermesMetrics.messageContentSizeHistogram(topic.getName()).update(messageContent.length);
+
                         messageValidators.check(topic.getName(), message.getData());
 
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
