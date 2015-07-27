@@ -70,6 +70,7 @@ public class MessageReader implements ReadListener {
         closeParsingTimers();
         try {
             checkContentLength(request, messageContent.size(), "Content-Length does not match the header");
+            hermesMetrics.messageContentSizeHistogram(topicName).update(messageContent.size());
             onRead.accept(messageContent.toByteArray());
         } catch (IllegalStateException e) {
             onValidationError.accept(e);
