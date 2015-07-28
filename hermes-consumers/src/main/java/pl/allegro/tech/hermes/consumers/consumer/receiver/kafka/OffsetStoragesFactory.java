@@ -9,9 +9,11 @@ import pl.allegro.tech.hermes.common.broker.OffsetsStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperOffsetsStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.time.Clock;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,7 +26,9 @@ public class OffsetStoragesFactory implements Factory<List<OffsetsStorage>> {
     private final Clock clock;
 
     @Inject
-    public OffsetStoragesFactory(CuratorFramework curator, BlockingChannelFactory blockingChannelFactory, Clock clock,
+    public OffsetStoragesFactory(@Named(CuratorType.KAFKA) CuratorFramework curator,
+                                 BlockingChannelFactory blockingChannelFactory,
+                                 Clock clock,
                                  ConfigFactory configFactory) {
         this.curator = curator;
         this.blockingChannelFactory = blockingChannelFactory;

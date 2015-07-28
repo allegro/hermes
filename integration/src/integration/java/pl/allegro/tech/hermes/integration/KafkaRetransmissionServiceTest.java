@@ -43,7 +43,7 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         remoteService = new RemoteServiceEndpoint(services().serviceMock());
     }
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     @Unreliable
     public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
         // given
