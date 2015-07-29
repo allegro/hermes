@@ -12,7 +12,10 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.BrokerListenersPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.HttpPublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.callbacks.MessageStatePublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -110,6 +113,7 @@ public class PublishingServlet extends HttpServlet {
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 
                         messagePublisher.publish(message, topic, messageState,
+                                new MessageStatePublishingCallback(messageState),
                                 new HttpPublishingCallback(httpResponder),
                                 new MetricsPublishingCallback(hermesMetrics, topic),
                                 new BrokerListenersPublishingCallback(listeners));
