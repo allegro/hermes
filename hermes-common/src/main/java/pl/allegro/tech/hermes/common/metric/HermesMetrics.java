@@ -260,8 +260,8 @@ public class HermesMetrics {
 
     public Histogram messageContentSizeHistogram(TopicName topic) {
         return metricRegistry.histogram(pathCompiler.compile(Histograms.PRODUCER_MESSAGE_SIZE, pathContext()
-                .withGroup(topic.getGroupName())
-                .withTopic(topic.getName())
+                .withGroup(escapeDots(topic.getGroupName()))
+                .withTopic(escapeDots(topic.getName()))
                 .build()));
     }
 
