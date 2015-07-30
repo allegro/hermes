@@ -2,7 +2,7 @@
 
 rm -rf build
 mkdir -p build
-cd .. && ./gradlew -q clean distZip && cd -
+cd .. && ./gradlew -q clean distZip -Pdistribution && cd -
 
 modules=( frontend consumers management )
 
