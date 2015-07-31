@@ -5,7 +5,6 @@ import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.broker.BlockingChannelFactory;
-import pl.allegro.tech.hermes.common.broker.OffsetsStorage;
 import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
@@ -13,6 +12,8 @@ import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
@@ -20,6 +21,8 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageCommitterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.OffsetStoragesFactory;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.KafkaOffsetsStorage;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.zookeeper.ZookeeperOffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
@@ -48,7 +51,10 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(HealthCheckServer.class);
 
         bind(KafkaMessageReceiverFactory.class).in(Singleton.class).to(ReceiverFactory.class);
-        bindFactory(MessageCommitterFactory.class).in(Singleton.class).to(new TypeLiteral<List<MessageCommitter>>(){});
+        bindSingleton(BrokerOffsetsRepository.class);
+        bind(ZookeeperOffsetsStorage.class).in(Singleton.class).to(OffsetsStorage.class).named("zookeeperOffsetsStorage");
+        bind(KafkaOffsetsStorage.class).in(Singleton.class).to(OffsetsStorage.class).named("kafkaOffsetsStorage");
+        bindFactory(MessageCommitterFactory.class).in(Singleton.class).to(new TypeLiteral<List<MessageCommitter>>() {});
         bind(MessageBodyInterpolator.class).in(Singleton.class).to(UriInterpolator.class);
         bind(InterpolatingEndpointAddressResolver.class).to(EndpointAddressResolver.class).in(Singleton.class);
         bind(JmsHornetQMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)

@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.admin.AdminOperationsCallback;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.common.broker.OffsetsStorage;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
@@ -237,9 +237,9 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                     subscriptionName.getTopicName(), subscriptionName.getName(), brokersClusterName);
 
             for (PartitionOffset partitionOffset : offsets) {
-                offsetsStorages.forEach(s ->
-                                s.setSubscriptionOffset(subscriptionName.getTopicName(), subscriptionName.getName(), partitionOffset.getPartition(), partitionOffset.getOffset())
-                );
+                for (OffsetsStorage s: offsetsStorages) {
+                    s.setSubscriptionOffset(Subscription.fromSubscriptionName(subscriptionName), partitionOffset);
+                }
             }
             createAndExecuteConsumer(subscriptionRepository.getSubscriptionDetails(subscriptionName.getTopicName(), subscriptionName.getName()));
         }

@@ -7,7 +7,6 @@ import com.google.common.collect.Multimap;
 import kafka.common.TopicAndPartition;
 import org.junit.After;
 import org.junit.Test;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.BrokerInfoNotAvailableException;
 import pl.allegro.tech.hermes.common.exception.PartitionsNotFoundForGivenTopicException;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
