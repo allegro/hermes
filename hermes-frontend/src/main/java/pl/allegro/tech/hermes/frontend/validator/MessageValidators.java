@@ -50,11 +50,11 @@ public class MessageValidators implements TopicCallback {
         }
     }
 
-    public void check(TopicName topicName, byte[] message) {
-        Optional.ofNullable(topicsWithValidators.get(topicName)).ifPresent(validator -> {
+    public void check(Topic topic, byte[] message) {
+        Optional.ofNullable(topicsWithValidators.get(topic.getName())).ifPresent(validator -> {
             try (Timer.Context globalValidationTimerContext = hermesMetrics.timer(Timers.PRODUCER_VALIDATION_LATENCY).time();
-                 Timer.Context topicValidationTimerContext = hermesMetrics.timer(Timers.PRODUCER_VALIDATION_LATENCY, topicName).time()) {
-                validator.check(message);
+                 Timer.Context topicValidationTimerContext = hermesMetrics.timer(Timers.PRODUCER_VALIDATION_LATENCY, topic.getName()).time()) {
+                validator.check(message, topic);
             }
         });
     }

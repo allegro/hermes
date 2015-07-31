@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.frontend.di;
 
 import org.I0Itec.zkclient.ZkClient;
+import org.apache.avro.Schema;
+import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.zookeeper.ZookeeperTopicsCacheFactory;
@@ -8,8 +10,13 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
+import pl.allegro.tech.hermes.frontend.publishing.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.MessagePublisher;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
+import pl.allegro.tech.hermes.frontend.schema.AvroMessageSchemaRepositoryFactory;
+import pl.allegro.tech.hermes.frontend.schema.MessageSchemaRepository;
+import pl.allegro.tech.hermes.frontend.schema.MessageSchemaSourceRepository;
+import pl.allegro.tech.hermes.frontend.schema.TopicFieldMessageSchemaSourceRepository;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
@@ -38,6 +45,9 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(NoOperationPublishingTracker.class);
         bindFactory(ZookeeperTopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
         bindSingleton(MessagePublisher.class);
+        bind(TopicFieldMessageSchemaSourceRepository.class).to(MessageSchemaSourceRepository.class).in(Singleton.class);
+        bindSingleton(MessageContentTypeEnforcer.class);
+        bindFactory(AvroMessageSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<MessageSchemaRepository<Schema>>() { });
     }
 
     private <T> void bindSingleton(Class<T> clazz) {

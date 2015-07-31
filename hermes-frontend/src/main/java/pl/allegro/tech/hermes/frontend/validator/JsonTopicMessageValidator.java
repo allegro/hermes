@@ -6,6 +6,7 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.Topic;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class JsonTopicMessageValidator implements TopicMessageValidator {
     }
 
     @Override
-    public void check(byte[] message) {
+    public void check(byte[] message, Topic topic) {
         List<String> errors = validate(jsonSchema, message);
 
         if (!errors.isEmpty()) {
