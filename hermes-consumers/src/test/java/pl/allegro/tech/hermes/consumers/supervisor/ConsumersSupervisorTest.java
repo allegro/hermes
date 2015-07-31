@@ -180,8 +180,8 @@ public class ConsumersSupervisorTest {
         String brokersClusterName = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
         PartitionOffset partitionOffset = new PartitionOffset(100L, 0);
         Subscription actualSubscription = createSubscription(SOME_TOPIC_NAME, subscriptionName, ACTIVE);
+        SubscriptionName subscription = new SubscriptionName(subscriptionName, SOME_TOPIC_NAME);
         consumersSupervisor.onSubscriptionChanged(actualSubscription);
-        Subscription subscription = createSubscription(SOME_TOPIC_NAME, subscriptionName);
         when(subscriptionOffsetChangeIndicator.getSubscriptionOffsets(SOME_TOPIC_NAME, subscriptionName, brokersClusterName))
                 .thenReturn(new PartitionOffsets().add(partitionOffset));
         when(subscriptionRepository.getSubscriptionDetails(SOME_TOPIC_NAME, subscriptionName))
@@ -190,12 +190,12 @@ public class ConsumersSupervisorTest {
         when(consumer.getSubscription()).thenReturn(actualSubscription);
 
         //when
-        consumersSupervisor.onRetransmissionStarts(new SubscriptionName(subscription.getName(), subscription.getTopicName()));
+        consumersSupervisor.onRetransmissionStarts(subscription);
 
         //then
         verify(consumer).stopConsuming();
         verify(subscriptionOffsetChangeIndicator).getSubscriptionOffsets(SOME_TOPIC_NAME, subscriptionName, brokersClusterName);
-        verify(offsetsStorage).setSubscriptionOffset(subscription, partitionOffset);
+        verify(offsetsStorage).setSubscriptionOffset(Subscription.fromSubscriptionName(subscription), partitionOffset);
     }
 
     @Test
