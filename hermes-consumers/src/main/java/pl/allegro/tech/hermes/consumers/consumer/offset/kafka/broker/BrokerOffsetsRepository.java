@@ -15,8 +15,6 @@ import kafka.javaapi.OffsetFetchRequest;
 import kafka.javaapi.OffsetFetchResponse;
 import kafka.network.BlockingChannel;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.broker.BlockingChannelFactory;
-import pl.allegro.tech.hermes.common.broker.BrokerOffsetCommitErrors;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.time.Clock;

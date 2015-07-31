@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker;
 
-import pl.allegro.tech.hermes.common.broker.BrokerOffsetCommitErrors;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetCommitErrors;
 
 public class CannotCommitOffsetToBrokerException extends RuntimeException {
 

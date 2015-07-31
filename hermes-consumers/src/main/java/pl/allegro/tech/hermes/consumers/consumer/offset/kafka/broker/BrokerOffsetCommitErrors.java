@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.common.broker;
+package pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker;
 
 import com.google.common.base.Joiner;
 import kafka.common.TopicAndPartition;
