@@ -1,18 +1,16 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import com.google.common.collect.Lists;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperProvider;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
-import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.List;
 
 @Singleton
 public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
@@ -28,19 +26,15 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     }
 
     @Override
-    public void send(Message message, Topic topic, final PublishingCallback... callbacks) {
-        send(message, topic, Lists.newArrayList(callbacks));
-    }
-
-    private void send(Message message, Topic topic, final List<PublishingCallback> callbacks) {
+    public void send(Message message, Topic topic, final PublishingCallback callback) {
         try {
             byte[] content = contentWrapperProvider
                 .provide(topic.getContentType())
                 .wrapContent(message.getData(), message.getId(), message.getTimestamp());
             ProducerRecord<byte[], byte[]> producerRecord = new ProducerRecord<>(topic.getQualifiedName(), content);
-            producers.get(topic).send(producerRecord, new SendCallback(message, topic, callbacks));
+            producers.get(topic).send(producerRecord, new SendCallback(message, topic, callback));
         } catch (Exception e) {
-            callbacks.forEach(c -> c.onUnpublished(e));
+            callback.onUnpublished(message, topic, e);
         }
     }
 
@@ -48,20 +42,20 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         
         private final Message message;
         private final Topic topic;
-        private final List<PublishingCallback> callbacks;
+        private final PublishingCallback callback;
 
-        public SendCallback(Message message, Topic topic, List<PublishingCallback> callbacks) {
+        public SendCallback(Message message, Topic topic, PublishingCallback callback) {
             this.message = message;
             this.topic = topic;
-            this.callbacks = callbacks;
+            this.callback = callback;
         }
 
         @Override
         public void onCompletion(RecordMetadata recordMetadata, Exception e) {
             if (e != null) {
-                callbacks.forEach(c -> c.onUnpublished(e));
+                callback.onUnpublished(message, topic, e);
             } else {
-                callbacks.forEach(c -> c.onPublished(message, topic));
+                callback.onPublished(message, topic);
             }
         }
     }

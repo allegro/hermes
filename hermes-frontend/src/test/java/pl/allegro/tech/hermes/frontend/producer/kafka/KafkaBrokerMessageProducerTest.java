@@ -70,7 +70,7 @@ public class KafkaBrokerMessageProducerTest {
         //when
         producer.send(MESSAGE, TOPIC, new PublishingCallback() {
             @Override
-            public void onUnpublished(Exception exception) {
+            public void onUnpublished(Message message, Topic topic, Exception exception) {
                 latch.countDown();
             }
 
@@ -130,7 +130,7 @@ public class KafkaBrokerMessageProducerTest {
     }
 
     private static class DoNothing implements PublishingCallback {
-        public void onUnpublished(Exception exception) {
+        public void onUnpublished(Message message, Topic topic, Exception exception) {
         }
 
         public void onPublished(Message message, Topic topic) {
