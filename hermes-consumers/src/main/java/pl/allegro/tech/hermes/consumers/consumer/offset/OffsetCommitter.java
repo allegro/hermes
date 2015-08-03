@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerHolder;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,15 +23,15 @@ public class OffsetCommitter implements Runnable {
 
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private final ConsumerHolder consumerHolder;
-    private final MessageCommitter messageCommitter;
+    private final List<MessageCommitter> messageCommitters;
     private final ConfigFactory configFactory;
 
     public OffsetCommitter(
             ConsumerHolder consumerHolder,
-            MessageCommitter messageCommitter,
+            List<MessageCommitter> messageCommitters,
             ConfigFactory configFactory) {
         this.consumerHolder = consumerHolder;
-        this.messageCommitter = messageCommitter;
+        this.messageCommitters = messageCommitters;
         this.configFactory = configFactory;
     }
 
@@ -45,17 +46,20 @@ public class OffsetCommitter implements Runnable {
 
     @Override
     public void run() {
-        try {
-            Map<Subscription, PartitionOffset> offsetsPerSubscription = Maps.newHashMap();
-            for (Consumer consumer : consumerHolder) {
-                Subscription subscription = consumer.getSubscription();
-                for (PartitionOffset partitionOffset : consumer.getOffsetsToCommit()) {
-                    messageCommitter.commitOffsets(subscription, partitionOffset);
-                    offsetsPerSubscription.put(subscription, partitionOffset);
+        Map<Subscription, PartitionOffset> offsetsPerSubscription = Maps.newHashMap();
+        for (Consumer consumer : consumerHolder) {
+            Subscription subscription = consumer.getSubscription();
+            for (PartitionOffset partitionOffset : consumer.getOffsetsToCommit()) {
+                for (MessageCommitter messageCommitter : messageCommitters) {
+                    try {
+                        messageCommitter.commitOffset(subscription, partitionOffset);
+                    } catch (Exception e) {
+                        LOGGER.error(String.format("Failed to commit offsets using message committer: %s",
+                                messageCommitter.getClass().getSimpleName()), e);
+                    }
                 }
+                offsetsPerSubscription.put(subscription, partitionOffset);
             }
-        } catch (Exception e) {
-            LOGGER.error("Failed to commit offsets", e);
         }
     }
 

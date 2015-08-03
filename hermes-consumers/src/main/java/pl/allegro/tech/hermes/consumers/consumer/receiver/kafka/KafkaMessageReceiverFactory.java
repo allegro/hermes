@@ -60,6 +60,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         props.put("fetch.wait.max.ms", "10000");
         props.put("consumer.timeout.ms", configFactory.getIntPropertyAsString(Configs.KAFKA_CONSUMER_TIMEOUT_MS));
         props.put("auto.offset.reset", configFactory.getStringProperty(Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET));
+        props.put("offsets.storage", configFactory.getStringProperty(Configs.KAFKA_CONSUMER_OFFSETS_STORAGE));
+        props.put("dual.commit.enabled", Boolean.toString(configFactory.getBooleanProperty(Configs.KAFKA_CONSUMER_DUAL_COMMIT_ENABLED)));
 
         return new ConsumerConfig(props);
     }
