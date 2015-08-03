@@ -1,15 +1,8 @@
 package pl.allegro.tech.hermes.frontend.di;
 
-import com.github.fge.jsonschema.main.JsonSchema;
 import org.I0Itec.zkclient.ZkClient;
-import org.apache.avro.Schema;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import pl.allegro.tech.hermes.common.schema.AvroMessageSchemaRepositoryFactory;
-import pl.allegro.tech.hermes.common.schema.JsonMessageSchemaRepositoryFactory;
-import pl.allegro.tech.hermes.common.schema.MessageSchemaRepository;
-import pl.allegro.tech.hermes.common.schema.MessageSchemaSourceRepository;
-import pl.allegro.tech.hermes.common.schema.TopicFieldMessageSchemaSourceRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.zookeeper.ZookeeperTopicsCacheFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
@@ -46,16 +39,10 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(NoOperationPublishingTracker.class);
         bindFactory(ZookeeperTopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
         bindSingleton(MessagePublisher.class);
-        bind(TopicFieldMessageSchemaSourceRepository.class).to(MessageSchemaSourceRepository.class).in(Singleton.class);
         bindSingleton(MessageContentTypeEnforcer.class);
-        bindFactory(AvroMessageSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<MessageSchemaRepository<Schema>>() {
-        });
-        bindFactory(JsonMessageSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<MessageSchemaRepository<JsonSchema>>() {
-        });
         bindSingleton(JsonTopicMessageValidator.class);
         bindSingleton(AvroTopicMessageValidator.class);
-        bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {
-        });
+        bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {});
     }
 
     private <T> void bindSingleton(Class<T> clazz) {

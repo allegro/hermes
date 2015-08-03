@@ -14,32 +14,22 @@ import java.io.IOException;
 
 public class AvroToJsonConverter {
 
-    private final GenericDatumReader<GenericRecord> reader;
-    private final GenericDatumWriter<GenericRecord> writer;
-    private final Schema schema;
-
-    public AvroToJsonConverter(Schema schema) {
-        this.schema = schema;
-        this.reader = new GenericDatumReader<>(schema);
-        this.writer = new GenericDatumWriter<>(schema);
-    }
-
-    public byte [] convert(byte [] data) {
+    public byte[] convert(byte[] data, Schema schema) {
         try {
             BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(data, null);
-            GenericRecord record = reader.read(null, binaryDecoder);
+            GenericRecord record = new GenericDatumReader<GenericRecord>(schema).read(null, binaryDecoder);
 
-            return decodeRecordToJson(record);
+            return decodeRecordToJson(record, schema);
         } catch (IOException exception) {
             throw new ConvertingException("Could not convert avro message to json. Invalid Message.", exception);
         }
     }
 
-    private byte [] decodeRecordToJson(GenericRecord record) throws IOException {
+    private byte[] decodeRecordToJson(GenericRecord record, Schema schema) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         JsonEncoder jsonEncoder = EncoderFactory.get().jsonEncoder(schema, outputStream);
-        writer.write(record, jsonEncoder);
+        new GenericDatumWriter<>(schema).write(record, jsonEncoder);
         jsonEncoder.flush();
 
         return outputStream.toByteArray();

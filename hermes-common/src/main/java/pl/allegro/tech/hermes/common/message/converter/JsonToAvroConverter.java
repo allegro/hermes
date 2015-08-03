@@ -17,10 +17,6 @@ import java.io.IOException;
 
 public class JsonToAvroConverter {
 
-    public byte[] convert(byte[] data, String messageSchema) {
-        return convert(data, new Schema.Parser().parse(messageSchema));
-    }
-
     public byte[] convert(byte[] data, Schema schema) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

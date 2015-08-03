@@ -17,6 +17,8 @@ import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPoolConfig;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
+import pl.allegro.tech.hermes.common.schema.MessageSchemaSourceRepository;
+import pl.allegro.tech.hermes.common.schema.TopicFieldMessageSchemaSourceRepository;
 import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
@@ -64,12 +66,21 @@ public class KafkaConfiguration {
     private final List<CuratorFramework> curators = new ArrayList<>();
 
     @Bean
-    MultiDCAwareService multiDCAwareService() {
+    MessageSchemaSourceRepository schemaSourceRepository() {
+        return new TopicFieldMessageSchemaSourceRepository();
+    }
+
+    @Bean
+    MultiDCAwareService multiDCAwareService(MessageSchemaSourceRepository schemaSourceRepository) {
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties));
             SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
-            SingleMessageReader singleMessageReader = new KafkaSingleMessageReader(new KafkaRawMessageReader(simpleConsumerPool), new AvroMessageContentWrapper());
+            SingleMessageReader singleMessageReader = new KafkaSingleMessageReader(
+                    new KafkaRawMessageReader(simpleConsumerPool),
+                    new AvroMessageContentWrapper(),
+                    schemaSourceRepository
+            );
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                 storage,
                 singleMessageReader,

@@ -16,13 +16,13 @@ public class AvroToJsonConverterTest {
     @Before
     public void setup() throws IOException {
         avroUser = new AvroUser();
-        avroToJsonConverter = new AvroToJsonConverter(avroUser.getSchema());
+        avroToJsonConverter = new AvroToJsonConverter();
     }
 
     @Test
     public void shouldConvertAvroToJson() throws IOException {
         //when
-        byte [] json = avroToJsonConverter.convert(avroUser.create("Bob", 50, "blue"));
+        byte[] json = avroToJsonConverter.convert(avroUser.create("Bob", 50, "blue"), avroUser.getSchema());
 
         //then
         assertThatJson(new String(json)).isEqualTo("{\"name\": \"Bob\",\"age\": 50,\"favoriteColor\": \"blue\"}");

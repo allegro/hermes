@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
+import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.schema.MessageSchemaRepository;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
@@ -33,6 +35,7 @@ public class ConsumerFactory {
     private final Clock clock;
     private final TopicRepository topicRepository;
     private final MessageConverterFactory messageConverterFactory;
+    private final MessageSchemaRepository<Schema> messageSchemaRepository;
 
     @Inject
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
@@ -44,7 +47,8 @@ public class ConsumerFactory {
             ConsumerMessageSenderFactory consumerMessageSenderFactory,
             Clock clock,
             TopicRepository topicRepository,
-            MessageConverterFactory messageConverterFactory) {
+            MessageConverterFactory messageConverterFactory,
+            MessageSchemaRepository<Schema> messageSchemaRepository) {
 
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
@@ -56,6 +60,7 @@ public class ConsumerFactory {
         this.clock = clock;
         this.topicRepository = topicRepository;
         this.messageConverterFactory = messageConverterFactory;
+        this.messageSchemaRepository = messageSchemaRepository;
     }
 
     Consumer createConsumer(Subscription subscription) {
@@ -78,7 +83,8 @@ public class ConsumerFactory {
             consumerMessageSenderFactory.create(subscription, consumerRateLimiter, subscriptionOffsetCommitQueues, inflightSemaphore),
             inflightSemaphore,
             trackers,
-            messageConverterFactory.create(topic.getContentType(), topic.getMessageSchema()));
+            messageConverterFactory.create(topic.getContentType(), messageSchemaRepository),
+            topic);
     }
 
 }
