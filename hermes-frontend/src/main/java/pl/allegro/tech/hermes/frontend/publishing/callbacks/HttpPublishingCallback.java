@@ -14,7 +14,7 @@ public class HttpPublishingCallback implements PublishingCallback {
     }
 
     @Override
-    public void onUnpublished(Exception exception) {
+    public void onUnpublished(Message message, Topic topic, Exception exception) {
         httpResponder.internalError(exception, "Broker seems to be down");
     }
 

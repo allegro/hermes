@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.frontend.di.FrontendBinder;
 import pl.allegro.tech.hermes.frontend.di.TrackersBinder;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerAcknowledgeListener;
+import pl.allegro.tech.hermes.frontend.listeners.BrokerErrorListener;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
@@ -137,6 +138,11 @@ public final class HermesFrontend {
 
         public Builder withBrokerAcknowledgeListener(BrokerAcknowledgeListener brokerAcknowledgeListener) {
             listeners.addAcknowledgeListener(brokerAcknowledgeListener);
+            return this;
+        }
+
+        public Builder withBrokerErrorListener(BrokerErrorListener brokerErrorListener) {
+            listeners.addErrorListener(brokerErrorListener);
             return this;
         }
 

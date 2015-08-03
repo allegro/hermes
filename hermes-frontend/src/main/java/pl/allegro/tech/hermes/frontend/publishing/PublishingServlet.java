@@ -115,6 +115,7 @@ public class PublishingServlet extends HttpServlet {
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 
                         messagePublisher.publish(message, topic, messageState,
+                                listeners,
                                 new AsyncContextExecutionCallback(asyncContext,
                                         new MessageStatePublishingCallback(messageState),
                                         new HttpPublishingCallback(httpResponder),
