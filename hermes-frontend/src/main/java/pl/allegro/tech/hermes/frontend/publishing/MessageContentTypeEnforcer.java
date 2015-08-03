@@ -4,7 +4,7 @@ import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.avro.JsonToAvroMessageConverter;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
-import pl.allegro.tech.hermes.frontend.schema.MessageSchemaRepository;
+import pl.allegro.tech.hermes.common.schema.MessageSchemaRepository;
 
 import javax.inject.Inject;
 

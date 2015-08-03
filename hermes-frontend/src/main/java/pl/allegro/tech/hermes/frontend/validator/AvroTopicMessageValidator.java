@@ -6,7 +6,7 @@ import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.frontend.schema.MessageSchemaRepository;
+import pl.allegro.tech.hermes.common.schema.MessageSchemaRepository;
 
 import javax.inject.Inject;
 

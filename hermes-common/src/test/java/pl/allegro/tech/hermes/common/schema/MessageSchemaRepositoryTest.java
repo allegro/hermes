@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.schema;
+package pl.allegro.tech.hermes.common.schema;
 
 import com.google.common.base.Ticker;
 import org.junit.Test;

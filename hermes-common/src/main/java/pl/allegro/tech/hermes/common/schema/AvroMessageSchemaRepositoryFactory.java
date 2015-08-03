@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.schema;
+package pl.allegro.tech.hermes.common.schema;
 
 import org.apache.avro.Schema;
 import org.glassfish.hk2.api.Factory;

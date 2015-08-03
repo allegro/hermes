@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.schema;
+package pl.allegro.tech.hermes.common.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;

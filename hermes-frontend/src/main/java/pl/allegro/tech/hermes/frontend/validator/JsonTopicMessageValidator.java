@@ -7,7 +7,7 @@ import com.github.fge.jsonschema.main.JsonSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.frontend.schema.MessageSchemaRepository;
+import pl.allegro.tech.hermes.common.schema.MessageSchemaRepository;
 
 import javax.inject.Inject;
 import java.io.IOException;
