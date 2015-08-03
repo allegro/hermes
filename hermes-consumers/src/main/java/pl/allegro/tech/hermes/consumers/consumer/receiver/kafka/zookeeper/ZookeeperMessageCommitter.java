@@ -1,28 +1,24 @@
-package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
+package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.zookeeper;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.nio.charset.Charset;
 
-public class KafkaMessageCommitter implements MessageCommitter {
+public class ZookeeperMessageCommitter implements MessageCommitter {
 
     private CuratorFramework curatorFramework;
 
-    @Inject
-    public KafkaMessageCommitter(@Named(CuratorType.KAFKA) CuratorFramework curatorFramework) {
+    public ZookeeperMessageCommitter(CuratorFramework curatorFramework) {
         this.curatorFramework = curatorFramework;
     }
 
     @Override
-    public void commitOffsets(Subscription subscription, PartitionOffset partitionOffset) throws Exception {
+    public void commitOffset(Subscription subscription, PartitionOffset partitionOffset) throws Exception {
         long firstToRead = partitionOffset.getOffset() + 1;
         byte[] data = String.valueOf(firstToRead).getBytes(Charset.forName("UTF-8"));
         String offsetPath = subscriptionPath(

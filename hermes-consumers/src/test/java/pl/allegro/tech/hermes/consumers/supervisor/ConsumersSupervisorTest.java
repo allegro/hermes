@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
 import com.google.common.collect.ImmutableList;
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +14,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.common.broker.BrokerStorage;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -62,7 +63,7 @@ public class ConsumersSupervisorTest {
     private ConsumerFactory consumerFactory;
 
     @Mock
-    private BrokerStorage brokerStorage;
+    private OffsetsStorage offsetsStorage;
 
     @Mock
     private MessageCommitter messageCommitter;
@@ -91,7 +92,7 @@ public class ConsumersSupervisorTest {
 
         consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository,
                 subscriptionOffsetChangeIndicator, executorService, consumerFactory,
-                messageCommitter, brokerStorage, subscriptionsCache, hermesMetrics,
+                Lists.newArrayList(messageCommitter), Lists.newArrayList(offsetsStorage), subscriptionsCache, hermesMetrics,
                 adminCache, undeliveredMessageLogPersister);
     }
 
@@ -177,25 +178,24 @@ public class ConsumersSupervisorTest {
         //given
         String subscriptionName = "subscriptionName1";
         String brokersClusterName = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
-        Long offset = 100L;
-        int partitionId = 0;
+        PartitionOffset partitionOffset = new PartitionOffset(100L, 0);
         Subscription actualSubscription = createSubscription(SOME_TOPIC_NAME, subscriptionName, ACTIVE);
+        SubscriptionName subscription = new SubscriptionName(subscriptionName, SOME_TOPIC_NAME);
         consumersSupervisor.onSubscriptionChanged(actualSubscription);
-        Subscription subscription = createSubscription(SOME_TOPIC_NAME, subscriptionName);
         when(subscriptionOffsetChangeIndicator.getSubscriptionOffsets(SOME_TOPIC_NAME, subscriptionName, brokersClusterName))
-                .thenReturn(new PartitionOffsets().add(new PartitionOffset(offset, partitionId)));
+                .thenReturn(new PartitionOffsets().add(partitionOffset));
         when(subscriptionRepository.getSubscriptionDetails(SOME_TOPIC_NAME, subscriptionName))
                 .thenReturn(SOME_SUBSCRIPTION);
 
         when(consumer.getSubscription()).thenReturn(actualSubscription);
 
         //when
-        consumersSupervisor.onRetransmissionStarts(new SubscriptionName(subscription.getName(), subscription.getTopicName()));
+        consumersSupervisor.onRetransmissionStarts(subscription);
 
         //then
         verify(consumer).stopConsuming();
         verify(subscriptionOffsetChangeIndicator).getSubscriptionOffsets(SOME_TOPIC_NAME, subscriptionName, brokersClusterName);
-        verify(brokerStorage).setSubscriptionOffset(subscription.getTopicName(), subscription.getName(), partitionId, offset);
+        verify(offsetsStorage).setSubscriptionOffset(Subscription.fromSubscriptionName(subscription), partitionOffset);
     }
 
     @Test

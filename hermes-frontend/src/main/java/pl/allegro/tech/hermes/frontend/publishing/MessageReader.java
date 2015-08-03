@@ -4,6 +4,7 @@ import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
@@ -13,7 +14,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 import static pl.allegro.tech.hermes.frontend.publishing.ContentLengthChecker.checkContentLength;
-import static pl.allegro.tech.hermes.frontend.publishing.MessageState.State.PARSED;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.PARSED;
 
 public class MessageReader implements ReadListener {
 

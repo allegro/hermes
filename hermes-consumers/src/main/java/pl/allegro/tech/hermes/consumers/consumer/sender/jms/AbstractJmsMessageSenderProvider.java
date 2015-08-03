@@ -6,7 +6,7 @@ import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
-import pl.allegro.tech.hermes.consumers.utils.UriUtils;
+import pl.allegro.tech.hermes.consumers.uri.UriUtils;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 import java.net.URI;

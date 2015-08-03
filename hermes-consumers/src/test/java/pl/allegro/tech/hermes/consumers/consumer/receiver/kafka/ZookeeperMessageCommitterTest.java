@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.zookeeper.ZookeeperMessageCommitter;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 
 import java.net.MalformedURLException;
@@ -19,12 +20,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 
-public class KafkaMessageCommitterTest {
+public class ZookeeperMessageCommitterTest {
 
     private static final TopicName SOME_TOPIC_NAME = new TopicName("g", "b");
     private static CuratorFramework curatorClient;
 
-    private KafkaMessageCommitter kafkaMessageCommitter = new KafkaMessageCommitter(curatorClient);
+    private ZookeeperMessageCommitter zookeeperMessageCommitter = new ZookeeperMessageCommitter(curatorClient);
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -39,7 +40,7 @@ public class KafkaMessageCommitterTest {
     @Test
     public void shouldCommitOffsetsIfNoEntryExists() throws Exception {
         //when
-        kafkaMessageCommitter.commitOffsets(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(15, 0));
+        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(15, 0));
 
         //then
         assertEquals(16, getOffsetForPath("/consumers/g_b_sub1/offsets/g.b/0"));
@@ -48,10 +49,10 @@ public class KafkaMessageCommitterTest {
     @Test
     public void shouldCommitOffsetsIfEntryExists() throws Exception {
         //given
-        kafkaMessageCommitter.commitOffsets(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(15, 0));
+        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(15, 0));
 
         //when
-        kafkaMessageCommitter.commitOffsets(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(17, 0));
+        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(17, 0));
 
         //then
         assertEquals(18, getOffsetForPath("/consumers/g_b_sub1/offsets/g.b/0"));
@@ -60,10 +61,10 @@ public class KafkaMessageCommitterTest {
     @Test
     public void shouldCommitCorrectOffset() throws Exception {
         //given
-        kafkaMessageCommitter.commitOffsets(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(15, 0));
+        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(15, 0));
 
         //when
-        kafkaMessageCommitter.commitOffsets(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(17, 1));
+        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(17, 1));
 
         //then
         assertEquals(16, getOffsetForPath("/consumers/g_b_sub1/offsets/g.b/0"));
@@ -73,10 +74,10 @@ public class KafkaMessageCommitterTest {
     @Test
     public void shouldRemoveOffset() throws Exception {
         //given
-        kafkaMessageCommitter.commitOffsets(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(15, 0));
+        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(15, 0));
 
         //when
-        kafkaMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", 0);
+        zookeeperMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", 0);
 
         //then
         assertNull(curatorClient.checkExists().forPath("/consumers/g_b_sub1/offsets/g.b/0"));

@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,4 +58,23 @@ public class EndpointAddressValidatorTest {
         // then
         assertThat(violations).isEmpty();
     }
+
+    @Test
+    public void shouldValidateUriTemplateWithInvalidHostname() {
+        // when
+        Set<ConstraintViolation<EndpointAddress>> violations = validator.validate(EndpointAddress.of("http://host_with_invalid_chars/{variable}"));
+
+        // then
+        assertThat(violations).hasSize(1);
+    }
+
+    @Test
+    public void shouldValidateUriWithInvalidHostname() {
+        // when
+        Set<ConstraintViolation<EndpointAddress>> violations = validator.validate(EndpointAddress.of("http://host_with_invalid_chars.com"));
+
+        // then
+        assertThat(violations).hasSize(1);
+    }
+
 }
