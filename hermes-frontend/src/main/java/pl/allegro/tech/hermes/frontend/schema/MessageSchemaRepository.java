@@ -58,7 +58,12 @@ public class MessageSchemaRepository<T> {
 
                         ListenableFutureTask<SchemaWithSource> task = ListenableFutureTask.create(() -> {
                             logger.info("Reloading schema for topic {}", topic.getQualifiedName());
-                            return createSchemaWithSource(newRawSource);
+                            try {
+                                return createSchemaWithSource(newRawSource);
+                            } catch (Exception e) {
+                                logger.warn("Could not compile schema for topic {}", topic.getQualifiedName(), e);
+                                throw e;
+                            }
                         });
                         reloadSchemaSourceExecutor.execute(task);
                         return task;
@@ -70,12 +75,16 @@ public class MessageSchemaRepository<T> {
         try {
             return schemaCache.get(topic).getSchema();
         } catch (Exception e) {
-            throw new CouldNotLoadTopicSchemaException("Could not load schema for topic " + topic.getQualifiedName(), e);
+            throw new CouldNotLoadSchemaException("Could not load schema for topic " + topic.getQualifiedName(), e);
         }
     }
 
     private SchemaWithSource createSchemaWithSource(String source) {
-        return new SchemaWithSource(source, schemaCompiler.compile(source));
+        try {
+            return new SchemaWithSource(source, schemaCompiler.compile(source));
+        } catch (Exception e) {
+            throw new CouldNotCompileSchemaException(e);
+        }
     }
 
     private class SchemaWithSource {

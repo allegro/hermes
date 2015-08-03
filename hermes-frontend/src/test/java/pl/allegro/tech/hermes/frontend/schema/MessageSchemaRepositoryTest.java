@@ -31,7 +31,20 @@ public class MessageSchemaRepositoryTest {
         catchException(schemaRepository).getSchema(topic);
 
         // then
-        assertThat((Exception) caughtException()).isInstanceOf(CouldNotLoadTopicSchemaException.class);
+        assertThat((Exception) caughtException()).isInstanceOf(CouldNotLoadSchemaException.class);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenFailedToCompileSchema() {
+        // given
+        MessageSchemaRepository<String> schemaRepository = messageSchemaRepository(topic -> null);
+        Topic topic = topic().build();
+
+        // when
+        catchException(schemaRepository).getSchema(topic);
+
+        // then
+        assertThat((Exception) caughtException()).isInstanceOf(CouldNotLoadSchemaException.class);
     }
 
     @Test
@@ -87,6 +100,23 @@ public class MessageSchemaRepositoryTest {
         Queue<String> sources = new LinkedList(Arrays.asList("s1"));
         FakeTicker ticker = new FakeTicker();
         MessageSchemaRepository<String> schemaRepository = messageSchemaRepository(topic -> sources.remove(), ticker);
+        Topic topic = topic().build();
+
+        // when
+        schemaRepository.getSchema(topic);
+        ticker.advance(Duration.ofMinutes(11));
+        String schema2 = schemaRepository.getSchema(topic);
+
+        // then
+        assertThat(schema2).isEqualTo("S1");
+    }
+
+    @Test
+    public void shouldReturnOldSchemaWhenFailedToCompileReloadedSchema() {
+        // given
+        Queue<String> sources = new LinkedList(Arrays.asList("s1", null));
+        FakeTicker ticker = new FakeTicker();
+        MessageSchemaRepository<String> schemaRepository = messageSchemaRepository(topic -> sources.poll(), ticker);
         Topic topic = topic().build();
 
         // when

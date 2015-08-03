@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.di;
 
+import com.github.fge.jsonschema.main.JsonSchema;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.avro.Schema;
 import org.glassfish.hk2.api.TypeLiteral;
@@ -13,19 +14,16 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.publishing.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.MessagePublisher;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
-import pl.allegro.tech.hermes.frontend.schema.AvroMessageSchemaRepositoryFactory;
-import pl.allegro.tech.hermes.frontend.schema.MessageSchemaRepository;
-import pl.allegro.tech.hermes.frontend.schema.MessageSchemaSourceRepository;
-import pl.allegro.tech.hermes.frontend.schema.TopicFieldMessageSchemaSourceRepository;
+import pl.allegro.tech.hermes.frontend.schema.*;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
-import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidatorFactory;
+import pl.allegro.tech.hermes.frontend.validator.*;
 import pl.allegro.tech.hermes.frontend.zk.ZkClientFactory;
 import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
 import pl.allegro.tech.hermes.tracker.frontend.PublishingMessageTracker;
 
 import javax.inject.Singleton;
+import java.util.List;
 
 public class FrontendBinder extends AbstractBinder {
 
@@ -41,13 +39,19 @@ public class FrontendBinder extends AbstractBinder {
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
         bindFactory(ZkClientFactory.class).to(ZkClient.class).in(Singleton.class);
         bindSingleton(PublishingMessageTracker.class);
-        bindSingleton(TopicMessageValidatorFactory.class);
         bindSingleton(NoOperationPublishingTracker.class);
         bindFactory(ZookeeperTopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
         bindSingleton(MessagePublisher.class);
         bind(TopicFieldMessageSchemaSourceRepository.class).to(MessageSchemaSourceRepository.class).in(Singleton.class);
         bindSingleton(MessageContentTypeEnforcer.class);
-        bindFactory(AvroMessageSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<MessageSchemaRepository<Schema>>() { });
+        bindFactory(AvroMessageSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<MessageSchemaRepository<Schema>>() {
+        });
+        bindFactory(JsonMessageSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<MessageSchemaRepository<JsonSchema>>() {
+        });
+        bindSingleton(JsonTopicMessageValidator.class);
+        bindSingleton(AvroTopicMessageValidator.class);
+        bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {
+        });
     }
 
     private <T> void bindSingleton(Class<T> clazz) {

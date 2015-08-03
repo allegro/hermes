@@ -21,6 +21,10 @@ public class AvroTopicMessageValidator implements TopicMessageValidator {
 
     @Override
     public void check(byte[] message, Topic topic) {
+        if (!topic.getContentType().equals(Topic.ContentType.AVRO)) {
+            return;
+        }
+
         Schema schema = messageSchemaRepository.getSchema(topic);
         BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(message, null);
         try {
