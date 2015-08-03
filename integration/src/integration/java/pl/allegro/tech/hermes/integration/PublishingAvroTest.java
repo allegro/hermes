@@ -87,4 +87,20 @@ public class PublishingAvroTest extends IntegrationTest {
         assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
     }
 
+    @Test
+    public void shouldGetBadRequestForJsonInvalidWIthAvroSchema() {
+        Topic topic = topic()
+                .withName("avro.invalidJson")
+                .withValidation(true)
+                .withMessageSchema(user.getSchema().toString())
+                .withContentType(AVRO).build();
+        operations.buildTopic(topic);
+
+        // when
+        Response response = publisher.publish("avro.invalidJson", "{\"name\":\"Bob\"");
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+    }
+
 }
