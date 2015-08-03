@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.publishing.avro;
 
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.common.message.converter.JsonToAvroConverter;
-import pl.allegro.tech.hermes.frontend.publishing.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 public class JsonToAvroMessageConverter {
     private final JsonToAvroConverter converter = new JsonToAvroConverter();

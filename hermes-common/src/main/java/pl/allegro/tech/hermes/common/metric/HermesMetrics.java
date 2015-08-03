@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.common.metric;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -257,5 +258,16 @@ public class HermesMetrics {
         return metricRegistry.counter(pathCompiler.compile(Counters.CONSUMER_SCHEDULED_EXECUTOR_OVERRUN, pathContext().withExecutorName(executorName).build()));
     }
 
+    public Histogram messageContentSizeHistogram(TopicName topic) {
+        return metricRegistry.histogram(pathCompiler.compile(Histograms.PRODUCER_MESSAGE_SIZE, pathContext()
+                .withGroup(escapeDots(topic.getGroupName()))
+                .withTopic(escapeDots(topic.getName()))
+                .build()));
+    }
+
+    public void reportContentSize(int size, TopicName topicName) {
+        messageContentSizeHistogram(topicName).update(size);
+        metricRegistry.histogram(pathCompiler.compile(Histograms.PRODUCER_GLOBAL_MESSAGE_SIZE)).update(size);
+    }
 }
 

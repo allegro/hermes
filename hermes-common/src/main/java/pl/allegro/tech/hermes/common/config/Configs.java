@@ -41,6 +41,10 @@ public enum Configs {
     KAFKA_PRODUCER_ACK_TIMEOUT("kafka.producer.ack.timeout", 1000),
     KAFKA_PRODUCER_BATCH_SIZE("kafka.producer.batch.size", 16 * 1024),
     KAFKA_PRODUCER_TCP_SEND_BUFFER("kafka.producer.tcp.send.buffer", 128 * 1024),
+    KAFKA_PRODUCER_MAX_REQUEST_SIZE("kafka.producer.max.request.size", 1024 * 1024),
+    KAFKA_PRODUCER_LINGER_MS("kafka.producer.linger.ms", 0),
+    KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS("kafka.producer.metrics.sample.window.ms", 30000),
+    KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION("kafka.producer.max.in.flight.requests.per.connection", 5),
 
     KAFKA_STREAM_COUNT("kafka.stream.count", 1),
 
@@ -84,7 +88,6 @@ public enum Configs {
     CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE("consumer.http.client.thread.pool.size", 30),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING("consumer.http.client.thread.pool.monitoring", false),
     CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION("consumer.http.client.max.connections.per.destination", 100),
-    CONSUMER_HTTP_CLIENT_CONNECTIONS_QUEUE("consumer.http.client.connections.per.queue", 1000000),
 
     CONSUMER_INFLIGHT_SIZE("consumer.inflight.size", 100),
     CONSUMER_RATE_LIMITER_SUPERVISOR_PERIOD("consumer.rate.limiter.supervisor.period", 30),

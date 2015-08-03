@@ -83,7 +83,6 @@ Property                                             Description                
 consumer.http.client.request.timeout                 how much time we wait for client response before timing out 1000ms
 consumer.http.client.thread.pool.size                size of thread pool for sender threads (global)             30
 consumer.http.client.max.connections.per.destination max connections per remote host                             100
-consumer.http.client.connections.per.queue           maximum size of request queue per remote host               1000000
 ==================================================== =========================================================== =================
 
 Kafka broker
