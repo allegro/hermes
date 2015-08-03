@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.schema;
 
+import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -11,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 
 import javax.inject.Inject;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -25,9 +24,14 @@ public class MessageSchemaRepository<T> {
 
     @Inject
     public MessageSchemaRepository(MessageSchemaSourceRepository schemaRepository, ExecutorService reloadSchemaSourceExecutor, MessageSchemaCompiler<T> schemaCompiler) {
+        this(schemaRepository, reloadSchemaSourceExecutor, Ticker.systemTicker(), schemaCompiler);
+    }
+
+    MessageSchemaRepository(MessageSchemaSourceRepository schemaRepository, ExecutorService reloadSchemaSourceExecutor, Ticker ticker, MessageSchemaCompiler<T> schemaCompiler) {
         this.schemaCompiler = schemaCompiler;
         this.schemaCache = CacheBuilder
                 .newBuilder()
+                .ticker(ticker)
                 .refreshAfterWrite(10, TimeUnit.MINUTES)
                 .expireAfterWrite(24, TimeUnit.HOURS)
                 .build(new CacheLoader<Topic, SchemaWithSource>() {
@@ -40,7 +44,14 @@ public class MessageSchemaRepository<T> {
 
                     @Override
                     public ListenableFuture<SchemaWithSource> reload(Topic topic, SchemaWithSource oldSchemaWithSource) throws Exception {
-                        String newRawSource = schemaRepository.getSchemaSource(topic);
+                        String newRawSource;
+                        try {
+                            newRawSource = schemaRepository.getSchemaSource(topic);
+                        } catch (Exception e) {
+                            logger.warn("Could not reload schema for topic {}", topic.getQualifiedName(), e);
+                            return Futures.immediateFuture(oldSchemaWithSource);
+                        }
+
                         if (oldSchemaWithSource.getRawSource().equals(newRawSource)) {
                             return Futures.immediateFuture(oldSchemaWithSource);
                         }
@@ -55,12 +66,11 @@ public class MessageSchemaRepository<T> {
                 });
     }
 
-    public Optional<T> getSchema(Topic topic) {
+    public T getSchema(Topic topic) {
         try {
-            return Optional.of(schemaCache.get(topic).getSchema());
-        } catch (ExecutionException e) {
-            logger.warn("Couldn't load schema for topic {}", topic.getQualifiedName(), e);
-            return Optional.empty();
+            return schemaCache.get(topic).getSchema();
+        } catch (Exception e) {
+            throw new CouldNotLoadTopicSchemaException("Could not load schema for topic " + topic.getQualifiedName(), e);
         }
     }
 

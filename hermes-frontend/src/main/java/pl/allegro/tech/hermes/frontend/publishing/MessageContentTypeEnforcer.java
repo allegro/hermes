@@ -22,7 +22,7 @@ public class MessageContentTypeEnforcer {
 
     public Message enforce(String messageContentType, Message message, Topic topic) {
         if (APPLICATION_JSON.equalsIgnoreCase(messageContentType) && AVRO == topic.getContentType()) {
-            return messageConverter.convert(message, messageSchemaRepository.getSchema(topic).get()); // FIXME will lose messages, make this resilient to schema repository failures
+            return messageConverter.convert(message, messageSchemaRepository.getSchema(topic)); // FIXME will lose messages, make this resilient to schema repository failures
         }
         return message;
     }

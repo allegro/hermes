@@ -21,14 +21,12 @@ public class AvroTopicMessageValidator implements TopicMessageValidator {
 
     @Override
     public void check(byte[] message, Topic topic) {
-        messageSchemaRepository.getSchema(topic).ifPresent(s -> {
-                    BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(message, null);
-                    try {
-                        new GenericDatumReader<>(s).read(null, binaryDecoder);
-                    } catch (Exception e) {
-                        throw new InvalidMessageException("Could not deserialize avro message with provided schema", ImmutableList.of(e.getMessage()));
-                    }
-                }
-        );
+        Schema schema = messageSchemaRepository.getSchema(topic);
+        BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(message, null);
+        try {
+            new GenericDatumReader<>(schema).read(null, binaryDecoder);
+        } catch (Exception e) {
+            throw new InvalidMessageException("Could not deserialize avro message with provided schema", ImmutableList.of(e.getMessage()));
+        }
     }
 }
