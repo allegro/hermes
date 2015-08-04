@@ -4,7 +4,7 @@ import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.avro.JsonToAvroMessageConverter;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
-import pl.allegro.tech.hermes.common.schema.MessageSchemaRepository;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
 
@@ -13,16 +13,16 @@ import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;
 
 public class MessageContentTypeEnforcer {
     private final JsonToAvroMessageConverter messageConverter = new JsonToAvroMessageConverter();
-    private final MessageSchemaRepository<Schema> messageSchemaRepository;
+    private final SchemaRepository<Schema> schemaRepository;
 
     @Inject
-    public MessageContentTypeEnforcer(MessageSchemaRepository<Schema> messageSchemaRepository) {
-        this.messageSchemaRepository = messageSchemaRepository;
+    public MessageContentTypeEnforcer(SchemaRepository<Schema> schemaRepository) {
+        this.schemaRepository = schemaRepository;
     }
 
     public Message enforce(String messageContentType, Message message, Topic topic) {
         if (APPLICATION_JSON.equalsIgnoreCase(messageContentType) && AVRO == topic.getContentType()) {
-            return messageConverter.convert(message, messageSchemaRepository.getSchema(topic)); // FIXME will lose messages, make this resilient to schema repository failures
+            return messageConverter.convert(message, schemaRepository.getSchema(topic)); // TODO make this resilient to schema repository failures
         }
         return message;
     }

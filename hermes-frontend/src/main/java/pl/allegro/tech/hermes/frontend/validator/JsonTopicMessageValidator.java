@@ -7,7 +7,7 @@ import com.github.fge.jsonschema.main.JsonSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.schema.MessageSchemaRepository;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -17,12 +17,12 @@ import java.util.List;
 public class JsonTopicMessageValidator implements TopicMessageValidator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonTopicMessageValidator.class);
-    private final MessageSchemaRepository<JsonSchema> messageSchemaRepository;
+    private final SchemaRepository<JsonSchema> schemaRepository;
     private final ObjectMapper objectMapper;
 
     @Inject
-    public JsonTopicMessageValidator(MessageSchemaRepository<JsonSchema> messageSchemaRepository, ObjectMapper objectMapper) {
-        this.messageSchemaRepository = messageSchemaRepository;
+    public JsonTopicMessageValidator(SchemaRepository<JsonSchema> schemaRepository, ObjectMapper objectMapper) {
+        this.schemaRepository = schemaRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -32,7 +32,7 @@ public class JsonTopicMessageValidator implements TopicMessageValidator {
             return;
         }
 
-        List<String> errors = validate(messageSchemaRepository.getSchema(topic), message);
+        List<String> errors = validate(schemaRepository.getSchema(topic), message);
 
         if (!errors.isEmpty()) {
             throw new InvalidMessageException("Message incompatible with JSON schema", errors);

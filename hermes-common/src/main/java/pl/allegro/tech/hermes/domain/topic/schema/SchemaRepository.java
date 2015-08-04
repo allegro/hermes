@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.common.schema;
+package pl.allegro.tech.hermes.domain.topic.schema;
 
 import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
@@ -15,19 +15,19 @@ import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MessageSchemaRepository<T> {
+public class SchemaRepository<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageSchemaRepository.class);
+    private static final Logger logger = LoggerFactory.getLogger(SchemaRepository.class);
 
     private final LoadingCache<Topic, SchemaWithSource> schemaCache;
-    private final MessageSchemaCompiler<T> schemaCompiler;
+    private final SchemaCompiler<T> schemaCompiler;
 
     @Inject
-    public MessageSchemaRepository(MessageSchemaSourceProvider schemaRepository, ExecutorService reloadSchemaSourceExecutor, MessageSchemaCompiler<T> schemaCompiler) {
+    public SchemaRepository(SchemaSourceProvider schemaRepository, ExecutorService reloadSchemaSourceExecutor, SchemaCompiler<T> schemaCompiler) {
         this(schemaRepository, reloadSchemaSourceExecutor, Ticker.systemTicker(), schemaCompiler);
     }
 
-    MessageSchemaRepository(MessageSchemaSourceProvider schemaSourceProvider, ExecutorService reloadSchemaSourceExecutor, Ticker ticker, MessageSchemaCompiler<T> schemaCompiler) {
+    SchemaRepository(SchemaSourceProvider schemaSourceProvider, ExecutorService reloadSchemaSourceExecutor, Ticker ticker, SchemaCompiler<T> schemaCompiler) {
         this.schemaCompiler = schemaCompiler;
         this.schemaCache = CacheBuilder
                 .newBuilder()

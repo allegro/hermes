@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.common.schema;
+package pl.allegro.tech.hermes.domain.topic.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
@@ -10,22 +10,22 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 
-public class JsonMessageSchemaRepositoryFactory implements Factory<MessageSchemaRepository<JsonSchema>> {
+public class JsonSchemaRepositoryFactory implements Factory<SchemaRepository<JsonSchema>> {
 
     private final ObjectMapper objectMapper;
-    private final MessageSchemaSourceProvider messageSchemaSourceProvider;
+    private final SchemaSourceProvider schemaSourceProvider;
     private JsonSchemaFactory jsonSchemaFactory;
 
     @Inject
-    public JsonMessageSchemaRepositoryFactory(ObjectMapper objectMapper, MessageSchemaSourceProvider messageSchemaSourceProvider) {
+    public JsonSchemaRepositoryFactory(ObjectMapper objectMapper, SchemaSourceProvider schemaSourceProvider) {
         this.objectMapper = objectMapper;
-        this.messageSchemaSourceProvider = messageSchemaSourceProvider;
+        this.schemaSourceProvider = schemaSourceProvider;
     }
 
     @Override
-    public MessageSchemaRepository<JsonSchema> provide() {
+    public SchemaRepository<JsonSchema> provide() {
         jsonSchemaFactory = JsonSchemaFactory.byDefault();
-        return new MessageSchemaRepository<>(messageSchemaSourceProvider, Executors.newFixedThreadPool(2),
+        return new SchemaRepository<>(schemaSourceProvider, Executors.newFixedThreadPool(2),
                 source -> {
                     try {
                         return jsonSchemaFactory.getJsonSchema(objectMapper.readTree(source));
@@ -36,7 +36,7 @@ public class JsonMessageSchemaRepositoryFactory implements Factory<MessageSchema
     }
 
     @Override
-    public void dispose(MessageSchemaRepository<JsonSchema> instance) {
+    public void dispose(SchemaRepository<JsonSchema> instance) {
 
     }
 }

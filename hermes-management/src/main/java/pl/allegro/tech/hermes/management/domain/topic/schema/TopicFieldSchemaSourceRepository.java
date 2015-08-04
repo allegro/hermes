@@ -4,18 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.schema.TopicFieldMessageSchemaSourceProvider;
+import pl.allegro.tech.hermes.domain.topic.schema.TopicFieldSchemaSourceProvider;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
 @Component
-public class TopicFieldMessageSchemaSourceRepository extends TopicFieldMessageSchemaSourceProvider implements MessageSchemaSourceRepository {
+public class TopicFieldSchemaSourceRepository extends TopicFieldSchemaSourceProvider implements SchemaSourceRepository {
 
     private final TopicService topicService;
 
     @Autowired
-    public TopicFieldMessageSchemaSourceRepository(@Lazy TopicService topicService) {
+    public TopicFieldSchemaSourceRepository(@Lazy TopicService topicService) {
         this.topicService = topicService;
     }
 

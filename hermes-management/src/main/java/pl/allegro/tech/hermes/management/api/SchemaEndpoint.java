@@ -4,7 +4,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.management.domain.topic.schema.MessageSchemaSourceRepository;
+import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceRepository;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
@@ -17,10 +17,10 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 public class SchemaEndpoint {
 
     private final TopicService topicService;
-    private final MessageSchemaSourceRepository schemaSourceRepository;
+    private final SchemaSourceRepository schemaSourceRepository;
 
     @Autowired
-    public SchemaEndpoint(TopicService topicService, MessageSchemaSourceRepository schemaSourceRepository) {
+    public SchemaEndpoint(TopicService topicService, SchemaSourceRepository schemaSourceRepository) {
         this.topicService = topicService;
         this.schemaSourceRepository = schemaSourceRepository;
     }

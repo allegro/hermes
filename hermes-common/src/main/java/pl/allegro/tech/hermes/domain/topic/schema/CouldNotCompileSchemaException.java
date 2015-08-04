@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.common.schema;
+package pl.allegro.tech.hermes.domain.topic.schema;
 
 public class CouldNotCompileSchemaException extends RuntimeException {
 

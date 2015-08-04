@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.management.domain.topic.schema;
 
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.schema.MessageSchemaSourceProvider;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaSourceProvider;
 
-public interface MessageSchemaSourceRepository extends MessageSchemaSourceProvider {
+public interface SchemaSourceRepository extends SchemaSourceProvider {
 
     void save(String schemaSource, Topic topic);
 

@@ -6,17 +6,17 @@ import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.schema.MessageSchemaRepository;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
 
 public class AvroTopicMessageValidator implements TopicMessageValidator {
 
-    private final MessageSchemaRepository<Schema> messageSchemaRepository;
+    private final SchemaRepository<Schema> schemaRepository;
 
     @Inject
-    public AvroTopicMessageValidator(MessageSchemaRepository<Schema> messageSchemaRepository) {
-        this.messageSchemaRepository = messageSchemaRepository;
+    public AvroTopicMessageValidator(SchemaRepository<Schema> schemaRepository) {
+        this.schemaRepository = schemaRepository;
     }
 
     @Override
@@ -25,7 +25,7 @@ public class AvroTopicMessageValidator implements TopicMessageValidator {
             return;
         }
 
-        Schema schema = messageSchemaRepository.getSchema(topic);
+        Schema schema = schemaRepository.getSchema(topic);
         BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(message, null);
         try {
             new GenericDatumReader<>(schema).read(null, binaryDecoder);

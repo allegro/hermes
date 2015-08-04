@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.common.schema;
+package pl.allegro.tech.hermes.domain.topic.schema;
 
 import com.google.common.base.Ticker;
 import org.junit.Test;
@@ -15,14 +15,14 @@ import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.assertj.core.api.StrictAssertions.assertThat;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
-public class MessageSchemaRepositoryTest {
+public class SchemaRepositoryTest {
 
-    private MessageSchemaCompiler<String> uppercaseCompiler = String::toUpperCase;
+    private SchemaCompiler<String> uppercaseCompiler = String::toUpperCase;
 
     @Test
     public void shouldThrowExceptionWhenFailedToLoadSchema() {
         // given
-        MessageSchemaRepository<String> schemaRepository = messageSchemaRepository(topic -> {
+        SchemaRepository<String> schemaRepository = schemaRepository(topic -> {
             throw new RuntimeException("Cannot load schema");
         });
         Topic topic = topic().build();
@@ -37,7 +37,7 @@ public class MessageSchemaRepositoryTest {
     @Test
     public void shouldThrowExceptionWhenFailedToCompileSchema() {
         // given
-        MessageSchemaRepository<String> schemaRepository = messageSchemaRepository(topic -> null);
+        SchemaRepository<String> schemaRepository = schemaRepository(topic -> null);
         Topic topic = topic().build();
 
         // when
@@ -50,7 +50,7 @@ public class MessageSchemaRepositoryTest {
     @Test
     public void shouldReturnCompiledSchema() {
         // given
-        MessageSchemaRepository<String> schemaRepository = messageSchemaRepository(Topic::getMessageSchema);
+        SchemaRepository<String> schemaRepository = schemaRepository(Topic::getMessageSchema);
         Topic topic = topic().withMessageSchema("abc").build();
 
         // when
@@ -65,7 +65,7 @@ public class MessageSchemaRepositoryTest {
         // given
         Queue<String> sources = new LinkedList(Arrays.asList("s1", "s2"));
         FakeTicker ticker = new FakeTicker();
-        MessageSchemaRepository<String> schemaRepository = messageSchemaRepository(topic -> sources.poll(), ticker);
+        SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.poll(), ticker);
         Topic topic = topic().build();
 
         // when
@@ -82,7 +82,7 @@ public class MessageSchemaRepositoryTest {
         // given
         Queue<String> sources = new LinkedList(Arrays.asList("s1", "s2"));
         FakeTicker ticker = new FakeTicker();
-        MessageSchemaRepository<String> schemaRepository = messageSchemaRepository(topic -> sources.poll(), ticker);
+        SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.poll(), ticker);
         Topic topic = topic().build();
 
         // when
@@ -99,7 +99,7 @@ public class MessageSchemaRepositoryTest {
         // given
         Queue<String> sources = new LinkedList(Arrays.asList("s1"));
         FakeTicker ticker = new FakeTicker();
-        MessageSchemaRepository<String> schemaRepository = messageSchemaRepository(topic -> sources.remove(), ticker);
+        SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.remove(), ticker);
         Topic topic = topic().build();
 
         // when
@@ -116,7 +116,7 @@ public class MessageSchemaRepositoryTest {
         // given
         Queue<String> sources = new LinkedList(Arrays.asList("s1", null));
         FakeTicker ticker = new FakeTicker();
-        MessageSchemaRepository<String> schemaRepository = messageSchemaRepository(topic -> sources.poll(), ticker);
+        SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.poll(), ticker);
         Topic topic = topic().build();
 
         // when
@@ -128,12 +128,12 @@ public class MessageSchemaRepositoryTest {
         assertThat(schema2).isEqualTo("S1");
     }
 
-    private MessageSchemaRepository<String> messageSchemaRepository(MessageSchemaSourceProvider sourceRepository) {
-        return new MessageSchemaRepository<>(sourceRepository, Executors.newSingleThreadExecutor(), uppercaseCompiler);
+    private SchemaRepository<String> schemaRepository(SchemaSourceProvider sourceRepository) {
+        return new SchemaRepository<>(sourceRepository, Executors.newSingleThreadExecutor(), uppercaseCompiler);
     }
 
-    private MessageSchemaRepository<String> messageSchemaRepository(MessageSchemaSourceProvider sourceRepository, Ticker ticker) {
-        return new MessageSchemaRepository<>(sourceRepository, Executors.newSingleThreadExecutor(), ticker, uppercaseCompiler);
+    private SchemaRepository<String> schemaRepository(SchemaSourceProvider sourceRepository, Ticker ticker) {
+        return new SchemaRepository<>(sourceRepository, Executors.newSingleThreadExecutor(), ticker, uppercaseCompiler);
     }
 
     private static class FakeTicker extends Ticker {
