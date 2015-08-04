@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.topic.schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.TopicFieldSchemaSourceProvider;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -20,8 +21,8 @@ public class TopicFieldSchemaSourceRepository extends TopicFieldSchemaSourceProv
     }
 
     @Override
-    public void save(String schemaSource, Topic topic) {
-        topicService.updateTopic(topic().applyPatch(topic).withMessageSchema(schemaSource).build());
+    public void save(SchemaSource schemaSource, Topic topic) {
+        topicService.updateTopic(topic().applyPatch(topic).withMessageSchema(schemaSource.value()).build());
     }
 
     @Override

@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.domain.topic.schema;
 
 import com.google.common.base.Ticker;
 import org.junit.Test;
+import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.time.Duration;
@@ -17,7 +18,7 @@ import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
 public class SchemaRepositoryTest {
 
-    private SchemaCompiler<String> uppercaseCompiler = String::toUpperCase;
+    private SchemaCompiler<String> uppercaseCompiler = x -> x.value().toUpperCase();
 
     @Test
     public void shouldThrowExceptionWhenFailedToLoadSchema() {
@@ -50,7 +51,7 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldReturnCompiledSchema() {
         // given
-        SchemaRepository<String> schemaRepository = schemaRepository(Topic::getMessageSchema);
+        SchemaRepository<String> schemaRepository = schemaRepository(new TopicFieldSchemaSourceProvider());
         Topic topic = topic().withMessageSchema("abc").build();
 
         // when
@@ -63,7 +64,7 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldCacheSchema() {
         // given
-        Queue<String> sources = new LinkedList(Arrays.asList("s1", "s2"));
+        Queue<SchemaSource> sources = new LinkedList(Arrays.asList(SchemaSource.valueOf("s1"), SchemaSource.valueOf("s2")));
         FakeTicker ticker = new FakeTicker();
         SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.poll(), ticker);
         Topic topic = topic().build();
@@ -80,7 +81,7 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldReloadSchemaAfterExpiration() {
         // given
-        Queue<String> sources = new LinkedList(Arrays.asList("s1", "s2"));
+        Queue<SchemaSource> sources = new LinkedList(Arrays.asList(SchemaSource.valueOf("s1"), SchemaSource.valueOf("s2")));
         FakeTicker ticker = new FakeTicker();
         SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.poll(), ticker);
         Topic topic = topic().build();
@@ -97,7 +98,7 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldReturnOldSchemaWhenSchemaReloadingFailed() {
         // given
-        Queue<String> sources = new LinkedList(Arrays.asList("s1"));
+        Queue<SchemaSource> sources = new LinkedList(Arrays.asList(SchemaSource.valueOf("s1")));
         FakeTicker ticker = new FakeTicker();
         SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.remove(), ticker);
         Topic topic = topic().build();
@@ -114,7 +115,7 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldReturnOldSchemaWhenFailedToCompileReloadedSchema() {
         // given
-        Queue<String> sources = new LinkedList(Arrays.asList("s1", null));
+        Queue<SchemaSource> sources = new LinkedList(Arrays.asList(SchemaSource.valueOf("s1"), null));
         FakeTicker ticker = new FakeTicker();
         SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.poll(), ticker);
         Topic topic = topic().build();

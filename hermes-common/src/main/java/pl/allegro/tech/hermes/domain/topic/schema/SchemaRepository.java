@@ -9,6 +9,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 
 import javax.inject.Inject;
@@ -37,14 +38,14 @@ public class SchemaRepository<T> {
                 .build(new CacheLoader<Topic, SchemaWithSource>() {
                     @Override
                     public SchemaWithSource load(Topic topic) throws Exception {
-                        String newRawSource = schemaSourceProvider.get(topic);
+                        SchemaSource newRawSource = schemaSourceProvider.get(topic);
                         logger.info("Loading schema for topic {}", topic.getQualifiedName());
                         return createSchemaWithSource(newRawSource);
                     }
 
                     @Override
                     public ListenableFuture<SchemaWithSource> reload(Topic topic, SchemaWithSource oldSchemaWithSource) throws Exception {
-                        String newRawSource;
+                        SchemaSource newRawSource;
                         try {
                             newRawSource = schemaSourceProvider.get(topic);
                         } catch (Exception e) {
@@ -52,7 +53,7 @@ public class SchemaRepository<T> {
                             return Futures.immediateFuture(oldSchemaWithSource);
                         }
 
-                        if (oldSchemaWithSource.getRawSource().equals(newRawSource)) {
+                        if (oldSchemaWithSource.getSource().equals(newRawSource)) {
                             return Futures.immediateFuture(oldSchemaWithSource);
                         }
 
@@ -79,7 +80,7 @@ public class SchemaRepository<T> {
         }
     }
 
-    private SchemaWithSource createSchemaWithSource(String source) {
+    private SchemaWithSource createSchemaWithSource(SchemaSource source) {
         try {
             return new SchemaWithSource(source, schemaCompiler.compile(source));
         } catch (Exception e) {
@@ -89,16 +90,16 @@ public class SchemaRepository<T> {
 
     private class SchemaWithSource {
 
-        private final String rawSource;
+        private final SchemaSource source;
         private final T schema;
 
-        private SchemaWithSource(String rawSource, T schema) {
-            this.rawSource = rawSource;
+        private SchemaWithSource(SchemaSource source, T schema) {
+            this.source = source;
             this.schema = schema;
         }
 
-        public String getRawSource() {
-            return rawSource;
+        public SchemaSource getSource() {
+            return source;
         }
 
         public T getSchema() {

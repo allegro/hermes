@@ -17,7 +17,7 @@ public class AvroSchemaRepositoryFactory implements Factory<SchemaRepository<Sch
 
     @Override
     public SchemaRepository<Schema> provide() {
-        return new SchemaRepository<>(schemaSourceProvider, Executors.newFixedThreadPool(2), source -> new Schema.Parser().parse(source));
+        return new SchemaRepository<>(schemaSourceProvider, Executors.newFixedThreadPool(2), source -> new Schema.Parser().parse(source.value()));
     }
 
     @Override

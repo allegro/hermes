@@ -28,7 +28,7 @@ public class JsonSchemaRepositoryFactory implements Factory<SchemaRepository<Jso
         return new SchemaRepository<>(schemaSourceProvider, Executors.newFixedThreadPool(2),
                 source -> {
                     try {
-                        return jsonSchemaFactory.getJsonSchema(objectMapper.readTree(source));
+                        return jsonSchemaFactory.getJsonSchema(objectMapper.readTree(source.value()));
                     } catch (IOException | ProcessingException e) {
                         throw new RuntimeException(e);
                     }

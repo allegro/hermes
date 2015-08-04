@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
+import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.converter.AvroToJsonConverter;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
@@ -31,7 +32,7 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
         return new String(bytes, Charset.forName("UTF-8"));
     }
 
-    private byte[] convertAvroToJson(String schema, byte[] bytes) {
+    private byte[] convertAvroToJson(SchemaSource schema, byte[] bytes) {
         return avroToJsonConverter.convert(bytes, avroMessageContentWrapper.getWrappedSchema(schema));
     }
 }

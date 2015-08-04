@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.api;
 
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceRepository;
@@ -28,7 +29,7 @@ public class SchemaEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Get schema", response = String.class, httpMethod = HttpMethod.GET)
-    public String get(@PathParam("topicName") String qualifiedTopicName) {
+    public SchemaSource get(@PathParam("topicName") String qualifiedTopicName) {
         return schemaSourceRepository.get(topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName)));
     }
 
@@ -36,7 +37,7 @@ public class SchemaEndpoint {
     @Consumes(APPLICATION_JSON)
     @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Save schema", httpMethod = HttpMethod.POST)
-    public Response save(@PathParam("topicName") String qualifiedTopicName, String schema) {
+    public Response save(@PathParam("topicName") String qualifiedTopicName, SchemaSource schema) {
         schemaSourceRepository.save(schema, topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName)));
         return responseStatus(Response.Status.CREATED);
     }
