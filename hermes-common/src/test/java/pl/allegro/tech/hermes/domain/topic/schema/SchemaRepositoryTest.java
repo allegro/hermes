@@ -1,13 +1,16 @@
 package pl.allegro.tech.hermes.domain.topic.schema;
 
 import com.google.common.base.Ticker;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.Executors;
 
@@ -64,9 +67,9 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldCacheSchema() {
         // given
-        Queue<SchemaSource> sources = new LinkedList(Arrays.asList(SchemaSource.valueOf("s1"), SchemaSource.valueOf("s2")));
+        Queue<SchemaSource> sources = new LinkedList<>(Arrays.asList(SchemaSource.valueOf("s1"), SchemaSource.valueOf("s2")));
         FakeTicker ticker = new FakeTicker();
-        SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.poll(), ticker);
+        SchemaRepository<String> schemaRepository = schemaRepository(topic -> Optional.ofNullable(sources.poll()), ticker);
         Topic topic = topic().build();
 
         // when
@@ -81,9 +84,9 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldReloadSchemaAfterExpiration() {
         // given
-        Queue<SchemaSource> sources = new LinkedList(Arrays.asList(SchemaSource.valueOf("s1"), SchemaSource.valueOf("s2")));
+        Queue<SchemaSource> sources = new LinkedList<>(Arrays.asList(SchemaSource.valueOf("s1"), SchemaSource.valueOf("s2")));
         FakeTicker ticker = new FakeTicker();
-        SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.poll(), ticker);
+        SchemaRepository<String> schemaRepository = schemaRepository(topic -> Optional.ofNullable(sources.poll()), ticker);
         Topic topic = topic().build();
 
         // when
@@ -98,9 +101,9 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldReturnOldSchemaWhenSchemaReloadingFailed() {
         // given
-        Queue<SchemaSource> sources = new LinkedList(Arrays.asList(SchemaSource.valueOf("s1")));
+        Queue<SchemaSource> sources = new LinkedList<>(Arrays.asList(SchemaSource.valueOf("s1")));
         FakeTicker ticker = new FakeTicker();
-        SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.remove(), ticker);
+        SchemaRepository<String> schemaRepository = schemaRepository(topic -> Optional.ofNullable(sources.remove()), ticker);
         Topic topic = topic().build();
 
         // when
@@ -115,9 +118,9 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldReturnOldSchemaWhenFailedToCompileReloadedSchema() {
         // given
-        Queue<SchemaSource> sources = new LinkedList(Arrays.asList(SchemaSource.valueOf("s1"), null));
+        Queue<SchemaSource> sources = new LinkedList<>(Arrays.asList(SchemaSource.valueOf("s1"), null));
         FakeTicker ticker = new FakeTicker();
-        SchemaRepository<String> schemaRepository = schemaRepository(topic -> sources.poll(), ticker);
+        SchemaRepository<String> schemaRepository = schemaRepository(topic -> Optional.ofNullable(sources.poll()), ticker);
         Topic topic = topic().build();
 
         // when
@@ -130,11 +133,11 @@ public class SchemaRepositoryTest {
     }
 
     private SchemaRepository<String> schemaRepository(SchemaSourceProvider sourceRepository) {
-        return new SchemaRepository<>(sourceRepository, Executors.newSingleThreadExecutor(), uppercaseCompiler);
+        return new SchemaRepository<>(new ConfigFactory(), sourceRepository, MoreExecutors.sameThreadExecutor(), uppercaseCompiler);
     }
 
     private SchemaRepository<String> schemaRepository(SchemaSourceProvider sourceRepository, Ticker ticker) {
-        return new SchemaRepository<>(sourceRepository, Executors.newSingleThreadExecutor(), ticker, uppercaseCompiler);
+        return new SchemaRepository<>(new ConfigFactory(), sourceRepository, MoreExecutors.sameThreadExecutor(), ticker, uppercaseCompiler);
     }
 
     private static class FakeTicker extends Ticker {

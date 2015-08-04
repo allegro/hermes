@@ -1,26 +1,22 @@
 package pl.allegro.tech.hermes.api;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.emptyToNull;
 
 public final class SchemaSource {
 
     private final String value;
 
-    @JsonCreator
-    private SchemaSource(@JsonProperty("schema") String value) {
-        this.value = checkNotNull(value);
+    private SchemaSource(String value) {
+        this.value = checkNotNull(emptyToNull(value));
     }
 
     public static SchemaSource valueOf(String schemaSource) {
         return new SchemaSource(schemaSource);
     }
 
-    @JsonProperty("schema")
     public String value() {
         return value;
     }

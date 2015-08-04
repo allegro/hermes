@@ -13,7 +13,6 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
     private final KafkaRawMessageReader kafkaRawMessageReader;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
     private final SchemaSourceProvider schemaSourceProvider;
-    private final AvroToJsonConverter avroToJsonConverter = new AvroToJsonConverter();
 
     public KafkaSingleMessageReader(KafkaRawMessageReader kafkaRawMessageReader,
                                     AvroMessageContentWrapper avroMessageContentWrapper,
@@ -27,12 +26,12 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
     public String readMessage(Topic topic, int partition, long offset) {
         byte[] bytes = kafkaRawMessageReader.readMessage(topic.getQualifiedName(), partition, offset);
         if (topic.getContentType() == Topic.ContentType.AVRO) {
-            bytes = convertAvroToJson(schemaSourceProvider.get(topic), bytes);
+            bytes = convertAvroToJson(schemaSourceProvider.get(topic).get(), bytes);
         }
         return new String(bytes, Charset.forName("UTF-8"));
     }
 
     private byte[] convertAvroToJson(SchemaSource schema, byte[] bytes) {
-        return avroToJsonConverter.convert(bytes, avroMessageContentWrapper.getWrappedSchema(schema));
+        return AvroToJsonConverter.convert(bytes, avroMessageContentWrapper.getWrappedSchema(schema));
     }
 }

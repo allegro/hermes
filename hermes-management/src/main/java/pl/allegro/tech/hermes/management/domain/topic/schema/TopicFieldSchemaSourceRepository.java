@@ -22,12 +22,16 @@ public class TopicFieldSchemaSourceRepository extends TopicFieldSchemaSourceProv
 
     @Override
     public void save(SchemaSource schemaSource, Topic topic) {
-        topicService.updateTopic(topic().applyPatch(topic).withMessageSchema(schemaSource.value()).build());
+        saveValue(schemaSource.value(), topic);
     }
 
     @Override
     public void delete(Topic topic) {
-        throw new UnsupportedOperationException("Not supported in this temporary implementation");
+        saveValue("", topic);
+    }
+
+    private void saveValue(String rawSchema, Topic topic) {
+        topicService.updateTopic(topic().applyPatch(topic).withMessageSchema(rawSchema).build());
     }
 
 }

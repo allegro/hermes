@@ -186,7 +186,7 @@ public class Topic {
             return this;
         }
 
-        public Builder  withMessageSchema(String messageSchema) {
+        public Builder withMessageSchema(String messageSchema) {
             topic.messageSchema = messageSchema;
             return this;
         }

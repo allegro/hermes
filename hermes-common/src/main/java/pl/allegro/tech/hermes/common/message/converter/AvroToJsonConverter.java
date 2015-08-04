@@ -12,9 +12,9 @@ import org.apache.avro.io.JsonEncoder;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class AvroToJsonConverter {
+public interface AvroToJsonConverter {
 
-    public byte[] convert(byte[] data, Schema schema) {
+    static byte[] convert(byte[] data, Schema schema) {
         try {
             BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(data, null);
             GenericRecord record = new GenericDatumReader<GenericRecord>(schema).read(null, binaryDecoder);
@@ -25,7 +25,7 @@ public class AvroToJsonConverter {
         }
     }
 
-    private byte[] decodeRecordToJson(GenericRecord record, Schema schema) throws IOException {
+    static byte[] decodeRecordToJson(GenericRecord record, Schema schema) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         JsonEncoder jsonEncoder = EncoderFactory.get().jsonEncoder(schema, outputStream);

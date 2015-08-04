@@ -5,19 +5,15 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
-import org.apache.avro.io.BinaryEncoder;
-import org.apache.avro.io.DatumReader;
-import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.io.EncoderFactory;
-import org.apache.avro.io.JsonDecoder;
+import org.apache.avro.io.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class JsonToAvroConverter {
+public interface JsonToAvroConverter {
 
-    public byte[] convert(byte[] data, Schema schema) {
+    static byte[] convert(byte[] data, Schema schema) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(outputStream, null);
@@ -30,7 +26,7 @@ public class JsonToAvroConverter {
         }
     }
 
-    private GenericData.Record readRecord(byte[] data, Schema schema) throws IOException {
+    static GenericData.Record readRecord(byte[] data, Schema schema) throws IOException {
         JsonDecoder decoder = DecoderFactory.get().jsonDecoder(schema, new ByteArrayInputStream(data));
         DatumReader<GenericData.Record> reader = new GenericDatumReader<>(schema);
         return reader.read(null, decoder);

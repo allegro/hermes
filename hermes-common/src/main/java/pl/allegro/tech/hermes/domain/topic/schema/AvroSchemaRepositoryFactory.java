@@ -1,23 +1,25 @@
 package pl.allegro.tech.hermes.domain.topic.schema;
 
 import org.apache.avro.Schema;
-import org.glassfish.hk2.api.Factory;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 
 import javax.inject.Inject;
-import java.util.concurrent.Executors;
 
-public class AvroSchemaRepositoryFactory implements Factory<SchemaRepository<Schema>> {
+public class AvroSchemaRepositoryFactory extends AbstractSchemaRepositoryFactory<Schema> {
 
+    private final ConfigFactory configFactory;
     private final SchemaSourceProvider schemaSourceProvider;
 
     @Inject
-    public AvroSchemaRepositoryFactory(SchemaSourceProvider schemaSourceProvider) {
+    public AvroSchemaRepositoryFactory(ConfigFactory configFactory, SchemaSourceProvider schemaSourceProvider) {
+        this.configFactory = configFactory;
         this.schemaSourceProvider = schemaSourceProvider;
     }
 
     @Override
     public SchemaRepository<Schema> provide() {
-        return new SchemaRepository<>(schemaSourceProvider, Executors.newFixedThreadPool(2), source -> new Schema.Parser().parse(source.value()));
+        return new SchemaRepository<>(configFactory, schemaSourceProvider, createSchemaReloadExecutorService(configFactory, "avro"), source -> new Schema.Parser().parse(source.value()));
     }
 
     @Override

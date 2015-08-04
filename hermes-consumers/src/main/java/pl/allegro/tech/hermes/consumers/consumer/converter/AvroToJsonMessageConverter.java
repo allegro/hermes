@@ -11,18 +11,16 @@ import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
 public class AvroToJsonMessageConverter implements MessageConverter {
 
     private final SchemaRepository<Schema> schemaRepository;
-    private final AvroToJsonConverter avroToJsonConverter;
 
-    public AvroToJsonMessageConverter(SchemaRepository<Schema> schemaRepository, AvroToJsonConverter avroToJsonConverter) {
+    public AvroToJsonMessageConverter(SchemaRepository<Schema> schemaRepository) {
         this.schemaRepository = schemaRepository;
-        this.avroToJsonConverter = avroToJsonConverter;
     }
 
     @Override
     public Message convert(Message message, Topic topic) {
         return message()
                 .fromMessage(message)
-                .withData(avroToJsonConverter.convert(message.getData(), schemaRepository.getSchema(topic)))
+                .withData(AvroToJsonConverter.convert(message.getData(), schemaRepository.getSchema(topic)))
                 .build();
     }
 
