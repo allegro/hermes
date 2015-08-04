@@ -2,10 +2,10 @@ package pl.allegro.tech.hermes.common.schema;
 
 import pl.allegro.tech.hermes.api.Topic;
 
-public class TopicFieldMessageSchemaSourceRepository implements MessageSchemaSourceRepository {
+public class TopicFieldMessageSchemaSourceProvider implements MessageSchemaSourceProvider {
 
     @Override
-    public String getSchemaSource(Topic topic) {
+    public String get(Topic topic) {
         return topic.getMessageSchema();
     }
 

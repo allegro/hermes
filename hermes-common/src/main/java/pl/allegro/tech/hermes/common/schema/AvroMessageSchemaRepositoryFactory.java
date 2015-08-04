@@ -8,16 +8,16 @@ import java.util.concurrent.Executors;
 
 public class AvroMessageSchemaRepositoryFactory implements Factory<MessageSchemaRepository<Schema>> {
 
-    private final MessageSchemaSourceRepository messageSchemaSourceRepository;
+    private final MessageSchemaSourceProvider messageSchemaSourceProvider;
 
     @Inject
-    public AvroMessageSchemaRepositoryFactory(MessageSchemaSourceRepository messageSchemaSourceRepository) {
-        this.messageSchemaSourceRepository = messageSchemaSourceRepository;
+    public AvroMessageSchemaRepositoryFactory(MessageSchemaSourceProvider messageSchemaSourceProvider) {
+        this.messageSchemaSourceProvider = messageSchemaSourceProvider;
     }
 
     @Override
     public MessageSchemaRepository<Schema> provide() {
-        return new MessageSchemaRepository<>(messageSchemaSourceRepository, Executors.newFixedThreadPool(2), source -> new Schema.Parser().parse(source));
+        return new MessageSchemaRepository<>(messageSchemaSourceProvider, Executors.newFixedThreadPool(2), source -> new Schema.Parser().parse(source));
     }
 
     @Override

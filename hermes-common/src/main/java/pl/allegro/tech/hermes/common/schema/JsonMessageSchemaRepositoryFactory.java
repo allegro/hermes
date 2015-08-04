@@ -13,19 +13,19 @@ import java.util.concurrent.Executors;
 public class JsonMessageSchemaRepositoryFactory implements Factory<MessageSchemaRepository<JsonSchema>> {
 
     private final ObjectMapper objectMapper;
-    private final MessageSchemaSourceRepository messageSchemaSourceRepository;
+    private final MessageSchemaSourceProvider messageSchemaSourceProvider;
     private JsonSchemaFactory jsonSchemaFactory;
 
     @Inject
-    public JsonMessageSchemaRepositoryFactory(ObjectMapper objectMapper, MessageSchemaSourceRepository messageSchemaSourceRepository) {
+    public JsonMessageSchemaRepositoryFactory(ObjectMapper objectMapper, MessageSchemaSourceProvider messageSchemaSourceProvider) {
         this.objectMapper = objectMapper;
-        this.messageSchemaSourceRepository = messageSchemaSourceRepository;
+        this.messageSchemaSourceProvider = messageSchemaSourceProvider;
     }
 
     @Override
     public MessageSchemaRepository<JsonSchema> provide() {
         jsonSchemaFactory = JsonSchemaFactory.byDefault();
-        return new MessageSchemaRepository<>(messageSchemaSourceRepository, Executors.newFixedThreadPool(2),
+        return new MessageSchemaRepository<>(messageSchemaSourceProvider, Executors.newFixedThreadPool(2),
                 source -> {
                     try {
                         return jsonSchemaFactory.getJsonSchema(objectMapper.readTree(source));

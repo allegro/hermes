@@ -23,11 +23,11 @@ public class MessageSchemaRepository<T> {
     private final MessageSchemaCompiler<T> schemaCompiler;
 
     @Inject
-    public MessageSchemaRepository(MessageSchemaSourceRepository schemaRepository, ExecutorService reloadSchemaSourceExecutor, MessageSchemaCompiler<T> schemaCompiler) {
+    public MessageSchemaRepository(MessageSchemaSourceProvider schemaRepository, ExecutorService reloadSchemaSourceExecutor, MessageSchemaCompiler<T> schemaCompiler) {
         this(schemaRepository, reloadSchemaSourceExecutor, Ticker.systemTicker(), schemaCompiler);
     }
 
-    MessageSchemaRepository(MessageSchemaSourceRepository schemaRepository, ExecutorService reloadSchemaSourceExecutor, Ticker ticker, MessageSchemaCompiler<T> schemaCompiler) {
+    MessageSchemaRepository(MessageSchemaSourceProvider schemaSourceProvider, ExecutorService reloadSchemaSourceExecutor, Ticker ticker, MessageSchemaCompiler<T> schemaCompiler) {
         this.schemaCompiler = schemaCompiler;
         this.schemaCache = CacheBuilder
                 .newBuilder()
@@ -37,7 +37,7 @@ public class MessageSchemaRepository<T> {
                 .build(new CacheLoader<Topic, SchemaWithSource>() {
                     @Override
                     public SchemaWithSource load(Topic topic) throws Exception {
-                        String newRawSource = schemaRepository.getSchemaSource(topic);
+                        String newRawSource = schemaSourceProvider.get(topic);
                         logger.info("Loading schema for topic {}", topic.getQualifiedName());
                         return createSchemaWithSource(newRawSource);
                     }
@@ -46,7 +46,7 @@ public class MessageSchemaRepository<T> {
                     public ListenableFuture<SchemaWithSource> reload(Topic topic, SchemaWithSource oldSchemaWithSource) throws Exception {
                         String newRawSource;
                         try {
-                            newRawSource = schemaRepository.getSchemaSource(topic);
+                            newRawSource = schemaSourceProvider.get(topic);
                         } catch (Exception e) {
                             logger.warn("Could not reload schema for topic {}", topic.getQualifiedName(), e);
                             return Futures.immediateFuture(oldSchemaWithSource);

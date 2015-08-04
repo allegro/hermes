@@ -17,8 +17,7 @@ import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPoolConfig;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.common.schema.MessageSchemaSourceRepository;
-import pl.allegro.tech.hermes.common.schema.TopicFieldMessageSchemaSourceRepository;
+import pl.allegro.tech.hermes.common.schema.MessageSchemaSourceProvider;
 import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
@@ -66,12 +65,7 @@ public class KafkaConfiguration {
     private final List<CuratorFramework> curators = new ArrayList<>();
 
     @Bean
-    MessageSchemaSourceRepository schemaSourceRepository() {
-        return new TopicFieldMessageSchemaSourceRepository();
-    }
-
-    @Bean
-    MultiDCAwareService multiDCAwareService(MessageSchemaSourceRepository schemaSourceRepository) {
+    MultiDCAwareService multiDCAwareService(MessageSchemaSourceProvider schemaSourceRepository) {
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties));

@@ -31,7 +31,7 @@ public class CommonBinder extends AbstractBinder {
         bind(SystemClock.class).to(Clock.class).in(Singleton.class);
         bind(ZookeeperBrokerStorage.class).to(BrokerStorage.class).in(Singleton.class);
         bind(InetAddressHostnameResolver.class).in(Singleton.class).to(HostnameResolver.class);
-        bind(TopicFieldMessageSchemaSourceRepository.class).to(MessageSchemaSourceRepository.class).in(Singleton.class);
+        bind(TopicFieldMessageSchemaSourceProvider.class).to(MessageSchemaSourceProvider.class).in(Singleton.class);
         bindFactory(JsonMessageSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<MessageSchemaRepository<JsonSchema>>() {});
         bindFactory(AvroMessageSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<MessageSchemaRepository<Schema>>() {});
 

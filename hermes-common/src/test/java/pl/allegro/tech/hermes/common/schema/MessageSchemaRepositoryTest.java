@@ -128,11 +128,11 @@ public class MessageSchemaRepositoryTest {
         assertThat(schema2).isEqualTo("S1");
     }
 
-    private MessageSchemaRepository<String> messageSchemaRepository(MessageSchemaSourceRepository sourceRepository) {
+    private MessageSchemaRepository<String> messageSchemaRepository(MessageSchemaSourceProvider sourceRepository) {
         return new MessageSchemaRepository<>(sourceRepository, Executors.newSingleThreadExecutor(), uppercaseCompiler);
     }
 
-    private MessageSchemaRepository<String> messageSchemaRepository(MessageSchemaSourceRepository sourceRepository, Ticker ticker) {
+    private MessageSchemaRepository<String> messageSchemaRepository(MessageSchemaSourceProvider sourceRepository, Ticker ticker) {
         return new MessageSchemaRepository<>(sourceRepository, Executors.newSingleThreadExecutor(), ticker, uppercaseCompiler);
     }
 
