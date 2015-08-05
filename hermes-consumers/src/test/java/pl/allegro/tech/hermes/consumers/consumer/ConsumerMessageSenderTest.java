@@ -8,8 +8,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.Meters;
+import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
@@ -248,10 +248,33 @@ public class ConsumerMessageSenderTest {
         verifyErrorHandlerHandleFailed(message, subscription, 1, 3000);
     }
 
+    @Test
+    public void shouldBackoffRetriesWhenEndpointFails() throws InterruptedException {
+        // given
+        int executionTime = 100;
+        int senderBackoffTime = 50;
+
+        sender = consumerMessageSender(subscription, senderBackoffTime);
+        Message message = message();
+        doReturn(failure(500)).when(messageSender).send(message);
+
+        //when
+        sender.sendMessage(message);
+
+        //then
+        Thread.sleep(executionTime);
+        verifyErrorHandlerHandleFailed(message, subscription, 1 + executionTime / senderBackoffTime);
+    }
+
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
+        return consumerMessageSender(subscription, 1);
+    }
+
+    private ConsumerMessageSender consumerMessageSender(Subscription subscription, int senderBackoffTime) {
         return new ConsumerMessageSender(subscription, messageSender, successHandler, errorHandler, rateLimiter,
                 Executors.newSingleThreadExecutor(), inflightSemaphore, hermesMetrics, ASYNC_TIMEOUT_MS,
-                new FutureAsyncTimeout<>(MessageSendingResult::loggedFailResult, Executors.newSingleThreadScheduledExecutor()));
+                new FutureAsyncTimeout<>(MessageSendingResult::loggedFailResult, Executors.newSingleThreadScheduledExecutor()),
+                senderBackoffTime);
     }
 
     private void verifyRateLimiterSuccessfulSendingCountedTimes(int count) {

@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.consumers.consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
@@ -16,7 +16,9 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
@@ -24,7 +26,7 @@ import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingRes
 public class ConsumerMessageSender {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerMessageSender.class);
-    private final ExecutorService retrySingleThreadExecutor;
+    private final ScheduledExecutorService retrySingleThreadExecutor;
     private final ExecutorService deliveryReportingExecutor;
     private final SuccessHandler successHandler;
     private final ErrorHandler errorHandler;
@@ -33,6 +35,7 @@ public class ConsumerMessageSender {
     private final Semaphore inflightSemaphore;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
+    private final int backoffTime;
     private ConsumerLatencyTimer consumerLatencyTimer;
     private Subscription subscription;
 
@@ -41,7 +44,7 @@ public class ConsumerMessageSender {
     public ConsumerMessageSender(Subscription subscription, MessageSender messageSender, SuccessHandler successHandler,
                                  ErrorHandler errorHandler, ConsumerRateLimiter rateLimiter, ExecutorService deliveryReportingExecutor,
                                  Semaphore inflightSemaphore, HermesMetrics hermesMetrics, int asyncTimeoutMs,
-                                 FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout) {
+                                 FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout, int backoffTime) {
         this.deliveryReportingExecutor = deliveryReportingExecutor;
         this.successHandler = successHandler;
         this.errorHandler = errorHandler;
@@ -49,11 +52,11 @@ public class ConsumerMessageSender {
         this.messageSender = messageSender;
         this.subscription = subscription;
         this.inflightSemaphore = inflightSemaphore;
-        this.retrySingleThreadExecutor = Executors.newSingleThreadExecutor();
+        this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1);
         this.async = futureAsyncTimeout;
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
-
+        this.backoffTime = backoffTime;
     }
 
     public void shutdown() {
@@ -140,7 +143,7 @@ public class ConsumerMessageSender {
             } else {
                 handleFailedSending(message, result);
                 if (!isTtlExceeded(message) && shouldRetrySending(result)) {
-                    retrySingleThreadExecutor.execute(() -> retrySending(result));
+                    retrySingleThreadExecutor.schedule(() -> retrySending(result), backoffTime, TimeUnit.MILLISECONDS);
                 } else {
                     handleMessageDiscarding(message, result);
                 }
