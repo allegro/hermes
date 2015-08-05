@@ -12,7 +12,7 @@ mechanisms for message sending.
 
 See our 10-minute getting started guide with docker: [Getting started](http://hermes-pubsub.readthedocs.org/en/latest/contents/tutorials/01_getting_started.html)
 
-Visit our page: [hermes.allegrotech.io](http://hermes.allegrotech.io)
+Visit our page: [hermes.allegro.tech](http://hermes.allegro.tech)
 
 See our full documentation: [http://hermes-pubsub.readthedocs.org/en/latest/](http://hermes-pubsub.readthedocs.org/en/latest/)
 
