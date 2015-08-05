@@ -5,6 +5,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 
@@ -57,6 +58,10 @@ public class Hermes {
 
     public TopicEndpoint createTopicEndpoint() {
         return createProxy(url, TopicEndpoint.class, managementConfig);
+    }
+
+    public SchemaEndpoint createSchemaEndpoint() {
+        return createProxy(url, SchemaEndpoint.class, managementConfig);
     }
 
     public SubscriptionEndpoint createSubscriptionEndpoint() {

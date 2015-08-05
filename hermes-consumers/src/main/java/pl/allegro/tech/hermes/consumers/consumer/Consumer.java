@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
@@ -29,6 +30,7 @@ public class Consumer implements Runnable {
     private final Semaphore inflightSemaphore;
     private final Trackers trackers;
     private final MessageConverter messageConverter;
+    private final Topic topic;
     private final ConsumerMessageSender sender;
 
     private Subscription subscription;
@@ -37,7 +39,7 @@ public class Consumer implements Runnable {
 
     public Consumer(MessageReceiver messageReceiver, HermesMetrics hermesMetrics, Subscription subscription,
                     ConsumerRateLimiter rateLimiter, SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues,
-                    ConsumerMessageSender sender, Semaphore inflightSemaphore, Trackers trackers, MessageConverter messageConverter) {
+                    ConsumerMessageSender sender, Semaphore inflightSemaphore, Trackers trackers, MessageConverter messageConverter, Topic topic) {
         this.messageReceiver = messageReceiver;
         this.hermesMetrics = hermesMetrics;
         this.subscription = subscription;
@@ -47,6 +49,7 @@ public class Consumer implements Runnable {
         this.inflightSemaphore = inflightSemaphore;
         this.trackers = trackers;
         this.messageConverter = messageConverter;
+        this.topic = topic;
     }
 
     private String getId() {
@@ -63,7 +66,7 @@ public class Consumer implements Runnable {
 
                 Message message = messageReceiver.next();
 
-                Message convertedMessage = messageConverter.convert(message);
+                Message convertedMessage = messageConverter.convert(message, topic);
 
                 sendMessage(convertedMessage);
             } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {

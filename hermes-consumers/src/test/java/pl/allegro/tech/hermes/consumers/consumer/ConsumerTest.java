@@ -8,10 +8,7 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
@@ -45,6 +42,8 @@ public class ConsumerTest {
             .withEndpoint(EndpointAddress.of("http://localhost"))
             .withSubscriptionPolicy(new SubscriptionPolicy(10, 10000, false))
             .build();
+
+    private static final Topic TOPIC = Topic.Builder.topic().withName("group", "topic").build();
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ConfigFactory configFactory;
@@ -87,7 +86,7 @@ public class ConsumerTest {
         when(configFactory.getIntProperty(Configs.REPORT_PERIOD)).thenReturn(10);
         when(configFactory.getIntProperty(Configs.CONSUMER_INFLIGHT_SIZE)).thenReturn(50);
         consumer = spy(new Consumer(messageReceiver, hermesMetrics, SUBSCRIPTION,
-                consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, new NoOperationMessageConverter()));
+                consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, new NoOperationMessageConverter(), TOPIC));
     }
 
     @Test
