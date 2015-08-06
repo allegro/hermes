@@ -4,6 +4,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.test.helper.client.Hermes;
@@ -18,6 +19,8 @@ public class HermesEndpoints {
 
     private final SubscriptionEndpoint subscriptionEndpoint;
 
+    private final SchemaEndpoint schemaEndpoint;
+
     public HermesEndpoints(String hermesFrontendUrl) {
         Hermes hermes = new Hermes(hermesFrontendUrl)
                 .withManagementConfig(integrationTestsConfig())
@@ -25,12 +28,14 @@ public class HermesEndpoints {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
         this.subscriptionEndpoint = hermes.createSubscriptionEndpoint();
+        this.schemaEndpoint = hermes.createSchemaEndpoint();
     }
 
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
         this.subscriptionEndpoint = hermes.createSubscriptionEndpoint();
+        this.schemaEndpoint = hermes.createSchemaEndpoint();
     }
 
     public GroupEndpoint group() {
@@ -43,6 +48,10 @@ public class HermesEndpoints {
 
     public SubscriptionEndpoint subscription() {
         return subscriptionEndpoint;
+    }
+
+    public SchemaEndpoint schema() {
+        return schemaEndpoint;
     }
 
     private static ClientConfig integrationTestsConfig() {

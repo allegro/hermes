@@ -19,7 +19,8 @@ public class BrokerTimeoutAsyncListener implements AsyncListener {
     private final MessageState messageState;
     private final BrokerListeners listeners;
 
-    public BrokerTimeoutAsyncListener(HttpResponder httpResponder, Message message, Topic topic, MessageState messageState, BrokerListeners listeners) {
+    public BrokerTimeoutAsyncListener(HttpResponder httpResponder, Message message, Topic topic, MessageState messageState,
+                                      BrokerListeners listeners) {
         this.httpResponder = httpResponder;
         this.message = message;
         this.topic = topic;

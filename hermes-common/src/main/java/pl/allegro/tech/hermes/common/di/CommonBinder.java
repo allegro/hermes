@@ -1,31 +1,20 @@
 package pl.allegro.tech.hermes.common.di;
 
+import com.github.fge.jsonschema.main.JsonSchema;
 import com.yammer.metrics.core.HealthCheckRegistry;
+import org.apache.avro.Schema;
+import org.glassfish.hk2.api.TypeLiteral;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.di.factories.BoonObjectMapperFactory;
-import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.DistributedEphemeralCounterFactory;
-import pl.allegro.tech.hermes.common.di.factories.GraphiteWebTargetFactory;
-import pl.allegro.tech.hermes.common.di.factories.GroupRepositoryFactory;
-import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.KafkaCuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
-import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
-import pl.allegro.tech.hermes.common.di.factories.PathsCompilerFactory;
-import pl.allegro.tech.hermes.common.di.factories.SharedCounterFactory;
-import pl.allegro.tech.hermes.common.di.factories.SimpleConsumerPoolFactory;
-import pl.allegro.tech.hermes.common.di.factories.SubscriptionOffsetChangeIndicatorFactory;
-import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
-import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
-import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
+import pl.allegro.tech.hermes.common.di.factories.*;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperProvider;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
+import pl.allegro.tech.hermes.domain.topic.schema.*;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
@@ -42,6 +31,9 @@ public class CommonBinder extends AbstractBinder {
         bind(SystemClock.class).to(Clock.class).in(Singleton.class);
         bind(ZookeeperBrokerStorage.class).to(BrokerStorage.class).in(Singleton.class);
         bind(InetAddressHostnameResolver.class).in(Singleton.class).to(HostnameResolver.class);
+        bind(TopicFieldSchemaSourceProvider.class).to(SchemaSourceProvider.class).in(Singleton.class);
+        bindFactory(JsonSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<SchemaRepository<JsonSchema>>() {});
+        bindFactory(AvroSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<SchemaRepository<Schema>>() {});
 
         bindSingleton(CuratorClientFactory.class);
         bindSingleton(HermesMetrics.class);
