@@ -29,7 +29,7 @@ public class MetricsPublishingCallback implements PublishingCallback {
     }
 
     @Override
-    public void onUnpublished(Exception exception) {
+    public void onUnpublished(Message message, Topic topic, Exception exception) {
         brokerLatencyTimer.close();
     }
 
