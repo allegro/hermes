@@ -9,21 +9,29 @@ import java.util.Objects;
 
 public class SubscriptionPolicy {
 
+    private static final Integer DEFAULT_MESSAGE_BACKOFF = 100;
+
     @Min(1)
     private Integer rate;
 
     @Min(0)
     private Integer messageTtl;
 
+    @Min(0)
+    private Integer messageBackoff;
+
     private boolean retryClientErrors = false;
 
     private SubscriptionPolicy() { }
 
     @JsonCreator
-    public SubscriptionPolicy(@JsonProperty("rate") int rate, @JsonProperty("messageTtl") int messageTtl,  @JsonProperty("retryClientErrors") boolean retryClientErrors) {
+    public SubscriptionPolicy(@JsonProperty("rate") int rate, @JsonProperty("messageTtl") int messageTtl,
+                              @JsonProperty("retryClientErrors") boolean retryClientErrors,
+                              @JsonProperty("messageBackoff") Integer messageBackoff) {
         this.rate = rate;
         this.messageTtl = messageTtl;
         this.retryClientErrors = retryClientErrors;
+        this.messageBackoff = messageBackoff != null ? messageBackoff : DEFAULT_MESSAGE_BACKOFF;
     }
 
     @Override
@@ -42,6 +50,7 @@ public class SubscriptionPolicy {
         final SubscriptionPolicy other = (SubscriptionPolicy) obj;
         return Objects.equals(this.rate, other.rate)
                 && Objects.equals(this.messageTtl, other.messageTtl)
+                && Objects.equals(this.messageBackoff, other.messageBackoff)
                 && Objects.equals(this.retryClientErrors, other.retryClientErrors);
     }
 
@@ -50,6 +59,7 @@ public class SubscriptionPolicy {
         return com.google.common.base.Objects.toStringHelper(this)
                 .add("rate", rate)
                 .add("messageTtl", messageTtl)
+                .add("messageBackoff", messageBackoff)
                 .add("retryClientErrors", retryClientErrors)
                 .toString();
     }
@@ -70,11 +80,15 @@ public class SubscriptionPolicy {
     public boolean isRetryClientErrors() {
         return retryClientErrors;
     }
+
+    public Integer getMessageBackoff() {
+        return messageBackoff;
+    }
     //</editor-fold>
 
     public static class Builder {
-        private static final Integer  DEFAULT_RATE = 400;
-        private static final Integer  DEFAULT_MESSAGE_TTL = 3600;
+        private static final Integer DEFAULT_RATE = 400;
+        private static final Integer DEFAULT_MESSAGE_TTL = 3600;
 
         private SubscriptionPolicy subscriptionPolicy;
 
@@ -85,6 +99,7 @@ public class SubscriptionPolicy {
         public Builder applyDefaults() {
             subscriptionPolicy.rate = DEFAULT_RATE;
             subscriptionPolicy.messageTtl = DEFAULT_MESSAGE_TTL;
+            subscriptionPolicy.messageBackoff = DEFAULT_MESSAGE_BACKOFF;
             return this;
         }
 
@@ -95,6 +110,11 @@ public class SubscriptionPolicy {
 
         public Builder withMessageTtl(int ttl) {
             subscriptionPolicy.messageTtl = ttl;
+            return this;
+        }
+
+        public Builder withMessageBackoff(int backoff) {
+            subscriptionPolicy.messageBackoff = backoff;
             return this;
         }
 

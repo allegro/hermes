@@ -69,8 +69,7 @@ public class ConsumerMessageSenderFactory {
                 inflightSemaphore,
                 hermesMetrics,
                 configFactory.getIntProperty(CONSUMER_SENDER_ASYNC_TIMEOUT_MS),
-                futureAsyncTimeout,
-                configFactory.getIntProperty(Configs.CONSUMER_SENDER_BACKOFF_TIME_MS));
+                futureAsyncTimeout);
     }
 
 }

@@ -35,7 +35,6 @@ public class ConsumerMessageSender {
     private final Semaphore inflightSemaphore;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
-    private final int backoffTime;
     private ConsumerLatencyTimer consumerLatencyTimer;
     private Subscription subscription;
 
@@ -44,7 +43,7 @@ public class ConsumerMessageSender {
     public ConsumerMessageSender(Subscription subscription, MessageSender messageSender, SuccessHandler successHandler,
                                  ErrorHandler errorHandler, ConsumerRateLimiter rateLimiter, ExecutorService deliveryReportingExecutor,
                                  Semaphore inflightSemaphore, HermesMetrics hermesMetrics, int asyncTimeoutMs,
-                                 FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout, int backoffTime) {
+                                 FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout) {
         this.deliveryReportingExecutor = deliveryReportingExecutor;
         this.successHandler = successHandler;
         this.errorHandler = errorHandler;
@@ -56,7 +55,6 @@ public class ConsumerMessageSender {
         this.async = futureAsyncTimeout;
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
-        this.backoffTime = backoffTime;
     }
 
     public void shutdown() {
@@ -143,7 +141,8 @@ public class ConsumerMessageSender {
             } else {
                 handleFailedSending(message, result);
                 if (!isTtlExceeded(message) && shouldRetrySending(result)) {
-                    retrySingleThreadExecutor.schedule(() -> retrySending(result), backoffTime, TimeUnit.MILLISECONDS);
+                    retrySingleThreadExecutor.schedule(() -> retrySending(result),
+                            subscription.getSubscriptionPolicy().getMessageBackoff(), TimeUnit.MILLISECONDS);
                 } else {
                     handleMessageDiscarding(message, result);
                 }

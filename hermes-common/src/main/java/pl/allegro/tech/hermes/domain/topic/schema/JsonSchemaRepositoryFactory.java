@@ -4,16 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.main.JsonSchema;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.HermesException;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class JsonSchemaRepositoryFactory extends AbstractSchemaRepositoryFactory<JsonSchema> {
 
