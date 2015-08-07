@@ -17,5 +17,6 @@ public abstract class AbstractHandler {
     protected void updateMetrics(String counterToUpdate, Message message, Subscription subscription) {
         hermesMetrics.counter(counterToUpdate, subscription.getTopicName(), subscription.getName()).inc();
         hermesMetrics.decrementInflightCounter(subscription);
+        hermesMetrics.inflightTimeHistogram(subscription).update(System.currentTimeMillis() - message.getReadingTimestamp());
     }
 }
