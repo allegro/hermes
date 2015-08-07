@@ -14,7 +14,7 @@ import static java.util.Arrays.copyOfRange;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGE_CONTENT_ROOT;
 import static pl.allegro.tech.hermes.common.config.Configs.METADATA_CONTENT_ROOT;
 
-public class JsonMessageContentWrapper implements MessageContentWrapper {
+public class JsonMessageContentWrapper {
 
     private static final byte[] SEPARATOR = ",".getBytes(UTF_8);
     private static final byte[] WRAPPED_MARKER = "\"_w\":true".getBytes(UTF_8);
@@ -36,7 +36,6 @@ public class JsonMessageContentWrapper implements MessageContentWrapper {
         this.mapper = mapper;
     }
 
-    @Override
     public byte[] wrapContent(byte[] json, String id, long timestamp) {
         try {
             return wrapContent(mapper.writeValueAsBytes(new MessageMetadata(timestamp, id)), json);
@@ -59,7 +58,6 @@ public class JsonMessageContentWrapper implements MessageContentWrapper {
         return stream.toByteArray();
     }
 
-    @Override
     public UnwrappedMessageContent unwrapContent(byte[] json) {
         int rootIndex = indexOf(json, contentRootField);
         int metadataIndex = indexOf(json, metadataRootField);

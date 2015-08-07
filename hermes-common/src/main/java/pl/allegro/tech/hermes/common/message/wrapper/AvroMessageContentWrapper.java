@@ -13,10 +13,9 @@ import java.io.IOException;
 import static com.google.common.io.ByteStreams.toByteArray;
 import static org.apache.avro.SchemaBuilder.record;
 
-public class AvroMessageContentWrapper implements MessageContentWrapper {
+public class AvroMessageContentWrapper {
 
-    @Override
-    public UnwrappedMessageContent unwrapContent(byte[] data) {
+    public UnwrappedMessageContent unwrapContent(byte[] data, Schema schema) {
         BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(data, null);
 
         try {
@@ -27,8 +26,7 @@ public class AvroMessageContentWrapper implements MessageContentWrapper {
         }
     }
 
-    @Override
-    public byte[] wrapContent(byte[] message, String id, long timestamp) {
+    public byte[] wrapContent(byte[] message, String id, long timestamp, Schema schema) {
         try {
             ByteArrayOutputStream wrappedMessage = new ByteArrayOutputStream();
             BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(wrappedMessage, null);

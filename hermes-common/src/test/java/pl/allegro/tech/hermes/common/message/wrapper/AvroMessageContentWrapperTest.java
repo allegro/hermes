@@ -32,8 +32,8 @@ public class AvroMessageContentWrapperTest {
     @Test
     public void shouldWrapAndUnwrapAvroMessageWithMetadata() throws IOException {
         // when
-        byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp);
-        UnwrappedMessageContent unwrappedMessageContent = avroMessageContentWrapper.unwrapContent(wrappedMessage);
+        byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, null);
+        UnwrappedMessageContent unwrappedMessageContent = avroMessageContentWrapper.unwrapContent(wrappedMessage, null);
 
         // then
         assertThat(unwrappedMessageContent.getMessageMetadata().getId()).isEqualTo(id);
@@ -45,7 +45,7 @@ public class AvroMessageContentWrapperTest {
     @SuppressWarnings("unchecked")
     public void shouldWrappedMessageBeValidWithHermesSchema() throws IOException {
         // given
-        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp);
+        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, null);
 
         // when
         GenericRecord messageWithMetadata = bytesToRecord(wrappedMessage, schema);

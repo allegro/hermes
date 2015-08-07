@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.factories.*;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperProvider;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperDispatcher;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
@@ -39,7 +39,7 @@ public class CommonBinder extends AbstractBinder {
         bindSingleton(HermesMetrics.class);
         bindSingleton(HealthCheckRegistry.class);
         bindSingleton(ConfigFactory.class);
-        bindSingleton(MessageContentWrapperProvider.class);
+        bindSingleton(MessageContentWrapperDispatcher.class);
         bindSingleton(JsonMessageContentWrapper.class);
         bindSingleton(AvroMessageContentWrapper.class);
 
