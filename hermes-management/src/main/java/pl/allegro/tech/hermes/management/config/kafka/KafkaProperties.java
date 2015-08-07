@@ -14,6 +14,10 @@ public class KafkaProperties {
 
     private int retrySleep = 1000;
 
+    private String offsetsStorage = "kafka";
+
+    private boolean dualCommitEnabled = false;
+
     private SimpleConsumer simpleConsumer = new SimpleConsumer();
 
     public static final class SimpleConsumer {
@@ -113,5 +117,21 @@ public class KafkaProperties {
 
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
+    }
+
+    public String getOffsetsStorage() {
+        return offsetsStorage;
+    }
+
+    public void setOffsetsStorage(String offsetsStorage) {
+        this.offsetsStorage = offsetsStorage;
+    }
+
+    public boolean isDualCommitEnabled() {
+        return dualCommitEnabled;
+    }
+
+    public void setDualCommitEnabled(boolean dualCommitEnabled) {
+        this.dualCommitEnabled = dualCommitEnabled;
     }
 }

@@ -1,15 +1,19 @@
 dependencies {
     compile project(':hermes-common')
+    compile project(':hermes-tracker')
+    compile project(':hermes-metrics')
 
     compile (group: 'com.github.fge', name: 'json-schema-validator', version: '2.2.6') {
         exclude group: 'net.sf.jopt-simple'
     }
-    compile group: 'io.undertow', name: 'undertow-servlet', version: '1.2.0.Beta8'
+    compile group: 'io.undertow', name: 'undertow-servlet', version: '1.2.7.Final'
     compile group: 'org.apache.kafka', name: 'kafka-clients', version: '0.8.2.0'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
 
+    provided group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
+
+
     testCompile project(':hermes-test-helper')
-    testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
     testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
         exclude group: 'com.jayway.jsonpath', module: 'json-path'
     }

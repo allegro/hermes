@@ -26,7 +26,7 @@ public class HttpClientFactory implements Factory<HttpClient> {
     public HttpClient provide() {
         HttpClient client = new HttpClient();
         client.setMaxConnectionsPerDestination(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION));
-        client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_CONNECTIONS_QUEUE));
+        client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE));
         client.setExecutor(getExecutor());
         client.setCookieStore(new HttpCookieStore.Empty());
         return client;

@@ -83,7 +83,6 @@ Property                                             Description                
 consumer.http.client.request.timeout                 how much time we wait for client response before timing out 1000ms
 consumer.http.client.thread.pool.size                size of thread pool for sender threads (global)             30
 consumer.http.client.max.connections.per.destination max connections per remote host                             100
-consumer.http.client.connections.per.queue           maximum size of request queue per remote host               1000000
 ==================================================== =========================================================== =================
 
 Kafka broker
@@ -115,20 +114,6 @@ zookeeper.max.retires            max connection retries                         
 zookeeper.base.sleep.time        base time between connection retries, grows on each retry  1000 ms
 zookeeper.cache.thread.pool.size size of thread pool used ot manage topics cache            5
 ================================ ========================================================== ==============
-
-
-Message tracker
-^^^^^^^^^^^^^^^
-
-These options configure message tracking (for debug purpose mostly). Make sure they are the same as on Management and Consumer nodes.
-
-=============================== ===================================================================== ========================================
-Property                        Description                                                           Default value
-=============================== ===================================================================== ========================================
-tracker.mongodb.uri             mongo URI                                                             mongodb://localhost:27017/hermesMessages
-tracker.mongodb.commit.interval push tracking messages to Mongo once per interval                     1000 ms
-tracker.mongodb.queue.capacity  capacity of tracking messages queue - overflow messages are discarded 100 000
-=============================== ===================================================================== ========================================
 
 Metrics
 ^^^^^^^

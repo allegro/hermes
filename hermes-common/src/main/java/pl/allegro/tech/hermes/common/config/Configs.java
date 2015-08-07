@@ -21,6 +21,11 @@ public enum Configs {
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
     KAFKA_CONSUMER_TIMEOUT_MS("kafka.consumer.timeout.ms", 60000),
     KAFKA_CONSUMER_AUTO_OFFSET_RESET("kafka.consumer.auto.offset.reset", "largest"),
+    KAFKA_CONSUMER_OFFSETS_STORAGE("kafka.consumer.offsets.storage", "kafka"),
+    KAFKA_CONSUMER_DUAL_COMMIT_ENABLED("kafka.consumer.dual.commit.enabled", true),
+    KAFKA_CONSUMER_METADATA_READ_TIMEOUT("kafka.consumers.metadata.read.timeout", 5000),
+    KAFKA_CONSUMER_OFFSET_COMMITTER_BROKER_CONNECTION_EXPIRATION("kafka.consumer.offset.commiter.broker.connection.expiration", 60),
+
     KAFKA_SIMPLE_CONSUMER_TIMEOUT_MS("kafka.simple.consumer.timeout.ms", 5000),
     KAFKA_SIMPLE_CONSUMER_BUFFER_SIZE("kafka.simple.consumer.buffer.size", 64 * 1024),
     KAFKA_SIMPLE_CONSUMER_ID_PREFIX("kafka.simple.consumer.id.prefix", "offsetChecker"),
@@ -36,6 +41,10 @@ public enum Configs {
     KAFKA_PRODUCER_ACK_TIMEOUT("kafka.producer.ack.timeout", 1000),
     KAFKA_PRODUCER_BATCH_SIZE("kafka.producer.batch.size", 16 * 1024),
     KAFKA_PRODUCER_TCP_SEND_BUFFER("kafka.producer.tcp.send.buffer", 128 * 1024),
+    KAFKA_PRODUCER_MAX_REQUEST_SIZE("kafka.producer.max.request.size", 1024 * 1024),
+    KAFKA_PRODUCER_LINGER_MS("kafka.producer.linger.ms", 0),
+    KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS("kafka.producer.metrics.sample.window.ms", 30000),
+    KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION("kafka.producer.max.in.flight.requests.per.connection", 5),
 
     KAFKA_STREAM_COUNT("kafka.stream.count", 1),
 
@@ -57,9 +66,20 @@ public enum Configs {
     FRONTEND_REQUEST_CHUNK_SIZE("frontend.request.chunk.size", 1024),
     FRONTEND_GRACEFUL_SHUTDOWN_ENABLED("frontend.graceful.shutdown.enabled", true),
     FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
+    FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
+
+    FRONTEND_SSL_ENABLED("frontend.ssl.enabled", false),
+    FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
+    FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
+    FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "classpath:server.keystore"),
+    FRONTEND_SSL_KEYSTORE_PASSWORD("frontend.ssl.keystore.password", "password"),
+    FRONTEND_SSL_KEYSTORE_FORMAT("frontend.ssl.keystore.format", "JKS"),
+    FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "classpath:server.truststore"),
+    FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
+    FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
+
 
     CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 20),
-    CONSUMER_COMMIT_OFFSET_CACHE_EXPIRATION("consumer.commit.offset.cache.expiration", 10),
     CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE("consumer.sender.async.timeout.thread.pool.size", 32),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING("consumer.sender.async.timeout.thread.pool.monitoring", false),
@@ -68,7 +88,6 @@ public enum Configs {
     CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE("consumer.http.client.thread.pool.size", 30),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING("consumer.http.client.thread.pool.monitoring", false),
     CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION("consumer.http.client.max.connections.per.destination", 100),
-    CONSUMER_HTTP_CLIENT_CONNECTIONS_QUEUE("consumer.http.client.connections.per.queue", 1000000),
 
     CONSUMER_INFLIGHT_SIZE("consumer.inflight.size", 100),
     CONSUMER_RATE_LIMITER_SUPERVISOR_PERIOD("consumer.rate.limiter.supervisor.period", 30),
@@ -101,9 +120,6 @@ public enum Configs {
     METADATA_CONTENT_ROOT("message.content.root", "metadata"),
     GRAPHITE_PREFIX("graphite.prefix", "stats.tech.hermes"),
 
-    TRACKER_MONGODB_URI("tracker.mongodb.uri", "mongodb://localhost:27017/hermesMessages"),
-    TRACKER_MONGODB_COMMIT_INTERVAL("tracker.mongodb.commit.interval", 1000),
-    TRACKER_MONGODB_QUEUE_CAPACITY("tracker.mongodb.queue.capacity", 100 * 1000),
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 
     private final String name;

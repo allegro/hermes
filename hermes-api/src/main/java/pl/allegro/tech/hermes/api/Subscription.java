@@ -94,6 +94,10 @@ public class Subscription {
         return Joiner.on("_").join(replaceInAll("_", "__", topicName.getGroupName(), topicName.getName(), subscriptionName));
     }
 
+    public static Subscription fromSubscriptionName(SubscriptionName subscriptionName) {
+        return Builder.subscription().withTopicName(subscriptionName.getTopicName()).withName(subscriptionName.getName()).build();
+    }
+
     public EndpointAddress getEndpoint() {
         return endpoint;
     }

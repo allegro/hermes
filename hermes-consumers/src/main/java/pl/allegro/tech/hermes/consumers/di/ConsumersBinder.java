@@ -4,21 +4,25 @@ import org.eclipse.jetty.client.HttpClient;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BlockingChannelFactory;
 import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
-import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.health.HealthCheckServer;
+import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageSplitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageCommitterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.OffsetStoragesFactory;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.KafkaOffsetsStorage;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.zookeeper.ZookeeperOffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
@@ -29,20 +33,16 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeoutFactory;
-import pl.allegro.tech.hermes.consumers.message.tracker.LogRepository;
-import pl.allegro.tech.hermes.consumers.message.tracker.MongoLogRepository;
-import pl.allegro.tech.hermes.consumers.message.tracker.NoOperationSendingTracker;
-import pl.allegro.tech.hermes.consumers.message.tracker.SendingMessageTracker;
-import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
+import pl.allegro.tech.hermes.consumers.health.HealthCheckServer;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.cache.zookeeper.ZookeeperSubscriptionsCacheFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.utils.SubscriptionSuspender;
 
 import javax.inject.Singleton;
+import java.util.List;
 
 public class ConsumersBinder extends AbstractBinder {
 
@@ -51,9 +51,11 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(HealthCheckServer.class);
 
         bind(KafkaMessageReceiverFactory.class).in(Singleton.class).to(ReceiverFactory.class);
-        bind(KafkaMessageCommitter.class).in(Singleton.class).to(MessageCommitter.class);
+        bindSingleton(BrokerOffsetsRepository.class);
+        bind(ZookeeperOffsetsStorage.class).in(Singleton.class).to(OffsetsStorage.class).named("zookeeperOffsetsStorage");
+        bind(KafkaOffsetsStorage.class).in(Singleton.class).to(OffsetsStorage.class).named("kafkaOffsetsStorage");
+        bindFactory(MessageCommitterFactory.class).in(Singleton.class).to(new TypeLiteral<List<MessageCommitter>>() {});
         bind(MessageBodyInterpolator.class).in(Singleton.class).to(UriInterpolator.class);
-        bind(MongoLogRepository.class).to(LogRepository.class).in(Singleton.class);
         bind(InterpolatingEndpointAddressResolver.class).to(EndpointAddressResolver.class).in(Singleton.class);
         bind(JmsHornetQMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
                 .in(Singleton.class).named("defaultJmsMessageSenderProvider");
@@ -61,21 +63,19 @@ public class ConsumersBinder extends AbstractBinder {
                 .in(Singleton.class).named("defaultHttpMessageSenderProvider");
 
         bindSingleton(ConsumersSupervisor.class);
-        bindSingleton(MessageContentWrapper.class);
         bindSingleton(MessageSenderFactory.class);
-        bindSingleton(MessageSplitter.class);
         bindSingleton(ConsumerFactory.class);
         bindSingleton(ConsumerRateLimitSupervisor.class);
         bindSingleton(OutputRateCalculator.class);
-        bindSingleton(SubscriptionSuspender.class);
         bindSingleton(ConsumersExecutorService.class);
         bindSingleton(ZookeeperAdminCache.class);
-        bindSingleton(SendingMessageTracker.class);
-        bindSingleton(NoOperationSendingTracker.class);
-        bindSingleton(Trackers.class);
         bindSingleton(InstrumentedExecutorServiceFactory.class);
         bindSingleton(ConsumerMessageSenderFactory.class);
+        bindSingleton(MessageConverterFactory.class);
 
+        bindSingleton(BlockingChannelFactory.class);
+        bindFactory(OffsetStoragesFactory.class).in(Singleton.class).to(new TypeLiteral<List<OffsetsStorage>>() {
+        });
         bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class).to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
         bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class);
         bindFactory(ZookeeperSubscriptionsCacheFactory.class).to(SubscriptionsCache.class).in(Singleton.class);

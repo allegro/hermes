@@ -3,11 +3,14 @@ package pl.allegro.tech.hermes.integration.helper;
 import com.jayway.awaitility.Duration;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import kafka.api.ConsumerMetadataRequest;
+import kafka.common.ErrorMapping;
+import kafka.javaapi.ConsumerMetadataResponse;
+import kafka.network.BlockingChannel;
 import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -15,11 +18,12 @@ import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.integration.helper.TimeoutAdjuster.adjust;
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
-public class Waiter {
+public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private final HermesEndpoints endpoints;
 
@@ -30,6 +34,7 @@ public class Waiter {
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue().toString());
 
     public Waiter(HermesEndpoints endpoints, CuratorFramework zookeeper, CuratorFramework kafkaZookeeper) {
+        super(endpoints);
         this.endpoints = endpoints;
         this.zookeeper = zookeeper;
         this.kafkaZookeeper = kafkaZookeeper;
@@ -175,25 +180,23 @@ public class Waiter {
         waitAtMost(adjust(Duration.FIVE_SECONDS)).until(() -> zookeeper.checkExists().forPath(path) == null);
     }
 
-    public void untilSubscriptionCreated(String group, String topic, Subscription subscription) {
-        untilSubscriptionCreated(group, topic, subscription.getName(), subscription.isTrackingEnabled());
+    public void waitUntilConsumerMetadataAvailable(Subscription subscription, String host, int port) {
+        BlockingChannel channel = createBlockingChannel(host, port);
+        channel.connect();
+
+        waitAtMost(adjust((Duration.ONE_MINUTE))).until(() -> {
+            channel.send(new ConsumerMetadataRequest(subscription.getId(), ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
+            ConsumerMetadataResponse metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
+            return metadataResponse.errorCode() == ErrorMapping.NoError();
+        });
+
+        channel.disconnect();
     }
 
-    public void untilSubscriptionCreated(String group, String topic, String subscription, boolean isTracked) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
-            endpoints.subscription().list(group + "." + topic, isTracked).contains(subscription);
-        });
-    }
-
-    public void untilGroupCreated(String group) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
-            return endpoints.group().list().contains(group);
-        });
-    }
-
-    public void untilTopicCreated(Topic topic) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
-            return endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName());
-        });
+    private BlockingChannel createBlockingChannel(String host, int port) {
+        return new BlockingChannel(host, port,
+                BlockingChannel.UseDefaultBufferSize(),
+                BlockingChannel.UseDefaultBufferSize(),
+                (int) adjust(Duration.TEN_SECONDS).getValueInMS());
     }
 }

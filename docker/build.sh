@@ -2,7 +2,6 @@
 
 rm -rf build
 mkdir -p build
-
 cd ..
 version=`./gradlew cV -q | grep version | sed -n 's/Project version: \(.*\)/\1/p'`
 ./gradlew -q clean distZip -Pdistribution && cd -

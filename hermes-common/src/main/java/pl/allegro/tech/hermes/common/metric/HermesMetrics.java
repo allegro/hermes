@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.common.metric;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -16,13 +17,18 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
+import pl.allegro.tech.hermes.metrics.PathContext;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import javax.inject.Inject;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.common.metric.Gauges.*;
-import static pl.allegro.tech.hermes.common.metric.PathContext.pathContext;
+import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES;
+import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES;
+import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES;
+import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_LEADER_CONFIRMS_BUFFER_TOTAL_BYTES;
+import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 public class HermesMetrics {
 
@@ -252,5 +258,16 @@ public class HermesMetrics {
         return metricRegistry.counter(pathCompiler.compile(Counters.CONSUMER_SCHEDULED_EXECUTOR_OVERRUN, pathContext().withExecutorName(executorName).build()));
     }
 
+    public Histogram messageContentSizeHistogram(TopicName topic) {
+        return metricRegistry.histogram(pathCompiler.compile(Histograms.PRODUCER_MESSAGE_SIZE, pathContext()
+                .withGroup(escapeDots(topic.getGroupName()))
+                .withTopic(escapeDots(topic.getName()))
+                .build()));
+    }
+
+    public void reportContentSize(int size, TopicName topicName) {
+        messageContentSizeHistogram(topicName).update(size);
+        metricRegistry.histogram(pathCompiler.compile(Histograms.PRODUCER_GLOBAL_MESSAGE_SIZE)).update(size);
+    }
 }
 

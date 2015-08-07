@@ -10,15 +10,21 @@ import pl.allegro.tech.hermes.common.di.CommonBinder;
 import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.frontend.di.FrontendBinder;
+import pl.allegro.tech.hermes.frontend.di.TrackersBinder;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerAcknowledgeListener;
+import pl.allegro.tech.hermes.frontend.listeners.BrokerErrorListener;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
+import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
+import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 
@@ -26,16 +32,22 @@ public final class HermesFrontend {
 
     private final ServiceLocator serviceLocator;
     private final HooksHandler hooksHandler;
+    private final List<Function<ServiceLocator, LogRepository>> logRepositories;
     private final HermesServer hermesServer;
+    private final Trackers trackers;
 
     public static void main(String[] args) throws Exception {
         frontend().build().start();
     }
 
-    private HermesFrontend(HooksHandler hooksHandler, List<Binder> binders) {
+    private HermesFrontend(HooksHandler hooksHandler, List<Binder> binders, List<Function<ServiceLocator, LogRepository>> logRepositories) {
         this.hooksHandler = hooksHandler;
+        this.logRepositories = logRepositories;
+
         serviceLocator = createDIContainer(binders);
+
         hermesServer = serviceLocator.getService(HermesServer.class);
+        trackers = serviceLocator.getService(Trackers.class);
 
         if (serviceLocator.getService(ConfigFactory.class).getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED)) {
             hooksHandler.addShutdownHook(gracefulShutdownHook());
@@ -65,6 +77,9 @@ public final class HermesFrontend {
     }
 
     public void start() {
+        logRepositories.forEach(serviceLocatorLogRepositoryFunction ->
+                trackers.add(serviceLocatorLogRepositoryFunction.apply(serviceLocator)));
+
         hermesServer.start();
         hooksHandler.startup();
     }
@@ -98,10 +113,12 @@ public final class HermesFrontend {
         private final HooksHandler hooksHandler = new HooksHandler();
         private final List<Binder> binders = Lists.newArrayList(new CommonBinder(), new FrontendBinder());
         private final BrokerListeners listeners = new BrokerListeners();
+        private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();
 
         public HermesFrontend build() {
             withDefaultRankBinding(listeners, BrokerListeners.class);
-            return new HermesFrontend(hooksHandler, binders);
+            binders.add(new TrackersBinder(new ArrayList<LogRepository>()));
+            return new HermesFrontend(hooksHandler, binders, logRepositories);
         }
 
         public Builder withShutdownHook(Hook hook) {
@@ -121,6 +138,16 @@ public final class HermesFrontend {
 
         public Builder withBrokerAcknowledgeListener(BrokerAcknowledgeListener brokerAcknowledgeListener) {
             listeners.addAcknowledgeListener(brokerAcknowledgeListener);
+            return this;
+        }
+
+        public Builder withBrokerErrorListener(BrokerErrorListener brokerErrorListener) {
+            listeners.addErrorListener(brokerErrorListener);
+            return this;
+        }
+
+        public Builder withLogRepository(Function<ServiceLocator, LogRepository> logRepository) {
+            logRepositories.add(logRepository);
             return this;
         }
 

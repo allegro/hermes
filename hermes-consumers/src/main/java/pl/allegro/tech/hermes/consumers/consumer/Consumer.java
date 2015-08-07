@@ -1,41 +1,43 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
-import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
-import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.SplitMessagesReceiver;
-import pl.allegro.tech.hermes.consumers.message.tracker.Trackers;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+
 public class Consumer implements Runnable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(Consumer.class);
 
-    private final SplitMessagesReceiver messageReceiver;
+    private final MessageReceiver messageReceiver;
     private final HermesMetrics hermesMetrics;
     private final ConsumerRateLimiter rateLimiter;
     private final SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues;
     private final Semaphore inflightSemaphore;
     private final Trackers trackers;
+    private final MessageConverter messageConverter;
     private final ConsumerMessageSender sender;
 
     private Subscription subscription;
 
     private volatile boolean consuming = true;
 
-    public Consumer(SplitMessagesReceiver messageReceiver, HermesMetrics hermesMetrics, Subscription subscription,
-                    ConsumerRateLimiter rateLimiter, SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues, ConsumerMessageSender sender,
-                    Semaphore inflightSemaphore, Trackers trackers) {
+    public Consumer(MessageReceiver messageReceiver, HermesMetrics hermesMetrics, Subscription subscription,
+                    ConsumerRateLimiter rateLimiter, SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues,
+                    ConsumerMessageSender sender, Semaphore inflightSemaphore, Trackers trackers, MessageConverter messageConverter) {
         this.messageReceiver = messageReceiver;
         this.hermesMetrics = hermesMetrics;
         this.subscription = subscription;
@@ -44,6 +46,7 @@ public class Consumer implements Runnable {
         this.sender = sender;
         this.inflightSemaphore = inflightSemaphore;
         this.trackers = trackers;
+        this.messageConverter = messageConverter;
     }
 
     private String getId() {
@@ -58,37 +61,29 @@ public class Consumer implements Runnable {
             try {
                 inflightSemaphore.acquire();
 
-                List<Message> messages = readMessages();
+                Message message = messageReceiver.next();
 
-                if (messages.isEmpty()) {
-                    inflightSemaphore.release();
-                }
+                Message convertedMessage = messageConverter.convert(message);
 
-                sendMessages(messages);
+                sendMessage(convertedMessage);
+            } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {
+                inflightSemaphore.release();
+                logger.debug("Timeout while reading message from topic. Trying to read message again", messageReceivingTimeoutException);
             } catch (Exception e) {
-                LOGGER.error("Consumer loop failed for " + getId(), e);
+                logger.error("Consumer loop failed for " + getId(), e);
             }
         }
-        LOGGER.info("Stopping consumer for subscription {}", subscription.getId());
+        logger.info("Stopping consumer for subscription {}", subscription.getId());
         messageReceiver.stop();
     }
 
-    private List<Message> readMessages() {
-        Timer.Context ctx = hermesMetrics.timer(Timers.CONSUMER_READ_LATENCY).time();
-        List<Message> messages = messageReceiver.next();
-        ctx.close();
-        return messages;
-    }
+    private void sendMessage(Message message) {
+        subscriptionOffsetCommitQueues.put(message);
 
-    private void sendMessages(List<Message> messages) {
-        for (Message message : messages) {
-            subscriptionOffsetCommitQueues.put(message);
+        hermesMetrics.incrementInflightCounter(subscription);
+        trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));
 
-            hermesMetrics.incrementInflightCounter(subscription);
-            trackers.get(subscription).logInflight(message, subscription);
-
-            sender.sendMessage(message);
-        }
+        sender.sendMessage(message);
     }
 
     public void stopConsuming() {

@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.common.broker;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
@@ -13,12 +11,9 @@ import kafka.utils.ZkUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.exception.BrokerInfoNotAvailableException;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.exception.PartitionsNotFoundForGivenTopicException;
 
 import javax.inject.Inject;
@@ -33,7 +28,6 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperBrokerStorage.class);
 
-    private static final String OFFSET_PATTERN_PATH = "/consumers/%s/offsets/%s";
     private static final String PARTITIONS = "/brokers/topics/%s/partitions";
 
     private final CuratorFramework curatorFramework;
@@ -43,23 +37,6 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
     public ZookeeperBrokerStorage(@Named(CuratorType.KAFKA) CuratorFramework curatorFramework, ObjectMapper objectMapper) {
         this.curatorFramework = curatorFramework;
         this.objectMapper = objectMapper;
-    }
-
-    @Override
-    public void setSubscriptionOffset(TopicName topicName, String subscriptionName, int partitionId, Long offset) {
-        try {
-            Long actualOffset = convertByteArrayToLong(curatorFramework.getData()
-                    .forPath(getPartitionOffsetPath(topicName, subscriptionName, partitionId)));
-
-            if (actualOffset > offset) {
-                curatorFramework.setData().forPath(
-                        getPartitionOffsetPath(topicName, subscriptionName, partitionId),
-                        offset.toString().getBytes(Charsets.UTF_8)
-                );
-            }
-        } catch (Exception exception) {
-            throw new InternalProcessingException(exception);
-        }
     }
 
     @Override
@@ -124,11 +101,6 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
     }
 
     @VisibleForTesting
-    protected String getPartitionOffsetPath(TopicName topicName, String subscriptionName, int partition) {
-        return Joiner.on("/").join(getOffsetPath(topicName, subscriptionName), partition);
-    }
-
-    @VisibleForTesting
     protected String getTopicPartitionLeaderPath(TopicAndPartition topicAndPartition) {
         return ZkUtils.getTopicPartitionLeaderAndIsrPath(topicAndPartition.topic(), topicAndPartition.partition());
     }
@@ -137,13 +109,4 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
     protected String getBrokerDetailsPath(int brokerId) {
         return ZkUtils.BrokerIdsPath() + "/" + brokerId;
     }
-
-    private String getOffsetPath(TopicName topicName, String subscriptionName) {
-        return String.format(OFFSET_PATTERN_PATH, Subscription.getId(topicName, subscriptionName), topicName.qualifiedName());
-    }
-
-    private Long convertByteArrayToLong(byte[] data) {
-        return Long.valueOf(new String(data, Charsets.UTF_8));
-    }
-
 }

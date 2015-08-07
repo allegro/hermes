@@ -15,10 +15,8 @@ import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
-
-import java.util.Optional;
 
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -52,9 +50,7 @@ public class DefaultErrorHandlerTest {
     @Mock
     private Subscription subscription;
 
-    private final Message message = new Message(
-            Optional.of("id"), OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), Optional.of(213232L), Optional.of(2132323L)
-    );
+    private final Message message = new Message("id", OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), 213232L, 2132323L);
 
     @Mock
     private Clock clock;
@@ -62,7 +58,7 @@ public class DefaultErrorHandlerTest {
     @Mock
     private Counter counter;
 
-    private TestTrackers trackers;
+    private TestTrackers trackers = new TestTrackers();
 
     private DefaultErrorHandler defaultErrorHandler;
 
@@ -72,7 +68,6 @@ public class DefaultErrorHandlerTest {
         when(subscription.getName()).thenReturn(SUBSCRIPTION_NAME);
         when(subscription.getTopicName()).thenReturn(QUALIFIED_TOPIC_NAME);
         when(clock.getTime()).thenReturn(CURRENT_TIME);
-        trackers = new TestTrackers();
         defaultErrorHandler = new DefaultErrorHandler(offsetHelper, hermesMetrics, undeliveredMessageLog, clock, trackers, CLUSTER);
         reset(hermesMetrics);
     }

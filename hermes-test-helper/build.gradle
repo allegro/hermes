@@ -2,10 +2,11 @@ dependencies {
 
     compile project(':hermes-api')
 
+    compile group: 'org.apache.avro', name: 'avro', version: '1.7.7'
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-proxy-client', version: versions.jersey
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
-    compile(group: 'org.apache.kafka', name: 'kafka_2.10', version: '0.8.2.0') {
+    compile(group: 'org.apache.kafka', name: 'kafka_2.10', version: '0.8.2.1') {
         exclude group: 'javax.jms'
         exclude group: 'com.sun.jdmk'
         exclude group: 'com.sun.jmx'
@@ -31,6 +32,6 @@ dependencies {
     }
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.0'
     compile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
-    compile group: 'org.assertj', name: 'assertj-core', version: '1.5.0'
+    compile group: 'org.assertj', name: 'assertj-core', version: '3.1.0'
     compile group: 'junit', name: 'junit', version: '4.11'
 }

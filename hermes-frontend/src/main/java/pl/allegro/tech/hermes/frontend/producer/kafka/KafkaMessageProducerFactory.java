@@ -18,8 +18,12 @@ import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS
 import static org.apache.kafka.clients.producer.ProducerConfig.BUFFER_MEMORY_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.COMPRESSION_TYPE_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.LINGER_MS_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION;
+import static org.apache.kafka.clients.producer.ProducerConfig.MAX_REQUEST_SIZE_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.METADATA_MAX_AGE_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.METRICS_SAMPLE_WINDOW_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.RETRIES_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.RETRY_BACKOFF_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.SEND_BUFFER_CONFIG;
@@ -31,8 +35,12 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_BATCH_
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_BLOCK_ON_BUFFER_FULL;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_BUFFER_MEMORY;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_COMPRESSION_CODEC;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_LINGER_MS;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_MAX_REQUEST_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_METADATA_FETCH_TIMEOUT_MS;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_METADATA_MAX_AGE;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRIES;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRY_BACKOFF_MS;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_TCP_SEND_BUFFER;
@@ -60,6 +68,10 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
         common.put(METADATA_MAX_AGE_CONFIG, getInt(KAFKA_PRODUCER_METADATA_MAX_AGE));
         common.put(KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
         common.put(VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
+        common.put(MAX_REQUEST_SIZE_CONFIG, getInt(KAFKA_PRODUCER_MAX_REQUEST_SIZE));
+        common.put(LINGER_MS_CONFIG, getInt(KAFKA_PRODUCER_LINGER_MS));
+        common.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, getInt(KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS));
+        common.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, getInt(KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION));
 
         Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(common, ACKS_CONFIG, ACK_LEADER));
         Producer<byte[], byte[]> everyoneConfirms = new KafkaProducer<>(copyWithEntryAdded(common, ACKS_CONFIG, ACK_ALL));

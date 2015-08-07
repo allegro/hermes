@@ -4,8 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.frontend.message.tracker.Trackers;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
+import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletResponse;

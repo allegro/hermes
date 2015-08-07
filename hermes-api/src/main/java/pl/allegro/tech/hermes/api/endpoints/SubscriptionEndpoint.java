@@ -80,10 +80,12 @@ public interface SubscriptionEndpoint {
 
     @PUT
     @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/retransmission")
     Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                         @PathParam("subscriptionName") String subscriptionName,
-                        Long timestamp);
+                        @DefaultValue("false") @QueryParam("dryRun") boolean dryRun,
+                        String formattedTime);
 
     @GET
     @Produces(APPLICATION_JSON)

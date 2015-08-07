@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.domain.subscription.offset;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 public class PartitionOffset {
@@ -7,7 +10,8 @@ public class PartitionOffset {
     private final int partition;
     private final long offset;
 
-    public PartitionOffset(long offset, int partition) {
+    @JsonCreator
+    public PartitionOffset(@JsonProperty("offset") long offset, @JsonProperty("partition") int partition) {
         this.offset = offset;
         this.partition = partition;
     }

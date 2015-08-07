@@ -2,12 +2,11 @@ package pl.allegro.tech.hermes.frontend.publishing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import java.io.IOException;
-
-import static pl.allegro.tech.hermes.frontend.publishing.MessageState.State.SENDING_TO_KAFKA;
 
 class TimeoutAsyncListener implements AsyncListener {
 
@@ -27,7 +26,7 @@ class TimeoutAsyncListener implements AsyncListener {
 
     @Override
     public void onTimeout(AsyncEvent event) throws IOException {
-        if (messageState.getState() != SENDING_TO_KAFKA) {
+        if (!messageState.wasDelegatedToKafka()) {
             httpResponder.timeout(event.getThrowable());
         }
     }

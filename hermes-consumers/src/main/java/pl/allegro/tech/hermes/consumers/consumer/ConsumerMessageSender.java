@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.Message;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -32,10 +31,9 @@ public class ConsumerMessageSender {
     private final ConsumerRateLimiter rateLimiter;
     private final MessageSender messageSender;
     private final Semaphore inflightSemaphore;
-    private final HermesMetrics hermesMetrics;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
-
+    private ConsumerLatencyTimer consumerLatencyTimer;
     private Subscription subscription;
 
     private volatile boolean consumerIsConsuming = true;
@@ -53,8 +51,9 @@ public class ConsumerMessageSender {
         this.inflightSemaphore = inflightSemaphore;
         this.retrySingleThreadExecutor = Executors.newSingleThreadExecutor();
         this.async = futureAsyncTimeout;
-        this.hermesMetrics = hermesMetrics;
         this.asyncTimeoutMs = asyncTimeoutMs;
+        this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
+
     }
 
     public void shutdown() {
@@ -67,12 +66,10 @@ public class ConsumerMessageSender {
      */
     public void sendMessage(final Message message) {
         while (consumerIsConsuming) {
-            final ConsumerLatencyTimer consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
             try {
                 submitAsyncSendMessageRequest(message, consumerLatencyTimer);
                 return;
             } catch (RuntimeException e) {
-                consumerLatencyTimer.stop();
                 handleFailedSending(message, failedResult(e));
                 if (isTtlExceeded(message)) {
                     handleMessageDiscarding(message, failedResult(e));
@@ -88,8 +85,9 @@ public class ConsumerMessageSender {
 
     private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
         rateLimiter.acquire();
+        ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
         final CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
-        response.thenAcceptAsync(new ResponseHandlingListener(message, consumerLatencyTimer), deliveryReportingExecutor);
+        response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
     }
 
     private boolean isTtlExceeded(Message message) {
@@ -126,16 +124,16 @@ public class ConsumerMessageSender {
     class ResponseHandlingListener implements java.util.function.Consumer<MessageSendingResult> {
 
         private final Message message;
-        private final ConsumerLatencyTimer consumerlatencyTimer;
+        private final ConsumerLatencyTimer.Context timer;
 
-        public ResponseHandlingListener(Message message, ConsumerLatencyTimer consumerlatencyTimer) {
+        public ResponseHandlingListener(Message message, ConsumerLatencyTimer.Context timer) {
             this.message = message;
-            this.consumerlatencyTimer = consumerlatencyTimer;
+            this.timer = timer;
         }
 
         @Override
         public void accept(MessageSendingResult result) {
-            consumerlatencyTimer.stop();
+            timer.stop();
             if (result.succeeded()) {
                 rateLimiter.registerSuccessfulSending();
                 handleMessageSendingSuccess(message);
@@ -153,7 +151,7 @@ public class ConsumerMessageSender {
             if (result.isLoggable()) {
                 logger.info(
                     format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                        subscription.getEndpoint().getEndpoint(), message.getId().orElse("unknown"), message.getOffset(), message.getPartition(),
+                        subscription.getEndpoint().getEndpoint(), message.getId(), message.getOffset(), message.getPartition(),
                         subscription.getId(), result.getRootCause()),
                     result.getFailure());
             }

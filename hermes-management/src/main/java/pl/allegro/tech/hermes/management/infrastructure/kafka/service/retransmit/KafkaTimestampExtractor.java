@@ -1,34 +1,28 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit;
 
-import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.json.MessageContentWrapper;
-import pl.allegro.tech.hermes.common.json.UnwrappedMessageContent;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
-
-import java.util.Optional;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
+import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 
 class KafkaTimestampExtractor {
 
-    private final TopicName topic;
+    private final Topic topic;
     private final int partition;
-    private final KafkaSingleMessageReader kafkaSingleMessageReader;
-    private final MessageContentWrapper messageContentWrapper;
+    private final SingleMessageReader singleMessageReader;
+    private final JsonMessageContentWrapper messageContentWrapper;
 
-    private static final String TIMESTAMP = "timestamp";
-
-    KafkaTimestampExtractor(TopicName topic, int partition, KafkaSingleMessageReader kafkaSingleMessageReader,
-                            MessageContentWrapper messageContentWrapper) {
+    KafkaTimestampExtractor(Topic topic, int partition, SingleMessageReader singleMessageReader,
+                            JsonMessageContentWrapper messageContentWrapper) {
 
         this.topic = topic;
         this.partition = partition;
-        this.kafkaSingleMessageReader = kafkaSingleMessageReader;
+        this.singleMessageReader = singleMessageReader;
         this.messageContentWrapper = messageContentWrapper;
     }
 
-    public Optional<Long> extract(Long offset) {
-        String message = kafkaSingleMessageReader.readMessage(topic, partition, offset);
-        UnwrappedMessageContent unwrappedMessage = messageContentWrapper.unwrapContent(message.getBytes());
-        return unwrappedMessage.getLongFromMetadata(TIMESTAMP);
+    public long extract(Long offset) {
+        String message = singleMessageReader.readMessage(topic, partition, offset);
+        return messageContentWrapper.unwrapContent(message.getBytes()).getMessageMetadata().getTimestamp();
     }
 
 }
