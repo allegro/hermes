@@ -1,13 +1,14 @@
-FROM java:8
+FROM jeanblanchard/java:8
 
 MAINTAINER Allegro
 
-RUN apt-get update && apt-get install -y unzip
+RUN apk update && apk add unzip bash
 
-ENV HERMES_CONSUMERS_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/consumers.properties
-ADD conf/consumers.properties /etc/consumers.properties
-ADD build/hermes-consumers-*.zip hermes-consumers.zip
-RUN unzip hermes-consumers.zip -d /opt
-RUN mv /opt/hermes-consumers-* /opt/hermes-consumers
+ENV HERMES_CONSUMERS_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/hermes/consumers.properties"
+ADD latest/consumers/consumers.properties /etc/hermes/consumers.properties
+ADD build/hermes-consumers-*.zip /tmp/hermes-consumers.zip
+RUN unzip /tmp/hermes-consumers.zip -d /opt \
+  && mv /opt/hermes-consumers-* /opt/hermes-consumers \
+  && rm /tmp/hermes-consumers.zip
 
 CMD /opt/hermes-consumers/bin/hermes-consumers

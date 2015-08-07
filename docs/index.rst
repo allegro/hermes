@@ -35,6 +35,8 @@ to create Kafka consumer, redeliver messages, keep eye on throughput limits etc.
 Read more
 ---------
 
+See how we change: :doc:`contents/changelog`.
+
 Overview
 ********
 

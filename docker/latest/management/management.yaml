@@ -1,13 +1,6 @@
 application:
   name: hermes-management
 
-zookeeper:
-  enabled: false
-
-discovery:
-  enabled: false
-  register: false
-
 kafka:
   clusters:
     -

@@ -5,9 +5,6 @@ This guide walks through setting up a working Hermes environment and making an e
 Requirements
 ------------
 
-    We are currently preparing new, pre-built Docker containers. In order for this guide to work, you should checkout ``hermes-0.7.1`` tag.
-
-
 * Java 8
 * `Docker <https://docs.docker.com/installation/#installation>`_ (1.6+) and `Docker compose <https://docs.docker.com/compose/install/>`_
 * curl
@@ -15,19 +12,44 @@ Requirements
 
 Setting up an environment
 -------------------------
-Hermes is composed of 3 components: frontend, consumers and management, also a running **Kafka** and **Zookeeper** instances are required, so it's a bit tricky to fire it up from scratch. The simplest way to run Hermes is by building prepared **Docker** manifests and compose them with **Docker compose**.
+Hermes is composed of 3 components: frontend, consumers and management, also a running **Kafka** and **Zookeeper** instances are required, so it's a bit tricky to fire it up from scratch.
+The simplest way to try Hermes is by running it with **Docker**.
 
-* Download Hermes source code
-* Go to ``docker`` directory
-* Run ``./build.sh``
+Running the latest release of Hermes
+____________________________________
 
-This builds the source code and prepares a Docker image for each Hermes component.
+Prebuilt docker images of latest hermes distribution are publicly available at `Docker Hub <https://registry.hub.docker.com/repos/allegro>`_.
 
-To run the whole system, including Kafka and Zookeeper, use the ``run.sh`` script which wraps Docker compose:
+To run the whole system, including latest Hermes release, Kafka and Zookeeper, use the ``run.sh`` script which wraps **Docker compose**:
 
-* ``./run.sh``
+* Download `docker-compose.yml <https://raw.githubusercontent.com/allegro/hermes/master/docker/docker-compose.yml>`_ configuration from Hermes source code and put into an empty directory
+* Run ``docker-compose up -d --no-recreate`` from that directory
 
-Now you should be able to invoke some management endpoint by making a call to Hermes REST API:
+A handy one-liner would be:
+
+.. code-block:: bash
+
+    $ mkdir $HOME/hermes && cd $_ && curl -O https://raw.githubusercontent.com/allegro/hermes/master/docker/docker-compose.yml && docker-compose up -d --no-recreate
+
+Running custom Hermes build
+___________________________
+
+You can easily build your own docker images:
+
+* Download Hermes source code and go to ``docker`` directory
+* Run ``./build.sh`` - this builds the source code and prepares a Docker image for each Hermes component
+* Modify ``docker-compose.yml`` in order to run your custom images by changing the ``image`` property of each Hermes component to ``allegro/hermes-<component>:<custom image tag>``
+* Run ``./run.sh`` (or ``docker-compose up -d --no-recreate``)
+
+Stopping the system
+___________________
+
+To stop the containers simply run the :code:`stop.sh` script (or ``docker-compose stop``).
+
+Checking the setup
+__________________
+
+If the system is running, you should be able to invoke some management endpoint by making a call to Hermes REST API:
 
 .. code-block:: bash
 
@@ -36,7 +58,7 @@ Now you should be able to invoke some management endpoint by making a call to He
 
 (replace :code:`192.168.59.103` with IP of your Docker host).
 
-To stop the images just run the :code:`stop.sh` script.
+
 
 Creating topic
 --------------
