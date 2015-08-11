@@ -34,6 +34,7 @@ public class CommonBinder extends AbstractBinder {
         bind(TopicFieldSchemaSourceProvider.class).to(SchemaSourceProvider.class).in(Singleton.class);
         bindFactory(JsonSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<SchemaRepository<JsonSchema>>() {});
         bindFactory(AvroSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<SchemaRepository<Schema>>() {});
+        bindSingletonFactory(SchemaRepoClientFactory.class);
 
         bindSingleton(CuratorClientFactory.class);
         bindSingleton(HermesMetrics.class);
