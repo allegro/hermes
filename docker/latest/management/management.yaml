@@ -21,8 +21,3 @@ metrics:
   graphiteHttpUri: http://graphite:80
   enabled: true
 
-spring:
-  data:
-    mongodb:
-      uri: mongodb://mongo:27017/hermes
-    type: filter

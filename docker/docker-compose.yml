@@ -22,11 +22,6 @@ graphite:
     - "80:80"
     - "2003:2003"
 
-mongo:
-  image: mongo
-  ports:
-    - "27017:27017"
-
 frontend:
   image: allegro/hermes-frontend
   ports:
