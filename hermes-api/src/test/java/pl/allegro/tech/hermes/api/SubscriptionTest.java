@@ -41,6 +41,18 @@ public class SubscriptionTest {
     }
 
     @Test
+    public void shouldDeserializeSubscriptionWithoutBackoff() throws Exception {
+        // given
+        String json = "{\"name\": \"test\", \"endpoint\": \"http://localhost:8888\", \"subscriptionPolicy\": {\"messageTtl\": 100}}";
+
+        // when
+        Subscription subscription = mapper.readValue(json, Subscription.class);
+
+        // then
+        assertThat(subscription.getSubscriptionPolicy().getMessageBackoff()).isEqualTo(100);
+    }
+
+    @Test
     public void shouldApplyPatchToSubscriptionPolicy() {
         //given
         SubscriptionPolicy message = subscriptionPolicy().withRate(8).build();

@@ -3,23 +3,32 @@ package pl.allegro.tech.hermes.frontend.validator;
 import com.google.common.collect.ImmutableList;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+
+import javax.inject.Inject;
 
 public class AvroTopicMessageValidator implements TopicMessageValidator {
 
-    private final GenericDatumReader<GenericRecord> validator;
+    private final SchemaRepository<Schema> schemaRepository;
 
-    public AvroTopicMessageValidator(Schema schema) {
-        validator = new GenericDatumReader<>(schema);
+    @Inject
+    public AvroTopicMessageValidator(SchemaRepository<Schema> schemaRepository) {
+        this.schemaRepository = schemaRepository;
     }
 
     @Override
-    public void check(byte[] message) {
+    public void check(byte[] message, Topic topic) {
+        if (!topic.getContentType().equals(Topic.ContentType.AVRO)) {
+            return;
+        }
+
+        Schema schema = schemaRepository.getSchema(topic);
         BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(message, null);
         try {
-            validator.read(null, binaryDecoder);
+            new GenericDatumReader<>(schema).read(null, binaryDecoder);
         } catch (Exception e) {
             throw new InvalidMessageException("Could not deserialize avro message with provided schema", ImmutableList.of(e.getMessage()));
         }

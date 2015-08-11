@@ -5,6 +5,7 @@ import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
+import pl.allegro.tech.hermes.api.SchemaSource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,8 +42,8 @@ public class AvroMessageContentWrapper implements MessageContentWrapper {
         }
     }
 
-    public Schema getWrappedSchema(String messageSchema) {
-        return getWrappedSchema(new Schema.Parser().parse(messageSchema));
+    public Schema getWrappedSchema(SchemaSource messageSchema) {
+        return getWrappedSchema(new Schema.Parser().parse(messageSchema.value()));
     }
 
     public Schema getWrappedSchema(Schema messageSchema) {
