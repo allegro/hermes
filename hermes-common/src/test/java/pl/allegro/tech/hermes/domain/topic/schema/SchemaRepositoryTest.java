@@ -5,14 +5,12 @@ import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.concurrent.Executors;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
@@ -133,11 +131,11 @@ public class SchemaRepositoryTest {
     }
 
     private SchemaRepository<String> schemaRepository(SchemaSourceProvider sourceRepository) {
-        return new SchemaRepository<>(new ConfigFactory(), sourceRepository, MoreExecutors.sameThreadExecutor(), uppercaseCompiler);
+        return new SchemaRepository<>(sourceRepository, MoreExecutors.sameThreadExecutor(), 10, 60 * 24, uppercaseCompiler);
     }
 
     private SchemaRepository<String> schemaRepository(SchemaSourceProvider sourceRepository, Ticker ticker) {
-        return new SchemaRepository<>(new ConfigFactory(), sourceRepository, MoreExecutors.sameThreadExecutor(), ticker, uppercaseCompiler);
+        return new SchemaRepository<>(sourceRepository, MoreExecutors.sameThreadExecutor(), ticker, 10, 60 * 24, uppercaseCompiler);
     }
 
     private static class FakeTicker extends Ticker {

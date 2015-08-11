@@ -11,14 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
 import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES;
 
 public class SchemaRepository<T> {
 
@@ -28,17 +24,22 @@ public class SchemaRepository<T> {
     private final SchemaCompiler<T> schemaCompiler;
 
     @Inject
-    public SchemaRepository(ConfigFactory configFactory, SchemaSourceProvider schemaRepository, ExecutorService reloadSchemaSourceExecutor, SchemaCompiler<T> schemaCompiler) {
-        this(configFactory, schemaRepository, reloadSchemaSourceExecutor, Ticker.systemTicker(), schemaCompiler);
+    public SchemaRepository(SchemaSourceProvider schemaRepository, ExecutorService reloadSchemaSourceExecutor,
+                            int schemaCacheRefreshAfterWriteMinutes, int schemaCacheExpireAfterWriteMinutes, SchemaCompiler<T> schemaCompiler) {
+        this(
+            schemaRepository, reloadSchemaSourceExecutor, Ticker.systemTicker(),
+            schemaCacheRefreshAfterWriteMinutes, schemaCacheExpireAfterWriteMinutes, schemaCompiler
+        );
     }
 
-    SchemaRepository(ConfigFactory configFactory, SchemaSourceProvider schemaSourceProvider, ExecutorService reloadSchemaSourceExecutor, Ticker ticker, SchemaCompiler<T> schemaCompiler) {
+    SchemaRepository(SchemaSourceProvider schemaSourceProvider, ExecutorService reloadSchemaSourceExecutor, Ticker ticker,
+                     int schemaCacheRefreshAfterWriteMinutes, int schemaCacheExpireAfterWriteMinutes, SchemaCompiler<T> schemaCompiler) {
         this.schemaCompiler = schemaCompiler;
         this.schemaCache = CacheBuilder
                 .newBuilder()
                 .ticker(ticker)
-                .refreshAfterWrite(configFactory.getIntProperty(SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES), TimeUnit.MINUTES)
-                .expireAfterWrite(configFactory.getIntProperty(SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES), TimeUnit.MINUTES)
+                .refreshAfterWrite(schemaCacheRefreshAfterWriteMinutes, TimeUnit.MINUTES)
+                .expireAfterWrite(schemaCacheExpireAfterWriteMinutes, TimeUnit.MINUTES)
                 .build(new SchemaCacheLoader(schemaSourceProvider, reloadSchemaSourceExecutor));
     }
 

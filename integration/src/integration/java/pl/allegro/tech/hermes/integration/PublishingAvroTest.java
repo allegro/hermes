@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import net.javacrumbs.jsonunit.core.Option;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeoutException;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -44,14 +46,16 @@ public class PublishingAvroTest extends IntegrationTest {
                 .withMessageSchema(user.getSchema().toString())
                 .withContentType(AVRO).build());
         operations.createSubscription("avro", "topic", "subscription", HTTP_ENDPOINT_URL);
-        remoteService.expectMessages("{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}");
 
         // when
         Response response = publisher.publish("avro.topic", user.create("Bob", 50, "blue"));
 
         // then
         assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
-        remoteService.waitUntilReceived();
+        remoteService.waitUntilReceived(
+            //ignore extra fields like __metadata
+            json -> assertThatJson(json).when(Option.IGNORING_EXTRA_FIELDS).isEqualTo("{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}")
+        );
     }
 
     @Test
@@ -81,7 +85,7 @@ public class PublishingAvroTest extends IntegrationTest {
         operations.buildTopic(topic);
 
         // when
-        Response response = publisher.publish("avro.topic2", "{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}");
+        Response response = publisher.publish("avro.topic2", "{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\",\"__metadata\": null}");
 
         // then
         assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());

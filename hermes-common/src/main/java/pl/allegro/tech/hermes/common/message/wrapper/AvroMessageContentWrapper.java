@@ -1,60 +1,47 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import org.apache.avro.Schema;
-import org.apache.avro.io.BinaryDecoder;
-import org.apache.avro.io.BinaryEncoder;
-import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.io.EncoderFactory;
-import pl.allegro.tech.hermes.api.SchemaSource;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.util.Utf8;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.util.Map;
 
-import static com.google.common.io.ByteStreams.toByteArray;
-import static org.apache.avro.SchemaBuilder.record;
+import static com.google.common.collect.ImmutableMap.of;
+import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
+import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.recordToBytes;
 
 public class AvroMessageContentWrapper {
 
-    public UnwrappedMessageContent unwrapContent(byte[] data, Schema schema) {
-        BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(data, null);
+    public static final String METADATA_MARKER = "__metadata";
+    public static final Utf8 METADATA_TIMESTAMP_KEY = new Utf8("timestamp");
+    public static final Utf8 METADATA_MESSAGE_ID_KEY = new Utf8("messageId");
 
+    @SuppressWarnings("unchecked")
+    public UnwrappedMessageContent unwrapContent(byte[] data, Schema schema) {
         try {
+            GenericRecord record = bytesToRecord(data, schema);
+            Map<Utf8, Utf8> metadata = (Map<Utf8, Utf8>) record.get(METADATA_MARKER);
             return new UnwrappedMessageContent(
-                new MessageMetadata(binaryDecoder.readLong(), binaryDecoder.readString()), toByteArray(binaryDecoder.inputStream()));
-        } catch (IOException exception) {
-            throw new UnwrappingException("Could not read hermes avro message", exception);
+                new MessageMetadata(
+                    Long.valueOf(metadata.get(METADATA_TIMESTAMP_KEY).toString()),
+                    metadata.get(METADATA_MESSAGE_ID_KEY).toString()),
+                data);
+        } catch (Exception exception) {
+            throw new UnwrappingException("Could not read avro message", exception);
         }
     }
 
     public byte[] wrapContent(byte[] message, String id, long timestamp, Schema schema) {
         try {
-            ByteArrayOutputStream wrappedMessage = new ByteArrayOutputStream();
-            BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(wrappedMessage, null);
-            encoder.writeLong(timestamp);
-            encoder.writeString(id);
-            encoder.writeFixed(message);
-            encoder.flush();
-            return wrappedMessage.toByteArray();
-        } catch (IOException exception) {
+            GenericRecord genericRecord = bytesToRecord(message, schema);
+            genericRecord.put(METADATA_MARKER, of(
+                METADATA_TIMESTAMP_KEY, Long.toString(timestamp),
+                METADATA_MESSAGE_ID_KEY, id
+            ));
+            return recordToBytes(genericRecord, schema);
+        } catch (Exception exception) {
             throw new WrappingException("Could not wrap avro message", exception);
         }
-    }
-
-    public Schema getWrappedSchema(SchemaSource messageSchema) {
-        return getWrappedSchema(new Schema.Parser().parse(messageSchema.value()));
-    }
-
-    public Schema getWrappedSchema(Schema messageSchema) {
-        return record("MessageWithMetadata")
-                .namespace("pl.allegro.tech.hermes")
-                .fields()
-                    .name("metadata").type().record("MessageMetadata")
-                        .fields()
-                            .name("timestamp").type().longType().noDefault()
-                            .name("id").type().stringType().noDefault()
-                        .endRecord().noDefault()
-                    .name("message").type(messageSchema).noDefault()
-                .endRecord();
     }
 
 }
