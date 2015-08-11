@@ -12,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
 
 public class JsonToAvroConverterTest {
-    private JsonToAvroConverter converter = new JsonToAvroConverter();
     private AvroUser avroUser;
 
     @Before
@@ -26,8 +25,8 @@ public class JsonToAvroConverterTest {
         String json = "{\"name\": \"Bob\",\"age\": 50,\"favoriteColor\": \"blue\"}";
 
         // when
-        byte[] avro = converter.convert(json.getBytes(), avroUser.getSchema());
-        
+        byte[] avro = JsonToAvroConverter.convert(json.getBytes(), avroUser.getSchema());
+
         // then
         BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(avro, null);
         assertThat(decoder.readString()).isEqualTo("Bob");
@@ -42,7 +41,7 @@ public class JsonToAvroConverterTest {
 
         // when & then
         assertThatThrownBy(() ->
-                converter.convert(json.getBytes(), avroUser.getSchema())).isInstanceOf(ConvertingException.class);
+                JsonToAvroConverter.convert(json.getBytes(), avroUser.getSchema())).isInstanceOf(ConvertingException.class);
     }
 
 }

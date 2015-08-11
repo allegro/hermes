@@ -8,7 +8,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.zookeeper.ZookeeperMessageCommitter;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
@@ -19,6 +18,7 @@ import java.nio.charset.Charset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 
 public class ZookeeperMessageCommitterTest {
 
@@ -85,7 +85,7 @@ public class ZookeeperMessageCommitterTest {
 
     private Subscription subscriptionForTopic(TopicName topicName) throws MalformedURLException {
         return subscription().withTopicName(topicName).withName("sub1").withEndpoint(EndpointAddress.of("http://touk.pl"))
-            .withSubscriptionPolicy(new SubscriptionPolicy(1, 1, false)).build();
+            .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build()).build();
     }
 
 

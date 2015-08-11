@@ -98,7 +98,6 @@ public enum Configs {
     CONSUMER_RATE_CONVERGENCE_FACTOR("consumer.rate.convergence.factor", 0.2),
     CONSUMER_RATE_FAILURES_NOCHANGE_TOLERANCE_RATIO("consumer.rate.failures.nochange.tolerance.ratio", 0.05),
     CONSUMER_RATE_FAILURES_SPEEDUP_TOLERANCE_RATIO("consumer.rate.failures.speedup.tolerance.ratio", 0.01),
-    CONSUMER_OFFSET_MONITOR_ENABLED("consumer.offset.monitor.enabled", true),
     CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD("consumer.offset.commit.queue.alert.minimal.idle.period", 3600),
     CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE("consumer.offset.commit.queue.alert.size", 20_000),
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
@@ -119,6 +118,10 @@ public enum Configs {
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),
     METADATA_CONTENT_ROOT("message.content.root", "metadata"),
     GRAPHITE_PREFIX("graphite.prefix", "stats.tech.hermes"),
+
+    SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES("schema.cache.refresh.after.write.minutes", 10),
+    SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES("schema.cache.expire.after.write.minutes", 60 * 24),
+    SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE("schema.cache.reload.thread.pool.size", 2),
 
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 

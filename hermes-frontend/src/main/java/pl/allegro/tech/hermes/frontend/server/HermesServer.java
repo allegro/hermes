@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.server;
 
-import com.google.common.collect.ImmutableList;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
@@ -14,14 +13,16 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
+import pl.allegro.tech.hermes.frontend.cache.topic.TopicCallback;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 
 import javax.inject.Inject;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
+
+import java.util.Collections;
 
 import static io.undertow.Handlers.path;
 import static io.undertow.Handlers.redirect;
@@ -39,7 +40,6 @@ public class HermesServer {
 
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configFactory;
-    private final MessageValidators messageValidators;
     private final TopicsCache topicsCache;
     private final PublishingServlet publishingServlet;
     private final HealthCheckService healthCheckService;
@@ -52,13 +52,11 @@ public class HermesServer {
             TopicsCache topicsCache,
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
-            MessageValidators messageValidators,
             PublishingServlet publishingServlet,
             HealthCheckService healthCheckService) {
 
         this.topicsCache = topicsCache;
         this.configFactory = configFactory;
-        this.messageValidators = messageValidators;
         this.hermesMetrics = hermesMetrics;
         this.publishingServlet = publishingServlet;
         this.healthCheckService = healthCheckService;
@@ -69,7 +67,7 @@ public class HermesServer {
     }
 
     public void start() {
-        topicsCache.start(ImmutableList.of(messageValidators));
+        topicsCache.start(Collections.<TopicCallback>emptyList());
         configureServer().start();
     }
 
