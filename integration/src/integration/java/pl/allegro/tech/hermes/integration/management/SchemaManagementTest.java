@@ -60,17 +60,17 @@ public class SchemaManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldRemoveJsonSchemaBySettingToEmpty() {
+    public void shouldRemoveJsonSchema() {
         // given
         operations.buildTopic("schemaGroup", "schemaTopic");
         management.schema().save("schemaGroup.schemaTopic", "{}");
 
         // when
-        management.schema().save("schemaGroup.schemaTopic", "");
+        management.schema().delete("schemaGroup.schemaTopic");
 
         // then
-        Response response = management.schema().get("schemaGroup.schemaTopic");
-        assertThat(response).hasStatus(Response.Status.NO_CONTENT);
+        Response getResponse = management.schema().get("schemaGroup.schemaTopic");
+        assertThat(getResponse).hasStatus(Response.Status.NO_CONTENT);
     }
 
     @Test
@@ -86,7 +86,7 @@ public class SchemaManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldNotRemoveAvroSchemaBySettingToEmpty() throws IOException {
+    public void shouldNotRemoveAvroSchema() throws IOException {
         // given
         AvroUser avroUser = new AvroUser();
         Topic avroTopic = topic().withName("avroGroup", "avroTopic")
@@ -96,7 +96,7 @@ public class SchemaManagementTest extends IntegrationTest {
         operations.buildTopic(avroTopic);
 
         // when
-        Response response = management.schema().save("avroGroup.avroTopic", "");
+        Response response = management.schema().delete("avroGroup.avroTopic");
 
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST);

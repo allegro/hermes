@@ -14,11 +14,11 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -30,7 +30,6 @@ import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChang
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +37,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.Subscription.State.*;
+import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -233,7 +233,7 @@ public class ConsumersSupervisorTest {
         // given
         final Subscription oldSubscription = createSubscription(SOME_TOPIC_NAME, SOME_SUBSCRIPTION_NAME);
         Subscription newSubscription = createSubscription(SOME_TOPIC_NAME, SOME_SUBSCRIPTION_NAME);
-        newSubscription.setSubscriptionPolicy(new SubscriptionPolicy(2, 1000, false));
+        newSubscription.setSubscriptionPolicy(new SubscriptionPolicy(2, 1000, false, 10));
         newSubscription.setState(Subscription.State.ACTIVE);
 
         when(consumer.getSubscription()).thenReturn(oldSubscription);
@@ -262,7 +262,7 @@ public class ConsumersSupervisorTest {
 
         // when
         for (int i = 0; i < 100; i++) {
-            Future<?> submit = executor.submit(() -> {
+            executor.submit(() -> {
                 consumersSupervisor.onSubscriptionCreated(subscription);
                 latch.countDown();
             });
@@ -283,7 +283,7 @@ public class ConsumersSupervisorTest {
         return subscription().applyDefaults()
                 .withTopicName(topicName)
                 .withName(subscriptionName)
-                .withSubscriptionPolicy(new SubscriptionPolicy(1, 10000, false))
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
                 .withDescription("desc")
                 .build();
     }
