@@ -1,8 +1,9 @@
-package pl.allegro.tech.hermes.domain.topic.schema;
+package pl.allegro.tech.hermes.infrastructure.schema;
 
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaSourceProvider;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
 
@@ -19,7 +20,8 @@ public class AvroSchemaRepositoryFactory extends AbstractSchemaRepositoryFactory
 
     @Override
     public SchemaRepository<Schema> provide() {
-        return new SchemaRepository<>(configFactory, schemaSourceProvider, createSchemaReloadExecutorService(configFactory, "avro"), source -> new Schema.Parser().parse(source.value()));
+        return new SchemaRepository<>(configFactory, schemaSourceProvider,
+                createSchemaReloadExecutorService(configFactory, "avro"), source -> new Schema.Parser().parse(source.value()));
     }
 
     @Override

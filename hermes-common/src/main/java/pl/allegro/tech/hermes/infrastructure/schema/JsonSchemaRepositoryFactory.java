@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.domain.topic.schema;
+package pl.allegro.tech.hermes.infrastructure.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
@@ -7,6 +7,8 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.HermesException;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaSourceProvider;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
 import java.io.IOException;

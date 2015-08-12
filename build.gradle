@@ -40,14 +40,15 @@ allprojects {
     targetCompatibility = 1.8
 
     project.ext.versions = [
-            guava   : '16.0.1',
-            jackson : '2.5.1',
-            jersey  : '2.12',
-            curator : '2.7.0',
-            wiremock: '1.47',
-            fongo   : '1.6.1',
-            spock   : '1.0-groovy-2.4',
-            alpn_api: '1.1.2.v20150522'
+            guava       : '16.0.1',
+            jackson     : '2.5.1',
+            jersey      : '2.12',
+            curator     : '2.7.0',
+            wiremock    : '1.47',
+            fongo       : '1.6.1',
+            spock       : '1.0-groovy-2.4',
+            alpn_api    : '1.1.2.v20150522',
+            schemarepo  : '0.1.3'
     ]
 
     repositories {

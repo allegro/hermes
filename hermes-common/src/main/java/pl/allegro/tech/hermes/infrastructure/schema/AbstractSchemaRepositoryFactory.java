@@ -1,9 +1,10 @@
-package pl.allegro.tech.hermes.domain.topic.schema;
+package pl.allegro.tech.hermes.infrastructure.schema;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

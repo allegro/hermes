@@ -28,8 +28,8 @@ public class SchemaRepository<T> {
     private final SchemaCompiler<T> schemaCompiler;
 
     @Inject
-    public SchemaRepository(ConfigFactory configFactory, SchemaSourceProvider schemaRepository, ExecutorService reloadSchemaSourceExecutor, SchemaCompiler<T> schemaCompiler) {
-        this(configFactory, schemaRepository, reloadSchemaSourceExecutor, Ticker.systemTicker(), schemaCompiler);
+    public SchemaRepository(ConfigFactory configFactory, SchemaSourceProvider schemaSourceProvider, ExecutorService reloadSchemaSourceExecutor, SchemaCompiler<T> schemaCompiler) {
+        this(configFactory, schemaSourceProvider, reloadSchemaSourceExecutor, Ticker.systemTicker(), schemaCompiler);
     }
 
     SchemaRepository(ConfigFactory configFactory, SchemaSourceProvider schemaSourceProvider, ExecutorService reloadSchemaSourceExecutor, Ticker ticker, SchemaCompiler<T> schemaCompiler) {
