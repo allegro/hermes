@@ -35,3 +35,6 @@ spring:
     type: filter
 
 spring.groovy.template.check-template-location: false
+
+schemaRepository:
+  repositoryType: topic_field

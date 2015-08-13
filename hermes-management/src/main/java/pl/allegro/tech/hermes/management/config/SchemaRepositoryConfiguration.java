@@ -7,15 +7,17 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.infrastructure.schema.repo.JerseySchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClient;
-import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClientFactory;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceRepository;
 import pl.allegro.tech.hermes.management.domain.topic.schema.TopicFieldSchemaSourceRepository;
-import pl.allegro.tech.hermes.management.infrastructure.schema.ZookeeperSchemaSourceRepository;
 import pl.allegro.tech.hermes.management.infrastructure.schema.SchemaRepoSchemaSourceRepository;
+import pl.allegro.tech.hermes.management.infrastructure.schema.ZookeeperSchemaSourceRepository;
+
+import javax.ws.rs.client.ClientBuilder;
+import java.net.URI;
 
 @Configuration
 @EnableConfigurationProperties(SchemaRepositoryProperties.class)
@@ -33,6 +35,9 @@ public class SchemaRepositoryConfiguration {
     @Lazy
     private ZookeeperPaths zookeeperPaths;
 
+    @Autowired
+    private SchemaRepositoryProperties schemaRepositoryProperties;
+
     @Bean
     @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "zookeeper", matchIfMissing = true)
     public SchemaSourceRepository zookeeperSchemaSourceRepository() {
@@ -42,12 +47,12 @@ public class SchemaRepositoryConfiguration {
     @Bean
     @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "schemaRepo")
     public SchemaSourceRepository schemaRepoSchemaSourceRepository() {
-        SchemaRepoClient client = new SchemaRepoClientFactory(new ConfigFactory()).provide();
+        SchemaRepoClient client = new JerseySchemaRepoClient(ClientBuilder.newClient(), URI.create(schemaRepositoryProperties.getSchemaRepoServerUrl()));
         return new SchemaRepoSchemaSourceRepository(client);
     }
 
     @Bean
-    @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "topicField")
+    @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "topic_field")
     public SchemaSourceRepository topicFieldSchemaSourceRepository() {
         return new TopicFieldSchemaSourceRepository(topicService);
     }

@@ -108,13 +108,16 @@ public class PublishingServlet extends HttpServlet {
         new MessageReader(request, chunkSize, topic.getName(), hermesMetrics, messageState,
                 messageContent -> asyncContext.start(() -> {
                     try {
+                        System.out.println("XXX READ XXX");
                         Message message = contentTypeEnforcer.enforce(request.getContentType(),
                                 new Message(messageId, messageContent, clock.getTime()), topic);
 
+                        System.out.println("XXX CHECKED XXX");
                         messageValidators.check(topic, message.getData());
 
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 
+                        System.out.println("XXX PUBLISHING XXX");
                         messagePublisher.publish(message, topic, messageState,
                                 listeners,
                                 new AsyncContextExecutionCallback(asyncContext,
