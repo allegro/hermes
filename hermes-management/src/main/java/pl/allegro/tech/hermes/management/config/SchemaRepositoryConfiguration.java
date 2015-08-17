@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -39,19 +40,22 @@ public class SchemaRepositoryConfiguration {
     private SchemaRepositoryProperties schemaRepositoryProperties;
 
     @Bean
+    @ConditionalOnMissingBean(SchemaSourceRepository.class)
     @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "zookeeper", matchIfMissing = true)
     public SchemaSourceRepository zookeeperSchemaSourceRepository() {
         return new ZookeeperSchemaSourceRepository(storageZookeeper, zookeeperPaths);
     }
 
     @Bean
-    @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "schemaRepo")
+    @ConditionalOnMissingBean(SchemaSourceRepository.class)
+    @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "schema_repo")
     public SchemaSourceRepository schemaRepoSchemaSourceRepository() {
         SchemaRepoClient client = new JerseySchemaRepoClient(ClientBuilder.newClient(), URI.create(schemaRepositoryProperties.getSchemaRepoServerUrl()));
         return new SchemaRepoSchemaSourceRepository(client);
     }
 
     @Bean
+    @ConditionalOnMissingBean(SchemaSourceRepository.class)
     @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "topic_field")
     public SchemaSourceRepository topicFieldSchemaSourceRepository() {
         return new TopicFieldSchemaSourceRepository(topicService);

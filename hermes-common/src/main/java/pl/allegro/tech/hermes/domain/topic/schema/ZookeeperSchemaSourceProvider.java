@@ -26,7 +26,7 @@ public class ZookeeperSchemaSourceProvider implements SchemaSourceProvider {
     public Optional<SchemaSource> get(Topic topic) {
         try {
             byte[] schemaBytes = curatorFramework.getData().forPath(zkPaths.topicPath(topic.getName(), SCHEMA_SUFFIX));
-            return Optional.ofNullable(SchemaSource.valueOf(new String(schemaBytes, Charset.defaultCharset())));
+            return Optional.of(SchemaSource.valueOf(new String(schemaBytes, Charset.defaultCharset())));
         } catch (KeeperException.NoNodeException ex) {
             return Optional.empty();
         } catch (Exception ex) {
