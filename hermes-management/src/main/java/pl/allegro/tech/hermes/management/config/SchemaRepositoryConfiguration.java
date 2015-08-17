@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.management.config;
 
 import org.apache.curator.framework.CuratorFramework;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.avro.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -8,6 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.JerseySchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -20,13 +23,19 @@ import pl.allegro.tech.hermes.management.infrastructure.schema.ZookeeperSchemaSo
 import javax.ws.rs.client.ClientBuilder;
 import java.net.URI;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @Configuration
-@EnableConfigurationProperties(SchemaRepositoryProperties.class)
+@EnableConfigurationProperties({SchemaRepositoryProperties.class, SchemaCacheProperties.class})
 public class SchemaRepositoryConfiguration {
 
     @Autowired
+    SchemaCacheProperties schemaCacheProperties;
+    
+    @Autowired
     @Lazy
-    private TopicService topicService;
+    TopicService topicService;
 
     @Autowired
     @Lazy
@@ -50,7 +59,7 @@ public class SchemaRepositoryConfiguration {
     @ConditionalOnMissingBean(SchemaSourceRepository.class)
     @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "schema_repo")
     public SchemaSourceRepository schemaRepoSchemaSourceRepository() {
-        SchemaRepoClient client = new JerseySchemaRepoClient(ClientBuilder.newClient(), URI.create(schemaRepositoryProperties.getSchemaRepoServerUrl()));
+        SchemaRepoClient client = new JerseySchemaRepoClient(ClientBuilder.newClient(), URI.create(schemaRepositoryProperties.getServerUrl()));
         return new SchemaRepoSchemaSourceRepository(client);
     }
 
@@ -59,6 +68,20 @@ public class SchemaRepositoryConfiguration {
     @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "topic_field")
     public SchemaSourceRepository topicFieldSchemaSourceRepository() {
         return new TopicFieldSchemaSourceRepository(topicService);
+    }
+
+    @Bean
+    public SchemaRepository<Schema> avroSchemaRepository(SchemaSourceRepository schemaSourceRepository) {
+        return new SchemaRepository<>(
+                schemaSourceRepository,
+                createSchemaReloadExecutorService(schemaCacheProperties.getPoolSize(), "avro"),
+                schemaCacheProperties.getRefreshAfterWriteMinutes(),
+                schemaCacheProperties.getExpireAfterWriteMinutes(),
+                source -> new Schema.Parser().parse(source.value()));
+    }
+
+    private ExecutorService createSchemaReloadExecutorService(int poolSize, String format) {
+        return Executors.newFixedThreadPool(poolSize, new ThreadFactoryBuilder().setNameFormat(format + "-schema-reloader-%d").build());
     }
 
 }

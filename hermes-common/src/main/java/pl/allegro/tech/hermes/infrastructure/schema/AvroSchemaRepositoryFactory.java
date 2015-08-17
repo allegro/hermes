@@ -7,6 +7,10 @@ import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
 
+import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES;
+import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES;
+import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE;
+
 public class AvroSchemaRepositoryFactory extends AbstractSchemaRepositoryFactory<Schema> {
 
     private final ConfigFactory configFactory;
@@ -20,8 +24,12 @@ public class AvroSchemaRepositoryFactory extends AbstractSchemaRepositoryFactory
 
     @Override
     public SchemaRepository<Schema> provide() {
-        return new SchemaRepository<>(configFactory, schemaSourceProvider,
-                createSchemaReloadExecutorService(configFactory, "avro"), source -> new Schema.Parser().parse(source.value()));
+        return new SchemaRepository<>(
+            schemaSourceProvider,
+            createSchemaReloadExecutorService(configFactory.getIntProperty(SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE), "avro"),
+            configFactory.getIntProperty(SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES),
+            configFactory.getIntProperty(SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES),
+            source -> new Schema.Parser().parse(source.value()));
     }
 
     @Override

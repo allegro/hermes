@@ -23,6 +23,6 @@ public class AvroToJsonConverterTest {
         byte[] json = AvroToJsonConverter.convert(avroUser.create("Bob", 50, "blue"), avroUser.getSchema());
 
         //then
-        assertThatJson(new String(json)).isEqualTo("{\"name\": \"Bob\",\"age\": 50,\"favoriteColor\": \"blue\"}");
+        assertThatJson(new String(json)).isEqualTo("{\"name\": \"Bob\",\"age\": 50,\"favoriteColor\": \"blue\",\"__metadata\":null}");
     }
 }

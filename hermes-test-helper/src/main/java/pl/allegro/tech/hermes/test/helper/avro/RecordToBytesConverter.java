@@ -13,9 +13,9 @@ import org.apache.avro.io.EncoderFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class RecordToBytesConverter {
+public interface RecordToBytesConverter {
 
-    public static byte[] recordToBytes(GenericRecord record, Schema schema) throws IOException {
+    static byte[] recordToBytes(GenericRecord record, Schema schema) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(out, null);
         DatumWriter<GenericRecord> writer = new GenericDatumWriter<>(schema);
@@ -25,7 +25,7 @@ public class RecordToBytesConverter {
         return out.toByteArray();
     }
 
-    public static GenericRecord bytesToRecord(byte [] data, Schema schema) throws IOException {
+    static GenericRecord bytesToRecord(byte [] data, Schema schema) throws IOException {
         GenericDatumReader<GenericRecord> reader = new GenericDatumReader<>(schema);
         BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(data, null);
         GenericRecord record = reader.read(null, binaryDecoder);

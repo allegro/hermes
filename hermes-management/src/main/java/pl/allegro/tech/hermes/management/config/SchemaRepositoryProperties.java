@@ -3,26 +3,26 @@ package pl.allegro.tech.hermes.management.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.config.Configs;
 
-@ConfigurationProperties(prefix = "schemaRepository")
+@ConfigurationProperties(prefix = "schema.repository")
 public class SchemaRepositoryProperties {
 
-    private String repositoryType = Configs.SCHEMA_REPOSITORY_TYPE.getDefaultValue();
+    private String type = Configs.SCHEMA_REPOSITORY_TYPE.getDefaultValue();
 
-    private String schemaRepoServerUrl = Configs.SCHEMA_REPO_SERVER_URL.getDefaultValue();
+    private String serverUrl = Configs.SCHEMA_REPO_SERVER_URL.getDefaultValue();
 
-    public String getRepositoryType() {
-        return repositoryType;
+    public String getType() {
+        return type;
     }
 
-    public void setRepositoryType(String repositoryType) {
-        this.repositoryType = repositoryType;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getSchemaRepoServerUrl() {
-        return schemaRepoServerUrl;
+    public String getServerUrl() {
+        return serverUrl;
     }
 
-    public void setSchemaRepoServerUrl(String schemaRepoServerUrl) {
-        this.schemaRepoServerUrl = schemaRepoServerUrl;
+    public void setServerUrl(String serverUrl) {
+        this.serverUrl = serverUrl;
     }
 }
