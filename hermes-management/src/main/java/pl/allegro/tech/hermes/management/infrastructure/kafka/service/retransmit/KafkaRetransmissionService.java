@@ -10,8 +10,8 @@ import kafka.javaapi.consumer.SimpleConsumer;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
-import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -27,7 +27,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
 
     private final BrokerStorage brokerStorage;
     private final SingleMessageReader singleMessageReader;
-    private final JsonMessageContentWrapper messageContentWrapper;
+    private final MessageContentWrapper messageContentWrapper;
     private final SubscriptionOffsetChangeIndicator subscriptionOffsetChange;
     private final SimpleConsumerPool simpleConsumerPool;
     private final TopicRepository topicRepository;
@@ -35,7 +35,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
     public KafkaRetransmissionService(
             BrokerStorage brokerStorage,
             SingleMessageReader singleMessageReader,
-            JsonMessageContentWrapper messageContentWrapper,
+            MessageContentWrapper messageContentWrapper,
             SubscriptionOffsetChangeIndicator subscriptionOffsetChange,
             SimpleConsumerPool simpleConsumerPool,
             TopicRepository topicRepository) {

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.config.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kafka.utils.ZKStringSerializer$;
 import org.I0Itec.zkclient.ZkClient;
+import org.apache.avro.Schema;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
@@ -15,11 +16,10 @@ import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPoolConfig;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaSourceProvider;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
@@ -50,7 +50,7 @@ public class KafkaConfiguration {
     ObjectMapper mapper;
 
     @Autowired
-    JsonMessageContentWrapper messageContentWrapper;
+    MessageContentWrapper messageContentWrapper;
 
     @Autowired
     SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
@@ -61,19 +61,20 @@ public class KafkaConfiguration {
     @Autowired
     TopicRepository topicRepository;
 
+    @Autowired
+    SchemaRepository<Schema> avroSchemaRepository;
+
     private final List<ZkClient> zkClients = new ArrayList<>();
     private final List<CuratorFramework> curators = new ArrayList<>();
 
     @Bean
-    MultiDCAwareService multiDCAwareService(SchemaSourceProvider schemaSourceRepository) {
+    MultiDCAwareService multiDCAwareService() {
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties));
             SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
             SingleMessageReader singleMessageReader = new KafkaSingleMessageReader(
-                    new KafkaRawMessageReader(simpleConsumerPool),
-                    new AvroMessageContentWrapper(),
-                    schemaSourceRepository
+                new KafkaRawMessageReader(simpleConsumerPool), avroSchemaRepository
             );
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                 storage,

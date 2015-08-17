@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.frontend.publishing.callbacks.MessageStatePublishi
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
+import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -48,6 +49,7 @@ public class PublishingServlet extends HttpServlet {
     private final Clock clock;
     private final MessagePublisher messagePublisher;
     private final MessageContentTypeEnforcer contentTypeEnforcer;
+    private final MetadataAddingMessageConverter metadataAddingMessageConverter;
     private final BrokerListeners listeners;
 
     private final Integer defaultAsyncTimeout;
@@ -64,13 +66,15 @@ public class PublishingServlet extends HttpServlet {
                              Clock clock,
                              MessagePublisher messagePublisher,
                              BrokerListeners listeners,
-                             MessageContentTypeEnforcer contentTypeEnforcer) {
+                             MessageContentTypeEnforcer contentTypeEnforcer,
+                             MetadataAddingMessageConverter metadataAddingMessageConverter) {
 
         this.topicsCache = topicsCache;
         this.messageValidators = messageValidators;
         this.clock = clock;
         this.messagePublisher = messagePublisher;
         this.contentTypeEnforcer = contentTypeEnforcer;
+        this.metadataAddingMessageConverter = metadataAddingMessageConverter;
         this.errorSender = new ErrorSender(objectMapper);
         this.hermesMetrics = hermesMetrics;
         this.trackers = trackers;
@@ -113,6 +117,7 @@ public class PublishingServlet extends HttpServlet {
 
                         messageValidators.check(topic, message.getData());
 
+                        message = metadataAddingMessageConverter.addMetadata(message, topic);
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 
                         messagePublisher.publish(message, topic, messageState,

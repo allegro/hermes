@@ -75,7 +75,7 @@ public class ConsumerFactory {
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
 
         return new Consumer(
-            messageReceiverFactory.createMessageReceiver(topic.getContentType(), subscription),
+            messageReceiverFactory.createMessageReceiver(topic, subscription),
             hermesMetrics,
             subscription,
             consumerRateLimiter,

@@ -5,6 +5,6 @@ import pl.allegro.tech.hermes.api.Topic;
 
 public interface ReceiverFactory {
 
-    MessageReceiver createMessageReceiver(Topic.ContentType receivingContentType, Subscription subscription);
+    MessageReceiver createMessageReceiver(Topic receivingTopic, Subscription subscription);
 
 }

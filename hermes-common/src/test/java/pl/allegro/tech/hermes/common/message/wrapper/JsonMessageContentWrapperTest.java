@@ -24,6 +24,7 @@ public class JsonMessageContentWrapperTest {
     private final JsonMessageContentWrapper contentWrapper = new JsonMessageContentWrapper(content.key.toString(), "metadata", mapper);
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldWrapJsonWithMetadata() {
         //when
         byte[] result = contentWrapper.wrapContent(CONTENT, metadata.getId(), metadata.getTimestamp());

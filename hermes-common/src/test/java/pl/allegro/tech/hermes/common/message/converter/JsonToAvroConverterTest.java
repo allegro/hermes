@@ -22,7 +22,7 @@ public class JsonToAvroConverterTest {
     @Test
     public void shouldConvertToAvro() throws IOException {
         // given
-        String json = "{\"name\": \"Bob\",\"age\": 50,\"favoriteColor\": \"blue\"}";
+        String json = "{\"name\": \"Bob\",\"age\": 50,\"favoriteColor\": \"blue\", \"__metadata\": null}";
 
         // when
         byte[] avro = JsonToAvroConverter.convert(json.getBytes(), avroUser.getSchema());

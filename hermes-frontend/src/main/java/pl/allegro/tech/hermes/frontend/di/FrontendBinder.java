@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.publishing.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.MessagePublisher;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
+import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.*;
@@ -42,6 +43,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageContentTypeEnforcer.class);
         bindSingleton(JsonTopicMessageValidator.class);
         bindSingleton(AvroTopicMessageValidator.class);
+        bindSingleton(MetadataAddingMessageConverter.class);
         bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {});
     }
 
