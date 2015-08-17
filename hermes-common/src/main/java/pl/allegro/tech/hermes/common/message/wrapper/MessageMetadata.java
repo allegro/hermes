@@ -7,11 +7,11 @@ import java.util.Objects;
 
 public class MessageMetadata {
 
-    private final Long timestamp;
+    private final long timestamp;
     private final String id;
 
     @JsonCreator
-    public MessageMetadata(@JsonProperty("timestamp") Long timestamp, @JsonProperty("id") String id) {
+    public MessageMetadata(@JsonProperty("timestamp") long timestamp, @JsonProperty("id") String id) {
         this.id = id;
         this.timestamp = timestamp;
     }
@@ -20,7 +20,7 @@ public class MessageMetadata {
         return id;
     }
 
-    public Long getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 

@@ -17,7 +17,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageMetadata;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperDispatcher;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -44,7 +44,7 @@ public class KafkaMessageReceiverTest {
             format("{\"_w\":true,\"metadata\":{\"id\":\"%s\",\"timestamp\":%d},\"%s\":%s}", METADATA.getId(), METADATA.getTimestamp(), "message", CONTENT);
 
     @Mock
-    private MessageContentWrapperDispatcher messageContentWrapperDispatcher;
+    private MessageContentWrapper messageContentWrapper;
 
     @Mock
     private ConsumerConfig consumerConfig;
@@ -64,7 +64,7 @@ public class KafkaMessageReceiverTest {
         Map<String, List<kafka.consumer.KafkaStream<byte[], byte[]>>> consumerMap = Maps.newHashMap();
         consumerMap.put(TOPIC.getQualifiedName(), ImmutableList.of(kafkaStream).asList());
         when(consumerConnector.createMessageStreams(any(Map.class))).thenReturn(consumerMap);
-        when(messageContentWrapperDispatcher.unwrap(WRAPPED_MESSAGE_CONTENT.getBytes(), TOPIC)).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
+        when(messageContentWrapper.unwrap(WRAPPED_MESSAGE_CONTENT.getBytes(), TOPIC)).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
     }
 
     @Test
@@ -108,7 +108,7 @@ public class KafkaMessageReceiverTest {
 
     private KafkaMessageReceiver getKafkaMessageReceiver() {
         return new KafkaMessageReceiver(TOPIC, consumerConnector, new ConfigFactory(),
-                messageContentWrapperDispatcher, timer, new SystemClock());
+                messageContentWrapper, timer, new SystemClock());
     }
 
 }

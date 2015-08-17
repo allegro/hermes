@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperDispatcher;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -25,12 +25,12 @@ public class KafkaMessageReceiver implements MessageReceiver {
     private final ConsumerIterator<byte[], byte[]> iterator;
     private final Topic topic;
     private final ConsumerConnector consumerConnector;
-    private final MessageContentWrapperDispatcher contentWrapper;
+    private final MessageContentWrapper contentWrapper;
     private final Timer readingTimer;
     private final Clock clock;
 
     public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, ConfigFactory configFactory,
-                                MessageContentWrapperDispatcher contentWrapper, Timer readingTimer, Clock clock) {
+                                MessageContentWrapper contentWrapper, Timer readingTimer, Clock clock) {
         this.topic = topic;
         this.consumerConnector = consumerConnector;
         this.contentWrapper = contentWrapper;

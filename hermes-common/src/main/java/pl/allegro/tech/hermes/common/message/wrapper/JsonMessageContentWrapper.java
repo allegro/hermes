@@ -36,7 +36,7 @@ public class JsonMessageContentWrapper {
         this.mapper = mapper;
     }
 
-    public byte[] wrapContent(byte[] json, String id, long timestamp) {
+    byte[] wrapContent(byte[] json, String id, long timestamp) {
         try {
             return wrapContent(mapper.writeValueAsBytes(new MessageMetadata(timestamp, id)), json);
         } catch (IOException e) {
@@ -58,7 +58,7 @@ public class JsonMessageContentWrapper {
         return stream.toByteArray();
     }
 
-    public UnwrappedMessageContent unwrapContent(byte[] json) {
+    UnwrappedMessageContent unwrapContent(byte[] json) {
         int rootIndex = indexOf(json, contentRootField);
         int metadataIndex = indexOf(json, metadataRootField);
         try {

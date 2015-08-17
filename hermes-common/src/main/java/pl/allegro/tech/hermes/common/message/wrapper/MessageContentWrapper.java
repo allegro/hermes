@@ -6,16 +6,16 @@ import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
 
-public class MessageContentWrapperDispatcher {
+public class MessageContentWrapper {
 
     private final JsonMessageContentWrapper jsonMessageContentWrapper;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
     private final SchemaRepository<Schema> avroSchemaRepository;
 
     @Inject
-    public MessageContentWrapperDispatcher(JsonMessageContentWrapper jsonMessageContentWrapper,
-                                           AvroMessageContentWrapper avroMessageContentWrapper,
-                                           SchemaRepository<Schema> avroSchemaRepository) {
+    public MessageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
+                                 AvroMessageContentWrapper avroMessageContentWrapper,
+                                 SchemaRepository<Schema> avroSchemaRepository) {
         this.jsonMessageContentWrapper = jsonMessageContentWrapper;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
         this.avroSchemaRepository = avroSchemaRepository;

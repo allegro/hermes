@@ -15,14 +15,14 @@ public class Message {
     private int partition;
 
     private String topic;
-    private Long publishingTimestamp;
+    private long publishingTimestamp;
     private long readingTimestamp;
 
     private byte[] data;
 
     private Message() {}
 
-    public Message(String id, long offset, int partition, String topic, byte[] content, Long publishingTimestamp, long readingTimestamp) {
+    public Message(String id, long offset, int partition, String topic, byte[] content, long publishingTimestamp, long readingTimestamp) {
         this.id = id;
         this.offset = offset;
         this.partition = partition;
@@ -32,7 +32,7 @@ public class Message {
         this.readingTimestamp = readingTimestamp;
     }
 
-    public Long getPublishingTimestamp() {
+    public long getPublishingTimestamp() {
         return publishingTimestamp;
     }
 

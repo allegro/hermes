@@ -7,11 +7,11 @@ public class MessageMetadata {
     private final int partition;
     private final String topic;
     private final String subscription;
-    private final Long publishingTimestamp;
+    private final long publishingTimestamp;
     private final long readingTimestamp;
 
     public MessageMetadata(String id, long offset, int partition, String topic, String subscription,
-                           Long publishingTimestamp, long readingTimestamp) {
+                           long publishingTimestamp, long readingTimestamp) {
         this.id = id;
         this.offset = offset;
         this.partition = partition;
@@ -41,7 +41,7 @@ public class MessageMetadata {
         return subscription;
     }
 
-    public Long getPublishingTimestamp() {
+    public long getPublishingTimestamp() {
         return publishingTimestamp;
     }
 

@@ -17,13 +17,13 @@ public class AvroMessageContentWrapper {
     public static final Utf8 METADATA_MESSAGE_ID_KEY = new Utf8("messageId");
 
     @SuppressWarnings("unchecked")
-    public UnwrappedMessageContent unwrapContent(byte[] data, Schema schema) {
+    UnwrappedMessageContent unwrapContent(byte[] data, Schema schema) {
         try {
             GenericRecord record = bytesToRecord(data, schema);
             Map<Utf8, Utf8> metadata = (Map<Utf8, Utf8>) record.get(METADATA_MARKER);
             return new UnwrappedMessageContent(
                 new MessageMetadata(
-                    Long.valueOf(metadata.get(METADATA_TIMESTAMP_KEY).toString()),
+                    Long.parseLong(metadata.get(METADATA_TIMESTAMP_KEY).toString()),
                     metadata.get(METADATA_MESSAGE_ID_KEY).toString()),
                 data);
         } catch (Exception exception) {
@@ -31,7 +31,7 @@ public class AvroMessageContentWrapper {
         }
     }
 
-    public byte[] wrapContent(byte[] message, String id, long timestamp, Schema schema) {
+    byte[] wrapContent(byte[] message, String id, long timestamp, Schema schema) {
         try {
             GenericRecord genericRecord = bytesToRecord(message, schema);
             genericRecord.put(METADATA_MARKER, of(
