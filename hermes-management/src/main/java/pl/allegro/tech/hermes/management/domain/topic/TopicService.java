@@ -80,10 +80,6 @@ public class TopicService {
         Topic modified = Patch.apply(retrieved, topic);
 
         if (!retrieved.equals(modified)) {
-            if (topic.isSchemaValidationRequired()) {
-                schemaValidatorProvider.provide(topic.getContentType()).check(modified.getMessageSchema());
-            }
-
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {
                 multiDCAwareService.manageTopic(brokerTopicManagement ->
                     brokerTopicManagement.updateTopic(topic.getName(), modified.getRetentionTime())
