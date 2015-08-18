@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.infrastructure.schemarepo;
+package pl.allegro.tech.hermes.infrastructure.schema.repo;
 
 import java.util.Optional;
 

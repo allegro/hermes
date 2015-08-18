@@ -1,9 +1,9 @@
-package pl.allegro.tech.hermes.management.infrastructure.schema.schemarepo;
+package pl.allegro.tech.hermes.management.infrastructure.schema;
 
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.infrastructure.schemarepo.SchemaRepoClient;
-import pl.allegro.tech.hermes.infrastructure.schemarepo.SchemaRepoSchemaSourceProvider;
+import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClient;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepoSchemaSourceProvider;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceRepository;
 
 public class SchemaRepoSchemaSourceRepository extends SchemaRepoSchemaSourceProvider implements SchemaSourceRepository {

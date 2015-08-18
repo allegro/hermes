@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.infrastructure.schemarepo;
+package pl.allegro.tech.hermes.domain.topic.schema;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
@@ -8,14 +8,11 @@ import org.junit.Test;
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepoClientFactory;
+import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClientFactory;
 
 import java.util.Optional;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
@@ -41,7 +38,7 @@ public class SchemaRepoSchemaSourceProviderTest {
 
         // then
         wireMockRule.verify(1, getRequestedFor(topicLatestSchema()));
-        assertThat(source.isPresent()).isFalse();
+        assertThat(source).isEmpty();
     }
 
     @Test
@@ -54,7 +51,7 @@ public class SchemaRepoSchemaSourceProviderTest {
 
         // then
         wireMockRule.verify(1, getRequestedFor(topicLatestSchema()));
-        assertThat(source.get().value()).isEqualTo("someSchema");
+        assertThat(source).contains(SchemaSource.valueOf("someSchema"));
     }
 
     private UrlMatchingStrategy topicLatestSchema() {

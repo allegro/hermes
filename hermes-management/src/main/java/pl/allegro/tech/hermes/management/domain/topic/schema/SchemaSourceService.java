@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaV
 
 import java.util.Optional;
 
+import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 @Component
@@ -40,6 +41,9 @@ public class SchemaSourceService {
 
     public void deleteSchemaSource(String qualifiedTopicName) {
         Topic topic = findTopic(qualifiedTopicName);
+        if (topic.getContentType() == AVRO) {
+            throw new AvroSchemaRemovalDisabledException("Topic " + qualifiedTopicName + " has Avro content-type, schema removal is disabled");
+        }
         schemaSourceRepository.delete(topic);
     }
 

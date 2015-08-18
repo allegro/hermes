@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.infrastructure.schemarepo;
+package pl.allegro.tech.hermes.infrastructure.schema.repo;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;

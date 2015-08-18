@@ -47,6 +47,6 @@ public class SchemaEndpoint {
     @ApiOperation(value = "Delete schema", httpMethod = HttpMethod.DELETE)
     public Response delete(@PathParam("topicName") String qualifiedTopicName) {
         schemaSourceService.deleteSchemaSource(qualifiedTopicName);
-        return Response.status(Response.Status.CREATED).build();
+        return Response.status(Response.Status.OK).build();
     }
 }
