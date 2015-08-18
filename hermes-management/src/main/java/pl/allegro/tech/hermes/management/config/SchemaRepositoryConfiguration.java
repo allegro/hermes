@@ -50,14 +50,14 @@ public class SchemaRepositoryConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(SchemaSourceRepository.class)
-    @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "zookeeper", matchIfMissing = true)
+    @ConditionalOnProperty(value = "schema.repository.type", havingValue = "zookeeper", matchIfMissing = true)
     public SchemaSourceRepository zookeeperSchemaSourceRepository() {
         return new ZookeeperSchemaSourceRepository(storageZookeeper, zookeeperPaths);
     }
 
     @Bean
     @ConditionalOnMissingBean(SchemaSourceRepository.class)
-    @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "schema_repo")
+    @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_repo")
     public SchemaSourceRepository schemaRepoSchemaSourceRepository() {
         SchemaRepoClient client = new JerseySchemaRepoClient(ClientBuilder.newClient(), URI.create(schemaRepositoryProperties.getServerUrl()));
         return new SchemaRepoSchemaSourceRepository(client);
@@ -65,7 +65,7 @@ public class SchemaRepositoryConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(SchemaSourceRepository.class)
-    @ConditionalOnProperty(value = "schemaRepository.repositoryType", havingValue = "topic_field")
+    @ConditionalOnProperty(value = "schema.repository.type", havingValue = "topic_field")
     public SchemaSourceRepository topicFieldSchemaSourceRepository() {
         return new TopicFieldSchemaSourceRepository(topicService);
     }

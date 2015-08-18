@@ -9,8 +9,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
 public class Topic {
     @Valid @NotNull
     private TopicName name;
@@ -142,11 +140,6 @@ public class Topic {
     @JsonIgnore
     public boolean isReplicationConfirmRequired() {
         return getAck() == Ack.ALL;
-    }
-
-    @JsonIgnore
-    public boolean isSchemaValidationRequired() {
-        return Topic.ContentType.AVRO == contentType || !isNullOrEmpty(messageSchema);
     }
 
     public static class Builder {

@@ -8,7 +8,7 @@ public class SchemaRepositoryProperties {
 
     private String type = Configs.SCHEMA_REPOSITORY_TYPE.getDefaultValue();
 
-    private String serverUrl = Configs.SCHEMA_REPO_SERVER_URL.getDefaultValue();
+    private String serverUrl = Configs.SCHEMA_REPOSITORY_SERVER_URL.getDefaultValue();
 
     public String getType() {
         return type;

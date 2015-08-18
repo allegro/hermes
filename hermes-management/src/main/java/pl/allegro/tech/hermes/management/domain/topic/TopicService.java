@@ -46,10 +46,6 @@ public class TopicService {
     }
 
     public void createTopic(Topic topic) {
-        if (topic.isSchemaValidationRequired()) {
-            schemaValidatorProvider.provide(topic.getContentType()).check(topic.getMessageSchema());
-        }
-
         topicRepository.createTopic(topic);
 
         try {

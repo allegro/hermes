@@ -122,7 +122,7 @@ public enum Configs {
     SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES("schema.cache.expire.after.write.minutes", 60 * 24),
     SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE("schema.cache.reload.thread.pool.size", 2),
     SCHEMA_REPOSITORY_TYPE("schema.repository.type", "zookeeper"),
-    SCHEMA_REPO_SERVER_URL("schema.repo.server.url", "http://localhost:2876/schema-repo/"),
+    SCHEMA_REPOSITORY_SERVER_URL("schema.repository.serverUrl", "http://localhost:2876/schema-repo/"),
 
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 

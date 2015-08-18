@@ -19,7 +19,7 @@ public class SchemaRepoClientFactory implements Factory<SchemaRepoClient> {
 
     @Override
     public SchemaRepoClient provide() {
-        return new JerseySchemaRepoClient(ClientBuilder.newClient(), URI.create(configFactory.getStringProperty(Configs.SCHEMA_REPO_SERVER_URL)));
+        return new JerseySchemaRepoClient(ClientBuilder.newClient(), URI.create(configFactory.getStringProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL)));
     }
 
     @Override
