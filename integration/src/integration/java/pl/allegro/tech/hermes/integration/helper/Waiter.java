@@ -18,7 +18,6 @@ import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
@@ -69,20 +68,21 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     public void untilSubscriptionIsActivated(String group, String topic, String subscription) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
-            endpoints.subscription().get(group + "." + topic, subscription).getState().equals(Subscription.State.ACTIVE);
-        });
+        untilSubscriptionHasState(group, topic, subscription, Subscription.State.ACTIVE);
+    }
+
+    public void untilSubscriptionIsSuspended(String group, String topic, String subscription) {
+        untilSubscriptionHasState(group, topic, subscription, Subscription.State.SUSPENDED);
+    }
+
+    private void untilSubscriptionHasState(String group, String topic, String subscription, Subscription.State state) {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+            endpoints.subscription().get(group + "." + topic, subscription).getState().equals(state)
+        );
     }
 
     public void untilSubscriptionEndsReiteration(TopicName topicName, String subscription) {
-        untilSubscriptionEndsReiteration(topicName.getGroupName(), topicName.getName(), subscription);
-    }
-
-    public void untilSubscriptionEndsReiteration(final String group, final String topic, final String subscription) {
-        waitAtMost(adjust(30), TimeUnit.SECONDS).until(() -> {
-            Subscription.State state = endpoints.subscription().get(group + "." + topic, subscription).getState();
-            return state == Subscription.State.ACTIVE;
-        });
+        untilSubscriptionHasState(topicName.getGroupName(), topicName.getName(), subscription, Subscription.State.ACTIVE);
     }
 
     public void untilAllOffsetsEqual(final String group, final String topic, final String subscription, final int offset) {
