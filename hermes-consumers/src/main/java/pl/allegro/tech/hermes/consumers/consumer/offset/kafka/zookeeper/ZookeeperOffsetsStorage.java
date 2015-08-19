@@ -7,6 +7,7 @@ import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 
@@ -18,10 +19,12 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     private static final String OFFSET_PATTERN_PATH = "/consumers/%s/offsets/%s";
 
     private final CuratorFramework curatorFramework;
+    private final KafkaNamesMapper kafkaNamesMapper;
 
     @Inject
-    public ZookeeperOffsetsStorage(@Named(CuratorType.KAFKA) CuratorFramework curatorFramework) {
+    public ZookeeperOffsetsStorage(@Named(CuratorType.KAFKA) CuratorFramework curatorFramework, KafkaNamesMapper kafkaNamesMapper) {
         this.curatorFramework = curatorFramework;
+        this.kafkaNamesMapper = kafkaNamesMapper;
     }
 
     @Override
@@ -60,7 +63,7 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
         return Joiner.on("/").join(getOffsetPath(subscription), partition);
     }
 
-    private static String getOffsetPath(Subscription subscription) {
-        return String.format(OFFSET_PATTERN_PATH, subscription.getId(), subscription.getQualifiedTopicName());
+    private String getOffsetPath(Subscription subscription) {
+        return String.format(OFFSET_PATTERN_PATH, subscription.getId(), kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()).asString());
     }
 }

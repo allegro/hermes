@@ -17,6 +17,7 @@ import kafka.network.BlockingChannel;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.CannotCommitOffsetToBrokerException;
@@ -38,21 +39,24 @@ public class BrokerOffsetsRepository {
 
     private final BlockingChannelFactory blockingChannelFactory;
     private final Clock clock;
+    private final KafkaNamesMapper kafkaNamesMapper;
 
     private final LoadingCache<Subscription, BlockingChannel> channels;
     private final String clientId;
 
     @Inject
     public BrokerOffsetsRepository(BlockingChannelFactory blockingChannelFactory, Clock clock, HostnameResolver hostnameResolver,
-                               ConfigFactory configFactory) {
-        this(blockingChannelFactory, clock, hostnameResolver,
-                configFactory.getIntProperty(Configs.KAFKA_CONSUMER_OFFSET_COMMITTER_BROKER_CONNECTION_EXPIRATION));
+                               ConfigFactory configFactory, KafkaNamesMapper kafkaNamesMapper) {
+        this(blockingChannelFactory, clock, hostnameResolver, kafkaNamesMapper,
+                configFactory.getIntProperty(Configs.KAFKA_CONSUMER_OFFSET_COMMITTER_BROKER_CONNECTION_EXPIRATION)
+        );
     }
 
     public BrokerOffsetsRepository(BlockingChannelFactory blockingChannelFactory, Clock clock, HostnameResolver hostnameResolver,
-                               int channelExpTime) {
+                                   KafkaNamesMapper kafkaNamesMapper, int channelExpTime) {
         this.blockingChannelFactory = blockingChannelFactory;
         this.clock = clock;
+        this.kafkaNamesMapper = kafkaNamesMapper;
         this.clientId = clientId(hostnameResolver);
 
         channels = CacheBuilder.newBuilder()
@@ -101,7 +105,7 @@ public class BrokerOffsetsRepository {
 
     private Map<TopicAndPartition, OffsetAndMetadata> createOffset(Subscription subscription, PartitionOffset partitionOffset) {
         Map<TopicAndPartition, OffsetAndMetadata> offset = new LinkedHashMap<>();
-        TopicAndPartition topicAndPartition = new TopicAndPartition(subscription.getTopicName().qualifiedName(), partitionOffset.getPartition());
+        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()).asString(), partitionOffset.getPartition());
         offset.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset(), EMPTY_METADATA, clock.getTime()));
         return offset;
     }
@@ -112,7 +116,7 @@ public class BrokerOffsetsRepository {
         BlockingChannel channel = blockingChannelFactory.create(groupId);
         channel.connect();
 
-        TopicAndPartition topicAndPartition = new TopicAndPartition(subscription.getQualifiedTopicName(), partitionId);
+        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()).asString(), partitionId);
         List<TopicAndPartition> partitions = Lists.newArrayList(topicAndPartition);
 
         OffsetFetchRequest fetchRequest = new OffsetFetchRequest(

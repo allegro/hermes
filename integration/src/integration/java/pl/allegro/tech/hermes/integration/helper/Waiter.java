@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
@@ -30,13 +31,16 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private final CuratorFramework kafkaZookeeper;
 
-    private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue().toString());
+    private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue());
 
-    public Waiter(HermesEndpoints endpoints, CuratorFramework zookeeper, CuratorFramework kafkaZookeeper) {
+    private final KafkaNamesMapper kafkaNamesMapper;
+
+    public Waiter(HermesEndpoints endpoints, CuratorFramework zookeeper, CuratorFramework kafkaZookeeper, String kafkaNamespace) {
         super(endpoints);
         this.endpoints = endpoints;
         this.zookeeper = zookeeper;
         this.kafkaZookeeper = kafkaZookeeper;
+        this.kafkaNamesMapper = new KafkaNamesMapper(kafkaNamespace);
     }
 
     public void untilKafkaZookeeperNodeDeletion(final String path) {
@@ -144,7 +148,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private String subscriptionConsumerPath(String group, String topic, String subscription) {
         TopicName topicName = new TopicName(group, topic);
-        return "/consumers/" + Subscription.getId(topicName, subscription) + "/owners/" + topicName.qualifiedName();
+        return "/consumers/" + Subscription.getId(topicName, subscription) + "/owners/" + kafkaNamesMapper.toKafkaTopicName(topicName).asString();
     }
 
     private String subscriptionIdsPath(String group, String topic, String subscription) {
@@ -154,7 +158,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private String subscriptionOffsetPath(String group, String topic, String subscription) {
         TopicName topicName = new TopicName(group, topic);
-        return "/consumers/" + Subscription.getId(topicName, subscription) + "/offsets/" + topicName.qualifiedName();
+        return "/consumers/" + Subscription.getId(topicName, subscription) + "/offsets/" + kafkaNamesMapper.toKafkaTopicName(topicName).asString();
     }
 
     private void sleep(int seconds) {
