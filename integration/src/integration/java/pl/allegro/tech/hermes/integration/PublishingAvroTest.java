@@ -52,10 +52,7 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
-        remoteService.waitUntilReceived(
-            //ignore extra fields like __metadata
-            json -> assertThatJson(json).when(Option.IGNORING_EXTRA_FIELDS).isEqualTo("{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}")
-        );
+        remoteService.waitUntilReceived(json -> assertThatJson(json).isEqualTo("{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}"));
     }
 
     @Test

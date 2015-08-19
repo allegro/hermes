@@ -9,12 +9,11 @@ import java.util.Map;
 import static com.google.common.collect.ImmutableMap.of;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.recordToBytes;
+import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_MARKER;
+import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_MESSAGE_ID_KEY;
+import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_TIMESTAMP_KEY;
 
 public class AvroMessageContentWrapper {
-
-    public static final String METADATA_MARKER = "__metadata";
-    public static final Utf8 METADATA_TIMESTAMP_KEY = new Utf8("timestamp");
-    public static final Utf8 METADATA_MESSAGE_ID_KEY = new Utf8("messageId");
 
     @SuppressWarnings("unchecked")
     UnwrappedMessageContent unwrapContent(byte[] data, Schema schema) {
