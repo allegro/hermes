@@ -32,11 +32,10 @@ public class GraphiteClient {
     public GraphiteMetrics readMetrics(String... metrics) {
         try {
             GraphiteMetrics response = new GraphiteMetrics();
-            queryGraphite(metrics).stream()
-                    .forEach(metric -> response.addMetricValue(metric.getTarget(), getFirstValue(metric)));
+            queryGraphite(metrics).stream().forEach(metric -> response.addMetricValue(metric.getTarget(), getFirstValue(metric)));
             return response;
         } catch (GraphiteConnectionException exception) {
-            logger.warn("Unable to read from Graphite", exception);
+            logger.warn("Unable to read from Graphite", exception.getMessage());
             return GraphiteMetrics.unavailable(metrics);
         }
     }
