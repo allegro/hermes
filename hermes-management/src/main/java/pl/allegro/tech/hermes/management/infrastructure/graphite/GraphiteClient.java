@@ -10,6 +10,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.apache.commons.lang.exception.ExceptionUtils.getRootCause;
 
 public class GraphiteClient {
 
@@ -34,8 +35,8 @@ public class GraphiteClient {
             GraphiteMetrics response = new GraphiteMetrics();
             queryGraphite(metrics).stream().forEach(metric -> response.addMetricValue(metric.getTarget(), getFirstValue(metric)));
             return response;
-        } catch (GraphiteConnectionException exception) {
-            logger.warn("Unable to read from Graphite", exception.getMessage());
+        } catch (Exception exception) {
+            logger.warn("Unable to read from Graphite. {}", getRootCause(exception).getMessage());
             return GraphiteMetrics.unavailable(metrics);
         }
     }
@@ -56,11 +57,7 @@ public class GraphiteClient {
         for (String query : queries) {
             webQuery = webQuery.queryParam(TARGET_PARAM, query);
         }
-        try {
-            return webQuery.request(MediaType.APPLICATION_JSON).get().readEntity(new GraphiteResponseList());
-        } catch (Exception exception) {
-            throw new GraphiteConnectionException(exception);
-        }
+        return webQuery.request(MediaType.APPLICATION_JSON).get().readEntity(new GraphiteResponseList());
     }
 
     protected static class GraphiteResponseList extends GenericType<List<GraphiteResponse>> {
