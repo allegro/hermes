@@ -1,7 +1,7 @@
 dependencies {
     compile project(':hermes-tracker')
     compile 'org.slf4j:slf4j-api:1.7.12'
-    compile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.6.0'
+    compile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.7.1'
 
     testCompile project(path: ":hermes-tracker", configuration: "testArtifacts")
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
