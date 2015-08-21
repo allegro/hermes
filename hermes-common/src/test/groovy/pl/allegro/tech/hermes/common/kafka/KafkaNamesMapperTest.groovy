@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.common.kafka
 
-import pl.allegro.tech.hermes.api.Subscription
-import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -26,12 +24,9 @@ class KafkaNamesMapperTest extends Specification {
     def "should map subscription id '#subscriptionId' to consumer group '#consumerGroupId' for namespace '#namespace'"() {
         given:
         def mapper = new KafkaNamesMapper(namespace)
-        def subscription = Stub(Subscription) {
-            getId() >> subscriptionId
-        }
 
         expect:
-        mapper.toConsumerGroupId(subscription) == ConsumerGroupId.valueOf(consumerGroupId)
+        mapper.toConsumerGroupId(subscriptionId) == ConsumerGroupId.valueOf(consumerGroupId)
 
         where:
         namespace | subscriptionId     | consumerGroupId

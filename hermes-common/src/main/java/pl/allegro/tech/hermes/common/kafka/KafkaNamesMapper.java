@@ -17,7 +17,11 @@ public class KafkaNamesMapper {
     }
 
     public ConsumerGroupId toConsumerGroupId(Subscription subscription) {
-        return ConsumerGroupId.valueOf(namespaced(subscription.getId()));
+        return toConsumerGroupId(subscription.getId());
+    }
+
+    public ConsumerGroupId toConsumerGroupId(String subscriptionId) {
+        return ConsumerGroupId.valueOf(namespaced(subscriptionId));
     }
 
     public KafkaTopicName toKafkaTopicName(Topic topic) {

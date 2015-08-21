@@ -17,6 +17,7 @@ import kafka.network.BlockingChannel;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
@@ -64,7 +65,7 @@ public class BrokerOffsetsRepository {
                 .removalListener((RemovalNotification<Subscription, BlockingChannel> notification) -> notification.getValue().disconnect())
                 .build(new CacheLoader<Subscription, BlockingChannel>() {
                     public BlockingChannel load(Subscription key) {
-                        BlockingChannel channel = blockingChannelFactory.create(key.getId());
+                        BlockingChannel channel = blockingChannelFactory.create(kafkaNamesMapper.toConsumerGroupId(key));
                         channel.connect();
                         return channel;
                     }
@@ -96,7 +97,7 @@ public class BrokerOffsetsRepository {
         Map<TopicAndPartition, OffsetAndMetadata> offset = createOffset(subscription, partitionOffset);
 
         return new OffsetCommitRequest(
-                subscription.getId(),
+                kafkaNamesMapper.toConsumerGroupId(subscription).asString(),
                 offset,
                 CORRELATION_ID,
                 clientId,
@@ -112,7 +113,7 @@ public class BrokerOffsetsRepository {
 
 
     public long find(Subscription subscription, int partitionId) {
-        String groupId = subscription.getId();
+        ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription);
         BlockingChannel channel = blockingChannelFactory.create(groupId);
         channel.connect();
 
@@ -120,7 +121,7 @@ public class BrokerOffsetsRepository {
         List<TopicAndPartition> partitions = Lists.newArrayList(topicAndPartition);
 
         OffsetFetchRequest fetchRequest = new OffsetFetchRequest(
-                groupId,
+                groupId.asString(),
                 partitions,
                 VERSION_ID,
                 CORRELATION_ID,

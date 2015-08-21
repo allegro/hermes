@@ -5,6 +5,7 @@ import org.apache.zookeeper.KeeperException;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 
@@ -24,9 +25,9 @@ public class ZookeeperMessageCommitter implements MessageCommitter {
     public void commitOffset(Subscription subscription, PartitionOffset partitionOffset) throws Exception {
         long firstToRead = partitionOffset.getOffset() + 1;
         byte[] data = String.valueOf(firstToRead).getBytes(Charset.forName("UTF-8"));
-        String offsetPath = subscriptionPath(
-                subscription.getTopicName(),
-                subscription.getId(),
+        String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(
+                kafkaNamesMapper.toConsumerGroupId(subscription),
+                kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()),
                 partitionOffset.getPartition()
         );
         try {
@@ -36,14 +37,13 @@ public class ZookeeperMessageCommitter implements MessageCommitter {
         }
     }
 
-    private String subscriptionPath(TopicName topicName, String subscriptionId, int partition) {
-        return String.format("/consumers/%s/offsets/%s/%s", subscriptionId, kafkaNamesMapper.toKafkaTopicName(topicName).asString(), partition);
-    }
-
     @Override
     public void removeOffset(TopicName topicName, String subscriptionName, int partition) throws Exception {
-        curatorFramework.delete().forPath(
-            subscriptionPath(topicName, Subscription.getId(topicName, subscriptionName), partition)
+        String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(
+                kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscriptionName)),
+                kafkaNamesMapper.toKafkaTopicName(topicName),
+                partition
         );
+        curatorFramework.delete().forPath(offsetPath);
     }
 }

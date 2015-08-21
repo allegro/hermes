@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
@@ -81,7 +82,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private void untilSubscriptionHasState(String group, String topic, String subscription, Subscription.State state) {
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
-            endpoints.subscription().get(group + "." + topic, subscription).getState().equals(state)
+                        endpoints.subscription().get(group + "." + topic, subscription).getState().equals(state)
         );
     }
 
@@ -148,17 +149,19 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private String subscriptionConsumerPath(String group, String topic, String subscription) {
         TopicName topicName = new TopicName(group, topic);
-        return "/consumers/" + Subscription.getId(topicName, subscription) + "/owners/" + kafkaNamesMapper.toKafkaTopicName(topicName).asString();
+        return KafkaZookeeperPaths.ownersPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription)),
+                kafkaNamesMapper.toKafkaTopicName(topicName));
     }
 
     private String subscriptionIdsPath(String group, String topic, String subscription) {
         TopicName topicName = new TopicName(group, topic);
-        return "/consumers/" + Subscription.getId(topicName, subscription) + "/ids";
+        return KafkaZookeeperPaths.idsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription)));
     }
 
     private String subscriptionOffsetPath(String group, String topic, String subscription) {
         TopicName topicName = new TopicName(group, topic);
-        return "/consumers/" + Subscription.getId(topicName, subscription) + "/offsets/" + kafkaNamesMapper.toKafkaTopicName(topicName).asString();
+        return KafkaZookeeperPaths.offsetsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription)),
+                kafkaNamesMapper.toKafkaTopicName(topicName));
     }
 
     private void sleep(int seconds) {
@@ -189,7 +192,8 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         channel.connect();
 
         waitAtMost(adjust((Duration.ONE_MINUTE))).until(() -> {
-            channel.send(new ConsumerMetadataRequest(subscription.getId(), ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
+            channel.send(new ConsumerMetadataRequest(kafkaNamesMapper.toConsumerGroupId(subscription).asString(),
+                    ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
             ConsumerMetadataResponse metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
             return metadataResponse.errorCode() == ErrorMapping.NoError();
         });
