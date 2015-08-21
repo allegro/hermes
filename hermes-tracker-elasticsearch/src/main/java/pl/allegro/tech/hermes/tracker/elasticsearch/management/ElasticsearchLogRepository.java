@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
-import org.elasticsearch.action.admin.indices.alias.Alias;
-import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.FilteredQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortOrder;
@@ -24,8 +24,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
+import static org.elasticsearch.index.query.QueryBuilders.filteredQuery;
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager.schemaManagerWithDailyIndexes;
 
 public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware {
@@ -33,16 +33,13 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     private static final int LIMIT = 1000;
 
     private final Client elasticClient;
-    private final float minScore;
 
-    public ElasticsearchLogRepository(Client elasticClient, float minScore) {
-        this(elasticClient, minScore, schemaManagerWithDailyIndexes(elasticClient));
+    public ElasticsearchLogRepository(Client elasticClient) {
+        this(elasticClient, schemaManagerWithDailyIndexes(elasticClient));
     }
 
-    public ElasticsearchLogRepository(Client elasticClient, float minScore, SchemaManager schemaManager) {
+    public ElasticsearchLogRepository(Client elasticClient, SchemaManager schemaManager) {
         this.elasticClient = elasticClient;
-        this.minScore = minScore;
-
         schemaManager.ensureSchema();
     }
 
@@ -50,8 +47,11 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     public List<SentMessageTrace> getLastUndeliveredMessages(String topicName, String subscriptionName, int limit) {
 
         try {
-            SearchResponse response = searchSentMessages(limit, createQuery(topicName, subscriptionName)
-                    .must(matchQuery(STATUS, SentMessageTraceStatus.DISCARDED)));
+            SearchResponse response = searchSentMessages(limit,
+                    createFilterQuery(
+                            filter(TOPIC_NAME, topicName),
+                            filter(SUBSCRIPTION, subscriptionName),
+                            filter(STATUS, SentMessageTraceStatus.DISCARDED.name())));
 
             return Arrays.stream(response.getHits().hits())
                     .map(this::toSentMessageTrace)
@@ -66,8 +66,16 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     public List<MessageTrace> getMessageStatus(String topicName, String subscriptionName, String messageId) {
 
         try {
-            SearchResponse publishedResponse = searchPublishedMessages(LIMIT, createQuery(topicName).must(matchQuery(MESSAGE_ID, messageId)));
-            SearchResponse sentResponse = searchSentMessages(LIMIT, createQuery(topicName, subscriptionName).must(matchQuery(MESSAGE_ID, messageId)));
+            SearchResponse publishedResponse = searchPublishedMessages(LIMIT,
+                    createFilterQuery(
+                            filter(TOPIC_NAME, topicName),
+                            filter(MESSAGE_ID, messageId)));
+
+            SearchResponse sentResponse = searchSentMessages(LIMIT,
+                    createFilterQuery(
+                            filter(TOPIC_NAME, topicName),
+                            filter(SUBSCRIPTION, subscriptionName),
+                            filter(MESSAGE_ID, messageId)));
 
             return Stream.concat(
                     Arrays.stream(publishedResponse.getHits().hits()).map(this::toPublishedMessageTrace),
@@ -78,26 +86,12 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
         }
     }
 
-    private void createTemplate(String template, String index, String alias) {
-        PutIndexTemplateRequest publishedTemplateRequest = new PutIndexTemplateRequest(template)
-                .template(index)
-                .alias(new Alias(alias));
-
-        try {
-            elasticClient.admin().indices().putTemplate(publishedTemplateRequest).get();
-        } catch (ExecutionException | InterruptedException ex) {
-            throw new ElasticsearchRepositoryException(ex);
-        }
+    private FilteredQueryBuilder createFilterQuery(FilterBuilder... filters) {
+        return filteredQuery(matchAllQuery(), FilterBuilders.andFilter(filters));
     }
 
-    private BoolQueryBuilder createQuery(String topicName) {
-        return boolQuery()
-                .must(matchQuery(TOPIC_NAME, topicName));
-    }
-
-    private BoolQueryBuilder createQuery(String topicName, String subscriptionName) {
-        return createQuery(topicName)
-                .must(matchQuery(SUBSCRIPTION, subscriptionName));
+    private FilterBuilder filter(String fieldName, String value) {
+        return FilterBuilders.termFilter(fieldName, value);
     }
 
     private SearchResponse searchSentMessages(int limit, QueryBuilder query) throws InterruptedException, ExecutionException {
@@ -106,7 +100,6 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
                 .setTrackScores(true)
                 .setQuery(query)
                 .addSort(TIMESTAMP, SortOrder.ASC)
-                .setMinScore(minScore)
                 .setSize(limit)
                 .execute()
                 .get();
@@ -118,7 +111,6 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
                 .setTrackScores(true)
                 .setQuery(query)
                 .addSort(TIMESTAMP, SortOrder.ASC)
-                .setMinScore(minScore)
                 .setSize(limit)
                 .execute()
                 .get();
