@@ -1,11 +1,9 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
-import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
@@ -15,8 +13,8 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSuperviso
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
-import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import javax.inject.Inject;
 import java.util.concurrent.Semaphore;
@@ -35,7 +33,6 @@ public class ConsumerFactory {
     private final Clock clock;
     private final TopicRepository topicRepository;
     private final MessageConverterFactory messageConverterFactory;
-    private final SchemaRepository<Schema> schemaRepository;
 
     @Inject
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
@@ -47,8 +44,7 @@ public class ConsumerFactory {
             ConsumerMessageSenderFactory consumerMessageSenderFactory,
             Clock clock,
             TopicRepository topicRepository,
-            MessageConverterFactory messageConverterFactory,
-            SchemaRepository<Schema> schemaRepository) {
+            MessageConverterFactory messageConverterFactory) {
 
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
@@ -60,7 +56,6 @@ public class ConsumerFactory {
         this.clock = clock;
         this.topicRepository = topicRepository;
         this.messageConverterFactory = messageConverterFactory;
-        this.schemaRepository = schemaRepository;
     }
 
     Consumer createConsumer(Subscription subscription) {
@@ -83,7 +78,7 @@ public class ConsumerFactory {
             consumerMessageSenderFactory.create(subscription, consumerRateLimiter, subscriptionOffsetCommitQueues, inflightSemaphore),
             inflightSemaphore,
             trackers,
-            messageConverterFactory.create(topic.getContentType(), schemaRepository),
+            messageConverterFactory.create(topic.getContentType()),
             topic);
     }
 

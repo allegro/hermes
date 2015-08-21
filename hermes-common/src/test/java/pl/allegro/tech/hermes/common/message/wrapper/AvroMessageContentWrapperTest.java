@@ -14,9 +14,9 @@ import static java.lang.Long.valueOf;
 import static java.util.Arrays.copyOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
-import static pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper.METADATA_MARKER;
-import static pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper.METADATA_MESSAGE_ID_KEY;
-import static pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper.METADATA_TIMESTAMP_KEY;
+import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_MARKER;
+import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_MESSAGE_ID_KEY;
+import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_TIMESTAMP_KEY;
 
 public class AvroMessageContentWrapperTest {
     private AvroMessageContentWrapper avroMessageContentWrapper;
