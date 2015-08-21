@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterFactory;
-import pl.allegro.tech.hermes.consumers.consumer.converter.schema.AvroSchemaRepositoryMetadataAware;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
@@ -34,7 +33,6 @@ public class ConsumerFactory {
     private final Clock clock;
     private final TopicRepository topicRepository;
     private final MessageConverterFactory messageConverterFactory;
-    private final AvroSchemaRepositoryMetadataAware schemaRepository;
 
     @Inject
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
@@ -46,8 +44,7 @@ public class ConsumerFactory {
             ConsumerMessageSenderFactory consumerMessageSenderFactory,
             Clock clock,
             TopicRepository topicRepository,
-            MessageConverterFactory messageConverterFactory,
-            AvroSchemaRepositoryMetadataAware schemaRepository) {
+            MessageConverterFactory messageConverterFactory) {
 
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
@@ -59,7 +56,6 @@ public class ConsumerFactory {
         this.clock = clock;
         this.topicRepository = topicRepository;
         this.messageConverterFactory = messageConverterFactory;
-        this.schemaRepository = schemaRepository;
     }
 
     Consumer createConsumer(Subscription subscription) {
@@ -82,7 +78,7 @@ public class ConsumerFactory {
             consumerMessageSenderFactory.create(subscription, consumerRateLimiter, subscriptionOffsetCommitQueues, inflightSemaphore),
             inflightSemaphore,
             trackers,
-            messageConverterFactory.create(topic.getContentType(), schemaRepository),
+            messageConverterFactory.create(topic.getContentType()),
             topic);
     }
 

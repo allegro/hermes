@@ -1,52 +1,48 @@
 package pl.allegro.tech.hermes.consumers.consumer.converter.schema;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Maps;
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
-import static com.google.common.base.Ticker.systemTicker;
-import static java.util.concurrent.TimeUnit.MINUTES;
+import javax.inject.Inject;
+import java.util.Map;
+
 import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_MARKER;
 
 public class AvroSchemaRepositoryMetadataAware {
 
     private final SchemaRepository<Schema> avroSchemaRepository;
-    private final LoadingCache<Topic, Schema> schemaWithoutMetadataCache;
+    private final Map<Topic, Schema> schemasWithoutMetadata = Maps.newConcurrentMap();
 
-    public AvroSchemaRepositoryMetadataAware(SchemaRepository<Schema> avroSchemaRepository, int schemaCacheRefreshAfterWriteMinutes,
-                                             int schemaCacheExpireAfterWriteMinutes) {
+    @Inject
+    public AvroSchemaRepositoryMetadataAware(SchemaRepository<Schema> avroSchemaRepository) {
         this.avroSchemaRepository = avroSchemaRepository;
-
-        schemaWithoutMetadataCache = CacheBuilder
-                .newBuilder()
-                .ticker(systemTicker())
-                .refreshAfterWrite(schemaCacheRefreshAfterWriteMinutes, MINUTES)
-                .expireAfterWrite(schemaCacheExpireAfterWriteMinutes, MINUTES)
-                .build(new SchemaWithoutMetadataCacheLoader());
+        avroSchemaRepository.onReload(topicWithSchema ->
+                schemasWithoutMetadata.put(topicWithSchema.getTopic(), removeMetadataField(topicWithSchema.getSchema())));
+        avroSchemaRepository.onRemove(topicWithSchema ->
+                schemasWithoutMetadata.remove(topicWithSchema.getTopic()));
     }
 
     public Schema getSchemaWithoutMetadata(Topic topic) {
         try {
-            return schemaWithoutMetadataCache.get(topic);
+            return schemasWithoutMetadata.computeIfAbsent(topic, this::loadWithoutMetadata);
         } catch (Exception e) {
-            throw new CouldNotLoadSchemaException("Could not load schema for topic " + topic.getQualifiedName(), e);
+            throw new CouldNotLoadSchemaException("Could not load schema without metadata for topic " + topic.getQualifiedName(), e);
         }
     }
 
-    private class SchemaWithoutMetadataCacheLoader extends CacheLoader<Topic, Schema> {
-        @Override
-        public Schema load(Topic topic) throws Exception {
-            return
-                Schema.createRecord(
-                    avroSchemaRepository.getSchema(topic).getFields().stream()
-                        .filter(field -> !METADATA_MARKER.equals(field.name()))
-                        .map(field -> new Schema.Field(field.name(), field.schema(), field.doc(), field.defaultValue()))
-                        .collect(toList()));
-        }
+    private Schema loadWithoutMetadata(Topic topic) {
+        return removeMetadataField(avroSchemaRepository.getSchema(topic));
+    }
+
+    private Schema removeMetadataField(Schema schema) {
+        return Schema.createRecord(
+            schema.getFields().stream()
+                .filter(field -> !METADATA_MARKER.equals(field.name()))
+                .map(field -> new Schema.Field(field.name(), field.schema(), field.doc(), field.defaultValue()))
+                .collect(toList()));
     }
 }

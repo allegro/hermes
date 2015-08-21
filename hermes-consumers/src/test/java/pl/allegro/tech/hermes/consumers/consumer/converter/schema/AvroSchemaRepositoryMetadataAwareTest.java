@@ -26,7 +26,7 @@ public class AvroSchemaRepositoryMetadataAwareTest {
 
     @Before
     public void init() {
-        avroSchemaRepositoryMetadataAware = new AvroSchemaRepositoryMetadataAware(avroSchemaRepository, 10, 10);
+        avroSchemaRepositoryMetadataAware = new AvroSchemaRepositoryMetadataAware(avroSchemaRepository);
     }
 
     @Test

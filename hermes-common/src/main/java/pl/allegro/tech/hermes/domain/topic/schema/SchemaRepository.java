@@ -4,6 +4,9 @@ import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
@@ -13,8 +16,10 @@ import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class SchemaRepository<T> {
 
@@ -22,6 +27,8 @@ public class SchemaRepository<T> {
 
     private final LoadingCache<Topic, SchemaWithSource> schemaCache;
     private final SchemaCompiler<T> schemaCompiler;
+    private List<Consumer<TopicWithSchema<T>>> topicWithSchemaReloadConsumers = Lists.newArrayList();
+    private List<Consumer<TopicWithSchema<T>>> topicWithSchemaRemoveConsumers = Lists.newArrayList();
 
     @Inject
     public SchemaRepository(SchemaSourceProvider schemaRepository, ExecutorService reloadSchemaSourceExecutor,
@@ -40,6 +47,13 @@ public class SchemaRepository<T> {
                 .ticker(ticker)
                 .refreshAfterWrite(schemaCacheRefreshAfterWriteMinutes, TimeUnit.MINUTES)
                 .expireAfterWrite(schemaCacheExpireAfterWriteMinutes, TimeUnit.MINUTES)
+                .removalListener(new RemovalListener<Topic, SchemaWithSource>() {
+                    @Override
+                    public void onRemoval(RemovalNotification<Topic, SchemaWithSource> notification) {
+                        topicWithSchemaRemoveConsumers.forEach(consumer ->
+                            consumer.accept(new TopicWithSchema<>(notification.getKey(), notification.getValue().getSchema())));
+                    }
+                })
                 .build(new SchemaCacheLoader(schemaSourceProvider, reloadSchemaSourceExecutor));
     }
 
@@ -49,6 +63,18 @@ public class SchemaRepository<T> {
         } catch (Exception e) {
             throw new CouldNotLoadSchemaException("Could not load schema for topic " + topic.getQualifiedName(), e);
         }
+    }
+
+    public void onReload(Consumer<TopicWithSchema<T>> topicWithSchemaConsumer) {
+        topicWithSchemaReloadConsumers.add(topicWithSchemaConsumer);
+    }
+
+    public void onRemove(Consumer<TopicWithSchema<T>> topicWithSchemaConsumer) {
+        topicWithSchemaRemoveConsumers.add(topicWithSchemaConsumer);
+    }
+
+    private void notifyConsumersAboutSchemaReload(Topic topic, SchemaWithSource schemaWithSource) {
+        topicWithSchemaReloadConsumers.forEach(consumer -> consumer.accept(new TopicWithSchema<>(topic, schemaWithSource.getSchema())));
     }
 
     private class SchemaWithSource {
@@ -104,7 +130,9 @@ public class SchemaRepository<T> {
             ListenableFutureTask<SchemaWithSource> task = ListenableFutureTask.create(() -> {
                 logger.info("Reloading schema for topic {}", topic.getQualifiedName());
                 try {
-                    return createSchemaWithSource(newRawSource);
+                    SchemaWithSource schemaWithSource = createSchemaWithSource(newRawSource);
+                    notifyConsumersAboutSchemaReload(topic, schemaWithSource);
+                    return schemaWithSource;
                 } catch (Exception e) {
                     logger.warn("Could not compile schema for topic {}", topic.getQualifiedName(), e);
                     throw e;
