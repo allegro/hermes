@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperProvider;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -40,7 +41,7 @@ public class KafkaBrokerMessageProducerTest {
 
     private MockProducer leaderConfirmsProducer = new MockProducer();
     private MockProducer everyoneConfirmProducer = new MockProducer();
-    private Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer);
+    private Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, new ConfigFactory());
 
     private KafkaBrokerMessageProducer producer;
     private ObjectMapper mapper = new ObjectMapper();

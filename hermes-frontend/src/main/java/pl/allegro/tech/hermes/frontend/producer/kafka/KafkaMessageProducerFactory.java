@@ -75,7 +75,7 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
 
         Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(common, ACKS_CONFIG, ACK_LEADER));
         Producer<byte[], byte[]> everyoneConfirms = new KafkaProducer<>(copyWithEntryAdded(common, ACKS_CONFIG, ACK_ALL));
-        return new Producers(leaderConfirms, everyoneConfirms);
+        return new Producers(leaderConfirms, everyoneConfirms, configFactory);
     }
 
     private ImmutableMap<String, Object> copyWithEntryAdded(Map<String, Object> common, String key, String value) {
