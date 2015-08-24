@@ -11,6 +11,7 @@ public class Gauges {
             PRODUCER_EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES = "producer." + HOSTNAME + ".everyone-confirms-buffer-available-bytes",
             PRODUCER_LEADER_CONFIRMS_BUFFER_TOTAL_BYTES = "producer." + HOSTNAME + ".leader-confirms-buffer-total-bytes",
             PRODUCER_LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES = "producer." + HOSTNAME + ".leader-confirms-buffer-available-bytes",
+            PRODUCER_JMX_PREFIX = "producer." + HOSTNAME + ".jmx",
 
             CONSUMER_THREADS = "consumer." + HOSTNAME + ".threads",
             CONSUMER_OUTPUT_RATE = "consumer." + HOSTNAME + ".output-rate." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
