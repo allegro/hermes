@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPoolConfig;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
@@ -70,11 +71,12 @@ public class KafkaConfiguration {
     @Bean
     MultiDCAwareService multiDCAwareService() {
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
+            KafkaNamesMapper kafkaNamesMapper = new KafkaNamesMapper(kafkaProperties.getNamespace());
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
-            BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties));
+            BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties), kafkaNamesMapper);
             SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
             SingleMessageReader singleMessageReader = new KafkaSingleMessageReader(
-                new KafkaRawMessageReader(simpleConsumerPool), avroSchemaRepository
+                new KafkaRawMessageReader(simpleConsumerPool), avroSchemaRepository, kafkaNamesMapper
             );
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                 storage,
@@ -82,7 +84,8 @@ public class KafkaConfiguration {
                 messageContentWrapper,
                 subscriptionOffsetChangeIndicator,
                 simpleConsumerPool,
-                topicRepository
+                topicRepository,
+                kafkaNamesMapper
             );
 
             return new BrokersClusterService(kafkaProperties.getClusterName(), singleMessageReader, retransmissionService, brokerTopicManagement);

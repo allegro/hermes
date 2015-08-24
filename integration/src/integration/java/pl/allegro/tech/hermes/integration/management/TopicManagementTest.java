@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.ErrorCode;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 
 import javax.ws.rs.core.Response;
@@ -77,7 +78,7 @@ public class TopicManagementTest extends IntegrationTest {
         operations.createTopic("recreateTopicGroup", "topic");
         management.topic().remove("recreateTopicGroup.topic");
 
-        wait.untilKafkaZookeeperNodeDeletion("/brokers/topics/recreateTopicGroup.topic");
+        wait.untilTopicRemovedInKafka(new TopicName("recreateTopicGroup", "topic"));
 
         // when
         Response response = management.topic().create(

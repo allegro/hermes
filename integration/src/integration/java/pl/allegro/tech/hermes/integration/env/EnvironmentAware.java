@@ -46,4 +46,6 @@ public interface EnvironmentAware {
     String SECONDARY_KAFKA_CONNECT = "localhost:" + SECONDARY_KAFKA_PORT;
 
     String SECONDARY_ZK_KAFKA_CONNECT = "localhost:14192/secondaryKafka";
+
+    String KAFKA_NAMESPACE = CONFIG_FACTORY.getStringProperty(Configs.KAFKA_NAMESPACE);
 }

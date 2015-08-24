@@ -23,7 +23,7 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
     public void initializeIntegrationTest() {
         this.management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL);
         this.publisher = new HermesPublisher(FRONTEND_URL);
-        this.wait = new Waiter(management, services().zookeeper(), services().kafkaZookeeper());
+        this.wait = new Waiter(management, services().zookeeper(), services().kafkaZookeeper(), KAFKA_NAMESPACE);
         this.operations = new HermesAPIOperations(management, wait);
     }
 

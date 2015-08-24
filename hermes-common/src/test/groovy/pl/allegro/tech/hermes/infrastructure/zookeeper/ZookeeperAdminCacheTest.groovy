@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.test.IntegrationTest
 
 class ZookeeperAdminCacheTest extends IntegrationTest {
 
-    def adminCache = new ZookeeperAdminCache(zookeeper(), mapper)
+    def adminCache = new ZookeeperAdminCache(paths, zookeeper(), mapper)
     def subscriptionBytes =  mapper.writeValueAsBytes(new SubscriptionName("test", new TopicName("group", "name")));
 
     def "should cleanup RETRANSMIT marker after retransmission"() {

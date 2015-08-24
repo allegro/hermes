@@ -4,6 +4,7 @@ import kafka.admin.AdminUtils;
 import org.I0Itec.zkclient.ZkClient;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 
@@ -18,9 +19,12 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     private final ZkClient client;
 
-    public KafkaBrokerTopicManagement(TopicProperties topicProperties, ZkClient zkClient) {
+    private final KafkaNamesMapper kafkaNamesMapper;
+
+    public KafkaBrokerTopicManagement(TopicProperties topicProperties, ZkClient zkClient, KafkaNamesMapper kafkaNamesMapper) {
         this.topicProperties = topicProperties;
         this.client = zkClient;
+        this.kafkaNamesMapper = kafkaNamesMapper;
     }
 
     @Override
@@ -29,7 +33,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
         populateRetentionToProperties(retentionTime.getDuration(), props);
 
         AdminUtils.createTopic(
-            client, topicName.qualifiedName(),
+            client, kafkaNamesMapper.toKafkaTopicName(topicName).asString(),
             topicProperties.getPartitions(),
             topicProperties.getReplicationFactor(),
             props
@@ -38,14 +42,14 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     @Override
     public void removeTopic(TopicName name) {
-        AdminUtils.deleteTopic(client, name.qualifiedName());
+        AdminUtils.deleteTopic(client, kafkaNamesMapper.toKafkaTopicName(name).asString());
     }
 
     @Override
     public void updateTopic(TopicName topicName, RetentionTime retentionTime) {
         Properties props = new Properties();
         populateRetentionToProperties(retentionTime.getDuration(), props);
-        AdminUtils.changeTopicConfig(client, topicName.qualifiedName(), props);
+        AdminUtils.changeTopicConfig(client, kafkaNamesMapper.toKafkaTopicName(topicName).asString(), props);
     }
 
     private void populateRetentionToProperties(int retentionPolicy, Properties props) {

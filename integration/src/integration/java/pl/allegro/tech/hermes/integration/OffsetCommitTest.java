@@ -2,10 +2,11 @@ package pl.allegro.tech.hermes.integration;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.integration.env.ConsumersStarter;
+import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
-import pl.allegro.tech.hermes.integration.shame.Unreliable;
 
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -13,6 +14,8 @@ import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertTha
 public class OffsetCommitTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
+
+    private KafkaNamesMapper kafkaNamesMapper = new KafkaNamesMapper(KAFKA_NAMESPACE);
 
     @BeforeMethod
     public void initializeAlways() {
@@ -43,7 +46,8 @@ public class OffsetCommitTest extends IntegrationTest {
         wait.untilAllOffsetsEqual("properCommitOffsetGroup", "topic", "subscription", messages);
 
         //then
-        assertThat(services().zookeeper()).offsetsAreNotRetracted("properCommitOffsetGroup", "topic", "subscription", 2, messages);
+        assertThat(services().zookeeper(), kafkaNamesMapper)
+                .offsetsAreNotRetracted("properCommitOffsetGroup", "topic", "subscription", 2, messages);
         secondConsumer.stop();
     }
 

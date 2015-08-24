@@ -6,7 +6,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.zookeeper.ZookeeperTopicsCacheFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.publishing.MessageContentTypeEnforcer;
@@ -29,12 +29,12 @@ public class FrontendBinder extends AbstractBinder {
     protected void configure() {
         bind(HermesServer.class).to(HermesServer.class).in(Singleton.class);
         bind(PublishingServlet.class).to(PublishingServlet.class).in(Singleton.class);
-        bind(KafkaBrokerMessageProducer.class).to(BrokerMessageProducer.class).in(Singleton.class);
         bind(MessageValidators.class).to(MessageValidators.class).in(Singleton.class);
 
         bind(HealthCheckService.class).to(HealthCheckService.class).in(Singleton.class);
 
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
+        bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);
         bindFactory(ZkClientFactory.class).to(ZkClient.class).in(Singleton.class);
         bindSingleton(PublishingMessageTracker.class);
         bindSingleton(NoOperationPublishingTracker.class);
