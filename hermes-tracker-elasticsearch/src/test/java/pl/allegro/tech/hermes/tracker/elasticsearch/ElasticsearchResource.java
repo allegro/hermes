@@ -31,17 +31,6 @@ public class ElasticsearchResource extends ExternalResource implements LogSchema
         elastic = NodeBuilder.nodeBuilder().local(true).settings(settings).build();
         elastic.start();
         client = elastic.client();
-
-        createIndices();
-    }
-
-    private void createIndices() {
-        for (IndexFactory index : indices) {
-            client.admin().indices()
-                    .prepareCreate(index.createIndex())
-                    .execute().actionGet();
-            client.admin().cluster().prepareHealth(index.createIndex()).setWaitForActiveShards(1).execute().actionGet();
-        }
     }
 
     @Override

@@ -22,11 +22,6 @@ graphite:
     - "80:80"
     - "2003:2003"
 
-mongo:
-  image: mongo
-  ports:
-    - "27017:27017"
-
 frontend:
   image: allegro/hermes-frontend
   ports:
@@ -35,7 +30,6 @@ frontend:
     - zookeeper:zk
     - kafka
     - graphite
-    - mongo
 
 consumers:
   image: allegro/hermes-consumers
@@ -43,7 +37,6 @@ consumers:
     - zookeeper:zk
     - kafka
     - graphite
-    - mongo
 
 management:
   image: allegro/hermes-management
@@ -53,4 +46,3 @@ management:
     - zookeeper:zk
     - kafka
     - graphite
-    - mongo
