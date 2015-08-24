@@ -90,6 +90,10 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         untilSubscriptionHasState(topicName.getGroupName(), topicName.getName(), subscription, Subscription.State.ACTIVE);
     }
 
+    public void untilTopicRemovedInKafka(TopicName topicName) {
+        untilZookeeperNodeDeletion(KafkaZookeeperPaths.topicPath(kafkaNamesMapper.toKafkaTopicName(topicName)), kafkaZookeeper);
+    }
+
     public void untilAllOffsetsEqual(final String group, final String topic, final String subscription, final int offset) {
         waitAtMost(adjust(30), TimeUnit.SECONDS).until(() -> {
             List<String> partitions = zookeeper.getChildren().forPath(subscriptionOffsetPath(group, topic, subscription));

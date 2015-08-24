@@ -27,6 +27,10 @@ public final class KafkaZookeeperPaths {
         return join("/consumers", groupId.asString());
     }
 
+    public static String topicPath(KafkaTopicName topicName) {
+        return join("/brokers/topics", topicName.asString());
+    }
+
     private static String join(Object... parts) {
         return Joiner.on("/").join(parts);
     }
