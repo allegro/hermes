@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
 import kafka.admin.AdminUtils;
+import kafka.log.LogConfig;
 import org.I0Itec.zkclient.ZkClient;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -11,8 +12,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
-
-    public static final String RETENTION_MS_PROPERTY = "retention.ms";
 
     private final TopicProperties topicProperties;
 
@@ -25,14 +24,14 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     @Override
     public void createTopic(TopicName topicName, RetentionTime retentionTime) {
-        Properties props = new Properties();
-        populateRetentionToProperties(retentionTime.getDuration(), props);
+        Properties config = createTopicConfig(retentionTime.getDuration(), topicProperties);
 
         AdminUtils.createTopic(
-            client, topicName.qualifiedName(),
+            client,
+            topicName.qualifiedName(),
             topicProperties.getPartitions(),
             topicProperties.getReplicationFactor(),
-            props
+            config
         );
     }
 
@@ -43,13 +42,16 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     @Override
     public void updateTopic(TopicName topicName, RetentionTime retentionTime) {
-        Properties props = new Properties();
-        populateRetentionToProperties(retentionTime.getDuration(), props);
-        AdminUtils.changeTopicConfig(client, topicName.qualifiedName(), props);
+        Properties config = createTopicConfig(retentionTime.getDuration(), topicProperties);
+        AdminUtils.changeTopicConfig(client, topicName.qualifiedName(), config);
     }
 
-    private void populateRetentionToProperties(int retentionPolicy, Properties props) {
-        props.put(RETENTION_MS_PROPERTY, "" + TimeUnit.DAYS.toMillis(retentionPolicy));
+    private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties) {
+        Properties props = new Properties();
+        props.put(LogConfig.RententionMsProp(), "" + TimeUnit.DAYS.toMillis(retentionPolicy));
+        props.put(LogConfig.UncleanLeaderElectionEnableProp(), Boolean.toString(topicProperties.isUncleanLeaderElectionEnabled()));
+
+        return props;
     }
 
 }
