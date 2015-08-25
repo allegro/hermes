@@ -20,4 +20,9 @@ public class SubscriptionName {
     public TopicName getTopicName() {
         return topicName;
     }
+
+    @Override
+    public String toString() {
+        return Subscription.getId(topicName, name);
+    }
 }

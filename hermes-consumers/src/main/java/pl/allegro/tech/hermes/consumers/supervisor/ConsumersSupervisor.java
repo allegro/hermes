@@ -34,7 +34,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 public class ConsumersSupervisor implements SubscriptionCallback, AdminOperationsCallback {
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumersSupervisor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConsumersSupervisor.class);
 
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
@@ -94,10 +94,10 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                 } else if (subscription.getState() == ACTIVE) {
                     createAndExecuteConsumerIfNotExists(subscription);
                 } else {
-                    LOGGER.info("Got subscription created event for inactive subscription {}", subscription.getId());
+                    logger.info("Got subscription created event for inactive subscription {}", subscription.getId());
                 }
             } catch (Exception e) {
-                LOGGER.error("Failed to create subscription " + subscription.getName(), e);
+                logger.error("Failed to create subscription " + subscription.getName(), e);
             }
         }
     }
@@ -109,7 +109,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                 deleteConsumerIfExists(subscription, true);
                 hermesMetrics.removeMetrics(subscription);
             } catch (Exception e) {
-                LOGGER.error("Failed to remove subscription " + subscription.getId(), e);
+                logger.error("Failed to remove subscription " + subscription.getId(), e);
             }
         }
     }
@@ -128,7 +128,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                 consumerOptional.ifPresent((consumer) -> consumer.updateSubscription(modifiedSubscription));
 
             } catch (Exception e) {
-                LOGGER.error("Failed to update subscription " + modifiedSubscription.getId(), e);
+                logger.error("Failed to update subscription " + modifiedSubscription.getId(), e);
             }
         }
     }
@@ -145,7 +145,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
     private void handleSubscriptionStateChange(Subscription.State oldState,
                                                Subscription.State newState,
                                                Subscription modifiedSubscription) throws Exception {
-        LOGGER.info("Changing state from {} to {} for subscription {}", oldState, newState, modifiedSubscription.getId());
+        logger.info("Changing state from {} to {} for subscription {}", oldState, newState, modifiedSubscription.getId());
         switch (newState) {
             case PENDING:
                 if (!oldState.equals(PENDING)) {
@@ -187,7 +187,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
 
     private void createAndExecuteConsumerIfNotExists(Subscription subscription) {
             if (consumerHolder.contains(subscription.getTopicName(), subscription.getName())) {
-                LOGGER.warn("Consumer for {} already exists, ignoring", subscription.getId());
+                logger.warn("Consumer for {} already exists, ignoring", subscription.getId());
             } else {
                 createAndExecuteConsumer(subscription);
             }
@@ -203,9 +203,12 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
 
     private void deleteConsumerIfExists(TopicName topicName, String subscriptionName, boolean removeOffsets) throws Exception {
         if (consumerHolder.contains(topicName, subscriptionName)) {
-            LOGGER.info("Deleting consumer for {}", Subscription.getId(topicName, subscriptionName));
+            logger.info("Deleting consumer for {}", Subscription.getId(topicName, subscriptionName));
+
             Consumer consumer = consumerHolder.get(topicName, subscriptionName).get();
             consumer.stopConsuming();
+            consumer.waitUntilStopped();
+
             consumerHolder.remove(topicName, subscriptionName);
             if (removeOffsets) {
                 removeOffsets(topicName, subscriptionName, consumer.getOffsetsToCommit());
@@ -214,7 +217,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
     }
 
     private void createAndExecuteConsumer(Subscription subscription) {
-        LOGGER.info("Creating consumer for {}", subscription.getId());
+        logger.info("Creating consumer for {}", subscription.getId());
         Consumer consumer = consumerFactory.createConsumer(subscription);
         consumerHolder.add(subscription.getTopicName(), subscription.getName(), consumer);
         executor.execute(consumer);
@@ -231,6 +234,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
     @Override
     public void onRetransmissionStarts(SubscriptionName subscriptionName) throws Exception {
         synchronized (subscriptionsLocks.getLock(subscriptionName)) {
+            logger.info("Starting retransmission for subscription {}", subscriptionName);
             deleteConsumerIfExists(subscriptionName, false);
 
             PartitionOffsets offsets = subscriptionOffsetChangeIndicator.getSubscriptionOffsets(
@@ -242,6 +246,7 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                 }
             }
             createAndExecuteConsumer(subscriptionRepository.getSubscriptionDetails(subscriptionName.getTopicName(), subscriptionName.getName()));
+            logger.info("Finished retransmission for subscription {}", subscriptionName);
         }
     }
 }
