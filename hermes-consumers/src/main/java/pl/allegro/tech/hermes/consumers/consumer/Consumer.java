@@ -36,8 +36,8 @@ public class Consumer implements Runnable {
 
     private Subscription subscription;
 
+    private final CountDownLatch stoppedLatch = new CountDownLatch(1);
     private volatile boolean consuming = true;
-    private volatile CountDownLatch stoppedLatch = new CountDownLatch(1);
 
     public Consumer(MessageReceiver messageReceiver, HermesMetrics hermesMetrics, Subscription subscription,
                     ConsumerRateLimiter rateLimiter, SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues,
@@ -79,6 +79,7 @@ public class Consumer implements Runnable {
             }
         }
         messageReceiver.stop();
+        unsetThreadName();
         logger.info("Stopped consumer for subscription {}", subscription.getId());
         stoppedLatch.countDown();
     }
@@ -119,6 +120,10 @@ public class Consumer implements Runnable {
 
     private void setThreadName() {
         Thread.currentThread().setName("Consumer-" + subscription.getId());
+    }
+
+    private void unsetThreadName() {
+        Thread.currentThread().setName("Released thread");
     }
 
     @VisibleForTesting
