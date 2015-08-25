@@ -39,6 +39,8 @@ public class Producers {
         registerAvailableBytesGauge(leaderConfirms, metrics, Gauges.PRODUCER_LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES);
         registerTotalBytesGauge(everyoneConfirms, metrics, Gauges.PRODUCER_EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES);
         registerAvailableBytesGauge(everyoneConfirms, metrics, Gauges.PRODUCER_EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES);
+        registerCompressionRateGauge(leaderConfirms, metrics, Gauges.PRODUCER_LEADER_CONFIRMS_COMPRESSION_RATE);
+        registerCompressionRateGauge(everyoneConfirms, metrics, Gauges.PRODUCER_EVERYONE_CONFIRMS_COMPRESSION_RATE);
         if (reportNodeMetrics) {
             registerLatencyPerBrokerGauge(metrics);
         }
@@ -49,6 +51,10 @@ public class Producers {
         registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-avg", "leader-confirms");
         registerLatencyPerBrokerGauge(everyoneConfirms, metrics, "request-latency-max", "everyone-confirms");
         registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-max", "leader-confirms");
+    }
+
+    private void registerCompressionRateGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
+        registerProducerGauge(producer, metrics, new MetricName("compression-rate-avg", "producer-metrics"), gauge);
     }
 
     private void registerTotalBytesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
