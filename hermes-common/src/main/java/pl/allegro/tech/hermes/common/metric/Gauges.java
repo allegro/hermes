@@ -9,8 +9,10 @@ public class Gauges {
 
     public static final String PRODUCER_EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES = "producer." + HOSTNAME + ".everyone-confirms-buffer-total-bytes",
             PRODUCER_EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES = "producer." + HOSTNAME + ".everyone-confirms-buffer-available-bytes",
+            PRODUCER_EVERYONE_CONFIRMS_COMPRESSION_RATE = "producer." + HOSTNAME + ".everyone-confirms-compression-rate-avg",
             PRODUCER_LEADER_CONFIRMS_BUFFER_TOTAL_BYTES = "producer." + HOSTNAME + ".leader-confirms-buffer-total-bytes",
             PRODUCER_LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES = "producer." + HOSTNAME + ".leader-confirms-buffer-available-bytes",
+            PRODUCER_LEADER_CONFIRMS_COMPRESSION_RATE = "producer." + HOSTNAME + ".leader-confirms-compression-rate-avg",
             PRODUCER_JMX_PREFIX = "producer." + HOSTNAME + ".jmx",
 
             CONSUMER_THREADS = "consumer." + HOSTNAME + ".threads",
