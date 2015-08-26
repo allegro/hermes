@@ -101,8 +101,8 @@ public class Producers {
         metrics.registerGauge(gauge, () -> {
             Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
                     producer.metrics().entrySet().stream().filter(predicate).findFirst();
-
-            return first.isPresent() ? first.get().getValue().value() : 0.0;
+            double value = first.isPresent() ? first.get().getValue().value() : 0.0;
+            return value < 0? 0.0 : value;
         });
     }
 
