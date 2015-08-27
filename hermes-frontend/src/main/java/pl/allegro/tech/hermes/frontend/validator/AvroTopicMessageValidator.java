@@ -21,7 +21,7 @@ public class AvroTopicMessageValidator implements TopicMessageValidator {
 
     @Override
     public void check(byte[] message, Topic topic) {
-        if (!topic.getContentType().equals(Topic.ContentType.AVRO)) {
+        if (Topic.ContentType.AVRO != topic.getContentType()) {
             return;
         }
 
