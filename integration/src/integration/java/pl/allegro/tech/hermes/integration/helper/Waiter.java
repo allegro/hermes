@@ -13,6 +13,8 @@ import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
@@ -30,13 +32,16 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private final CuratorFramework kafkaZookeeper;
 
-    private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue().toString());
+    private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue());
 
-    public Waiter(HermesEndpoints endpoints, CuratorFramework zookeeper, CuratorFramework kafkaZookeeper) {
+    private final KafkaNamesMapper kafkaNamesMapper;
+
+    public Waiter(HermesEndpoints endpoints, CuratorFramework zookeeper, CuratorFramework kafkaZookeeper, String kafkaNamespace) {
         super(endpoints);
         this.endpoints = endpoints;
         this.zookeeper = zookeeper;
         this.kafkaZookeeper = kafkaZookeeper;
+        this.kafkaNamesMapper = new KafkaNamesMapper(kafkaNamespace);
     }
 
     public void untilKafkaZookeeperNodeDeletion(final String path) {
@@ -77,12 +82,16 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private void untilSubscriptionHasState(String group, String topic, String subscription, Subscription.State state) {
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
-            endpoints.subscription().get(group + "." + topic, subscription).getState().equals(state)
+                        endpoints.subscription().get(group + "." + topic, subscription).getState().equals(state)
         );
     }
 
     public void untilSubscriptionEndsReiteration(TopicName topicName, String subscription) {
         untilSubscriptionHasState(topicName.getGroupName(), topicName.getName(), subscription, Subscription.State.ACTIVE);
+    }
+
+    public void untilTopicRemovedInKafka(TopicName topicName) {
+        untilZookeeperNodeDeletion(KafkaZookeeperPaths.topicPath(kafkaNamesMapper.toKafkaTopicName(topicName)), kafkaZookeeper);
     }
 
     public void untilAllOffsetsEqual(final String group, final String topic, final String subscription, final int offset) {
@@ -144,17 +153,19 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private String subscriptionConsumerPath(String group, String topic, String subscription) {
         TopicName topicName = new TopicName(group, topic);
-        return "/consumers/" + Subscription.getId(topicName, subscription) + "/owners/" + topicName.qualifiedName();
+        return KafkaZookeeperPaths.ownersPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription)),
+                kafkaNamesMapper.toKafkaTopicName(topicName));
     }
 
     private String subscriptionIdsPath(String group, String topic, String subscription) {
         TopicName topicName = new TopicName(group, topic);
-        return "/consumers/" + Subscription.getId(topicName, subscription) + "/ids";
+        return KafkaZookeeperPaths.idsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription)));
     }
 
     private String subscriptionOffsetPath(String group, String topic, String subscription) {
         TopicName topicName = new TopicName(group, topic);
-        return "/consumers/" + Subscription.getId(topicName, subscription) + "/offsets/" + topicName.qualifiedName();
+        return KafkaZookeeperPaths.offsetsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription)),
+                kafkaNamesMapper.toKafkaTopicName(topicName));
     }
 
     private void sleep(int seconds) {
@@ -185,7 +196,8 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         channel.connect();
 
         waitAtMost(adjust((Duration.ONE_MINUTE))).until(() -> {
-            channel.send(new ConsumerMetadataRequest(subscription.getId(), ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
+            channel.send(new ConsumerMetadataRequest(kafkaNamesMapper.toConsumerGroupId(subscription).asString(),
+                    ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
             ConsumerMetadataResponse metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
             return metadataResponse.errorCode() == ErrorMapping.NoError();
         });

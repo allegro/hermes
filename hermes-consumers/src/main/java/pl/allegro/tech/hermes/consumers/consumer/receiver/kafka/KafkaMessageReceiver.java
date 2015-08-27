@@ -8,9 +8,9 @@ import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.time.Clock;
@@ -29,21 +29,20 @@ public class KafkaMessageReceiver implements MessageReceiver {
     private final Timer readingTimer;
     private final Clock clock;
 
-    public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, ConfigFactory configFactory,
-                                MessageContentWrapper contentWrapper, Timer readingTimer, Clock clock) {
+    public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, MessageContentWrapper contentWrapper,
+                                Timer readingTimer, Clock clock, KafkaNamesMapper kafkaNamesMapper, Integer kafkaStreamCount) {
         this.topic = topic;
         this.consumerConnector = consumerConnector;
         this.contentWrapper = contentWrapper;
         this.readingTimer = readingTimer;
         this.clock = clock;
 
-        Map<String, Integer> topicCountMap = ImmutableMap.of(
-                topic.getQualifiedName(), configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT)
-        );
+        KafkaTopicName topicName = kafkaNamesMapper.toKafkaTopicName(topic);
+        Map<String, Integer> topicCountMap = ImmutableMap.of(topicName.asString(), kafkaStreamCount);
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumerConnector.createMessageStreams(
                 topicCountMap
         );
-        KafkaStream<byte[], byte[]> stream = consumerMap.get(topic.getQualifiedName()).get(0);
+        KafkaStream<byte[], byte[]> stream = consumerMap.get(topicName.asString()).get(0);
         iterator = stream.iterator();
     }
 
@@ -57,7 +56,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
                     unwrappedContent.getMessageMetadata().getId(),
                     message.offset(),
                     message.partition(),
-                    message.topic(),
+                    topic.getQualifiedName(),
                     unwrappedContent.getContent(),
                     unwrappedContent.getMessageMetadata().getTimestamp(),
                     clock.getTime());

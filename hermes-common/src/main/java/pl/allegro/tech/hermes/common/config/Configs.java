@@ -19,6 +19,7 @@ public enum Configs {
 
     KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary"),
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
+    KAFKA_NAMESPACE("kafka.namespace", ""),
     KAFKA_CONSUMER_TIMEOUT_MS("kafka.consumer.timeout.ms", 60000),
     KAFKA_CONSUMER_AUTO_OFFSET_RESET("kafka.consumer.auto.offset.reset", "largest"),
     KAFKA_CONSUMER_OFFSETS_STORAGE("kafka.consumer.offsets.storage", "kafka"),

@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.converter.ConvertingException;
+import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
@@ -128,10 +129,8 @@ public class PublishingServlet extends HttpServlet {
                                         new MetricsPublishingCallback(hermesMetrics, topic),
                                         new BrokerListenersPublishingCallback(listeners)));
 
-                    } catch (InvalidMessageException exception) {
+                    } catch (InvalidMessageException | ConvertingException | UnsupportedContentTypeException exception) {
                         httpResponder.badRequest(exception);
-                    } catch (ConvertingException exception) {
-                        httpResponder.badRequest(exception, "Converting exception");
                     }
                 }),
                 input -> httpResponder.badRequest(input, "Validation error"),

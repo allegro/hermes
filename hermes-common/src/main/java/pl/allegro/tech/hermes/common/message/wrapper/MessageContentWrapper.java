@@ -28,7 +28,7 @@ public class MessageContentWrapper {
             return avroMessageContentWrapper.unwrapContent(data, avroSchemaRepository.getSchema(topic));
         }
 
-        throw new IllegalStateException("Unsupported content type " + topic.getContentType());
+        throw new UnsupportedContentTypeException(topic);
     }
 
     public byte[] wrap(byte[] data, String id, long timestamp, Topic topic) {
@@ -38,7 +38,7 @@ public class MessageContentWrapper {
             return avroMessageContentWrapper.wrapContent(data, id, timestamp, avroSchemaRepository.getSchema(topic));
         }
 
-        throw new IllegalStateException("Unsupported content type " + topic.getContentType());
+        throw new UnsupportedContentTypeException(topic);
     }
 
 }

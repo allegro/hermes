@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.After;
@@ -10,16 +9,16 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
@@ -37,14 +36,14 @@ public class KafkaBrokerMessageProducerTest {
     private Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer);
 
     private KafkaBrokerMessageProducer producer;
-    private ObjectMapper mapper = new ObjectMapper();
+    private KafkaNamesMapper kafkaNamesMapper = new KafkaNamesMapper("ns");
 
     @Mock
     private HermesMetrics hermesMetrics;
 
     @Before
     public void before() {
-        producer = new KafkaBrokerMessageProducer(producers, hermesMetrics);
+        producer = new KafkaBrokerMessageProducer(producers, hermesMetrics, kafkaNamesMapper);
     }
 
     @After
@@ -54,29 +53,36 @@ public class KafkaBrokerMessageProducerTest {
     }
 
     @Test
+    public void shouldPublishOnTopicUsingKafkaTopicName() throws InterruptedException {
+        //when
+        producer.send(MESSAGE, TOPIC, new DoNothing());
+
+        //then
+        List<ProducerRecord<byte[], byte[]>> records = leaderConfirmsProducer.history();
+        assertThat(records.size()).isEqualTo(1);
+        assertThat(records.get(0).topic()).isEqualTo("ns_group.topic");
+    }
+
+    @Test
     public void shouldCallCallbackOnSend() throws InterruptedException {
         //given
-        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean callbackCalled = new AtomicBoolean(false);
 
         //when
         producer.send(MESSAGE, TOPIC, new PublishingCallback() {
             @Override
             public void onUnpublished(Message message, Topic topic, Exception exception) {
-                latch.countDown();
+                callbackCalled.set(true);
             }
 
             @Override
             public void onPublished(Message message, Topic topic) {
-                latch.countDown();
+                callbackCalled.set(true);
             }
         });
 
         //then
-        List<ProducerRecord<byte[], byte[]>> records = leaderConfirmsProducer.history();
-        assertThat(records.size()).isEqualTo(1);
-        assertThat(records.get(0).topic()).isEqualTo("group.topic");
-
-        latch.await();
+        await().until(callbackCalled::get);
     }
 
     @Test
@@ -90,16 +96,7 @@ public class KafkaBrokerMessageProducerTest {
         //then
         List<ProducerRecord<byte[], byte[]>> records = everyoneConfirmProducer.history();
         assertThat(records.size()).isEqualTo(1);
-        assertThat(records.get(0).topic()).isEqualTo("group.all");
-    }
-
-    private Map<String, Object> firstMessage(MockProducer producer) throws IOException {
-        return readMap(producer.history().get(0).value());
-    }
-
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> readMap(byte[] result) throws IOException {
-        return mapper.readValue(new String(result), Map.class);
+        assertThat(records.get(0).topic()).isEqualTo("ns_group.all");
     }
 
     private static class DoNothing implements PublishingCallback {

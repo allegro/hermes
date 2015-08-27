@@ -28,7 +28,7 @@ public class JsonTopicMessageValidator implements TopicMessageValidator {
 
     @Override
     public void check(byte[] message, Topic topic) {
-        if (!topic.getContentType().equals(Topic.ContentType.JSON) || !topic.isValidationEnabled()) {
+        if (Topic.ContentType.JSON != topic.getContentType() || !topic.isValidationEnabled()) {
             return;
         }
 
