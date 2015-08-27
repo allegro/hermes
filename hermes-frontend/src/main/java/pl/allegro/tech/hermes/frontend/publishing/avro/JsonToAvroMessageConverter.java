@@ -16,7 +16,7 @@ public class JsonToAvroMessageConverter {
 
     public Message convert(Message message, Topic topic) {
         Schema schema = schemaRepository.getSchema(topic);
-        return new Message(message.getId(), JsonToAvroConverter.convert(message.getData(), schema), message.getTimestamp());
+        return message.withDataReplaced(JsonToAvroConverter.convert(message.getData(), schema));
     }
 
 }

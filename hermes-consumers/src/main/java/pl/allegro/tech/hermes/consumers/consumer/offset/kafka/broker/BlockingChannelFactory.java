@@ -8,6 +8,7 @@ import kafka.javaapi.ConsumerMetadataResponse;
 import kafka.network.BlockingChannel;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -32,7 +33,7 @@ public class BlockingChannelFactory {
         this.readTimeout = readTimeout;
     }
 
-    public BlockingChannel create(String consumerGroupId) {
+    public BlockingChannel create(ConsumerGroupId consumerGroupId) {
         ConsumerMetadataResponse metadataResponse = readConsumerMetadata(consumerGroupId);
 
         if (metadataResponse.errorCode() != ErrorMapping.NoError()) {
@@ -49,14 +50,14 @@ public class BlockingChannelFactory {
         return blockingChannel;
     }
 
-    private ConsumerMetadataResponse readConsumerMetadata(String consumerGroupId) {
+    private ConsumerMetadataResponse readConsumerMetadata(ConsumerGroupId consumerGroupId) {
         BlockingChannel channel = new BlockingChannel(broker.getHostText(), broker.getPort(),
                 BlockingChannel.UseDefaultBufferSize(),
                 BlockingChannel.UseDefaultBufferSize(),
                 readTimeout);
 
         channel.connect();
-        channel.send(new ConsumerMetadataRequest(consumerGroupId, ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
+        channel.send(new ConsumerMetadataRequest(consumerGroupId.asString(), ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
         ConsumerMetadataResponse metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
         channel.disconnect();
         return metadataResponse;

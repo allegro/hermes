@@ -105,7 +105,8 @@ public class StorageConfiguration {
 
     @Bean
     AdminTool adminTool() {
-        return new ZookeeperAdminTool(storageZookeeper(), objectMapper, Configs.ADMIN_REAPER_INTERAL_MS.getDefaultValue());
+        return new ZookeeperAdminTool(zookeeperPaths(), storageZookeeper(), objectMapper,
+                Configs.ADMIN_REAPER_INTERAL_MS.getDefaultValue());
     }
 
     @Bean

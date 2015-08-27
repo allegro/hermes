@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.converter.ConvertingException;
+import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
@@ -18,6 +19,7 @@ import pl.allegro.tech.hermes.frontend.publishing.callbacks.MessageStatePublishi
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
+import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -48,6 +50,7 @@ public class PublishingServlet extends HttpServlet {
     private final Clock clock;
     private final MessagePublisher messagePublisher;
     private final MessageContentTypeEnforcer contentTypeEnforcer;
+    private final MetadataAddingMessageConverter metadataAddingMessageConverter;
     private final BrokerListeners listeners;
 
     private final Integer defaultAsyncTimeout;
@@ -64,13 +67,15 @@ public class PublishingServlet extends HttpServlet {
                              Clock clock,
                              MessagePublisher messagePublisher,
                              BrokerListeners listeners,
-                             MessageContentTypeEnforcer contentTypeEnforcer) {
+                             MessageContentTypeEnforcer contentTypeEnforcer,
+                             MetadataAddingMessageConverter metadataAddingMessageConverter) {
 
         this.topicsCache = topicsCache;
         this.messageValidators = messageValidators;
         this.clock = clock;
         this.messagePublisher = messagePublisher;
         this.contentTypeEnforcer = contentTypeEnforcer;
+        this.metadataAddingMessageConverter = metadataAddingMessageConverter;
         this.errorSender = new ErrorSender(objectMapper);
         this.hermesMetrics = hermesMetrics;
         this.trackers = trackers;
@@ -113,6 +118,7 @@ public class PublishingServlet extends HttpServlet {
 
                         messageValidators.check(topic, message.getData());
 
+                        message = metadataAddingMessageConverter.addMetadata(message, topic);
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 
                         messagePublisher.publish(message, topic, messageState,
@@ -123,10 +129,8 @@ public class PublishingServlet extends HttpServlet {
                                         new MetricsPublishingCallback(hermesMetrics, topic),
                                         new BrokerListenersPublishingCallback(listeners)));
 
-                    } catch (InvalidMessageException exception) {
+                    } catch (InvalidMessageException | ConvertingException | UnsupportedContentTypeException exception) {
                         httpResponder.badRequest(exception);
-                    } catch (ConvertingException exception) {
-                        httpResponder.badRequest(exception, "Converting exception");
                     }
                 }),
                 input -> httpResponder.badRequest(input, "Validation error"),

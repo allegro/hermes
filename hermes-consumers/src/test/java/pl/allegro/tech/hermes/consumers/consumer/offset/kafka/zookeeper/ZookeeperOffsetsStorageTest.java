@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.offset.kafka.zookeeper;
 import org.junit.After;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
@@ -14,7 +15,7 @@ public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
             .withTopicName("brokerGroup", "brokerTopic")
             .withName("brokerSubscription").build();
 
-    private final ZookeeperOffsetsStorage offsetsStorage = new ZookeeperOffsetsStorage(zookeeperClient);
+    private final ZookeeperOffsetsStorage offsetsStorage = new ZookeeperOffsetsStorage(zookeeperClient, new KafkaNamesMapper("ns"));
 
     @After
     public void after() throws Exception {

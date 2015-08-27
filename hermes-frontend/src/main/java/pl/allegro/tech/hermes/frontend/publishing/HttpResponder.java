@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
-import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.servlet.AsyncContext;
@@ -71,8 +70,8 @@ public class HttpResponder {
         completeError(new ErrorDescription(formatErrorMessage(message, throwable), VALIDATION_ERROR));
     }
 
-    public void badRequest(InvalidMessageException exception) {
-        completeError(new ErrorDescription(exception.getMessage(), VALIDATION_ERROR));
+    public void badRequest(Throwable throwable) {
+        completeError(new ErrorDescription(throwable.getMessage(), VALIDATION_ERROR));
     }
 
     public void internalError(Throwable throwable, String message) {
