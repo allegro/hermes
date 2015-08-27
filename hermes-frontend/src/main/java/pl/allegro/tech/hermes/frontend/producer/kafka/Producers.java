@@ -16,6 +16,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
+import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
+
 
 public class Producers {
     private final Producer<byte[], byte[]> leaderConfirms;
@@ -96,7 +98,7 @@ public class Producers {
                                                String producerName,
                                                Node node) {
 
-        String gauge = Gauges.PRODUCER_JMX_PREFIX + "." + producerName + "-" + metricName + "." + node.host();
+        String gauge = Gauges.PRODUCER_JMX_PREFIX + "." + producerName + "-" + metricName + "." + escapeDots(node.host());
         registerGauge(producer, metrics, gauge,
                 entry -> entry.getKey().group().equals("producer-node-metrics")
                         && entry.getKey().name().equals(metricName)
