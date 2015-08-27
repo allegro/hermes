@@ -23,4 +23,9 @@ public class Message {
     public long getTimestamp() {
         return timestamp;
     }
+
+    public Message withDataReplaced(byte[] newData) {
+        return new Message(id, newData, timestamp);
+    }
+
 }

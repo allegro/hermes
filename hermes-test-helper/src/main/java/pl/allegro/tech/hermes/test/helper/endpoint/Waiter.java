@@ -20,21 +20,21 @@ public class Waiter {
     }
 
     public void untilSubscriptionCreated(String group, String topic, String subscription, boolean isTracked) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
-            endpoints.subscription().list(group + "." + topic, isTracked).contains(subscription);
-        });
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+            endpoints.subscription().list(group + "." + topic, isTracked).contains(subscription)
+        );
     }
 
     public void untilGroupCreated(String group) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
-            return endpoints.group().list().contains(group);
-        });
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+            endpoints.group().list().contains(group)
+        );
     }
 
     public void untilTopicCreated(Topic topic) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
-            return endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName());
-        });
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+            endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName())
+        );
     }
 }
 

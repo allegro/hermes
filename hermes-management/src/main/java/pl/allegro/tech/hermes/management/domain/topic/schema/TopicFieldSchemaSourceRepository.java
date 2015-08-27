@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
-@Component
 public class TopicFieldSchemaSourceRepository extends TopicFieldSchemaSourceProvider implements SchemaSourceRepository {
 
     private final TopicService topicService;

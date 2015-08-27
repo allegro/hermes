@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -81,6 +82,16 @@ public class RemoteServiceEndpoint {
         logger.info("Expecting to receive {} messages", expectedMessages.size());
         await().atMost(new Duration(seconds, TimeUnit.SECONDS)).until(() -> receivedRequests.size() == expectedMessages.size());
         assertThat(receivedRequests.stream().map(request -> request.getBodyAsString()).collect(toList())).containsAll(expectedMessages);
+    }
+
+    public void waitUntilReceived(Consumer<String> requestBodyConsumer) {
+        waitUntilReceived(60, 1, requestBodyConsumer);
+    }
+
+    public void waitUntilReceived(long seconds, int numberOfExpectedMessages, Consumer<String> requestBodyConsumer) {
+        logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
+        await().atMost(new Duration(seconds, TimeUnit.SECONDS)).until(() -> receivedRequests.size() == numberOfExpectedMessages);
+        receivedRequests.stream().map(request -> request.getBodyAsString()).forEach(requestBodyConsumer::accept);
     }
 
     public void waitUntilReceived() {

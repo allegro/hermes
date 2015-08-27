@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integration.management;
 
-import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -12,7 +11,6 @@ import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
-import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -23,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.net.URI.create;
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
@@ -45,7 +42,6 @@ public class SubscriptionManagementTest extends IntegrationTest {
         client = hermesClient(new JerseyHermesSender(newClient())).withURI(create("http://localhost:" + FRONTEND_PORT)).build();
     }
 
-    @Unreliable
     @Test
     public void shouldCreateSubscriptionWithActiveStatus() {
         // given
@@ -63,7 +59,6 @@ public class SubscriptionManagementTest extends IntegrationTest {
         wait.untilSubscriptionIsActivated("subscribeGroup", "topic", "subscription");
     }
     
-    @Unreliable
     @Test
     public void shouldSuspendSubscription() {
         // given
@@ -78,9 +73,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
-            management.subscription().get("suspendSubscriptionGroup.topic", "subscription").getState().equals(Subscription.State.SUSPENDED);
-        });
+        wait.untilSubscriptionIsSuspended("suspendSubscriptionGroup", "topic", "subscription");
     }
 
     @Test

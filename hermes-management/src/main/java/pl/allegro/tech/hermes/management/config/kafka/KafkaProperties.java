@@ -18,6 +18,8 @@ public class KafkaProperties {
 
     private boolean dualCommitEnabled = false;
 
+    private String namespace = "";
+
     private SimpleConsumer simpleConsumer = new SimpleConsumer();
 
     public static final class SimpleConsumer {
@@ -133,5 +135,13 @@ public class KafkaProperties {
 
     public void setDualCommitEnabled(boolean dualCommitEnabled) {
         this.dualCommitEnabled = dualCommitEnabled;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 }

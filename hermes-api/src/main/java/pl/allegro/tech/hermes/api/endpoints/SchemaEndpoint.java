@@ -15,4 +15,7 @@ public interface SchemaEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     Response save(@PathParam("topicName") String qualifiedTopicName, String schema);
+
+    @DELETE
+    Response delete(@PathParam("topicName") String qualifiedTopicName);
 }

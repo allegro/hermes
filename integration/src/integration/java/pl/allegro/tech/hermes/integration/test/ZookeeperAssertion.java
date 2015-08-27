@@ -6,22 +6,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ZookeeperAssertion extends AbstractAssert<ZookeeperAssertion, CuratorFramework> {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperAssertion.class);
+    private final KafkaNamesMapper kafkaNamesMapper;
 
-    public ZookeeperAssertion(CuratorFramework actual, Class<?> selfType) {
+    public ZookeeperAssertion(CuratorFramework actual, Class<?> selfType, KafkaNamesMapper kafkaNamesMapper) {
         super(actual, selfType);
+        this.kafkaNamesMapper = kafkaNamesMapper;
     }
 
     public void offsetsAreNotRetracted(String group, String topic, String subscription, int partitions, int offset) {
+        TopicName topicName = new TopicName(group, topic);
+        ConsumerGroupId kafkaGroupId = kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription));
+        KafkaTopicName kafkaTopic = kafkaNamesMapper.toKafkaTopicName(topicName);
+
         for (int i = 0; i < 200; i++) {
             try {
                 for (int j = 0; j < partitions; j++) {
-                    assertThat(offsetValue(group, topic, subscription, j)).isEqualTo(offset);
+                    assertThat(offsetValue(kafkaGroupId, kafkaTopic, j)).isEqualTo(offset);
                 }
                 Thread.sleep(10);
             } catch (Exception exception) {
@@ -30,12 +40,9 @@ public class ZookeeperAssertion extends AbstractAssert<ZookeeperAssertion, Curat
         }
     }
 
-    private long offsetValue(String group, String topic, String subscription, int partition) throws Exception {
-        return Long.valueOf(new String(actual.getData().forPath(subscriptionOffsetPath(group, topic, subscription, partition))));
+    private long offsetValue(ConsumerGroupId groupId, KafkaTopicName topic, int partition) throws Exception {
+        String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(groupId, topic, partition);
+        return Long.valueOf(new String(actual.getData().forPath(offsetPath)));
     }
 
-    private String subscriptionOffsetPath(String group, String topic, String subscription, int partition) {
-        TopicName topicName = new TopicName(group, topic);
-        return "/consumers/" + Subscription.getId(topicName, subscription) + "/offsets/" + topicName.qualifiedName() + "/" + partition;
-    }
 }

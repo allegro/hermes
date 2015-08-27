@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.googlecode.catchexception.CatchException;
+import net.javacrumbs.jsonunit.core.Option;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
@@ -17,6 +18,7 @@ import java.util.List;
 import static com.googlecode.catchexception.CatchException.catchException;
 import static java.util.stream.IntStream.range;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;
@@ -49,7 +51,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         remoteService.waitUntilReceived();
 
         // when
-        List<String> previews = fetchPreviewsFromAllPartitions(qualifiedTopicName, 10);
+        List<String> previews = fetchPreviewsFromAllPartitions(qualifiedTopicName, 10, true);
 
         // then
         assertThat(previews).hasSize(messages.size()).contains(messages.toArray(new String[messages.size()]));
@@ -69,10 +71,13 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
                 .getStatus()).isEqualTo(CREATED.getStatusCode());
 
         // when
-        List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10);
+        List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
 
         // then
-        assertThat(previews).contains("{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}");
+        assertThat(previews).hasSize(1);
+        assertThatJson(previews.get(0))
+            .when(Option.IGNORING_EXTRA_FIELDS)
+            .isEqualTo("{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}");
     }
 
     @Test
@@ -105,14 +110,14 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         assertThat(CatchException.<NotFoundException>caughtException()).isInstanceOf(NotFoundException.class);
     }
 
-    private List<String> fetchPreviewsFromAllPartitions(String qualifiedTopicName, int upToOffset) {
+    private List<String> fetchPreviewsFromAllPartitions(String qualifiedTopicName, int upToOffset, boolean unwrap) {
         List<String> result = new ArrayList<>();
         for (int p = 0; p < NUMBER_OF_PARTITIONS; p++) {
             long offset = 0;
             while (offset <= upToOffset) {
                 try {
                     String wrappedMessage = management.topic().preview(qualifiedTopicName, PRIMARY_KAFKA_CLUSTER_NAME, p, offset);
-                    result.add(unwrap(wrappedMessage));
+                    result.add(unwrap ? unwrap(wrappedMessage) : wrappedMessage);
                     offset++;
                 } catch (Exception e) {
                     break;
