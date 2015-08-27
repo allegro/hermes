@@ -16,12 +16,14 @@ import java.util.concurrent.TimeUnit;
 
 public class ConsumersExecutorService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsumersExecutorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConsumersExecutorService.class);
     private final ThreadPoolExecutor executor;
 
     @Inject
     public ConsumersExecutorService(ConfigFactory configFactory, HermesMetrics hermesMetrics) {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Consumer-%d").build();
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+            .setNameFormat("Consumer-%d")
+            .setUncaughtExceptionHandler((t, e) -> logger.error("Exception from consumer with name {}", t.getName(), e)).build();
         int poolSize = configFactory.getIntProperty(Configs.CONSUMER_THREAD_POOL_SIZE);
 
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize, threadFactory);
@@ -38,7 +40,7 @@ public class ConsumersExecutorService {
         try {
             executor.awaitTermination(1, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
-            LOGGER.error("Termination of consumers executor service interrupted.", e);
+            logger.error("Termination of consumers executor service interrupted.", e);
         }
     }
 

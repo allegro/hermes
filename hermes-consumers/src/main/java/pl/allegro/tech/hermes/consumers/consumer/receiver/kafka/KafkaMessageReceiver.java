@@ -7,6 +7,8 @@ import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -21,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 public class KafkaMessageReceiver implements MessageReceiver {
+
+    private static final Logger logger = LoggerFactory.getLogger(KafkaMessageReceiver.class);
+
     private final ConsumerIterator<byte[], byte[]> iterator;
     private final ConsumerConnector consumerConnector;
     private final MessageContentWrapper contentWrapper;
@@ -68,7 +73,11 @@ public class KafkaMessageReceiver implements MessageReceiver {
 
     @Override
     public void stop() {
-        consumerConnector.shutdown();
+        try {
+            consumerConnector.shutdown();
+        } catch (Throwable throwable) {
+            logger.error("Error while shutting down", throwable);
+        }
     }
 
 }
