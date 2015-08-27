@@ -11,6 +11,8 @@ public class TopicProperties {
 
     private boolean allowRemoval = false;
 
+    private boolean uncleanLeaderElectionEnabled = false;
+
     public int getReplicationFactor() {
         return replicationFactor;
     }
@@ -33,5 +35,13 @@ public class TopicProperties {
 
     public void setAllowRemoval(boolean allowRemoval) {
         this.allowRemoval = allowRemoval;
+    }
+
+    public boolean isUncleanLeaderElectionEnabled() {
+        return uncleanLeaderElectionEnabled;
+    }
+
+    public void setUncleanLeaderElectionEnabled(boolean uncleanLeaderElectionEnabled) {
+        this.uncleanLeaderElectionEnabled = uncleanLeaderElectionEnabled;
     }
 }
