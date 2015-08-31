@@ -67,7 +67,7 @@ public class JsonMessageContentWrapper {
             return unwrapMessageContent(json);
         } else {
             UUID id = UUID.randomUUID();
-            LOGGER.warn("Unwrapped message read by consumer (size=%s, id=%s).", json.length, id.toString());
+            LOGGER.warn("Unwrapped message read by consumer (size={}, id={}).", json.length, id.toString());
             return new UnwrappedMessageContent(new MessageMetadata(1L, id.toString()), json);
         }
     }
