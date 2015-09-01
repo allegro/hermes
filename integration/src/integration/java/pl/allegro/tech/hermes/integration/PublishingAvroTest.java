@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integration;
 
-import net.javacrumbs.jsonunit.core.Option;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -66,6 +65,23 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // when
         Response response = publisher.publish("invalidAvro.topic", "invalidMessage".getBytes());
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void shouldIgnoreValidationDryRunSettingForAvroTopic() {
+        // given
+        operations.buildTopic(topic()
+                .withName("invalidAvro.topicWithValidationDryRun")
+                .withValidation(true)
+                .withValidationDryRun(true)
+                .withMessageSchema(user.getSchema().toString())
+                .withContentType(AVRO).build());
+
+        // when
+        Response response = publisher.publish("invalidAvro.topicWithValidationDryRun", "invalidMessage".getBytes());
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
