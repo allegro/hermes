@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.consumers.health.HealthCheckServer;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.workTracking.SupervisorController;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
@@ -24,13 +24,14 @@ public class HermesConsumers {
     private static final Logger logger = LoggerFactory.getLogger(HermesConsumers.class);
 
     private final HooksHandler hooksHandler;
-    private final ConsumersSupervisor consumersSupervisor;
     private final HealthCheckServer healthCheckServer;
     private final Trackers trackers;
     private final List<Function<ServiceLocator, LogRepository>> logRepositories;
     private final MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
     private final MessageSenderProviders messageSendersProviders;
     private final ServiceLocator serviceLocator;
+
+    private final SupervisorController supervisorController;
 
     public static void main(String... args) {
         consumers().build().start();
@@ -48,14 +49,15 @@ public class HermesConsumers {
         serviceLocator = createDIContainer(binders);
 
         trackers = serviceLocator.getService(Trackers.class);
-        consumersSupervisor = serviceLocator.getService(ConsumersSupervisor.class);
         healthCheckServer = serviceLocator.getService(HealthCheckServer.class);
         messageSendersProviders = serviceLocator.getService(MessageSenderProviders.class);
+
+        supervisorController = serviceLocator.getService(SupervisorController.class);
 
         hooksHandler.addShutdownHook(() -> {
             try {
                 healthCheckServer.stop();
-                consumersSupervisor.shutdown();
+                supervisorController.shutdown();
                 serviceLocator.shutdown();
             } catch (InterruptedException e) {
                 logger.error("Exception while shutdown Hermes Consumers", e);
@@ -74,7 +76,7 @@ public class HermesConsumers {
                 });
             });
 
-            consumersSupervisor.start();
+            supervisorController.start();
             healthCheckServer.start();
             hooksHandler.startup();
         } catch (Exception e) {
