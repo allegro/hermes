@@ -3,9 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import com.googlecode.catchexception.CatchException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.SubscriptionMetrics;
-import pl.allegro.tech.hermes.api.TopicMetrics;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
@@ -178,6 +176,52 @@ public class MetricsTest extends IntegrationTest {
         management.topic().publishMessage(topicName.qualifiedName(), TestMessage.simple().body());
         wait.untilSubscriptionMetricsIsCreated(topicName, subscriptionName2);
         wait.untilSubscriptionMetricsIsRemoved(topicName, subscriptionName1);
+    }
+
+    @Test
+    public void shouldReportHttpErrorCodeMetrics() {
+        //given
+        String grpTopic = "myGroup.topicXX";
+        TopicName topicName = TopicName.fromQualifiedName(grpTopic);
+        operations.buildSubscription(topicName, Subscription.Builder.subscription()
+                .withTopicName(topicName)
+                .withName("subsription")
+                .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL))
+                .withSubscriptionPolicy(SubscriptionPolicy.Builder.subscriptionPolicy()
+                        .applyDefaults()
+                        .withMessageTtl(0)
+                        .build())
+                .build());
+
+        remoteService.setReturnedStatusCode(404);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.*.4xx.404.count"), 1);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.*.4xx.count"), 1);
+        remoteService.expectMessages(TestMessage.simple().body());
+
+        //when
+        publisher.publish(grpTopic, TestMessage.simple().body());
+
+        //then
+        graphiteServer.waitUntilReceived();
+    }
+
+    @Test
+    public void shouldReportHttpSuccessCodeMetrics() {
+        //given
+        String grpTopic = "myGroupSuccess.topic";
+        TopicName topicName = TopicName.fromQualifiedName(grpTopic);
+        String subscriptionName = "subscription";
+        operations.buildSubscription(topicName.getGroupName(), topicName.getName(), subscriptionName, HTTP_ENDPOINT_URL);
+        remoteService.setReturnedStatusCode(200);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.*.2xx.200.count"), 1);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.*.2xx.count"), 1);
+        remoteService.expectMessages(TestMessage.simple().body());
+
+        //when
+        publisher.publish(grpTopic, TestMessage.simple().body());
+
+        //then
+        graphiteServer.waitUntilReceived();
     }
 
     private String metricNameWithPrefix(String metricName) {

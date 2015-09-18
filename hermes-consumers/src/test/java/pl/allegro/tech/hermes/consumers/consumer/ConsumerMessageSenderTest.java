@@ -69,6 +69,9 @@ public class ConsumerMessageSenderTest {
     @Mock
     private Meter failedMeter;
 
+    @Mock
+    private Meter errors;
+
     private Semaphore inflightSemaphore;
 
     private ConsumerMessageSender sender;
@@ -83,6 +86,7 @@ public class ConsumerMessageSenderTest {
 
     private void setUpMetrics(Subscription subscription) {
         when(hermesMetrics.latencyTimer(subscription)).thenReturn(consumerLatencyTimer);
+        when(hermesMetrics.consumerErrorsOtherMeter(subscription)).thenReturn(errors);
         when(consumerLatencyTimer.time()).thenReturn(consumerLatencyTimerContext);
         when(hermesMetrics.meter(Meters.CONSUMER_FAILED_METER, subscription.getTopicName(), subscription.getName())).thenReturn(failedMeter);
     }

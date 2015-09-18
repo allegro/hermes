@@ -1,10 +1,11 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
+import com.codahale.metrics.Meter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
@@ -13,10 +14,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
 
 import static java.lang.String.format;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
@@ -31,6 +29,9 @@ public class ConsumerMessageSender {
     private final ConsumerRateLimiter rateLimiter;
     private final MessageSender messageSender;
     private final Semaphore inflightSemaphore;
+    private final HermesMetrics hermesMetrics;
+    private final Meter timeouts;
+    private final Meter otherErrors;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
     private ConsumerLatencyTimer consumerLatencyTimer;
@@ -49,11 +50,13 @@ public class ConsumerMessageSender {
         this.messageSender = messageSender;
         this.subscription = subscription;
         this.inflightSemaphore = inflightSemaphore;
+        this.hermesMetrics = hermesMetrics;
+        this.timeouts = hermesMetrics.consumerErrorsTimeoutMeter(subscription);
+        this.otherErrors = hermesMetrics.consumerErrorsOtherMeter(subscription);
         this.retrySingleThreadExecutor = Executors.newSingleThreadExecutor();
         this.async = futureAsyncTimeout;
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
-
     }
 
     public void shutdown() {
@@ -101,6 +104,23 @@ public class ConsumerMessageSender {
             rateLimiter.registerSuccessfulSending();
         }
         errorHandler.handleFailed(message, subscription, result);
+        registerFailureMetrics(result);
+    }
+
+    private void registerSuccessMetrics(MessageSendingResult result) {
+        hermesMetrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
+    }
+
+    private void registerFailureMetrics(MessageSendingResult result) {
+        if (result.getStatusCode() != 0) {
+            hermesMetrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
+        }
+        else if (result.getFailure() instanceof TimeoutException) {
+            timeouts.mark();
+        }
+        else {
+            otherErrors.mark();
+        }
     }
 
     private void handleMessageDiscarding(Message message, MessageSendingResult result) {
@@ -137,6 +157,7 @@ public class ConsumerMessageSender {
             if (result.succeeded()) {
                 rateLimiter.registerSuccessfulSending();
                 handleMessageSendingSuccess(message);
+                registerSuccessMetrics(result);
             } else {
                 handleFailedSending(message, result);
                 if (!isTtlExceeded(message) && shouldRetrySending(result)) {

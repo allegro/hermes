@@ -21,6 +21,7 @@ import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import javax.inject.Inject;
+import javax.ws.rs.core.Response;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
@@ -268,6 +269,53 @@ public class HermesMetrics {
     public void reportContentSize(int size, TopicName topicName) {
         messageContentSizeHistogram(topicName).update(size);
         metricRegistry.histogram(pathCompiler.compile(Histograms.PRODUCER_GLOBAL_MESSAGE_SIZE)).update(size);
+    }
+
+    public void registerConsumerHttpAnswer(Subscription subscription, int statusCode) {
+        PathContext pathContext = pathContext()
+                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
+                .withTopic(escapeDots(subscription.getTopicName().getName()))
+                .withSubscription(escapeDots(subscription.getName()))
+                .withHttpCode(statusCode)
+                .withHttpCodeFamily(httpStatusFamilyStr(statusCode))
+                .build();
+        metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_HTTP_BY_FAMILY, pathContext)).mark();
+        metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_HTTP_BY_CODE, pathContext)).mark();
+    }
+
+    private String httpStatusFamilyStr(int statusCode) {
+        switch (statusCode / 100) {
+            case 1:
+                return "1xx";
+            case 2:
+                return "2xx";
+            case 3:
+                return "3xx";
+            case 4:
+                return "4xx";
+            case 5:
+                return "5xx";
+            default:
+                return "unknown";
+        }
+    }
+
+    public Meter consumerErrorsTimeoutMeter(Subscription subscription) {
+        PathContext pathContext = pathContext()
+                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
+                .withTopic(escapeDots(subscription.getTopicName().getName()))
+                .withSubscription(escapeDots(subscription.getName()))
+                .build();
+        return metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_TIMEOUTS, pathContext));
+    }
+
+    public Meter consumerErrorsOtherMeter(Subscription subscription) {
+        PathContext pathContext = pathContext()
+                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
+                .withTopic(escapeDots(subscription.getTopicName().getName()))
+                .withSubscription(escapeDots(subscription.getName()))
+                .build();
+        return metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_OTHER, pathContext));
     }
 }
 
