@@ -47,7 +47,7 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     public List<SentMessageTrace> getLastUndeliveredMessages(String topicName, String subscriptionName, int limit) {
 
         try {
-            SearchResponse response = searchSentMessages(limit,
+            SearchResponse response = searchSentMessages(limit, SortOrder.DESC,
                     createFilterQuery(
                             filter(TOPIC_NAME, topicName),
                             filter(SUBSCRIPTION, subscriptionName),
@@ -71,7 +71,7 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
                             filter(TOPIC_NAME, topicName),
                             filter(MESSAGE_ID, messageId)));
 
-            SearchResponse sentResponse = searchSentMessages(LIMIT,
+            SearchResponse sentResponse = searchSentMessages(LIMIT, SortOrder.ASC,
                     createFilterQuery(
                             filter(TOPIC_NAME, topicName),
                             filter(SUBSCRIPTION, subscriptionName),
@@ -94,12 +94,12 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
         return FilterBuilders.termFilter(fieldName, value);
     }
 
-    private SearchResponse searchSentMessages(int limit, QueryBuilder query) throws InterruptedException, ExecutionException {
+    private SearchResponse searchSentMessages(int limit, SortOrder sort, QueryBuilder query) throws InterruptedException, ExecutionException {
         return elasticClient.prepareSearch(SchemaManager.SENT_ALIAS_NAME)
                 .addFields(MESSAGE_ID, TIMESTAMP, SUBSCRIPTION, TOPIC_NAME, STATUS, REASON, PARTITION, OFFSET, CLUSTER)
                 .setTrackScores(true)
                 .setQuery(query)
-                .addSort(TIMESTAMP, SortOrder.ASC)
+                .addSort(TIMESTAMP, sort)
                 .setSize(limit)
                 .execute()
                 .get();

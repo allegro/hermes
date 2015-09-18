@@ -50,13 +50,20 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     @Test
     public void shouldGetLastUndelivered() throws Exception {
         //given
-        MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch.lastUndelivered", "subscription");
-        long timestamp = System.currentTimeMillis();
+        String topic = "elasticsearch.lastUndelivered";
+        String subscription = "subscription";
+        MessageMetadata firstDiscarded = TestMessageMetadata.of("1234", topic, subscription);
+        long firstTimestamp = System.currentTimeMillis();
 
-        dataInitializer.indexSentMessage(messageMetadata, timestamp, DISCARDED, REASON_MESSAGE);
+        MessageMetadata secondDiscarded = TestMessageMetadata.of("5678", topic, subscription);
+        long secondTimestamp = firstTimestamp + 1;
 
-        //when & then
-        assertThat(fetchUndelivered(messageMetadata)).containsExactly(sentMessageTrace(messageMetadata, timestamp));
+        // when
+        dataInitializer.indexSentMessage(firstDiscarded, firstTimestamp, DISCARDED, REASON_MESSAGE);
+        dataInitializer.indexSentMessage(secondDiscarded, secondTimestamp, DISCARDED, REASON_MESSAGE);
+
+        // then
+        assertThat(fetchLastUndelivered(topic, subscription)).containsExactly(sentMessageTrace(secondDiscarded, secondTimestamp, DISCARDED));
     }
 
     @Test
@@ -65,24 +72,21 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
         MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch.messageStatus", "subscription");
         long timestamp = System.currentTimeMillis();
 
-        PublishedMessageTraceStatus publishedStatus = PublishedMessageTraceStatus.SUCCESS;
-        dataInitializer.indexPublishedMessage(messageMetadata, timestamp, publishedStatus);
-
-        SentMessageTraceStatus sentStatus = SentMessageTraceStatus.SUCCESS;
-        dataInitializer.indexSentMessage(messageMetadata, timestamp, sentStatus, REASON_MESSAGE);
+        dataInitializer.indexPublishedMessage(messageMetadata, timestamp, PublishedMessageTraceStatus.SUCCESS);
+        dataInitializer.indexSentMessage(messageMetadata, timestamp, SentMessageTraceStatus.SUCCESS, REASON_MESSAGE);
 
         //when
         assertThat(fetchMessageStatus(messageMetadata))
-                .contains(publishedMessageTrace(messageMetadata, timestamp, publishedStatus))
-                .contains(sentMessageTrace(messageMetadata, timestamp));
+                .contains(publishedMessageTrace(messageMetadata, timestamp, PublishedMessageTraceStatus.SUCCESS))
+                .contains(sentMessageTrace(messageMetadata, timestamp, SentMessageTraceStatus.SUCCESS));
     }
 
-    private List<SentMessageTrace> fetchUndelivered(MessageMetadata messageMetadata) {
+    private List<SentMessageTrace> fetchLastUndelivered(String topic, String subscription) {
         final List<SentMessageTrace> lastUndelivered = new ArrayList<>();
 
         await().atMost(ONE_MINUTE).until(() -> {
             lastUndelivered.clear();
-            lastUndelivered.addAll(logRepository.getLastUndeliveredMessages(messageMetadata.getTopic(), messageMetadata.getSubscription(), 10));
+            lastUndelivered.addAll(logRepository.getLastUndeliveredMessages(topic, subscription, 1));
             return lastUndelivered.size() == 1;
         });
         return lastUndelivered;
@@ -100,12 +104,12 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
         return status;
     }
 
-    private SentMessageTrace sentMessageTrace(MessageMetadata messageMetadata, long timestamp) {
+    private SentMessageTrace sentMessageTrace(MessageMetadata messageMetadata, long timestamp, SentMessageTraceStatus status) {
         return new SentMessageTrace(messageMetadata.getId(),
                 timestamp,
                 messageMetadata.getSubscription(),
                 messageMetadata.getTopic(),
-                DISCARDED,
+                status,
                 REASON_MESSAGE,
                 null,
                 messageMetadata.getPartition(),
@@ -113,11 +117,11 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
                 CLUSTER_NAME);
     }
 
-    private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, long timestamp, PublishedMessageTraceStatus publishedStatus) {
+    private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, long timestamp, PublishedMessageTraceStatus status) {
         return new PublishedMessageTrace(messageMetadata.getId(),
                 timestamp,
                 messageMetadata.getTopic(),
-                publishedStatus,
+                status,
                 null,
                 null,
                 CLUSTER_NAME);
