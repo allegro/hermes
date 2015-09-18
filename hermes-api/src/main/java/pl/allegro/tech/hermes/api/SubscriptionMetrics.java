@@ -6,6 +6,7 @@ public class SubscriptionMetrics {
     private long delivered;
     private long discarded;
     private long inflight;
+    private long lag;
     private String rate = "0.0";
     private Subscription.State state;
 
@@ -31,6 +32,14 @@ public class SubscriptionMetrics {
 
     public void setInflight(long inflight) {
         this.inflight = inflight;
+    }
+
+    public long getLag() {
+        return lag;
+    }
+
+    public void setLag(long lag) {
+        this.lag = lag;
     }
 
     public String getRate() {
@@ -99,6 +108,11 @@ public class SubscriptionMetrics {
 
         public Builder withState(Subscription.State state) {
             subscriptionMetrics.state = state;
+            return this;
+        }
+
+        public Builder withLag(long lag) {
+            subscriptionMetrics.lag = lag;
             return this;
         }
 
