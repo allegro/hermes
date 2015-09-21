@@ -7,6 +7,8 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import javax.ws.rs.core.Response;
 
+import java.util.concurrent.TimeoutException;
+
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
@@ -77,6 +79,14 @@ public class MessageSendingResult {
 
     public int getStatusCode() {
         return statusCode;
+    }
+
+    public boolean hasHttpAnswer() {
+        return getStatusCode() != 0;
+    }
+
+    public boolean isTimeout() {
+        return getFailure() instanceof TimeoutException;
     }
 
     public boolean isLoggable() {

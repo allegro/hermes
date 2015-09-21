@@ -13,8 +13,6 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommit
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-import java.util.concurrent.TimeoutException;
-
 import static java.lang.String.format;
 import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
@@ -68,10 +66,10 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     }
 
     private void registerFailureMetrics(Subscription subscription, MessageSendingResult result) {
-        if (result.getStatusCode() != 0) {
+        if (result.hasHttpAnswer()) {
             hermesMetrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
         }
-        else if (result.getFailure() instanceof TimeoutException) {
+        else if (result.isTimeout()) {
             hermesMetrics.consumerErrorsTimeoutMeter(subscription).mark();
         }
         else {
