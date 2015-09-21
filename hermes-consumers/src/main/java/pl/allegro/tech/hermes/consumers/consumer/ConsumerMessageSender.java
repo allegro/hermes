@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
-import com.codahale.metrics.Meter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -29,9 +28,6 @@ public class ConsumerMessageSender {
     private final ConsumerRateLimiter rateLimiter;
     private final MessageSender messageSender;
     private final Semaphore inflightSemaphore;
-    private final HermesMetrics hermesMetrics;
-    private final Meter timeouts;
-    private final Meter otherErrors;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
     private ConsumerLatencyTimer consumerLatencyTimer;
@@ -50,9 +46,6 @@ public class ConsumerMessageSender {
         this.messageSender = messageSender;
         this.subscription = subscription;
         this.inflightSemaphore = inflightSemaphore;
-        this.hermesMetrics = hermesMetrics;
-        this.timeouts = hermesMetrics.consumerErrorsTimeoutMeter(subscription);
-        this.otherErrors = hermesMetrics.consumerErrorsOtherMeter(subscription);
         this.retrySingleThreadExecutor = Executors.newSingleThreadExecutor();
         this.async = futureAsyncTimeout;
         this.asyncTimeoutMs = asyncTimeoutMs;
@@ -104,23 +97,6 @@ public class ConsumerMessageSender {
             rateLimiter.registerSuccessfulSending();
         }
         errorHandler.handleFailed(message, subscription, result);
-        registerFailureMetrics(result);
-    }
-
-    private void registerSuccessMetrics(MessageSendingResult result) {
-        hermesMetrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
-    }
-
-    private void registerFailureMetrics(MessageSendingResult result) {
-        if (result.getStatusCode() != 0) {
-            hermesMetrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
-        }
-        else if (result.getFailure() instanceof TimeoutException) {
-            timeouts.mark();
-        }
-        else {
-            otherErrors.mark();
-        }
     }
 
     private void handleMessageDiscarding(Message message, MessageSendingResult result) {
@@ -128,9 +104,9 @@ public class ConsumerMessageSender {
         errorHandler.handleDiscarded(message, subscription, result);
     }
 
-    private void handleMessageSendingSuccess(Message message) {
+    private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
         inflightSemaphore.release();
-        successHandler.handle(message, subscription);
+        successHandler.handle(message, subscription, result);
     }
 
     private boolean shouldReduceSendingRate(MessageSendingResult result) {
@@ -156,8 +132,7 @@ public class ConsumerMessageSender {
             timer.stop();
             if (result.succeeded()) {
                 rateLimiter.registerSuccessfulSending();
-                handleMessageSendingSuccess(message);
-                registerSuccessMetrics(result);
+                handleMessageSendingSuccess(message, result);
             } else {
                 handleFailedSending(message, result);
                 if (!isTtlExceeded(message) && shouldRetrySending(result)) {
