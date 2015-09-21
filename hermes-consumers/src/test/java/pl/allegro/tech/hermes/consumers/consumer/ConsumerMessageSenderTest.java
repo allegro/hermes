@@ -8,8 +8,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.Meters;
+import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
@@ -24,13 +24,7 @@ import java.util.concurrent.Semaphore;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.EndpointAddress.of;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
@@ -69,6 +63,9 @@ public class ConsumerMessageSenderTest {
     @Mock
     private Meter failedMeter;
 
+    @Mock
+    private Meter errors;
+
     private Semaphore inflightSemaphore;
 
     private ConsumerMessageSender sender;
@@ -83,6 +80,7 @@ public class ConsumerMessageSenderTest {
 
     private void setUpMetrics(Subscription subscription) {
         when(hermesMetrics.latencyTimer(subscription)).thenReturn(consumerLatencyTimer);
+        when(hermesMetrics.consumerErrorsOtherMeter(subscription)).thenReturn(errors);
         when(consumerLatencyTimer.time()).thenReturn(consumerLatencyTimerContext);
         when(hermesMetrics.meter(Meters.CONSUMER_FAILED_METER, subscription.getTopicName(), subscription.getName())).thenReturn(failedMeter);
     }
@@ -95,7 +93,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.sendMessage(message);
-        verify(successHandler, timeout(1000)).handle(message, subscription);
+        verify(successHandler, timeout(1000)).handle(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
         verifySemaphoreReleased();
@@ -113,7 +111,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.sendMessage(message);
-        verify(successHandler, timeout(1000)).handle(message, subscription);
+        verify(successHandler, timeout(1000)).handle(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
         verifySemaphoreReleased();
@@ -132,7 +130,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.sendMessage(message);
-        verify(successHandler, timeout(1000)).handle(message, subscription);
+        verify(successHandler, timeout(1000)).handle(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
         verifySemaphoreReleased();
@@ -184,7 +182,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.sendMessage(message);
-        verify(successHandler, timeout(1000)).handle(message, subscriptionWith4xxRetry);
+        verify(successHandler, timeout(1000)).handle(eq(message), eq(subscriptionWith4xxRetry), any(MessageSendingResult.class));
 
         // then
         verifySemaphoreReleased();

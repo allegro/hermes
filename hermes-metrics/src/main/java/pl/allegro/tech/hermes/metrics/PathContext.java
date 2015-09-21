@@ -9,6 +9,7 @@ public class PathContext {
     private final Optional<String> subscription;
     private final Optional<Integer> partition;
     private final Optional<Integer> httpCode;
+    private final Optional<String> httpCodeFamily;
     private final Optional<String> executorName;
 
     private PathContext(Optional<String> group,
@@ -16,12 +17,14 @@ public class PathContext {
                         Optional<String> subscription,
                         Optional<Integer> partition,
                         Optional<Integer> httpCode,
+                        Optional<String> httpCodeFamily,
                         Optional<String> executorName)  {
         this.group = group;
         this.topic = topic;
         this.subscription = subscription;
         this.partition = partition;
         this.httpCode = httpCode;
+        this.httpCodeFamily = httpCodeFamily;
         this.executorName = executorName;
     }
 
@@ -45,6 +48,10 @@ public class PathContext {
         return httpCode;
     }
 
+    public Optional<String> getHttpCodeFamily() {
+        return httpCodeFamily;
+    }
+
     public Optional<String> getExecutorName() {
         return executorName;
     }
@@ -60,6 +67,7 @@ public class PathContext {
         private Optional<String> subscription = Optional.empty();
         private Optional<Integer> partition = Optional.empty();
         private Optional<Integer> httpCode = Optional.empty();
+        private Optional<String> httpCodeFamily = Optional.empty();
         private Optional<String> executorName = Optional.empty();
 
         public Builder withGroup(String group) {
@@ -87,13 +95,18 @@ public class PathContext {
             return this;
         }
 
+        public Builder withHttpCodeFamily(String httpCodeFamily) {
+            this.httpCodeFamily = Optional.of(httpCodeFamily);
+            return this;
+        }
+
         public Builder withExecutorName(String executorName) {
             this.executorName = Optional.of(executorName);
             return this;
         }
 
         public PathContext build() {
-            return new PathContext(group, topic, subscription, partition, httpCode, executorName);
+            return new PathContext(group, topic, subscription, partition, httpCode, httpCodeFamily, executorName);
         }
     }
 }

@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.consumers.consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
@@ -13,10 +13,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
 
 import static java.lang.String.format;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
@@ -53,7 +50,6 @@ public class ConsumerMessageSender {
         this.async = futureAsyncTimeout;
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
-
     }
 
     public void shutdown() {
@@ -108,9 +104,9 @@ public class ConsumerMessageSender {
         errorHandler.handleDiscarded(message, subscription, result);
     }
 
-    private void handleMessageSendingSuccess(Message message) {
+    private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
         inflightSemaphore.release();
-        successHandler.handle(message, subscription);
+        successHandler.handle(message, subscription, result);
     }
 
     private boolean shouldReduceSendingRate(MessageSendingResult result) {
@@ -136,7 +132,7 @@ public class ConsumerMessageSender {
             timer.stop();
             if (result.succeeded()) {
                 rateLimiter.registerSuccessfulSending();
-                handleMessageSendingSuccess(message);
+                handleMessageSendingSuccess(message, result);
             } else {
                 handleFailedSending(message, result);
                 if (!isTtlExceeded(message) && shouldRetrySending(result)) {
