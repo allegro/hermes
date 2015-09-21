@@ -21,7 +21,6 @@ import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import javax.inject.Inject;
-import javax.ws.rs.core.Response;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
@@ -277,27 +276,14 @@ public class HermesMetrics {
                 .withTopic(escapeDots(subscription.getTopicName().getName()))
                 .withSubscription(escapeDots(subscription.getName()))
                 .withHttpCode(statusCode)
-                .withHttpCodeFamily(httpStatusFamilyStr(statusCode))
+                .withHttpCodeFamily(httpStatusFamily(statusCode))
                 .build();
         metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_HTTP_BY_FAMILY, pathContext)).mark();
         metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_HTTP_BY_CODE, pathContext)).mark();
     }
 
-    private String httpStatusFamilyStr(int statusCode) {
-        switch (statusCode / 100) {
-            case 1:
-                return "1xx";
-            case 2:
-                return "2xx";
-            case 3:
-                return "3xx";
-            case 4:
-                return "4xx";
-            case 5:
-                return "5xx";
-            default:
-                return "unknown";
-        }
+    private String httpStatusFamily(int statusCode) {
+        return String.format("%dxx", statusCode / 100);
     }
 
     public Meter consumerErrorsTimeoutMeter(Subscription subscription) {
