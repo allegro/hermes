@@ -30,7 +30,6 @@ frontend:
     - zookeeper:zk
     - kafka
     - graphite
-    - mongo
 
 consumers:
   image: allegro/hermes-consumers
@@ -38,7 +37,6 @@ consumers:
     - zookeeper:zk
     - kafka
     - graphite
-    - mongo
 
 management:
   image: allegro/hermes-management
@@ -48,4 +46,3 @@ management:
     - zookeeper:zk
     - kafka
     - graphite
-    - mongo

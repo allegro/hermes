@@ -1,11 +1,6 @@
 package pl.allegro.tech.hermes.common.metric;
 
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.HOSTNAME;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.HTTP_CODE;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.EXECUTOR_NAME;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.*;
 
 public class Meters {
 
@@ -21,6 +16,15 @@ public class Meters {
     CONSUMER_METER = "consumer." + HOSTNAME + ".meter",
             CONSUMER_TOPIC_METER = CONSUMER_METER + "." + GROUP + "." + TOPIC,
             CONSUMER_SUBSCRIPTION_METER = CONSUMER_TOPIC_METER + "." + SUBSCRIPTION,
+
+    CONSUMER_ERRORS_TIMEOUTS = "consumer." + HOSTNAME + ".status." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".errors.timeout",
+
+    CONSUMER_ERRORS_OTHER = "consumer." + HOSTNAME + ".status." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".errors.other",
+
+    CONSUMER_ERRORS_HTTP_BY_FAMILY = "consumer." + HOSTNAME + ".status." + GROUP + "." + TOPIC + "." + SUBSCRIPTION +
+            "." + HTTP_CODE_FAMILY,
+
+    CONSUMER_ERRORS_HTTP_BY_CODE = CONSUMER_ERRORS_HTTP_BY_FAMILY + "." + HTTP_CODE,
 
     CONSUMER_FAILED_METER = "consumer." + HOSTNAME + ".failed-meter" + "." + SUBSCRIPTION,
 

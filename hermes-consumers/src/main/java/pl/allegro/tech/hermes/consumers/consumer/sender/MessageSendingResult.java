@@ -7,6 +7,8 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import javax.ws.rs.core.Response;
 
+import java.util.concurrent.TimeoutException;
+
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
@@ -16,6 +18,7 @@ public class MessageSendingResult {
     private Throwable failure;
     private boolean loggable = false;
     private Response.Status.Family responseFamily;
+    private int statusCode;
 
     public MessageSendingResult() {
     }
@@ -33,7 +36,8 @@ public class MessageSendingResult {
         if (result.isFailed()) {
             this.failure = result.getFailure();
             if (result.getResponse() != null) {
-                responseFamily = familyOf(result.getResponse().getStatus());
+                statusCode = result.getResponse().getStatus();
+                responseFamily = familyOf(statusCode);
             }
         } else {
             initializeForStatusCode(result.getResponse().getStatus());
@@ -53,6 +57,7 @@ public class MessageSendingResult {
     }
 
     private void initializeForStatusCode(int statusCode) {
+        this.statusCode = statusCode;
         responseFamily = familyOf(statusCode);
         if (!isInFamily(SUCCESSFUL)) {
             this.failure = new InternalProcessingException("Message sending failed with status code:" + statusCode);
@@ -70,6 +75,18 @@ public class MessageSendingResult {
 
     public String getRootCause() {
         return failure != null ? Throwables.getRootCause(failure).getMessage() : UNKNOWN_CAUSE;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public boolean hasHttpAnswer() {
+        return getStatusCode() != 0;
+    }
+
+    public boolean isTimeout() {
+        return getFailure() instanceof TimeoutException;
     }
 
     public boolean isLoggable() {

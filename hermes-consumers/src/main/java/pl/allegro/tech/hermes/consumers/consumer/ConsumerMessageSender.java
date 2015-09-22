@@ -109,9 +109,9 @@ public class ConsumerMessageSender {
         errorHandler.handleDiscarded(message, subscription, result);
     }
 
-    private void handleMessageSendingSuccess(Message message) {
+    private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
         inflightSemaphore.release();
-        successHandler.handle(message, subscription);
+        successHandler.handle(message, subscription, result);
     }
 
     private boolean shouldReduceSendingRate(MessageSendingResult result) {
@@ -137,7 +137,7 @@ public class ConsumerMessageSender {
             timer.stop();
             if (result.succeeded()) {
                 rateLimiter.registerSuccessfulSending();
-                handleMessageSendingSuccess(message);
+                handleMessageSendingSuccess(message, result);
             } else {
                 handleFailedSending(message, result);
                 if (!isTtlExceeded(message) && shouldRetrySending(result)) {

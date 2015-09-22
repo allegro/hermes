@@ -8,8 +8,8 @@ import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.time.Clock;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
@@ -52,8 +52,6 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
         trackers.get(subscription).logDiscarded(toMessageMetadata(message, subscription), result.getRootCause());
     }
 
-
-
     private void updateMeters(Subscription subscription) {
         hermesMetrics.meter(Meters.CONSUMER_DISCARDED_METER).mark();
         hermesMetrics.meter(Meters.CONSUMER_DISCARDED_TOPIC_METER, subscription.getTopicName()).mark();
@@ -63,7 +61,19 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     @Override
     public void handleFailed(Message message, Subscription subscription, MessageSendingResult result) {
         hermesMetrics.meter(Meters.CONSUMER_FAILED_METER, subscription.getTopicName(), subscription.getName()).mark();
-
+        registerFailureMetrics(subscription, result);
         trackers.get(subscription).logFailed(toMessageMetadata(message, subscription), result.getRootCause());
+    }
+
+    private void registerFailureMetrics(Subscription subscription, MessageSendingResult result) {
+        if (result.hasHttpAnswer()) {
+            hermesMetrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
+        }
+        else if (result.isTimeout()) {
+            hermesMetrics.consumerErrorsTimeoutMeter(subscription).mark();
+        }
+        else {
+            hermesMetrics.consumerErrorsOtherMeter(subscription).mark();
+        }
     }
 }
