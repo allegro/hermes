@@ -12,12 +12,20 @@ import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics;
 import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 @Component
 public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsRepository {
 
     private static final String SUBSCRIPTION_RATE_PATTERN = "sumSeries(%s.consumer.*.meter.%s.%s.%s.m1_rate)";
+    private static final String SUBSCRIPTION_HTTP_STATUSES_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.%s.m1_rate)";
+    private static final String SUBSCRIPTION_ERROR_TIMEOUT_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.errors.timeout.m1_rate)";
+    private static final String SUBSCRIPTION_ERROR_OTHER_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.errors.other.m1_rate)";
 
     private final GraphiteClient graphiteClient;
 
@@ -43,8 +51,16 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
     @Override
     public SubscriptionMetrics loadMetrics(TopicName topicName, String subscriptionName) {
         String rateMetric = metricPath(topicName, subscriptionName);
+        String timeouts = metricPathTimeouts(topicName, subscriptionName);
+        String otherErrors = metricPathOtherErrors(topicName, subscriptionName);
 
         GraphiteMetrics metrics = graphiteClient.readMetrics(rateMetric);
+
+        List<String> httpStatusCodes = allHttpStatusCodeClasses()
+                .map(code -> metricPathHttpStatuses(topicName, subscriptionName, code))
+                .map(m -> graphiteClient.readMetrics(m)
+                .metricValue(m))
+                .collect(Collectors.toList());
 
         return SubscriptionMetrics.Builder.subscriptionMetrics()
                 .withRate(metrics.metricValue(rateMetric))
@@ -54,6 +70,9 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
                         zookeeperPaths.consumersPath(),
                         zookeeperPaths.subscriptionMetricPathWithoutBasePath(topicName, subscriptionName, "inflight")
                 ))
+                .withHttpStatusCodesM1(httpStatusCodes)
+                .withTimeoutsM1(graphiteClient.readMetrics(timeouts).metricValue(timeouts))
+                .withOtherErrorsM1(graphiteClient.readMetrics(otherErrors).metricValue(otherErrors))
                 .build();
     }
 
@@ -61,5 +80,27 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
         return String.format(SUBSCRIPTION_RATE_PATTERN,
                 metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
         );
+    }
+
+    private String metricPathHttpStatuses(TopicName topicName, String subscriptionName, String statusCodeClass) {
+        return String.format(SUBSCRIPTION_HTTP_STATUSES_PATTERN,
+                metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName), statusCodeClass
+        );
+    }
+
+    private String metricPathTimeouts(TopicName topicName, String subscriptionName) {
+        return String.format(SUBSCRIPTION_ERROR_TIMEOUT_PATTERN,
+                metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
+        );
+    }
+
+    private String metricPathOtherErrors(TopicName topicName, String subscriptionName) {
+        return String.format(SUBSCRIPTION_ERROR_OTHER_PATTERN,
+                metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
+        );
+    }
+
+    private Stream<String> allHttpStatusCodeClasses() {
+        return IntStream.range(1, 6).mapToObj(i -> i + "xx");
     }
 }

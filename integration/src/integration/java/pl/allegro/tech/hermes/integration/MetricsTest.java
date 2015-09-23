@@ -131,6 +131,7 @@ public class MetricsTest extends IntegrationTest {
         assertThat(metrics.getPublished()).isEqualTo(2);
     }
 
+    @Unreliable
     @Test
     public void shouldSendMetricToGraphite() {
         //given
@@ -183,6 +184,7 @@ public class MetricsTest extends IntegrationTest {
         wait.untilSubscriptionMetricsIsRemoved(topicName, subscriptionName1);
     }
 
+    @Unreliable
     @Test
     public void shouldReportHttpErrorCodeMetrics() {
         //given
@@ -209,6 +211,7 @@ public class MetricsTest extends IntegrationTest {
         graphiteServer.waitUntilReceived();
     }
 
+    @Unreliable
     @Test
     public void shouldReportHttpSuccessCodeMetrics() {
         //given
