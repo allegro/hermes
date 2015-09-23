@@ -8,6 +8,8 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 
 import javax.ws.rs.core.Response;
 
+import java.util.stream.Stream;
+
 import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
 import static pl.allegro.tech.hermes.api.Group.Builder.group;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
@@ -99,5 +101,16 @@ public class GroupManagementTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.FORBIDDEN).hasErrorCode(ErrorCode.GROUP_NOT_EMPTY);
+    }
+
+    @Test
+    public void shouldNotAllowDollarSigns() {
+        Stream.of("$name", "na$me", "name$").forEach(name -> {
+            // when
+            Response response = management.group().create(Group.from(name));
+
+            // then
+            assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+        });
     }
 }

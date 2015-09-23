@@ -41,6 +41,10 @@ import pl.allegro.tech.hermes.consumers.subscription.cache.zookeeper.ZookeeperSu
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.workTracking.SupervisorController;
+import pl.allegro.tech.hermes.consumers.supervisor.workTracking.SupervisorControllerFactory;
+import pl.allegro.tech.hermes.consumers.supervisor.workTracking.WorkTracker;
+import pl.allegro.tech.hermes.consumers.supervisor.workTracking.WorkTrackerFactory;
 
 import javax.inject.Singleton;
 import java.util.List;
@@ -76,13 +80,15 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(AvroSchemaRepositoryMetadataAware.class);
 
         bindSingleton(BlockingChannelFactory.class);
-        bindFactory(OffsetStoragesFactory.class).in(Singleton.class).to(new TypeLiteral<List<OffsetsStorage>>() {
-        });
+        bindFactory(OffsetStoragesFactory.class).in(Singleton.class).to(new TypeLiteral<List<OffsetsStorage>>() {});
         bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class).to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
         bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class);
         bindFactory(ZookeeperSubscriptionsCacheFactory.class).to(SubscriptionsCache.class).in(Singleton.class);
 
         bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
+        bindFactory(WorkTrackerFactory.class).in(Singleton.class).to(WorkTracker.class);
+        bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);
+
         bindSingleton(UndeliveredMessageLogPersister.class);
     }
 

@@ -36,6 +36,10 @@ public class Subscription {
 
     private boolean trackingEnabled;
 
+    public SubscriptionName toSubscriptionName() {
+        return new SubscriptionName(name, topicName);
+    }
+
     public static enum State {
         PENDING, ACTIVE, SUSPENDED
     }

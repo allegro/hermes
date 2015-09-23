@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
-import com.google.common.collect.ImmutableList;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,27 +91,20 @@ public class ConsumersSupervisorTest {
 
         consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository,
                 subscriptionOffsetChangeIndicator, executorService, consumerFactory,
-                Lists.newArrayList(messageCommitter), Lists.newArrayList(offsetsStorage), subscriptionsCache, hermesMetrics,
+                Lists.newArrayList(messageCommitter), Lists.newArrayList(offsetsStorage), hermesMetrics,
                 adminCache, undeliveredMessageLogPersister);
     }
 
     @Test
-    public void shouldRegisterSubscriptionListenerOnStartup() throws Exception {
-        consumersSupervisor.start();
-
-        verify(subscriptionsCache).start(ImmutableList.of(consumersSupervisor));
-    }
-
-    @Test
     public void shouldRunConsumerWhenPendingSubscriptionCreated() {
-        consumersSupervisor.onSubscriptionCreated(createSubscription(SOME_TOPIC_NAME, "sub1", PENDING));
+        consumersSupervisor.assignConsumerForSubscription(createSubscription(SOME_TOPIC_NAME, "sub1", PENDING));
 
         verify(executorService).execute(any(Consumer.class));
     }
 
     @Test
     public void shouldRunConsumerWhenActiveSubscriptionCreated() {
-        consumersSupervisor.onSubscriptionCreated(createSubscription(SOME_TOPIC_NAME, "sub1", ACTIVE));
+        consumersSupervisor.assignConsumerForSubscription(createSubscription(SOME_TOPIC_NAME, "sub1", ACTIVE));
 
         verify(executorService).execute(any(Consumer.class));
     }
@@ -121,7 +113,7 @@ public class ConsumersSupervisorTest {
     public void shouldChangeSubscriptionStateToActiveWhenCreatingConsumer() {
         Subscription subscription = createSubscription(SOME_TOPIC_NAME, "sub1", PENDING);
 
-        consumersSupervisor.onSubscriptionCreated(subscription);
+        consumersSupervisor.assignConsumerForSubscription(subscription);
 
         assertThat(subscription.getState()).isEqualTo(Subscription.State.ACTIVE);
         verify(subscriptionRepository).updateSubscription(subscription);
@@ -129,25 +121,25 @@ public class ConsumersSupervisorTest {
 
     @Test
     public void shouldNotRunConsumerWhenSuspendedSubscriptionCreated() {
-        consumersSupervisor.onSubscriptionCreated(createSubscription(SOME_TOPIC_NAME, "sub1", SUSPENDED));
+        consumersSupervisor.assignConsumerForSubscription(createSubscription(SOME_TOPIC_NAME, "sub1", SUSPENDED));
 
         verify(executorService, never()).execute(any(Consumer.class));
     }
 
     @Test
     public void shouldShutdownConsumerWhenSubscriptionRemoved() {
-        consumersSupervisor.onSubscriptionCreated(SOME_SUBSCRIPTION);
+        consumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
 
-        consumersSupervisor.onSubscriptionRemoved(SOME_SUBSCRIPTION);
+        consumersSupervisor.deleteConsumerForSubscription(SOME_SUBSCRIPTION);
 
         verify(consumer).stopConsuming();
     }
 
     @Test
     public void shouldRemoveSubscriptionMetricsWhenSubscriptionRemoved() {
-        consumersSupervisor.onSubscriptionCreated(SOME_SUBSCRIPTION);
+        consumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
 
-        consumersSupervisor.onSubscriptionRemoved(SOME_SUBSCRIPTION);
+        consumersSupervisor.deleteConsumerForSubscription(SOME_SUBSCRIPTION);
 
         verify(hermesMetrics).removeMetrics(SOME_SUBSCRIPTION);
     }
@@ -155,11 +147,11 @@ public class ConsumersSupervisorTest {
     @Test
     public void shouldStopConsumerOnSuspend() {
         Subscription subscription = createSubscription(SOME_TOPIC_NAME, "sub1");
-        consumersSupervisor.onSubscriptionCreated(subscription);
+        consumersSupervisor.assignConsumerForSubscription(subscription);
         when(consumer.getSubscription()).thenReturn(subscription);
         Subscription modifiedSubscription = createSubscription(SOME_TOPIC_NAME, "sub1", SUSPENDED);
 
-        consumersSupervisor.onSubscriptionChanged(modifiedSubscription);
+        consumersSupervisor.notifyConsumerOnSubscriptionUpdate(modifiedSubscription);
 
         verify(consumer).stopConsuming();
     }
@@ -168,7 +160,7 @@ public class ConsumersSupervisorTest {
     public void shouldCreateConsumerOnResume() {
         Subscription subscription = createSubscription(SOME_TOPIC_NAME, "sub1", ACTIVE);
 
-        consumersSupervisor.onSubscriptionChanged(subscription);
+        consumersSupervisor.notifyConsumerOnSubscriptionUpdate(subscription);
 
         verify(consumerFactory).createConsumer(subscription);
     }
@@ -181,7 +173,7 @@ public class ConsumersSupervisorTest {
         PartitionOffset partitionOffset = new PartitionOffset(100L, 0);
         Subscription actualSubscription = createSubscription(SOME_TOPIC_NAME, subscriptionName, ACTIVE);
         SubscriptionName subscription = new SubscriptionName(subscriptionName, SOME_TOPIC_NAME);
-        consumersSupervisor.onSubscriptionChanged(actualSubscription);
+        consumersSupervisor.notifyConsumerOnSubscriptionUpdate(actualSubscription);
         when(subscriptionOffsetChangeIndicator.getSubscriptionOffsets(SOME_TOPIC_NAME, subscriptionName, brokersClusterName))
                 .thenReturn(new PartitionOffsets().add(partitionOffset));
         when(subscriptionRepository.getSubscriptionDetails(SOME_TOPIC_NAME, subscriptionName))
@@ -208,8 +200,8 @@ public class ConsumersSupervisorTest {
         when(consumerFactory.createConsumer(secondSubscription)).thenReturn(secondConsumer);
 
         consumersSupervisor.start();
-        consumersSupervisor.onSubscriptionCreated(firstSubscription);
-        consumersSupervisor.onSubscriptionCreated(secondSubscription);
+        consumersSupervisor.assignConsumerForSubscription(firstSubscription);
+        consumersSupervisor.assignConsumerForSubscription(secondSubscription);
 
         consumersSupervisor.shutdown();
 
@@ -223,7 +215,7 @@ public class ConsumersSupervisorTest {
                 new EndpointProtocolNotSupportedException(EndpointAddress.of("xyz://localhost:8080/test"))
         );
 
-        consumersSupervisor.onSubscriptionCreated(SOME_SUBSCRIPTION);
+        consumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
 
         verify(executorService, never()).execute(any(Consumer.class));
     }
@@ -238,10 +230,10 @@ public class ConsumersSupervisorTest {
 
         when(consumer.getSubscription()).thenReturn(oldSubscription);
 
-        consumersSupervisor.onSubscriptionCreated(oldSubscription);
+        consumersSupervisor.assignConsumerForSubscription(oldSubscription);
 
         // when
-        consumersSupervisor.onSubscriptionChanged(newSubscription);
+        consumersSupervisor.notifyConsumerOnSubscriptionUpdate(newSubscription);
 
         // then
         ArgumentCaptor<Subscription> captor = ArgumentCaptor.forClass(Subscription.class);
@@ -263,7 +255,7 @@ public class ConsumersSupervisorTest {
         // when
         for (int i = 0; i < 100; i++) {
             executor.submit(() -> {
-                consumersSupervisor.onSubscriptionCreated(subscription);
+                consumersSupervisor.assignConsumerForSubscription(subscription);
                 latch.countDown();
             });
         }

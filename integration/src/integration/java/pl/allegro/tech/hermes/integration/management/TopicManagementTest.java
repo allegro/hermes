@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
@@ -127,5 +128,20 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(tracked).contains("mixedTrackedGroup.trackedTopic")
                            .doesNotContain("mixedTrackedGroup.untrackedTopic");
+    }
+
+    @Test
+    public void shouldNotAllowDollarSign() {
+        // given
+        operations.createGroup("dollar");
+
+        Stream.of("$name", "na$me", "name$").forEach(topic -> {
+            // when
+            Response response = management.topic().create(
+                    topic().withName("dollar", topic).applyDefaults().build());
+
+            // then
+            assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+        });
     }
 }
