@@ -84,6 +84,10 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_PATH);
     }
 
+    public String consumersRuntimePath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_PATH, "runtime");
+    }
+
     public String inflightPath(String hostname, TopicName topicName, String subscriptionName, String metricName) {
         return Joiner.on(URL_SEPARATOR).join(
                 consumersPath(),

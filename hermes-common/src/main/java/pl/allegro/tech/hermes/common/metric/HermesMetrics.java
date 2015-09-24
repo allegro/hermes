@@ -277,5 +277,39 @@ public class HermesMetrics {
         messageContentSizeHistogram(topicName).update(size);
         metricRegistry.histogram(pathCompiler.compile(Histograms.PRODUCER_GLOBAL_MESSAGE_SIZE)).update(size);
     }
+
+    public void registerConsumerHttpAnswer(Subscription subscription, int statusCode) {
+        PathContext pathContext = pathContext()
+                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
+                .withTopic(escapeDots(subscription.getTopicName().getName()))
+                .withSubscription(escapeDots(subscription.getName()))
+                .withHttpCode(statusCode)
+                .withHttpCodeFamily(httpStatusFamily(statusCode))
+                .build();
+        metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_HTTP_BY_FAMILY, pathContext)).mark();
+        metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_HTTP_BY_CODE, pathContext)).mark();
+    }
+
+    private String httpStatusFamily(int statusCode) {
+        return String.format("%dxx", statusCode / 100);
+    }
+
+    public Meter consumerErrorsTimeoutMeter(Subscription subscription) {
+        PathContext pathContext = pathContext()
+                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
+                .withTopic(escapeDots(subscription.getTopicName().getName()))
+                .withSubscription(escapeDots(subscription.getName()))
+                .build();
+        return metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_TIMEOUTS, pathContext));
+    }
+
+    public Meter consumerErrorsOtherMeter(Subscription subscription) {
+        PathContext pathContext = pathContext()
+                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
+                .withTopic(escapeDots(subscription.getTopicName().getName()))
+                .withSubscription(escapeDots(subscription.getName()))
+                .build();
+        return metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_OTHER, pathContext));
+    }
 }
 

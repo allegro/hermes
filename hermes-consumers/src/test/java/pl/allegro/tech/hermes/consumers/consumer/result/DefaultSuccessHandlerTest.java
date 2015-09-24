@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
 import java.util.concurrent.ExecutionException;
@@ -43,6 +44,8 @@ public class DefaultSuccessHandlerTest {
 
     private DefaultSuccessHandler defaultRetryHandler;
 
+    private MessageSendingResult result = new MessageSendingResult();
+
     @Before
     public void setUp() {
         when(subscription.getName()).thenReturn(SUBSCRIPTION_NAME);
@@ -53,14 +56,14 @@ public class DefaultSuccessHandlerTest {
 
     @Test
     public void shouldDecrementOffsetWhenSuccessfullySendMessage() throws ExecutionException, InterruptedException {
-        defaultRetryHandler.handle(message, subscription);
+        defaultRetryHandler.handle(message, subscription, result);
 
         verify(offsetHelper).decrement(PARTITION, OFFSET);
     }
 
     @Test
     public void shouldDecrementInflightMessagesOnSuccess() {
-        defaultRetryHandler.handle(message, subscription);
+        defaultRetryHandler.handle(message, subscription, result);
 
         verify(hermesMetrics).decrementInflightCounter(subscription);
     }

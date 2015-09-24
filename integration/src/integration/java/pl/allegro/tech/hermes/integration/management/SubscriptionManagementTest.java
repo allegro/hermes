@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static java.net.URI.create;
@@ -140,6 +141,25 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(tracked).containsExactly(subscription.getName());
+    }
+
+    @Test
+    public void shouldNotAllowSubscriptionNameToContainDollarSign() {
+        // given
+        TopicName topic = new TopicName("dollar", "topic");
+        operations.buildTopic(topic.getGroupName(), topic.getName());
+
+        Stream.of("$name", "na$me", "name$").forEach(name -> {
+            // when
+            Response response = management.subscription()
+                    .create(topic.qualifiedName(), subscription()
+                            .withName(name)
+                            .withTopicName(topic)
+                            .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL)).build());
+
+            // then
+            assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+        });
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
