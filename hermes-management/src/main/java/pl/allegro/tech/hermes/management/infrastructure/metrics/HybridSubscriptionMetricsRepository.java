@@ -12,10 +12,9 @@ import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics;
 import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
@@ -26,6 +25,8 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
     private static final String SUBSCRIPTION_HTTP_STATUSES_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.%s.m1_rate)";
     private static final String SUBSCRIPTION_ERROR_TIMEOUT_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.errors.timeout.m1_rate)";
     private static final String SUBSCRIPTION_ERROR_OTHER_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.errors.other.m1_rate)";
+
+    private static final String[] HTTP_STATUS_CODE_FAMILIES_FOR_METRICS = {"2xx", "4xx", "5xx"};
 
     private final GraphiteClient graphiteClient;
 
@@ -54,13 +55,12 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
         String timeouts = metricPathTimeouts(topicName, subscriptionName);
         String otherErrors = metricPathOtherErrors(topicName, subscriptionName);
 
-        GraphiteMetrics metrics = graphiteClient.readMetrics(rateMetric);
-
-        List<String> httpStatusCodes = allHttpStatusCodeClasses()
+        List<String> metricsPathsForHttpStatuses = Arrays.stream(HTTP_STATUS_CODE_FAMILIES_FOR_METRICS)
                 .map(code -> metricPathHttpStatuses(topicName, subscriptionName, code))
-                .map(m -> graphiteClient.readMetrics(m)
-                .metricValue(m))
                 .collect(Collectors.toList());
+
+        GraphiteMetrics metrics = graphiteClient.readMetrics(metricsPathsForHttpStatuses.get(0),
+                metricsPathsForHttpStatuses.get(1), metricsPathsForHttpStatuses.get(2), rateMetric, timeouts, otherErrors);
 
         return SubscriptionMetrics.Builder.subscriptionMetrics()
                 .withRate(metrics.metricValue(rateMetric))
@@ -70,9 +70,11 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
                         zookeeperPaths.consumersPath(),
                         zookeeperPaths.subscriptionMetricPathWithoutBasePath(topicName, subscriptionName, "inflight")
                 ))
-                .withHttpStatusCodesM1(httpStatusCodes)
-                .withTimeoutsM1(graphiteClient.readMetrics(timeouts).metricValue(timeouts))
-                .withOtherErrorsM1(graphiteClient.readMetrics(otherErrors).metricValue(otherErrors))
+                .withCodes2xx(metrics.metricValue(metricsPathsForHttpStatuses.get(0)))
+                .withCodes4xx(metrics.metricValue(metricsPathsForHttpStatuses.get(1)))
+                .withCodes5xx(metrics.metricValue(metricsPathsForHttpStatuses.get(2)))
+                .withTimeouts(metrics.metricValue(timeouts))
+                .withOtherErrors(metrics.metricValue(otherErrors))
                 .build();
     }
 
@@ -98,9 +100,5 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
         return String.format(SUBSCRIPTION_ERROR_OTHER_PATTERN,
                 metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
         );
-    }
-
-    private Stream<String> allHttpStatusCodeClasses() {
-        return IntStream.range(1, 6).mapToObj(i -> i + "xx");
     }
 }
