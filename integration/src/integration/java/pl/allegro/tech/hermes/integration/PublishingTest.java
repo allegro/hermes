@@ -93,7 +93,7 @@ public class PublishingTest extends IntegrationTest {
         operations.buildSubscription(group, topic, subscription, HTTP_ENDPOINT_URL);
         operations.suspendSubscription(group, topic, subscription);
         wait.untilSubscriptionIsDeactivated(group, topic, subscription);
-        
+
         // when
         Response response = publisher.publish(group + "." + topic, TestMessage.of("hello", "world").body());
 
@@ -267,6 +267,24 @@ public class PublishingTest extends IntegrationTest {
 
         //then
         assertThat(response).hasStatus(BAD_REQUEST);
+    }
+
+    @Test
+    public void shouldPublishInvalidJsonMessageOnValidationDryRun() {
+        // given
+        String invalidMessage = "{\"id\": \"shouldBeNumber\"}";
+        operations.buildTopic(
+                topic().withName("schema.topicWithValidationDryRun")
+                        .withValidation(true)
+                        .withValidationDryRun(true)
+                        .withMessageSchema(schema)
+                        .withContentType(JSON).build());
+
+        //when
+        Response response = publisher.publish("schema.topicWithValidationDryRun", invalidMessage);
+
+        //then
+        assertThat(response).hasStatus(CREATED);
     }
 
 }

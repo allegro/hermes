@@ -142,6 +142,9 @@ public class SentMessageTrace implements MessageTrace {
             return false;
         }
         final SentMessageTrace other = (SentMessageTrace) obj;
-        return Objects.equals(this.messageId, other.messageId) && Objects.equals(this.subscription, other.subscription);
+        return Objects.equals(this.messageId, other.messageId)
+                && Objects.equals(this.subscription, other.subscription)
+                && Objects.equals(this.timestamp, other.timestamp)
+                && Objects.equals(this.status, other.status);
     }
 }

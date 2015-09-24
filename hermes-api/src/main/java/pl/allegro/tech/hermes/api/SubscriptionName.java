@@ -33,4 +33,8 @@ public class SubscriptionName {
     public String toString() {
         return topicName.qualifiedName() + "$" + name;
     }
+
+    public String toSubscriptionId() {
+        return Subscription.getId(topicName, name);
+    }
 }

@@ -72,7 +72,7 @@ public class SubscriptionsEndpoint {
 
     @POST
     @Consumes(APPLICATION_JSON)
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Create subscription", httpMethod = HttpMethod.POST)
     public Response create(@PathParam("topicName") String qualifiedTopicName, Subscription subscription) {
         preconditions.checkConstraints(subscription);
@@ -174,7 +174,7 @@ public class SubscriptionsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/retransmission")
-    @RolesAllowed({Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription offset", httpMethod = HttpMethod.PUT)
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,

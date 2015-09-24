@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics
 import pl.allegro.tech.hermes.management.stub.MetricsPaths
@@ -22,8 +23,10 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
 
     private ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes")
 
+    private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
+
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(client, paths,
-            sharedCounter, distributedCounter, zookeeperPaths)
+            sharedCounter, distributedCounter, zookeeperPaths, lagSource)
 
     def "should read subscription metrics from multiple places"() {
         given:
@@ -42,5 +45,6 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
         metrics.delivered == 100
         metrics.discarded == 1
         metrics.inflight == 5
+        metrics.lag == -1
     }
 }

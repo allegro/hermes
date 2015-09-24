@@ -22,6 +22,7 @@ public class TopicTest {
         assertThat(topic.getName().getGroupName()).isEqualTo("foo");
         assertThat(topic.getDescription()).isEqualTo("description");
         assertThat(topic.isValidationEnabled()).isFalse();
+        assertThat(topic.isValidationDryRunEnabled()).isFalse();
     }
 
     @Test
