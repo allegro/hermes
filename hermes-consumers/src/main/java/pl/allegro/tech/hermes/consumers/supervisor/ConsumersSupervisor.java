@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
-import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -15,8 +14,6 @@ import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
-import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionCallback;
-import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffsets;
@@ -31,7 +28,7 @@ import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
 import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
-public class ConsumersSupervisor implements SubscriptionCallback, AdminOperationsCallback {
+public class ConsumersSupervisor implements AdminOperationsCallback {
 
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumersSupervisor.class);
@@ -46,7 +43,6 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
     private final HermesMetrics hermesMetrics;
     private final OffsetCommitter offsetCommitter;
     private final ConsumerHolder consumerHolder;
-    private final SubscriptionsCache subscriptionsCache;
     private final ZookeeperAdminCache adminCache;
     private final SubscriptionLocks subscriptionsLocks;
 
@@ -61,7 +57,6 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
                                ConsumerFactory consumerFactory,
                                List<MessageCommitter> messageCommitters,
                                List<OffsetsStorage> offsetsStorages,
-                               SubscriptionsCache subscriptionsCache,
                                HermesMetrics hermesMetrics,
                                ZookeeperAdminCache adminCache,
                                UndeliveredMessageLogPersister undeliveredMessageLogPersister) {
@@ -71,7 +66,6 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
         this.consumerFactory = consumerFactory;
         this.offsetsStorages = offsetsStorages;
         this.messageCommitters = messageCommitters;
-        this.subscriptionsCache = subscriptionsCache;
         this.adminCache = adminCache;
         this.hermesMetrics = hermesMetrics;
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
@@ -121,6 +115,13 @@ public class ConsumersSupervisor implements SubscriptionCallback, AdminOperation
             consumerOptional.ifPresent((consumer) -> consumer.updateSubscription(modifiedSubscription));
         } catch (Exception e) {
             logger.error("Failed to update subscription " + modifiedSubscription.getId(), e);
+        }
+    }
+
+    public void updateSubscription(Subscription modifiedSubscription) {
+        try (CloseableSubscriptionLock subscriptionLock = subscriptionsLocks.lock(modifiedSubscription)) {
+            consumerHolder.get(modifiedSubscription.getTopicName(), modifiedSubscription.getName()).
+                    ifPresent((consumer) -> consumer.updateSubscription(modifiedSubscription));
         }
     }
 
