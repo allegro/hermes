@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class SubscriptionMetrics {
     private long delivered;
     private long discarded;
@@ -10,86 +13,67 @@ public class SubscriptionMetrics {
     private String codes4xx;
     private String codes5xx;
     private Subscription.State state;
-    private String rate = "0.0";
+    private String rate;
+
+    private SubscriptionMetrics() {
+    }
+
+    @JsonCreator
+    public SubscriptionMetrics(@JsonProperty("delivered") long delivered, @JsonProperty("discarded") long discarded,
+                               @JsonProperty("inflight") long inflight, @JsonProperty("timeouts") String timeouts,
+                               @JsonProperty("otherErrors") String otherErrors, @JsonProperty("codes2xx") String codes2xx,
+                               @JsonProperty("codes4xx") String codes4xx, @JsonProperty("codes5xx") String codes5xx,
+                               @JsonProperty("Subscription") Subscription.State state, @JsonProperty("rate") String rate) {
+        this.delivered = delivered;
+        this.discarded = discarded;
+        this.inflight = inflight;
+        this.timeouts = timeouts;
+        this.otherErrors = otherErrors;
+        this.codes2xx = codes2xx;
+        this.codes4xx = codes4xx;
+        this.codes5xx = codes5xx;
+        this.state = state;
+        this.rate = rate;
+    }
 
     public long getDelivered() {
         return delivered;
-    }
-
-    public void setDelivered(long delivered) {
-        this.delivered = delivered;
     }
 
     public long getDiscarded() {
         return discarded;
     }
 
-    public void setDiscarded(long discarded) {
-        this.discarded = discarded;
-    }
-
     public long getInflight() {
         return inflight;
-    }
-
-    public void setInflight(long inflight) {
-        this.inflight = inflight;
     }
 
     public String getTimeouts() {
         return timeouts;
     }
 
-    public void setTimeouts(String timeouts) {
-        this.timeouts = timeouts;
-    }
-
     public String getOtherErrors() {
         return otherErrors;
-    }
-
-    public void setOtherErrors(String otherErrors) {
-        this.otherErrors = otherErrors;
     }
 
     public String getCodes2xx() {
         return codes2xx;
     }
 
-    public void setCodes2xx(String codes2xx) {
-        this.codes2xx = codes2xx;
-    }
-
     public String getCodes4xx() {
         return codes4xx;
-    }
-
-    public void setCodes4xx(String codes4xx) {
-        this.codes4xx = codes4xx;
     }
 
     public String getCodes5xx() {
         return codes5xx;
     }
 
-    public void setCodes5xx(String codes5xx) {
-        this.codes5xx = codes5xx;
-    }
-
-    public String getRate() {
-        return rate;
-    }
-
-    public void setRate(String rate) {
-        this.rate = rate;
-    }
-
     public Subscription.State getState() {
         return state;
     }
 
-    public void setState(Subscription.State state) {
-        this.state = state;
+    public String getRate() {
+        return rate;
     }
 
     public static class Builder {
