@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.domain.subscription.offset;
+package pl.allegro.tech.hermes.common.kafka.offset;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

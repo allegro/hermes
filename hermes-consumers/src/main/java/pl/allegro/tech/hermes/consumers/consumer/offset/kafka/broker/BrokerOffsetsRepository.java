@@ -22,7 +22,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.CannotCommitOffsetToBrokerException;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import javax.inject.Inject;
 import java.util.LinkedHashMap;

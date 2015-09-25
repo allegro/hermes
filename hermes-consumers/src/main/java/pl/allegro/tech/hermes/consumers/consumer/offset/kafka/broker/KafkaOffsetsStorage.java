@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import javax.inject.Inject;
 

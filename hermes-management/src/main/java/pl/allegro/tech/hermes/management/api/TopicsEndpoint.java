@@ -85,7 +85,7 @@ public class TopicsEndpoint {
     @RolesAllowed({ Roles.ADMIN })
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName) {
-        topicService.removeTopic(TopicName.fromQualifiedName(qualifiedTopicName));
+        topicService.removeTopic(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)));
         return status(Response.Status.OK).build();
     }
 

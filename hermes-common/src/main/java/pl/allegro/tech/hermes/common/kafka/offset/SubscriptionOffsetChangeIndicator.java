@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.domain.subscription.offset;
+package pl.allegro.tech.hermes.common.kafka.offset;
 
 import pl.allegro.tech.hermes.api.TopicName;
 

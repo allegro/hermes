@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.domain.subscription.offset;
+package pl.allegro.tech.hermes.common.kafka.offset;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;

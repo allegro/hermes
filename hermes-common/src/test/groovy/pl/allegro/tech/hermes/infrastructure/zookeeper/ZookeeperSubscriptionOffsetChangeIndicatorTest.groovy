@@ -4,8 +4,8 @@ import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffsets
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets
 import pl.allegro.tech.hermes.test.IntegrationTest
 
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription

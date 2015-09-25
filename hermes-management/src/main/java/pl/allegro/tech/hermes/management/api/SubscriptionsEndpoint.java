@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.management.infrastructure.time.TimeFormatter;
@@ -41,17 +42,19 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 public class SubscriptionsEndpoint {
 
     private final SubscriptionService subscriptionService;
+    private final TopicService topicService;
     private final ApiPreconditions preconditions;
     private final MultiDCAwareService multiDCAwareService;
     private final TimeFormatter timeFormatter;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
+                                 TopicService topicService,
                                  ApiPreconditions preconditions,
                                  MultiDCAwareService multiDCAwareService,
                                  TimeFormatter timeFormatter) {
-
         this.subscriptionService = subscriptionService;
+        this.topicService = topicService;
         this.preconditions = preconditions;
         this.multiDCAwareService = multiDCAwareService;
         this.timeFormatter = timeFormatter;
@@ -182,7 +185,7 @@ public class SubscriptionsEndpoint {
                                @NotEmpty String formattedTime) {
 
         MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
-            TopicName.fromQualifiedName(qualifiedTopicName),
+            topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
             subscriptionName,
             timeFormatter.parse(formattedTime),
             dryRun);

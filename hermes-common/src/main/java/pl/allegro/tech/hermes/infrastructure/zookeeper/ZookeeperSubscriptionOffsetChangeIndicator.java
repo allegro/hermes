@@ -5,9 +5,9 @@ import org.apache.curator.utils.EnsurePath;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffsets;
-import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
+import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 
 import static com.google.common.base.Charsets.UTF_8;
 

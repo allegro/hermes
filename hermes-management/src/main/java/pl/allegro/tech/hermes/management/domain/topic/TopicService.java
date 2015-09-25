@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
-import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -27,7 +26,6 @@ public class TopicService {
     private final GroupService groupService;
 
     private final TopicMetricsRepository metricRepository;
-    private final SchemaValidatorProvider schemaValidatorProvider;
     private final MultiDCAwareService multiDCAwareService;
 
     @Inject
@@ -35,14 +33,12 @@ public class TopicService {
                         TopicRepository topicRepository,
                         GroupService groupService,
                         TopicProperties topicProperties,
-                        TopicMetricsRepository metricRepository,
-                        SchemaValidatorProvider schemaValidatorProvider) {
+                        TopicMetricsRepository metricRepository) {
         this.multiDCAwareService = multiDCAwareService;
         this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
         this.groupService = groupService;
         this.metricRepository = metricRepository;
-        this.schemaValidatorProvider = schemaValidatorProvider;
     }
 
     public void createTopic(Topic topic) {
@@ -50,7 +46,7 @@ public class TopicService {
 
         try {
             multiDCAwareService.manageTopic(brokerTopicManagement ->
-                brokerTopicManagement.createTopic(topic.getName(), topic.getRetentionTime())
+                brokerTopicManagement.createTopic(topic)
             );
         } catch (Exception exception) {
             logger.error(
@@ -61,12 +57,12 @@ public class TopicService {
         }
     }
 
-    public void removeTopic(TopicName topicName) {
+    public void removeTopic(Topic topic) {
         if (!allowRemoval) {
-            throw new TopicRemovalDisabledException(topicName);
+            throw new TopicRemovalDisabledException(topic);
         }
-        topicRepository.removeTopic(topicName);
-        multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topicName));
+        topicRepository.removeTopic(topic.getName());
+        multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
     }
 
     public void updateTopic(Topic topic) {
@@ -78,7 +74,7 @@ public class TopicService {
         if (!retrieved.equals(modified)) {
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {
                 multiDCAwareService.manageTopic(brokerTopicManagement ->
-                    brokerTopicManagement.updateTopic(topic.getName(), modified.getRetentionTime())
+                    brokerTopicManagement.updateTopic(topic)
                 );
             }
             topicRepository.updateTopic(modified);

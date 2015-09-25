@@ -15,9 +15,9 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffsets;
-import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
+import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 
 import javax.inject.Inject;
 import java.util.List;

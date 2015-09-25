@@ -3,8 +3,7 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 import kafka.admin.AdminUtils;
 import kafka.log.LogConfig;
 import org.I0Itec.zkclient.ZkClient;
-import pl.allegro.tech.hermes.api.RetentionTime;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
@@ -27,12 +26,12 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
     }
 
     @Override
-    public void createTopic(TopicName topicName, RetentionTime retentionTime) {
-        Properties config = createTopicConfig(retentionTime.getDuration(), topicProperties);
+    public void createTopic(Topic topic) {
+        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
 
         AdminUtils.createTopic(
             client,
-            kafkaNamesMapper.toKafkaTopicName(topicName).name(),
+            kafkaNamesMapper.toKafkaTopicName(topic).name(),
             topicProperties.getPartitions(),
             topicProperties.getReplicationFactor(),
             config
@@ -40,14 +39,14 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
     }
 
     @Override
-    public void removeTopic(TopicName name) {
-        AdminUtils.deleteTopic(client, kafkaNamesMapper.toKafkaTopicName(name).name());
+    public void removeTopic(Topic topic) {
+        AdminUtils.deleteTopic(client, kafkaNamesMapper.toKafkaTopicName(topic).name());
     }
 
     @Override
-    public void updateTopic(TopicName topicName, RetentionTime retentionTime) {
-        Properties config = createTopicConfig(retentionTime.getDuration(), topicProperties);
-        AdminUtils.changeTopicConfig(client, kafkaNamesMapper.toKafkaTopicName(topicName).name(), config);
+    public void updateTopic(Topic topic) {
+        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
+        AdminUtils.changeTopicConfig(client, kafkaNamesMapper.toKafkaTopicName(topic).name(), config);
     }
 
     private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties) {

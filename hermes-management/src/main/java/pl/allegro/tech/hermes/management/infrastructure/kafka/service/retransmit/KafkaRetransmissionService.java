@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit;
 
-
 import com.google.common.collect.Range;
 import kafka.api.OffsetRequest;
 import kafka.api.PartitionOffsetRequestInfo;
@@ -8,15 +7,13 @@ import kafka.common.TopicAndPartition;
 import kafka.javaapi.OffsetResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
-import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 
@@ -32,7 +29,6 @@ public class KafkaRetransmissionService implements RetransmissionService {
     private final MessageContentWrapper messageContentWrapper;
     private final SubscriptionOffsetChangeIndicator subscriptionOffsetChange;
     private final SimpleConsumerPool simpleConsumerPool;
-    private final TopicRepository topicRepository;
     private final KafkaNamesMapper kafkaNamesMapper;
 
     public KafkaRetransmissionService(
@@ -41,7 +37,6 @@ public class KafkaRetransmissionService implements RetransmissionService {
             MessageContentWrapper messageContentWrapper,
             SubscriptionOffsetChangeIndicator subscriptionOffsetChange,
             SimpleConsumerPool simpleConsumerPool,
-            TopicRepository topicRepository,
             KafkaNamesMapper kafkaNamesMapper) {
 
         this.brokerStorage = brokerStorage;
@@ -49,12 +44,11 @@ public class KafkaRetransmissionService implements RetransmissionService {
         this.messageContentWrapper = messageContentWrapper;
         this.subscriptionOffsetChange = subscriptionOffsetChange;
         this.simpleConsumerPool = simpleConsumerPool;
-        this.topicRepository = topicRepository;
         this.kafkaNamesMapper = kafkaNamesMapper;
     }
 
     @Override
-    public List<PartitionOffset> indicateOffsetChange(TopicName topic, String subscription, String brokersClusterName,
+    public List<PartitionOffset> indicateOffsetChange(Topic topic, String subscription, String brokersClusterName,
                                                             long timestamp, boolean dryRun) {
 
         List<PartitionOffset> partitionOffsetList = new ArrayList<>();
@@ -63,10 +57,10 @@ public class KafkaRetransmissionService implements RetransmissionService {
 
         for (Integer partitionId : partitionsIds) {
             SimpleConsumer consumer = createSimpleConsumer(kafkaTopic, partitionId);
-            long offset = getLastOffset(consumer, topicRepository.getTopicDetails(topic), partitionId, timestamp);
+            long offset = getLastOffset(consumer, topic, partitionId, timestamp);
             partitionOffsetList.add(new PartitionOffset(offset, partitionId));
             if (!dryRun) {
-                subscriptionOffsetChange.setSubscriptionOffset(topic, subscription, brokersClusterName, partitionId, offset);
+                subscriptionOffsetChange.setSubscriptionOffset(topic.getName(), subscription, brokersClusterName, partitionId, offset);
             }
         }
 

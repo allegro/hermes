@@ -37,12 +37,12 @@ public class KafkaMessageReceiver implements MessageReceiver {
         this.readingTimer = readingTimer;
         this.clock = clock;
 
-        KafkaTopic topicName = kafkaNamesMapper.toKafkaTopicName(topic);
-        Map<String, Integer> topicCountMap = ImmutableMap.of(topicName.name(), kafkaStreamCount);
+        KafkaTopic kafkaTopic = kafkaNamesMapper.toKafkaTopicName(topic);
+        Map<String, Integer> topicCountMap = ImmutableMap.of(kafkaTopic.name(), kafkaStreamCount);
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumerConnector.createMessageStreams(
                 topicCountMap
         );
-        KafkaStream<byte[], byte[]> stream = consumerMap.get(topicName.name()).get(0);
+        KafkaStream<byte[], byte[]> stream = consumerMap.get(kafkaTopic.name()).get(0);
         iterator = stream.iterator();
     }
 
