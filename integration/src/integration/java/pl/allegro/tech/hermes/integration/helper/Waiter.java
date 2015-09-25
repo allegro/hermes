@@ -81,7 +81,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     private void untilSubscriptionHasState(String group, String topic, String subscription, Subscription.State state) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() ->
                         endpoints.subscription().get(group + "." + topic, subscription).getState().equals(state)
         );
     }

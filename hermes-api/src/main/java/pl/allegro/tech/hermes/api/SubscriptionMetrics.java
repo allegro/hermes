@@ -12,6 +12,7 @@ public class SubscriptionMetrics {
     private String codes2xx;
     private String codes4xx;
     private String codes5xx;
+    private long lag;
     private Subscription.State state;
     private String rate;
 
@@ -52,6 +53,14 @@ public class SubscriptionMetrics {
         return timeouts;
     }
 
+    public long getLag() {
+        return lag;
+    }
+
+    public String getRate() {
+        return rate;
+    }
+    
     public String getOtherErrors() {
         return otherErrors;
     }
@@ -70,10 +79,6 @@ public class SubscriptionMetrics {
 
     public Subscription.State getState() {
         return state;
-    }
-
-    public String getRate() {
-        return rate;
     }
 
     public static class Builder {
@@ -130,6 +135,11 @@ public class SubscriptionMetrics {
 
         public Builder withState(Subscription.State state) {
             subscriptionMetrics.state = state;
+            return this;
+        }
+
+        public Builder withLag(long lag) {
+            subscriptionMetrics.lag = lag;
             return this;
         }
 

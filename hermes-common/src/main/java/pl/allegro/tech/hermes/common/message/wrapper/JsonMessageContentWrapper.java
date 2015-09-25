@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
 import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.UUID;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.primitives.Bytes.indexOf;
@@ -15,6 +18,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.MESSAGE_CONTENT_ROOT;
 import static pl.allegro.tech.hermes.common.config.Configs.METADATA_CONTENT_ROOT;
 
 public class JsonMessageContentWrapper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonMessageContentWrapper.class);
 
     private static final byte[] SEPARATOR = ",".getBytes(UTF_8);
     private static final byte[] WRAPPED_MARKER = "\"_w\":true".getBytes(UTF_8);
@@ -58,7 +62,17 @@ public class JsonMessageContentWrapper {
         return stream.toByteArray();
     }
 
-    UnwrappedMessageContent unwrapContent(byte[] json) {
+    public UnwrappedMessageContent unwrapContent(byte[] json) {
+        if (isWrapped(json)) {
+            return unwrapMessageContent(json);
+        } else {
+            UUID id = UUID.randomUUID();
+            LOGGER.warn("Unwrapped message read by consumer (size={}, id={}).", json.length, id.toString());
+            return new UnwrappedMessageContent(new MessageMetadata(1L, id.toString()), json);
+        }
+    }
+
+    private UnwrappedMessageContent unwrapMessageContent(byte[] json) {
         int rootIndex = indexOf(json, contentRootField);
         int metadataIndex = indexOf(json, metadataRootField);
         try {
@@ -82,6 +96,10 @@ public class JsonMessageContentWrapper {
 
     private byte[] formatNodeKey(String keyName) {
         return format("\"%s\":", keyName).getBytes(UTF_8);
+    }
+
+    private boolean isWrapped(byte[] json) {
+        return indexOf(json, WRAPPED_MARKER) > 0;
     }
 
 }

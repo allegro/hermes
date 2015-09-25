@@ -6,6 +6,7 @@ import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionAlreadyExistsException;
@@ -95,6 +96,11 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
         ensureSubscriptionExists(topicName, subscriptionName);
         return readFrom(paths.subscriptionPath(topicName, subscriptionName), Subscription.class);
+    }
+
+    @Override
+    public Subscription getSubscriptionDetails(SubscriptionName name) {
+        return getSubscriptionDetails(name.getTopicName(), name.getName());
     }
 
     @Override

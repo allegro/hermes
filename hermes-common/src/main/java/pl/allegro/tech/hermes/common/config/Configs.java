@@ -1,5 +1,10 @@
 package pl.allegro.tech.hermes.common.config;
 
+import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
+
+import static java.lang.Math.abs;
+import static java.util.UUID.randomUUID;
+
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public enum Configs {
 
@@ -46,7 +51,7 @@ public enum Configs {
     KAFKA_PRODUCER_LINGER_MS("kafka.producer.linger.ms", 0),
     KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS("kafka.producer.metrics.sample.window.ms", 30000),
     KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION("kafka.producer.max.in.flight.requests.per.connection", 5),
-
+    KAFKA_PRODUCER_REPORT_NODE_METRICS("kafka.producer.report.node.metrics", false),
     KAFKA_STREAM_COUNT("kafka.stream.count", 1),
 
     FRONTEND_PORT("frontend.port", 8080),
@@ -101,6 +106,9 @@ public enum Configs {
     CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD("consumer.offset.commit.queue.alert.minimal.idle.period", 3600),
     CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE("consumer.offset.commit.queue.alert.size", 20_000),
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
+    CONSUMER_WORKLOAD_ALGORITHM("consumer.workload.algorithm", "legacy.mirror"),
+    CONSUMER_WORKLOAD_ID("consumer.workload.id",
+            new InetAddressHostnameResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits())),
 
     GRAPHITE_HOST("graphite.host", "localhost"),
     GRAPHITE_PORT("graphite.port", 2003),

@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
@@ -35,6 +36,7 @@ public class Consumer implements Runnable {
 
     private Subscription subscription;
 
+    private final CountDownLatch stoppedLatch = new CountDownLatch(1);
     private volatile boolean consuming = true;
 
     public Consumer(MessageReceiver messageReceiver, HermesMetrics hermesMetrics, Subscription subscription,
@@ -76,8 +78,10 @@ public class Consumer implements Runnable {
                 logger.error("Consumer loop failed for " + getId(), e);
             }
         }
-        logger.info("Stopping consumer for subscription {}", subscription.getId());
         messageReceiver.stop();
+        unsetThreadName();
+        logger.info("Stopped consumer for subscription {}", subscription.getId());
+        stoppedLatch.countDown();
     }
 
     private void sendMessage(Message message) {
@@ -90,9 +94,14 @@ public class Consumer implements Runnable {
     }
 
     public void stopConsuming() {
+        logger.info("Stopping consumer for subscription {}", subscription.getId());
         rateLimiter.shutdown();
         sender.shutdown();
         consuming = false;
+    }
+
+    public void waitUntilStopped() throws InterruptedException {
+        stoppedLatch.await();
     }
 
     public List<PartitionOffset> getOffsetsToCommit() {
@@ -111,6 +120,10 @@ public class Consumer implements Runnable {
 
     private void setThreadName() {
         Thread.currentThread().setName("Consumer-" + subscription.getId());
+    }
+
+    private void unsetThreadName() {
+        Thread.currentThread().setName("Released thread");
     }
 
     @VisibleForTesting

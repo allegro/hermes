@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionMetricsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics;
@@ -32,15 +33,18 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
     private final ZookeeperPaths zookeeperPaths;
 
+    private final SubscriptionLagSource lagSource;
+
     @Autowired
     public HybridSubscriptionMetricsRepository(GraphiteClient graphiteClient, MetricsPaths metricsPaths,
                                                SharedCounter sharedCounter, DistributedEphemeralCounter distributedCounter,
-                                               ZookeeperPaths zookeeperPaths) {
+                                               ZookeeperPaths zookeeperPaths, SubscriptionLagSource lagSource) {
         this.graphiteClient = graphiteClient;
         this.metricsPaths = metricsPaths;
         this.sharedCounter = sharedCounter;
         this.distributedCounter = distributedCounter;
         this.zookeeperPaths = zookeeperPaths;
+        this.lagSource = lagSource;
     }
 
     @Override
@@ -67,6 +71,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
                 .withCodes5xx(metrics.metricValue(codes5xxPath))
                 .withTimeouts(metrics.metricValue(timeouts))
                 .withOtherErrors(metrics.metricValue(otherErrors))
+                .withLag(lagSource.getLag(topicName, subscriptionName))
                 .build();
     }
 
