@@ -7,9 +7,10 @@ import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.time.Clock;
@@ -22,25 +23,26 @@ import java.util.Map;
 
 public class KafkaMessageReceiver implements MessageReceiver {
     private final ConsumerIterator<byte[], byte[]> iterator;
+    private final Topic topic;
     private final ConsumerConnector consumerConnector;
     private final MessageContentWrapper contentWrapper;
     private final Timer readingTimer;
     private final Clock clock;
 
-    public KafkaMessageReceiver(String topicName, ConsumerConnector consumerConnector, ConfigFactory configFactory,
-                                MessageContentWrapper contentWrapper, Timer readingTimer, Clock clock) {
+    public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, MessageContentWrapper contentWrapper,
+                                Timer readingTimer, Clock clock, KafkaNamesMapper kafkaNamesMapper, Integer kafkaStreamCount) {
+        this.topic = topic;
         this.consumerConnector = consumerConnector;
         this.contentWrapper = contentWrapper;
         this.readingTimer = readingTimer;
         this.clock = clock;
 
-        Map<String, Integer> topicCountMap = ImmutableMap.of(
-                topicName, configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT)
-        );
+        KafkaTopicName topicName = kafkaNamesMapper.toKafkaTopicName(topic);
+        Map<String, Integer> topicCountMap = ImmutableMap.of(topicName.asString(), kafkaStreamCount);
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumerConnector.createMessageStreams(
                 topicCountMap
         );
-        KafkaStream<byte[], byte[]> stream = consumerMap.get(topicName).get(0);
+        KafkaStream<byte[], byte[]> stream = consumerMap.get(topicName.asString()).get(0);
         iterator = stream.iterator();
     }
 
@@ -48,13 +50,13 @@ public class KafkaMessageReceiver implements MessageReceiver {
     public Message next() {
         try (Timer.Context readingTimerContext = readingTimer.time()) {
             MessageAndMetadata<byte[], byte[]> message = iterator.next();
-            UnwrappedMessageContent unwrappedContent = contentWrapper.unwrapContent(message.message());
+            UnwrappedMessageContent unwrappedContent = contentWrapper.unwrap(message.message(), topic);
 
             return new Message(
                     unwrappedContent.getMessageMetadata().getId(),
                     message.offset(),
                     message.partition(),
-                    message.topic(),
+                    topic.getQualifiedName(),
                     unwrappedContent.getContent(),
                     unwrappedContent.getMessageMetadata().getTimestamp(),
                     clock.getTime());

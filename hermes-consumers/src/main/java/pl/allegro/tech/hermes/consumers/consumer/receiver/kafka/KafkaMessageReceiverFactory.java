@@ -4,10 +4,11 @@ import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapperProvider;
+import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.common.time.Clock;
@@ -20,38 +21,41 @@ import java.util.Properties;
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final ConfigFactory configFactory;
-    private final MessageContentWrapperProvider messageContentWrapperProvider;
+    private final MessageContentWrapper messageContentWrapper;
     private final HermesMetrics hermesMetrics;
     private final Clock clock;
+    private final KafkaNamesMapper kafkaNamesMapper;
 
     @Inject
-    public KafkaMessageReceiverFactory(ConfigFactory configFactory, MessageContentWrapperProvider messageContentWrapperProvider,
-                                       HermesMetrics hermesMetrics, Clock clock) {
+    public KafkaMessageReceiverFactory(ConfigFactory configFactory, MessageContentWrapper messageContentWrapper,
+                                       HermesMetrics hermesMetrics, Clock clock, KafkaNamesMapper kafkaNamesMapper) {
         this.configFactory = configFactory;
-        this.messageContentWrapperProvider = messageContentWrapperProvider;
+        this.messageContentWrapper = messageContentWrapper;
         this.hermesMetrics = hermesMetrics;
         this.clock = clock;
+        this.kafkaNamesMapper = kafkaNamesMapper;
     }
 
     @Override
-    public MessageReceiver createMessageReceiver(Topic.ContentType receivingContentType, Subscription subscription) {
-        return create(subscription.getTopicName(), receivingContentType, createConsumerConfig(subscription.getId()));
+    public MessageReceiver createMessageReceiver(Topic receivingTopic, Subscription subscription) {
+        return create(receivingTopic, createConsumerConfig(kafkaNamesMapper.toConsumerGroupId(subscription)));
     }
 
-    MessageReceiver create(TopicName topicName, Topic.ContentType receivingContentType, ConsumerConfig consumerConfig) {
+    MessageReceiver create(Topic receivingTopic, ConsumerConfig consumerConfig) {
         return new KafkaMessageReceiver(
-                topicName.qualifiedName(),
+                receivingTopic,
                 Consumer.createJavaConsumerConnector(consumerConfig),
-                configFactory,
-                messageContentWrapperProvider.provide(receivingContentType),
+                messageContentWrapper,
                 hermesMetrics.timer(Timers.CONSUMER_READ_LATENCY),
-                clock);
+                clock,
+                kafkaNamesMapper,
+                configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT));
     }
 
-    private ConsumerConfig createConsumerConfig(String subscriptionName) {
+    private ConsumerConfig createConsumerConfig(ConsumerGroupId groupId) {
         Properties props = new Properties();
 
-        props.put("group.id", subscriptionName);
+        props.put("group.id", groupId.asString());
         props.put("zookeeper.connect", configFactory.getStringProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING));
         props.put("zookeeper.connection.timeout.ms", configFactory.getIntPropertyAsString(Configs.ZOOKEEPER_CONNECTION_TIMEOUT));
         props.put("zookeeper.session.timeout.ms", configFactory.getIntPropertyAsString(Configs.ZOOKEEPER_SESSION_TIMEOUT));

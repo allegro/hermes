@@ -12,6 +12,7 @@ public class ZookeeperPaths {
     public static final String URL_SEPARATOR = "/";
     public static final String CONSUMERS_PATH = "consumers";
     public static final String METRICS_PATH = "metrics";
+    public static final String ADMIN_PATH = "admin";
 
     private final String basePath;
 
@@ -21,6 +22,14 @@ public class ZookeeperPaths {
 
     public String basePath() {
         return basePath;
+    }
+
+    public String adminPath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, ADMIN_PATH);
+    }
+
+    public String adminOperationPath(String operation) {
+        return Joiner.on(URL_SEPARATOR).join(adminPath(), operation);
     }
 
     public String groupsPath() {

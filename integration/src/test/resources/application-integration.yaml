@@ -10,10 +10,12 @@ kafka:
       clusterName: primary
       connectionString: localhost:14192/kafka
       connectionTimeout: 10000
+      namespace: 'itTest'
     -
       clusterName: secondary
       connectionString: localhost:14192/secondaryKafka
       connectionTimeout: 10000
+      namespace: 'itTest'
 
 topic:
   replicationFactor: 1
@@ -35,3 +37,6 @@ spring:
     type: filter
 
 spring.groovy.template.check-template-location: false
+
+schema.repository:
+  type: topic_field

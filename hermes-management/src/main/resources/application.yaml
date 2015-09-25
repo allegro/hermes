@@ -4,7 +4,7 @@ zookeeper:
 kafka:
   clusters:
     -
-      clusterName: kafkaPrimary
+      clusterName: primary
       connectionString: localhost:2181
       connectionTimeout: 3000
 

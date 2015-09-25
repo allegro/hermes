@@ -19,6 +19,7 @@ public enum Configs {
 
     KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary"),
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
+    KAFKA_NAMESPACE("kafka.namespace", ""),
     KAFKA_CONSUMER_TIMEOUT_MS("kafka.consumer.timeout.ms", 60000),
     KAFKA_CONSUMER_AUTO_OFFSET_RESET("kafka.consumer.auto.offset.reset", "largest"),
     KAFKA_CONSUMER_OFFSETS_STORAGE("kafka.consumer.offsets.storage", "kafka"),
@@ -78,7 +79,6 @@ public enum Configs {
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
 
-
     CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 20),
     CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE("consumer.sender.async.timeout.thread.pool.size", 32),
@@ -98,7 +98,6 @@ public enum Configs {
     CONSUMER_RATE_CONVERGENCE_FACTOR("consumer.rate.convergence.factor", 0.2),
     CONSUMER_RATE_FAILURES_NOCHANGE_TOLERANCE_RATIO("consumer.rate.failures.nochange.tolerance.ratio", 0.05),
     CONSUMER_RATE_FAILURES_SPEEDUP_TOLERANCE_RATIO("consumer.rate.failures.speedup.tolerance.ratio", 0.01),
-    CONSUMER_OFFSET_MONITOR_ENABLED("consumer.offset.monitor.enabled", true),
     CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD("consumer.offset.commit.queue.alert.minimal.idle.period", 3600),
     CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE("consumer.offset.commit.queue.alert.size", 20_000),
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
@@ -119,6 +118,12 @@ public enum Configs {
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),
     METADATA_CONTENT_ROOT("message.content.root", "metadata"),
     GRAPHITE_PREFIX("graphite.prefix", "stats.tech.hermes"),
+
+    SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES("schema.cache.refresh.after.write.minutes", 10),
+    SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES("schema.cache.expire.after.write.minutes", 60 * 24),
+    SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE("schema.cache.reload.thread.pool.size", 2),
+    SCHEMA_REPOSITORY_TYPE("schema.repository.type", "zookeeper"),
+    SCHEMA_REPOSITORY_SERVER_URL("schema.repository.serverUrl", "http://localhost:2876/schema-repo/"),
 
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 

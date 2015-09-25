@@ -10,21 +10,19 @@ import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 
 public class AvroToJsonConverterTest {
 
-    private AvroToJsonConverter avroToJsonConverter;
     private AvroUser avroUser;
 
     @Before
     public void setup() throws IOException {
         avroUser = new AvroUser();
-        avroToJsonConverter = new AvroToJsonConverter(avroUser.getSchema());
     }
 
     @Test
     public void shouldConvertAvroToJson() throws IOException {
         //when
-        byte [] json = avroToJsonConverter.convert(avroUser.create("Bob", 50, "blue"));
+        byte[] json = AvroToJsonConverter.convert(avroUser.create("Bob", 50, "blue"), avroUser.getSchema());
 
         //then
-        assertThatJson(new String(json)).isEqualTo("{\"name\": \"Bob\",\"age\": 50,\"favoriteColor\": \"blue\"}");
+        assertThatJson(new String(json)).isEqualTo("{\"name\": \"Bob\",\"age\": 50,\"favoriteColor\": \"blue\",\"__metadata\":null}");
     }
 }

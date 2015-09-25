@@ -8,10 +8,7 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
@@ -29,6 +26,7 @@ import java.util.concurrent.Semaphore;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConsumerTest {
@@ -43,8 +41,10 @@ public class ConsumerTest {
             .withTopicName(new TopicName("group", "topic"))
             .withName("subscription")
             .withEndpoint(EndpointAddress.of("http://localhost"))
-            .withSubscriptionPolicy(new SubscriptionPolicy(10, 10000, false))
+            .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
             .build();
+
+    private static final Topic TOPIC = Topic.Builder.topic().withName("group", "topic").build();
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ConfigFactory configFactory;
@@ -87,7 +87,7 @@ public class ConsumerTest {
         when(configFactory.getIntProperty(Configs.REPORT_PERIOD)).thenReturn(10);
         when(configFactory.getIntProperty(Configs.CONSUMER_INFLIGHT_SIZE)).thenReturn(50);
         consumer = spy(new Consumer(messageReceiver, hermesMetrics, SUBSCRIPTION,
-                consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, new NoOperationMessageConverter()));
+                consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, new NoOperationMessageConverter(), TOPIC));
     }
 
     @Test
@@ -152,7 +152,7 @@ public class ConsumerTest {
     public void shouldUpdateSubscriptionPolicy() {
         // given
         Subscription newSubscription = createSubscription();
-        SubscriptionPolicy newSubscriptionPolicy = new SubscriptionPolicy(2, 500, false);
+        SubscriptionPolicy newSubscriptionPolicy = new SubscriptionPolicy(2, 500, false, 10);
         newSubscription.setSubscriptionPolicy(newSubscriptionPolicy);
 
         // when

@@ -16,7 +16,9 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
@@ -24,7 +26,7 @@ import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingRes
 public class ConsumerMessageSender {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerMessageSender.class);
-    private final ExecutorService retrySingleThreadExecutor;
+    private final ScheduledExecutorService retrySingleThreadExecutor;
     private final ExecutorService deliveryReportingExecutor;
     private final SuccessHandler successHandler;
     private final ErrorHandler errorHandler;
@@ -49,7 +51,7 @@ public class ConsumerMessageSender {
         this.messageSender = messageSender;
         this.subscription = subscription;
         this.inflightSemaphore = inflightSemaphore;
-        this.retrySingleThreadExecutor = Executors.newSingleThreadExecutor();
+        this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1);
         this.async = futureAsyncTimeout;
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
@@ -139,7 +141,8 @@ public class ConsumerMessageSender {
             } else {
                 handleFailedSending(message, result);
                 if (!isTtlExceeded(message) && shouldRetrySending(result)) {
-                    retrySingleThreadExecutor.execute(() -> retrySending(result));
+                    retrySingleThreadExecutor.schedule(() -> retrySending(result),
+                            subscription.getSubscriptionPolicy().getMessageBackoff(), TimeUnit.MILLISECONDS);
                 } else {
                     handleMessageDiscarding(message, result);
                 }

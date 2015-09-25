@@ -246,6 +246,26 @@ public class ConsumerMessageSenderTest {
         verifyErrorHandlerHandleFailed(message, subscription, 1, 3000);
     }
 
+    @Test
+    public void shouldBackoffRetriesWhenEndpointFails() throws InterruptedException {
+        // given
+        int executionTime = 100;
+        int senderBackoffTime = 50;
+        Subscription subscriptionWithBackoff = subscriptionWithBackoff(senderBackoffTime);
+        setUpMetrics(subscriptionWithBackoff);
+
+        sender = consumerMessageSender(subscriptionWithBackoff);
+        Message message = message();
+        doReturn(failure(500)).when(messageSender).send(message);
+
+        //when
+        sender.sendMessage(message);
+
+        //then
+        Thread.sleep(executionTime);
+        verifyErrorHandlerHandleFailed(message, subscriptionWithBackoff, 1 + executionTime / senderBackoffTime);
+    }
+
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
         return new ConsumerMessageSender(subscription, messageSender, successHandler, errorHandler, rateLimiter,
                 Executors.newSingleThreadExecutor(), inflightSemaphore, hermesMetrics, ASYNC_TIMEOUT_MS,
@@ -276,7 +296,7 @@ public class ConsumerMessageSenderTest {
 
     private Subscription subscriptionWithTtl(int ttl) {
         return subscriptionBuilderWithTestValues()
-            .withSubscriptionPolicy(subscriptionPolicy()
+            .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
                     .withMessageTtl(ttl)
                     .build())
             .build();
@@ -284,11 +304,19 @@ public class ConsumerMessageSenderTest {
 
     private Subscription subscriptionWithTtlAndClientErrorRetry(int ttl) {
         return subscriptionBuilderWithTestValues()
-            .withSubscriptionPolicy(subscriptionPolicy()
+            .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
                     .withMessageTtl(ttl)
                     .withClientErrorRetry()
                     .build())
-            .build();
+                .build();
+    }
+
+    private Subscription subscriptionWithBackoff(int backoff) {
+        return subscriptionBuilderWithTestValues()
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
+                        .withMessageBackoff(backoff)
+                        .build())
+                .build();
     }
 
     private Subscription.Builder subscriptionBuilderWithTestValues() {

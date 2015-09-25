@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
 import kafka.admin.AdminUtils;
+import kafka.log.LogConfig;
 import org.I0Itec.zkclient.ZkClient;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 
@@ -12,44 +14,48 @@ import java.util.concurrent.TimeUnit;
 
 public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
-    public static final String RETENTION_MS_PROPERTY = "retention.ms";
-
     private final TopicProperties topicProperties;
 
     private final ZkClient client;
 
-    public KafkaBrokerTopicManagement(TopicProperties topicProperties, ZkClient zkClient) {
+    private final KafkaNamesMapper kafkaNamesMapper;
+
+    public KafkaBrokerTopicManagement(TopicProperties topicProperties, ZkClient zkClient, KafkaNamesMapper kafkaNamesMapper) {
         this.topicProperties = topicProperties;
         this.client = zkClient;
+        this.kafkaNamesMapper = kafkaNamesMapper;
     }
 
     @Override
     public void createTopic(TopicName topicName, RetentionTime retentionTime) {
-        Properties props = new Properties();
-        populateRetentionToProperties(retentionTime.getDuration(), props);
+        Properties config = createTopicConfig(retentionTime.getDuration(), topicProperties);
 
         AdminUtils.createTopic(
-            client, topicName.qualifiedName(),
+            client,
+            kafkaNamesMapper.toKafkaTopicName(topicName).asString(),
             topicProperties.getPartitions(),
             topicProperties.getReplicationFactor(),
-            props
+            config
         );
     }
 
     @Override
     public void removeTopic(TopicName name) {
-        AdminUtils.deleteTopic(client, name.qualifiedName());
+        AdminUtils.deleteTopic(client, kafkaNamesMapper.toKafkaTopicName(name).asString());
     }
 
     @Override
     public void updateTopic(TopicName topicName, RetentionTime retentionTime) {
-        Properties props = new Properties();
-        populateRetentionToProperties(retentionTime.getDuration(), props);
-        AdminUtils.changeTopicConfig(client, topicName.qualifiedName(), props);
+        Properties config = createTopicConfig(retentionTime.getDuration(), topicProperties);
+        AdminUtils.changeTopicConfig(client, kafkaNamesMapper.toKafkaTopicName(topicName).asString(), config);
     }
 
-    private void populateRetentionToProperties(int retentionPolicy, Properties props) {
-        props.put(RETENTION_MS_PROPERTY, "" + TimeUnit.DAYS.toMillis(retentionPolicy));
+    private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties) {
+        Properties props = new Properties();
+        props.put(LogConfig.RententionMsProp(), String.valueOf(TimeUnit.DAYS.toMillis(retentionPolicy)));
+        props.put(LogConfig.UncleanLeaderElectionEnableProp(), Boolean.toString(topicProperties.isUncleanLeaderElectionEnabled()));
+
+        return props;
     }
 
 }

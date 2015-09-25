@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -15,11 +17,14 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 @Configuration
-@EnableConfigurationProperties({TopicProperties.class, MetricsProperties.class})
+@EnableConfigurationProperties({TopicProperties.class, MetricsProperties.class, HttpClientProperties.class})
 public class ManagementConfiguration {
 
     @Autowired
     MetricsProperties metricsProperties;
+
+    @Autowired
+    HttpClientProperties httpClientProperties;
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -32,7 +37,11 @@ public class ManagementConfiguration {
 
     @Bean
     public Client jerseyClient() {
-        return ClientBuilder.newClient();
+        ClientConfig config = new ClientConfig();
+        config.property(ClientProperties.CONNECT_TIMEOUT, httpClientProperties.getConnectTimeout());
+        config.property(ClientProperties.READ_TIMEOUT,    httpClientProperties.getReadTimeout());
+
+        return ClientBuilder.newClient(config);
     }
 
     @Bean

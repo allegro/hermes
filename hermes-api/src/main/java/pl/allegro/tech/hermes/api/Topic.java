@@ -8,9 +8,6 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
-import java.util.function.Function;
-
-import static com.google.common.base.Strings.isNullOrEmpty;
 
 public class Topic {
     @Valid @NotNull
@@ -19,8 +16,6 @@ public class Topic {
     private String description;
 
     private String messageSchema;
-
-    private Object compiledSchema;
 
     private boolean validationEnabled;
 
@@ -125,14 +120,6 @@ public class Topic {
         return messageSchema;
     }
 
-    @JsonIgnore
-    public <T> T getCompiledSchema(Function<String, T> compiler) {
-        if (compiledSchema == null) {
-            compiledSchema = compiler.apply(getMessageSchema());
-        }
-        return (T) compiledSchema;
-    }
-
     @JsonProperty("validation")
     public boolean isValidationEnabled() {
         return validationEnabled || ContentType.AVRO == contentType;
@@ -153,11 +140,6 @@ public class Topic {
     @JsonIgnore
     public boolean isReplicationConfirmRequired() {
         return getAck() == Ack.ALL;
-    }
-
-    @JsonIgnore
-    public boolean isSchemaValidationRequired() {
-        return Topic.ContentType.AVRO == contentType || !isNullOrEmpty(messageSchema);
     }
 
     public static class Builder {

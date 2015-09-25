@@ -265,6 +265,14 @@ public class HermesMetrics {
                 .build()));
     }
 
+    public Histogram inflightTimeHistogram(Subscription subscription) {
+        return metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMER_INFLIGHT_TIME, pathContext()
+                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
+                .withTopic(escapeDots(subscription.getTopicName().getName()))
+                .withSubscription(escapeDots(subscription.getName()))
+                .build()));
+    }
+
     public void reportContentSize(int size, TopicName topicName) {
         messageContentSizeHistogram(topicName).update(size);
         metricRegistry.histogram(pathCompiler.compile(Histograms.PRODUCER_GLOBAL_MESSAGE_SIZE)).update(size);

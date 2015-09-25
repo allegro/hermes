@@ -6,7 +6,10 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,18 +17,22 @@ import java.util.List;
 public class JsonTopicMessageValidator implements TopicMessageValidator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonTopicMessageValidator.class);
+    private final SchemaRepository<JsonSchema> schemaRepository;
+    private final ObjectMapper objectMapper;
 
-    private JsonSchema jsonSchema;
-    private ObjectMapper objectMapper;
-
-    public JsonTopicMessageValidator(JsonSchema jsonSchema, ObjectMapper objectMapper) {
-        this.jsonSchema = jsonSchema;
+    @Inject
+    public JsonTopicMessageValidator(SchemaRepository<JsonSchema> schemaRepository, ObjectMapper objectMapper) {
+        this.schemaRepository = schemaRepository;
         this.objectMapper = objectMapper;
     }
 
     @Override
-    public void check(byte[] message) {
-        List<String> errors = validate(jsonSchema, message);
+    public void check(byte[] message, Topic topic) {
+        if (Topic.ContentType.JSON != topic.getContentType() || !topic.isValidationEnabled()) {
+            return;
+        }
+
+        List<String> errors = validate(schemaRepository.getSchema(topic), message);
 
         if (!errors.isEmpty()) {
             throw new InvalidMessageException("Message incompatible with JSON schema", errors);

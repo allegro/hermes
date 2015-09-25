@@ -8,8 +8,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.zookeeper.ZookeeperMessageCommitter;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 
@@ -19,13 +19,14 @@ import java.nio.charset.Charset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 
 public class ZookeeperMessageCommitterTest {
 
     private static final TopicName SOME_TOPIC_NAME = new TopicName("g", "b");
     private static CuratorFramework curatorClient;
 
-    private ZookeeperMessageCommitter zookeeperMessageCommitter = new ZookeeperMessageCommitter(curatorClient);
+    private ZookeeperMessageCommitter zookeeperMessageCommitter = new ZookeeperMessageCommitter(curatorClient, new KafkaNamesMapper("ns"));
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -43,7 +44,7 @@ public class ZookeeperMessageCommitterTest {
         zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(15, 0));
 
         //then
-        assertEquals(16, getOffsetForPath("/consumers/g_b_sub1/offsets/g.b/0"));
+        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/0"));
     }
 
     @Test
@@ -55,7 +56,7 @@ public class ZookeeperMessageCommitterTest {
         zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(17, 0));
 
         //then
-        assertEquals(18, getOffsetForPath("/consumers/g_b_sub1/offsets/g.b/0"));
+        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/0"));
     }
 
     @Test
@@ -67,8 +68,8 @@ public class ZookeeperMessageCommitterTest {
         zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(17, 1));
 
         //then
-        assertEquals(16, getOffsetForPath("/consumers/g_b_sub1/offsets/g.b/0"));
-        assertEquals(18, getOffsetForPath("/consumers/g_b_sub1/offsets/g.b/1"));
+        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/0"));
+        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/1"));
     }
 
     @Test
@@ -80,12 +81,12 @@ public class ZookeeperMessageCommitterTest {
         zookeeperMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", 0);
 
         //then
-        assertNull(curatorClient.checkExists().forPath("/consumers/g_b_sub1/offsets/g.b/0"));
+        assertNull(curatorClient.checkExists().forPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/0"));
     }
 
     private Subscription subscriptionForTopic(TopicName topicName) throws MalformedURLException {
         return subscription().withTopicName(topicName).withName("sub1").withEndpoint(EndpointAddress.of("http://touk.pl"))
-            .withSubscriptionPolicy(new SubscriptionPolicy(1, 1, false)).build();
+            .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build()).build();
     }
 
 

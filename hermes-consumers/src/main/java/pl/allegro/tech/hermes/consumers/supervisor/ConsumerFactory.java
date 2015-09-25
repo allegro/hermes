@@ -13,8 +13,8 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSuperviso
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
-import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import javax.inject.Inject;
 import java.util.concurrent.Semaphore;
@@ -70,7 +70,7 @@ public class ConsumerFactory {
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
 
         return new Consumer(
-            messageReceiverFactory.createMessageReceiver(topic.getContentType(), subscription),
+            messageReceiverFactory.createMessageReceiver(topic, subscription),
             hermesMetrics,
             subscription,
             consumerRateLimiter,
@@ -78,7 +78,8 @@ public class ConsumerFactory {
             consumerMessageSenderFactory.create(subscription, consumerRateLimiter, subscriptionOffsetCommitQueues, inflightSemaphore),
             inflightSemaphore,
             trackers,
-            messageConverterFactory.create(topic.getContentType(), topic.getMessageSchema()));
+            messageConverterFactory.create(topic.getContentType()),
+            topic);
     }
 
 }
