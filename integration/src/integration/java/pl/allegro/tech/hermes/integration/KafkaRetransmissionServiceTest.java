@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
@@ -47,22 +48,22 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
     @Unreliable
     public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
         // given
-        TopicName topicName = new TopicName("resetOffsetGroup", "topic");
         String subscription = "subscription";
 
-        operations.buildSubscription(topicName, subscription, HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("resetOffsetGroup", "topic");
+        operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
 
-        sendMessagesOnTopic(topicName.qualifiedName(), 4);
+        sendMessagesOnTopic(topic.getQualifiedName(), 4);
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         Thread.sleep(1000);
-        sendMessagesOnTopic(topicName.qualifiedName(), 2);
+        sendMessagesOnTopic(topic.getQualifiedName(), 2);
         wait.untilConsumerCommitsOffset();
 
         // when
         remoteService.expectMessages(simpleMessages(2));
-        Response response = endpoints.subscription().retransmit(topicName.qualifiedName(), subscription, false, dateTime);
-        wait.untilSubscriptionEndsReiteration(topicName, subscription);
+        Response response = endpoints.subscription().retransmit(topic.getQualifiedName(), subscription, false, dateTime);
+        wait.untilSubscriptionEndsReiteration(topic, subscription);
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);
@@ -72,19 +73,19 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
     @Test
     public void shouldMoveOffsetInDryRunMode() throws InterruptedException {
         // given
-        TopicName topicName = new TopicName("resetOffsetGroup", "topicDryRun");
         String subscription = "subscription";
 
-        operations.buildSubscription(topicName, subscription, HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("resetOffsetGroup", "topicDryRun");
+        operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
 
-        sendMessagesOnTopic(topicName.qualifiedName(), 4);
+        sendMessagesOnTopic(topic.getQualifiedName(), 4);
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        sendMessagesOnTopic(topicName.qualifiedName(), 2);
+        sendMessagesOnTopic(topic.getQualifiedName(), 2);
         wait.untilConsumerCommitsOffset();
 
         // when
-        Response response = endpoints.subscription().retransmit(topicName.qualifiedName(), subscription, true, dateTime);
+        Response response = endpoints.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);

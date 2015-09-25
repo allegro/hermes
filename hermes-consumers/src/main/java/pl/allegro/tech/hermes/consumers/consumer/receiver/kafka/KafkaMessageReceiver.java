@@ -10,7 +10,7 @@ import kafka.message.MessageAndMetadata;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.time.Clock;
@@ -37,12 +37,12 @@ public class KafkaMessageReceiver implements MessageReceiver {
         this.readingTimer = readingTimer;
         this.clock = clock;
 
-        KafkaTopicName topicName = kafkaNamesMapper.toKafkaTopicName(topic);
-        Map<String, Integer> topicCountMap = ImmutableMap.of(topicName.asString(), kafkaStreamCount);
+        KafkaTopic topicName = kafkaNamesMapper.toKafkaTopicName(topic);
+        Map<String, Integer> topicCountMap = ImmutableMap.of(topicName.name(), kafkaStreamCount);
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumerConnector.createMessageStreams(
                 topicCountMap
         );
-        KafkaStream<byte[], byte[]> stream = consumerMap.get(topicName.asString()).get(0);
+        KafkaStream<byte[], byte[]> stream = consumerMap.get(topicName.name()).get(0);
         iterator = stream.iterator();
     }
 

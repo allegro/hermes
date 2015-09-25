@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
@@ -19,14 +20,14 @@ public class UndeliveredLogTest extends IntegrationTest {
     @Test
     public void shouldLogUndeliveredMessage() {
         // given
-        operations.buildTopic("logUndelivered", "topic");
+        Topic topic = operations.buildTopic("logUndelivered", "topic");
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
                 .withTrackingEnabled(true)
                 .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(0).build())
                 .build();
 
-        operations.createSubscription("logUndelivered", "topic", subscription);
+        operations.createSubscription(topic, subscription);
 
         // when
         publisher.publish("logUndelivered.topic", TestMessage.simple().body());

@@ -5,10 +5,10 @@ import org.assertj.core.api.AbstractAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,10 +23,9 @@ public class ZookeeperAssertion extends AbstractAssert<ZookeeperAssertion, Curat
         this.kafkaNamesMapper = kafkaNamesMapper;
     }
 
-    public void offsetsAreNotRetracted(String group, String topic, String subscription, int partitions, int offset) {
-        TopicName topicName = new TopicName(group, topic);
-        ConsumerGroupId kafkaGroupId = kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription));
-        KafkaTopicName kafkaTopic = kafkaNamesMapper.toKafkaTopicName(topicName);
+    public void offsetsAreNotRetracted(Topic topic, String subscription, int partitions, int offset) {
+        ConsumerGroupId kafkaGroupId = kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription));
+        KafkaTopic kafkaTopic = kafkaNamesMapper.toKafkaTopicName(topic);
 
         for (int i = 0; i < 200; i++) {
             try {
@@ -40,7 +39,7 @@ public class ZookeeperAssertion extends AbstractAssert<ZookeeperAssertion, Curat
         }
     }
 
-    private long offsetValue(ConsumerGroupId groupId, KafkaTopicName topic, int partition) throws Exception {
+    private long offsetValue(ConsumerGroupId groupId, KafkaTopic topic, int partition) throws Exception {
         String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(groupId, topic, partition);
         return Long.valueOf(new String(actual.getData().forPath(offsetPath)));
     }

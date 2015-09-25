@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
@@ -58,11 +58,11 @@ public class KafkaRetransmissionService implements RetransmissionService {
                                                             long timestamp, boolean dryRun) {
 
         List<PartitionOffset> partitionOffsetList = new ArrayList<>();
-        KafkaTopicName kafkaTopicName = kafkaNamesMapper.toKafkaTopicName(topic);
-        List<Integer> partitionsIds = brokerStorage.readPartitionsIds(kafkaTopicName.asString());
+        KafkaTopic kafkaTopic = kafkaNamesMapper.toKafkaTopicName(topic);
+        List<Integer> partitionsIds = brokerStorage.readPartitionsIds(kafkaTopic.name());
 
         for (Integer partitionId : partitionsIds) {
-            SimpleConsumer consumer = createSimpleConsumer(kafkaTopicName, partitionId);
+            SimpleConsumer consumer = createSimpleConsumer(kafkaTopic, partitionId);
             long offset = getLastOffset(consumer, topicRepository.getTopicDetails(topic), partitionId, timestamp);
             partitionOffsetList.add(new PartitionOffset(offset, partitionId));
             if (!dryRun) {
@@ -73,8 +73,8 @@ public class KafkaRetransmissionService implements RetransmissionService {
         return partitionOffsetList;
     }
 
-    private SimpleConsumer createSimpleConsumer(KafkaTopicName kafkaTopicName, int partition) {
-        Integer leader = brokerStorage.readLeaderForPartition(new TopicAndPartition(kafkaTopicName.asString(), partition));
+    private SimpleConsumer createSimpleConsumer(KafkaTopic kafkaTopic, int partition) {
+        Integer leader = brokerStorage.readLeaderForPartition(new TopicAndPartition(kafkaTopic.name(), partition));
 
         return simpleConsumerPool.get(leader);
     }
@@ -99,7 +99,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
     }
 
     private long getOffset(SimpleConsumer simpleConsumer, Topic topic, int partition, long whichTime) {
-        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaNamesMapper.toKafkaTopicName(topic).asString(), partition);
+        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaNamesMapper.toKafkaTopicName(topic).name(), partition);
 
         Map<TopicAndPartition, PartitionOffsetRequestInfo> requestInfo = new HashMap<>();
         requestInfo.put(topicAndPartition, new PartitionOffsetRequestInfo(whichTime, 1));

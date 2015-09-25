@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integration;
 
-import net.javacrumbs.jsonunit.core.Option;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -40,12 +39,12 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldPublishAvroAndConsumeJsonMessage() throws InterruptedException, ExecutionException, TimeoutException, IOException {
         // given
-        operations.buildTopic(topic()
+        Topic topic = operations.buildTopic(topic()
                 .withName("avro.topic")
                 .withValidation(true)
                 .withMessageSchema(user.getSchema().toString())
                 .withContentType(AVRO).build());
-        operations.createSubscription("avro", "topic", "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         // when
         Response response = publisher.publish("avro.topic", user.create("Bob", 50, "blue"));

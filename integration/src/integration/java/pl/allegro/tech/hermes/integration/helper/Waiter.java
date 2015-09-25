@@ -8,10 +8,7 @@ import kafka.common.ErrorMapping;
 import kafka.javaapi.ConsumerMetadataResponse;
 import kafka.network.BlockingChannel;
 import org.apache.curator.framework.CuratorFramework;
-import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
-import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
@@ -48,7 +45,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         untilZookeeperNodeDeletion(path, kafkaZookeeper);
     }
 
-    public void untilZookeeperNodeCreation(final String path) {
+    public void untilHermesZookeeperNodeCreation(final String path) {
         untilZookeeperNodeCreation(path, zookeeper);
     }
 
@@ -57,49 +54,49 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     public void untilTopicDetailsAreCreated(TopicName topicName) {
-        untilZookeeperNodeCreation(zookeeperPaths.topicPath(topicName));
+        untilHermesZookeeperNodeCreation(zookeeperPaths.topicPath(topicName));
     }
 
     public void untilSubscriptionMetricsIsCreated(TopicName topicName, String subscriptionName) {
-        untilZookeeperNodeCreation(zookeeperPaths.subscriptionMetricsPath(topicName, subscriptionName));
+        untilHermesZookeeperNodeCreation(zookeeperPaths.subscriptionMetricsPath(topicName, subscriptionName));
     }
 
     public void untilSubscriptionMetricsIsRemoved(TopicName topicName, String subscriptionName) {
         untilZookeeperNodeDeletion(zookeeperPaths.subscriptionMetricsPath(topicName, subscriptionName), zookeeper);
     }
 
-    public void untilSubscriptionIsDeactivated(String group, String topic, String subscription) {
-        untilKafkaZookeeperNodeEmptied(subscriptionConsumerPath(group, topic, subscription), 60);
+    public void untilSubscriptionIsDeactivated(Topic topic, String subscription) {
+        untilKafkaZookeeperNodeEmptied(subscriptionConsumerPath(topic, subscription), 60);
     }
 
-    public void untilSubscriptionIsActivated(String group, String topic, String subscription) {
-        untilSubscriptionHasState(group, topic, subscription, Subscription.State.ACTIVE);
+    public void untilSubscriptionIsActivated(Topic topic, String subscription) {
+        untilSubscriptionHasState(topic, subscription, Subscription.State.ACTIVE);
     }
 
-    public void untilSubscriptionIsSuspended(String group, String topic, String subscription) {
-        untilSubscriptionHasState(group, topic, subscription, Subscription.State.SUSPENDED);
+    public void untilSubscriptionIsSuspended(Topic topic, String subscription) {
+        untilSubscriptionHasState(topic, subscription, Subscription.State.SUSPENDED);
     }
 
-    private void untilSubscriptionHasState(String group, String topic, String subscription, Subscription.State state) {
+    private void untilSubscriptionHasState(Topic topic, String subscription, Subscription.State state) {
         waitAtMost(adjust(Duration.TWO_MINUTES)).until(() ->
-                        endpoints.subscription().get(group + "." + topic, subscription).getState().equals(state)
+                        endpoints.subscription().get(topic.getQualifiedName(), subscription).getState().equals(state)
         );
     }
 
-    public void untilSubscriptionEndsReiteration(TopicName topicName, String subscription) {
-        untilSubscriptionHasState(topicName.getGroupName(), topicName.getName(), subscription, Subscription.State.ACTIVE);
+    public void untilSubscriptionEndsReiteration(Topic topic, String subscription) {
+        untilSubscriptionHasState(topic, subscription, Subscription.State.ACTIVE);
     }
 
-    public void untilTopicRemovedInKafka(TopicName topicName) {
-        untilZookeeperNodeDeletion(KafkaZookeeperPaths.topicPath(kafkaNamesMapper.toKafkaTopicName(topicName)), kafkaZookeeper);
+    public void untilTopicRemovedInKafka(Topic topic) {
+        untilKafkaZookeeperNodeDeletion(KafkaZookeeperPaths.topicPath(kafkaNamesMapper.toKafkaTopicName(topic)));
     }
 
-    public void untilAllOffsetsEqual(final String group, final String topic, final String subscription, final int offset) {
+    public void untilAllOffsetsEqual(Topic topic, final String subscription, final int offset) {
         waitAtMost(adjust(30), TimeUnit.SECONDS).until(() -> {
-            List<String> partitions = zookeeper.getChildren().forPath(subscriptionOffsetPath(group, topic, subscription));
+            List<String> partitions = zookeeper.getChildren().forPath(subscriptionOffsetPath(topic, subscription));
             for (String partition : partitions) {
                 Long currentOffset = Long.valueOf(new String(
-                        zookeeper.getData().forPath(subscriptionOffsetPath(group, topic, subscription) + "/" + partition)));
+                        zookeeper.getData().forPath(subscriptionOffsetPath(topic, subscription) + "/" + partition)));
                 if (currentOffset != offset) {
                     return false;
                 }
@@ -108,9 +105,9 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         });
     }
 
-    public void untilConsumersRebalance(final String group, final String topic, final String subscription, final int consumerCount) {
+    public void untilConsumersRebalance(Topic topic, final String subscription, final int consumerCount) {
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
-            List<String> children = zookeeper.getChildren().forPath(subscriptionIdsPath(group, topic, subscription));
+            List<String> children = zookeeper.getChildren().forPath(subscriptionIdsPath(topic, subscription));
             return children != null && children.size() == consumerCount;
         });
     }
@@ -151,21 +148,18 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> collection.find().count() > 0);
     }
 
-    private String subscriptionConsumerPath(String group, String topic, String subscription) {
-        TopicName topicName = new TopicName(group, topic);
-        return KafkaZookeeperPaths.ownersPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription)),
-                kafkaNamesMapper.toKafkaTopicName(topicName));
+    private String subscriptionConsumerPath(Topic topic, String subscription) {
+        return KafkaZookeeperPaths.ownersPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription)),
+                kafkaNamesMapper.toKafkaTopicName(topic));
     }
 
-    private String subscriptionIdsPath(String group, String topic, String subscription) {
-        TopicName topicName = new TopicName(group, topic);
-        return KafkaZookeeperPaths.idsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription)));
+    private String subscriptionIdsPath(Topic topic, String subscription) {
+        return KafkaZookeeperPaths.idsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription)));
     }
 
-    private String subscriptionOffsetPath(String group, String topic, String subscription) {
-        TopicName topicName = new TopicName(group, topic);
-        return KafkaZookeeperPaths.offsetsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription)),
-                kafkaNamesMapper.toKafkaTopicName(topicName));
+    private String subscriptionOffsetPath(Topic topic, String subscription) {
+        return KafkaZookeeperPaths.offsetsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription)),
+                kafkaNamesMapper.toKafkaTopicName(topic));
     }
 
     private void sleep(int seconds) {

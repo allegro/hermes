@@ -106,7 +106,7 @@ public class BrokerOffsetsRepository {
 
     private Map<TopicAndPartition, OffsetAndMetadata> createOffset(Subscription subscription, PartitionOffset partitionOffset) {
         Map<TopicAndPartition, OffsetAndMetadata> offset = new LinkedHashMap<>();
-        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()).asString(), partitionOffset.getPartition());
+        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()).name(), partitionOffset.getPartition());
         offset.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset(), EMPTY_METADATA, clock.getTime()));
         return offset;
     }
@@ -117,7 +117,7 @@ public class BrokerOffsetsRepository {
         BlockingChannel channel = blockingChannelFactory.create(groupId);
         channel.connect();
 
-        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()).asString(), partitionId);
+        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()).name(), partitionId);
         List<TopicAndPartition> partitions = Lists.newArrayList(topicAndPartition);
 
         OffsetFetchRequest fetchRequest = new OffsetFetchRequest(

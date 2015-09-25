@@ -5,6 +5,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.env.ConsumersStarter;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
@@ -21,10 +22,6 @@ public class MultipleKafkaTest extends IntegrationTest {
 
     private final int frontendPort = 6793;
     private final String frontendUrl = "http://localhost:" + frontendPort + "/";
-    private final Subscription subscription = new Subscription.Builder()
-            .withTopicName("secondaryKafka", "topic")
-            .withName("subscription")
-            .build();
 
     private HermesPublisher publisher;
     private RemoteServiceEndpoint remoteService;
@@ -52,7 +49,8 @@ public class MultipleKafkaTest extends IntegrationTest {
     @Test
     public void shouldPublishAndConsumeThroughSecondaryKafka() throws Exception {
         // given
-        operations.buildSubscription(subscription.getTopicName(), subscription.getName(), HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("secondaryKafka", "topic");
+        Subscription subscription = operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         wait.waitUntilConsumerMetadataAvailable(subscription, "localhost", SECONDARY_KAFKA_PORT);
         remoteService.expectMessages("message");
 
