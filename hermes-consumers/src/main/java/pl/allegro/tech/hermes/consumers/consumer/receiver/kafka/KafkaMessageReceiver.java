@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.time.Clock;
@@ -28,6 +29,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
     private final MessageContentWrapper contentWrapper;
     private final Timer readingTimer;
     private final Clock clock;
+    private final KafkaTopic kafkaTopic;
 
     public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, MessageContentWrapper contentWrapper,
                                 Timer readingTimer, Clock clock, KafkaNamesMapper kafkaNamesMapper, Integer kafkaStreamCount) {
@@ -37,7 +39,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
         this.readingTimer = readingTimer;
         this.clock = clock;
 
-        KafkaTopic kafkaTopic = kafkaNamesMapper.toKafkaTopicName(topic);
+        this.kafkaTopic = kafkaNamesMapper.toKafkaTopicName(topic);
         Map<String, Integer> topicCountMap = ImmutableMap.of(kafkaTopic.name(), kafkaStreamCount);
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumerConnector.createMessageStreams(
                 topicCountMap
@@ -54,12 +56,11 @@ public class KafkaMessageReceiver implements MessageReceiver {
 
             return new Message(
                     unwrappedContent.getMessageMetadata().getId(),
-                    message.offset(),
-                    message.partition(),
                     topic.getQualifiedName(),
                     unwrappedContent.getContent(),
                     unwrappedContent.getMessageMetadata().getTimestamp(),
-                    clock.getTime());
+                    clock.getTime(),
+                    new PartitionOffset(kafkaTopic, message.offset(), message.partition()));
 
         } catch (ConsumerTimeoutException consumerTimeoutException) {
             throw new MessageReceivingTimeoutException("No messages received", consumerTimeoutException);

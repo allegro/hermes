@@ -58,9 +58,10 @@ public class KafkaRetransmissionService implements RetransmissionService {
         for (Integer partitionId : partitionsIds) {
             SimpleConsumer consumer = createSimpleConsumer(kafkaTopic, partitionId);
             long offset = getLastOffset(consumer, topic, partitionId, timestamp);
-            partitionOffsetList.add(new PartitionOffset(offset, partitionId));
+            PartitionOffset partitionOffset = new PartitionOffset(kafkaTopic, offset, partitionId);
+            partitionOffsetList.add(partitionOffset);
             if (!dryRun) {
-                subscriptionOffsetChange.setSubscriptionOffset(topic.getName(), subscription, brokersClusterName, partitionId, offset);
+                subscriptionOffsetChange.setSubscriptionOffset(topic.getName(), subscription, brokersClusterName, partitionOffset);
             }
         }
 

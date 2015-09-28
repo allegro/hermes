@@ -10,6 +10,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -50,7 +52,8 @@ public class DefaultErrorHandlerTest {
     @Mock
     private Subscription subscription;
 
-    private final Message message = new Message("id", OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), 213232L, 2132323L);
+    private final Message message = new Message("id", TOPIC_NAME, MESSAGE_CONTENT.getBytes(), 213232L, 2132323L,
+            new PartitionOffset(new KafkaTopic("kafka_topic"), OFFSET, PARTITION));
 
     @Mock
     private Clock clock;
@@ -76,7 +79,7 @@ public class DefaultErrorHandlerTest {
     public void shouldDecrementOffsetWhenExhaustedRetries() {
         defaultErrorHandler.handleDiscarded(message, subscription, failedResult(new InternalProcessingException("oops")));
 
-        verify(offsetHelper).decrement(PARTITION, OFFSET);
+        verify(offsetHelper).remove(message);
     }
 
     @Test

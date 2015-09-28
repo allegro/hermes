@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.common.kafka;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.Objects;
@@ -12,11 +15,17 @@ public class KafkaTopic {
 
     private final Topic.ContentType contentType;
 
+    @JsonCreator
+    public KafkaTopic(@JsonProperty("name") String name) {
+        this(name, null);
+    }
+
     KafkaTopic(String name, Topic.ContentType contentType) {
         this.name = checkNotNull(name);
         this.contentType = contentType;
     }
 
+    @JsonGetter(value = "name")
     public String name() {
         return name;
     }

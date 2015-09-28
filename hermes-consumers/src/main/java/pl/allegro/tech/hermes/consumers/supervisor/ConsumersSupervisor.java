@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -34,6 +35,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumersSupervisor.class);
 
     private final SubscriptionRepository subscriptionRepository;
+    private final TopicRepository topicRepository;
     private final SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
 
     private final ConsumersExecutorService executor;
@@ -52,6 +54,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
     @Inject
     public ConsumersSupervisor(ConfigFactory configFactory,
                                SubscriptionRepository subscriptionRepository,
+                               TopicRepository topicRepository,
                                SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
                                ConsumersExecutorService executor,
                                ConsumerFactory consumerFactory,
@@ -61,6 +64,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
                                ZookeeperAdminCache adminCache,
                                UndeliveredMessageLogPersister undeliveredMessageLogPersister) {
         this.subscriptionRepository = subscriptionRepository;
+        this.topicRepository = topicRepository;
         this.subscriptionOffsetChangeIndicator = subscriptionOffsetChangeIndicator;
         this.executor = executor;
         this.consumerFactory = consumerFactory;
@@ -234,7 +238,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
             deleteConsumerIfExists(subscriptionName, false);
 
             PartitionOffsets offsets = subscriptionOffsetChangeIndicator.getSubscriptionOffsets(
-                    subscriptionName.getTopicName(), subscriptionName.getName(), brokersClusterName);
+                    topicRepository.getTopicDetails(subscriptionName.getTopicName()), subscriptionName.getName(), brokersClusterName);
 
             for (PartitionOffset partitionOffset : offsets) {
                 for (OffsetsStorage s: offsetsStorages) {

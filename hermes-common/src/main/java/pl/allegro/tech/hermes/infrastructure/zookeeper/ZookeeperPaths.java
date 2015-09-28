@@ -3,12 +3,14 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 import com.google.common.base.Joiner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 
 public class ZookeeperPaths {
 
     public static final String TOPICS_PATH = "topics";
     public static final String GROUPS_PATH = "groups";
     public static final String SUBSCRIPTIONS_PATH = "subscriptions";
+    public static final String KAFKA_TOPICS_PATH = "kafka_topics";
     public static final String URL_SEPARATOR = "/";
     public static final String CONSUMERS_PATH = "consumers";
     public static final String METRICS_PATH = "metrics";
@@ -72,12 +74,16 @@ public class ZookeeperPaths {
         return subscriptionPath(topicName, subscriptionName, METRICS_PATH, metricName);
     }
 
-    public String offsetPath(TopicName topicName, String subscriptionName, String brokersClusterName, int partitionId) {
-        return Joiner.on(URL_SEPARATOR).join(offsetsPath(topicName, subscriptionName, brokersClusterName), partitionId);
+    public String offsetPath(TopicName topicName, String subscriptionName, KafkaTopic kafkaTopic, String brokersClusterName, int partitionId) {
+        return Joiner.on(URL_SEPARATOR).join(offsetsPath(topicName, subscriptionName, kafkaTopic, brokersClusterName), partitionId);
     }
 
-    public String offsetsPath(TopicName topicName, String subscriptionName, String brokersClusterName) {
-        return Joiner.on(URL_SEPARATOR).join(subscriptionPath(topicName, subscriptionName), "offset", brokersClusterName);
+    public String offsetsPath(TopicName topicName, String subscriptionName, KafkaTopic kafkaTopic, String brokersClusterName) {
+        return Joiner.on(URL_SEPARATOR).join(subscribedKafkaTopicsPath(topicName, subscriptionName), kafkaTopic.name(), "offset", brokersClusterName);
+    }
+
+    public String subscribedKafkaTopicsPath(TopicName topicName, String subscriptionName) {
+        return Joiner.on(URL_SEPARATOR).join(subscriptionPath(topicName, subscriptionName), KAFKA_TOPICS_PATH);
     }
 
     public String consumersPath() {

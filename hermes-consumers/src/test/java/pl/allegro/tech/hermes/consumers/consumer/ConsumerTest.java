@@ -11,6 +11,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
@@ -32,10 +34,11 @@ import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscription
 public class ConsumerTest {
 
     private static final Message MESSAGE = new Message(
-            "id", 10, 0,
+            "id",
             "topic", "{\"username\":\"ala\"}".getBytes(),
             122424L,
-            1224245L);
+            1224245L,
+            new PartitionOffset(new KafkaTopic("kafka_topic"), 10, 0));
 
     private static final Subscription SUBSCRIPTION = Subscription.Builder.subscription()
             .withTopicName(new TopicName("group", "topic"))

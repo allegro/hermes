@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.management.api;
 
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
@@ -40,6 +42,9 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 @Path("topics/{topicName}/subscriptions")
 public class SubscriptionsEndpoint {
+
+    private static final Logger logger = LoggerFactory.getLogger(SubscriptionsEndpoint.class);
+
 
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
@@ -184,13 +189,20 @@ public class SubscriptionsEndpoint {
                                @DefaultValue("false") @QueryParam("dryRun") boolean dryRun,
                                @NotEmpty String formattedTime) {
 
-        MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
-            topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
-            subscriptionName,
-            timeFormatter.parse(formattedTime),
-            dryRun);
+        try {
 
-        return Response.status(OK).entity(summary).build();
+            MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
+                    topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
+                    subscriptionName,
+                    timeFormatter.parse(formattedTime),
+                    dryRun);
+
+            return Response.status(OK).entity(summary).build();
+
+        } catch (Exception e) {
+            logger.warn("bad happened", e);
+        }
+        return null;
     }
 
     @GET

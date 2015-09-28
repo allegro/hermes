@@ -2,9 +2,9 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
-import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 
 import javax.inject.Inject;
 
@@ -19,7 +19,7 @@ public class BrokerMessageCommitter implements MessageCommitter {
 
     @Override
     public void commitOffset(Subscription subscription, PartitionOffset partitionOffset) throws Exception {
-        offsetsRepository.save(subscription, new PartitionOffset(partitionOffset.getOffset() + 1, partitionOffset.getPartition()));
+        offsetsRepository.save(subscription, partitionOffset.withIncrementedOffset());
     }
 
     @Override

@@ -12,7 +12,7 @@ public class OffsetCommitQueueMonitor {
     private static final Logger LOGGER = LoggerFactory.getLogger(OffsetCommitQueueMonitor.class);
 
     private final Subscription subscription;
-    private final Integer partition;
+    private final TopicPartition topicPartition;
     private final HermesMetrics hermesMetrics;
     private final Clock clock;
 
@@ -24,9 +24,10 @@ public class OffsetCommitQueueMonitor {
     private final long offsetCommitQueueAlertSize;
     private final long offsetCommitAdditionalIdlePeriodAlert;
 
-    public OffsetCommitQueueMonitor(Subscription subscription, Integer partition, HermesMetrics hermesMetrics, Clock clock, int offsetCommitAdditionalIdlePeriodAlert, int offsetCommitQueueAlertSize) {
+    public OffsetCommitQueueMonitor(Subscription subscription, TopicPartition topicPartition, HermesMetrics hermesMetrics,
+                                    Clock clock, int offsetCommitAdditionalIdlePeriodAlert, int offsetCommitQueueAlertSize) {
         this.subscription = subscription;
-        this.partition = partition;
+        this.topicPartition = topicPartition;
         this.hermesMetrics = hermesMetrics;
         this.clock = clock;
 
@@ -40,7 +41,8 @@ public class OffsetCommitQueueMonitor {
         if (offset != null && firstOffset == offset) {
             if (alertSizeExceeded(size) || idlePeriodDurationAlert()) {
                 reportIdlenessPeriod();
-                LOGGER.warn("Commit queue idle for partition {} / {}. Current size {}", subscription.getName(), partition, size);
+                LOGGER.warn("Commit queue idle for partition {} of kafka topic {} and subscription {}. Current size {}",
+                        topicPartition.getPartition(), topicPartition.getTopic(), subscription.getName(), size);
             }
         } else {
             this.offset = firstOffset;
@@ -63,15 +65,19 @@ public class OffsetCommitQueueMonitor {
     }
 
     private void removeCounter() {
-        hermesMetrics.removeCounterForOffsetCommitIdlePeriod(subscription, partition);
+        hermesMetrics.removeCounterForOffsetCommitIdlePeriod(subscription, topicPartition.getTopic(), topicPartition.getPartition());
         metricsDeltaCalculator.clear();
     }
 
     private void reportIdlenessPeriod() {
         long idlenessPeriod = currentTimestampSec() - offsetChangeTimestampSec;
-        hermesMetrics.counterForOffsetCommitIdlePeriod(subscription, partition).inc(
-                metricsDeltaCalculator.calculateDelta(subscription.getId() + "_" + partition, idlenessPeriod)
+        hermesMetrics.counterForOffsetCommitIdlePeriod(subscription, topicPartition.getTopic(), topicPartition.getPartition()).inc(
+                metricsDeltaCalculator.calculateDelta(deltaKey(), idlenessPeriod)
         );
+    }
+
+    private String deltaKey() {
+        return subscription.getId() + "_" + topicPartition.getTopic() + "_" + topicPartition.getPartition();
     }
 
     private long currentTimestampSec() {

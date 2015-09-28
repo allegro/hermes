@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BlockingChannelFactory;
@@ -55,7 +56,7 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
     @Test
     public void shouldCommitOffset() throws Exception {
         //given
-        PartitionOffset partitionOffset = new PartitionOffset(10, 0);
+        PartitionOffset partitionOffset = new PartitionOffset(new KafkaTopic("kafka_topic"), 10, 0);
 
         //when
         offsetStorage.save(subscription, partitionOffset);

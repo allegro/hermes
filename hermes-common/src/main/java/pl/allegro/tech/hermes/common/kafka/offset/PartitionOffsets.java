@@ -13,6 +13,11 @@ public class PartitionOffsets implements Iterable<PartitionOffset> {
         return this;
     }
 
+    public PartitionOffsets addAll(PartitionOffsets offsets) {
+        offsets.forEach(this::add);
+        return this;
+    }
+
     @Override
     public Iterator<PartitionOffset> iterator() {
         return offsets.values().iterator();

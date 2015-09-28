@@ -6,17 +6,17 @@ import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SubscriptionOffsetCommitQueues {
 
-    private final LoadingCache<Integer, OffsetCommitQueue> queues;
+    private final LoadingCache<TopicPartition, OffsetCommitQueue> queues;
 
     public SubscriptionOffsetCommitQueues(Subscription subscription, HermesMetrics hermesMetrics, Clock clock, ConfigFactory configFactory) {
         this.queues = CacheBuilder.newBuilder()
@@ -24,22 +24,23 @@ public class SubscriptionOffsetCommitQueues {
     }
 
     public void put(Message message) {
-        OffsetCommitQueue helper = queues.getUnchecked(message.getPartition());
+        OffsetCommitQueue helper = queues.getUnchecked(new TopicPartition(message.getKafkaTopic(), message.getPartition()));
         helper.put(message.getOffset());
     }
 
-    public void decrement(int partition, long offset) {
-        OffsetCommitQueue offsetCommitQueue = queues.getUnchecked(partition);
-        offsetCommitQueue.markDelivered(offset);
+    public void remove(Message message) {
+        OffsetCommitQueue offsetCommitQueue = queues.getUnchecked(new TopicPartition(message.getKafkaTopic(), message.getPartition()));
+        offsetCommitQueue.markDelivered(message.getOffset());
     }
 
     public List<PartitionOffset> getOffsetsToCommit() {
         List<PartitionOffset> offsets = new ArrayList<>();
-        queues.asMap().forEach((partition, queue) -> queue.poll().ifPresent(offset -> offsets.add(new PartitionOffset(offset, partition))));
+        queues.asMap().forEach((topicAndPartition, queue) -> queue.poll().ifPresent(offset ->
+                offsets.add(new PartitionOffset(topicAndPartition.getTopic(), offset, topicAndPartition.getPartition()))));
         return offsets;
     }
 
-    private static final class OffsetCommitQueueLoader extends CacheLoader<Integer, OffsetCommitQueue> {
+    private static final class OffsetCommitQueueLoader extends CacheLoader<TopicPartition, OffsetCommitQueue> {
 
         private final Subscription subscription;
         private final HermesMetrics hermesMetrics;
@@ -54,10 +55,10 @@ public class SubscriptionOffsetCommitQueues {
         }
 
         @Override
-        public OffsetCommitQueue load(Integer partition) throws Exception {
-           return new OffsetCommitQueue(new OffsetCommitQueueMonitor(subscription, partition, hermesMetrics, clock,
-                   configFactory.getIntProperty(Configs.CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD),
-                   configFactory.getIntProperty(Configs.CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE)));
+        public OffsetCommitQueue load(TopicPartition topicPartition) throws Exception {
+            return new OffsetCommitQueue(new OffsetCommitQueueMonitor(subscription, topicPartition, hermesMetrics, clock,
+                    configFactory.getIntProperty(Configs.CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD),
+                    configFactory.getIntProperty(Configs.CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE)));
         }
     }
 

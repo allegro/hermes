@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.consumers.consumer.interpolation;
 
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.net.URI;
@@ -11,8 +13,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MessageBodyInterpolatorTest {
 
     private static final Message SAMPLE_MSG = new Message(
-            "id", 0, 0, "some.topic", "{\"a\": \"b\"}".getBytes(), 214312123L, 2143121233L
+            "id", "some.topic", "{\"a\": \"b\"}".getBytes(), 214312123L, 2143121233L,
+            new PartitionOffset(new KafkaTopic("kafka_topic"), 0, 0)
     );
+
+    private static final KafkaTopic KAFKA_TOPIC = new KafkaTopic("kafka_topic");
 
     @Test
     public void willReturnURIAsIsIfNoTemplate() throws InterpolationException {
@@ -32,7 +37,8 @@ public class MessageBodyInterpolatorTest {
         EndpointAddress endpoint = EndpointAddress.of("http://some.endpoint.com/{some.object}");
         URI expectedEndpoint = URI.create("http://some.endpoint.com/100");
         String jsonMessage = "{\"some\": {\"object\": 100}}";
-        Message msg = new Message("id", 0, 0, "some.topic", jsonMessage.getBytes(), 121422L, 121423L);
+        Message msg = new Message("id", "some.topic", jsonMessage.getBytes(), 121422L, 121423L,
+                new PartitionOffset(new KafkaTopic("kafka_topic"), 0, 0));
 
         // when
         URI interpolated = new MessageBodyInterpolator().interpolate(endpoint, msg);
@@ -60,7 +66,8 @@ public class MessageBodyInterpolatorTest {
         EndpointAddress endpoint = EndpointAddress.of("http://some.endpoint.com/{some.object}?test={some.test}");
         URI expectedEndpoint = URI.create("http://some.endpoint.com/100?test=hello");
         String jsonMessage = "{\"some\": {\"object\": 100, \"test\": \"hello\"}}";
-        Message msg = new Message("id", 0, 0, "some.topic", jsonMessage.getBytes(), 12323L, 123234L);
+        Message msg = new Message("id", "some.topic", jsonMessage.getBytes(), 12323L, 123234L,
+                new PartitionOffset(new KafkaTopic("kafka_topic"), 0, 0));
 
 
         // when
@@ -94,7 +101,8 @@ public class MessageBodyInterpolatorTest {
         EndpointAddress endpoint = EndpointAddress.of("http://some.endpoint.com/{some.object}?test={some.test}");
         URI expectedEndpoint = URI.create("http://some.endpoint.com/100?test=hello");
         String jsonMessage = "{\"some\": {\"test\": \"hello\", \"object\": 100}}";
-        Message msg = new Message("id", 0, 0, "some.topic", jsonMessage.getBytes(), 1232443L, 12324434L);
+        Message msg = new Message("id", "some.topic", jsonMessage.getBytes(), 1232443L, 12324434L,
+                new PartitionOffset(KAFKA_TOPIC, 0, 0));
 
         // when
         URI interpolated = new MessageBodyInterpolator().interpolate(endpoint, msg);

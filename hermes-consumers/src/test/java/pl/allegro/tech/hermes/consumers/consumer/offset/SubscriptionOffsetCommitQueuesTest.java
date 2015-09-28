@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -21,6 +22,8 @@ public class SubscriptionOffsetCommitQueuesTest {
 
     private static final int FIRST_PARTITION = 0;
     private static final int SECOND_PARTITION = 1;
+    private static final KafkaTopic KAFKA_TOPIC = new KafkaTopic("kafka_topic");
+
     public static final String SOME_TOPIC = "topic";
 
     private Subscription subscription = Subscription.Builder.subscription()
@@ -63,7 +66,7 @@ public class SubscriptionOffsetCommitQueuesTest {
         List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
 
         // then
-        assertThat(offsets).containsOnlyOnce(new PartitionOffset(0, FIRST_PARTITION));
+        assertThat(offsets).containsOnlyOnce(new PartitionOffset(KAFKA_TOPIC, 0, FIRST_PARTITION));
     }
 
     @Test
@@ -87,7 +90,7 @@ public class SubscriptionOffsetCommitQueuesTest {
         List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
 
         // then
-        assertThat(offsets).containsOnly(new PartitionOffset(1, FIRST_PARTITION));
+        assertThat(offsets).containsOnly(new PartitionOffset(KAFKA_TOPIC, 1, FIRST_PARTITION));
     }
 
     @Test
@@ -100,7 +103,7 @@ public class SubscriptionOffsetCommitQueuesTest {
         List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
 
         // then
-        assertThat(offsets).containsExactly(new PartitionOffset(1, FIRST_PARTITION), new PartitionOffset(2, SECOND_PARTITION));
+        assertThat(offsets).containsExactly(new PartitionOffset(KAFKA_TOPIC, 1, FIRST_PARTITION), new PartitionOffset(KAFKA_TOPIC, 2, SECOND_PARTITION));
     }
 
     @Test
@@ -131,7 +134,7 @@ public class SubscriptionOffsetCommitQueuesTest {
 
         //then
         List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
-        assertThat(offsets).containsOnly(new PartitionOffset(2, FIRST_PARTITION));
+        assertThat(offsets).containsOnly(new PartitionOffset(KAFKA_TOPIC, 2, FIRST_PARTITION));
     }
 
     private Partition partition(final int partition) {
@@ -148,17 +151,21 @@ public class SubscriptionOffsetCommitQueuesTest {
 
         public Partition addOffsets(long... offsets) {
             for (long offset : offsets) {
-                subscriptionOffsetCommitQueues.put(new Message("id", offset, partition, SOME_TOPIC, new byte[partition],
-                        213123L, 2131234L));
+                subscriptionOffsetCommitQueues.put(messageWithPartitionOffset(offset));
             }
             return this;
         }
 
         private Partition finishOffsets(long... offsets) {
             for (long offset : offsets) {
-                subscriptionOffsetCommitQueues.decrement(partition, offset);
+                subscriptionOffsetCommitQueues.remove(messageWithPartitionOffset(offset));
             }
             return this;
+        }
+
+        private Message messageWithPartitionOffset(long offset) {
+            return new Message("id", SOME_TOPIC, new byte[partition],
+                    213123L, 2131234L, new PartitionOffset(KAFKA_TOPIC, offset, partition));
         }
     }
 }

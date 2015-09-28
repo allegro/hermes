@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
@@ -12,6 +13,8 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BrokerMessageCommitterTest {
+
+    private static final KafkaTopic KAFKA_TOPIC = new KafkaTopic("kafka_topic");
 
     @Mock
     private BrokerOffsetsRepository brokerOffsetsRepository;
@@ -27,9 +30,9 @@ public class BrokerMessageCommitterTest {
         BrokerMessageCommitter brokerMessageCommitter = new BrokerMessageCommitter(brokerOffsetsRepository);
 
         //when
-        brokerMessageCommitter.commitOffset(subscription, new PartitionOffset(offset, partition));
+        brokerMessageCommitter.commitOffset(subscription, new PartitionOffset(KAFKA_TOPIC, offset, partition));
 
         //then
-        verify(brokerOffsetsRepository).save(subscription, new PartitionOffset(offset + 1, partition));
+        verify(brokerOffsetsRepository).save(subscription, new PartitionOffset(KAFKA_TOPIC, offset + 1, partition));
     }
 }

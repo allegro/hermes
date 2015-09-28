@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
@@ -29,7 +30,7 @@ public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
         createOffset(subscription, 0, 100L);
 
         // when
-        offsetsStorage.setSubscriptionOffset(subscription, new PartitionOffset(50L, 0));
+        offsetsStorage.setSubscriptionOffset(subscription, new PartitionOffset(new KafkaTopic("kafka_topic"), 50L, 0));
 
         // then
         long offset = offsetsStorage.getSubscriptionOffset(subscription, 0);

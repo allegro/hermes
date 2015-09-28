@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
@@ -31,7 +33,8 @@ import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_
 @RunWith(MockitoJUnitRunner.class)
 public class JmsMessageSenderTest {
 
-    private static final Message SOME_MESSAGE = new Message("id", 0, 0, "topic", "aaaaaaaaaaaaaaaa".getBytes(), 1214323L, 12143234L);
+    private static final Message SOME_MESSAGE = new Message("id", "topic", "aaaaaaaaaaaaaaaa".getBytes(), 1214323L, 12143234L,
+            new PartitionOffset(new KafkaTopic("kafka_topic"), 0, 0));
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private JMSContext jmsContextMock;
