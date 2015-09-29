@@ -81,7 +81,7 @@ public class ZookeeperMessageCommitterTest {
         zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
 
         //when
-        zookeeperMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", 0);
+        zookeeperMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", KAFKA_TOPIC, 0);
 
         //then
         assertNull(curatorClient.checkExists().forPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/0"));

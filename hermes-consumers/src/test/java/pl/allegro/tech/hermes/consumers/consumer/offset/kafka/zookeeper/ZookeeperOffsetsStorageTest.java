@@ -27,18 +27,19 @@ public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
     @Test
     public void shouldSetOffset() throws Exception {
         // given
-        createOffset(subscription, 0, 100L);
+        KafkaTopic kafkaTopic = new KafkaTopic("kafka_topic");
+        createOffset(subscription, kafkaTopic, 0, 100L);
 
         // when
-        offsetsStorage.setSubscriptionOffset(subscription, new PartitionOffset(new KafkaTopic("kafka_topic"), 50L, 0));
+        offsetsStorage.setSubscriptionOffset(subscription, new PartitionOffset(kafkaTopic, 50L, 0));
 
         // then
-        long offset = offsetsStorage.getSubscriptionOffset(subscription, 0);
+        long offset = offsetsStorage.getSubscriptionOffset(subscription, kafkaTopic, 0);
         assertThat(offset).isEqualTo(50L);
     }
 
-    private void createOffset(Subscription subscription, int partitionId, Long offset) throws Exception {
-        String path = offsetsStorage.getPartitionOffsetPath(subscription, partitionId);
+    private void createOffset(Subscription subscription, KafkaTopic kafkaTopic, int partitionId, Long offset) throws Exception {
+        String path = offsetsStorage.getPartitionOffsetPath(subscription, kafkaTopic, partitionId);
         zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
         zookeeperClient.setData().forPath(path, offset.toString().getBytes());
     }

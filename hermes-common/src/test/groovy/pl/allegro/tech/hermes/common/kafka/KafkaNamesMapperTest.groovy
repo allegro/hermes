@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.common.kafka
 
-import pl.allegro.tech.hermes.api.TopicName
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import static pl.allegro.tech.hermes.api.Topic.Builder.topic
 
 class KafkaNamesMapperTest extends Specification {
 
@@ -12,7 +13,7 @@ class KafkaNamesMapperTest extends Specification {
         def mapper = new KafkaNamesMapper(namespace)
 
         expect:
-        mapper.toKafkaTopicName(TopicName.fromQualifiedName(topicName)) == KafkaTopic.valueOf(kafkaTopicName)
+        mapper.toKafkaTopicName(topic().withName(topicName).build()) == new KafkaTopic(kafkaTopicName)
 
         where:
         namespace | topicName     | kafkaTopicName

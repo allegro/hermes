@@ -43,9 +43,6 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 @Path("topics/{topicName}/subscriptions")
 public class SubscriptionsEndpoint {
 
-    private static final Logger logger = LoggerFactory.getLogger(SubscriptionsEndpoint.class);
-
-
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
     private final ApiPreconditions preconditions;
@@ -189,20 +186,13 @@ public class SubscriptionsEndpoint {
                                @DefaultValue("false") @QueryParam("dryRun") boolean dryRun,
                                @NotEmpty String formattedTime) {
 
-        try {
+        MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
+                topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
+                subscriptionName,
+                timeFormatter.parse(formattedTime),
+                dryRun);
 
-            MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
-                    topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
-                    subscriptionName,
-                    timeFormatter.parse(formattedTime),
-                    dryRun);
-
-            return Response.status(OK).entity(summary).build();
-
-        } catch (Exception e) {
-            logger.warn("bad happened", e);
-        }
-        return null;
+        return Response.status(OK).entity(summary).build();
     }
 
     @GET

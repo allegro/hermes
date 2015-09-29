@@ -18,13 +18,14 @@ import pl.allegro.tech.hermes.integration.env.SharedServices;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
 public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
 
     private final String kafkaHost = "localhost";
-    private final String groupName = "brokerMessageCommiter";
-    private final String topicName = "topic";
+    private final Topic topic = topic().withName("brokerMessageCommiter", "topic").build();
     private final String subscriptionName = "subscription";
+    private KafkaTopic kafkaTopic;
     private Subscription subscription;
 
     private int readTimeout = 60_000;
@@ -36,7 +37,8 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        subscription = new Subscription.Builder().withTopicName(groupName, topicName).withName(subscriptionName).build();
+        kafkaTopic = new KafkaNamesMapper(KAFKA_NAMESPACE).toKafkaTopicName(topic);
+        subscription = new Subscription.Builder().withTopicName(topic.getName()).withName(subscriptionName).build();
 
         HostnameResolver hostnameResolver = mock(HostnameResolver.class);
         when(hostnameResolver.resolve()).thenReturn(kafkaHost);
@@ -44,7 +46,7 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
         KafkaConfig kafkaConfig = SharedServices.services().kafkaStarter().instance().serverConfig();
         kafkaPort = kafkaConfig.port();
 
-        Topic topic = operations.buildTopic(groupName, topicName);
+        operations.buildTopic(topic);
         operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
 
         wait.waitUntilConsumerMetadataAvailable(subscription, kafkaHost, kafkaPort);
@@ -56,12 +58,12 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
     @Test
     public void shouldCommitOffset() throws Exception {
         //given
-        PartitionOffset partitionOffset = new PartitionOffset(new KafkaTopic("kafka_topic"), 10, 0);
+        PartitionOffset partitionOffset = new PartitionOffset(kafkaTopic, 10, 0);
 
         //when
         offsetStorage.save(subscription, partitionOffset);
 
         //then
-        assertThat(offsetStorage.find(subscription, partitionOffset.getPartition())).isEqualTo(partitionOffset.getOffset());
+        assertThat(offsetStorage.find(subscription, kafkaTopic, partitionOffset.getPartition())).isEqualTo(partitionOffset.getOffset());
     }
 }

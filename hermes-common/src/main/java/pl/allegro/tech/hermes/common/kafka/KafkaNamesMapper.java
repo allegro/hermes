@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.common.kafka;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -25,11 +24,7 @@ public class KafkaNamesMapper {
     }
 
     public KafkaTopic toKafkaTopicName(Topic topic) {
-        return toKafkaTopicName(topic.getName());
-    }
-
-    public KafkaTopic toKafkaTopicName(TopicName topicName) {
-        return new KafkaTopic(namespaced(topicName.qualifiedName()), null);
+        return new KafkaTopic(namespaced(topic.getName().qualifiedName()));
     }
 
     private String namespaced(String name) {

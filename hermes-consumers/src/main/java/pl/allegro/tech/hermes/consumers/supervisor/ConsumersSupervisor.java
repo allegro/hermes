@@ -227,7 +227,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
     private void removeOffsets(TopicName topicName, String subscriptionName, List<PartitionOffset> offsetsToRemove) throws Exception {
         for (PartitionOffset partitionOffset : offsetsToRemove) {
             for (MessageCommitter messageCommitter: messageCommitters) {
-                messageCommitter.removeOffset(topicName, subscriptionName, partitionOffset.getPartition());
+                messageCommitter.removeOffset(topicName, subscriptionName, partitionOffset.getTopic(), partitionOffset.getPartition());
             }
         }
     }

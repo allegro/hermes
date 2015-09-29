@@ -19,6 +19,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.CannotCommitOffsetToBrokerException;
@@ -94,7 +95,7 @@ public class BrokerOffsetsRepository {
     }
 
     private OffsetCommitRequest createCommitRequest(Subscription subscription, PartitionOffset partitionOffset) {
-        Map<TopicAndPartition, OffsetAndMetadata> offset = createOffset(subscription, partitionOffset);
+        Map<TopicAndPartition, OffsetAndMetadata> offset = createOffset(partitionOffset);
 
         return new OffsetCommitRequest(
                 kafkaNamesMapper.toConsumerGroupId(subscription).asString(),
@@ -104,20 +105,20 @@ public class BrokerOffsetsRepository {
                 VERSION_ID);
     }
 
-    private Map<TopicAndPartition, OffsetAndMetadata> createOffset(Subscription subscription, PartitionOffset partitionOffset) {
+    private Map<TopicAndPartition, OffsetAndMetadata> createOffset(PartitionOffset partitionOffset) {
         Map<TopicAndPartition, OffsetAndMetadata> offset = new LinkedHashMap<>();
-        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()).name(), partitionOffset.getPartition());
+        TopicAndPartition topicAndPartition = new TopicAndPartition(partitionOffset.getTopic().name(), partitionOffset.getPartition());
         offset.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset(), EMPTY_METADATA, clock.getTime()));
         return offset;
     }
 
 
-    public long find(Subscription subscription, int partitionId) {
+    public long find(Subscription subscription, KafkaTopic kafkaTopic, int partitionId) {
         ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription);
         BlockingChannel channel = blockingChannelFactory.create(groupId);
         channel.connect();
 
-        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()).name(), partitionId);
+        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaTopic.name(), partitionId);
         List<TopicAndPartition> partitions = Lists.newArrayList(topicAndPartition);
 
         OffsetFetchRequest fetchRequest = new OffsetFetchRequest(
