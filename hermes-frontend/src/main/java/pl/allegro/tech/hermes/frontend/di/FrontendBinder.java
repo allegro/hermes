@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
+import pl.allegro.tech.hermes.frontend.services.SchemaPrefetchService;
 import pl.allegro.tech.hermes.frontend.validator.*;
 import pl.allegro.tech.hermes.frontend.zk.ZkClientFactory;
 import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
@@ -27,11 +28,12 @@ public class FrontendBinder extends AbstractBinder {
 
     @Override
     protected void configure() {
-        bind(HermesServer.class).to(HermesServer.class).in(Singleton.class);
-        bind(PublishingServlet.class).to(PublishingServlet.class).in(Singleton.class);
-        bind(MessageValidators.class).to(MessageValidators.class).in(Singleton.class);
+        bindSingleton(HermesServer.class);
+        bindSingleton(PublishingServlet.class);
+        bindSingleton(MessageValidators.class);
 
-        bind(HealthCheckService.class).to(HealthCheckService.class).in(Singleton.class);
+        bindSingleton(SchemaPrefetchService.class);
+        bindSingleton(HealthCheckService.class);
 
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
         bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);
