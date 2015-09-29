@@ -24,6 +24,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeou
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
@@ -37,6 +38,7 @@ import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 public class KafkaMessageReceiverTest {
 
     private static final Topic TOPIC = topic().withContentType(Topic.ContentType.JSON).withName("group.topic1").build();
+    private static final Topic TOPIC_AVRO = topic().withContentType(Topic.ContentType.JSON).withName("group.topic1_avro").build();
     private static final Integer KAFKA_STREAM_COUNT = 1;
     private static final String CONTENT = "{\"test\":\"a\"}";
     private static final MessageMetadata METADATA = new MessageMetadata(1L, "unique");
@@ -69,7 +71,7 @@ public class KafkaMessageReceiverTest {
         Map<String, Integer> expectedTopicCountMap = singletonMap("ns_group.topic1", KAFKA_STREAM_COUNT);
         when(consumerConnector.createMessageStreams(expectedTopicCountMap)).thenReturn(consumerMap);
         when(messageContentWrapper.unwrap(WRAPPED_MESSAGE_CONTENT.getBytes(), TOPIC)).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
-        kafkaMsgReceiver = new KafkaMessageReceiver(TOPIC, consumerConnector, messageContentWrapper,
+        kafkaMsgReceiver = new KafkaMessageReceiver(TOPIC, Optional.of(TOPIC_AVRO), consumerConnector, messageContentWrapper,
                 timer, new SystemClock(), kafkaNamesMapper, KAFKA_STREAM_COUNT);
     }
 
