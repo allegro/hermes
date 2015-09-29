@@ -5,7 +5,7 @@ import org.apache.curator.utils.EnsurePath;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
@@ -50,21 +50,21 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
         String kafkaTopicsPath = paths.subscribedKafkaTopicsPath(topic.getName(), subscriptionName);
 
         PartitionOffsets allOffsets = new PartitionOffsets();
-        getZookeeperChildrenForPath(kafkaTopicsPath).stream().map(KafkaTopic::new).forEach(kafkaTopic ->
+        getZookeeperChildrenForPath(kafkaTopicsPath).stream().map(KafkaTopicName::valueOf).forEach(kafkaTopic ->
                         allOffsets.addAll(getOffsetsForKafkaTopic(topic, kafkaTopic, subscriptionName, brokersClusterName))
         );
         return allOffsets;
     }
 
-    private PartitionOffsets getOffsetsForKafkaTopic(Topic topic, KafkaTopic kafkaTopic, String subscriptionName, String brokersClusterName) {
-        String offsetsPath = paths.offsetsPath(topic.getName(), subscriptionName, kafkaTopic, brokersClusterName);
+    private PartitionOffsets getOffsetsForKafkaTopic(Topic topic, KafkaTopicName kafkaTopicName, String subscriptionName, String brokersClusterName) {
+        String offsetsPath = paths.offsetsPath(topic.getName(), subscriptionName, kafkaTopicName, brokersClusterName);
 
         PartitionOffsets offsets = new PartitionOffsets();
         for (String partitionAsString : getZookeeperChildrenForPath(offsetsPath)) {
             Integer partition = Integer.valueOf(partitionAsString);
             offsets.add(new PartitionOffset(
-                    kafkaTopic,
-                    getOffsetForPartition(topic, kafkaTopic, subscriptionName, brokersClusterName, partition),
+                    kafkaTopicName,
+                    getOffsetForPartition(topic, kafkaTopicName, subscriptionName, brokersClusterName, partition),
                     partition
             ));
         }
@@ -79,10 +79,10 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
         }
     }
 
-    private Long getOffsetForPartition(Topic topic, KafkaTopic kafkaTopic, String subscriptionName, String brokersClusterName, int partitionId) {
+    private Long getOffsetForPartition(Topic topic, KafkaTopicName kafkaTopicName, String subscriptionName, String brokersClusterName, int partitionId) {
         try {
             return Long.valueOf(new String(
-                    zookeeper.getData().forPath(paths.offsetPath(topic.getName(), subscriptionName, kafkaTopic, brokersClusterName, partitionId)),
+                    zookeeper.getData().forPath(paths.offsetPath(topic.getName(), subscriptionName, kafkaTopicName, brokersClusterName, partitionId)),
                     UTF_8));
         } catch (Exception e) {
             throw new InternalProcessingException(e);

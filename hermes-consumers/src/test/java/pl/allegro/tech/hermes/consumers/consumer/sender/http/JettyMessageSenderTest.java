@@ -10,7 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -35,8 +36,8 @@ import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_
 public class JettyMessageSenderTest {
 
     private static final String MESSAGE_BODY = "aaaaaaaaaaaaaaaa";
-    private static final Message SOME_MESSAGE = new Message("id", "topic", MESSAGE_BODY.getBytes(), 2134144L, 21341445L,
-            new PartitionOffset(new KafkaTopic("kafka_topic"), 0, 0));
+    private static final Message SOME_MESSAGE = new Message("id", "topic", MESSAGE_BODY.getBytes(), Topic.ContentType.JSON,
+            2134144L, 21341445L, new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 0, 0));
     private static final int ENDPOINT_PORT = 23215;
     private static final EndpointAddress ENDPOINT = EndpointAddress.of(format("http://localhost:%d/", ENDPOINT_PORT));
 

@@ -8,7 +8,9 @@ import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.converter.AvroToJsonMessageConverter;
+import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
+import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.converter.schema.AvroSchemaRepositoryMetadataAware;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
@@ -59,7 +61,8 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(BrokerOffsetsRepository.class);
         bind(ZookeeperOffsetsStorage.class).in(Singleton.class).to(OffsetsStorage.class).named("zookeeperOffsetsStorage");
         bind(KafkaOffsetsStorage.class).in(Singleton.class).to(OffsetsStorage.class).named("kafkaOffsetsStorage");
-        bindFactory(MessageCommitterFactory.class).in(Singleton.class).to(new TypeLiteral<List<MessageCommitter>>() {});
+        bindFactory(MessageCommitterFactory.class).in(Singleton.class).to(new TypeLiteral<List<MessageCommitter>>() {
+        });
         bind(MessageBodyInterpolator.class).in(Singleton.class).to(UriInterpolator.class);
         bind(InterpolatingEndpointAddressResolver.class).to(EndpointAddressResolver.class).in(Singleton.class);
         bind(JmsHornetQMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
@@ -76,7 +79,9 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(ZookeeperAdminCache.class);
         bindSingleton(InstrumentedExecutorServiceFactory.class);
         bindSingleton(ConsumerMessageSenderFactory.class);
-        bindSingleton(MessageConverterFactory.class);
+        bindSingleton(NoOperationMessageConverter.class);
+        bindSingleton(AvroToJsonMessageConverter.class);
+        bindSingleton(MessageConverterResolver.class);
         bindSingleton(AvroSchemaRepositoryMetadataAware.class);
 
         bindSingleton(BlockingChannelFactory.class);

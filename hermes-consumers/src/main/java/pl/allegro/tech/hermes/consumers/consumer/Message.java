@@ -1,7 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import java.util.Arrays;
@@ -15,17 +16,20 @@ public class Message {
     private PartitionOffset partitionOffset;
 
     private String topic;
+    private Topic.ContentType contentType;
+
     private long publishingTimestamp;
     private long readingTimestamp;
-
     private byte[] data;
 
     private Message() {}
 
-    public Message(String id, String topic, byte[] content, long publishingTimestamp, long readingTimestamp, PartitionOffset partitionOffset) {
+    public Message(String id, String topic, byte[] content, Topic.ContentType contentType, long publishingTimestamp,
+                   long readingTimestamp, PartitionOffset partitionOffset) {
         this.id = id;
         this.data = content;
         this.topic = topic;
+        this.contentType = contentType;
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
         this.partitionOffset = partitionOffset;
@@ -45,6 +49,10 @@ public class Message {
 
     public byte[] getData() {
         return data;
+    }
+
+    public Topic.ContentType getContentType() {
+        return contentType;
     }
 
     public int getPartition() {
@@ -68,7 +76,7 @@ public class Message {
 
     @Override
     public int hashCode() {
-        return Objects.hash(topic, data, publishingTimestamp, readingTimestamp, partitionOffset);
+        return Objects.hash(topic, data, contentType, publishingTimestamp, readingTimestamp, partitionOffset);
     }
 
     @Override
@@ -84,6 +92,7 @@ public class Message {
                 && Objects.equals(this.publishingTimestamp, other.publishingTimestamp)
                 && Objects.equals(this.readingTimestamp, other.readingTimestamp)
                 && Arrays.equals(this.data, other.data)
+                && Objects.equals(this.contentType, other.contentType)
                 && Objects.equals(this.partitionOffset, other.partitionOffset);
     }
 
@@ -91,7 +100,7 @@ public class Message {
         return new Builder();
     }
 
-    public KafkaTopic getKafkaTopic() {
+    public KafkaTopicName getKafkaTopic() {
         return partitionOffset.getTopic();
     }
 
@@ -105,6 +114,7 @@ public class Message {
         public Builder fromMessage(Message message) {
             this.message.id = message.getId();
             this.message.data = message.getData();
+            this.message.contentType = message.getContentType();
             this.message.topic = message.getTopic();
             this.message.publishingTimestamp = message.getPublishingTimestamp();
             this.message.readingTimestamp = message.getReadingTimestamp();
@@ -115,7 +125,6 @@ public class Message {
 
         public Builder withData(byte [] data) {
             this.message.data = data;
-
             return this;
         }
 

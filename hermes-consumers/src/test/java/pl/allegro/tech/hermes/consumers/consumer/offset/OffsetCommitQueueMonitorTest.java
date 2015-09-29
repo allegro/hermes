@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
 
@@ -29,7 +29,7 @@ public class OffsetCommitQueueMonitorTest {
 
     private OffsetCommitQueueMonitor monitor;
 
-    private final TopicPartition topicPartition = new TopicPartition(new KafkaTopic("topic"), 5);
+    private final TopicPartition topicPartition = new TopicPartition(KafkaTopicName.valueOf("topic"), 5);
 
     @Before
     public void setUp() {

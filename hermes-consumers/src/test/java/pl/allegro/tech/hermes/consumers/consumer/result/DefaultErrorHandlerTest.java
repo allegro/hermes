@@ -8,9 +8,10 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.Counters;
@@ -52,8 +53,8 @@ public class DefaultErrorHandlerTest {
     @Mock
     private Subscription subscription;
 
-    private final Message message = new Message("id", TOPIC_NAME, MESSAGE_CONTENT.getBytes(), 213232L, 2132323L,
-            new PartitionOffset(new KafkaTopic("kafka_topic"), OFFSET, PARTITION));
+    private final Message message = new Message("id", TOPIC_NAME, MESSAGE_CONTENT.getBytes(), Topic.ContentType.JSON, 213232L, 2132323L,
+            new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), OFFSET, PARTITION));
 
     @Mock
     private Clock clock;

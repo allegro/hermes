@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
@@ -128,24 +128,24 @@ public class HermesMetrics {
         return metricRegistry.counter(metricRegistryName(metric, topicName, name));
     }
 
-    public Counter counterForOffsetCommitIdlePeriod(Subscription subscription, KafkaTopic topic, int partition) {
+    public Counter counterForOffsetCommitIdlePeriod(Subscription subscription, KafkaTopicName topic, int partition) {
         String path = pathForConsumerOffsetCommitIdle(subscription, topic, partition);
 
         return metricRegistry.counter(path);
     }
 
-    public void removeCounterForOffsetCommitIdlePeriod(Subscription subscription, KafkaTopic topic, int partition) {
+    public void removeCounterForOffsetCommitIdlePeriod(Subscription subscription, KafkaTopicName topic, int partition) {
         String path = pathForConsumerOffsetCommitIdle(subscription, topic, partition);
 
         metricRegistry.remove(path);
     }
 
-    private String pathForConsumerOffsetCommitIdle(Subscription subscription, KafkaTopic topic, int partition) {
+    private String pathForConsumerOffsetCommitIdle(Subscription subscription, KafkaTopicName topic, int partition) {
         return pathCompiler.compile(Counters.CONSUMER_OFFSET_COMMIT_IDLE, pathContext()
                 .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
                 .withTopic(escapeDots(subscription.getTopicName().getName()))
                 .withSubscription(escapeDots(subscription.getName()))
-                .withKafkaTopic(escapeDots(topic.name()))
+                .withKafkaTopic(escapeDots(topic.asString()))
                 .withPartition(partition)
                 .build());
     }

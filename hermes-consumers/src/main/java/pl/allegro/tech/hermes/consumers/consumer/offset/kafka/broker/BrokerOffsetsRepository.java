@@ -19,7 +19,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.CannotCommitOffsetToBrokerException;
@@ -107,18 +107,18 @@ public class BrokerOffsetsRepository {
 
     private Map<TopicAndPartition, OffsetAndMetadata> createOffset(PartitionOffset partitionOffset) {
         Map<TopicAndPartition, OffsetAndMetadata> offset = new LinkedHashMap<>();
-        TopicAndPartition topicAndPartition = new TopicAndPartition(partitionOffset.getTopic().name(), partitionOffset.getPartition());
+        TopicAndPartition topicAndPartition = new TopicAndPartition(partitionOffset.getTopic().asString(), partitionOffset.getPartition());
         offset.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset(), EMPTY_METADATA, clock.getTime()));
         return offset;
     }
 
 
-    public long find(Subscription subscription, KafkaTopic kafkaTopic, int partitionId) {
+    public long find(Subscription subscription, KafkaTopicName kafkaTopicName, int partitionId) {
         ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription);
         BlockingChannel channel = blockingChannelFactory.create(groupId);
         channel.connect();
 
-        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaTopic.name(), partitionId);
+        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaTopicName.asString(), partitionId);
         List<TopicAndPartition> partitions = Lists.newArrayList(topicAndPartition);
 
         OffsetFetchRequest fetchRequest = new OffsetFetchRequest(

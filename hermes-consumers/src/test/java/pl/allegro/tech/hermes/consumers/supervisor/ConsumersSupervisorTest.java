@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
@@ -173,7 +173,7 @@ public class ConsumersSupervisorTest {
         //given
         String subscriptionName = "subscriptionName1";
         String brokersClusterName = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
-        PartitionOffset partitionOffset = new PartitionOffset(new KafkaTopic("kafka_topic"), 100L, 0);
+        PartitionOffset partitionOffset = new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 100L, 0);
         Subscription actualSubscription = createSubscription(SOME_TOPIC_NAME, subscriptionName, ACTIVE);
         SubscriptionName subscription = new SubscriptionName(subscriptionName, SOME_TOPIC_NAME);
         consumersSupervisor.notifyConsumerOnSubscriptionUpdate(actualSubscription);

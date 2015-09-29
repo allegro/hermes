@@ -5,7 +5,7 @@ import org.apache.zookeeper.KeeperException;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
@@ -39,7 +39,7 @@ public class ZookeeperMessageCommitter implements MessageCommitter {
     }
 
     @Override
-    public void removeOffset(TopicName topicName, String subscriptionName, KafkaTopic topic, int partition) throws Exception {
+    public void removeOffset(TopicName topicName, String subscriptionName, KafkaTopicName topic, int partition) throws Exception {
         String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(
                 kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscriptionName)),
                 topic,

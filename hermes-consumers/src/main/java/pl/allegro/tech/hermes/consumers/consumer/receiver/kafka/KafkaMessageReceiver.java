@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
@@ -22,11 +23,11 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeou
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,34 +38,41 @@ public class KafkaMessageReceiver implements MessageReceiver {
     private final Clock clock;
     private final BlockingQueue<Message> readQueue;
     private final ExecutorService pool;
-    private final KafkaNamesMapper kafkaNamesMapper;
+    private final Integer readTimeout;
+    private final Topic topic;
     private boolean consuming = true;
 
-    public KafkaMessageReceiver(Topic primaryTopic, Optional<Topic> secondaryTopic, ConsumerConnector consumerConnector, MessageContentWrapper contentWrapper,
-                                Timer readingTimer, Clock clock, KafkaNamesMapper kafkaNamesMapper, Integer kafkaStreamCount) {
+    public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, MessageContentWrapper contentWrapper,
+                                Timer readingTimer, Clock clock, KafkaNamesMapper kafkaNamesMapper,
+                                Integer kafkaStreamCount, Integer readTimeout) {
+        this.topic = topic;
         this.consumerConnector = consumerConnector;
         this.contentWrapper = contentWrapper;
         this.readingTimer = readingTimer;
         this.clock = clock;
-        this.kafkaNamesMapper = kafkaNamesMapper;
+        this.readTimeout = readTimeout;
 
-        ImmutableList.Builder<Topic> topicsBuilder = new ImmutableList.Builder<Topic>().add(primaryTopic);
-        secondaryTopic.ifPresent(topicsBuilder::add);
-        Collection<Topic> topics = topicsBuilder.build();
+        KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
+
+        ImmutableList.Builder<KafkaTopic> topicsBuilder = new ImmutableList.Builder<KafkaTopic>().add(kafkaTopics.getPrimary());
+        kafkaTopics.getSecondary().ifPresent(topicsBuilder::add);
+        Collection<KafkaTopic> topics = topicsBuilder.build();
 
         Map<String, Integer> topicCountMap = topics.stream()
-                .collect(Collectors.toMap((topic) -> kafkaTopic(topic).name(), (topic) -> kafkaStreamCount));
+                .collect(Collectors.toMap((kafkaTopic) -> kafkaTopic.name().asString(), (kafkaTopic) -> kafkaStreamCount));
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumerConnector.createMessageStreams(topicCountMap);
 
-        Map<Topic, ConsumerIterator<byte[],byte[]>> iterators = topics.stream()
-                .collect(Collectors.toMap(Function.<Topic>identity(), (topic) -> iterator(consumerMap.get(kafkaTopic(topic).name()))));
+        Map<KafkaTopic, ConsumerIterator<byte[],byte[]>> iterators = topics.stream()
+                .collect(Collectors.toMap(Function.<KafkaTopic>identity(), (kafkaTopic) -> iterator(consumerMap.get(kafkaTopic.name().asString()))));
 
         readQueue = new ArrayBlockingQueue<>(iterators.size());
         pool = Executors.newFixedThreadPool(iterators.size());
 
-        iterators.forEach((topic, iterator) -> pool.submit(() -> {
+        iterators.forEach((kafkaTopic, iterator) -> pool.submit(() -> {
                 while (consuming) {
-                    readQueue.offer(readMessage(topic, iterator));
+                    try {
+                        readQueue.put(readMessage(kafkaTopic, iterator));
+                    } catch (InterruptedException | MessageReceivingTimeoutException ignored) { }
                 }
         }));
     }
@@ -72,32 +80,34 @@ public class KafkaMessageReceiver implements MessageReceiver {
     @Override
     public Message next() {
         try {
-            return readQueue.take();
+            Message message = readQueue.poll(readTimeout, TimeUnit.MILLISECONDS);
+            if (message == null) {
+                throw new MessageReceivingTimeoutException("No messages received");
+            } else {
+                return message;
+            }
         } catch (InterruptedException ex) {
             throw new MessageReceivingTimeoutException("No messages received", ex);
         }
-    }
-
-    private KafkaTopic kafkaTopic(Topic topic) {
-        return kafkaNamesMapper.toKafkaTopicName(topic);
     }
 
     private ConsumerIterator<byte[],byte[]> iterator(List<KafkaStream<byte[], byte[]>> streams) {
         return streams.get(0).iterator();
     }
 
-    private Message readMessage(Topic topic, ConsumerIterator<byte[], byte[]> iterator) {
+    private Message readMessage(KafkaTopic kafkaTopic, ConsumerIterator<byte[], byte[]> iterator) {
         try (Timer.Context readingTimerContext = readingTimer.time()) {
             MessageAndMetadata<byte[], byte[]> message = iterator.next();
-            UnwrappedMessageContent unwrappedContent = contentWrapper.unwrap(message.message(), topic);
+            UnwrappedMessageContent unwrappedContent = contentWrapper.unwrap(message.message(), topic, kafkaTopic.contentType());
 
             return new Message(
                     unwrappedContent.getMessageMetadata().getId(),
                     topic.getQualifiedName(),
                     unwrappedContent.getContent(),
+                    kafkaTopic.contentType(),
                     unwrappedContent.getMessageMetadata().getTimestamp(),
                     clock.getTime(),
-                    new PartitionOffset(kafkaTopic(topic), message.offset(), message.partition()));
+                    new PartitionOffset(kafkaTopic.name(), message.offset(), message.partition()));
 
         } catch (ConsumerTimeoutException consumerTimeoutException) {
             throw new MessageReceivingTimeoutException("No messages received", consumerTimeoutException);
@@ -110,6 +120,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
     public void stop() {
         this.consuming = false;
         consumerConnector.shutdown();
+        pool.shutdown();
     }
 
 }

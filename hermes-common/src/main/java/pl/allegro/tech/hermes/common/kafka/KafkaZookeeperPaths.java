@@ -7,19 +7,19 @@ public final class KafkaZookeeperPaths {
     private KafkaZookeeperPaths() {
     }
 
-    public static String offsetsPath(ConsumerGroupId groupId, KafkaTopic topicName) {
-        return join(consumerGroupPath(groupId), "offsets", topicName.name());
+    public static String offsetsPath(ConsumerGroupId groupId, KafkaTopicName topicName) {
+        return join(consumerGroupPath(groupId), "offsets", topicName.asString());
     }
 
-    public static String ownersPath(ConsumerGroupId groupId, KafkaTopic topicName) {
-        return join(consumerGroupPath(groupId), "owners", topicName.name());
+    public static String ownersPath(ConsumerGroupId groupId, KafkaTopicName topicName) {
+        return join(consumerGroupPath(groupId), "owners", topicName.asString());
     }
 
     public static String idsPath(ConsumerGroupId groupId) {
         return join(consumerGroupPath(groupId), "ids");
     }
 
-    public static String partitionOffsetPath(ConsumerGroupId groupId, KafkaTopic topic, int partition) {
+    public static String partitionOffsetPath(ConsumerGroupId groupId, KafkaTopicName topic, int partition) {
         return join(offsetsPath(groupId, topic), partition);
     }
 
@@ -27,8 +27,8 @@ public final class KafkaZookeeperPaths {
         return join("/consumers", groupId.asString());
     }
 
-    public static String topicPath(KafkaTopic topicName) {
-        return join("/brokers/topics", topicName.name());
+    public static String topicPath(KafkaTopicName topicName) {
+        return join("/brokers/topics", topicName.asString());
     }
 
     private static String join(Object... parts) {

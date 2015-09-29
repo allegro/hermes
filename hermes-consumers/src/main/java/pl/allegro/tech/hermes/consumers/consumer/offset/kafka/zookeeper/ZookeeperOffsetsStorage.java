@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
@@ -48,9 +48,9 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     }
 
     @Override
-    public long getSubscriptionOffset(Subscription subscription, KafkaTopic kafkaTopic, int partitionId) {
+    public long getSubscriptionOffset(Subscription subscription, KafkaTopicName kafkaTopicName, int partitionId) {
         try {
-            byte[] offset = curatorFramework.getData().forPath(getPartitionOffsetPath(subscription, kafkaTopic, partitionId));
+            byte[] offset = curatorFramework.getData().forPath(getPartitionOffsetPath(subscription, kafkaTopicName, partitionId));
             return Long.valueOf(new String(offset));
         } catch (Exception e) {
             throw new InternalProcessingException(e);
@@ -58,10 +58,10 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     }
 
     @VisibleForTesting
-    protected String getPartitionOffsetPath(Subscription subscription, KafkaTopic kafkaTopic, int partition) {
+    protected String getPartitionOffsetPath(Subscription subscription, KafkaTopicName kafkaTopicName, int partition) {
         return KafkaZookeeperPaths.partitionOffsetPath(
                 kafkaNamesMapper.toConsumerGroupId(subscription),
-                kafkaTopic,
+                kafkaTopicName,
                 partition
         );
     }

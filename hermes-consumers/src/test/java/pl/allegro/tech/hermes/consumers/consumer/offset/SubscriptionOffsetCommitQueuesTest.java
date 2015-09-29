@@ -5,9 +5,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -22,7 +23,7 @@ public class SubscriptionOffsetCommitQueuesTest {
 
     private static final int FIRST_PARTITION = 0;
     private static final int SECOND_PARTITION = 1;
-    private static final KafkaTopic KAFKA_TOPIC = new KafkaTopic("kafka_topic");
+    private static final KafkaTopicName KAFKA_TOPIC = KafkaTopicName.valueOf("kafka_topic");
 
     public static final String SOME_TOPIC = "topic";
 
@@ -165,7 +166,7 @@ public class SubscriptionOffsetCommitQueuesTest {
 
         private Message messageWithPartitionOffset(long offset) {
             return new Message("id", SOME_TOPIC, new byte[partition],
-                    213123L, 2131234L, new PartitionOffset(KAFKA_TOPIC, offset, partition));
+                    Topic.ContentType.JSON, 213123L, 2131234L, new PartitionOffset(KAFKA_TOPIC, offset, partition));
         }
     }
 }

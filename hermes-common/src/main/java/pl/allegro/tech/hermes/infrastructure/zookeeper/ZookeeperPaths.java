@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 import com.google.common.base.Joiner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 
 public class ZookeeperPaths {
 
@@ -74,12 +74,12 @@ public class ZookeeperPaths {
         return subscriptionPath(topicName, subscriptionName, METRICS_PATH, metricName);
     }
 
-    public String offsetPath(TopicName topicName, String subscriptionName, KafkaTopic kafkaTopic, String brokersClusterName, int partitionId) {
-        return Joiner.on(URL_SEPARATOR).join(offsetsPath(topicName, subscriptionName, kafkaTopic, brokersClusterName), partitionId);
+    public String offsetPath(TopicName topicName, String subscriptionName, KafkaTopicName kafkaTopicName, String brokersClusterName, int partitionId) {
+        return Joiner.on(URL_SEPARATOR).join(offsetsPath(topicName, subscriptionName, kafkaTopicName, brokersClusterName), partitionId);
     }
 
-    public String offsetsPath(TopicName topicName, String subscriptionName, KafkaTopic kafkaTopic, String brokersClusterName) {
-        return Joiner.on(URL_SEPARATOR).join(subscribedKafkaTopicsPath(topicName, subscriptionName), kafkaTopic.name(), "offset", brokersClusterName);
+    public String offsetsPath(TopicName topicName, String subscriptionName, KafkaTopicName kafkaTopicName, String brokersClusterName) {
+        return Joiner.on(URL_SEPARATOR).join(subscribedKafkaTopicsPath(topicName, subscriptionName), kafkaTopicName.asString(), "offset", brokersClusterName);
     }
 
     public String subscribedKafkaTopicsPath(TopicName topicName, String subscriptionName) {

@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 
 import javax.inject.Inject;
-import java.util.Optional;
 import java.util.Properties;
 
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
@@ -43,17 +42,15 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     }
 
     MessageReceiver create(Topic receivingTopic, ConsumerConfig consumerConfig) {
-        Topic avroTopic = Topic.Builder.topic().applyPatch(receivingTopic)
-                .withName(receivingTopic.getName().getGroupName(), receivingTopic.getName().getName() + "_avro")
-                .build();
         return new KafkaMessageReceiver(
-                receivingTopic, Optional.of(avroTopic),
+                receivingTopic,
                 Consumer.createJavaConsumerConnector(consumerConfig),
                 messageContentWrapper,
                 hermesMetrics.timer(Timers.CONSUMER_READ_LATENCY),
                 clock,
                 kafkaNamesMapper,
-                configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT));
+                configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT),
+                configFactory.getIntProperty(Configs.KAFKA_CONSUMER_TIMEOUT_MS));
     }
 
     private ConsumerConfig createConsumerConfig(ConsumerGroupId groupId) {

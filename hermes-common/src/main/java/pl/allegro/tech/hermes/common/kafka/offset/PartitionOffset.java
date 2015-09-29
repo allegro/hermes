@@ -2,18 +2,18 @@ package pl.allegro.tech.hermes.common.kafka.offset;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 
 import java.util.Objects;
 
 public class PartitionOffset {
 
-    private final KafkaTopic topic;
+    private final KafkaTopicName topic;
     private final int partition;
     private final long offset;
 
     @JsonCreator
-    public PartitionOffset(@JsonProperty("topic") KafkaTopic topic,
+    public PartitionOffset(@JsonProperty("topic") KafkaTopicName topic,
                            @JsonProperty("offset") long offset,
                            @JsonProperty("partition") int partition) {
         this.topic = topic;
@@ -21,7 +21,7 @@ public class PartitionOffset {
         this.partition = partition;
     }
 
-    public KafkaTopic getTopic() {
+    public KafkaTopicName getTopic() {
         return topic;
     }
 

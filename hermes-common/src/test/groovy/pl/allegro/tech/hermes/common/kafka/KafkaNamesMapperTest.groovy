@@ -13,7 +13,7 @@ class KafkaNamesMapperTest extends Specification {
         def mapper = new KafkaNamesMapper(namespace)
 
         expect:
-        mapper.toKafkaTopicName(topic().withName(topicName).build()) == new KafkaTopic(kafkaTopicName)
+        mapper.toKafkaTopicName(topic().withName(topicName).build()) == new KafkaTopicName(kafkaTopicName)
 
         where:
         namespace | topicName     | kafkaTopicName

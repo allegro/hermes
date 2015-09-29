@@ -1,20 +1,20 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 
 import java.util.Objects;
 
 class TopicPartition {
 
-    private final KafkaTopic topic;
+    private final KafkaTopicName topic;
     private final int partition;
 
-    TopicPartition(KafkaTopic topic, int partition) {
+    TopicPartition(KafkaTopicName topic, int partition) {
         this.topic = topic;
         this.partition = partition;
     }
 
-    public KafkaTopic getTopic() {
+    public KafkaTopicName getTopic() {
         return topic;
     }
 

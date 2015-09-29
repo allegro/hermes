@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,12 +25,12 @@ public class ZookeeperAssertion extends AbstractAssert<ZookeeperAssertion, Curat
 
     public void offsetsAreNotRetracted(Topic topic, String subscription, int partitions, int offset) {
         ConsumerGroupId kafkaGroupId = kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription));
-        KafkaTopic kafkaTopic = kafkaNamesMapper.toKafkaTopicName(topic);
+        KafkaTopicName kafkaTopicName = kafkaNamesMapper.toKafkaTopicName(topic);
 
         for (int i = 0; i < 200; i++) {
             try {
                 for (int j = 0; j < partitions; j++) {
-                    assertThat(offsetValue(kafkaGroupId, kafkaTopic, j)).isEqualTo(offset);
+                    assertThat(offsetValue(kafkaGroupId, kafkaTopicName, j)).isEqualTo(offset);
                 }
                 Thread.sleep(10);
             } catch (Exception exception) {
@@ -39,7 +39,7 @@ public class ZookeeperAssertion extends AbstractAssert<ZookeeperAssertion, Curat
         }
     }
 
-    private long offsetValue(ConsumerGroupId groupId, KafkaTopic topic, int partition) throws Exception {
+    private long offsetValue(ConsumerGroupId groupId, KafkaTopicName topic, int partition) throws Exception {
         String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(groupId, topic, partition);
         return Long.valueOf(new String(actual.getData().forPath(offsetPath)));
     }

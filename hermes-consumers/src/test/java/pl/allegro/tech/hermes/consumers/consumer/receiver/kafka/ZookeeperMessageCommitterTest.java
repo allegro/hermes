@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.zookeeper.ZookeeperMessageCommitter;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
@@ -25,7 +25,7 @@ import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscription
 public class ZookeeperMessageCommitterTest {
 
     private static final TopicName SOME_TOPIC_NAME = new TopicName("g", "b");
-    private static final KafkaTopic KAFKA_TOPIC = new KafkaTopic("kafka_topic");
+    private static final KafkaTopicName KAFKA_TOPIC = KafkaTopicName.valueOf("kafka_topic");
 
     private static CuratorFramework curatorClient;
 

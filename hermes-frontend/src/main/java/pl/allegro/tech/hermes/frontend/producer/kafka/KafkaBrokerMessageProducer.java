@@ -28,7 +28,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     @Override
     public void send(Message message, Topic topic, final PublishingCallback callback) {
         try {
-            ProducerRecord<byte[], byte[]> producerRecord = new ProducerRecord<>(kafkaNamesMapper.toKafkaTopicName(topic).name(), message.getData());
+            ProducerRecord<byte[], byte[]> producerRecord = new ProducerRecord<>(kafkaNamesMapper.toKafkaTopicName(topic).asString(), message.getData());
             producers.get(topic).send(producerRecord, new SendCallback(message, topic, callback));
         } catch (Exception e) {
             callback.onUnpublished(message, topic, e);

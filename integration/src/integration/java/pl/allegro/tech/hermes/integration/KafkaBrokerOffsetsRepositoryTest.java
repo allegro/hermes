@@ -7,7 +7,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BlockingChannelFactory;
@@ -25,7 +25,7 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
     private final String kafkaHost = "localhost";
     private final Topic topic = topic().withName("brokerMessageCommiter", "topic").build();
     private final String subscriptionName = "subscription";
-    private KafkaTopic kafkaTopic;
+    private KafkaTopicName kafkaTopicName;
     private Subscription subscription;
 
     private int readTimeout = 60_000;
@@ -37,7 +37,7 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        kafkaTopic = new KafkaNamesMapper(KAFKA_NAMESPACE).toKafkaTopicName(topic);
+        kafkaTopicName = new KafkaNamesMapper(KAFKA_NAMESPACE).toKafkaTopicName(topic);
         subscription = new Subscription.Builder().withTopicName(topic.getName()).withName(subscriptionName).build();
 
         HostnameResolver hostnameResolver = mock(HostnameResolver.class);
@@ -58,12 +58,12 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
     @Test
     public void shouldCommitOffset() throws Exception {
         //given
-        PartitionOffset partitionOffset = new PartitionOffset(kafkaTopic, 10, 0);
+        PartitionOffset partitionOffset = new PartitionOffset(kafkaTopicName, 10, 0);
 
         //when
         offsetStorage.save(subscription, partitionOffset);
 
         //then
-        assertThat(offsetStorage.find(subscription, kafkaTopic, partitionOffset.getPartition())).isEqualTo(partitionOffset.getOffset());
+        assertThat(offsetStorage.find(subscription, kafkaTopicName, partitionOffset.getPartition())).isEqualTo(partitionOffset.getOffset());
     }
 }

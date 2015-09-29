@@ -31,7 +31,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
         AdminUtils.createTopic(
             client,
-            kafkaNamesMapper.toKafkaTopicName(topic).name(),
+            kafkaNamesMapper.toKafkaTopicName(topic).asString(),
             topicProperties.getPartitions(),
             topicProperties.getReplicationFactor(),
             config
@@ -40,13 +40,13 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     @Override
     public void removeTopic(Topic topic) {
-        AdminUtils.deleteTopic(client, kafkaNamesMapper.toKafkaTopicName(topic).name());
+        AdminUtils.deleteTopic(client, kafkaNamesMapper.toKafkaTopicName(topic).asString());
     }
 
     @Override
     public void updateTopic(Topic topic) {
         Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
-        AdminUtils.changeTopicConfig(client, kafkaNamesMapper.toKafkaTopicName(topic).name(), config);
+        AdminUtils.changeTopicConfig(client, kafkaNamesMapper.toKafkaTopicName(topic).asString(), config);
     }
 
     private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties) {

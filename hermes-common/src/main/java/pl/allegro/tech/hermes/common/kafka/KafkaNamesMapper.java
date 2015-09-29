@@ -23,8 +23,12 @@ public class KafkaNamesMapper {
         return ConsumerGroupId.valueOf(namespaced(subscriptionId));
     }
 
-    public KafkaTopic toKafkaTopicName(Topic topic) {
-        return new KafkaTopic(namespaced(topic.getName().qualifiedName()));
+    public KafkaTopicName toKafkaTopicName(Topic topic) {
+        return KafkaTopicName.valueOf(namespaced(topic.getName().qualifiedName()));
+    }
+
+    public KafkaTopics toKafkaTopics(Topic topic) {
+        return new KafkaTopics(new KafkaTopic(toKafkaTopicName(topic), topic.getContentType()));
     }
 
     private String namespaced(String name) {
