@@ -5,6 +5,7 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.main.JsonSchema;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import pl.allegro.tech.hermes.api.ErrorCode;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.HermesException;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaSourceProvider;
@@ -35,6 +36,7 @@ public class JsonSchemaRepositoryFactory extends AbstractSchemaRepositoryFactory
     @Override
     public SchemaRepository<JsonSchema> provide() {
         return new SchemaRepository<>(
+                Topic.ContentType.JSON,
                 schemaSourceProvider,
                 createSchemaReloadExecutorService(configFactory.getIntProperty(SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE), "json"),
                 configFactory.getIntProperty(SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES),

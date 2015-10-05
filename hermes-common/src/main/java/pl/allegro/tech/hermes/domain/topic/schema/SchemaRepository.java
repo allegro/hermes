@@ -27,20 +27,22 @@ public class SchemaRepository<T> {
 
     private final LoadingCache<Topic, SchemaWithSource> schemaCache;
     private final SchemaCompiler<T> schemaCompiler;
+    private final Topic.ContentType contentType;
     private List<Consumer<TopicWithSchema<T>>> topicWithSchemaReloadConsumers = Lists.newArrayList();
     private List<Consumer<TopicWithSchema<T>>> topicWithSchemaRemoveConsumers = Lists.newArrayList();
 
     @Inject
-    public SchemaRepository(SchemaSourceProvider schemaRepository, ExecutorService reloadSchemaSourceExecutor,
+    public SchemaRepository(Topic.ContentType contentType, SchemaSourceProvider schemaRepository, ExecutorService reloadSchemaSourceExecutor,
                             int schemaCacheRefreshAfterWriteMinutes, int schemaCacheExpireAfterWriteMinutes, SchemaCompiler<T> schemaCompiler) {
         this(
-            schemaRepository, reloadSchemaSourceExecutor, Ticker.systemTicker(),
+            contentType, schemaRepository, reloadSchemaSourceExecutor, Ticker.systemTicker(),
             schemaCacheRefreshAfterWriteMinutes, schemaCacheExpireAfterWriteMinutes, schemaCompiler
         );
     }
 
-    SchemaRepository(SchemaSourceProvider schemaSourceProvider, ExecutorService reloadSchemaSourceExecutor, Ticker ticker,
+    SchemaRepository(Topic.ContentType contentType, SchemaSourceProvider schemaSourceProvider, ExecutorService reloadSchemaSourceExecutor, Ticker ticker,
                      int schemaCacheRefreshAfterWriteMinutes, int schemaCacheExpireAfterWriteMinutes, SchemaCompiler<T> schemaCompiler) {
+        this.contentType = contentType;
         this.schemaCompiler = schemaCompiler;
         this.schemaCache = CacheBuilder
                 .newBuilder()
@@ -63,6 +65,10 @@ public class SchemaRepository<T> {
         } catch (Exception e) {
             throw new CouldNotLoadSchemaException("Could not load schema for topic " + topic.getQualifiedName(), e);
         }
+    }
+
+    public boolean canService(Topic.ContentType contentType) {
+        return contentType == this.contentType;
     }
 
     public void onReload(Consumer<TopicWithSchema<T>> topicWithSchemaConsumer) {

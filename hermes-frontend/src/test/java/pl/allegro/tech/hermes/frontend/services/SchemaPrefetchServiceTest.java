@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.services;
 
 import com.github.fge.jsonschema.main.JsonSchema;
+import com.google.common.collect.ImmutableList;
 import org.apache.avro.Schema;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +26,9 @@ public class SchemaPrefetchServiceTest {
 
     @Before
     public void before() {
-        schemaPrefetchService = new SchemaPrefetchService(avroSchemaRepo, jsonSchemaRepo);
+        when(avroSchemaRepo.canService(Topic.ContentType.AVRO)).thenReturn(true);
+        when(jsonSchemaRepo.canService(Topic.ContentType.JSON)).thenReturn(true);
+        schemaPrefetchService = new SchemaPrefetchService(ImmutableList.of(avroSchemaRepo, jsonSchemaRepo));
     }
 
     @Test
