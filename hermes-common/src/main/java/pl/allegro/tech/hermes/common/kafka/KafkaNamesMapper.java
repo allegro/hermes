@@ -23,12 +23,8 @@ public class KafkaNamesMapper {
         return ConsumerGroupId.valueOf(namespaced(subscriptionId));
     }
 
-    public KafkaTopicName toKafkaTopicName(Topic topic) {
-        return toKafkaTopicName(topic, topic.getContentType());
-    }
-
     public KafkaTopics toKafkaTopics(Topic topic) {
-        KafkaTopic primary = new KafkaTopic(toKafkaTopicName(topic), topic.getContentType());
+        KafkaTopic primary = new KafkaTopic(toKafkaTopicName(topic, topic.getContentType()), topic.getContentType());
         if (topic.wasMigratedFromJsonType()) {
             KafkaTopic secondary = new KafkaTopic(toKafkaTopicName(topic, Topic.ContentType.JSON), Topic.ContentType.JSON);
             return new KafkaTopics(primary, secondary);

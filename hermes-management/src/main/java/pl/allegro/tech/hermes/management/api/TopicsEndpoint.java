@@ -126,7 +126,7 @@ public class TopicsEndpoint {
                           @PathParam("partition") Integer partition,
                           @PathParam("offset") Long offset) {
         try {
-            return topicService.fetchSingleMessage(brokersClusterName, TopicName.fromQualifiedName(qualifiedTopicName), partition, offset);
+            return topicService.fetchSingleMessageFromPrimary(brokersClusterName, TopicName.fromQualifiedName(qualifiedTopicName), partition, offset);
         } catch (BrokerNotFoundForPartitionException | SingleMessageReaderException exception) {
             throw new NotFoundException(format(
                 "Message not found for brokers cluster %s, topic %s, partition %d and offset %d",

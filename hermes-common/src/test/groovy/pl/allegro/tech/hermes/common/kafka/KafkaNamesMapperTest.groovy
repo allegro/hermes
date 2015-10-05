@@ -14,7 +14,7 @@ class KafkaNamesMapperTest extends Specification {
         def mapper = new KafkaNamesMapper(namespace)
 
         expect:
-        mapper.toKafkaTopicName(topic().withName(topicName).build()) == KafkaTopicName.valueOf(kafkaTopicName)
+        mapper.toKafkaTopics(topic().withName(topicName).build()).primary.name() == KafkaTopicName.valueOf(kafkaTopicName)
 
         where:
         namespace | topicName     | kafkaTopicName
@@ -42,6 +42,21 @@ class KafkaNamesMapperTest extends Specification {
         def avroTopic = topic().withName("group", "topic").withContentType(Topic.ContentType.AVRO).build()
 
         expect:
-        mapper.toKafkaTopicName(avroTopic) == KafkaTopicName.valueOf("group.topic_avro")
+        mapper.toKafkaTopics(avroTopic).primary.name() == KafkaTopicName.valueOf("group.topic_avro")
     }
+
+    def "should map to topics with secondary json topic for topics migrated from json to avro"() {
+        given:
+        def mapper = new KafkaNamesMapper("")
+        def migratedTopic = topic().withName("group", "topic").withContentType(Topic.ContentType.AVRO).migratedFromJsonType().build()
+
+        when:
+        def topics = mapper.toKafkaTopics(migratedTopic)
+
+        then:
+        topics.primary.contentType() == Topic.ContentType.AVRO
+        topics.secondary.present
+        topics.secondary.get().contentType() == Topic.ContentType.JSON
+    }
+
 }

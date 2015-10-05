@@ -107,8 +107,8 @@ public class TopicService {
         return topicRepository.topicExists(topicName) ? metricRepository.loadMetrics(topicName) : TopicMetrics.unavailable();
     }
 
-    public String fetchSingleMessage(String brokersClusterName, TopicName topicName, Integer partition, Long offset) {
-        return multiDCAwareService.readMessage(brokersClusterName, getTopicDetails(topicName), partition, offset);
+    public String fetchSingleMessageFromPrimary(String brokersClusterName, TopicName topicName, Integer partition, Long offset) {
+        return multiDCAwareService.readMessageFromPrimary(brokersClusterName, getTopicDetails(topicName), partition, offset);
     }
 
     public List<String> listTrackedTopicNames() {

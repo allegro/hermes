@@ -37,7 +37,7 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        kafkaTopicName = new KafkaNamesMapper(KAFKA_NAMESPACE).toKafkaTopicName(topic);
+        kafkaTopicName = new KafkaNamesMapper(KAFKA_NAMESPACE).toKafkaTopics(topic).getPrimary().name();
         subscription = new Subscription.Builder().withTopicName(topic.getName()).withName(subscriptionName).build();
 
         HostnameResolver hostnameResolver = mock(HostnameResolver.class);

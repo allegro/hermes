@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka;
 
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
@@ -24,12 +23,12 @@ public class MultiDCAwareService {
         clusters.forEach(kafkaService -> kafkaService.manageTopic(manageFunction));
     }
 
-    public String readMessage(String clusterName, Topic topic, Integer partition, Long offset) {
+    public String readMessageFromPrimary(String clusterName, Topic topic, Integer partition, Long offset) {
         return clusters.stream()
             .filter(cluster -> clusterName.equals(cluster.getClusterName()))
             .findFirst()
             .orElseThrow(() -> new BrokersClusterNotFoundException(clusterName))
-            .readMessage(topic, partition, offset);
+            .readMessageFromPrimary(topic, partition, offset);
     }
 
     public MultiDCOffsetChangeSummary moveOffset(Topic topic, String subscriptionName, Long timestamp, boolean dryRun) {

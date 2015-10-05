@@ -72,7 +72,7 @@ public class KafkaConfiguration {
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties), kafkaNamesMapper);
             SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
             SingleMessageReader singleMessageReader = new KafkaSingleMessageReader(
-                new KafkaRawMessageReader(simpleConsumerPool), avroSchemaRepository, kafkaNamesMapper
+                new KafkaRawMessageReader(simpleConsumerPool), avroSchemaRepository
             );
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                 storage,
@@ -80,10 +80,11 @@ public class KafkaConfiguration {
                 messageContentWrapper,
                 subscriptionOffsetChangeIndicator,
                 simpleConsumerPool,
-                kafkaNamesMapper
+                    kafkaNamesMapper
             );
 
-            return new BrokersClusterService(kafkaProperties.getClusterName(), singleMessageReader, retransmissionService, brokerTopicManagement);
+            return new BrokersClusterService(kafkaProperties.getClusterName(), singleMessageReader,
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper);
         }).collect(toList());
 
         return new MultiDCAwareService(clusters, adminTool);
