@@ -114,7 +114,7 @@ public class PublishingTest extends IntegrationTest {
         // when
         publisher.publish(topic.getQualifiedName(), TestMessage.of("hello", "world").body());
 
-        operations.activateSubscription("publishResumedGroup", "topic", "subscription");
+        operations.activateSubscription(topic, "subscription");
 
         // then
         remoteService.waitUntilReceived();

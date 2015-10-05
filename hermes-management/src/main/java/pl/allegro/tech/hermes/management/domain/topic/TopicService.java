@@ -74,7 +74,7 @@ public class TopicService {
         if (!retrieved.equals(modified)) {
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {
                 multiDCAwareService.manageTopic(brokerTopicManagement ->
-                    brokerTopicManagement.updateTopic(topic)
+                    brokerTopicManagement.updateTopic(modified)
                 );
             }
             topicRepository.updateTopic(modified);

@@ -45,10 +45,10 @@ public class OffsetCommitTest extends IntegrationTest {
         for (int i = 0; i < messages; i++) {
             publisher.publish("properCommitOffsetGroup.topic", TestMessage.simple().body());
         }
-        wait.untilAllOffsetsEqual(topic, "subscription", messages);
+        wait.untilAllOffsetsEqualOnPrimaryKafkaTopic(topic, "subscription", messages);
 
         //then
-        assertThat(services().zookeeper(), kafkaNamesMapper).offsetsAreNotRetracted(topic, "subscription", 2, messages);
+        assertThat(services().zookeeper(), kafkaNamesMapper).offsetsAreNotRetractedOnPrimaryKafkaTopic(topic, "subscription", 2, messages);
         secondConsumer.stop();
     }
 

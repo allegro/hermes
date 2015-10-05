@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
+import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -88,7 +89,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldGetBadRequestForJsonInvalidWIthAvroSchema() {
+    public void shouldGetBadRequestForJsonInvalidWithAvroSchema() {
         Topic topic = topic()
                 .withName("avro.invalidJson")
                 .withValidation(true)
@@ -101,6 +102,41 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void shouldPublishAndConsumeMessageAfterMigrationFromJsonToAvro() throws Exception {
+        // given
+        Topic topic = operations.buildTopic("migrated", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+
+        TestMessage beforeMigrationMessage = user.createMessage("Bob", 50, "blue");
+        TestMessage afterMigrationMessage = user.createMessage("Barney", 35, "yellow");
+
+        remoteService.expectMessages(beforeMigrationMessage, afterMigrationMessage);
+
+        publisher.publish(topic.getQualifiedName(), beforeMigrationMessage.body());
+
+        Topic migratedTopic = topic()
+                .applyPatch(topic)
+                .withContentType(AVRO)
+                .withMessageSchema(user.getSchema().toString())
+                .migratedFromJsonType()
+                .build();
+        operations.updateTopic("migrated", "topic", migratedTopic);
+        restartConsumer(topic, "subscription");
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), afterMigrationMessage.append("__metadata", null).body());
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+        remoteService.waitUntilReceived();
+    }
+
+    private void restartConsumer(Topic topic, String subscription) {
+        operations.suspendSubscription(topic, subscription);
+        operations.activateSubscription(topic, subscription);
     }
 
 }

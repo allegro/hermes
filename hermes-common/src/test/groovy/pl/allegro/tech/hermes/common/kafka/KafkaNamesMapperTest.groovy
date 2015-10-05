@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.kafka
 
+import pl.allegro.tech.hermes.api.Topic
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -13,7 +14,7 @@ class KafkaNamesMapperTest extends Specification {
         def mapper = new KafkaNamesMapper(namespace)
 
         expect:
-        mapper.toKafkaTopicName(topic().withName(topicName).build()) == new KafkaTopicName(kafkaTopicName)
+        mapper.toKafkaTopicName(topic().withName(topicName).build()) == KafkaTopicName.valueOf(kafkaTopicName)
 
         where:
         namespace | topicName     | kafkaTopicName
@@ -35,4 +36,12 @@ class KafkaNamesMapperTest extends Specification {
         ""        | "subscription_id" | "subscription_id"
     }
 
+    def "should append '_avro' suffix for topics of type AVRO"() {
+        given:
+        def mapper = new KafkaNamesMapper("")
+        def avroTopic = topic().withName("group", "topic").withContentType(Topic.ContentType.AVRO).build()
+
+        expect:
+        mapper.toKafkaTopicName(avroTopic) == KafkaTopicName.valueOf("group.topic_avro")
+    }
 }

@@ -5,6 +5,7 @@ import kafka.log.LogConfig;
 import org.I0Itec.zkclient.ZkClient;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 
@@ -29,24 +30,47 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
     public void createTopic(Topic topic) {
         Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
 
-        AdminUtils.createTopic(
-            client,
-            kafkaNamesMapper.toKafkaTopicName(topic).asString(),
-            topicProperties.getPartitions(),
-            topicProperties.getReplicationFactor(),
-            config
+        kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
+                        AdminUtils.createTopic(
+                                client,
+                                k.name().asString(),
+                                topicProperties.getPartitions(),
+                                topicProperties.getReplicationFactor(),
+                                config
+                        )
         );
     }
 
     @Override
     public void removeTopic(Topic topic) {
-        AdminUtils.deleteTopic(client, kafkaNamesMapper.toKafkaTopicName(topic).asString());
+        kafkaNamesMapper.toKafkaTopics(topic).forEach(k -> AdminUtils.deleteTopic(client, k.name().asString()));
     }
 
     @Override
     public void updateTopic(Topic topic) {
         Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
-        AdminUtils.changeTopicConfig(client, kafkaNamesMapper.toKafkaTopicName(topic).asString(), config);
+        KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
+
+        if (isMigrationToNewKafkaTopic(kafkaTopics)) {
+            AdminUtils.createTopic(
+                    client,
+                    kafkaTopics.getPrimary().name().asString(),
+                    topicProperties.getPartitions(),
+                    topicProperties.getReplicationFactor(),
+                    config
+            );
+        } else {
+            AdminUtils.changeTopicConfig(client, kafkaTopics.getPrimary().name().asString(), config);
+        }
+
+        kafkaTopics.getSecondary().ifPresent(secondary ->
+                        AdminUtils.changeTopicConfig(client, secondary.name().asString(), config)
+        );
+    }
+
+    protected boolean isMigrationToNewKafkaTopic(KafkaTopics kafkaTopics) {
+        return kafkaTopics.getSecondary().isPresent() &&
+                !AdminUtils.topicExists(client, kafkaTopics.getPrimary().name().asString());
     }
 
     private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties) {

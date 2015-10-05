@@ -24,11 +24,20 @@ public class KafkaNamesMapper {
     }
 
     public KafkaTopicName toKafkaTopicName(Topic topic) {
-        return KafkaTopicName.valueOf(namespaced(topic.getName().qualifiedName()));
+        return toKafkaTopicName(topic, topic.getContentType());
     }
 
     public KafkaTopics toKafkaTopics(Topic topic) {
-        return new KafkaTopics(new KafkaTopic(toKafkaTopicName(topic), topic.getContentType()));
+        KafkaTopic primary = new KafkaTopic(toKafkaTopicName(topic), topic.getContentType());
+        if (topic.wasMigratedFromJsonType()) {
+            KafkaTopic secondary = new KafkaTopic(toKafkaTopicName(topic, Topic.ContentType.JSON), Topic.ContentType.JSON);
+            return new KafkaTopics(primary, secondary);
+        }
+        return new KafkaTopics(primary);
+    }
+
+    private KafkaTopicName toKafkaTopicName(Topic topic, Topic.ContentType contentType) {
+        return KafkaTopicName.valueOf(namespaced(topic.getName().qualifiedName() + topicNameSuffix(contentType)));
     }
 
     private String namespaced(String name) {
@@ -37,6 +46,17 @@ public class KafkaNamesMapper {
         }
 
         return namespace + SEPARATOR + name;
+    }
+
+    private String topicNameSuffix(Topic.ContentType contentType) {
+        switch (contentType) {
+            case JSON:
+                return "";
+            case AVRO:
+                return "_avro";
+        }
+
+        throw new IllegalStateException("unknown content type '" + contentType + "'");
     }
 
 }

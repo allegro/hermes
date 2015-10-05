@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.common.message.converter.ConvertingException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
+import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.AsyncContextExecutionCallback;
@@ -131,6 +132,8 @@ public class PublishingServlet extends HttpServlet {
 
                     } catch (InvalidMessageException | ConvertingException | UnsupportedContentTypeException exception) {
                         httpResponder.badRequest(exception);
+                    } catch (CouldNotLoadSchemaException e) {
+                        httpResponder.internalError(e, "Could not load schema for published message");
                     }
                 }),
                 input -> httpResponder.badRequest(input, "Validation error"),

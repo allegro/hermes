@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.kafka;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -25,5 +26,10 @@ public class KafkaTopics {
 
     public Optional<KafkaTopic> getSecondary() {
         return secondary;
+    }
+
+    public void forEach(Consumer<KafkaTopic> consumer) {
+        consumer.accept(primary);
+        secondary.ifPresent(consumer);
     }
 }

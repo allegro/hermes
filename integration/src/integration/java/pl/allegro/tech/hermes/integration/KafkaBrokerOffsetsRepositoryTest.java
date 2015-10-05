@@ -23,7 +23,7 @@ import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
 
     private final String kafkaHost = "localhost";
-    private final Topic topic = topic().withName("brokerMessageCommiter", "topic").build();
+    private final Topic topic = topic().applyDefaults().withName("brokerMessageCommiter", "topic").build();
     private final String subscriptionName = "subscription";
     private KafkaTopicName kafkaTopicName;
     private Subscription subscription;

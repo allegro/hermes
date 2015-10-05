@@ -23,9 +23,9 @@ public class ZookeeperAssertion extends AbstractAssert<ZookeeperAssertion, Curat
         this.kafkaNamesMapper = kafkaNamesMapper;
     }
 
-    public void offsetsAreNotRetracted(Topic topic, String subscription, int partitions, int offset) {
+    public void offsetsAreNotRetractedOnPrimaryKafkaTopic(Topic topic, String subscription, int partitions, int offset) {
         ConsumerGroupId kafkaGroupId = kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription));
-        KafkaTopicName kafkaTopicName = kafkaNamesMapper.toKafkaTopicName(topic);
+        KafkaTopicName kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name();
 
         for (int i = 0; i < 200; i++) {
             try {

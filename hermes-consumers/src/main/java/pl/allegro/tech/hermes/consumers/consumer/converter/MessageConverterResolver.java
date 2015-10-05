@@ -18,7 +18,7 @@ public class MessageConverterResolver {
     }
 
     public MessageConverter converterFor(Message message, Topic topic) {
-        if (topic.getContentType() == Topic.ContentType.AVRO) {
+        if (message.getContentType() == Topic.ContentType.AVRO) {
             return avroToJsonMessageConverter;
         }
 

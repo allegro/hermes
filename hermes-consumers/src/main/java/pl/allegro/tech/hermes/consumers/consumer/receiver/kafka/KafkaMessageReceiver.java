@@ -52,11 +52,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
         this.clock = clock;
         this.readTimeout = readTimeout;
 
-        KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
-
-        ImmutableList.Builder<KafkaTopic> topicsBuilder = new ImmutableList.Builder<KafkaTopic>().add(kafkaTopics.getPrimary());
-        kafkaTopics.getSecondary().ifPresent(topicsBuilder::add);
-        Collection<KafkaTopic> topics = topicsBuilder.build();
+        Collection<KafkaTopic> topics = getKafkaTopics(topic, kafkaNamesMapper);
 
         Map<String, Integer> topicCountMap = topics.stream()
                 .collect(Collectors.toMap((kafkaTopic) -> kafkaTopic.name().asString(), (kafkaTopic) -> kafkaStreamCount));
@@ -75,6 +71,14 @@ public class KafkaMessageReceiver implements MessageReceiver {
                     } catch (InterruptedException | MessageReceivingTimeoutException ignored) { }
                 }
         }));
+    }
+
+    private Collection<KafkaTopic> getKafkaTopics(Topic topic, KafkaNamesMapper kafkaNamesMapper) {
+        KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
+
+        ImmutableList.Builder<KafkaTopic> topicsBuilder = new ImmutableList.Builder<KafkaTopic>().add(kafkaTopics.getPrimary());
+        kafkaTopics.getSecondary().ifPresent(topicsBuilder::add);
+        return topicsBuilder.build();
     }
 
     @Override

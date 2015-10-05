@@ -58,7 +58,7 @@ public class RemoteServiceEndpoint {
     }
 
     public void expectMessages(TestMessage... messages) {
-        expectMessages(Lists.transform(Arrays.asList(messages), input -> input.body()));
+        expectMessages(Arrays.asList(messages).stream().map(TestMessage::body).collect(toList()));
     }
 
     public void expectMessages(String... messages) {

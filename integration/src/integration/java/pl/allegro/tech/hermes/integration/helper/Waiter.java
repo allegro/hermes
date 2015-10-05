@@ -11,11 +11,13 @@ import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
@@ -66,7 +68,9 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     public void untilSubscriptionIsDeactivated(Topic topic, String subscription) {
-        untilKafkaZookeeperNodeEmptied(subscriptionConsumerPath(topic, subscription), 60);
+        kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
+                        untilKafkaZookeeperNodeEmptied(subscriptionConsumerPath(topic, k, subscription), 60)
+        );
     }
 
     public void untilSubscriptionIsActivated(Topic topic, String subscription) {
@@ -88,15 +92,19 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     public void untilTopicRemovedInKafka(Topic topic) {
-        untilKafkaZookeeperNodeDeletion(KafkaZookeeperPaths.topicPath(kafkaNamesMapper.toKafkaTopicName(topic)));
+        kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
+                        untilKafkaZookeeperNodeDeletion(KafkaZookeeperPaths.topicPath(k.name()))
+        );
     }
 
-    public void untilAllOffsetsEqual(Topic topic, final String subscription, final int offset) {
+    public void untilAllOffsetsEqualOnPrimaryKafkaTopic(Topic topic, final String subscription, final int offset) {
+        KafkaTopic primaryKafkaTopic = kafkaNamesMapper.toKafkaTopics(topic).getPrimary();
+
         waitAtMost(adjust(30), TimeUnit.SECONDS).until(() -> {
-            List<String> partitions = zookeeper.getChildren().forPath(subscriptionOffsetPath(topic, subscription));
+            List<String> partitions = zookeeper.getChildren().forPath(subscriptionOffsetPath(topic, primaryKafkaTopic, subscription));
             for (String partition : partitions) {
                 Long currentOffset = Long.valueOf(new String(
-                        zookeeper.getData().forPath(subscriptionOffsetPath(topic, subscription) + "/" + partition)));
+                        zookeeper.getData().forPath(subscriptionOffsetPath(topic, primaryKafkaTopic, subscription) + "/" + partition)));
                 if (currentOffset != offset) {
                     return false;
                 }
@@ -148,18 +156,18 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> collection.find().count() > 0);
     }
 
-    private String subscriptionConsumerPath(Topic topic, String subscription) {
+    private String subscriptionConsumerPath(Topic topic, KafkaTopic kafkaTopic, String subscription) {
         return KafkaZookeeperPaths.ownersPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription)),
-                kafkaNamesMapper.toKafkaTopicName(topic));
+                kafkaTopic.name());
     }
 
     private String subscriptionIdsPath(Topic topic, String subscription) {
         return KafkaZookeeperPaths.idsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription)));
     }
 
-    private String subscriptionOffsetPath(Topic topic, String subscription) {
+    private String subscriptionOffsetPath(Topic topic, KafkaTopic kafkaTopic, String subscription) {
         return KafkaZookeeperPaths.offsetsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription)),
-                kafkaNamesMapper.toKafkaTopicName(topic));
+                kafkaTopic.name());
     }
 
     private void sleep(int seconds) {

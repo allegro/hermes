@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 
 import javax.ws.rs.core.Response;
 
+import static com.jayway.awaitility.Awaitility.to;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -37,7 +38,13 @@ public class HermesAPIOperations {
     }
 
     public Topic createTopic(String group, String topic) {
-        Topic created = topic().withName(group, topic).withRetentionTime(1000).withDescription("Test topic").build();
+        Topic created = topic()
+                .applyDefaults()
+                .withName(group, topic)
+                .withRetentionTime(1000)
+                .withDescription("Test topic")
+                .build();
+
         createTopic(created);
         return created;
     }
@@ -89,8 +96,8 @@ public class HermesAPIOperations {
         return endpoints.subscription().updateState(topic.getQualifiedName(), subscription, Subscription.State.SUSPENDED);
     }
 
-    public Response activateSubscription(String group, String topic, String subscription) {
-        return endpoints.subscription().updateState(group + "." + topic, subscription, Subscription.State.ACTIVE);
+    public Response activateSubscription(Topic topic, String subscription) {
+        return endpoints.subscription().updateState(topic.getQualifiedName(), subscription, Subscription.State.ACTIVE);
     }
 
     public void updateSubscription(String group, String topic, String subscription, Subscription updated) {
@@ -105,6 +112,10 @@ public class HermesAPIOperations {
 
     public Topic getTopic(String group, String topic) {
         return endpoints.topic().get(group + "." + topic);
+    }
+
+    public void updateTopic(String group, String topic, Topic updated) {
+        updateTopic(new TopicName(group, topic), updated);
     }
 
     public void updateTopic(TopicName topicName, Topic updated) {
