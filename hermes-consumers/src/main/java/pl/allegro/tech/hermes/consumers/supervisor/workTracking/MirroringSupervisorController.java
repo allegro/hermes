@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workTracking;
 
 import com.google.common.collect.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
@@ -9,6 +11,8 @@ public class MirroringSupervisorController implements SupervisorController {
     private ConsumersSupervisor supervisor;
     private SubscriptionsCache subscriptionsCache;
     private WorkTracker workTracker;
+
+    private static final Logger logger = LoggerFactory.getLogger(MirroringSupervisorController.class);
 
     public MirroringSupervisorController(ConsumersSupervisor supervisor,
                                          SubscriptionsCache subscriptionsCache,
@@ -46,11 +50,13 @@ public class MirroringSupervisorController implements SupervisorController {
 
     @Override
     public void onSubscriptionAssigned(Subscription subscription) {
+        logger.info("Assigning consumer for {}", subscription.getId());
         supervisor.assignConsumerForSubscription(subscription);
     }
 
     @Override
     public void onAssignmentRemoved(Subscription subscription) {
+        logger.info("Removing assignment from consumer for {}", subscription.getId());
         supervisor.deleteConsumerForSubscription(subscription);
     }
 
