@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
+import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 import javax.inject.Inject;
@@ -27,21 +28,25 @@ public class TopicService {
 
     private final TopicMetricsRepository metricRepository;
     private final MultiDCAwareService multiDCAwareService;
+    private final TopicValidator topicValidator;
 
     @Inject
     public TopicService(MultiDCAwareService multiDCAwareService,
                         TopicRepository topicRepository,
                         GroupService groupService,
                         TopicProperties topicProperties,
-                        TopicMetricsRepository metricRepository) {
+                        TopicMetricsRepository metricRepository,
+                        TopicValidator topicValidator) {
         this.multiDCAwareService = multiDCAwareService;
         this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
         this.groupService = groupService;
         this.metricRepository = metricRepository;
+        this.topicValidator = topicValidator;
     }
 
     public void createTopic(Topic topic) {
+        topicValidator.ensureCreatedTopicIsValid(topic);
         topicRepository.createTopic(topic);
 
         try {
@@ -70,6 +75,8 @@ public class TopicService {
 
         Topic retrieved = getTopicDetails(topic.getName());
         Topic modified = Patch.apply(retrieved, topic);
+
+        topicValidator.ensureUpdatedTopicIsValid(modified, retrieved);
 
         if (!retrieved.equals(modified)) {
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {
