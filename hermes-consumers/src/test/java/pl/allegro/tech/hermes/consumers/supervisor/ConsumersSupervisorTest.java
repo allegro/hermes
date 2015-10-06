@@ -130,7 +130,7 @@ public class ConsumersSupervisorTest {
     public void shouldShutdownConsumerWhenSubscriptionRemoved() {
         consumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
 
-        consumersSupervisor.deleteConsumerForSubscription(SOME_SUBSCRIPTION);
+        consumersSupervisor.deleteConsumerForSubscriptionName(SOME_SUBSCRIPTION.toSubscriptionName());
 
         verify(consumer).stopConsuming();
     }
@@ -138,10 +138,11 @@ public class ConsumersSupervisorTest {
     @Test
     public void shouldRemoveSubscriptionMetricsWhenSubscriptionRemoved() {
         consumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
+        SubscriptionName name = SOME_SUBSCRIPTION.toSubscriptionName();
 
-        consumersSupervisor.deleteConsumerForSubscription(SOME_SUBSCRIPTION);
+        consumersSupervisor.deleteConsumerForSubscriptionName(name);
 
-        verify(hermesMetrics).removeMetrics(SOME_SUBSCRIPTION);
+        verify(hermesMetrics).removeMetrics(name);
     }
 
     @Test
