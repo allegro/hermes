@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.assertj.core.data.MapEntry;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -43,6 +44,17 @@ public class JsonMessageContentWrapperTest {
         assertThat(result.getMessageMetadata()).isEqualTo(metadata);
     }
 
+    @Test
+    public void shouldTolerateUnwrappingUnwrappedMessage() {
+        //when
+        UnwrappedMessageContent result = contentWrapper.unwrapContent(CONTENT);
+
+        //then
+        assertThat(result.getMessageMetadata().getId()).isNotEmpty();
+        assertThat(result.getMessageMetadata().getTimestamp()).isEqualTo(1L);
+    }
+
+    @Ignore
     @Test(expected = UnwrappingException.class)
     public void shouldThrowExceptionWhenMetadataNotFound() {
         contentWrapper.unwrapContent(CONTENT);

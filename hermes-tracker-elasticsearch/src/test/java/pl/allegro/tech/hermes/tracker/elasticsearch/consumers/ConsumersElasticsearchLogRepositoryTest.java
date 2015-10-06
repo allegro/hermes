@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.consumers;
 
 import com.codahale.metrics.MetricRegistry;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.junit.ClassRule;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
@@ -10,6 +11,8 @@ import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
 import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
+import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendDailyIndexFactory;
+import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactory;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -18,8 +21,8 @@ import java.time.ZoneOffset;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
+import static org.elasticsearch.index.query.QueryBuilders.filteredQuery;
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
 public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest implements LogSchemaAware {
 
@@ -27,12 +30,15 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
 
     private static final Clock clock = Clock.fixed(LocalDate.of(2000, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
     private static final ConsumersIndexFactory indexFactory = new ConsumersDailyIndexFactory(clock);
+    private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
 
     @ClassRule
     public static ElasticsearchResource elasticsearch = new ElasticsearchResource(indexFactory);
+    private final SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, indexFactory);
 
     @Override
     protected LogRepository createLogRepository() {
+        schemaManager.ensureSchema();
         return new ConsumersElasticsearchLogRepository.Builder(elasticsearch.client(), new PathsCompiler("localhost"), new MetricRegistry())
                 .withIndexFactory(indexFactory)
                 .build();
@@ -43,12 +49,14 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
         await().atMost(ONE_MINUTE).until(() -> {
             SearchResponse response = elasticsearch.client().prepareSearch(indexFactory.createIndex())
                     .setTypes(SchemaManager.SENT_TYPE)
-                    .setQuery(boolQuery()
-                            .should(matchQuery(TOPIC_NAME, topic))
-                            .should(matchQuery(SUBSCRIPTION, subscription))
-                            .should(matchQuery(MESSAGE_ID, id))
-                            .should(matchQuery(STATUS, status.toString()))
-                            .should(matchQuery(CLUSTER, CLUSTER_NAME)))
+                    .setQuery(filteredQuery(matchAllQuery(),
+                            FilterBuilders.andFilter(
+                                    FilterBuilders.termFilter(TOPIC_NAME, topic),
+                                    FilterBuilders.termFilter(SUBSCRIPTION, subscription),
+                                    FilterBuilders.termFilter(MESSAGE_ID, id),
+                                    FilterBuilders.termFilter(STATUS, status.toString()),
+                                    FilterBuilders.termFilter(CLUSTER, CLUSTER_NAME)
+                            )))
                     .execute().get();
             return response.getHits().getTotalHits() == 1;
         });

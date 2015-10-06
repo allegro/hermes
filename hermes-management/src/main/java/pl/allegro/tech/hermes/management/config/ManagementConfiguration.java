@@ -7,10 +7,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.NoOpSubscriptionLagSource;
 import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
 import javax.ws.rs.client.Client;
@@ -39,7 +42,7 @@ public class ManagementConfiguration {
     public Client jerseyClient() {
         ClientConfig config = new ClientConfig();
         config.property(ClientProperties.CONNECT_TIMEOUT, httpClientProperties.getConnectTimeout());
-        config.property(ClientProperties.READ_TIMEOUT,    httpClientProperties.getReadTimeout());
+        config.property(ClientProperties.READ_TIMEOUT, httpClientProperties.getReadTimeout());
 
         return ClientBuilder.newClient(config);
     }
@@ -52,5 +55,11 @@ public class ManagementConfiguration {
     @Bean
     public GraphiteClient graphiteClient() {
         return new GraphiteClient(jerseyClient().target(metricsProperties.getGraphiteHttpUri()));
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SubscriptionLagSource consumerLagSource() {
+        return new NoOpSubscriptionLagSource();
     }
 }

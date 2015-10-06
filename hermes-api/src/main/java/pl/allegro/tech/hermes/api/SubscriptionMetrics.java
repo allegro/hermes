@@ -1,73 +1,84 @@
 package pl.allegro.tech.hermes.api;
 
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SubscriptionMetrics {
     private long delivered;
     private long discarded;
     private long inflight;
-    private String rate = "0.0";
+    private String timeouts;
+    private String otherErrors;
+    private String codes2xx;
+    private String codes4xx;
+    private String codes5xx;
+    private long lag;
     private Subscription.State state;
+    private String rate;
+
+    private SubscriptionMetrics() {
+    }
+
+    @JsonCreator
+    public SubscriptionMetrics(@JsonProperty("delivered") long delivered, @JsonProperty("discarded") long discarded,
+                               @JsonProperty("inflight") long inflight, @JsonProperty("timeouts") String timeouts,
+                               @JsonProperty("otherErrors") String otherErrors, @JsonProperty("codes2xx") String codes2xx,
+                               @JsonProperty("codes4xx") String codes4xx, @JsonProperty("codes5xx") String codes5xx,
+                               @JsonProperty("Subscription") Subscription.State state, @JsonProperty("rate") String rate) {
+        this.delivered = delivered;
+        this.discarded = discarded;
+        this.inflight = inflight;
+        this.timeouts = timeouts;
+        this.otherErrors = otherErrors;
+        this.codes2xx = codes2xx;
+        this.codes4xx = codes4xx;
+        this.codes5xx = codes5xx;
+        this.state = state;
+        this.rate = rate;
+    }
 
     public long getDelivered() {
         return delivered;
-    }
-
-    public void setDelivered(long delivered) {
-        this.delivered = delivered;
     }
 
     public long getDiscarded() {
         return discarded;
     }
 
-    public void setDiscarded(long discarded) {
-        this.discarded = discarded;
-    }
-
     public long getInflight() {
         return inflight;
     }
 
-    public void setInflight(long inflight) {
-        this.inflight = inflight;
+    public String getTimeouts() {
+        return timeouts;
+    }
+
+    public long getLag() {
+        return lag;
     }
 
     public String getRate() {
         return rate;
     }
+    
+    public String getOtherErrors() {
+        return otherErrors;
+    }
 
-    public void setRate(String rate) {
-        this.rate = rate;
+    public String getCodes2xx() {
+        return codes2xx;
+    }
+
+    public String getCodes4xx() {
+        return codes4xx;
+    }
+
+    public String getCodes5xx() {
+        return codes5xx;
     }
 
     public Subscription.State getState() {
         return state;
-    }
-
-    public void setState(Subscription.State state) {
-        this.state = state;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(delivered, discarded, rate, state);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        final SubscriptionMetrics other = (SubscriptionMetrics) obj;
-
-        return Objects.equals(this.delivered, other.delivered)
-            && Objects.equals(this.discarded, other.discarded)
-            && Objects.equals(this.rate, other.rate)
-            && Objects.equals(this.state, other.state);
     }
 
     public static class Builder {
@@ -92,6 +103,31 @@ public class SubscriptionMetrics {
             return this;
         }
 
+        public Builder withOtherErrors(String otherErrors) {
+            subscriptionMetrics.otherErrors = otherErrors;
+            return this;
+        }
+
+        public Builder withTimeouts(String timeouts) {
+            subscriptionMetrics.timeouts = timeouts;
+            return this;
+        }
+
+        public Builder withCodes2xx(String count) {
+            subscriptionMetrics.codes2xx = count;
+            return this;
+        }
+
+        public Builder withCodes4xx(String count) {
+            subscriptionMetrics.codes4xx = count;
+            return this;
+        }
+
+        public Builder withCodes5xx(String count) {
+            subscriptionMetrics.codes5xx = count;
+            return this;
+        }
+
         public Builder withRate(String rate) {
             subscriptionMetrics.rate = rate;
             return this;
@@ -99,6 +135,11 @@ public class SubscriptionMetrics {
 
         public Builder withState(Subscription.State state) {
             subscriptionMetrics.state = state;
+            return this;
+        }
+
+        public Builder withLag(long lag) {
+            subscriptionMetrics.lag = lag;
             return this;
         }
 

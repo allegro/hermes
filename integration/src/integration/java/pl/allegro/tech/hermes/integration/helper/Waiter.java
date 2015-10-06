@@ -66,18 +66,20 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         untilZookeeperNodeDeletion(zookeeperPaths.subscriptionMetricsPath(topicName, subscriptionName), zookeeper);
     }
 
-    public void untilSubscriptionIsDeactivated(Topic topic, String subscription) {
-        kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
-                        untilKafkaZookeeperNodeEmptied(subscriptionConsumerPath(topic, k, subscription), 60)
-        );
-    }
-
     public void untilSubscriptionIsActivated(Topic topic, String subscription) {
         untilSubscriptionHasState(topic, subscription, Subscription.State.ACTIVE);
+
+        kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
+                        untilZookeeperNodeCreation(subscriptionConsumerPath(topic, k, subscription), kafkaZookeeper)
+        );
     }
 
     public void untilSubscriptionIsSuspended(Topic topic, String subscription) {
         untilSubscriptionHasState(topic, subscription, Subscription.State.SUSPENDED);
+
+        kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
+                        untilKafkaZookeeperNodeEmptied(subscriptionConsumerPath(topic, k, subscription), 60)
+        );
     }
 
     private void untilSubscriptionHasState(Topic topic, String subscription, Subscription.State state) {

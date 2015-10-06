@@ -17,11 +17,13 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
     private final Producers producers;
     private final KafkaNamesMapper kafkaNamesMapper;
+    private final HermesMetrics metrics;
 
     @Inject
     public KafkaBrokerMessageProducer(Producers producers, HermesMetrics metrics, KafkaNamesMapper kafkaNamesMapper) {
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.producers = producers;
+        this.metrics = metrics;
         producers.registerGauges(metrics);
     }
 
@@ -36,8 +38,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         }
     }
 
-    private static class SendCallback implements org.apache.kafka.clients.producer.Callback {
-
+    private class SendCallback implements org.apache.kafka.clients.producer.Callback {
         private final Message message;
         private final Topic topic;
         private final PublishingCallback callback;
@@ -54,6 +55,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
                 callback.onUnpublished(message, topic, e);
             } else {
                 callback.onPublished(message, topic);
+                producers.maybeRegisterNodeMetricsGauges(metrics);
             }
         }
     }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchema;
+import com.google.common.base.Joiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -11,12 +12,14 @@ import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 public class JsonTopicMessageValidator implements TopicMessageValidator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsonTopicMessageValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(JsonTopicMessageValidator.class);
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
     private final SchemaRepository<JsonSchema> schemaRepository;
     private final ObjectMapper objectMapper;
 
@@ -35,7 +38,12 @@ public class JsonTopicMessageValidator implements TopicMessageValidator {
         List<String> errors = validate(schemaRepository.getSchema(topic), message);
 
         if (!errors.isEmpty()) {
-            throw new InvalidMessageException("Message incompatible with JSON schema", errors);
+            if (topic.isValidationDryRunEnabled()) {
+                logger.info("Message incompatible with JSON schema for topic {}, errors: {}, message body: {}",
+                        topic.getQualifiedName(), Joiner.on(";").join(errors), new String(message, UTF_8));
+            } else {
+                throw new InvalidMessageException("Message incompatible with JSON schema", errors);
+            }
         }
     }
 
@@ -50,7 +58,7 @@ public class JsonTopicMessageValidator implements TopicMessageValidator {
             report.forEach(processingMessage -> errors.add(processingMessage.getMessage()));
 
         } catch (IOException e) {
-            LOGGER.warn("Error while deserializing message: " + new String(message), e);
+            logger.warn("Error while deserializing message: " + new String(message), e);
             errors.add("Problem with message deserialization. Is this correct JSON format?");
         }
 

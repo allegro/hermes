@@ -75,14 +75,20 @@ public class BrokerOffsetsRepository {
 
     public void save(Subscription subscription, PartitionOffset partitionOffset) throws ExecutionException {
         OffsetCommitRequest commitRequest = createCommitRequest(subscription, partitionOffset);
-        OffsetCommitResponse commitResponse = commitOffset(subscription, commitRequest);
-
+        OffsetCommitResponse commitResponse;
+        try {
+            commitResponse = commitOffset(subscription, commitRequest);
+        } catch (Exception e) {
+            channels.invalidate(subscription);
+            throw e;
+        }
         if (commitResponse.hasError()) {
             commitResponse.errors().values()
                     .stream()
-                    .map(e -> Short.parseShort(e.toString()))
-                    .filter(e -> (e == ErrorMapping.NotCoordinatorForConsumerCode() || e == ErrorMapping.NotCoordinatorForConsumerCode()))
-                    .forEach(e -> channels.invalidate(subscription));
+                    .map(error -> (Short) error)
+                    .filter(error -> error == ErrorMapping.NotCoordinatorForConsumerCode() || error == ErrorMapping.ConsumerCoordinatorNotAvailableCode())
+                    .findAny()
+                    .ifPresent(error -> channels.invalidate(subscription));
 
             throw new CannotCommitOffsetToBrokerException(new BrokerOffsetCommitErrors(commitResponse.errors()));
         }

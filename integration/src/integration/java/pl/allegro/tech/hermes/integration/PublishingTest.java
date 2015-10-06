@@ -89,8 +89,9 @@ public class PublishingTest extends IntegrationTest {
 
         Topic topic = operations.buildTopic("publishSuspendedGroup", "publishingTestTopic");
         operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
+        wait.untilSubscriptionIsActivated(topic, subscription);
         operations.suspendSubscription(topic, subscription);
-        wait.untilSubscriptionIsDeactivated(topic, subscription);
+        wait.untilSubscriptionIsSuspended(topic, subscription);
         
         // when
         Response response = publisher.publish(topic.getQualifiedName(), TestMessage.of("hello", "world").body());
@@ -108,7 +109,7 @@ public class PublishingTest extends IntegrationTest {
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         operations.suspendSubscription(topic, "subscription");
-        wait.untilSubscriptionIsDeactivated(topic, "subscription");
+        wait.untilSubscriptionIsSuspended(topic, "subscription");
         remoteService.expectMessages(TestMessage.of("hello", "world").body());
 
         // when
@@ -270,6 +271,24 @@ public class PublishingTest extends IntegrationTest {
 
         //then
         assertThat(response).hasStatus(BAD_REQUEST);
+    }
+
+    @Test
+    public void shouldPublishInvalidJsonMessageOnValidationDryRun() {
+        // given
+        String invalidMessage = "{\"id\": \"shouldBeNumber\"}";
+        operations.buildTopic(
+                topic().withName("schema.topicWithValidationDryRun")
+                        .withValidation(true)
+                        .withValidationDryRun(true)
+                        .withMessageSchema(schema)
+                        .withContentType(JSON).build());
+
+        //when
+        Response response = publisher.publish("schema.topicWithValidationDryRun", invalidMessage);
+
+        //then
+        assertThat(response).hasStatus(CREATED);
     }
 
 }

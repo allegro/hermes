@@ -123,19 +123,19 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldNotifyConsumersAboutSchemaRemove() throws InterruptedException {
         // given
+        Topic someTopic = topic().withName("old.topic").build();
         CountDownLatch removeSchemaLatch = new CountDownLatch(1);
         FakeTicker ticker = new FakeTicker();
         SchemaRepository<String> schemaRepository = schemaRepository(topic -> Optional.ofNullable(SchemaSource.valueOf("schema")), ticker);
         schemaRepository.onRemove(stringTopicWithSchema -> {
-            assertThat(stringTopicWithSchema.getTopic().getQualifiedName()).isEqualTo("old.topic");
+            assertThat(stringTopicWithSchema.getTopic().getQualifiedName()).isEqualTo(someTopic.getQualifiedName());
             removeSchemaLatch.countDown();
         });
 
         // when
-        schemaRepository.getSchema(topic().withName("old.topic").build());
+        schemaRepository.getSchema(someTopic);
         ticker.advance(Duration.ofMinutes(60 * 24 + 1));
-        schemaRepository.getSchema(topic().withName("new.topic1").build());
-        schemaRepository.getSchema(topic().withName("new.topic2").build());
+        schemaRepository.getSchema(someTopic);
 
         //then
         assertThat(removeSchemaLatch.await(300, TimeUnit.MILLISECONDS)).isTrue();
