@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.test.helper.message;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -41,6 +42,10 @@ public final class TestMessage {
     public TestMessage append(String key, Object value) {
         content.put(key, value);
         return this;
+    }
+
+    public TestMessage withEmptyAvroMetadata() {
+        return append(AvroMetadataMarker.METADATA_MARKER, null);
     }
 
     public String body() {

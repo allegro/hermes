@@ -22,7 +22,6 @@ import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndica
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
-import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
@@ -71,19 +70,17 @@ public class KafkaConfiguration {
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties), kafkaNamesMapper);
             SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
-            SingleMessageReader singleMessageReader = new KafkaSingleMessageReader(
-                new KafkaRawMessageReader(simpleConsumerPool), avroSchemaRepository
-            );
+            KafkaRawMessageReader kafkaRawMessageReader = new KafkaRawMessageReader(simpleConsumerPool);
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                 storage,
-                singleMessageReader,
+                kafkaRawMessageReader,
                 messageContentWrapper,
                 subscriptionOffsetChangeIndicator,
                 simpleConsumerPool,
                     kafkaNamesMapper
             );
 
-            return new BrokersClusterService(kafkaProperties.getClusterName(), singleMessageReader,
+            return new BrokersClusterService(kafkaProperties.getClusterName(), new KafkaSingleMessageReader(kafkaRawMessageReader, avroSchemaRepository),
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper);
         }).collect(toList());
 

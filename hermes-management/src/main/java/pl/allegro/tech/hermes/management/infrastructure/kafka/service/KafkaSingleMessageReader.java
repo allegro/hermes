@@ -19,7 +19,7 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
     }
 
     @Override
-    public String readMessage(Topic topic, KafkaTopic kafkaTopic, int partition, long offset) {
+    public String readMessageAsJson(Topic topic, KafkaTopic kafkaTopic, int partition, long offset) {
         byte[] bytes = kafkaRawMessageReader.readMessage(kafkaTopic, partition, offset);
         if (topic.getContentType() == Topic.ContentType.AVRO) {
             bytes = convertAvroToJson(avroSchemaRepository.getSchema(topic), bytes);

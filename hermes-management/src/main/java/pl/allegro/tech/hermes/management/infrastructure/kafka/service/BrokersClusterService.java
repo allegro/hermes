@@ -38,7 +38,7 @@ public class BrokersClusterService {
     }
 
     public String readMessageFromPrimary(Topic topic, Integer partition, Long offset) {
-        return singleMessageReader.readMessage(topic, kafkaNamesMapper.toKafkaTopics(topic).getPrimary(), partition, offset);
+        return singleMessageReader.readMessageAsJson(topic, kafkaNamesMapper.toKafkaTopics(topic).getPrimary(), partition, offset);
     }
 
     public List<PartitionOffset> indicateOffsetChange(Topic topic, String subscriptionName, Long timestamp, boolean dryRun) {

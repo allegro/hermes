@@ -4,28 +4,29 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 
 class KafkaTimestampExtractor {
 
     private final Topic topic;
     private final KafkaTopic kafkaTopic;
     private final int partition;
-    private final SingleMessageReader singleMessageReader;
+    private final KafkaRawMessageReader kafkaRawMessageReader;
     private final MessageContentWrapper messageContentWrapper;
 
-    KafkaTimestampExtractor(Topic topic, KafkaTopic kafkaTopic, int partition, SingleMessageReader singleMessageReader,
+    KafkaTimestampExtractor(Topic topic, KafkaTopic kafkaTopic, int partition, KafkaRawMessageReader kafkaRawMessageReader,
                             MessageContentWrapper messageContentWrapper) {
 
         this.topic = topic;
         this.kafkaTopic = kafkaTopic;
         this.partition = partition;
-        this.singleMessageReader = singleMessageReader;
+        this.kafkaRawMessageReader = kafkaRawMessageReader;
         this.messageContentWrapper = messageContentWrapper;
     }
 
     public long extract(Long offset) {
-        String message = singleMessageReader.readMessage(topic, kafkaTopic, partition, offset);
-        return messageContentWrapper.unwrap(message.getBytes(), topic).getMessageMetadata().getTimestamp();
+        byte[] message = kafkaRawMessageReader.readMessage(kafkaTopic, partition, offset);
+        return messageContentWrapper.unwrap(message, topic, kafkaTopic.contentType()).getMessageMetadata().getTimestamp();
     }
 
 }

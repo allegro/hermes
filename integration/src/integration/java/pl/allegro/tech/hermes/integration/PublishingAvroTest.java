@@ -105,7 +105,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldPublishAndConsumeMessageAfterMigrationFromJsonToAvro() throws Exception {
+    public void shouldPublishAndConsumeJsonMessageAfterMigrationFromJsonToAvro() throws Exception {
         // given
         Topic topic = operations.buildTopic("migrated", "topic");
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
@@ -116,6 +116,7 @@ public class PublishingAvroTest extends IntegrationTest {
         remoteService.expectMessages(beforeMigrationMessage, afterMigrationMessage);
 
         publisher.publish(topic.getQualifiedName(), beforeMigrationMessage.body());
+        wait.untilConsumerCommitsOffset();
 
         Topic migratedTopic = topic()
                 .applyPatch(topic)
@@ -124,19 +125,14 @@ public class PublishingAvroTest extends IntegrationTest {
                 .migratedFromJsonType()
                 .build();
         operations.updateTopic("migrated", "topic", migratedTopic);
-        restartConsumer(topic, "subscription");
+        operations.restartConsumer(topic, "subscription");
 
         // when
-        Response response = publisher.publish(topic.getQualifiedName(), afterMigrationMessage.append("__metadata", null).body());
+        Response response = publisher.publish(topic.getQualifiedName(), afterMigrationMessage.withEmptyAvroMetadata().body());
 
         // then
         assertThat(response).hasStatus(CREATED);
         remoteService.waitUntilReceived();
-    }
-
-    private void restartConsumer(Topic topic, String subscription) {
-        operations.suspendSubscription(topic, subscription);
-        operations.activateSubscription(topic, subscription);
     }
 
 }

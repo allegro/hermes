@@ -110,6 +110,11 @@ public class HermesAPIOperations {
         });
     }
 
+    public void restartConsumer(Topic topic, String subscription) {
+        suspendSubscription(topic, subscription);
+        activateSubscription(topic, subscription);
+    }
+
     public Topic getTopic(String group, String topic) {
         return endpoints.topic().get(group + "." + topic);
     }

@@ -1,6 +1,6 @@
 dependencies {
-
     compile project(':hermes-api')
+    compile project(':hermes-common')
 
     compile group: 'org.apache.avro', name: 'avro', version: '1.7.7'
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
