@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang.StringUtils.isEmpty;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
@@ -71,7 +72,8 @@ public class KafkaConfiguration {
     @Bean
     MultiDCAwareService multiDCAwareService() {
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
-            KafkaNamesMapper kafkaNamesMapper = new KafkaNamesMapper(kafkaProperties.getNamespace());
+            KafkaNamesMapper kafkaNamesMapper = isEmpty(kafkaProperties.getNamespace()) ?
+                    new KafkaNamesMapper(kafkaClustersProperties.getDefaultNamespace()) : new KafkaNamesMapper(kafkaProperties.getNamespace());
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties), kafkaNamesMapper);
             SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
