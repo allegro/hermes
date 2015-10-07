@@ -6,6 +6,7 @@ import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
+import kafka.message.MessageAndMetadata;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +59,9 @@ public class KafkaMessageReceiverTest {
     @Mock(answer = Answers.RETURNS_MOCKS)
     private Timer timer;
 
+    @Mock
+    private MessageAndMetadata<byte[], byte[]> messageAndMetadata;
+
     private KafkaNamesMapper kafkaNamesMapper = new KafkaNamesMapper("ns");
 
     private KafkaMessageReceiver kafkaMsgReceiver;
@@ -68,7 +72,8 @@ public class KafkaMessageReceiverTest {
         Map<String, List<kafka.consumer.KafkaStream<byte[], byte[]>>> consumerMap = singletonMap("ns_group.topic1", ImmutableList.of(kafkaStream));
         Map<String, Integer> expectedTopicCountMap = singletonMap("ns_group.topic1", KAFKA_STREAM_COUNT);
         when(consumerConnector.createMessageStreams(expectedTopicCountMap)).thenReturn(consumerMap);
-        when(messageContentWrapper.unwrap(WRAPPED_MESSAGE_CONTENT.getBytes(), TOPIC)).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
+        when(messageAndMetadata.message()).thenReturn(WRAPPED_MESSAGE_CONTENT.getBytes());
+        when(messageContentWrapper.unwrap(WRAPPED_MESSAGE_CONTENT.getBytes(), TOPIC, TOPIC.getContentType())).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
         kafkaMsgReceiver = new KafkaMessageReceiver(TOPIC, consumerConnector, messageContentWrapper,
                 timer, new SystemClock(), kafkaNamesMapper, KAFKA_STREAM_COUNT, 10000);
     }
@@ -76,7 +81,7 @@ public class KafkaMessageReceiverTest {
     @Test
     public void shouldReadMessage() {
         // given
-        when(kafkaStream.iterator().next().message()).thenReturn(WRAPPED_MESSAGE_CONTENT.getBytes());
+        when(kafkaStream.iterator().next()).thenReturn(messageAndMetadata);
 
         // when
         Message msg = kafkaMsgReceiver.next();

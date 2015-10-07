@@ -47,7 +47,7 @@ public class ZookeeperMessageCommitterTest {
         zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
 
         //then
-        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/0"));
+        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
     }
 
     @Test
@@ -59,7 +59,7 @@ public class ZookeeperMessageCommitterTest {
         zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 0));
 
         //then
-        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/0"));
+        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
     }
 
     @Test
@@ -71,8 +71,8 @@ public class ZookeeperMessageCommitterTest {
         zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 1));
 
         //then
-        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/0"));
-        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/1"));
+        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
+        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/1"));
     }
 
     @Test
@@ -84,7 +84,7 @@ public class ZookeeperMessageCommitterTest {
         zookeeperMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", KAFKA_TOPIC, 0);
 
         //then
-        assertNull(curatorClient.checkExists().forPath("/consumers/ns_g_b_sub1/offsets/ns_g.b/0"));
+        assertNull(curatorClient.checkExists().forPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
     }
 
     private Subscription subscriptionForTopic(TopicName topicName) throws MalformedURLException {

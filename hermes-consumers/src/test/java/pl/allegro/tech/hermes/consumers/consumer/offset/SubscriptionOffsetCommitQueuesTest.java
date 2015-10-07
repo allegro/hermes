@@ -104,7 +104,7 @@ public class SubscriptionOffsetCommitQueuesTest {
         List<PartitionOffset> offsets = subscriptionOffsetCommitQueues.getOffsetsToCommit();
 
         // then
-        assertThat(offsets).containsExactly(new PartitionOffset(KAFKA_TOPIC, 1, FIRST_PARTITION), new PartitionOffset(KAFKA_TOPIC, 2, SECOND_PARTITION));
+        assertThat(offsets).containsOnly(new PartitionOffset(KAFKA_TOPIC, 1, FIRST_PARTITION), new PartitionOffset(KAFKA_TOPIC, 2, SECOND_PARTITION));
     }
 
     @Test

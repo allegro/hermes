@@ -91,6 +91,7 @@ public class ConsumersSupervisorTest {
     @Before
     public void before() {
         when(consumerFactory.createConsumer(any(Subscription.class))).thenReturn(consumer);
+        when(topicRepository.getTopicDetails(SOME_TOPIC_NAME)).thenReturn(SOME_TOPIC);
 
         consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository, topicRepository,
                 subscriptionOffsetChangeIndicator, executorService, consumerFactory,
