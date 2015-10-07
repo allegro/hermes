@@ -10,6 +10,7 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -204,7 +205,7 @@ public class HermesMetrics {
         return counterStorage.countInflightNodes(subscription.getTopicName(), subscription.getName());
     }
 
-    public void removeMetrics(final Subscription subscription) {
+    public void removeMetrics(final SubscriptionName subscription) {
         metricRegistry.removeMatching((name, metric) -> name.contains(String.format(".%s.", subscription.getId())));
     }
 
