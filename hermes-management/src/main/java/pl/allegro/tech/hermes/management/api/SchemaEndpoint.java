@@ -37,8 +37,10 @@ public class SchemaEndpoint {
     @Consumes(APPLICATION_JSON)
     @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Save schema", httpMethod = HttpMethod.POST)
-    public Response save(@PathParam("topicName") String qualifiedTopicName, String schema) {
-        schemaSourceService.saveSchemaSource(qualifiedTopicName, schema);
+    public Response save(@PathParam("topicName") String qualifiedTopicName,
+                         @DefaultValue("true") @QueryParam(value = "validate") boolean validate,
+                         String schema) {
+        schemaSourceService.saveSchemaSource(qualifiedTopicName, schema, validate);
         return Response.status(Response.Status.CREATED).build();
     }
 
