@@ -9,6 +9,7 @@ import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -49,7 +50,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
 
     public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, MessageContentWrapper contentWrapper,
                                 Timer readingTimer, Clock clock, KafkaNamesMapper kafkaNamesMapper,
-                                Integer kafkaStreamCount, Integer readTimeout) {
+                                Integer kafkaStreamCount, Integer readTimeout, SubscriptionName subscriptionName) {
         this.topic = topic;
         this.consumerConnector = consumerConnector;
         this.contentWrapper = contentWrapper;
@@ -70,10 +71,15 @@ public class KafkaMessageReceiver implements MessageReceiver {
         pool = Executors.newFixedThreadPool(iterators.size());
 
         iterators.forEach((kafkaTopic, iterator) -> pool.submit(() -> {
+                Thread.currentThread().setName("Kafka-message-receiver-" + kafkaTopic.contentType() + "-" + subscriptionName);
                 while (consuming) {
                     try {
                         readQueue.put(readMessage(kafkaTopic, iterator));
-                    } catch (InterruptedException | MessageReceivingTimeoutException ignored) { }
+                    } catch (InterruptedException | MessageReceivingTimeoutException ignored) {
+                        // intentional ignore of exception
+                    } catch (Throwable throwable) {
+                        logger.error("Error while reading message", throwable);
+                    }
                 }
         }));
     }
@@ -105,8 +111,9 @@ public class KafkaMessageReceiver implements MessageReceiver {
     }
 
     private Message readMessage(KafkaTopic kafkaTopic, ConsumerIterator<byte[], byte[]> iterator) {
+        MessageAndMetadata<byte[], byte[]> message = null;
         try (Timer.Context readingTimerContext = readingTimer.time()) {
-            MessageAndMetadata<byte[], byte[]> message = iterator.next();
+            message = iterator.next();
             UnwrappedMessageContent unwrappedContent = contentWrapper.unwrap(message.message(), topic, kafkaTopic.contentType());
 
             return new Message(
@@ -121,6 +128,10 @@ public class KafkaMessageReceiver implements MessageReceiver {
         } catch (ConsumerTimeoutException consumerTimeoutException) {
             throw new MessageReceivingTimeoutException("No messages received", consumerTimeoutException);
         } catch (Exception e) {
+            if (message != null) {
+                logger.error("Error while receiving message. Last read message: %s Partition: %d Offset: %d",
+                    new String(message.message()), message.partition(), message.offset(), e);
+            }
             throw new InternalProcessingException("Message received failed", e);
         }
     }

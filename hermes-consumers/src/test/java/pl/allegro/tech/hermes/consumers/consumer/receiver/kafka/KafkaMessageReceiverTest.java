@@ -7,14 +7,15 @@ import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageMetadata;
@@ -75,7 +76,12 @@ public class KafkaMessageReceiverTest {
         when(messageAndMetadata.message()).thenReturn(WRAPPED_MESSAGE_CONTENT.getBytes());
         when(messageContentWrapper.unwrap(WRAPPED_MESSAGE_CONTENT.getBytes(), TOPIC, TOPIC.getContentType())).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
         kafkaMsgReceiver = new KafkaMessageReceiver(TOPIC, consumerConnector, messageContentWrapper,
-                timer, new SystemClock(), kafkaNamesMapper, KAFKA_STREAM_COUNT, 10000);
+                timer, new SystemClock(), kafkaNamesMapper, KAFKA_STREAM_COUNT, 100, SubscriptionName.fromString("ns_group.topic$sub"));
+    }
+
+    @After
+    public void cleanUp() {
+        kafkaMsgReceiver.stop();
     }
 
     @Test
@@ -91,7 +97,7 @@ public class KafkaMessageReceiverTest {
     }
 
     @Test
-    public void shouldThrowTimeoutException() {
+    public void shouldThrowTimeoutExceptionWhilePollingFromEmptyQueue() {
         // given
         when(kafkaStream.iterator().next()).thenThrow(new ConsumerTimeoutException());
 
@@ -100,18 +106,6 @@ public class KafkaMessageReceiverTest {
 
         // then
         assertThat((Throwable) caughtException()).isInstanceOf(MessageReceivingTimeoutException.class);
-    }
-
-    @Test
-    public void shouldRethrowIfOtherError() {
-        // given
-        when(kafkaStream.iterator().next()).thenThrow(new NullPointerException());
-
-        // when
-        catchException(kafkaMsgReceiver).next();
-
-        // then
-        assertThat((Throwable) caughtException()).isInstanceOf(InternalProcessingException.class);
     }
 
 }
