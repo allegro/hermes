@@ -44,7 +44,8 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
         indicator.setSubscriptionOffset(TOPIC_NAME, 'override', BROKERS_CLUSTER_NAME, new PartitionOffset(primaryKafkaTopicName, 10, 1))
 
         then:
-        indicator.getSubscriptionOffsets(TOPIC, 'override', BROKERS_CLUSTER_NAME).forPartition(1) == new PartitionOffset(primaryKafkaTopicName, 10, 1)
+        def offsets = indicator.getSubscriptionOffsets(TOPIC, 'override', BROKERS_CLUSTER_NAME)
+        offsets.find { it.partition == 1 } == new PartitionOffset(primaryKafkaTopicName, 10, 1)
     }
 
     def "should extract changed offsets"() {
@@ -57,7 +58,7 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
         PartitionOffsets offsets = indicator.getSubscriptionOffsets(TOPIC, 'read', BROKERS_CLUSTER_NAME)
 
         then:
-        offsets.forPartition(1).offset == 10
+        (offsets.find { it.partition == 1 } as PartitionOffset).offset == 10
     }
 
     def "should throw exception when trying to set offsets for nonexistent subscription"() {

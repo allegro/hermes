@@ -1,15 +1,15 @@
 package pl.allegro.tech.hermes.common.kafka.offset;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 
 public class PartitionOffsets implements Iterable<PartitionOffset> {
 
-    private final Map<Integer, PartitionOffset> offsets = new LinkedHashMap<>();
+    private final List<PartitionOffset> offsets = new ArrayList<>();
 
     public PartitionOffsets add(PartitionOffset offset) {
-        offsets.put(offset.getPartition(), offset);
+        offsets.add(offset);
         return this;
     }
 
@@ -20,10 +20,7 @@ public class PartitionOffsets implements Iterable<PartitionOffset> {
 
     @Override
     public Iterator<PartitionOffset> iterator() {
-        return offsets.values().iterator();
+        return offsets.iterator();
     }
 
-    public PartitionOffset forPartition(int partition) {
-        return offsets.get(partition);
-    }
 }
