@@ -1,7 +1,8 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
@@ -40,12 +41,23 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
 
-    @ClassRule
     public static final ElasticsearchResource elasticsearch = new ElasticsearchResource(frontendIndexFactory, consumersIndexFactory);
 
-    private final DataInitializer dataInitializer = new DataInitializer(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, CLUSTER_NAME);
-    private final SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory);
-    private final LogRepository logRepository = new ElasticsearchLogRepository(elasticsearch.client(), schemaManager);
+    private DataInitializer dataInitializer;
+    private LogRepository logRepository;
+
+    @BeforeSuite
+    public void before() throws Throwable {
+        elasticsearch.before();
+        dataInitializer = new DataInitializer(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, CLUSTER_NAME);
+        SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory);
+        logRepository = new ElasticsearchLogRepository(elasticsearch.client(), schemaManager);
+    }
+
+    @AfterSuite
+    public void after() {
+        elasticsearch.after();
+    }
 
     @Test
     public void shouldGetLastUndelivered() throws Exception {
