@@ -46,7 +46,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
     private final ExecutorService pool;
     private final Integer readTimeout;
     private final Topic topic;
-    private boolean consuming = true;
+    private volatile boolean consuming = true;
 
     public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, MessageContentWrapper contentWrapper,
                                 Timer readingTimer, Clock clock, KafkaNamesMapper kafkaNamesMapper,

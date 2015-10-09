@@ -17,6 +17,8 @@ import javax.inject.Named;
 
 public class ZookeeperOffsetsStorage implements OffsetsStorage {
 
+    public static final int OFFSET_MISSING = -1;
+
     private final CuratorFramework curatorFramework;
     private final KafkaNamesMapper kafkaNamesMapper;
 
@@ -29,12 +31,20 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     @Override
     public void setSubscriptionOffset(Subscription subscription, PartitionOffset partitionOffset) {
         try {
-            Long actualOffset = convertByteArrayToLong(curatorFramework.getData()
-                    .forPath(getPartitionOffsetPath(subscription, partitionOffset.getTopic(), partitionOffset.getPartition())));
+            String offsetPath = getPartitionOffsetPath(subscription, partitionOffset.getTopic(), partitionOffset.getPartition());
 
-            if (actualOffset > partitionOffset.getOffset()) {
+            long currentOffset = OFFSET_MISSING;
+            if (curatorFramework.checkExists().forPath(offsetPath) != null) {
+                currentOffset = convertByteArrayToLong(curatorFramework.getData().forPath(offsetPath));
+            }
+
+            if (currentOffset == OFFSET_MISSING || currentOffset > partitionOffset.getOffset()) {
+                if (currentOffset == OFFSET_MISSING) {
+                    curatorFramework.create().creatingParentsIfNeeded().forPath(offsetPath);
+                }
+
                 curatorFramework.setData().forPath(
-                        getPartitionOffsetPath(subscription, partitionOffset.getTopic(), partitionOffset.getPartition()),
+                        offsetPath,
                         Long.valueOf(partitionOffset.getOffset()).toString().getBytes(Charsets.UTF_8)
                 );
             }
@@ -43,7 +53,7 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
         }
     }
 
-    private Long convertByteArrayToLong(byte[] data) {
+    private long convertByteArrayToLong(byte[] data) {
         return Long.valueOf(new String(data, Charsets.UTF_8));
     }
 

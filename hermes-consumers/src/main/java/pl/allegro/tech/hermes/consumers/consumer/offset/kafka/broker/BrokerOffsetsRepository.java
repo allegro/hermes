@@ -94,6 +94,14 @@ public class BrokerOffsetsRepository {
         }
     }
 
+    public void saveIfOffsetInThePast(Subscription subscription, PartitionOffset partitionOffset) throws ExecutionException {
+        long currentOffset = find(subscription, partitionOffset.getTopic(), partitionOffset.getPartition());
+
+        if (currentOffset == -1 || currentOffset > partitionOffset.getOffset()) {
+            save(subscription, partitionOffset);
+        }
+    }
+
     private OffsetCommitResponse commitOffset(Subscription subscription, OffsetCommitRequest commitRequest) throws ExecutionException {
         BlockingChannel channel = channels.get(subscription);
         channel.send(commitRequest.underlying());

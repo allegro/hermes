@@ -16,6 +16,8 @@ public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
             .withTopicName("brokerGroup", "brokerTopic")
             .withName("brokerSubscription").build();
 
+    private static final KafkaTopicName kafkaTopicName = KafkaTopicName.valueOf("kafka_topic");
+
     private final ZookeeperOffsetsStorage offsetsStorage = new ZookeeperOffsetsStorage(zookeeperClient, new KafkaNamesMapper("ns"));
 
     @After
@@ -27,7 +29,6 @@ public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
     @Test
     public void shouldSetOffset() throws Exception {
         // given
-        KafkaTopicName kafkaTopicName = KafkaTopicName.valueOf("kafka_topic");
         createOffset(subscription, kafkaTopicName, 0, 100L);
 
         // when
@@ -35,6 +36,19 @@ public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
 
         // then
         long offset = offsetsStorage.getSubscriptionOffset(subscription, kafkaTopicName, 0);
+        assertThat(offset).isEqualTo(50L);
+    }
+
+    @Test
+    public void shouldSetOffsetEvenIfPartitionWasNotCommittedPreviously() throws Exception {
+        // given
+        createOffset(subscription, kafkaTopicName, 0, 100L);
+
+        // when
+        offsetsStorage.setSubscriptionOffset(subscription, new PartitionOffset(kafkaTopicName, 50L, 1));
+
+        // then
+        long offset = offsetsStorage.getSubscriptionOffset(subscription, kafkaTopicName, 1);
         assertThat(offset).isEqualTo(50L);
     }
 

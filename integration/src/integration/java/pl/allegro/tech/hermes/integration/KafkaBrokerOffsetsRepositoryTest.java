@@ -73,6 +73,31 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldNotCommitOffsetInTheFutureWhenSavingOffsetInThePast() throws Exception {
+        //given
+        PartitionOffset oldOffset = new PartitionOffset(kafkaTopicName, 10, 0);
+        offsetStorage.save(subscription, oldOffset);
+
+        //when
+        offsetStorage.saveIfOffsetInThePast(subscription, new PartitionOffset(kafkaTopicName, 15, oldOffset.getPartition()));
+
+        //then
+        assertThat(offsetStorage.find(subscription, kafkaTopicName, oldOffset.getPartition())).isEqualTo(oldOffset.getOffset());
+    }
+
+    @Test
+    public void shouldSetOffsetEvenIfPartitionWasNotCommittedPreviously() throws Exception {
+        //when
+        offsetStorage.save(subscription, new PartitionOffset(kafkaTopicName, -1, 0));
+
+        //when
+        offsetStorage.saveIfOffsetInThePast(subscription, new PartitionOffset(kafkaTopicName, 0, 0));
+
+        //then
+        assertThat(offsetStorage.find(subscription, kafkaTopicName, 0)).isEqualTo(0);
+    }
+
+    @Test
     public void shouldReloadInterruptedBlockingChannelOnRetryAfterFailure() throws Exception {
         // given
         PartitionOffset partitionOffset = new PartitionOffset(kafkaTopicName, 20, 0);

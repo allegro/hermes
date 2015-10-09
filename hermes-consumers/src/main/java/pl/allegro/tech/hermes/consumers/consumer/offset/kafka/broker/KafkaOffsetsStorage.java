@@ -18,7 +18,7 @@ public class KafkaOffsetsStorage implements OffsetsStorage {
 
     @Override
     public void setSubscriptionOffset(Subscription subscription, PartitionOffset partitionOffset) throws Exception {
-        brokerOffsetsRepository.save(subscription, partitionOffset);
+        brokerOffsetsRepository.saveIfOffsetInThePast(subscription, partitionOffset);
     }
 
     @Override
