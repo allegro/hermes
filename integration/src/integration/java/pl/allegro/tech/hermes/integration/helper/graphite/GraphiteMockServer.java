@@ -68,7 +68,7 @@ public class GraphiteMockServer {
     }
 
     public void waitUntilReceived() {
-        await().atMost(Duration.FIVE_SECONDS).until(() -> {
+        await().atMost(Duration.TEN_SECONDS).until(() -> {
             for (String metric : expectedMetrics.keySet()) {
                 if (assertedMetrics.get(metric) == null || !assertedMetrics.get(metric)) {
                     LOGGER.debug("mismatch metric {}", metric);

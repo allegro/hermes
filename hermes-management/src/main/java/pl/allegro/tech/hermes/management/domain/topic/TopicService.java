@@ -14,6 +14,8 @@ import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 import javax.inject.Inject;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,8 @@ public class TopicService {
     private final TopicMetricsRepository metricRepository;
     private final MultiDCAwareService multiDCAwareService;
     private final TopicValidator topicValidator;
+    private final TopicContentTypeMigrationService topicContentTypeMigrationService;
+    private final Clock clock;
 
     @Inject
     public TopicService(MultiDCAwareService multiDCAwareService,
@@ -36,13 +40,17 @@ public class TopicService {
                         GroupService groupService,
                         TopicProperties topicProperties,
                         TopicMetricsRepository metricRepository,
-                        TopicValidator topicValidator) {
+                        TopicValidator topicValidator,
+                        TopicContentTypeMigrationService topicContentTypeMigrationService,
+                        Clock clock) {
         this.multiDCAwareService = multiDCAwareService;
         this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
         this.groupService = groupService;
         this.metricRepository = metricRepository;
         this.topicValidator = topicValidator;
+        this.topicContentTypeMigrationService = topicContentTypeMigrationService;
+        this.clock = clock;
     }
 
     public void createTopic(Topic topic) {
@@ -79,12 +87,16 @@ public class TopicService {
         topicValidator.ensureUpdatedTopicIsValid(modified, retrieved);
 
         if (!retrieved.equals(modified)) {
+            Instant beforeMigrationInstant = clock.instant();
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {
                 multiDCAwareService.manageTopic(brokerTopicManagement ->
                     brokerTopicManagement.updateTopic(modified)
                 );
             }
             topicRepository.updateTopic(modified);
+            if (!retrieved.wasMigratedFromJsonType() && modified.wasMigratedFromJsonType()) {
+                topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
+            }
         }
     }
 

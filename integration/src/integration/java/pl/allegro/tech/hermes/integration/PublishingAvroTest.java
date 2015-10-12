@@ -142,7 +142,6 @@ public class PublishingAvroTest extends IntegrationTest {
                 .migratedFromJsonType()
                 .build();
         operations.updateTopic("migrated", "topic", migratedTopic);
-        operations.restartConsumer(topic, "subscription");
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), afterMigrationMessage.withEmptyAvroMetadata().body());

@@ -44,4 +44,8 @@ public class MultiDCAwareService {
 
         return multiDCOffsetChangeSummary;
     }
+
+    public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
+        return clusters.stream().allMatch(cluster -> cluster.areOffsetsAvailableOnAllKafkaTopics(topic));
+    }
 }

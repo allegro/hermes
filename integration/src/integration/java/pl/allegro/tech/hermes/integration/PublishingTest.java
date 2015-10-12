@@ -101,12 +101,12 @@ public class PublishingTest extends IntegrationTest {
         remoteService.makeSureNoneReceived();
     }
 
-    @Unreliable
-    @Test(enabled = false)
+    @Test
     public void shouldSendPendingMessagesAfterSubscriptionIsResumed() {
         // given
         Topic topic = operations.buildTopic("publishResumedGroup", "topic");
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        wait.untilSubscriptionIsActivated(topic, "subscription");
 
         operations.suspendSubscription(topic, "subscription");
         wait.untilSubscriptionIsSuspended(topic, "subscription");

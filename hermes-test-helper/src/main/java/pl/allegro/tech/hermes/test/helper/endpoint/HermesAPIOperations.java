@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 
 import javax.ws.rs.core.Response;
 
-import static com.jayway.awaitility.Awaitility.to;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -108,11 +107,6 @@ public class HermesAPIOperations {
         waitAtMost(Duration.ONE_MINUTE).until(() -> {
             return endpoints.subscription().get(qualifiedTopicName, subscription).equals(updated);
         });
-    }
-
-    public void restartConsumer(Topic topic, String subscription) {
-        suspendSubscription(topic, subscription);
-        activateSubscription(topic, subscription);
     }
 
     public Topic getTopic(String group, String topic) {

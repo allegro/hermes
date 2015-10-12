@@ -23,10 +23,7 @@ import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.service.*;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
 
 import javax.annotation.PreDestroy;
@@ -81,7 +78,7 @@ public class KafkaConfiguration {
             );
 
             return new BrokersClusterService(kafkaProperties.getClusterName(), new KafkaSingleMessageReader(kafkaRawMessageReader, avroSchemaRepository),
-                    retransmissionService, brokerTopicManagement, kafkaNamesMapper);
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper, new OffsetsAvailableChecker(simpleConsumerPool, storage));
         }).collect(toList());
 
         return new MultiDCAwareService(clusters, adminTool);

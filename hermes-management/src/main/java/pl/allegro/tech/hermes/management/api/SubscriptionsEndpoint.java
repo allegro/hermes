@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.management.api;
 
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTrace;

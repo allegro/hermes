@@ -127,7 +127,6 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
                 .migratedFromJsonType()
                 .build();
         operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", migratedTopic);
-        operations.restartConsumer(topic, "subscription");
 
         sendAvroMessageOnTopic(topic, user.createMessage("Barney", 35, "yellow"));
 
@@ -148,7 +147,7 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
     private void sendAvroMessageOnTopic(Topic topic, TestMessage afterMigrationMessage) {
         remoteService.expectMessages(afterMigrationMessage);
         publisher.publish(topic.getQualifiedName(), afterMigrationMessage.withEmptyAvroMetadata().body());
-        remoteService.waitUntilReceived();
+        remoteService.waitUntilReceived(120);
         remoteService.reset();
     }
 

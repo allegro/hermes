@@ -17,16 +17,18 @@ public class BrokersClusterService {
     private final RetransmissionService retransmissionService;
     private final BrokerTopicManagement brokerTopicManagement;
     private final KafkaNamesMapper kafkaNamesMapper;
+    private final OffsetsAvailableChecker offsetsAvailableChecker;
 
     public BrokersClusterService(String clusterName, SingleMessageReader singleMessageReader,
                                  RetransmissionService retransmissionService, BrokerTopicManagement brokerTopicManagement,
-                                 KafkaNamesMapper kafkaNamesMapper) {
+                                 KafkaNamesMapper kafkaNamesMapper, OffsetsAvailableChecker offsetsAvailableChecker) {
 
         this.clusterName = clusterName;
         this.singleMessageReader = singleMessageReader;
         this.retransmissionService = retransmissionService;
         this.brokerTopicManagement = brokerTopicManagement;
         this.kafkaNamesMapper = kafkaNamesMapper;
+        this.offsetsAvailableChecker = offsetsAvailableChecker;
     }
 
     public String getClusterName() {
@@ -43,5 +45,9 @@ public class BrokersClusterService {
 
     public List<PartitionOffset> indicateOffsetChange(Topic topic, String subscriptionName, Long timestamp, boolean dryRun) {
         return retransmissionService.indicateOffsetChange(topic, subscriptionName, clusterName, timestamp, dryRun);
+    }
+
+    public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
+        return kafkaNamesMapper.toKafkaTopics(topic).allMatch(offsetsAvailableChecker::areOffsetsAvailable);
     }
 }
