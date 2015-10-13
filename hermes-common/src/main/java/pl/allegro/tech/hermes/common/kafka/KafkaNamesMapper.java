@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.common.kafka;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -24,12 +23,17 @@ public class KafkaNamesMapper {
         return ConsumerGroupId.valueOf(namespaced(subscriptionId));
     }
 
-    public KafkaTopicName toKafkaTopicName(Topic topic) {
-        return toKafkaTopicName(topic.getName());
+    public KafkaTopics toKafkaTopics(Topic topic) {
+        KafkaTopic primary = new KafkaTopic(toKafkaTopicName(topic, topic.getContentType()), topic.getContentType());
+        if (topic.wasMigratedFromJsonType()) {
+            KafkaTopic secondary = new KafkaTopic(toKafkaTopicName(topic, Topic.ContentType.JSON), Topic.ContentType.JSON);
+            return new KafkaTopics(primary, secondary);
+        }
+        return new KafkaTopics(primary);
     }
 
-    public KafkaTopicName toKafkaTopicName(TopicName topicName) {
-        return KafkaTopicName.valueOf(namespaced(topicName.qualifiedName()));
+    private KafkaTopicName toKafkaTopicName(Topic topic, Topic.ContentType contentType) {
+        return KafkaTopicName.valueOf(namespaced(topic.getName().qualifiedName() + topicNameSuffix(contentType)));
     }
 
     private String namespaced(String name) {
@@ -38,6 +42,17 @@ public class KafkaNamesMapper {
         }
 
         return namespace + SEPARATOR + name;
+    }
+
+    private String topicNameSuffix(Topic.ContentType contentType) {
+        switch (contentType) {
+            case JSON:
+                return "";
+            case AVRO:
+                return "_avro";
+        }
+
+        throw new IllegalStateException("unknown content type '" + contentType + "'");
     }
 
 }

@@ -7,7 +7,10 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -32,7 +35,8 @@ public class DefaultSuccessHandlerTest {
     @Mock
     private SubscriptionOffsetCommitQueues offsetHelper;
 
-    private Message message = new Message("id", OFFSET, PARTITION, TOPIC_NAME, MESSAGE_CONTENT.getBytes(), 241243123L, 2412431234L);
+    private Message message = new Message("id", TOPIC_NAME, MESSAGE_CONTENT.getBytes(), Topic.ContentType.JSON, 241243123L, 2412431234L,
+            new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), OFFSET, PARTITION));
 
     @Mock
     private Subscription subscription;
@@ -58,7 +62,7 @@ public class DefaultSuccessHandlerTest {
     public void shouldDecrementOffsetWhenSuccessfullySendMessage() throws ExecutionException, InterruptedException {
         defaultRetryHandler.handle(message, subscription, result);
 
-        verify(offsetHelper).decrement(PARTITION, OFFSET);
+        verify(offsetHelper).remove(message);
     }
 
     @Test

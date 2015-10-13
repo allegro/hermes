@@ -36,70 +36,67 @@ public class HermesAPIOperations {
         wait.untilGroupCreated(group);
     }
 
-    public void createTopic(String group, String topic) {
-        createTopic(topic().withName(group, topic).withRetentionTime(1000).withDescription("Test topic").build());
+    public Topic createTopic(String group, String topic) {
+        Topic created = topic()
+                .applyDefaults()
+                .withName(group, topic)
+                .withRetentionTime(1000)
+                .withDescription("Test topic")
+                .build();
+
+        createTopic(created);
+        return created;
     }
 
-    public void createTopic(Topic topic) {
+    public Topic createTopic(Topic topic) {
         if (endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName())) {
-            return;
+            return topic;
         }
         assertThat(endpoints.topic().create(topic).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilTopicCreated(topic);
+        return topic;
     }
 
-    public void createSubscription(String group, String topic, String subscriptionName, String endpoint) {
+    public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint) {
         Subscription subscription = subscription()
                 .applyDefaults()
                 .withName(subscriptionName)
+                .withTopicName(topic.getName())
                 .withEndpoint(of(endpoint))
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
                 .build();
 
-        createSubscription(group, topic, subscription);
+        return createSubscription(topic, subscription);
     }
 
-    public void createSubscription(String group, String topic, Subscription subscription) {
-        if (endpoints.findSubscriptions(group, topic, subscription.isTrackingEnabled()).contains(subscription.getName())) {
-            return;
+    public Subscription createSubscription(Topic topic, Subscription subscription) {
+        if (endpoints.findSubscriptions(topic.getName().getGroupName(), topic.getName().getName(), subscription.isTrackingEnabled()).contains(subscription.getName())) {
+            return subscription;
         }
 
-        assertThat(endpoints.subscription().create(group + "." + topic, subscription).getStatus()).isEqualTo(CREATED.getStatusCode());
+        assertThat(endpoints.subscription().create(topic.getQualifiedName(), subscription).getStatus()).isEqualTo(CREATED.getStatusCode());
 
-        wait.untilSubscriptionCreated(group, topic, subscription);
+        wait.untilSubscriptionCreated(topic, subscription);
+        return subscription;
     }
 
-    public void buildTopic(String group, String topic) {
+    public Topic buildTopic(String group, String topic) {
         createGroup(group);
-        createTopic(group, topic);
+        return createTopic(group, topic);
     }
 
-    public void buildTopic(Topic topic) {
+    public Topic buildTopic(Topic topic) {
         createGroup(topic.getName().getGroupName());
-        createTopic(topic);
+        return createTopic(topic);
     }
 
-    public void buildSubscription(TopicName topicName, String subscription, String httpEndpointUrl) {
-        buildSubscription(topicName.getGroupName(), topicName.getName(), subscription, httpEndpointUrl);
+    public Response suspendSubscription(Topic topic, String subscription) {
+        return endpoints.subscription().updateState(topic.getQualifiedName(), subscription, Subscription.State.SUSPENDED);
     }
 
-    public void buildSubscription(String group, String topic, String subscription, String endpoint) {
-        buildTopic(group, topic);
-        createSubscription(group, topic, subscription, endpoint);
-    }
-
-    public void buildSubscription(TopicName topic, Subscription subscription) {
-        buildTopic(topic.getGroupName(), topic.getName());
-        createSubscription(topic.getGroupName(), topic.getName(), subscription);
-    }
-
-    public Response suspendSubscription(String group, String topic, String subscription) {
-        return endpoints.subscription().updateState(group + "." + topic, subscription, Subscription.State.SUSPENDED);
-    }
-
-    public Response activateSubscription(String group, String topic, String subscription) {
-        return endpoints.subscription().updateState(group + "." + topic, subscription, Subscription.State.ACTIVE);
+    public Response activateSubscription(Topic topic, String subscription) {
+        return endpoints.subscription().updateState(topic.getQualifiedName(), subscription, Subscription.State.ACTIVE);
     }
 
     public void updateSubscription(String group, String topic, String subscription, Subscription updated) {
@@ -114,6 +111,10 @@ public class HermesAPIOperations {
 
     public Topic getTopic(String group, String topic) {
         return endpoints.topic().get(group + "." + topic);
+    }
+
+    public void updateTopic(String group, String topic, Topic updated) {
+        updateTopic(new TopicName(group, topic), updated);
     }
 
     public void updateTopic(TopicName topicName, Topic updated) {

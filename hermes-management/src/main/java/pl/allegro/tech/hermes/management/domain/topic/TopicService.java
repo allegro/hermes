@@ -10,10 +10,12 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
+import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
-import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
 
 import javax.inject.Inject;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,8 +29,10 @@ public class TopicService {
     private final GroupService groupService;
 
     private final TopicMetricsRepository metricRepository;
-    private final SchemaValidatorProvider schemaValidatorProvider;
     private final MultiDCAwareService multiDCAwareService;
+    private final TopicValidator topicValidator;
+    private final TopicContentTypeMigrationService topicContentTypeMigrationService;
+    private final Clock clock;
 
     @Inject
     public TopicService(MultiDCAwareService multiDCAwareService,
@@ -36,21 +40,26 @@ public class TopicService {
                         GroupService groupService,
                         TopicProperties topicProperties,
                         TopicMetricsRepository metricRepository,
-                        SchemaValidatorProvider schemaValidatorProvider) {
+                        TopicValidator topicValidator,
+                        TopicContentTypeMigrationService topicContentTypeMigrationService,
+                        Clock clock) {
         this.multiDCAwareService = multiDCAwareService;
         this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
         this.groupService = groupService;
         this.metricRepository = metricRepository;
-        this.schemaValidatorProvider = schemaValidatorProvider;
+        this.topicValidator = topicValidator;
+        this.topicContentTypeMigrationService = topicContentTypeMigrationService;
+        this.clock = clock;
     }
 
     public void createTopic(Topic topic) {
+        topicValidator.ensureCreatedTopicIsValid(topic);
         topicRepository.createTopic(topic);
 
         try {
             multiDCAwareService.manageTopic(brokerTopicManagement ->
-                brokerTopicManagement.createTopic(topic.getName(), topic.getRetentionTime())
+                brokerTopicManagement.createTopic(topic)
             );
         } catch (Exception exception) {
             logger.error(
@@ -61,12 +70,12 @@ public class TopicService {
         }
     }
 
-    public void removeTopic(TopicName topicName) {
+    public void removeTopic(Topic topic) {
         if (!allowRemoval) {
-            throw new TopicRemovalDisabledException(topicName);
+            throw new TopicRemovalDisabledException(topic);
         }
-        topicRepository.removeTopic(topicName);
-        multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topicName));
+        topicRepository.removeTopic(topic.getName());
+        multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
     }
 
     public void updateTopic(Topic topic) {
@@ -75,13 +84,19 @@ public class TopicService {
         Topic retrieved = getTopicDetails(topic.getName());
         Topic modified = Patch.apply(retrieved, topic);
 
+        topicValidator.ensureUpdatedTopicIsValid(modified, retrieved);
+
         if (!retrieved.equals(modified)) {
+            Instant beforeMigrationInstant = clock.instant();
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {
                 multiDCAwareService.manageTopic(brokerTopicManagement ->
-                    brokerTopicManagement.updateTopic(topic.getName(), modified.getRetentionTime())
+                    brokerTopicManagement.updateTopic(modified)
                 );
             }
             topicRepository.updateTopic(modified);
+            if (!retrieved.wasMigratedFromJsonType() && modified.wasMigratedFromJsonType()) {
+                topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
+            }
         }
     }
 
@@ -111,8 +126,8 @@ public class TopicService {
         return topicRepository.topicExists(topicName) ? metricRepository.loadMetrics(topicName) : TopicMetrics.unavailable();
     }
 
-    public String fetchSingleMessage(String brokersClusterName, TopicName topicName, Integer partition, Long offset) {
-        return multiDCAwareService.readMessage(brokersClusterName, getTopicDetails(topicName), partition, offset);
+    public String fetchSingleMessageFromPrimary(String brokersClusterName, TopicName topicName, Integer partition, Long offset) {
+        return multiDCAwareService.readMessageFromPrimary(brokersClusterName, getTopicDetails(topicName), partition, offset);
     }
 
     public List<String> listTrackedTopicNames() {

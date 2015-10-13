@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.test
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.curator.framework.CuratorFramework
 import org.junit.ClassRule
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository
@@ -25,7 +26,7 @@ abstract class IntegrationTest extends Specification {
     protected ZookeeperPaths paths = new ZookeeperPaths("/hermes")
 
     protected RepositoryWaiter wait = new RepositoryWaiter(zookeeperResource.curator(), paths)
-    
+
     protected ObjectMapper mapper = new ObjectMapper()
 
     protected ZookeeperGroupRepository groupRepository = new ZookeeperGroupRepository(zookeeper(), mapper, paths)
@@ -33,7 +34,9 @@ abstract class IntegrationTest extends Specification {
     protected ZookeeperTopicRepository topicRepository = new ZookeeperTopicRepository(zookeeper(), mapper, paths, groupRepository)
 
     protected ZookeeperSubscriptionRepository subscriptionRepository = new ZookeeperSubscriptionRepository(zookeeper(), mapper, paths, topicRepository)
-    
+
+    protected KafkaNamesMapper kafkaNamesMapper = new KafkaNamesMapper("")
+
     protected CuratorFramework zookeeper() {
         return zookeeperResource.curator()
     }

@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.google.common.collect.ImmutableMap;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import java.util.HashMap;
 import java.util.List;

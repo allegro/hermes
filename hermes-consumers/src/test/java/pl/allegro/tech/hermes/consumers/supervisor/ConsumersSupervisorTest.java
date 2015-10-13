@@ -7,14 +7,11 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
@@ -22,9 +19,10 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffsets;
-import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
+import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -37,6 +35,7 @@ import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.Subscription.State.*;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
+import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -44,10 +43,14 @@ public class ConsumersSupervisorTest {
 
     private static final String SOME_SUBSCRIPTION_NAME = "sub";
     private static final TopicName SOME_TOPIC_NAME = new TopicName("group1", "topic1");
+    private static final Topic SOME_TOPIC = topic().applyDefaults().withName(SOME_TOPIC_NAME).build();
     private static final Subscription SOME_SUBSCRIPTION = createSubscription(SOME_TOPIC_NAME, SOME_SUBSCRIPTION_NAME);
 
     @Mock
     private SubscriptionRepository subscriptionRepository;
+
+    @Mock
+    private TopicRepository topicRepository;
 
     @Mock
     private SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
@@ -88,8 +91,9 @@ public class ConsumersSupervisorTest {
     @Before
     public void before() {
         when(consumerFactory.createConsumer(any(Subscription.class))).thenReturn(consumer);
+        when(topicRepository.getTopicDetails(SOME_TOPIC_NAME)).thenReturn(SOME_TOPIC);
 
-        consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository,
+        consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository, topicRepository,
                 subscriptionOffsetChangeIndicator, executorService, consumerFactory,
                 Lists.newArrayList(messageCommitter), Lists.newArrayList(offsetsStorage), hermesMetrics,
                 adminCache, undeliveredMessageLogPersister);
@@ -170,11 +174,11 @@ public class ConsumersSupervisorTest {
         //given
         String subscriptionName = "subscriptionName1";
         String brokersClusterName = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
-        PartitionOffset partitionOffset = new PartitionOffset(100L, 0);
+        PartitionOffset partitionOffset = new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 100L, 0);
         Subscription actualSubscription = createSubscription(SOME_TOPIC_NAME, subscriptionName, ACTIVE);
         SubscriptionName subscription = new SubscriptionName(subscriptionName, SOME_TOPIC_NAME);
         consumersSupervisor.notifyConsumerOnSubscriptionUpdate(actualSubscription);
-        when(subscriptionOffsetChangeIndicator.getSubscriptionOffsets(SOME_TOPIC_NAME, subscriptionName, brokersClusterName))
+        when(subscriptionOffsetChangeIndicator.getSubscriptionOffsets(SOME_TOPIC, subscriptionName, brokersClusterName))
                 .thenReturn(new PartitionOffsets().add(partitionOffset));
         when(subscriptionRepository.getSubscriptionDetails(SOME_TOPIC_NAME, subscriptionName))
                 .thenReturn(SOME_SUBSCRIPTION);
@@ -186,7 +190,7 @@ public class ConsumersSupervisorTest {
 
         //then
         verify(consumer).stopConsuming();
-        verify(subscriptionOffsetChangeIndicator).getSubscriptionOffsets(SOME_TOPIC_NAME, subscriptionName, brokersClusterName);
+        verify(subscriptionOffsetChangeIndicator).getSubscriptionOffsets(SOME_TOPIC, subscriptionName, brokersClusterName);
         verify(offsetsStorage).setSubscriptionOffset(Subscription.fromSubscriptionName(subscription), partitionOffset);
     }
 

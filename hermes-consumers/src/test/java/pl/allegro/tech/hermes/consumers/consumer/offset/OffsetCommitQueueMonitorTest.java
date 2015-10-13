@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
 
@@ -28,7 +29,7 @@ public class OffsetCommitQueueMonitorTest {
 
     private OffsetCommitQueueMonitor monitor;
 
-    private final int partition = 5;
+    private final TopicPartition topicPartition = new TopicPartition(KafkaTopicName.valueOf("topic"), 5);
 
     @Before
     public void setUp() {
@@ -36,11 +37,11 @@ public class OffsetCommitQueueMonitorTest {
         int offsetCommitAdditionalIdlePeriodAlert = 1000;
         int offsetCommitQueueAlertSize = 100;
 
-        monitor = new OffsetCommitQueueMonitor(subscription, 5, hermesMetrics, clock, offsetCommitAdditionalIdlePeriodAlert, offsetCommitQueueAlertSize);
+        monitor = new OffsetCommitQueueMonitor(subscription, topicPartition, hermesMetrics, clock, offsetCommitAdditionalIdlePeriodAlert, offsetCommitQueueAlertSize);
 
         Counter idlenessCounterMock = Mockito.mock(Counter.class);
 
-        when(hermesMetrics.counterForOffsetCommitIdlePeriod(subscription, partition)).thenReturn(idlenessCounterMock);
+        when(hermesMetrics.counterForOffsetCommitIdlePeriod(subscription, topicPartition.getTopic(), topicPartition.getPartition())).thenReturn(idlenessCounterMock);
 
     }
 
@@ -53,8 +54,8 @@ public class OffsetCommitQueueMonitorTest {
         monitor.nothingNewToCommit(1000, 5L);
 
         // then
-        verify(hermesMetrics).removeCounterForOffsetCommitIdlePeriod(subscription, partition);
-        verify(hermesMetrics).counterForOffsetCommitIdlePeriod(subscription, partition);
+        verify(hermesMetrics).removeCounterForOffsetCommitIdlePeriod(subscription, topicPartition.getTopic(), topicPartition.getPartition());
+        verify(hermesMetrics).counterForOffsetCommitIdlePeriod(subscription, topicPartition.getTopic(), topicPartition.getPartition());
     }
 
     @Test
@@ -66,7 +67,7 @@ public class OffsetCommitQueueMonitorTest {
         monitor.nothingNewToCommit(10, 5L);
 
         // then
-        verify(hermesMetrics).removeCounterForOffsetCommitIdlePeriod(subscription, partition);
+        verify(hermesMetrics).removeCounterForOffsetCommitIdlePeriod(subscription, topicPartition.getTopic(), topicPartition.getPartition());
         Mockito.verifyNoMoreInteractions(hermesMetrics);
     }
 
@@ -82,8 +83,8 @@ public class OffsetCommitQueueMonitorTest {
         monitor.nothingNewToCommit(10, 5L);
 
         // then
-        verify(hermesMetrics).removeCounterForOffsetCommitIdlePeriod(subscription, partition);
-        verify(hermesMetrics).counterForOffsetCommitIdlePeriod(subscription, partition);
+        verify(hermesMetrics).removeCounterForOffsetCommitIdlePeriod(subscription, topicPartition.getTopic(), topicPartition.getPartition());
+        verify(hermesMetrics).counterForOffsetCommitIdlePeriod(subscription, topicPartition.getTopic(), topicPartition.getPartition());
     }
 
 
@@ -99,7 +100,7 @@ public class OffsetCommitQueueMonitorTest {
         monitor.nothingNewToCommit(10, 7L);
 
         // then
-        verify(hermesMetrics).removeCounterForOffsetCommitIdlePeriod(subscription, partition);
+        verify(hermesMetrics).removeCounterForOffsetCommitIdlePeriod(subscription, topicPartition.getTopic(), topicPartition.getPartition());
         verifyZeroInteractions(hermesMetrics);
     }
 
@@ -114,7 +115,7 @@ public class OffsetCommitQueueMonitorTest {
         monitor.nothingNewToCommit(10, 5L);
 
         // then
-        verify(hermesMetrics).removeCounterForOffsetCommitIdlePeriod(subscription, partition);
+        verify(hermesMetrics).removeCounterForOffsetCommitIdlePeriod(subscription, topicPartition.getTopic(), topicPartition.getPartition());
         verifyZeroInteractions(hermesMetrics);
     }
 }

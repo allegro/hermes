@@ -32,10 +32,12 @@ public class SchemaSourceService {
         return schemaSourceRepository.get(topic);
     }
 
-    public void saveSchemaSource(String qualifiedTopicName, String schema) {
+    public void saveSchemaSource(String qualifiedTopicName, String schema, boolean validate) {
         Topic topic = findTopic(qualifiedTopicName);
-        SchemaValidator validator = validatorProvider.provide(topic.getContentType());
-        validator.check(schema);
+        if (validate) {
+            SchemaValidator validator = validatorProvider.provide(topic.getContentType());
+            validator.check(schema);
+        }
         schemaSourceRepository.save(SchemaSource.valueOf(schema), topic);
     }
 

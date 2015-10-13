@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
@@ -32,7 +32,7 @@ public class ConsumerFactory {
     private final ConsumerMessageSenderFactory consumerMessageSenderFactory;
     private final Clock clock;
     private final TopicRepository topicRepository;
-    private final MessageConverterFactory messageConverterFactory;
+    private final MessageConverterResolver messageConverterResolver;
 
     @Inject
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
@@ -44,7 +44,7 @@ public class ConsumerFactory {
             ConsumerMessageSenderFactory consumerMessageSenderFactory,
             Clock clock,
             TopicRepository topicRepository,
-            MessageConverterFactory messageConverterFactory) {
+            MessageConverterResolver messageConverterResolver) {
 
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
@@ -55,7 +55,7 @@ public class ConsumerFactory {
         this.consumerMessageSenderFactory = consumerMessageSenderFactory;
         this.clock = clock;
         this.topicRepository = topicRepository;
-        this.messageConverterFactory = messageConverterFactory;
+        this.messageConverterResolver = messageConverterResolver;
     }
 
     Consumer createConsumer(Subscription subscription) {
@@ -78,7 +78,7 @@ public class ConsumerFactory {
             consumerMessageSenderFactory.create(subscription, consumerRateLimiter, subscriptionOffsetCommitQueues, inflightSemaphore),
             inflightSemaphore,
             trackers,
-            messageConverterFactory.create(topic.getContentType()),
+            messageConverterResolver,
             topic);
     }
 

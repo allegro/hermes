@@ -1,18 +1,23 @@
 package pl.allegro.tech.hermes.test.helper.message;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 
 public final class TestMessage {
 
-    private final Map<String, String> content = new LinkedHashMap<>();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final Map<String, Object> content = new LinkedHashMap<>();
 
     private TestMessage() {
     }
 
-    public static TestMessage of(String key, String value) {
+    public static TestMessage of(String key, Object value) {
         return new TestMessage().append(key, value);
     }
 
@@ -34,9 +39,13 @@ public final class TestMessage {
         return new TestMessage().append("random", UUID.randomUUID().toString());
     }
 
-    public TestMessage append(String key, String value) {
+    public TestMessage append(String key, Object value) {
         content.put(key, value);
         return this;
+    }
+
+    public TestMessage withEmptyAvroMetadata() {
+        return append(AvroMetadataMarker.METADATA_MARKER, null);
     }
 
     public String body() {
@@ -45,14 +54,11 @@ public final class TestMessage {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("{");
-        for (Entry<String, String> entry : content.entrySet()) {
-            builder.append('"').append(entry.getKey()).append("\":").append('"').append(entry.getValue()).append("\",");
+        try {
+            return objectMapper.writeValueAsString(content);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
-        builder.deleteCharAt(builder.length() - 1);
-        builder.append("}");
-        return builder.toString();
     }
 
 }

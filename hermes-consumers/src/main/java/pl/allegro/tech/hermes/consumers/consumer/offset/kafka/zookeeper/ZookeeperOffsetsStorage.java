@@ -7,14 +7,17 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 public class ZookeeperOffsetsStorage implements OffsetsStorage {
+
+    public static final int OFFSET_MISSING = -1;
 
     private final CuratorFramework curatorFramework;
     private final KafkaNamesMapper kafkaNamesMapper;
@@ -28,12 +31,20 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     @Override
     public void setSubscriptionOffset(Subscription subscription, PartitionOffset partitionOffset) {
         try {
-            Long actualOffset = convertByteArrayToLong(curatorFramework.getData()
-                    .forPath(getPartitionOffsetPath(subscription, partitionOffset.getPartition())));
+            String offsetPath = getPartitionOffsetPath(subscription, partitionOffset.getTopic(), partitionOffset.getPartition());
 
-            if (actualOffset > partitionOffset.getOffset()) {
+            long currentOffset = OFFSET_MISSING;
+            if (curatorFramework.checkExists().forPath(offsetPath) != null) {
+                currentOffset = convertByteArrayToLong(curatorFramework.getData().forPath(offsetPath));
+            }
+
+            if (currentOffset == OFFSET_MISSING || currentOffset > partitionOffset.getOffset()) {
+                if (currentOffset == OFFSET_MISSING) {
+                    curatorFramework.create().creatingParentsIfNeeded().forPath(offsetPath);
+                }
+
                 curatorFramework.setData().forPath(
-                        getPartitionOffsetPath(subscription, partitionOffset.getPartition()),
+                        offsetPath,
                         Long.valueOf(partitionOffset.getOffset()).toString().getBytes(Charsets.UTF_8)
                 );
             }
@@ -42,14 +53,14 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
         }
     }
 
-    private Long convertByteArrayToLong(byte[] data) {
+    private long convertByteArrayToLong(byte[] data) {
         return Long.valueOf(new String(data, Charsets.UTF_8));
     }
 
     @Override
-    public long getSubscriptionOffset(Subscription subscription, int partitionId) {
+    public long getSubscriptionOffset(Subscription subscription, KafkaTopicName kafkaTopicName, int partitionId) {
         try {
-            byte[] offset = curatorFramework.getData().forPath(getPartitionOffsetPath(subscription, partitionId));
+            byte[] offset = curatorFramework.getData().forPath(getPartitionOffsetPath(subscription, kafkaTopicName, partitionId));
             return Long.valueOf(new String(offset));
         } catch (Exception e) {
             throw new InternalProcessingException(e);
@@ -57,10 +68,10 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     }
 
     @VisibleForTesting
-    protected String getPartitionOffsetPath(Subscription subscription, int partition) {
+    protected String getPartitionOffsetPath(Subscription subscription, KafkaTopicName kafkaTopicName, int partition) {
         return KafkaZookeeperPaths.partitionOffsetPath(
                 kafkaNamesMapper.toConsumerGroupId(subscription),
-                kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()),
+                kafkaTopicName,
                 partition
         );
     }

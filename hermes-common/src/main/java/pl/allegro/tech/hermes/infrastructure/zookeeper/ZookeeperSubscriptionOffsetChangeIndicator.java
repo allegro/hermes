@@ -2,12 +2,16 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.utils.EnsurePath;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
+import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffsets;
-import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
+
+import java.util.List;
 
 import static com.google.common.base.Charsets.UTF_8;
 
@@ -27,45 +31,62 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
         this.subscriptionRepository = repository;
     }
 
-    public void setSubscriptionOffset(
-            TopicName topicName, String subscriptionName, String brokersClusterName, int partitionId, Long offset) {
-
+    @Override
+    public void setSubscriptionOffset(TopicName topicName, String subscriptionName, String brokersClusterName, PartitionOffset partitionOffset) {
         subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
 
-        String offsetPath = paths.offsetPath(topicName, subscriptionName, brokersClusterName, partitionId);
+        String offsetPath = paths.offsetPath(topicName, subscriptionName, partitionOffset.getTopic(), brokersClusterName, partitionOffset.getPartition());
         try {
             new EnsurePath(offsetPath).ensure(zookeeper.getZookeeperClient());
-            zookeeper.setData().forPath(offsetPath, offset.toString().getBytes(UTF_8));
+            zookeeper.setData().forPath(offsetPath, String.valueOf(partitionOffset.getOffset()).getBytes(UTF_8));
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
     }
 
-    public PartitionOffsets getSubscriptionOffsets(TopicName topicName, String subscriptionName, String brokersClusterName) {
-        subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
-        String offsetsPath = paths.offsetsPath(topicName, subscriptionName, brokersClusterName);
+    @Override
+    public PartitionOffsets getSubscriptionOffsets(Topic topic, String subscriptionName, String brokersClusterName) {
+        subscriptionRepository.ensureSubscriptionExists(topic.getName(), subscriptionName);
+        String kafkaTopicsPath = paths.subscribedKafkaTopicsPath(topic.getName(), subscriptionName);
+
+        PartitionOffsets allOffsets = new PartitionOffsets();
+        getZookeeperChildrenForPath(kafkaTopicsPath).stream().map(KafkaTopicName::valueOf).forEach(kafkaTopic ->
+                        allOffsets.addAll(getOffsetsForKafkaTopic(topic, kafkaTopic, subscriptionName, brokersClusterName))
+        );
+        return allOffsets;
+    }
+
+    private PartitionOffsets getOffsetsForKafkaTopic(Topic topic, KafkaTopicName kafkaTopicName, String subscriptionName, String brokersClusterName) {
+        String offsetsPath = paths.offsetsPath(topic.getName(), subscriptionName, kafkaTopicName, brokersClusterName);
 
         PartitionOffsets offsets = new PartitionOffsets();
-        try {
-            for (String partitionAsString : zookeeper.getChildren().forPath(offsetsPath)) {
-                Integer partition = Integer.valueOf(partitionAsString);
-                offsets.add(new PartitionOffset(
-                    getSubscriptionOffset(topicName, subscriptionName, brokersClusterName, partition),
+        for (String partitionAsString : getZookeeperChildrenForPath(offsetsPath)) {
+            Integer partition = Integer.valueOf(partitionAsString);
+            offsets.add(new PartitionOffset(
+                    kafkaTopicName,
+                    getOffsetForPartition(topic, kafkaTopicName, subscriptionName, brokersClusterName, partition),
                     partition
-                ));
-            }
-            return offsets;
+            ));
+        }
+        return offsets;
+    }
+
+    private List<String> getZookeeperChildrenForPath(String path) {
+        try {
+            return zookeeper.getChildren().forPath(path);
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
     }
 
-    private Long getSubscriptionOffset(TopicName topicName, String subscriptionName, String brokersClusterName, int partitionId)
-            throws Exception {
-
-        return Long.valueOf(new String(
-            zookeeper.getData().forPath(paths.offsetPath(topicName, subscriptionName, brokersClusterName, partitionId)),
-            UTF_8));
+    private Long getOffsetForPartition(Topic topic, KafkaTopicName kafkaTopicName, String subscriptionName, String brokersClusterName, int partitionId) {
+        try {
+            return Long.valueOf(new String(
+                    zookeeper.getData().forPath(paths.offsetPath(topic.getName(), subscriptionName, kafkaTopicName, brokersClusterName, partitionId)),
+                    UTF_8));
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
 }

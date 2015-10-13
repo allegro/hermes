@@ -2,6 +2,9 @@ package pl.allegro.tech.hermes.consumers.consumer.offset;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.util.Optional;
@@ -152,7 +155,8 @@ public class OffsetCommitQueueTest {
 
     private void addOffsets(long ... offsets) {
         for (Long offset : offsets) {
-            queue.put(new Message("id", offset, 0, "topic", new byte[0], 12091212L, 120912123L).getOffset());
+            queue.put(new Message("id", "topic", new byte[0], Topic.ContentType.JSON, 12091212L, 120912123L,
+                    new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), offset, 0)).getOffset());
         }
     }
 

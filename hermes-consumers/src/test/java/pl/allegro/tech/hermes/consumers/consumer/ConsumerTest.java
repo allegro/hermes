@@ -11,8 +11,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
@@ -32,10 +35,11 @@ import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscription
 public class ConsumerTest {
 
     private static final Message MESSAGE = new Message(
-            "id", 10, 0,
+            "id",
             "topic", "{\"username\":\"ala\"}".getBytes(),
-            122424L,
-            1224245L);
+            Topic.ContentType.JSON, 122424L,
+            1224245L,
+            new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 10, 0));
 
     private static final Subscription SUBSCRIPTION = Subscription.Builder.subscription()
             .withTopicName(new TopicName("group", "topic"))
@@ -74,6 +78,9 @@ public class ConsumerTest {
     private ListenableFuture<MessageSendingResult> messageSendingResult;
 
     @Mock
+    private MessageConverterResolver messageConverterResolver;
+
+    @Mock
     Semaphore infligtSemaphore;
 
     @Mock
@@ -86,8 +93,9 @@ public class ConsumerTest {
     public void setUp() throws Exception {
         when(configFactory.getIntProperty(Configs.REPORT_PERIOD)).thenReturn(10);
         when(configFactory.getIntProperty(Configs.CONSUMER_INFLIGHT_SIZE)).thenReturn(50);
+        when(messageConverterResolver.converterFor(any(Message.class), any(Topic.class))).thenReturn(new NoOperationMessageConverter());
         consumer = spy(new Consumer(messageReceiver, hermesMetrics, SUBSCRIPTION,
-                consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, new NoOperationMessageConverter(), TOPIC));
+                consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, messageConverterResolver, TOPIC));
     }
 
     @Test

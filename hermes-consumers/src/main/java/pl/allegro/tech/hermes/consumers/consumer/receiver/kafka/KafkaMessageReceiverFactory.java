@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -38,10 +39,10 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     @Override
     public MessageReceiver createMessageReceiver(Topic receivingTopic, Subscription subscription) {
-        return create(receivingTopic, createConsumerConfig(kafkaNamesMapper.toConsumerGroupId(subscription)));
+        return create(receivingTopic, createConsumerConfig(kafkaNamesMapper.toConsumerGroupId(subscription)), subscription.toSubscriptionName());
     }
 
-    MessageReceiver create(Topic receivingTopic, ConsumerConfig consumerConfig) {
+    MessageReceiver create(Topic receivingTopic, ConsumerConfig consumerConfig, SubscriptionName subscriptionName) {
         return new KafkaMessageReceiver(
                 receivingTopic,
                 Consumer.createJavaConsumerConnector(consumerConfig),
@@ -49,7 +50,9 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 hermesMetrics.timer(Timers.CONSUMER_READ_LATENCY),
                 clock,
                 kafkaNamesMapper,
-                configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT));
+                configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT),
+                configFactory.getIntProperty(Configs.KAFKA_CONSUMER_TIMEOUT_MS),
+                subscriptionName);
     }
 
     private ConsumerConfig createConsumerConfig(ConsumerGroupId groupId) {

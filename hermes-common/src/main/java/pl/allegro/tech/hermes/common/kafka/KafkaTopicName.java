@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.common.kafka;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -12,10 +16,12 @@ public class KafkaTopicName {
         this.value = checkNotNull(value);
     }
 
-    public static KafkaTopicName valueOf(String value) {
+    @JsonCreator
+    public static KafkaTopicName valueOf(@JsonProperty("value") String value) {
         return new KafkaTopicName(value);
     }
 
+    @JsonGetter(value = "value")
     public String asString() {
         return value;
     }
