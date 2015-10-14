@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import com.squareup.okhttp.OkHttpClient;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.client.HermesClient;

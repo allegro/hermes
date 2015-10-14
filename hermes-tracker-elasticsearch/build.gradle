@@ -4,6 +4,8 @@ dependencies {
     compile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.7.1'
 
     testCompile project(path: ":hermes-tracker", configuration: "testArtifacts")
+    testCompile project(path: ":hermes-test-helper")
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
-
 }
+
+test.useTestNG()
