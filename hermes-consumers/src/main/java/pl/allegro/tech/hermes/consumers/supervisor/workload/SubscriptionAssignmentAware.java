@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workTracking;
+package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;

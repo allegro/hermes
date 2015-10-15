@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workTracking;
+package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
@@ -16,7 +16,8 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ID;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class WorkTrackerFactory implements Factory<WorkTracker> {
     private final CuratorFramework curatorClient;
@@ -39,8 +40,9 @@ public class WorkTrackerFactory implements Factory<WorkTracker> {
     public WorkTracker provide() {
         ZookeeperPaths paths = new ZookeeperPaths(configFactory.getStringProperty(Configs.ZOOKEEPER_ROOT));
         ExecutorService executorService = newFixedThreadPool(configFactory.getIntProperty(Configs.ZOOKEEPER_CACHE_THREAD_POOL_SIZE));
-        String supervisorId = configFactory.getStringProperty(CONSUMER_WORKLOAD_ID);
-        return new WorkTracker(curatorClient, objectMapper, paths.consumersRuntimePath(), supervisorId, executorService, subscriptionRepository);
+        String consumerNodeId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
+        String cluster = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
+        return new WorkTracker(curatorClient, objectMapper, paths.consumersRuntimePath(cluster), consumerNodeId, executorService, subscriptionRepository);
     }
 
     @Override

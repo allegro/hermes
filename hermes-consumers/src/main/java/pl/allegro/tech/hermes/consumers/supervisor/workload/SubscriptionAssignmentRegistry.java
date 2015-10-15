@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workTracking;
+package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
@@ -10,27 +10,31 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import java.util.concurrent.ExecutorService;
 
 public class SubscriptionAssignmentRegistry extends StartableCache<SubscriptionAssignmentAware> implements PathChildrenCacheListener {
+
     private final SubscriptionRepository subscriptionRepository;
-    private final String supervisorId;
+    private final String consumerNodeId;
     private final SubscriptionAssignmentPathSerializer pathSerializer;
 
     public SubscriptionAssignmentRegistry(CuratorFramework curatorClient,
                                           String path,
                                           ExecutorService executorService,
                                           SubscriptionRepository subscriptionRepository,
-                                          String supervisorId,
+                                          String consumerNodeId,
                                           SubscriptionAssignmentPathSerializer pathSerializer) {
         super(curatorClient, path, executorService);
         this.subscriptionRepository = subscriptionRepository;
-        this.supervisorId = supervisorId;
+        this.consumerNodeId = consumerNodeId;
         this.pathSerializer = pathSerializer;
         getListenable().addListener(this);
     }
 
     @Override
     public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
+        if (event.getData() == null || event.getData().getPath() == null) {
+            return;
+        }
         SubscriptionAssignment path = pathSerializer.deserialize(event.getData().getPath());
-        if (this.supervisorId.equals(path.getSupervisorId())) {
+        if (this.consumerNodeId.equals(path.getConsumerNodeId())) {
             switch (event.getType()) {
                 case CHILD_ADDED:
                     Subscription subscription = subscriptionRepository.getSubscriptionDetails(path.getSubscriptionName());

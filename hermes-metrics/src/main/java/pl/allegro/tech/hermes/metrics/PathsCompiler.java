@@ -12,6 +12,7 @@ public class PathsCompiler {
     public static final String SUBSCRIPTION = "$subscription";
     public static final String KAFKA_TOPIC = "$kafka_topic";
     public static final String PARTITION = "$partition";
+    public static final String KAFKA_CLUSTER = "$kafka_cluster";
     public static final String HTTP_CODE = "$http_code";
     public static final String HTTP_CODE_FAMILY = "$http_family_of_code";
     public static final String EXECUTOR_NAME = "$executor_name";
@@ -34,6 +35,7 @@ public class PathsCompiler {
         context.getSubscription().ifPresent(s -> pathBuilder.replaceAll(SUBSCRIPTION, s));
         context.getKafkaTopic().ifPresent(k -> pathBuilder.replaceAll(KAFKA_TOPIC, k));
         context.getPartition().ifPresent(p -> pathBuilder.replaceAll(PARTITION, p.toString()));
+        context.getKafkaCluster().ifPresent(c -> pathBuilder.replaceAll(KAFKA_CLUSTER, c.toString()));
         context.getHttpCode().ifPresent(c -> pathBuilder.replaceAll(HTTP_CODE, c.toString()));
         context.getHttpCodeFamily().ifPresent(cf -> pathBuilder.replaceAll(HTTP_CODE_FAMILY, cf));
         context.getExecutorName().ifPresent(c -> pathBuilder.replaceAll(EXECUTOR_NAME, c));
