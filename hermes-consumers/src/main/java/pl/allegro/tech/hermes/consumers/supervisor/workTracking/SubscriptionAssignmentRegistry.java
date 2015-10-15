@@ -31,16 +31,16 @@ public class SubscriptionAssignmentRegistry extends StartableCache<SubscriptionA
     public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
         SubscriptionAssignment path = pathSerializer.deserialize(event.getData().getPath());
         if (this.supervisorId.equals(path.getSupervisorId())) {
-            Subscription subscription = subscriptionRepository.getSubscriptionDetails(path.getSubscriptionName());
             switch (event.getType()) {
                 case CHILD_ADDED:
+                    Subscription subscription = subscriptionRepository.getSubscriptionDetails(path.getSubscriptionName());
                     for (SubscriptionAssignmentAware callback : callbacks) {
                         callback.onSubscriptionAssigned(subscription);
                     }
                     break;
                 case CHILD_REMOVED:
                     for (SubscriptionAssignmentAware callback : callbacks) {
-                        callback.onAssignmentRemoved(subscription);
+                        callback.onAssignmentRemoved(path.getSubscriptionName());
                     }
                     break;
                 default:

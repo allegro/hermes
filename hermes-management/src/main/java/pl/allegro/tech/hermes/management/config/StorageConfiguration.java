@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.utils.EnsurePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
+
+import javax.annotation.PostConstruct;
 
 @Configuration
 @EnableConfigurationProperties(StorageProperties.class)
@@ -113,4 +116,10 @@ public class StorageConfiguration {
     UndeliveredMessageLog undeliveredMessageLog() {
         return new ZookeeperUndeliveredMessageLog(storageZookeeper(), zookeeperPaths(), objectMapper);
     }
+
+    @PostConstruct
+    public void ensureInitPathExists() throws Exception {
+        new EnsurePath(zookeeperPaths().groupsPath()).ensure(storageZookeeper().getZookeeperClient());
+    }
+
 }

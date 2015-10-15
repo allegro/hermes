@@ -22,7 +22,7 @@ public class LegacyMirroringSupervisorController implements SupervisorController
 
     @Override
     public void onSubscriptionRemoved(Subscription subscription) {
-        supervisor.deleteConsumerForSubscription(subscription);
+        supervisor.deleteConsumerForSubscriptionName(subscription.toSubscriptionName());
     }
 
     @Override

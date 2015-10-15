@@ -97,7 +97,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
         }
     }
 
-    public void deleteConsumerForSubscription(Subscription subscription) {
+    public void deleteConsumerForSubscriptionName(SubscriptionName subscription) {
         try (CloseableSubscriptionLock subscriptionLock = subscriptionsLocks.lock(subscription)) {
             deleteConsumerIfExists(subscription, true);
             hermesMetrics.removeMetrics(subscription);
@@ -158,7 +158,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
                 break;
             case SUSPENDED:
                 if (oldState.equals(ACTIVE)) {
-                    deleteConsumerIfExists(modifiedSubscription, false);
+                    deleteConsumerIfExists(modifiedSubscription.toSubscriptionName(), false);
                 }
                 break;
             default:
@@ -188,10 +188,6 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
         } else {
             createAndExecuteConsumer(subscription);
         }
-    }
-
-    private void deleteConsumerIfExists(Subscription subscription, boolean removeOffsets) throws Exception {
-        deleteConsumerIfExists(subscription.getTopicName(), subscription.getName(), removeOffsets);
     }
 
     private void deleteConsumerIfExists(SubscriptionName subscription, boolean removeOffsets) throws Exception {
