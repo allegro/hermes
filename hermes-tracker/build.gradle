@@ -1,6 +1,7 @@
 dependencies {
     compile project(':hermes-api')
     compile project(':hermes-metrics')
+    testCompile project(path: ":hermes-test-helper")
 }
 
 configurations {

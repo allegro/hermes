@@ -15,13 +15,13 @@ public class Waiter {
         this.endpoints = endpoints;
     }
 
-    public void untilSubscriptionCreated(String group, String topic, Subscription subscription) {
-        untilSubscriptionCreated(group, topic, subscription.getName(), subscription.isTrackingEnabled());
+    public void untilSubscriptionCreated(Topic topic, Subscription subscription) {
+        untilSubscriptionCreated(topic, subscription.getName(), subscription.isTrackingEnabled());
     }
 
-    public void untilSubscriptionCreated(String group, String topic, String subscription, boolean isTracked) {
+    public void untilSubscriptionCreated(Topic topic, String subscription, boolean isTracked) {
         waitAtMost(adjust(Duration.TWO_MINUTES)).until(() ->
-            endpoints.subscription().list(group + "." + topic, isTracked).contains(subscription)
+            endpoints.subscription().list(topic.getQualifiedName(), isTracked).contains(subscription)
         );
     }
 

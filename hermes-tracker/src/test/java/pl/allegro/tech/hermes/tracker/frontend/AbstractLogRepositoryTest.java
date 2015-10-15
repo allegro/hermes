@@ -1,18 +1,32 @@
 package pl.allegro.tech.hermes.tracker.frontend;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.ITestContext;
+import org.testng.ITestNGMethod;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Listeners;
+import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
+import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
+import pl.allegro.tech.hermes.test.helper.retry.Retry;
 
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.INFLIGHT;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
 
+@Listeners({RetryListener.class})
 public abstract class AbstractLogRepositoryTest {
 
     private LogRepository logRepository;
 
-    @Before
+    @BeforeSuite
+    public void setUpRetry(ITestContext context) {
+        for (ITestNGMethod method : context.getAllTestMethods()) {
+            method.setRetryAnalyzer(new Retry());
+        }
+    }
+
+    @BeforeTest
     public void setup() {
         logRepository = createRepository();
     }

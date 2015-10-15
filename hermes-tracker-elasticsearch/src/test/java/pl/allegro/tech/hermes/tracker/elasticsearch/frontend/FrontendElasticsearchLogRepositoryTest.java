@@ -4,7 +4,8 @@ import com.codahale.metrics.MetricRegistry;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.junit.ClassRule;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
@@ -33,10 +34,20 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
 
-    @ClassRule
     public static ElasticsearchResource elasticsearch = new ElasticsearchResource(frontendIndexFactory);
 
-    private final SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory);
+    private SchemaManager schemaManager;
+
+    @BeforeSuite
+    public void before() throws Throwable {
+        elasticsearch.before();
+        schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory);
+    }
+
+    @AfterSuite
+    public void after() {
+        elasticsearch.after();
+    }
 
     @Override
     protected LogRepository createRepository() {

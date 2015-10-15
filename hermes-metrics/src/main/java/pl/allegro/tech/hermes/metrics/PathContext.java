@@ -7,6 +7,7 @@ public class PathContext {
     private final Optional<String> group;
     private final Optional<String> topic;
     private final Optional<String> subscription;
+    private final Optional<String> kafkaTopic;
     private final Optional<Integer> partition;
     private final Optional<Integer> httpCode;
     private final Optional<String> httpCodeFamily;
@@ -15,6 +16,7 @@ public class PathContext {
     private PathContext(Optional<String> group,
                         Optional<String> topic,
                         Optional<String> subscription,
+                        Optional<String> kafkaTopic,
                         Optional<Integer> partition,
                         Optional<Integer> httpCode,
                         Optional<String> httpCodeFamily,
@@ -22,6 +24,7 @@ public class PathContext {
         this.group = group;
         this.topic = topic;
         this.subscription = subscription;
+        this.kafkaTopic = kafkaTopic;
         this.partition = partition;
         this.httpCode = httpCode;
         this.httpCodeFamily = httpCodeFamily;
@@ -38,6 +41,10 @@ public class PathContext {
 
     public Optional<String> getSubscription() {
         return subscription;
+    }
+
+    public Optional<String> getKafkaTopic() {
+        return kafkaTopic;
     }
 
     public Optional<Integer> getPartition() {
@@ -65,6 +72,7 @@ public class PathContext {
         private Optional<String> group = Optional.empty();
         private Optional<String> topic = Optional.empty();
         private Optional<String> subscription = Optional.empty();
+        private Optional<String> kafkaTopic = Optional.empty();
         private Optional<Integer> partition = Optional.empty();
         private Optional<Integer> httpCode = Optional.empty();
         private Optional<String> httpCodeFamily = Optional.empty();
@@ -82,6 +90,11 @@ public class PathContext {
 
         public Builder withSubscription(String subscription) {
             this.subscription = Optional.of(subscription);
+            return this;
+        }
+
+        public Builder withKafkaTopic(String kafkaTopic) {
+            this.kafkaTopic = Optional.of(kafkaTopic);
             return this;
         }
 
@@ -106,7 +119,7 @@ public class PathContext {
         }
 
         public PathContext build() {
-            return new PathContext(group, topic, subscription, partition, httpCode, httpCodeFamily, executorName);
+            return new PathContext(group, topic, subscription, kafkaTopic, partition, httpCode, httpCodeFamily, executorName);
         }
     }
 }

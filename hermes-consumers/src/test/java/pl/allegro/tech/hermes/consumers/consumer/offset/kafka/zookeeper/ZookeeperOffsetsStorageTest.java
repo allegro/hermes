@@ -4,7 +4,8 @@ import org.junit.After;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import static org.assertj.core.api.StrictAssertions.assertThat;
@@ -14,6 +15,8 @@ public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
     private static final Subscription subscription = Subscription.Builder.subscription()
             .withTopicName("brokerGroup", "brokerTopic")
             .withName("brokerSubscription").build();
+
+    private static final KafkaTopicName kafkaTopicName = KafkaTopicName.valueOf("kafka_topic");
 
     private final ZookeeperOffsetsStorage offsetsStorage = new ZookeeperOffsetsStorage(zookeeperClient, new KafkaNamesMapper("ns"));
 
@@ -26,18 +29,31 @@ public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
     @Test
     public void shouldSetOffset() throws Exception {
         // given
-        createOffset(subscription, 0, 100L);
+        createOffset(subscription, kafkaTopicName, 0, 100L);
 
         // when
-        offsetsStorage.setSubscriptionOffset(subscription, new PartitionOffset(50L, 0));
+        offsetsStorage.setSubscriptionOffset(subscription, new PartitionOffset(kafkaTopicName, 50L, 0));
 
         // then
-        long offset = offsetsStorage.getSubscriptionOffset(subscription, 0);
+        long offset = offsetsStorage.getSubscriptionOffset(subscription, kafkaTopicName, 0);
         assertThat(offset).isEqualTo(50L);
     }
 
-    private void createOffset(Subscription subscription, int partitionId, Long offset) throws Exception {
-        String path = offsetsStorage.getPartitionOffsetPath(subscription, partitionId);
+    @Test
+    public void shouldSetOffsetEvenIfPartitionWasNotCommittedPreviously() throws Exception {
+        // given
+        createOffset(subscription, kafkaTopicName, 0, 100L);
+
+        // when
+        offsetsStorage.setSubscriptionOffset(subscription, new PartitionOffset(kafkaTopicName, 50L, 1));
+
+        // then
+        long offset = offsetsStorage.getSubscriptionOffset(subscription, kafkaTopicName, 1);
+        assertThat(offset).isEqualTo(50L);
+    }
+
+    private void createOffset(Subscription subscription, KafkaTopicName kafkaTopicName, int partitionId, Long offset) throws Exception {
+        String path = offsetsStorage.getPartitionOffsetPath(subscription, kafkaTopicName, partitionId);
         zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
         zookeeperClient.setData().forPath(path, offset.toString().getBytes());
     }

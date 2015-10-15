@@ -7,6 +7,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
@@ -348,6 +351,7 @@ public class ConsumerMessageSenderTest {
     }
 
     private Message messageWithTimestamp(long timestamp) {
-        return new Message("id", 10, 0, "topic", "{\"username\":\"ala\"}".getBytes(), 122424L, timestamp);
+        return new Message("id", "topic", "{\"username\":\"ala\"}".getBytes(), Topic.ContentType.JSON, 122424L, timestamp,
+                new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 10, 0));
     }
 }

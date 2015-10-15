@@ -9,3 +9,5 @@ dependencies {
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
 }
+
+test.useTestNG()

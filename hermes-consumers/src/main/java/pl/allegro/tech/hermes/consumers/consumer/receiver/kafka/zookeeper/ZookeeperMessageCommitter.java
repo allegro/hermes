@@ -5,9 +5,10 @@ import org.apache.zookeeper.KeeperException;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import java.nio.charset.Charset;
 
@@ -27,7 +28,7 @@ public class ZookeeperMessageCommitter implements MessageCommitter {
         byte[] data = String.valueOf(firstToRead).getBytes(Charset.forName("UTF-8"));
         String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(
                 kafkaNamesMapper.toConsumerGroupId(subscription),
-                kafkaNamesMapper.toKafkaTopicName(subscription.getTopicName()),
+                partitionOffset.getTopic(),
                 partitionOffset.getPartition()
         );
         try {
@@ -38,10 +39,10 @@ public class ZookeeperMessageCommitter implements MessageCommitter {
     }
 
     @Override
-    public void removeOffset(TopicName topicName, String subscriptionName, int partition) throws Exception {
+    public void removeOffset(TopicName topicName, String subscriptionName, KafkaTopicName topic, int partition) throws Exception {
         String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(
                 kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscriptionName)),
-                kafkaNamesMapper.toKafkaTopicName(topicName),
+                topic,
                 partition
         );
         curatorFramework.delete().forPath(offsetPath);

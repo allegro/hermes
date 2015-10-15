@@ -6,12 +6,11 @@ import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
-import org.junit.rules.ExternalResource;
 
 import java.io.File;
 import java.nio.file.Files;
 
-public class ElasticsearchResource extends ExternalResource implements LogSchemaAware {
+public class ElasticsearchResource implements LogSchemaAware {
 
     private final IndexFactory[] indices;
     private Node elastic;
@@ -22,8 +21,7 @@ public class ElasticsearchResource extends ExternalResource implements LogSchema
         this.indices = indices;
     }
 
-    @Override
-    protected void before() throws Throwable {
+    public void before() throws Throwable {
         dataDir = Files.createTempDirectory("elasticsearch_data_").toFile();
         Settings settings = ImmutableSettings.settingsBuilder()
                 .put("path.data", dataDir)
@@ -33,8 +31,7 @@ public class ElasticsearchResource extends ExternalResource implements LogSchema
         client = elastic.client();
     }
 
-    @Override
-    protected void after() {
+    public void after() {
         elastic.stop();
         FileSystemUtils.deleteRecursively(dataDir);
     }

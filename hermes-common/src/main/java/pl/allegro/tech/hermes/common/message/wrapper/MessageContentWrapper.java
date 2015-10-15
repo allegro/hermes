@@ -22,9 +22,13 @@ public class MessageContentWrapper {
     }
 
     public UnwrappedMessageContent unwrap(byte[] data, Topic topic) {
-        if (topic.getContentType() == Topic.ContentType.JSON) {
+        return unwrap(data, topic, topic.getContentType());
+    }
+
+    public UnwrappedMessageContent unwrap(byte[] data, Topic topic, Topic.ContentType contentType) {
+        if (contentType == Topic.ContentType.JSON) {
             return jsonMessageContentWrapper.unwrapContent(data);
-        } else if (topic.getContentType() == Topic.ContentType.AVRO) {
+        } else if (contentType == Topic.ContentType.AVRO) {
             return avroMessageContentWrapper.unwrapContent(data, avroSchemaRepository.getSchema(topic));
         }
 

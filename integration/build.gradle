@@ -42,7 +42,6 @@ dependencies {
     compile project(':hermes-tracker-mongo')
 
     testCompile project(':hermes-test-helper')
-    testCompile group: 'org.testng', name: 'testng', version: '6.8.8'
     testCompile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo

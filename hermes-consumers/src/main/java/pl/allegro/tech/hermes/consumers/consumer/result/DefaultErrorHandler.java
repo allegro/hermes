@@ -41,7 +41,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
                 subscription.getEndpoint(), message.getId(), message.getOffset(), message.getPartition(), subscription.getId(),
                 result.getRootCause()), result.getFailure());
 
-        offsetHelper.decrement(message.getPartition(), message.getOffset());
+        offsetHelper.remove(message);
 
         updateMeters(subscription);
         updateMetrics(Counters.CONSUMER_DISCARDED, message, subscription);

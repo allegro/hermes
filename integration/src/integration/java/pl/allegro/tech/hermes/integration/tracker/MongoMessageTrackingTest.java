@@ -84,13 +84,13 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     @Test
     public void shouldLogMessageInflightAndSending() {
         // given
-        operations.buildTopic("logMessageSending", "topic");
+        Topic topic = operations.buildTopic("logMessageSending", "topic");
         Subscription subscription = subscription().applyDefaults().withName("subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
                 .withTrackingEnabled(true)
                 .build();
 
-        operations.createSubscription("logMessageSending", "topic", subscription);
+        operations.createSubscription(topic, subscription);
         remoteService.expectMessages(MESSAGE.body());
 
         // when
@@ -107,14 +107,14 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldLogMessageDiscarding() {
         // given
-        operations.buildTopic("logMessageDiscarding", "topic");
+        Topic topic = operations.buildTopic("logMessageDiscarding", "topic");
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
                 .withTrackingEnabled(true)
                 .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(3).build())
                 .build();
 
-        operations.createSubscription("logMessageDiscarding", "topic", subscription);
+        operations.createSubscription(topic, subscription);
 
         // when
         publisher.publish("logMessageDiscarding.topic", MESSAGE.body());
@@ -128,8 +128,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldFetchUndeliveredMessagesLogs() {
         // given
-        operations.createGroup("fetchUndeliveredMessagesLogs");
-        operations.createTopic(Topic.Builder.topic().withName("fetchUndeliveredMessagesLogs", "topic").withTrackingEnabled(true).build());
+        Topic topic = operations.buildTopic(Topic.Builder.topic().withName("fetchUndeliveredMessagesLogs", "topic").withTrackingEnabled(true).build());
 
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
@@ -137,7 +136,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
                 .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(5).build())
                 .build();
 
-        operations.createSubscription("fetchUndeliveredMessagesLogs", "topic", subscription);
+        operations.createSubscription(topic, subscription);
 
         publisher.publish("fetchUndeliveredMessagesLogs.topic", MESSAGE.body());
         wait.untilMessageTraceLogged(sentMessages, SentMessageTraceStatus.DISCARDED);
@@ -198,14 +197,14 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     @Test
     public void shouldToggleTrackingOnSubscriptionUpdate() {
         // given
-        operations.buildTopic("toggleTrackingOnSubscription", "topic");
+        Topic topic = operations.buildTopic("toggleTrackingOnSubscription", "topic");
         Subscription subscription = subscription().applyDefaults().withName("subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
                 .withTrackingEnabled(true)
                 .withTopicName("toggleTrackingOnSubscription", "topic")
                 .build();
 
-        operations.createSubscription("toggleTrackingOnSubscription", "topic", subscription);
+        operations.createSubscription(topic, subscription);
         remoteService.expectMessages(MESSAGE.body(), MESSAGE.body());
         String firstTracked = publishMessage("toggleTrackingOnSubscription.topic", MESSAGE.body());
         wait.untilMessageIdLogged(sentMessages, firstTracked);
@@ -234,11 +233,11 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     public void shouldReturnEmptyListIfThereAreNoSentMessages() {
         //given
         assertThat(sentMessages.count()).isZero();
-        operations.buildSubscription("returnEmptyListIfThereAreNoSentMessages", "topic", "subscription3", INVALID_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("returnEmptyListIfThereAreNoSentMessages", "topic");
+        operations.createSubscription(topic, "subscription3", INVALID_ENDPOINT_URL);
 
         //when
-        Response response = management.subscription().getLatestUndeliveredMessages("returnEmptyListIfThereAreNoSentMessages.topic",
-                "subscription3");
+        Response response = management.subscription().getLatestUndeliveredMessages(topic.getQualifiedName(), "subscription3");
 
         //then
         assertThat(readSentMessages(response)).isEmpty();

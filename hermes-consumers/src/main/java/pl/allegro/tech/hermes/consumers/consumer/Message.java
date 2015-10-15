@@ -1,6 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -10,26 +13,26 @@ import java.util.concurrent.TimeUnit;
 public class Message {
 
     private String id;
-    private long offset;
-
-    private int partition;
+    private PartitionOffset partitionOffset;
 
     private String topic;
+    private Topic.ContentType contentType;
+
     private long publishingTimestamp;
     private long readingTimestamp;
-
     private byte[] data;
 
     private Message() {}
 
-    public Message(String id, long offset, int partition, String topic, byte[] content, long publishingTimestamp, long readingTimestamp) {
+    public Message(String id, String topic, byte[] content, Topic.ContentType contentType, long publishingTimestamp,
+                   long readingTimestamp, PartitionOffset partitionOffset) {
         this.id = id;
-        this.offset = offset;
-        this.partition = partition;
         this.data = content;
         this.topic = topic;
+        this.contentType = contentType;
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
+        this.partitionOffset = partitionOffset;
     }
 
     public long getPublishingTimestamp() {
@@ -41,15 +44,19 @@ public class Message {
     }
 
     public long getOffset() {
-        return offset;
+        return partitionOffset.getOffset();
     }
 
     public byte[] getData() {
         return data;
     }
 
+    public Topic.ContentType getContentType() {
+        return contentType;
+    }
+
     public int getPartition() {
-        return partition;
+        return partitionOffset.getPartition();
     }
 
     public String getTopic() {
@@ -69,7 +76,7 @@ public class Message {
 
     @Override
     public int hashCode() {
-        return Objects.hash(offset, partition, topic, data, publishingTimestamp, readingTimestamp);
+        return Objects.hash(topic, data, contentType, publishingTimestamp, readingTimestamp, partitionOffset);
     }
 
     @Override
@@ -81,16 +88,20 @@ public class Message {
             return false;
         }
         final Message other = (Message) obj;
-        return Objects.equals(this.offset, other.offset)
-                && Objects.equals(this.partition, other.partition)
-                && Objects.equals(this.topic, other.topic)
+        return Objects.equals(this.topic, other.topic)
                 && Objects.equals(this.publishingTimestamp, other.publishingTimestamp)
                 && Objects.equals(this.readingTimestamp, other.readingTimestamp)
-                && Arrays.equals(this.data, other.data);
+                && Arrays.equals(this.data, other.data)
+                && Objects.equals(this.contentType, other.contentType)
+                && Objects.equals(this.partitionOffset, other.partitionOffset);
     }
 
     public static Builder message() {
         return new Builder();
+    }
+
+    public KafkaTopicName getKafkaTopic() {
+        return partitionOffset.getTopic();
     }
 
     public static class Builder {
@@ -102,19 +113,18 @@ public class Message {
 
         public Builder fromMessage(Message message) {
             this.message.id = message.getId();
-            this.message.offset = message.getOffset();
-            this.message.partition = message.getPartition();
             this.message.data = message.getData();
+            this.message.contentType = message.getContentType();
             this.message.topic = message.getTopic();
             this.message.publishingTimestamp = message.getPublishingTimestamp();
             this.message.readingTimestamp = message.getReadingTimestamp();
+            this.message.partitionOffset = message.partitionOffset;
 
             return this;
         }
 
         public Builder withData(byte [] data) {
             this.message.data = data;
-
             return this;
         }
 

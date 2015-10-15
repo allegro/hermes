@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.ErrorCode;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 
 import javax.ws.rs.core.Response;
@@ -60,9 +60,8 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldNotAllowOnDeletingTopicWithSubscriptions() {
         // given
-        operations.createGroup("removeNonemptyTopicGroup");
-        operations.createTopic("removeNonemptyTopicGroup", "topic");
-        operations.createSubscription("removeNonemptyTopicGroup", "topic",
+        Topic topic = operations.buildTopic("removeNonemptyTopicGroup", "topic");
+        operations.createSubscription(topic,
                 subscription().withName("subscription").withEndpoint(EndpointAddress.of("http://whatever.com")).applyDefaults().build());
 
         // when
@@ -76,10 +75,10 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldRecreateTopicAfterDeletion() {
         // given
         operations.createGroup("recreateTopicGroup");
-        operations.createTopic("recreateTopicGroup", "topic");
+        Topic created = operations.createTopic("recreateTopicGroup", "topic");
         management.topic().remove("recreateTopicGroup.topic");
 
-        wait.untilTopicRemovedInKafka(new TopicName("recreateTopicGroup", "topic"));
+        wait.untilTopicRemovedInKafka(created);
 
         // when
         Response response = management.topic().create(
