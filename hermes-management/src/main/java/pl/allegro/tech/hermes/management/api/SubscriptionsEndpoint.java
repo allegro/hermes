@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareServic
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.management.infrastructure.time.TimeFormatter;
 
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -72,7 +73,7 @@ public class SubscriptionsEndpoint {
 
     @POST
     @Consumes(APPLICATION_JSON)
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.ANY})
     @ApiOperation(value = "Create subscription", httpMethod = HttpMethod.POST)
     public Response create(@PathParam("topicName") String qualifiedTopicName, Subscription subscription) {
         preconditions.checkConstraints(subscription);
