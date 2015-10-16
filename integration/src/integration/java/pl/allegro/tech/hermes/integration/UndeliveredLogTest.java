@@ -25,6 +25,7 @@ public class UndeliveredLogTest extends IntegrationTest {
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
                 .withTrackingEnabled(true)
                 .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(0).build())
+                .withSupportTeam("team")
                 .build();
 
         operations.createSubscription(topic, subscription);

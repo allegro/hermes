@@ -39,7 +39,7 @@ public class Subscription {
     @NotNull
     private String supportTeam;
     
-    public static enum State {
+    public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
 
