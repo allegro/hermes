@@ -62,7 +62,7 @@ public class TopicManagementTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("removeNonemptyTopicGroup", "topic");
         operations.createSubscription(topic,
-                subscription().withName("subscription").withEndpoint(EndpointAddress.of("http://whatever.com")).applyDefaults().build());
+                subscription().withName("subscription").withEndpoint(EndpointAddress.of("http://whatever.com")).withSupportTeam("team").applyDefaults().build());
 
         // when
         Response response = management.topic().remove("removeNonemptyTopicGroup.topic");
