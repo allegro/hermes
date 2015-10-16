@@ -20,7 +20,8 @@ public class Subscription {
     @Valid
     private TopicName topicName;
 
-    @NotEmpty @Pattern(regexp = ALLOWED_NAME_REGEX)
+    @NotEmpty
+    @Pattern(regexp = ALLOWED_NAME_REGEX)
     private String name;
 
     private State state = State.PENDING;
@@ -38,15 +39,19 @@ public class Subscription {
 
     @NotNull
     private String supportTeam;
-    
-    public static enum State {
+
+    private String contact;
+
+    public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
 
-    private Subscription() { }
+    private Subscription() {
+    }
 
     public Subscription(TopicName topicName, String name, EndpointAddress endpoint, String description,
-                        SubscriptionPolicy subscriptionPolicy, boolean trackingEnabled, String supportTeam) {
+                        SubscriptionPolicy subscriptionPolicy, boolean trackingEnabled,
+                        String supportTeam, String contact) {
         this.topicName = topicName;
         this.name = name;
         this.description = description;
@@ -54,6 +59,7 @@ public class Subscription {
         this.endpoint = endpoint;
         this.trackingEnabled = trackingEnabled;
         this.supportTeam = supportTeam;
+        this.contact = contact;
     }
 
     @JsonCreator
@@ -63,8 +69,10 @@ public class Subscription {
                         @JsonProperty("description") String description,
                         @JsonProperty("subscriptionPolicy") SubscriptionPolicy subscriptionPolicy,
                         @JsonProperty("trackingEnabled") boolean trackingEnabled,
-                        @JsonProperty("supportTeam") String supportTeam) {
-        this(TopicName.fromQualifiedName(topicName), name, endpoint, description, subscriptionPolicy, trackingEnabled, supportTeam);
+                        @JsonProperty("supportTeam") String supportTeam,
+                        @JsonProperty("contact") String contact) {
+        this(TopicName.fromQualifiedName(topicName), name, endpoint, description, subscriptionPolicy,
+                trackingEnabled, supportTeam, contact);
     }
 
     @Override
@@ -88,13 +96,14 @@ public class Subscription {
                 && Objects.equals(this.description, other.description)
                 && Objects.equals(this.subscriptionPolicy, other.subscriptionPolicy)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
-                && Objects.equals(this.supportTeam, other.supportTeam);
+                && Objects.equals(this.supportTeam, other.supportTeam)
+                && Objects.equals(this.contact, other.contact);
     }
-    
+
     public SubscriptionName toSubscriptionName() {
         return new SubscriptionName(name, topicName);
     }
-    
+
     @JsonIgnore
     public String getId() {
         return getId(getTopicName(), getName());
@@ -154,6 +163,10 @@ public class Subscription {
         return supportTeam;
     }
 
+    public String getContact() {
+        return contact;
+    }
+
     public Subscription anonymizePassword() {
         if (getEndpoint().containsCredentials()) {
             return Builder.subscription().withName(this.getName())
@@ -164,6 +177,7 @@ public class Subscription {
                     .withSubscriptionPolicy(this.getSubscriptionPolicy())
                     .withTrackingEnabled(this.trackingEnabled)
                     .withSupportTeam(this.supportTeam)
+                    .withContact(this.contact)
                     .build();
         }
         return this;
@@ -223,6 +237,11 @@ public class Subscription {
 
         public Builder withSupportTeam(String supportTeam) {
             subscription.supportTeam = supportTeam;
+            return this;
+        }
+
+        public Builder withContact(String contact) {
+            subscription.contact = contact;
             return this;
         }
 

@@ -191,6 +191,7 @@ public class MetricsTest extends IntegrationTest {
         operations.createSubscription(topic, Subscription.Builder.subscription()
                 .withTopicName(topic.getName())
                 .withName("subscription")
+                .withSupportTeam("team")
                 .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL))
                 .withSubscriptionPolicy(SubscriptionPolicy.Builder.subscriptionPolicy()
                         .applyDefaults()
