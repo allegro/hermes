@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integration;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.helper.RemoteJmsEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -19,11 +20,12 @@ public class JmsConsumingTest extends IntegrationTest {
     @Test
     public void shouldConsumeMessageOnJMSEndpoint() {
         // given
-        operations.buildSubscription("publishJmsGroup", "topic", "subscription", jmsEndpointAddress(JMS_TOPIC_NAME));
+        Topic topic = operations.buildTopic("publishJmsGroup", "topic");
+        operations.createSubscription(topic, "subscription", jmsEndpointAddress(JMS_TOPIC_NAME));
         jmsEndpoint.expectMessages(TestMessage.of("hello", "world"));
 
         // when
-        publisher.publish("publishJmsGroup.topic", TestMessage.of("hello", "world").body());
+        publisher.publish(topic.getQualifiedName(), TestMessage.of("hello", "world").body());
 
         // then
         jmsEndpoint.waitUntilReceived();

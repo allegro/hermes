@@ -1,6 +1,6 @@
 dependencies {
-
     compile project(':hermes-api')
+    compile project(':hermes-common')
 
     compile group: 'org.apache.avro', name: 'avro', version: '1.7.7'
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
@@ -35,4 +35,5 @@ dependencies {
     compile group: 'org.assertj', name: 'assertj-core', version: '3.1.0'
     compile group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: '1.5.5'
     compile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'org.testng', name: 'testng', version: '6.8.8'
 }

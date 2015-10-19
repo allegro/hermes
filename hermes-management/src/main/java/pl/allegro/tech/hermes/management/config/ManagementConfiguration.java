@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import java.time.Clock;
 
 @Configuration
 @EnableConfigurationProperties({TopicProperties.class, MetricsProperties.class, HttpClientProperties.class})
@@ -61,5 +62,10 @@ public class ManagementConfiguration {
     @ConditionalOnMissingBean
     public SubscriptionLagSource consumerLagSource() {
         return new NoOpSubscriptionLagSource();
+    }
+
+    @Bean
+    public Clock clock() {
+        return Clock.systemDefaultZone();
     }
 }

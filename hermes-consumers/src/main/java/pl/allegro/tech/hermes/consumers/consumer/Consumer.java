@@ -5,13 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverter;
+import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class Consumer implements Runnable {
     private final SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues;
     private final Semaphore inflightSemaphore;
     private final Trackers trackers;
-    private final MessageConverter messageConverter;
+    private final MessageConverterResolver messageConverterResolver;
     private final Topic topic;
     private final ConsumerMessageSender sender;
 
@@ -41,7 +41,8 @@ public class Consumer implements Runnable {
 
     public Consumer(MessageReceiver messageReceiver, HermesMetrics hermesMetrics, Subscription subscription,
                     ConsumerRateLimiter rateLimiter, SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues,
-                    ConsumerMessageSender sender, Semaphore inflightSemaphore, Trackers trackers, MessageConverter messageConverter, Topic topic) {
+                    ConsumerMessageSender sender, Semaphore inflightSemaphore, Trackers trackers,
+                    MessageConverterResolver messageConverterResolver, Topic topic) {
         this.messageReceiver = messageReceiver;
         this.hermesMetrics = hermesMetrics;
         this.subscription = subscription;
@@ -50,7 +51,7 @@ public class Consumer implements Runnable {
         this.sender = sender;
         this.inflightSemaphore = inflightSemaphore;
         this.trackers = trackers;
-        this.messageConverter = messageConverter;
+        this.messageConverterResolver = messageConverterResolver;
         this.topic = topic;
     }
 
@@ -68,7 +69,7 @@ public class Consumer implements Runnable {
 
                 Message message = messageReceiver.next();
 
-                Message convertedMessage = messageConverter.convert(message, topic);
+                Message convertedMessage = messageConverterResolver.converterFor(message, topic).convert(message, topic);
 
                 sendMessage(convertedMessage);
             } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {

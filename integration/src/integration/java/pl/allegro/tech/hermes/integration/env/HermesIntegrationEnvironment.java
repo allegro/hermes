@@ -3,10 +3,15 @@ package pl.allegro.tech.hermes.integration.env;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.testng.ITestContext;
+import org.testng.ITestNGMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
+import pl.allegro.tech.hermes.test.helper.retry.Retry;
 import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.test.helper.environment.WireMockStarter;
@@ -17,6 +22,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Listeners({RetryListener.class})
 public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     private static final Map<Class<?>, Starter<?>> STARTERS = new LinkedHashMap<>();
@@ -40,7 +46,11 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     private CuratorFramework kafkaZookeeper;
 
     @BeforeSuite
-    public void prepareEnvironment() throws Exception {
+    public void prepareEnvironment(ITestContext context) throws Exception {
+        for (ITestNGMethod method : context.getAllTestMethods()) {
+            method.setRetryAnalyzer(new Retry());
+        }
+
         for (Starter<?> starter : STARTERS.values()) {
             starter.start();
         }
@@ -68,6 +78,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         zookeeperClient.start();
         return zookeeperClient;
     }
+
 
     @AfterSuite(alwaysRun = true)
     public void cleanEnvironment() throws Exception {

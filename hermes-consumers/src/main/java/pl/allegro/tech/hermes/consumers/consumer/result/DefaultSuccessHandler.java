@@ -22,7 +22,7 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
 
     @Override
     public void handle(Message message, Subscription subscription, MessageSendingResult result) {
-        offsetHelper.decrement(message.getPartition(), message.getOffset());
+        offsetHelper.remove(message);
         updateMeters(subscription, result);
         updateMetrics(Counters.CONSUMER_DELIVERED, message, subscription);
         trackers.get(subscription).logSent(toMessageMetadata(message, subscription));

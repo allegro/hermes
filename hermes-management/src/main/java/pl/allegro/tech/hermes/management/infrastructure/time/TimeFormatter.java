@@ -5,10 +5,11 @@ import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -18,8 +19,11 @@ public class TimeFormatter {
     private static final Logger logger = LoggerFactory.getLogger(TimeFormatter.class);
 
     private final PeriodFormatter hourFormatter;
+    private final Clock clock;
 
-    public TimeFormatter() {
+    @Autowired
+    public TimeFormatter(Clock clock) {
+        this.clock = clock;
         hourFormatter = new PeriodFormatterBuilder()
             .appendPrefix("-")
             .appendHours()
@@ -30,13 +34,13 @@ public class TimeFormatter {
     public Long parse(String formattedTime) {
         try {
             Period period = hourFormatter.parsePeriod(formattedTime);
-            return LocalDateTime.now().minusHours(period.getHours()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            return LocalDateTime.now().minusHours(period.getHours()).atZone(clock.getZone()).toInstant().toEpochMilli();
         } catch (IllegalArgumentException e) {
             logger.info("Could not parse period. {}", e.getMessage());
         }
 
         try {
-            return LocalDateTime.parse(formattedTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            return LocalDateTime.parse(formattedTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME).atZone(clock.getZone()).toInstant().toEpochMilli();
         } catch (DateTimeParseException e) {
             logger.info("Could not parse date. {}", e.getMessage());
         }

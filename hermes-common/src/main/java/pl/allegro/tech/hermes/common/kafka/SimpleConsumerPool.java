@@ -1,10 +1,6 @@
 package pl.allegro.tech.hermes.common.kafka;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
+import com.google.common.cache.*;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.consumer.SimpleConsumer;
 import pl.allegro.tech.hermes.common.broker.BrokerDetails;
@@ -37,8 +33,8 @@ public class SimpleConsumerPool {
         }
     }
 
-    public SimpleConsumer get(String topic, int partition) {
-        return get(brokerStorage.readLeaderForPartition(new TopicAndPartition(topic, partition)));
+    public SimpleConsumer get(KafkaTopic topic, int partition) {
+        return get(brokerStorage.readLeaderForPartition(new TopicAndPartition(topic.name().asString(), partition)));
     }
 
     public int getBufferSize() {

@@ -15,9 +15,10 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffset;
-import pl.allegro.tech.hermes.domain.subscription.offset.PartitionOffsets;
-import pl.allegro.tech.hermes.domain.subscription.offset.SubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
+import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -34,6 +35,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
     private static final Logger logger = LoggerFactory.getLogger(ConsumersSupervisor.class);
 
     private final SubscriptionRepository subscriptionRepository;
+    private final TopicRepository topicRepository;
     private final SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
 
     private final ConsumersExecutorService executor;
@@ -52,6 +54,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
     @Inject
     public ConsumersSupervisor(ConfigFactory configFactory,
                                SubscriptionRepository subscriptionRepository,
+                               TopicRepository topicRepository,
                                SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
                                ConsumersExecutorService executor,
                                ConsumerFactory consumerFactory,
@@ -61,6 +64,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
                                ZookeeperAdminCache adminCache,
                                UndeliveredMessageLogPersister undeliveredMessageLogPersister) {
         this.subscriptionRepository = subscriptionRepository;
+        this.topicRepository = topicRepository;
         this.subscriptionOffsetChangeIndicator = subscriptionOffsetChangeIndicator;
         this.executor = executor;
         this.consumerFactory = consumerFactory;
@@ -93,7 +97,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
         }
     }
 
-    public void deleteConsumerForSubscription(Subscription subscription) {
+    public void deleteConsumerForSubscriptionName(SubscriptionName subscription) {
         try (CloseableSubscriptionLock subscriptionLock = subscriptionsLocks.lock(subscription)) {
             deleteConsumerIfExists(subscription, true);
             hermesMetrics.removeMetrics(subscription);
@@ -154,7 +158,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
                 break;
             case SUSPENDED:
                 if (oldState.equals(ACTIVE)) {
-                    deleteConsumerIfExists(modifiedSubscription, false);
+                    deleteConsumerIfExists(modifiedSubscription.toSubscriptionName(), false);
                 }
                 break;
             default:
@@ -186,10 +190,6 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
         }
     }
 
-    private void deleteConsumerIfExists(Subscription subscription, boolean removeOffsets) throws Exception {
-        deleteConsumerIfExists(subscription.getTopicName(), subscription.getName(), removeOffsets);
-    }
-
     private void deleteConsumerIfExists(SubscriptionName subscription, boolean removeOffsets) throws Exception {
         deleteConsumerIfExists(subscription.getTopicName(), subscription.getName(), removeOffsets);
     }
@@ -219,7 +219,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
     private void removeOffsets(TopicName topicName, String subscriptionName, List<PartitionOffset> offsetsToRemove) throws Exception {
         for (PartitionOffset partitionOffset : offsetsToRemove) {
             for (MessageCommitter messageCommitter: messageCommitters) {
-                messageCommitter.removeOffset(topicName, subscriptionName, partitionOffset.getPartition());
+                messageCommitter.removeOffset(topicName, subscriptionName, partitionOffset.getTopic(), partitionOffset.getPartition());
             }
         }
     }
@@ -231,7 +231,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
             deleteConsumerIfExists(subscriptionName, false);
 
             PartitionOffsets offsets = subscriptionOffsetChangeIndicator.getSubscriptionOffsets(
-                    subscriptionName.getTopicName(), subscriptionName.getName(), brokersClusterName);
+                    topicRepository.getTopicDetails(subscriptionName.getTopicName()), subscriptionName.getName(), brokersClusterName);
 
             for (PartitionOffset partitionOffset : offsets) {
                 for (OffsetsStorage s: offsetsStorages) {

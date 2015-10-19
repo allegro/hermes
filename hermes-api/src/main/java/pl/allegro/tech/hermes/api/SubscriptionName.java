@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class SubscriptionName {
@@ -32,5 +34,10 @@ public class SubscriptionName {
     @Override
     public String toString() {
         return topicName.qualifiedName() + "$" + name;
+    }
+
+    @JsonIgnore
+    public String getId() {
+        return Subscription.getId(getTopicName(), getName());
     }
 }

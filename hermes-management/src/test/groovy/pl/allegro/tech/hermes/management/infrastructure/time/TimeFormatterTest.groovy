@@ -2,12 +2,13 @@ package pl.allegro.tech.hermes.management.infrastructure.time
 
 import spock.lang.Specification
 
+import java.time.Clock
 import java.time.LocalDateTime
 import java.time.ZoneId
 
 class TimeFormatterTest extends Specification {
 
-    private TimeFormatter timeFormatter = new TimeFormatter()
+    private TimeFormatter timeFormatter = new TimeFormatter(Clock.systemDefaultZone())
 
     def "should parse formatted time to millis"() {
         expect:

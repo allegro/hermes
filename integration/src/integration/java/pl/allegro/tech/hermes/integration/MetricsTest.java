@@ -3,12 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import com.googlecode.catchexception.CatchException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionMetrics;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.api.TopicMetrics;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
@@ -42,7 +37,8 @@ public class MetricsTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldIncreaseTopicMetricsAfterMessageHasBeenPublished() {
         // given
-        operations.buildSubscription("topicMetricsGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("topicMetricsGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetricForTopic("topicMetricsGroup", "topic", 10, 15);
 
         remoteService.expectMessages(TestMessage.simple().body());
@@ -64,7 +60,8 @@ public class MetricsTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldIncreaseSubscriptionDeliveredMetricsAfterMessageDelivered() {
         // given
-        operations.buildSubscription("subscriptionMetricsGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("subscriptionMetricsGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetricForSubscription("subscriptionMetricsGroup", "topic", "subscription", 15);
 
         remoteService.expectMessages(TestMessage.simple().body());
@@ -102,7 +99,8 @@ public class MetricsTest extends IntegrationTest {
 
     @Test
     public void shouldReadSubscriptionDeliveryRate() {
-        operations.buildSubscription("pl.allegro.tech.hermes", "topic", "pl.allegro.tech.hermes.subscription", HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("pl.allegro.tech.hermes", "topic");
+        operations.createSubscription(topic, "pl.allegro.tech.hermes.subscription", HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetricForSubscription("pl_allegro_tech_hermes", "topic", "pl_allegro_tech_hermes_subscription", 15);
 
         SubscriptionMetrics metrics = management.subscription().getMetrics("pl.allegro.tech.hermes.topic", "pl.allegro.tech.hermes.subscription");
@@ -113,7 +111,8 @@ public class MetricsTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldIncreasePublishedMetricsIncrementallyInMultipleMetricUpdateCycles() {
         // given
-        operations.buildSubscription("incrementalMetricsGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("incrementalMetricsGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetricForTopic("incrementalMetricsGroup", "topic", 10, 15);
 
         remoteService.expectMessages(TestMessage.simple().body(), TestMessage.simple().body());
@@ -131,6 +130,7 @@ public class MetricsTest extends IntegrationTest {
         assertThat(metrics.getPublished()).isEqualTo(2);
     }
 
+    @Unreliable
     @Test
     public void shouldSendMetricToGraphite() {
         //given
@@ -160,35 +160,36 @@ public class MetricsTest extends IntegrationTest {
     @Test
     public void shouldNotReportMetricsToConfigStorageForRemovedSubscription() {
         //given
-        TopicName topicName = TopicName.fromQualifiedName("metricsAfterSubscriptionRemovedGroup.topic");
+        Topic topic = operations.buildTopic("metricsAfterSubscriptionRemovedGroup", "topic");
         String subscriptionName1 = "subscription";
-        operations.buildSubscription(topicName.getGroupName(), topicName.getName(), subscriptionName1, HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, subscriptionName1, HTTP_ENDPOINT_URL);
         remoteService.expectMessages(TestMessage.simple().body());
 
-        publisher.publish(topicName.qualifiedName(), TestMessage.simple().body());
+        publisher.publish(topic.getQualifiedName(), TestMessage.simple().body());
         remoteService.waitUntilReceived();
 
-        wait.untilSubscriptionMetricsIsCreated(topicName, subscriptionName1);
+        wait.untilSubscriptionMetricsIsCreated(topic.getName(), subscriptionName1);
 
         //when
-        management.subscription().remove(topicName.qualifiedName(), subscriptionName1);
+        management.subscription().remove(topic.getQualifiedName(), subscriptionName1);
 
         //then
-        wait.untilSubscriptionMetricsIsRemoved(topicName, subscriptionName1);
+        wait.untilSubscriptionMetricsIsRemoved(topic.getName(), subscriptionName1);
 
         String subscriptionName2 = "subscription2";
-        operations.buildSubscription(topicName.getGroupName(), topicName.getName(), subscriptionName2, HTTP_ENDPOINT_URL);
-        management.topic().publishMessage(topicName.qualifiedName(), TestMessage.simple().body());
-        wait.untilSubscriptionMetricsIsCreated(topicName, subscriptionName2);
-        wait.untilSubscriptionMetricsIsRemoved(topicName, subscriptionName1);
+        operations.createSubscription(topic, subscriptionName2, HTTP_ENDPOINT_URL);
+        management.topic().publishMessage(topic.getQualifiedName(), TestMessage.simple().body());
+        wait.untilSubscriptionMetricsIsCreated(topic.getName(), subscriptionName2);
+        wait.untilSubscriptionMetricsIsRemoved(topic.getName(), subscriptionName1);
     }
 
+    @Unreliable
     @Test
     public void shouldReportHttpErrorCodeMetrics() {
         //given
-        TopicName topicName = TopicName.fromQualifiedName("statusErrorGroup.topic");
-        operations.buildSubscription(topicName, Subscription.Builder.subscription()
-                .withTopicName(topicName)
+        Topic topic = operations.buildTopic("statusErrorGroup", "topic");
+        operations.createSubscription(topic, Subscription.Builder.subscription()
+                .withTopicName(topic.getName())
                 .withName("subscription")
                 .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL))
                 .withSubscriptionPolicy(SubscriptionPolicy.Builder.subscriptionPolicy()
@@ -203,24 +204,25 @@ public class MetricsTest extends IntegrationTest {
         remoteService.expectMessages(TestMessage.simple().body());
 
         //when
-        publisher.publish(topicName.qualifiedName(), TestMessage.simple().body());
+        publisher.publish(topic.getQualifiedName(), TestMessage.simple().body());
 
         //then
         graphiteServer.waitUntilReceived();
     }
 
+    @Unreliable
     @Test
     public void shouldReportHttpSuccessCodeMetrics() {
         //given
-        TopicName topicName = TopicName.fromQualifiedName("statusSuccessGroup.topic");
+        Topic topic = operations.buildTopic("statusSuccessGroup", "topic");
         String subscriptionName = "subscription";
-        operations.buildSubscription(topicName.getGroupName(), topicName.getName(), subscriptionName, HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
         graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.statusSuccessGroup.topic.subscription.2xx.200.count"), 1);
         graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.statusSuccessGroup.topic.subscription.2xx.count"), 1);
         remoteService.expectMessages(TestMessage.simple().body());
 
         //when
-        publisher.publish(topicName.qualifiedName(), TestMessage.simple().body());
+        publisher.publish(topic.getQualifiedName(), TestMessage.simple().body());
 
         //then
         graphiteServer.waitUntilReceived();

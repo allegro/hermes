@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
+import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -39,12 +40,12 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldPublishAvroAndConsumeJsonMessage() throws InterruptedException, ExecutionException, TimeoutException, IOException {
         // given
-        operations.buildTopic(topic()
+        Topic topic = operations.buildTopic(topic()
                 .withName("avro.topic")
                 .withValidation(true)
                 .withMessageSchema(user.getSchema().toString())
                 .withContentType(AVRO).build());
-        operations.createSubscription("avro", "topic", "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         // when
         Response response = publisher.publish("avro.topic", user.create("Bob", 50, "blue"));
@@ -105,7 +106,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldGetBadRequestForJsonInvalidWIthAvroSchema() {
+    public void shouldGetBadRequestForJsonInvalidWithAvroSchema() {
         Topic topic = topic()
                 .withName("avro.invalidJson")
                 .withValidation(true)
@@ -118,6 +119,36 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void shouldPublishAndConsumeJsonMessageAfterMigrationFromJsonToAvro() throws Exception {
+        // given
+        Topic topic = operations.buildTopic("migrated", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+
+        TestMessage beforeMigrationMessage = user.createMessage("Bob", 50, "blue");
+        TestMessage afterMigrationMessage = user.createMessage("Barney", 35, "yellow");
+
+        remoteService.expectMessages(beforeMigrationMessage, afterMigrationMessage);
+
+        publisher.publish(topic.getQualifiedName(), beforeMigrationMessage.body());
+        wait.untilConsumerCommitsOffset();
+
+        Topic migratedTopic = topic()
+                .applyPatch(topic)
+                .withContentType(AVRO)
+                .withMessageSchema(user.getSchema().toString())
+                .migratedFromJsonType()
+                .build();
+        operations.updateTopic("migrated", "topic", migratedTopic);
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), afterMigrationMessage.withEmptyAvroMetadata().body());
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+        remoteService.waitUntilReceived();
     }
 
 }

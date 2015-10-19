@@ -6,14 +6,16 @@ import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
+import kafka.message.MessageAndMetadata;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageMetadata;
@@ -58,6 +60,9 @@ public class KafkaMessageReceiverTest {
     @Mock(answer = Answers.RETURNS_MOCKS)
     private Timer timer;
 
+    @Mock
+    private MessageAndMetadata<byte[], byte[]> messageAndMetadata;
+
     private KafkaNamesMapper kafkaNamesMapper = new KafkaNamesMapper("ns");
 
     private KafkaMessageReceiver kafkaMsgReceiver;
@@ -68,15 +73,21 @@ public class KafkaMessageReceiverTest {
         Map<String, List<kafka.consumer.KafkaStream<byte[], byte[]>>> consumerMap = singletonMap("ns_group.topic1", ImmutableList.of(kafkaStream));
         Map<String, Integer> expectedTopicCountMap = singletonMap("ns_group.topic1", KAFKA_STREAM_COUNT);
         when(consumerConnector.createMessageStreams(expectedTopicCountMap)).thenReturn(consumerMap);
-        when(messageContentWrapper.unwrap(WRAPPED_MESSAGE_CONTENT.getBytes(), TOPIC)).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
+        when(messageAndMetadata.message()).thenReturn(WRAPPED_MESSAGE_CONTENT.getBytes());
+        when(messageContentWrapper.unwrap(WRAPPED_MESSAGE_CONTENT.getBytes(), TOPIC, TOPIC.getContentType())).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
         kafkaMsgReceiver = new KafkaMessageReceiver(TOPIC, consumerConnector, messageContentWrapper,
-                timer, new SystemClock(), kafkaNamesMapper, KAFKA_STREAM_COUNT);
+                timer, new SystemClock(), kafkaNamesMapper, KAFKA_STREAM_COUNT, 100, SubscriptionName.fromString("ns_group.topic$sub"));
+    }
+
+    @After
+    public void cleanUp() {
+        kafkaMsgReceiver.stop();
     }
 
     @Test
     public void shouldReadMessage() {
         // given
-        when(kafkaStream.iterator().next().message()).thenReturn(WRAPPED_MESSAGE_CONTENT.getBytes());
+        when(kafkaStream.iterator().next()).thenReturn(messageAndMetadata);
 
         // when
         Message msg = kafkaMsgReceiver.next();
@@ -86,7 +97,7 @@ public class KafkaMessageReceiverTest {
     }
 
     @Test
-    public void shouldThrowTimeoutException() {
+    public void shouldThrowTimeoutExceptionWhilePollingFromEmptyQueue() {
         // given
         when(kafkaStream.iterator().next()).thenThrow(new ConsumerTimeoutException());
 
@@ -95,18 +106,6 @@ public class KafkaMessageReceiverTest {
 
         // then
         assertThat((Throwable) caughtException()).isInstanceOf(MessageReceivingTimeoutException.class);
-    }
-
-    @Test
-    public void shouldRethrowIfOtherError() {
-        // given
-        when(kafkaStream.iterator().next()).thenThrow(new NullPointerException());
-
-        // when
-        catchException(kafkaMsgReceiver).next();
-
-        // then
-        assertThat((Throwable) caughtException()).isInstanceOf(InternalProcessingException.class);
     }
 
 }

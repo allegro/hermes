@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
@@ -44,13 +45,14 @@ public class OffsetManipulationTest extends HermesIntegrationEnvironment {
     @Test(enabled = false)
     public void shouldReadUncommitedOffsetAfterConsumerStart() {
         // given
-        operations.buildSubscription("uncommitedOffsetGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("uncommitedOffsetGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         consumers.stop();
         wait.untilConsumersStop();
 
         remoteService.expectMessages(TestMessage.simple().body());
-        publisher.publish("uncommitedOffsetGroup.topic", TestMessage.simple().body());
+        publisher.publish(topic.getQualifiedName(), TestMessage.simple().body());
 
         // when
         consumers.start();

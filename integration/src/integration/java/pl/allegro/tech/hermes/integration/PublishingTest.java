@@ -5,10 +5,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.integration.client.SlowClient;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.Assertions;
@@ -54,13 +51,14 @@ public class PublishingTest extends IntegrationTest {
     @Test
     public void shouldPublishAndConsumeMessage() {
         // given
-        operations.buildSubscription("publishAndConsumeGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("publishAndConsumeGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         TestMessage message = TestMessage.of("hello", "world");
         remoteService.expectMessages(message.body());
 
         // when
-        Response response = publisher.publish("publishAndConsumeGroup.topic", message.body());
+        Response response = publisher.publish(topic.getQualifiedName(), message.body());
 
         // then
         assertThat(response).hasStatus(CREATED);
@@ -70,7 +68,8 @@ public class PublishingTest extends IntegrationTest {
     @Test
     public void shouldMarkSubscriptionAsActiveAfterReceivingFirstMessage() {
         // given
-        operations.buildSubscription("markAsActiveGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("markAsActiveGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         TestMessage message = TestMessage.of("hello", "world");
         remoteService.expectMessages(message.body());
@@ -80,41 +79,43 @@ public class PublishingTest extends IntegrationTest {
 
         // then
         remoteService.waitUntilReceived();
-        assertThat(management.subscription().get("markAsActiveGroup.topic", "subscription").getState()).isEqualTo(Subscription.State.ACTIVE);
+        assertThat(management.subscription().get(topic.getQualifiedName(), "subscription").getState()).isEqualTo(Subscription.State.ACTIVE);
     }
 
     @Test
     public void shouldNotConsumeMessagesWhenSubscriptionIsSuspended() {
         // given
-        String group = "publishSuspendedGroup";
-        String topic = "publishingTestTopic";
         String subscription = "publishingTestSubscription";
 
-        operations.buildSubscription(group, topic, subscription, HTTP_ENDPOINT_URL);
-        operations.suspendSubscription(group, topic, subscription);
-        wait.untilSubscriptionIsDeactivated(group, topic, subscription);
-
+        Topic topic = operations.buildTopic("publishSuspendedGroup", "publishingTestTopic");
+        operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
+        wait.untilSubscriptionIsActivated(topic, subscription);
+        operations.suspendSubscription(topic, subscription);
+        wait.untilSubscriptionIsSuspended(topic, subscription);
+        
         // when
-        Response response = publisher.publish(group + "." + topic, TestMessage.of("hello", "world").body());
+        Response response = publisher.publish(topic.getQualifiedName(), TestMessage.of("hello", "world").body());
 
         // then
         assertThat(response).hasStatus(CREATED);
         remoteService.makeSureNoneReceived();
     }
 
-    @Unreliable
-    @Test(enabled = false)
+    @Test
     public void shouldSendPendingMessagesAfterSubscriptionIsResumed() {
         // given
-        operations.buildSubscription("publishResumedGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
-        operations.suspendSubscription("publishResumedGroup", "topic", "subscription");
-        wait.untilSubscriptionIsDeactivated("publishResumedGroup", "topic", "subscription");
+        Topic topic = operations.buildTopic("publishResumedGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        wait.untilSubscriptionIsActivated(topic, "subscription");
+
+        operations.suspendSubscription(topic, "subscription");
+        wait.untilSubscriptionIsSuspended(topic, "subscription");
         remoteService.expectMessages(TestMessage.of("hello", "world").body());
 
         // when
-        publisher.publish("publishResumedGroup.topic", TestMessage.of("hello", "world").body());
+        publisher.publish(topic.getQualifiedName(), TestMessage.of("hello", "world").body());
 
-        operations.activateSubscription("publishResumedGroup", "topic", "subscription");
+        operations.activateSubscription(topic, "subscription");
 
         // then
         remoteService.waitUntilReceived();
@@ -123,8 +124,9 @@ public class PublishingTest extends IntegrationTest {
     @Test
     public void shouldConsumeMessagesOnMultipleSubscriptions() {
         // given
-        operations.buildSubscription("publishMultipleGroup", "topic", "subscription1", HTTP_ENDPOINT_URL + "1/");
-        operations.createSubscription("publishMultipleGroup", "topic", "subscription2", HTTP_ENDPOINT_URL + "2/");
+        Topic topic = operations.buildTopic("publishMultipleGroup", "topic");
+        operations.createSubscription(topic, "subscription1", HTTP_ENDPOINT_URL + "1/");
+        operations.createSubscription(topic, "subscription2", HTTP_ENDPOINT_URL + "2/");
 
         TestMessage message = TestMessage.of("hello", "world");
 
@@ -134,7 +136,7 @@ public class PublishingTest extends IntegrationTest {
         endpoint2.expectMessages(message.body());
 
         // when
-        publisher.publish("publishMultipleGroup.topic", message.body());
+        publisher.publish(topic.getQualifiedName(), message.body());
 
         // then
         endpoint1.waitUntilReceived();
@@ -144,14 +146,15 @@ public class PublishingTest extends IntegrationTest {
     @Test
     public void shouldPublishMessageToEndpointWithInterpolatedURI() {
         // given
-        operations.buildSubscription("publishInterpolatedGroup", "topic", "subscription", HTTP_ENDPOINT_URL + "{template}/");
+        Topic topic = operations.buildTopic("publishInterpolatedGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL + "{template}/");
 
         TestMessage message = TestMessage.of("template", "hello");
         RemoteServiceEndpoint interpolatedEndpoint = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/hello/");
         interpolatedEndpoint.expectMessages(message.body());
 
         // when
-        publisher.publish("publishInterpolatedGroup.topic", message.body());
+        publisher.publish(topic.getQualifiedName(), message.body());
 
         // then
         interpolatedEndpoint.waitUntilReceived();
@@ -166,15 +169,15 @@ public class PublishingTest extends IntegrationTest {
         ).withSubscriptionPolicy(
                 SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().withMessageTtl(1).build()
         ).build();
-        operations.buildTopic("publishInvalidInterpolatedGroup", "topic");
-        operations.createSubscription("publishInvalidInterpolatedGroup", "topic", subscription);
+        Topic topic = operations.buildTopic("publishInvalidInterpolatedGroup", "topic");
+        operations.createSubscription(topic, subscription);
 
         TestMessage message = TestMessage.of("hello", "world");
         RemoteServiceEndpoint interpolatedEndpoint = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/hello/");
         interpolatedEndpoint.expectMessages(message.body());
 
         // when
-        publisher.publish("publishInvalidInterpolatedGroup.topic", message.body());
+        publisher.publish(topic.getQualifiedName(), message.body());
 
         // then
         interpolatedEndpoint.makeSureNoneReceived();
@@ -186,10 +189,11 @@ public class PublishingTest extends IntegrationTest {
     @Test
     public void shouldNotPublishMessageIfContentLengthDoNotMatch() throws IOException, InterruptedException {
         // given
-        operations.buildSubscription("invalidContentType", "topic", "subscription", HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("invalidContentType", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         // when
-        publishEventWithInvalidContentLength("invalidContentType.topic");
+        publishEventWithInvalidContentLength(topic.getQualifiedName());
 
         // then
         remoteService.makeSureNoneReceived();
@@ -214,12 +218,12 @@ public class PublishingTest extends IntegrationTest {
     @Test
     public void shouldPublishMessageUsingChunkedEncoding() throws UnsupportedEncodingException {
         // given
-        operations.buildTopic("chunked", "topic");
+        Topic topic = operations.buildTopic("chunked", "topic");
 
         // when
         Response response = newClient(new ClientConfig().property(REQUEST_ENTITY_PROCESSING, CHUNKED))
                 .target(FRONTEND_TOPICS_ENDPOINT)
-                .path("chunked.topic").request().post(Entity.text("{}"));
+                .path(topic.getQualifiedName()).request().post(Entity.text("{}"));
 
         // then
         assertThat(response).hasStatus(CREATED);

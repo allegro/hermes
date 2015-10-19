@@ -3,16 +3,19 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.consumers;
 import com.codahale.metrics.MetricRegistry;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.FilterBuilders;
-import org.junit.ClassRule;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.consumers.AbstractLogRepositoryTest;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
+import pl.allegro.tech.hermes.tracker.elasticsearch.DataInitializer;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
 import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
 import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendDailyIndexFactory;
 import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactory;
+import pl.allegro.tech.hermes.tracker.elasticsearch.management.ElasticsearchLogRepository;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -32,9 +35,19 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     private static final ConsumersIndexFactory indexFactory = new ConsumersDailyIndexFactory(clock);
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
 
-    @ClassRule
     public static ElasticsearchResource elasticsearch = new ElasticsearchResource(indexFactory);
-    private final SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, indexFactory);
+    private SchemaManager schemaManager;
+
+    @BeforeClass
+    public void before() throws Throwable {
+        elasticsearch.before();
+        schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, indexFactory);
+    }
+
+    @AfterClass
+    public void after() {
+        elasticsearch.after();
+    }
 
     @Override
     protected LogRepository createLogRepository() {

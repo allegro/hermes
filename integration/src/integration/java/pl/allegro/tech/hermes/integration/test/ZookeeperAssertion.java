@@ -5,7 +5,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
@@ -23,15 +23,14 @@ public class ZookeeperAssertion extends AbstractAssert<ZookeeperAssertion, Curat
         this.kafkaNamesMapper = kafkaNamesMapper;
     }
 
-    public void offsetsAreNotRetracted(String group, String topic, String subscription, int partitions, int offset) {
-        TopicName topicName = new TopicName(group, topic);
-        ConsumerGroupId kafkaGroupId = kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscription));
-        KafkaTopicName kafkaTopic = kafkaNamesMapper.toKafkaTopicName(topicName);
+    public void offsetsAreNotRetractedOnPrimaryKafkaTopic(Topic topic, String subscription, int partitions, int offset) {
+        ConsumerGroupId kafkaGroupId = kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription));
+        KafkaTopicName kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name();
 
         for (int i = 0; i < 200; i++) {
             try {
                 for (int j = 0; j < partitions; j++) {
-                    assertThat(offsetValue(kafkaGroupId, kafkaTopic, j)).isEqualTo(offset);
+                    assertThat(offsetValue(kafkaGroupId, kafkaTopicName, j)).isEqualTo(offset);
                 }
                 Thread.sleep(10);
             } catch (Exception exception) {

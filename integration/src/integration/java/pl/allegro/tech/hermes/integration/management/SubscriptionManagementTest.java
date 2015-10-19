@@ -5,7 +5,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -46,59 +46,55 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldCreateSubscriptionWithActiveStatus() {
         // given
-        operations.createGroup("subscribeGroup");
-        operations.createTopic("subscribeGroup", "topic");
+        Topic topic = operations.buildTopic("subscribeGroup", "topic");
 
         // when
-        Response response = management.subscription().create("subscribeGroup.topic",
+        Response response = management.subscription().create(topic.getQualifiedName(),
                 subscription().withName("subscription").withEndpoint(EndpointAddress.of("http://whatever.com")).applyDefaults().build());
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        wait.untilSubscriptionCreated("subscribeGroup", "topic", "subscription", false);
-        Assertions.assertThat(management.subscription().list("subscribeGroup.topic", false)).containsExactly("subscription");
-        wait.untilSubscriptionIsActivated("subscribeGroup", "topic", "subscription");
+        wait.untilSubscriptionCreated(topic, "subscription", false);
+        Assertions.assertThat(management.subscription().list(topic.getQualifiedName(), false)).containsExactly("subscription");
+        wait.untilSubscriptionIsActivated(topic, "subscription");
     }
     
     @Test
     public void shouldSuspendSubscription() {
         // given
-        operations.createGroup("suspendSubscriptionGroup");
-        operations.createTopic("suspendSubscriptionGroup", "topic");
-        operations.createSubscription("suspendSubscriptionGroup", "topic", "subscription", HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("suspendSubscriptionGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        wait.untilSubscriptionIsActivated(topic, "subscription");
 
         // when
         Response response = management.subscription().updateState(
-                "suspendSubscriptionGroup.topic",
+                topic.getQualifiedName(),
                 "subscription", Subscription.State.SUSPENDED);
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);
-        wait.untilSubscriptionIsSuspended("suspendSubscriptionGroup", "topic", "subscription");
+        wait.untilSubscriptionIsSuspended(topic, "subscription");
     }
 
     @Test
     public void shouldRemoveSubscription() {
         // given
-        operations.createGroup("removeSubscriptionGroup");
-        operations.createTopic("removeSubscriptionGroup", "topic");
-        operations.createSubscription("removeSubscriptionGroup", "topic", "subscription",
-                HTTP_ENDPOINT_URL);
+        Topic topic = operations.buildTopic("removeSubscriptionGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         // when
-        Response response = management.subscription().remove("removeSubscriptionGroup.topic", "subscription");
+        Response response = management.subscription().remove(topic.getQualifiedName(), "subscription");
         
         // then
         assertThat(response).hasStatus(Response.Status.OK);
-        assertThat(management.subscription().list("removeSubscriptionGroup.topic", false)).doesNotContain(
+        assertThat(management.subscription().list(topic.getQualifiedName(), false)).doesNotContain(
                 "subscription");
     }
 
     @Test
     public void shouldGetEventStatus() throws InterruptedException {
         // given
-        operations.createGroup("eventStatus");
-        operations.createTopic(topic().withName("eventStatus", "topic").withTrackingEnabled(true).build());
+        Topic topic = operations.buildTopic(topic().withName("eventStatus", "topic").withTrackingEnabled(true).build());
 
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
@@ -106,17 +102,17 @@ public class SubscriptionManagementTest extends IntegrationTest {
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
                 .build();
 
-        operations.createSubscription("eventStatus", "topic", subscription);
+        operations.createSubscription(topic, subscription);
         remoteService.expectMessages(MESSAGE.body());
 
         // when
-        String messageId = publishMessage("eventStatus.topic", MESSAGE.body());
+        String messageId = publishMessage(topic.getQualifiedName(), MESSAGE.body());
         remoteService.waitUntilReceived();
 
         // then
-        await().atMost(30, TimeUnit.SECONDS).until(() -> getMessageTrace("eventStatus.topic", "subscription", messageId).size() == 3);
+        await().atMost(30, TimeUnit.SECONDS).until(() -> getMessageTrace(topic.getQualifiedName(), "subscription", messageId).size() == 3);
 
-        List<Map<String, String>> traces = getMessageTrace("eventStatus.topic", "subscription", messageId);
+        List<Map<String, String>> traces = getMessageTrace(topic.getQualifiedName(), "subscription", messageId);
         traces.forEach(entry -> assertThat(entry).containsEntry("messageId", messageId));
         assertThat(traces.get(0)).containsEntry("status", "SUCCESS").containsKey("cluster");
         assertThat(traces.get(1)).containsEntry("status", "INFLIGHT").containsKey("cluster");
@@ -127,17 +123,17 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnSubscriptionsThatAreCurrentlyTrackedForGivenTopic() {
         // given
-        TopicName topic = new TopicName("tracked", "topic");
+        Topic topic = operations.buildTopic("tracked", "topic");
         Subscription subscription = subscription()
                 .withName("sub")
-                .withTopicName(topic)
+                .withTopicName(topic.getName())
                 .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL))
                 .withTrackingEnabled(true).build();
-        operations.buildSubscription(topic, subscription);
-        operations.createSubscription(topic.getGroupName(), topic.getName(), "sub2", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, subscription);
+        operations.createSubscription(topic, "sub2", HTTP_ENDPOINT_URL);
 
         // when
-        List<String> tracked = management.subscription().list(topic.qualifiedName(), true);
+        List<String> tracked = management.subscription().list(topic.getQualifiedName(), true);
 
         // then
         assertThat(tracked).containsExactly(subscription.getName());
@@ -146,15 +142,14 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldNotAllowSubscriptionNameToContainDollarSign() {
         // given
-        TopicName topic = new TopicName("dollar", "topic");
-        operations.buildTopic(topic.getGroupName(), topic.getName());
+        Topic topic = operations.buildTopic("dollar", "topic");
 
         Stream.of("$name", "na$me", "name$").forEach(name -> {
             // when
             Response response = management.subscription()
-                    .create(topic.qualifiedName(), subscription()
+                    .create(topic.getQualifiedName(), subscription()
                             .withName(name)
-                            .withTopicName(topic)
+                            .withTopicName(topic.getName())
                             .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL)).build());
 
             // then
