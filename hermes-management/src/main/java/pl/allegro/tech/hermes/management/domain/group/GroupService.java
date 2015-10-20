@@ -56,6 +56,5 @@ public class GroupService {
             logger.warn("Problem with reading details of group {}. Overriding them.", group.getGroupName());
             groupRepository.updateGroup(group);
         }
-
     }
 }
