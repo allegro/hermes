@@ -176,11 +176,11 @@ public class SchemaRepositoryTest {
     }
 
     private SchemaRepository<String> schemaRepository(SchemaSourceProvider sourceRepository) {
-        return new SchemaRepository<>(sourceRepository, MoreExecutors.sameThreadExecutor(), 10, 60 * 24, uppercaseCompiler);
+        return new SchemaRepository<>(Topic.ContentType.AVRO, sourceRepository, MoreExecutors.sameThreadExecutor(), 10, 60 * 24, uppercaseCompiler);
     }
 
     private SchemaRepository<String> schemaRepository(SchemaSourceProvider sourceRepository, Ticker ticker) {
-        return new SchemaRepository<>(sourceRepository, MoreExecutors.sameThreadExecutor(), ticker, 10, 60 * 24, uppercaseCompiler);
+        return new SchemaRepository<>(Topic.ContentType.AVRO, sourceRepository, MoreExecutors.sameThreadExecutor(), ticker, 10, 60 * 24, uppercaseCompiler);
     }
 
     private static class FakeTicker extends Ticker {

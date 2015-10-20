@@ -21,5 +21,7 @@ public interface TopicRepository {
 
     void updateTopic(Topic topic);
 
+    void touchTopic(TopicName topicName);
+
     Topic getTopicDetails(TopicName topicName);
 }
