@@ -67,8 +67,8 @@ public class SchemaRepository<T> {
         }
     }
 
-    public boolean canService(Topic.ContentType contentType) {
-        return contentType == this.contentType;
+    public Topic.ContentType supportedContentType() {
+        return contentType;
     }
 
     public void onReload(Consumer<TopicWithSchema<T>> topicWithSchemaConsumer) {

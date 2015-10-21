@@ -26,47 +26,36 @@ public class SchemaPrefetchServiceTest {
 
     @Before
     public void before() {
-        when(avroSchemaRepo.canService(Topic.ContentType.AVRO)).thenReturn(true);
-        when(jsonSchemaRepo.canService(Topic.ContentType.JSON)).thenReturn(true);
+        when(avroSchemaRepo.supportedContentType()).thenReturn(Topic.ContentType.AVRO);
+        when(jsonSchemaRepo.supportedContentType()).thenReturn(Topic.ContentType.JSON);
         schemaPrefetchService = new SchemaPrefetchService(ImmutableList.of(avroSchemaRepo, jsonSchemaRepo));
     }
 
     @Test
-    public void shouldNotPrefetchForTopicsWithoutValidation() throws Exception {
+    public void shouldPrefetchSchemaFromEveryAvailableSchemaRepo() throws Exception {
         //given
-        Topic topic = topic().withValidation(false).build();
+        Topic topic = topic().build();
 
         //when
         schemaPrefetchService.prefetchFor(topic);
 
         //then
-        verify(avroSchemaRepo, never()).getSchema(any());
-        verify(jsonSchemaRepo, never()).getSchema(any());
+        verify(avroSchemaRepo).getSchema(any());
+        verify(jsonSchemaRepo).getSchema(any());
     }
 
     @Test
-    public void shouldPrefetchForAvroTopics() throws Exception {
+    public void shouldHandleExceptionWhileFetchingSchema() {
         //given
-        Topic topic = topic().withValidation(true).withContentType(Topic.ContentType.AVRO).build();
+        Topic topic = topic().build();
+        when(avroSchemaRepo.getSchema(any())).thenThrow(new RuntimeException());
 
         //when
         schemaPrefetchService.prefetchFor(topic);
 
         //then
-        verify(avroSchemaRepo, times(1)).getSchema(topic);
-        verify(jsonSchemaRepo, never()).getSchema(any());
+        verify(avroSchemaRepo).getSchema(topic);
+        verify(jsonSchemaRepo).getSchema(any());
     }
 
-    @Test
-    public void shouldPrefetchForJsonTopics() throws Exception {
-        //given
-        Topic topic = topic().withValidation(true).withContentType(Topic.ContentType.JSON).build();
-
-        //when
-        schemaPrefetchService.prefetchFor(topic);
-
-        //then
-        verify(jsonSchemaRepo, times(1)).getSchema(topic);
-        verify(avroSchemaRepo, never()).getSchema(any());
-    }
 }
