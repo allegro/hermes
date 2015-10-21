@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.services;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -13,7 +14,7 @@ import java.util.List;
 public class SchemaPrefetchService {
     private List<SchemaRepository> schemaRepositories;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SchemaPrefetchService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SchemaPrefetchService.class);
 
     @Inject
     public SchemaPrefetchService(List<SchemaRepository> schemaRepositories) {
@@ -21,15 +22,17 @@ public class SchemaPrefetchService {
     }
 
     public void prefetchFor(Topic topic) {
-        if (topic.isValidationEnabled()) {
-            LOGGER.debug("Prefetching schema for topic {}", topic.getQualifiedName());
-            prefetch(topic);
-        }
-    }
-
-    private void prefetch(Topic topic) {
-        schemaRepositories.stream()
-                .filter(repo -> repo.canService(topic.getContentType()))
-                .forEach(repo -> repo.getSchema(topic));
+        schemaRepositories.stream().forEach(repo -> {
+            try {
+                repo.getSchema(topic);
+                logger.info("Successful prefetch of schema for topic {} with content type {} via {} schema repo", topic.getQualifiedName(), topic.getContentType(), repo.supportedContentType());
+            } catch (Exception exception) {
+                logger.info("Unsuccessful prefetch of schema for topic {} with content type {} via {} schema repo. Root cause: {}",
+                    topic.getQualifiedName(),
+                    topic.getContentType(),
+                    repo.supportedContentType(),
+                    ExceptionUtils.getRootCauseMessage(exception));
+            }
+        });
     }
 }
