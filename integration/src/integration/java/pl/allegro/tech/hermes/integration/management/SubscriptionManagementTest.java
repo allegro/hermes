@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integration.management;
 
-import org.assertj.core.api.Assertions;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
@@ -59,7 +58,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
         wait.untilSubscriptionCreated(topic, "subscription", false);
-        Assertions.assertThat(management.subscription().list(topic.getQualifiedName(), false)).containsExactly("subscription");
+        assertThat(management.subscription().list(topic.getQualifiedName(), false)).containsExactly("subscription");
         wait.untilSubscriptionIsActivated(topic, "subscription");
     }
 
