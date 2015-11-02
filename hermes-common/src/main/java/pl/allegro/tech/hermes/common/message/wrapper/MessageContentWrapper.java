@@ -35,11 +35,11 @@ public class MessageContentWrapper {
         throw new UnsupportedContentTypeException(topic);
     }
 
-    public byte[] wrap(byte[] data, String id, long timestamp, Topic topic) {
+    public byte[] wrap(byte[] data, String id, String traceId, long timestamp, Topic topic) {
         if (topic.getContentType() == Topic.ContentType.JSON) {
-            return jsonMessageContentWrapper.wrapContent(data, id, timestamp);
+            return jsonMessageContentWrapper.wrapContent(data, id, traceId, timestamp);
         } else if (topic.getContentType() == Topic.ContentType.AVRO) {
-            return avroMessageContentWrapper.wrapContent(data, id, timestamp, avroSchemaRepository.getSchema(topic));
+            return avroMessageContentWrapper.wrapContent(data, id, traceId, timestamp, avroSchemaRepository.getSchema(topic));
         }
 
         throw new UnsupportedContentTypeException(topic);

@@ -25,6 +25,7 @@ public class AvroMessageContentWrapperTest {
 
     private final String id = UUID.randomUUID().toString();
     private final Long timestamp = System.currentTimeMillis();
+    private final String traceId = UUID.randomUUID().toString();
 
     @Before
     public void setup() throws IOException {
@@ -36,7 +37,7 @@ public class AvroMessageContentWrapperTest {
     @Test
     public void shouldWrapAndUnwrapAvroMessageWithMetadata() throws IOException {
         // when
-        byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema());
+        byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, traceId, timestamp, avroUser.getSchema());
         UnwrappedMessageContent unwrappedMessageContent = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getSchema());
 
         // then
@@ -49,7 +50,7 @@ public class AvroMessageContentWrapperTest {
     @SuppressWarnings("unchecked")
     public void shouldWrappedMessageContainsMetadata() throws IOException {
         // when
-        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema());
+        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, traceId, timestamp, avroUser.getSchema());
 
         // then
         GenericRecord messageWithMetadata = bytesToRecord(wrappedMessage, avroUser.getSchema());

@@ -13,7 +13,10 @@ import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -291,4 +294,27 @@ public class PublishingTest extends IntegrationTest {
         assertThat(response).hasStatus(CREATED);
     }
 
+    @Test
+    public void shouldPublishMessageWithTraceId() {
+
+        // given
+        String message = "{\"id\": 101}";
+        String topic = "trace.topic";
+
+        // and
+        operations.buildTopic(
+                topic()
+                        .withName(topic)
+                        .withValidation(false)
+                        .withContentType(JSON)
+                        .build()
+        );
+        WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic);
+
+        // when
+        Response response = client.request().post(Entity.entity(message, MediaType.APPLICATION_JSON));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+    }
 }

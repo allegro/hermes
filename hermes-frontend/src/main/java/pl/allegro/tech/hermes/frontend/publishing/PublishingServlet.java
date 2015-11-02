@@ -40,6 +40,7 @@ import static org.apache.commons.lang.StringUtils.strip;
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
+import static pl.allegro.tech.hermes.frontend.publishing.HttpMetaHeaders.TRACE_ID;
 
 public class PublishingServlet extends HttpServlet {
 
@@ -90,17 +91,18 @@ public class PublishingServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         TopicName topicName = parseTopicName(request);
         final String messageId = UUID.randomUUID().toString();
+        final String traceId = getTraceId(request);
         Optional<Topic> topic = topicsCache.getTopic(topicName);
 
         if (topic.isPresent()) {
-            handlePublishAsynchronously(request, response, topic.get(), messageId);
+            handlePublishAsynchronously(request, response, topic.get(), messageId, traceId);
         } else {
             String cause = format("Topic %s not exists in group %s", topicName.getName(), topicName.getGroupName());
             errorSender.sendErrorResponse(new ErrorDescription(cause, TOPIC_NOT_EXISTS), response, messageId);
         }
     }
 
-    private void handlePublishAsynchronously(HttpServletRequest request, HttpServletResponse response, Topic topic, String messageId)
+    private void handlePublishAsynchronously(HttpServletRequest request, HttpServletResponse response, Topic topic, String messageId, String traceId)
             throws IOException {
         final MessageState messageState = new MessageState();
         final AsyncContext asyncContext = request.startAsync();
@@ -115,7 +117,7 @@ public class PublishingServlet extends HttpServlet {
                 messageContent -> asyncContext.start(() -> {
                     try {
                         Message message = contentTypeEnforcer.enforce(request.getContentType(),
-                                new Message(messageId, messageContent, clock.getTime()), topic);
+                                new Message(messageId, traceId, messageContent, clock.getTime()), topic);
 
                         messageValidators.check(topic, message.getData());
 
@@ -138,6 +140,10 @@ public class PublishingServlet extends HttpServlet {
                 }),
                 input -> httpResponder.badRequest(input, "Validation error"),
                 throwable -> httpResponder.internalError(throwable, "Error while reading request"));
+    }
+
+    private static String getTraceId(HttpServletRequest request) {
+        return request.getHeader(TRACE_ID);
     }
 
     private TopicName parseTopicName(HttpServletRequest request) {

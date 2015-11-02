@@ -40,9 +40,9 @@ public class JsonMessageContentWrapper {
         this.mapper = mapper;
     }
 
-    byte[] wrapContent(byte[] json, String id, long timestamp) {
+    byte[] wrapContent(byte[] json, String id, String traceId, long timestamp) {
         try {
-            return wrapContent(mapper.writeValueAsBytes(new MessageMetadata(timestamp, id)), json);
+            return wrapContent(mapper.writeValueAsBytes(new MessageMetadata(timestamp, id, traceId)), json);
         } catch (IOException e) {
             throw new WrappingException("Could not wrap json message", e);
         }
@@ -68,7 +68,7 @@ public class JsonMessageContentWrapper {
         } else {
             UUID id = UUID.randomUUID();
             LOGGER.warn("Unwrapped message read by consumer (size={}, id={}).", json.length, id.toString());
-            return new UnwrappedMessageContent(new MessageMetadata(1L, id.toString()), json);
+            return new UnwrappedMessageContent(new MessageMetadata(1L, id.toString(), null), json);
         }
     }
 
