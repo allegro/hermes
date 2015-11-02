@@ -47,7 +47,6 @@ public class MessageMetadata {
         }
         final MessageMetadata other = (MessageMetadata) obj;
         return Objects.equals(this.id, other.id)
-                && Objects.equals(this.timestamp, other.timestamp)
-                && Objects.equals(this.traceId, other.traceId);
+                && Objects.equals(this.timestamp, other.timestamp);
     }
 }

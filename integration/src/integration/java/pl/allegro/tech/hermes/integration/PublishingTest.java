@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
+import java.util.UUID;
 
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -300,6 +301,7 @@ public class PublishingTest extends IntegrationTest {
         // given
         String message = "{\"id\": 101}";
         String topic = "trace.topic";
+        String traceId = UUID.randomUUID().toString();
 
         // and
         operations.buildTopic(
@@ -312,7 +314,10 @@ public class PublishingTest extends IntegrationTest {
         WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic);
 
         // when
-        Response response = client.request().post(Entity.entity(message, MediaType.APPLICATION_JSON));
+        Response response = client
+                .request()
+                .header("Trace-Id", traceId)
+                .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);

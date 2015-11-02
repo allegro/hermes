@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_ID;
 
 public class JettyMessageSender extends CompletableFutureAwareMessageSender {
 
@@ -35,6 +36,7 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
                 .method(HttpMethod.POST)
                 .header(HttpHeader.KEEP_ALIVE.toString(), "true")
                 .header(MESSAGE_ID.getName(), message.getId())
+                .header(TRACE_ID.getName(), message.getTraceId())
                 .header(HttpHeader.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)
                 .timeout(timeout, TimeUnit.MILLISECONDS)
                 .content(new BytesContentProvider(message.getData()))

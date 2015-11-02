@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -155,8 +156,8 @@ public class OffsetCommitQueueTest {
 
     private void addOffsets(long ... offsets) {
         for (Long offset : offsets) {
-            queue.put(new Message("id", "topic", new byte[0], Topic.ContentType.JSON, 12091212L, 120912123L,
-                    new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), offset, 0)).getOffset());
+            queue.put(new Message("id", "topic", "traceId", new byte[0], Topic.ContentType.JSON,
+                    12091212L, 120912123L, new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), offset, 0)).getOffset());
         }
     }
 

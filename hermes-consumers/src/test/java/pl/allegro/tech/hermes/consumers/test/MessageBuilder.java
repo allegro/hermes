@@ -6,6 +6,8 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
+import java.util.UUID;
+
 public final class MessageBuilder {
 
     private final String content;
@@ -19,7 +21,7 @@ public final class MessageBuilder {
     }
 
     public Message build() {
-        return new Message("213", "whatever", content.getBytes(), Topic.ContentType.JSON, 123L, 123L,
-                new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 123, 1));
+        return new Message("213", "whatever", "traceId", content.getBytes(),
+                Topic.ContentType.JSON, 123L, 123L, new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 123, 1));
     }
 }

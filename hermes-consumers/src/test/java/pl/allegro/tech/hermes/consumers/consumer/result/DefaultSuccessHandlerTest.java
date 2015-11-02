@@ -35,8 +35,8 @@ public class DefaultSuccessHandlerTest {
     @Mock
     private SubscriptionOffsetCommitQueues offsetHelper;
 
-    private Message message = new Message("id", TOPIC_NAME, MESSAGE_CONTENT.getBytes(), Topic.ContentType.JSON, 241243123L, 2412431234L,
-            new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), OFFSET, PARTITION));
+    private Message message = new Message("id", TOPIC_NAME, "traceId", MESSAGE_CONTENT.getBytes(),
+            Topic.ContentType.JSON, 241243123L, 2412431234L, new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), OFFSET, PARTITION));
 
     @Mock
     private Subscription subscription;

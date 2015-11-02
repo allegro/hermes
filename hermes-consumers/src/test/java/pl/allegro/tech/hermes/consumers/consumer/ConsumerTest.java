@@ -36,7 +36,9 @@ public class ConsumerTest {
 
     private static final Message MESSAGE = new Message(
             "id",
-            "topic", "{\"username\":\"ala\"}".getBytes(),
+            "topic",
+            "traceId",
+            "{\"username\":\"ala\"}".getBytes(),
             Topic.ContentType.JSON, 122424L,
             1224245L,
             new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 10, 0));

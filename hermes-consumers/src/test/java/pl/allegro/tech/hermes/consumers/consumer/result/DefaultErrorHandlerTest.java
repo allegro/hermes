@@ -53,8 +53,9 @@ public class DefaultErrorHandlerTest {
     @Mock
     private Subscription subscription;
 
-    private final Message message = new Message("id", TOPIC_NAME, MESSAGE_CONTENT.getBytes(), Topic.ContentType.JSON, 213232L, 2132323L,
-            new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), OFFSET, PARTITION));
+    private final Message message = new Message("id", TOPIC_NAME, "traceId", MESSAGE_CONTENT.getBytes(),
+            Topic.ContentType.JSON, 213232L, 2132323L, new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"),
+            OFFSET, PARTITION));
 
     @Mock
     private Clock clock;

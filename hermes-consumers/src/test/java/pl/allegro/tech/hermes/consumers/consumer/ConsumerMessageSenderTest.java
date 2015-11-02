@@ -351,7 +351,7 @@ public class ConsumerMessageSenderTest {
     }
 
     private Message messageWithTimestamp(long timestamp) {
-        return new Message("id", "topic", "{\"username\":\"ala\"}".getBytes(), Topic.ContentType.JSON, 122424L, timestamp,
-                new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 10, 0));
+        return new Message("id", "topic", "traceId", "{\"username\":\"ala\"}".getBytes(), Topic.ContentType.JSON,
+                122424L, timestamp, new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 10, 0));
     }
 }

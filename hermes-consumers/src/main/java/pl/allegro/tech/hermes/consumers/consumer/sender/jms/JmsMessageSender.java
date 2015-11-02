@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_ID;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 
@@ -43,6 +44,7 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
             message.writeBytes(msg.getData());
             message.setStringProperty(TOPIC_NAME.getCamelCaseName(), msg.getTopic());
             message.setStringProperty(MESSAGE_ID.getCamelCaseName(), msg.getId());
+            message.setStringProperty(TRACE_ID.getCamelCaseName(), msg.getTraceId());
 
             CompletionListener asyncListener = new CompletionListener() {
                 @Override

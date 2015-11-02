@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.consumers.test.Wait;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -165,8 +166,9 @@ public class SubscriptionOffsetCommitQueuesTest {
         }
 
         private Message messageWithPartitionOffset(long offset) {
-            return new Message("id", SOME_TOPIC, new byte[partition],
-                    Topic.ContentType.JSON, 213123L, 2131234L, new PartitionOffset(KAFKA_TOPIC, offset, partition));
+            return new Message("id", SOME_TOPIC, "traceId",
+                    new byte[partition], Topic.ContentType.JSON, 213123L, 2131234L,
+                    new PartitionOffset(KAFKA_TOPIC, offset, partition));
         }
     }
 }
