@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TraceInfo;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -16,6 +17,7 @@ import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Charsets.UTF_8;
@@ -28,9 +30,10 @@ public class KafkaBrokerMessageProducerTest {
 
     private static final Long TIMESTAMP = 1L;
     private static final String MESSAGE_ID = "id";
+    private static final TraceInfo TRACE_INFO = new TraceInfo(UUID.randomUUID().toString());
     private static final Topic TOPIC = topic().applyDefaults().withName("group.topic").build();
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);
-    private static final Message MESSAGE = new Message(MESSAGE_ID, CONTENT, TIMESTAMP);
+    private static final Message MESSAGE = new Message(MESSAGE_ID, TRACE_INFO, CONTENT, TIMESTAMP);
 
     private MockProducer leaderConfirmsProducer = new MockProducer();
     private MockProducer everyoneConfirmProducer = new MockProducer();

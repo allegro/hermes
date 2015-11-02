@@ -119,6 +119,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
             return new Message(
                     unwrappedContent.getMessageMetadata().getId(),
                     topic.getQualifiedName(),
+                    unwrappedContent.getMessageMetadata().getTraceId(),
                     unwrappedContent.getContent(),
                     kafkaTopic.contentType(),
                     unwrappedContent.getMessageMetadata().getTimestamp(),
