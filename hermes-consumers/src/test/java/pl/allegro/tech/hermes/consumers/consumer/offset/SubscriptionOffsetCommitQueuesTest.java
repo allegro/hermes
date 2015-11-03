@@ -5,18 +5,17 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.consumers.test.Wait;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,8 +24,6 @@ public class SubscriptionOffsetCommitQueuesTest {
     private static final int FIRST_PARTITION = 0;
     private static final int SECOND_PARTITION = 1;
     private static final KafkaTopicName KAFKA_TOPIC = KafkaTopicName.valueOf("kafka_topic");
-
-    public static final String SOME_TOPIC = "topic";
 
     private Subscription subscription = Subscription.Builder.subscription()
             .applyDefaults().withSubscriptionPolicy(
@@ -166,9 +163,9 @@ public class SubscriptionOffsetCommitQueuesTest {
         }
 
         private Message messageWithPartitionOffset(long offset) {
-            return new Message("id", SOME_TOPIC, "traceId",
-                    new byte[partition], Topic.ContentType.JSON, 213123L, 2131234L,
-                    new PartitionOffset(KAFKA_TOPIC, offset, partition));
+            return MessageBuilder.withTestMessage().withContent(new byte[partition])
+                    .withPartitionOffset(new PartitionOffset(KAFKA_TOPIC, offset, partition))
+                    .build();
         }
     }
 }

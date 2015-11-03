@@ -8,11 +8,13 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionPolicy;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
@@ -24,24 +26,28 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeou
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
+import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConsumerTest {
 
-    private static final Message MESSAGE = new Message(
-            "id",
-            "topic",
-            "traceId",
-            "{\"username\":\"ala\"}".getBytes(),
-            Topic.ContentType.JSON, 122424L,
-            1224245L,
-            new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 10, 0));
+    private static final Message MESSAGE = withTestMessage()
+            .withContent("{\"username\":\"ala\"}", StandardCharsets.UTF_8)
+            .build();
 
     private static final Subscription SUBSCRIPTION = Subscription.Builder.subscription()
             .withTopicName(new TopicName("group", "topic"))

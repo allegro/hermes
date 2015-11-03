@@ -7,19 +7,22 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultSuccessHandlerTest {
@@ -35,8 +38,11 @@ public class DefaultSuccessHandlerTest {
     @Mock
     private SubscriptionOffsetCommitQueues offsetHelper;
 
-    private Message message = new Message("id", TOPIC_NAME, "traceId", MESSAGE_CONTENT.getBytes(),
-            Topic.ContentType.JSON, 241243123L, 2412431234L, new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), OFFSET, PARTITION));
+    private Message message = withTestMessage()
+            .withTopic(TOPIC_NAME)
+            .withContent(MESSAGE_CONTENT, StandardCharsets.UTF_8)
+            .withPartitionOffset(new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), OFFSET, PARTITION))
+            .build();
 
     @Mock
     private Subscription subscription;

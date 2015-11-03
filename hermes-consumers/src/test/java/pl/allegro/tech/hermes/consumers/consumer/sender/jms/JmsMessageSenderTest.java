@@ -8,10 +8,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
@@ -31,13 +28,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_ID;
+import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JmsMessageSenderTest {
 
-    private static final Message SOME_MESSAGE = new Message("id", "topic", "traceId",
-            "aaaaaaaaaaaaaaaa".getBytes(), Topic.ContentType.JSON, 1214323L, 12143234L,
-            new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 0, 0));
+    private static final Message SOME_MESSAGE = withTestMessage().build();
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private JMSContext jmsContextMock;
