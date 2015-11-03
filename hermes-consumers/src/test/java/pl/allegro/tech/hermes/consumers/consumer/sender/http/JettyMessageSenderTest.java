@@ -68,7 +68,7 @@ public class JettyMessageSenderTest {
     public void setUp() throws Exception {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
         ResolvableEndpointAddress address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver());
-        messageSender = new JettyMessageSender(client, address, 1000);
+        messageSender = new JettyMessageSender(client, address, 1000, new JettyTraceIdAppender());
     }
 
     @Test

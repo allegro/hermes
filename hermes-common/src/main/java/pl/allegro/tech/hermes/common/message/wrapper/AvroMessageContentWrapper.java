@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
+import pl.allegro.tech.hermes.api.TraceInfo;
 
 import java.util.Map;
 
@@ -33,13 +34,13 @@ public class AvroMessageContentWrapper {
         }
     }
 
-    byte[] wrapContent(byte[] message, String id, String traceId, long timestamp, Schema schema) {
+    byte[] wrapContent(byte[] message, String id, TraceInfo traceInfo, long timestamp, Schema schema) {
         try {
             GenericRecord genericRecord = bytesToRecord(message, schema);
             Map<Utf8, String> metadata = Maps.newHashMap();
             metadata.put(METADATA_TIMESTAMP_KEY, Long.toString(timestamp));
             metadata.put(METADATA_MESSAGE_ID_KEY, id);
-            ofNullable(traceId).ifPresent((val) -> metadata.put(METADATA_TRACE_ID_KEY, val));
+            ofNullable(traceInfo.getTraceId()).ifPresent((val) -> metadata.put(METADATA_TRACE_ID_KEY, val));
 
             genericRecord.put(METADATA_MARKER, metadata);
             return recordToBytes(genericRecord, schema);

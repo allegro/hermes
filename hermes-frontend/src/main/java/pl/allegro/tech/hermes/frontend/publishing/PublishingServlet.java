@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.TraceInfo;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
 import pl.allegro.tech.hermes.common.message.converter.ConvertingException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -22,6 +22,7 @@ import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCal
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
+import pl.allegro.tech.hermes.frontend.publishing.trace.TraceExtractor;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -54,6 +55,7 @@ public class PublishingServlet extends HttpServlet {
     private final MessageContentTypeEnforcer contentTypeEnforcer;
     private final MetadataAddingMessageConverter metadataAddingMessageConverter;
     private final BrokerListeners listeners;
+    private final TraceExtractor traceExtractor;
 
     private final Integer defaultAsyncTimeout;
     private final Integer longAsyncTimeout;
@@ -70,7 +72,8 @@ public class PublishingServlet extends HttpServlet {
                              MessagePublisher messagePublisher,
                              BrokerListeners listeners,
                              MessageContentTypeEnforcer contentTypeEnforcer,
-                             MetadataAddingMessageConverter metadataAddingMessageConverter) {
+                             MetadataAddingMessageConverter metadataAddingMessageConverter,
+                             TraceExtractor traceExtractor) {
 
         this.topicsCache = topicsCache;
         this.messageValidators = messageValidators;
@@ -85,24 +88,25 @@ public class PublishingServlet extends HttpServlet {
         this.defaultAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_IDLE_TIMEOUT);
         this.longAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_LONG_IDLE_TIMEOUT);
         this.chunkSize = configFactory.getIntProperty(Configs.FRONTEND_REQUEST_CHUNK_SIZE);
+        this.traceExtractor = traceExtractor;
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         TopicName topicName = parseTopicName(request);
         final String messageId = UUID.randomUUID().toString();
-        final String traceId = getTraceId(request);
+        final TraceInfo traceInfo = getTraceInfo(request);
         Optional<Topic> topic = topicsCache.getTopic(topicName);
 
         if (topic.isPresent()) {
-            handlePublishAsynchronously(request, response, topic.get(), messageId, traceId);
+            handlePublishAsynchronously(request, response, topic.get(), messageId, traceInfo);
         } else {
             String cause = format("Topic %s not exists in group %s", topicName.getName(), topicName.getGroupName());
             errorSender.sendErrorResponse(new ErrorDescription(cause, TOPIC_NOT_EXISTS), response, messageId);
         }
     }
 
-    private void handlePublishAsynchronously(HttpServletRequest request, HttpServletResponse response, Topic topic, String messageId, String traceId)
+    private void handlePublishAsynchronously(HttpServletRequest request, HttpServletResponse response, Topic topic, String messageId, TraceInfo traceInfo)
             throws IOException {
         final MessageState messageState = new MessageState();
         final AsyncContext asyncContext = request.startAsync();
@@ -117,7 +121,7 @@ public class PublishingServlet extends HttpServlet {
                 messageContent -> asyncContext.start(() -> {
                     try {
                         Message message = contentTypeEnforcer.enforce(request.getContentType(),
-                                new Message(messageId, traceId, messageContent, clock.getTime()), topic);
+                                new Message(messageId, traceInfo, messageContent, clock.getTime()), topic);
 
                         messageValidators.check(topic, message.getData());
 
@@ -142,8 +146,8 @@ public class PublishingServlet extends HttpServlet {
                 throwable -> httpResponder.internalError(throwable, "Error while reading request"));
     }
 
-    private static String getTraceId(HttpServletRequest request) {
-        return request.getHeader(MessageMetadataHeaders.TRACE_ID.getName());
+    private TraceInfo getTraceInfo(HttpServletRequest request) {
+        return this.traceExtractor.extractTraceInformation(request);
     }
 
     private TopicName parseTopicName(HttpServletRequest request) {

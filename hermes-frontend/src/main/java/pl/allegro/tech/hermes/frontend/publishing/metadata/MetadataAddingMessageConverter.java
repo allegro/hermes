@@ -16,7 +16,7 @@ public class MetadataAddingMessageConverter {
     }
 
     public Message addMetadata(Message toEnrich, Topic topic) {
-        byte[] wrappedData = messageContentWrapper.wrap(toEnrich.getData(), toEnrich.getId(), toEnrich.getTraceId(),
+        byte[] wrappedData = messageContentWrapper.wrap(toEnrich.getData(), toEnrich.getId(), toEnrich.getTraceInfo(),
                 toEnrich.getTimestamp(), topic);
         return toEnrich.withDataReplaced(wrappedData);
     }

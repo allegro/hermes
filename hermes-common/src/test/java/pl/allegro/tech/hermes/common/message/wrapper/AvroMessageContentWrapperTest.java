@@ -4,6 +4,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
 import org.junit.Before;
 import org.junit.Test;
+import pl.allegro.tech.hermes.api.TraceInfo;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class AvroMessageContentWrapperTest {
 
     private final String id = UUID.randomUUID().toString();
     private final Long timestamp = System.currentTimeMillis();
-    private final String traceId = UUID.randomUUID().toString();
+    private final TraceInfo traceInfo = new TraceInfo(UUID.randomUUID().toString());
 
     @Before
     public void setup() throws IOException {
@@ -37,7 +38,7 @@ public class AvroMessageContentWrapperTest {
     @Test
     public void shouldWrapAndUnwrapAvroMessageWithMetadata() throws IOException {
         // when
-        byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, traceId, timestamp, avroUser.getSchema());
+        byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, traceInfo, timestamp, avroUser.getSchema());
         UnwrappedMessageContent unwrappedMessageContent = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getSchema());
 
         // then
@@ -50,7 +51,7 @@ public class AvroMessageContentWrapperTest {
     @SuppressWarnings("unchecked")
     public void shouldWrappedMessageContainsMetadata() throws IOException {
         // when
-        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, traceId, timestamp, avroUser.getSchema());
+        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, traceInfo, timestamp, avroUser.getSchema());
 
         // then
         GenericRecord messageWithMetadata = bytesToRecord(wrappedMessage, avroUser.getSchema());

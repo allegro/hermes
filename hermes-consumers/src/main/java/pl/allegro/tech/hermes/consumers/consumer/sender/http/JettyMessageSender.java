@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
@@ -15,35 +16,44 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_ID;
 
 public class JettyMessageSender extends CompletableFutureAwareMessageSender {
 
     private final HttpClient client;
     private final ResolvableEndpointAddress endpoint;
     private final long timeout;
+    private final JettyTraceIdAppender traceIdAppender;
 
-    public JettyMessageSender(HttpClient client, ResolvableEndpointAddress endpoint, int timeout) {
+    public JettyMessageSender(HttpClient client, ResolvableEndpointAddress endpoint, int timeout, JettyTraceIdAppender traceIdAppender) {
         this.client = client;
         this.endpoint = endpoint;
         this.timeout = timeout;
+        this.traceIdAppender = traceIdAppender;
     }
 
     @Override
     protected void sendMessage(Message message, final CompletableFuture<MessageSendingResult> resultFuture) {
         try {
-            client.newRequest(endpoint.resolveFor(message))
-                .method(HttpMethod.POST)
-                .header(HttpHeader.KEEP_ALIVE.toString(), "true")
-                .header(MESSAGE_ID.getName(), message.getId())
-                .header(TRACE_ID.getName(), message.getTraceId())
-                .header(HttpHeader.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)
-                .timeout(timeout, TimeUnit.MILLISECONDS)
-                .content(new BytesContentProvider(message.getData()))
+            buildRequest(message)
                 .send(result -> resultFuture.complete(new MessageSendingResult(result)));
         } catch (EndpointAddressResolutionException exception) {
             resultFuture.complete(MessageSendingResult.failedResult(exception));
         }
+    }
+
+    private Request buildRequest(Message message) throws EndpointAddressResolutionException {
+        Request request = client.newRequest(endpoint.resolveFor(message))
+                .method(HttpMethod.POST)
+                .header(HttpHeader.KEEP_ALIVE.toString(), "true")
+                .header(MESSAGE_ID.getName(), message.getId())
+                .header(HttpHeader.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON)
+                .timeout(timeout, TimeUnit.MILLISECONDS)
+                .content(new BytesContentProvider(message.getData()));
+        return appendTraceInfo(request, message);
+    }
+
+    private Request appendTraceInfo(Request request, Message message) {
+        return traceIdAppender.appendTraceId(request, message);
     }
 
     @Override

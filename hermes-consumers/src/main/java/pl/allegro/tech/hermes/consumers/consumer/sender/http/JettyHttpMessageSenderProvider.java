@@ -17,16 +17,19 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private final HttpClient httpClient;
     private final EndpointAddressResolver endpointAddressResolver;
     private final int requestTimeout;
+    private final JettyTraceIdAppender traceIdAppender;
 
     @Inject
     public JettyHttpMessageSenderProvider(
             HttpClient httpClient,
             ConfigFactory configFactory,
-            EndpointAddressResolver endpointAddressResolver) {
+            EndpointAddressResolver endpointAddressResolver,
+            JettyTraceIdAppender traceIdAppender) {
 
         this.httpClient = httpClient;
         this.endpointAddressResolver = endpointAddressResolver;
         this.requestTimeout = configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_REQUEST_TIMEOUT);
+        this.traceIdAppender = traceIdAppender;
     }
 
     @Override
@@ -46,6 +49,6 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     @Override
     public MessageSender create(String endpoint) {
         ResolvableEndpointAddress resolvableEndpoint = new ResolvableEndpointAddress(of(endpoint), endpointAddressResolver);
-        return new JettyMessageSender(httpClient, resolvableEndpoint, requestTimeout);
+        return new JettyMessageSender(httpClient, resolvableEndpoint, requestTimeout, traceIdAppender);
     }
 }

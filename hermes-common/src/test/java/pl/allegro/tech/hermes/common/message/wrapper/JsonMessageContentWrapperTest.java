@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import org.assertj.core.data.MapEntry;
 import org.junit.Ignore;
 import org.junit.Test;
+import pl.allegro.tech.hermes.api.TraceInfo;
 
 import java.io.IOException;
 import java.util.Map;
@@ -29,8 +30,11 @@ public class JsonMessageContentWrapperTest {
     @Test
     @SuppressWarnings("unchecked")
     public void shouldWrapJsonWithMetadata() {
+        // given
+        TraceInfo traceInfo = new TraceInfo(TRACE_ID);
+
         //when
-        byte[] result = contentWrapper.wrapContent(CONTENT, metadata.getId(), TRACE_ID, metadata.getTimestamp());
+        byte[] result = contentWrapper.wrapContent(CONTENT, metadata.getId(), traceInfo, metadata.getTimestamp());
 
         //then
         assertThat(readMap(result)).containsExactly(unwrappingMarker, entry("metadata", metadataAsMap), content);
@@ -38,9 +42,12 @@ public class JsonMessageContentWrapperTest {
 
     @Test
     public void shouldUnwrapMessageWithMetadata() {
+        // given
+        TraceInfo traceInfo = new TraceInfo(TRACE_ID);
+
         //when
         UnwrappedMessageContent result = contentWrapper.unwrapContent(
-                contentWrapper.wrapContent(CONTENT, metadata.getId(), TRACE_ID, metadata.getTimestamp()));
+                contentWrapper.wrapContent(CONTENT, metadata.getId(), traceInfo, metadata.getTimestamp()));
 
         //then
         assertThat(result.getContent()).isEqualTo(CONTENT);

@@ -1,15 +1,17 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
+import pl.allegro.tech.hermes.api.TraceInfo;
+
 public class Message {
 
     private final String id;
-    private final String traceId;
+    private final TraceInfo traceInfo;
     private final byte[] data;
     private final long timestamp;
 
-    public Message(String id, String traceId, byte[] data, long timestamp) {
+    public Message(String id, TraceInfo traceInfo, byte[] data, long timestamp) {
         this.id = id;
-        this.traceId = traceId;
+        this.traceInfo = traceInfo;
         this.data = data;
         this.timestamp = timestamp;
     }
@@ -18,8 +20,8 @@ public class Message {
         return id;
     }
 
-    public String getTraceId() {
-        return traceId;
+    public TraceInfo getTraceInfo() {
+        return traceInfo;
     }
 
     public byte[] getData() {
@@ -31,7 +33,7 @@ public class Message {
     }
 
     public Message withDataReplaced(byte[] newData) {
-        return new Message(id, traceId, newData, timestamp);
+        return new Message(id, traceInfo, newData, timestamp);
     }
 
 }
