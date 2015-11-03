@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
 import pl.allegro.tech.hermes.common.message.converter.ConvertingException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -40,7 +41,6 @@ import static org.apache.commons.lang.StringUtils.strip;
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
-import static pl.allegro.tech.hermes.frontend.publishing.HttpMetaHeaders.TRACE_ID;
 
 public class PublishingServlet extends HttpServlet {
 
@@ -143,7 +143,7 @@ public class PublishingServlet extends HttpServlet {
     }
 
     private static String getTraceId(HttpServletRequest request) {
-        return request.getHeader(TRACE_ID);
+        return request.getHeader(MessageMetadataHeaders.TRACE_ID.getName());
     }
 
     private TopicName parseTopicName(HttpServletRequest request) {
