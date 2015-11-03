@@ -163,7 +163,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionName,
@@ -178,7 +178,7 @@ public class SubscriptionsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/retransmission")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription offset", httpMethod = HttpMethod.PUT)
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,
