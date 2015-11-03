@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.integration.test;
 
 import javax.ws.rs.core.Response;
+
+import io.netty.handler.codec.http.HttpResponse;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 import pl.allegro.tech.hermes.api.ErrorCode;

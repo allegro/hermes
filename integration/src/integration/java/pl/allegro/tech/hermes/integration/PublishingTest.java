@@ -296,22 +296,17 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldPublishMessageWithTraceId() {
+    public void shouldPublishAndConsumeMessageWithTraceId() {
 
         // given
         String message = "{\"id\": 101}";
-        String topic = "trace.topic";
         String traceId = UUID.randomUUID().toString();
 
         // and
-        operations.buildTopic(
-                topic()
-                        .withName(topic)
-                        .withValidation(false)
-                        .withContentType(JSON)
-                        .build()
-        );
-        WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic);
+        Topic topic = operations.buildTopic("traceSendAndReceiveGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        remoteService.expectMessages(message);
+        WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
 
         // when
         Response response = client
@@ -321,5 +316,6 @@ public class PublishingTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
+        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("Trace-Id", traceId);
     }
 }

@@ -6,6 +6,15 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.helper.RemoteJmsEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.UUID;
+
+import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+
 public class JmsConsumingTest extends IntegrationTest {
 
     private RemoteJmsEndpoint jmsEndpoint;
@@ -31,8 +40,31 @@ public class JmsConsumingTest extends IntegrationTest {
         jmsEndpoint.waitUntilReceived();
     }
 
+    @Test
+    public void shouldPublishAndConsumeJMSMessageWithTraceId() throws Exception {
+
+        // given
+        String message = "{\"hello\": \"world\"}";
+        String traceId = UUID.randomUUID().toString();
+
+        // and
+        Topic topic = operations.buildTopic("publishJmsGroupWithTrace", "topic");
+        operations.createSubscription(topic, "subscription", jmsEndpointAddress(JMS_TOPIC_NAME));
+        WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
+        jmsEndpoint.expectMessages(TestMessage.of("hello", "world"));
+
+        // when
+        Response response = client
+                .request()
+                .header("Trace-Id", traceId)
+                .post(Entity.entity(message, MediaType.APPLICATION_JSON));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        assertThat(jmsEndpoint.waitAndGetLastMessage()).assertStringProperty("TraceId", traceId);
+    }
+
     private String jmsEndpointAddress(String topicName) {
         return "jms://guest:guest@localhost:5445/" + topicName;
     }
-
 }
