@@ -15,6 +15,8 @@ import pl.allegro.tech.hermes.frontend.publishing.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.MessagePublisher;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
+import pl.allegro.tech.hermes.frontend.publishing.trace.HeaderTraceIdExtractor;
+import pl.allegro.tech.hermes.frontend.publishing.trace.TraceExtractor;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.services.SchemaPrefetchService;
@@ -36,6 +38,7 @@ public class FrontendBinder extends AbstractBinder {
 
         bindSingleton(SchemaPrefetchService.class);
         bindSingleton(HealthCheckService.class);
+        bind(HeaderTraceIdExtractor.class).to(TraceExtractor.class).in(Singleton.class);
 
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
         bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);

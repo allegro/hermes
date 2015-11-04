@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.common.message.wrapper;
 
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TraceInfo;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
@@ -35,11 +36,11 @@ public class MessageContentWrapper {
         throw new UnsupportedContentTypeException(topic);
     }
 
-    public byte[] wrap(byte[] data, String id, long timestamp, Topic topic) {
+    public byte[] wrap(byte[] data, String id, TraceInfo traceInfo, long timestamp, Topic topic) {
         if (topic.getContentType() == Topic.ContentType.JSON) {
-            return jsonMessageContentWrapper.wrapContent(data, id, timestamp);
+            return jsonMessageContentWrapper.wrapContent(data, id, traceInfo, timestamp);
         } else if (topic.getContentType() == Topic.ContentType.AVRO) {
-            return avroMessageContentWrapper.wrapContent(data, id, timestamp, avroSchemaRepository.getSchema(topic));
+            return avroMessageContentWrapper.wrapContent(data, id, traceInfo, timestamp, avroSchemaRepository.getSchema(topic));
         }
 
         throw new UnsupportedContentTypeException(topic);

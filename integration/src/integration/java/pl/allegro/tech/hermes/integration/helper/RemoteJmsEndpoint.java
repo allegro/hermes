@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integration.helper;
 
 import static com.jayway.awaitility.Awaitility.await;
 
+import com.google.common.collect.Iterables;
 import com.jayway.awaitility.Duration;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 public class RemoteJmsEndpoint {
 
-    private final List<String> receivedMessages = new ArrayList<>();
+    private final List<Message> receivedMessages = new ArrayList<>();
 
     private int expectedMessagesCount = 0;
 
@@ -42,25 +43,9 @@ public class RemoteJmsEndpoint {
         JMSContext jmsContext = connectionFactory.createContext();
 
         Topic topic = jmsContext.createTopic(topicName);
-        jmsContext.createConsumer(topic).setMessageListener(new MessageListener() {
-            @Override
-            public void onMessage(Message message) {
-                receivedMessages.add(readMessage(message));
-            }
-        });
+        jmsContext.createConsumer(topic).setMessageListener(message -> receivedMessages.add(message));
 
         return jmsContext;
-    }
-
-    private String readMessage(Message message) {
-        try {
-            BytesMessage byteMessage = (BytesMessage) message;
-            byte[] buffer = new byte[(int) byteMessage.getBodyLength()];
-            byteMessage.readBytes(buffer);
-            return new String(buffer);
-        } catch (JMSException jmsException) {
-            throw new RuntimeException(jmsException);
-        }
     }
 
     public void expectMessages(TestMessage... messages) {
@@ -68,11 +53,15 @@ public class RemoteJmsEndpoint {
     }
 
     public void waitUntilReceived() {
-        await().atMost(Duration.FIVE_SECONDS).until(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return receivedMessages.size() == expectedMessagesCount;
-            }
-        });
+        await().atMost(Duration.FIVE_SECONDS).until(() -> receivedMessages.size() == expectedMessagesCount);
+    }
+
+    public Message getLastReceivedMessage() {
+        return Iterables.getLast(receivedMessages);
+    }
+
+    public Message waitAndGetLastMessage() {
+        waitUntilReceived();
+        return getLastReceivedMessage();
     }
 }
