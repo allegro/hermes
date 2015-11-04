@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
 
 import javax.inject.Inject;
 import java.time.Clock;
@@ -29,6 +30,7 @@ public class TopicService {
     private final GroupService groupService;
 
     private final TopicMetricsRepository metricRepository;
+    private final SchemaValidatorProvider schemaValidatorProvider;
     private final MultiDCAwareService multiDCAwareService;
     private final TopicValidator topicValidator;
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
@@ -42,7 +44,8 @@ public class TopicService {
                         TopicMetricsRepository metricRepository,
                         TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
-                        Clock clock) {
+                        Clock clock,
+                        SchemaValidatorProvider schemaValidatorProvider) {
         this.multiDCAwareService = multiDCAwareService;
         this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
@@ -51,6 +54,7 @@ public class TopicService {
         this.topicValidator = topicValidator;
         this.topicContentTypeMigrationService = topicContentTypeMigrationService;
         this.clock = clock;
+        this.schemaValidatorProvider = schemaValidatorProvider;
     }
 
     public void createTopic(Topic topic) {
@@ -98,6 +102,10 @@ public class TopicService {
                 topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
             }
         }
+    }
+
+    public void touchTopic(TopicName topicName) {
+        topicRepository.touchTopic(topicName);
     }
 
     public List<String> listQualifiedTopicNames(String groupName) {

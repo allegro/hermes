@@ -102,6 +102,14 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     }
 
     @Override
+    public void touchTopic(TopicName topicName) {
+        ensureTopicExists(topicName);
+
+        logger.info("Touching topic: " + topicName.qualifiedName());
+        touch(paths.topicPath(topicName));
+    }
+
+    @Override
     public Topic getTopicDetails(TopicName topicName) {
         ensureTopicExists(topicName);
 

@@ -13,11 +13,15 @@ import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
+import java.util.UUID;
 
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -92,7 +96,7 @@ public class PublishingTest extends IntegrationTest {
         wait.untilSubscriptionIsActivated(topic, subscription);
         operations.suspendSubscription(topic, subscription);
         wait.untilSubscriptionIsSuspended(topic, subscription);
-        
+
         // when
         Response response = publisher.publish(topic.getQualifiedName(), TestMessage.of("hello", "world").body());
 
@@ -164,11 +168,12 @@ public class PublishingTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldTreatMessageWithInvalidInterpolationAsUndelivered() {
         // given
-        Subscription subscription = Subscription.Builder.subscription().applyDefaults().withName("subscription").withEndpoint(
-                EndpointAddress.of(HTTP_ENDPOINT_URL + "{template}/")
-        ).withSubscriptionPolicy(
-                SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().withMessageTtl(1).build()
-        ).build();
+        Subscription subscription = Subscription.Builder.subscription().applyDefaults().withName("subscription")
+                .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL + "{template}/"))
+                .withSupportTeam("team")
+                .withSubscriptionPolicy(
+                        SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().withMessageTtl(1).build()
+                ).build();
         Topic topic = operations.buildTopic("publishInvalidInterpolatedGroup", "topic");
         operations.createSubscription(topic, subscription);
 
@@ -250,7 +255,7 @@ public class PublishingTest extends IntegrationTest {
         //given
         String message = "{\"id\": 6}";
         operations.buildTopic(
-            topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
+                topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
 
         //when
         Response response = publisher.publish("schema.topic", message);
@@ -264,7 +269,7 @@ public class PublishingTest extends IntegrationTest {
         // given
         String messageInvalidWithSchema = "{\"id\": \"shouldBeNumber\"}";
         operations.buildTopic(
-            topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
+                topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
 
         //when
         Response response = publisher.publish("schema.topic", messageInvalidWithSchema);
@@ -291,4 +296,27 @@ public class PublishingTest extends IntegrationTest {
         assertThat(response).hasStatus(CREATED);
     }
 
+    @Test
+    public void shouldPublishAndConsumeMessageWithTraceId() {
+
+        // given
+        String message = "{\"id\": 101}";
+        String traceId = UUID.randomUUID().toString();
+
+        // and
+        Topic topic = operations.buildTopic("traceSendAndReceiveGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        remoteService.expectMessages(message);
+        WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
+
+        // when
+        Response response = client
+                .request()
+                .header("Trace-Id", traceId)
+                .post(Entity.entity(message, MediaType.APPLICATION_JSON));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("Trace-Id", traceId);
+    }
 }
