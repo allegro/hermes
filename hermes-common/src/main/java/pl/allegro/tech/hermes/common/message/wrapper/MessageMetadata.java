@@ -9,11 +9,15 @@ public class MessageMetadata {
 
     private final long timestamp;
     private final String id;
+    private final String traceId;
 
     @JsonCreator
-    public MessageMetadata(@JsonProperty("timestamp") long timestamp, @JsonProperty("id") String id) {
+    public MessageMetadata(@JsonProperty("timestamp") long timestamp,
+                           @JsonProperty("id") String id,
+                           @JsonProperty("traceId") String traceId) {
         this.id = id;
         this.timestamp = timestamp;
+        this.traceId = traceId;
     }
 
     public String getId() {
@@ -22,6 +26,10 @@ public class MessageMetadata {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public String getTraceId() {
+        return traceId;
     }
 
     @Override
@@ -38,6 +46,7 @@ public class MessageMetadata {
             return false;
         }
         final MessageMetadata other = (MessageMetadata) obj;
-        return Objects.equals(this.id, other.id) && Objects.equals(this.timestamp, other.timestamp);
+        return Objects.equals(this.id, other.id)
+                && Objects.equals(this.timestamp, other.timestamp);
     }
 }

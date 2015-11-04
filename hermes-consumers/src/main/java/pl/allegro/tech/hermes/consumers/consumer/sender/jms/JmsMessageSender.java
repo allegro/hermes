@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_ID;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 
@@ -23,12 +24,13 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
     private static final Logger logger = LoggerFactory.getLogger(JmsMessageSender.class);
 
     private final String topicName;
-
     private final JMSContext jmsContext;
+    private final JmsTraceIdAppender traceIdAppender;
 
-    public JmsMessageSender(JMSContext jmsContext, String destinationTopic) {
+    public JmsMessageSender(JMSContext jmsContext, String destinationTopic, JmsTraceIdAppender traceIdAppender) {
         this.jmsContext = jmsContext;
         this.topicName = destinationTopic;
+        this.traceIdAppender = traceIdAppender;
     }
 
     @Override
@@ -43,6 +45,8 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
             message.writeBytes(msg.getData());
             message.setStringProperty(TOPIC_NAME.getCamelCaseName(), msg.getTopic());
             message.setStringProperty(MESSAGE_ID.getCamelCaseName(), msg.getId());
+
+            traceIdAppender.appendTraceId(message, msg);
 
             CompletionListener asyncListener = new CompletionListener() {
                 @Override
@@ -59,7 +63,7 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
             jmsContext.createProducer()
                     .setAsync(asyncListener)
                     .send(jmsContext.createTopic(topicName), message);
-        } catch (JMSException | JMSRuntimeException e) {
+        } catch (JMSException | RuntimeException e) {
             resultFuture.complete(failedResult(e));
         }
     }

@@ -112,6 +112,11 @@ public class RemoteServiceEndpoint {
         return Iterables.getLast(receivedRequests);
     }
 
+    public LoggedRequest waitAndGetLastRequest() {
+        waitUntilReceived();
+        return getLastReceivedRequest();
+    }
+
     public void reset() {
         receivedRequests.clear();
     }
