@@ -115,16 +115,13 @@ public class MessageBodyInterpolatorTest {
         EndpointAddress endpoint = EndpointAddress.of("http://some.endpoint.com/{some.object}?test={some.test}");
         URI expectedEndpoint = URI.create("http://some.endpoint.com/100?test=hello");
         String jsonMessage = "{\"some\": {\"test\": \"hello\", \"object\": 100}}";
-//        Message msg = withTestMessage()
-//                .withTopic("some.topic")
-//                .withContent(jsonMessage, StandardCharsets.UTF_8)
-//                .withPublishingTimestamp(1232443L)
-//                .withReadingTimestamp(12324434L)
-//                .withPartitionOffset(new PartitionOffset(KAFKA_TOPIC, 0, 0))
-//                .build();
-
-        Message msg = new Message("id", "some.topic", "traceId", jsonMessage.getBytes(),
-                Topic.ContentType.JSON, 1232443L, 12324434L, new PartitionOffset(KAFKA_TOPIC, 0, 0));
+        Message msg = withTestMessage()
+                .withTopic("some.topic")
+                .withContent(jsonMessage, StandardCharsets.UTF_8)
+                .withPublishingTimestamp(1232443L)
+                .withReadingTimestamp(12324434L)
+                .withPartitionOffset(new PartitionOffset(KAFKA_TOPIC, 0, 0))
+                .build();
 
         // when
         URI interpolated = new MessageBodyInterpolator().interpolate(endpoint, msg);

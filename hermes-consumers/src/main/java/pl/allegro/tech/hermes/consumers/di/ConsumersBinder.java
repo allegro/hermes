@@ -31,7 +31,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyTraceIdAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpTraceIdAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsTraceIdAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
@@ -86,7 +86,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(MessageConverterResolver.class);
         bindSingleton(AvroSchemaRepositoryMetadataAware.class);
         bindSingleton(JmsTraceIdAppender.class);
-        bindSingleton(JettyTraceIdAppender.class);
+        bindSingleton(DefaultHttpTraceIdAppender.class);
 
         bindSingleton(BlockingChannelFactory.class);
         bindFactory(OffsetStoragesFactory.class).in(Singleton.class).to(new TypeLiteral<List<OffsetsStorage>>() {});

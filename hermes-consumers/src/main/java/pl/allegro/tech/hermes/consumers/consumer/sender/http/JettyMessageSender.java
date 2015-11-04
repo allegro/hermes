@@ -22,9 +22,9 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
     private final HttpClient client;
     private final ResolvableEndpointAddress endpoint;
     private final long timeout;
-    private final JettyTraceIdAppender traceIdAppender;
+    private final DefaultHttpTraceIdAppender traceIdAppender;
 
-    public JettyMessageSender(HttpClient client, ResolvableEndpointAddress endpoint, int timeout, JettyTraceIdAppender traceIdAppender) {
+    public JettyMessageSender(HttpClient client, ResolvableEndpointAddress endpoint, int timeout, DefaultHttpTraceIdAppender traceIdAppender) {
         this.client = client;
         this.endpoint = endpoint;
         this.timeout = timeout;

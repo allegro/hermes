@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.trace.TraceIdAppender;
 
-public class JettyTraceIdAppender implements TraceIdAppender<Request> {
+public class DefaultHttpTraceIdAppender implements TraceIdAppender<Request> {
 
     @Override
     public Request appendTraceId(Request target, Message message) {
