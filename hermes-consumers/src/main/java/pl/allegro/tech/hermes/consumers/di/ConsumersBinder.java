@@ -29,11 +29,11 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.OffsetStoragesFa
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpTraceAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpTraceIdAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsTraceIdAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsTraceAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
@@ -85,8 +85,8 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(AvroToJsonMessageConverter.class);
         bindSingleton(MessageConverterResolver.class);
         bindSingleton(AvroSchemaRepositoryMetadataAware.class);
-        bindSingleton(JmsTraceIdAppender.class);
-        bindSingleton(DefaultHttpTraceIdAppender.class);
+        bindSingleton(JmsTraceAppender.class);
+        bindSingleton(DefaultHttpTraceAppender.class);
 
         bindSingleton(BlockingChannelFactory.class);
         bindFactory(OffsetStoragesFactory.class).in(Singleton.class).to(new TypeLiteral<List<OffsetsStorage>>() {});

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.testng.annotations.BeforeClass;
@@ -318,5 +319,42 @@ public class PublishingTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
         assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("Trace-Id", traceId);
+    }
+
+    @Test
+    public void shouldPublishAndConsumeMessageWithTraceAndSpanHeaders() {
+
+        // given
+        String message = "{\"id\": 101}";
+        String traceId = UUID.randomUUID().toString();
+        String spanId = UUID.randomUUID().toString();
+        String parentSpanId = UUID.randomUUID().toString();
+        String sampled = "1";
+        String reported = "0";
+
+        // and
+        Topic topic = operations.buildTopic("traceSendAndReceiveGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        remoteService.expectMessages(message);
+        WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
+
+        // when
+        Response response = client
+                .request()
+                .header("Trace-Id", traceId)
+                .header("Span-Id", spanId)
+                .header("Parent-Span-Id", parentSpanId)
+                .header("Trace-Sampled", sampled)
+                .header("Trace-Reported", reported)
+                .post(Entity.entity(message, MediaType.APPLICATION_JSON));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        LoggedRequest lastRequest = remoteService.waitAndGetLastRequest();
+        assertThat(lastRequest).hasHeaderValue("Trace-Id", traceId);
+        assertThat(lastRequest).hasHeaderValue("Span-Id", spanId);
+        assertThat(lastRequest).hasHeaderValue("Parent-Span-Id", parentSpanId);
+        assertThat(lastRequest).hasHeaderValue("Trace-Sampled", sampled);
+        assertThat(lastRequest).hasHeaderValue("Trace-Reported", reported);
     }
 }

@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.MessageTrace;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +14,7 @@ public final class MessageBuilder {
 
     private String id;
     private String topic;
-    private String traceId;
+    private MessageTrace messageTrace;
     private Topic.ContentType contentType;
     private long publishingTimestamp;
     private long readingTimestamp;
@@ -28,7 +29,7 @@ public final class MessageBuilder {
         return new MessageBuilder()
                 .withId("id")
                 .withTopic("topicId")
-                .withTraceId("traceId")
+                .withMessageTrace(new MessageTrace("traceId", "spanId", "parentSpanId", "traceSampled", "traceReported"))
                 .withContent("aaaaaaaa", StandardCharsets.UTF_8)
                 .withContentType(Topic.ContentType.JSON)
                 .withPublishingTimestamp(123L)
@@ -37,7 +38,7 @@ public final class MessageBuilder {
     }
 
     public Message build() {
-        return new Message(id, topic, traceId, content, contentType, publishingTimestamp,
+        return new Message(id, topic, messageTrace, content, contentType, publishingTimestamp,
                 readingTimestamp, partitionOffset);
     }
 
@@ -51,8 +52,8 @@ public final class MessageBuilder {
         return this;
     }
 
-    public MessageBuilder withTraceId(String traceId) {
-        this.traceId = traceId;
+    public MessageBuilder withMessageTrace(MessageTrace messageTrace) {
+        this.messageTrace = messageTrace;
         return this;
     }
 

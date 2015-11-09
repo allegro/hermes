@@ -28,7 +28,11 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.PARENT_SPAN_ID;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SPAN_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_ID;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_REPORTED;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_SAMPLED;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -49,7 +53,7 @@ public class JmsMessageSenderTest {
     private ConfigFactory configFactoryMock;
 
     @Spy
-    private JmsTraceIdAppender traceIdAppender;
+    private JmsTraceAppender traceIdAppender;
 
     @InjectMocks
     private JmsMessageSender messageSender;
@@ -123,5 +127,18 @@ public class JmsMessageSenderTest {
 
         // then
         verify(messageMock).setStringProperty(TRACE_ID.getCamelCaseName(), "traceId");
+    }
+
+    @Test
+    public void shouldSetMessageTraceInProperty() throws JMSException {
+        // when
+        messageSender.send(SOME_MESSAGE);
+
+        // then
+        verify(messageMock).setStringProperty(TRACE_ID.getCamelCaseName(), "traceId");
+        verify(messageMock).setStringProperty(SPAN_ID.getCamelCaseName(), "spanId");
+        verify(messageMock).setStringProperty(PARENT_SPAN_ID.getCamelCaseName(), "parentSpanId");
+        verify(messageMock).setStringProperty(TRACE_SAMPLED.getCamelCaseName(), "traceSampled");
+        verify(messageMock).setStringProperty(TRACE_REPORTED.getCamelCaseName(), "traceReported");
     }
 }

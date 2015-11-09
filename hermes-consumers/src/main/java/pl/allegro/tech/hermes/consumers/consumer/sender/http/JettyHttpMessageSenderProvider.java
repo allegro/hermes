@@ -17,14 +17,14 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private final HttpClient httpClient;
     private final EndpointAddressResolver endpointAddressResolver;
     private final int requestTimeout;
-    private final DefaultHttpTraceIdAppender traceIdAppender;
+    private final DefaultHttpTraceAppender traceIdAppender;
 
     @Inject
     public JettyHttpMessageSenderProvider(
             HttpClient httpClient,
             ConfigFactory configFactory,
             EndpointAddressResolver endpointAddressResolver,
-            DefaultHttpTraceIdAppender traceIdAppender) {
+            DefaultHttpTraceAppender traceIdAppender) {
 
         this.httpClient = httpClient;
         this.endpointAddressResolver = endpointAddressResolver;

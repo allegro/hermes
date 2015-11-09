@@ -43,7 +43,16 @@ public class JsonMessageContentWrapper {
 
     byte[] wrapContent(byte[] json, String id, TraceInfo traceInfo, long timestamp) {
         try {
-            return wrapContent(mapper.writeValueAsBytes(new MessageMetadata(timestamp, id, traceInfo.getTraceId())), json);
+            MessageMetadata messageMetadata = new MessageMetadata(
+                    timestamp,
+                    id,
+                    traceInfo.getTraceId(),
+                    traceInfo.getSpanId(),
+                    traceInfo.getParentSpanId(),
+                    traceInfo.getTraceSampled(),
+                    traceInfo.getTraceReported());
+
+            return wrapContent(mapper.writeValueAsBytes(messageMetadata), json);
         } catch (IOException e) {
             throw new WrappingException("Could not wrap json message", e);
         }
@@ -69,7 +78,7 @@ public class JsonMessageContentWrapper {
         } else {
             UUID id = UUID.randomUUID();
             LOGGER.warn("Unwrapped message read by consumer (size={}, id={}).", json.length, id.toString());
-            return new UnwrappedMessageContent(new MessageMetadata(1L, id.toString(), null), json);
+            return new UnwrappedMessageContent(new MessageMetadata(1L, id.toString(), null, null, null, null, null), json);
         }
     }
 

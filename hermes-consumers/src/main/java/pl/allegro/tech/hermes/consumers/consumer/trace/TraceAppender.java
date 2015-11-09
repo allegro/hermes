@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.trace;
 
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
-public interface TraceIdAppender<T> {
+public interface TraceAppender<T> {
 
-    T appendTraceId(T target, Message message);
+    T appendTraceInfo(T target, Message message);
 }

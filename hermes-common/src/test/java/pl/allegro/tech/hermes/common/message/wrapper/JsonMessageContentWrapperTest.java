@@ -19,9 +19,20 @@ public class JsonMessageContentWrapperTest {
 
     private final static byte[] CONTENT = "{\"key\":\"value\"}".getBytes();
     private final static String TRACE_ID = UUID.randomUUID().toString();
+    private final static String SPAN_ID = UUID.randomUUID().toString();
+    private final static String PARENT_SPAN_ID = UUID.randomUUID().toString();
     private final ObjectMapper mapper = new ObjectMapper();
-    private final MessageMetadata metadata = new MessageMetadata(System.currentTimeMillis(), "14cf17ea-f1ea-a464-6bd6478615bb", TRACE_ID);
-    private final Map<String, Object> metadataAsMap = ImmutableMap.of("timestamp", metadata.getTimestamp(), "id", metadata.getId(), "traceId", TRACE_ID);
+    private final MessageMetadata metadata = new MessageMetadata(System.currentTimeMillis(),
+            "14cf17ea-f1ea-a464-6bd6478615bb", TRACE_ID, SPAN_ID, PARENT_SPAN_ID, "1", "0");
+    private final Map<String, Object> metadataAsMap = ImmutableMap.<String, Object>builder()
+            .put("timestamp", metadata.getTimestamp())
+            .put("id", metadata.getId())
+            .put("traceId", TRACE_ID)
+            .put("spanId", SPAN_ID)
+            .put("parentSpanId", PARENT_SPAN_ID)
+            .put("traceSampled", "1")
+            .put("traceReported", "0")
+            .build();
     private final MapEntry unwrappingMarker = entry("_w", true);
     private final MapEntry content = entry("message", readMap(CONTENT));
 
@@ -31,7 +42,7 @@ public class JsonMessageContentWrapperTest {
     @SuppressWarnings("unchecked")
     public void shouldWrapJsonWithMetadata() {
         // given
-        TraceInfo traceInfo = new TraceInfo(TRACE_ID);
+        TraceInfo traceInfo = new TraceInfo(TRACE_ID, SPAN_ID, PARENT_SPAN_ID, "1", "0");
 
         //when
         byte[] result = contentWrapper.wrapContent(CONTENT, metadata.getId(), traceInfo, metadata.getTimestamp());
@@ -43,7 +54,7 @@ public class JsonMessageContentWrapperTest {
     @Test
     public void shouldUnwrapMessageWithMetadata() {
         // given
-        TraceInfo traceInfo = new TraceInfo(TRACE_ID);
+        TraceInfo traceInfo = new TraceInfo(UUID.randomUUID().toString(), UUID.randomUUID().toString(), null, "1", "0");
 
         //when
         UnwrappedMessageContent result = contentWrapper.unwrapContent(
@@ -77,5 +88,4 @@ public class JsonMessageContentWrapperTest {
             throw new IllegalStateException("Error while reading map", e);
         }
     }
-
 }

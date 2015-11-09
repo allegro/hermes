@@ -10,12 +10,10 @@ import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
-import javax.jms.JMSRuntimeException;
 import java.util.concurrent.CompletableFuture;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_ID;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 
@@ -25,12 +23,12 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
 
     private final String topicName;
     private final JMSContext jmsContext;
-    private final JmsTraceIdAppender traceIdAppender;
+    private final JmsTraceAppender traceAppender;
 
-    public JmsMessageSender(JMSContext jmsContext, String destinationTopic, JmsTraceIdAppender traceIdAppender) {
+    public JmsMessageSender(JMSContext jmsContext, String destinationTopic, JmsTraceAppender traceAppender) {
         this.jmsContext = jmsContext;
         this.topicName = destinationTopic;
-        this.traceIdAppender = traceIdAppender;
+        this.traceAppender = traceAppender;
     }
 
     @Override
@@ -46,7 +44,7 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
             message.setStringProperty(TOPIC_NAME.getCamelCaseName(), msg.getTopic());
             message.setStringProperty(MESSAGE_ID.getCamelCaseName(), msg.getId());
 
-            traceIdAppender.appendTraceId(message, msg);
+            traceAppender.appendTraceInfo(message, msg);
 
             CompletionListener asyncListener = new CompletionListener() {
                 @Override

@@ -4,7 +4,11 @@ public enum MessageMetadataHeaders {
 
     MESSAGE_ID("Hermes-Message-Id"),
     TOPIC_NAME("Hermes-Topic-Name"),
-    TRACE_ID("Trace-Id");
+    TRACE_ID("Trace-Id"),
+    SPAN_ID("Span-Id"),
+    PARENT_SPAN_ID("Parent-Span-Id"),
+    TRACE_SAMPLED("Trace-Sampled"),
+    TRACE_REPORTED("Trace-Reported");
 
     private final String headerName;
 
