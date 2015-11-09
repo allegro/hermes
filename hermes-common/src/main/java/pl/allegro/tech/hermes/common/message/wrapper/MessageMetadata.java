@@ -9,11 +9,27 @@ public class MessageMetadata {
 
     private final long timestamp;
     private final String id;
+    private final String traceId;
+    private final String spanId;
+    private final String parentSpanId;
+    private final String traceSampled;
+    private final String traceReported;
 
     @JsonCreator
-    public MessageMetadata(@JsonProperty("timestamp") long timestamp, @JsonProperty("id") String id) {
+    public MessageMetadata(@JsonProperty("timestamp") long timestamp,
+                           @JsonProperty("id") String id,
+                           @JsonProperty("traceId") String traceId,
+                           @JsonProperty("spanId") String spanId,
+                           @JsonProperty("parentSpanId") String parentSpanId,
+                           @JsonProperty("traceSampled") String traceSampled,
+                           @JsonProperty("traceReported") String traceReported) {
         this.id = id;
         this.timestamp = timestamp;
+        this.traceId = traceId;
+        this.spanId = spanId;
+        this.parentSpanId = parentSpanId;
+        this.traceSampled = traceSampled;
+        this.traceReported = traceReported;
     }
 
     public String getId() {
@@ -22,6 +38,26 @@ public class MessageMetadata {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public String getTraceId() {
+        return traceId;
+    }
+
+    public String getSpanId() {
+        return spanId;
+    }
+
+    public String getParentSpanId() {
+        return parentSpanId;
+    }
+
+    public String getTraceSampled() {
+        return traceSampled;
+    }
+
+    public String getTraceReported() {
+        return traceReported;
     }
 
     @Override
@@ -38,6 +74,7 @@ public class MessageMetadata {
             return false;
         }
         final MessageMetadata other = (MessageMetadata) obj;
-        return Objects.equals(this.id, other.id) && Objects.equals(this.timestamp, other.timestamp);
+        return Objects.equals(this.id, other.id)
+                && Objects.equals(this.timestamp, other.timestamp);
     }
 }

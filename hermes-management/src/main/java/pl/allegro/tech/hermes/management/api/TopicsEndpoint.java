@@ -82,7 +82,7 @@ public class TopicsEndpoint {
     @DELETE
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
-    @RolesAllowed({ Roles.ADMIN })
+    @RolesAllowed({ Roles.GROUP_OWNER, Roles.ADMIN })
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName) {
         topicService.removeTopic(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)));

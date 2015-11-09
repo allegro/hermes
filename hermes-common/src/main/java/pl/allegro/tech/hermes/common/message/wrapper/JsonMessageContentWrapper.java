@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.common.message.wrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.TraceInfo;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
 import javax.inject.Inject;
@@ -40,9 +41,18 @@ public class JsonMessageContentWrapper {
         this.mapper = mapper;
     }
 
-    byte[] wrapContent(byte[] json, String id, long timestamp) {
+    byte[] wrapContent(byte[] json, String id, TraceInfo traceInfo, long timestamp) {
         try {
-            return wrapContent(mapper.writeValueAsBytes(new MessageMetadata(timestamp, id)), json);
+            MessageMetadata messageMetadata = new MessageMetadata(
+                    timestamp,
+                    id,
+                    traceInfo.getTraceId(),
+                    traceInfo.getSpanId(),
+                    traceInfo.getParentSpanId(),
+                    traceInfo.getTraceSampled(),
+                    traceInfo.getTraceReported());
+
+            return wrapContent(mapper.writeValueAsBytes(messageMetadata), json);
         } catch (IOException e) {
             throw new WrappingException("Could not wrap json message", e);
         }
@@ -68,7 +78,7 @@ public class JsonMessageContentWrapper {
         } else {
             UUID id = UUID.randomUUID();
             LOGGER.warn("Unwrapped message read by consumer (size={}, id={}).", json.length, id.toString());
-            return new UnwrappedMessageContent(new MessageMetadata(1L, id.toString()), json);
+            return new UnwrappedMessageContent(new MessageMetadata(1L, id.toString(), null, null, null, null, null), json);
         }
     }
 

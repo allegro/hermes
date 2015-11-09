@@ -10,7 +10,6 @@ import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
-import javax.jms.JMSRuntimeException;
 import java.util.concurrent.CompletableFuture;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
@@ -23,12 +22,13 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
     private static final Logger logger = LoggerFactory.getLogger(JmsMessageSender.class);
 
     private final String topicName;
-
     private final JMSContext jmsContext;
+    private final JmsTraceAppender traceAppender;
 
-    public JmsMessageSender(JMSContext jmsContext, String destinationTopic) {
+    public JmsMessageSender(JMSContext jmsContext, String destinationTopic, JmsTraceAppender traceAppender) {
         this.jmsContext = jmsContext;
         this.topicName = destinationTopic;
+        this.traceAppender = traceAppender;
     }
 
     @Override
@@ -43,6 +43,8 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
             message.writeBytes(msg.getData());
             message.setStringProperty(TOPIC_NAME.getCamelCaseName(), msg.getTopic());
             message.setStringProperty(MESSAGE_ID.getCamelCaseName(), msg.getId());
+
+            traceAppender.appendTraceInfo(message, msg);
 
             CompletionListener asyncListener = new CompletionListener() {
                 @Override
@@ -59,7 +61,7 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
             jmsContext.createProducer()
                     .setAsync(asyncListener)
                     .send(jmsContext.createTopic(topicName), message);
-        } catch (JMSException | JMSRuntimeException e) {
+        } catch (JMSException | RuntimeException e) {
             resultFuture.complete(failedResult(e));
         }
     }

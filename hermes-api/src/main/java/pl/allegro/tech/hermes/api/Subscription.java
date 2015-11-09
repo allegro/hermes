@@ -20,7 +20,8 @@ public class Subscription {
     @Valid
     private TopicName topicName;
 
-    @NotEmpty @Pattern(regexp = ALLOWED_NAME_REGEX)
+    @NotEmpty
+    @Pattern(regexp = ALLOWED_NAME_REGEX)
     private String name;
 
     private State state = State.PENDING;
@@ -36,24 +37,29 @@ public class Subscription {
 
     private boolean trackingEnabled;
 
-    public SubscriptionName toSubscriptionName() {
-        return new SubscriptionName(name, topicName);
-    }
+    @NotNull
+    private String supportTeam;
 
-    public static enum State {
+    private String contact;
+
+    public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
 
-    private Subscription() { }
+    private Subscription() {
+    }
 
     public Subscription(TopicName topicName, String name, EndpointAddress endpoint, String description,
-                        SubscriptionPolicy subscriptionPolicy, boolean trackingEnabled) {
+                        SubscriptionPolicy subscriptionPolicy, boolean trackingEnabled,
+                        String supportTeam, String contact) {
         this.topicName = topicName;
         this.name = name;
         this.description = description;
         this.subscriptionPolicy = subscriptionPolicy;
         this.endpoint = endpoint;
         this.trackingEnabled = trackingEnabled;
+        this.supportTeam = supportTeam;
+        this.contact = contact;
     }
 
     @JsonCreator
@@ -62,8 +68,11 @@ public class Subscription {
                         @JsonProperty("endpoint") EndpointAddress endpoint,
                         @JsonProperty("description") String description,
                         @JsonProperty("subscriptionPolicy") SubscriptionPolicy subscriptionPolicy,
-                        @JsonProperty("trackingEnabled") boolean trackingEnabled) {
-        this(TopicName.fromQualifiedName(topicName), name, endpoint, description, subscriptionPolicy, trackingEnabled);
+                        @JsonProperty("trackingEnabled") boolean trackingEnabled,
+                        @JsonProperty("supportTeam") String supportTeam,
+                        @JsonProperty("contact") String contact) {
+        this(TopicName.fromQualifiedName(topicName), name, endpoint, description, subscriptionPolicy,
+                trackingEnabled, supportTeam, contact);
     }
 
     @Override
@@ -86,7 +95,13 @@ public class Subscription {
                 && Objects.equals(this.name, other.name)
                 && Objects.equals(this.description, other.description)
                 && Objects.equals(this.subscriptionPolicy, other.subscriptionPolicy)
-                && Objects.equals(this.trackingEnabled, other.trackingEnabled);
+                && Objects.equals(this.trackingEnabled, other.trackingEnabled)
+                && Objects.equals(this.supportTeam, other.supportTeam)
+                && Objects.equals(this.contact, other.contact);
+    }
+
+    public SubscriptionName toSubscriptionName() {
+        return new SubscriptionName(name, topicName);
     }
 
     @JsonIgnore
@@ -140,12 +155,16 @@ public class Subscription {
         return subscriptionPolicy;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public boolean isTrackingEnabled() {
         return trackingEnabled;
+    }
+
+    public String getSupportTeam() {
+        return supportTeam;
+    }
+
+    public String getContact() {
+        return contact;
     }
 
     public Subscription anonymizePassword() {
@@ -156,6 +175,9 @@ public class Subscription {
                     .withEndpoint(this.getEndpoint().anonymizePassword())
                     .withState(this.getState())
                     .withSubscriptionPolicy(this.getSubscriptionPolicy())
+                    .withTrackingEnabled(this.trackingEnabled)
+                    .withSupportTeam(this.supportTeam)
+                    .withContact(this.contact)
                     .build();
         }
         return this;
@@ -210,6 +232,16 @@ public class Subscription {
 
         public Builder withTrackingEnabled(boolean trackingEnabled) {
             subscription.trackingEnabled = trackingEnabled;
+            return this;
+        }
+
+        public Builder withSupportTeam(String supportTeam) {
+            subscription.supportTeam = supportTeam;
+            return this;
+        }
+
+        public Builder withContact(String contact) {
+            subscription.contact = contact;
             return this;
         }
 

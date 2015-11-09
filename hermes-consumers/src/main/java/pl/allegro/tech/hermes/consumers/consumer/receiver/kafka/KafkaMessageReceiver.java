@@ -17,9 +17,11 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageMetadata;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.MessageTrace;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 
@@ -115,13 +117,23 @@ public class KafkaMessageReceiver implements MessageReceiver {
         try (Timer.Context readingTimerContext = readingTimer.time()) {
             message = iterator.next();
             UnwrappedMessageContent unwrappedContent = contentWrapper.unwrap(message.message(), topic, kafkaTopic.contentType());
+            MessageMetadata messageMetadata = unwrappedContent.getMessageMetadata();
+
+            MessageTrace messageTrace = new MessageTrace(
+                    messageMetadata.getTraceId(),
+                    messageMetadata.getSpanId(),
+                    messageMetadata.getParentSpanId(),
+                    messageMetadata.getTraceSampled(),
+                    messageMetadata.getTraceReported()
+            );
 
             return new Message(
-                    unwrappedContent.getMessageMetadata().getId(),
+                    messageMetadata.getId(),
                     topic.getQualifiedName(),
+                    messageTrace,
                     unwrappedContent.getContent(),
                     kafkaTopic.contentType(),
-                    unwrappedContent.getMessageMetadata().getTimestamp(),
+                    messageMetadata.getTimestamp(),
                     clock.getTime(),
                     new PartitionOffset(kafkaTopic.name(), message.offset(), message.partition()));
 

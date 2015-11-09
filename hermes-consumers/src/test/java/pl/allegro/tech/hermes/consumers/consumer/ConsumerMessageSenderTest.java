@@ -7,9 +7,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
@@ -19,7 +16,9 @@ import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
+import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -27,7 +26,13 @@ import java.util.concurrent.Semaphore;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.EndpointAddress.of;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
@@ -351,7 +356,11 @@ public class ConsumerMessageSenderTest {
     }
 
     private Message messageWithTimestamp(long timestamp) {
-        return new Message("id", "topic", "{\"username\":\"ala\"}".getBytes(), Topic.ContentType.JSON, 122424L, timestamp,
-                new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 10, 0));
+
+        return MessageBuilder
+                .withTestMessage()
+                .withContent("{\"username\":\"ala\"}", StandardCharsets.UTF_8)
+                .withReadingTimestamp(timestamp)
+                .build();
     }
 }

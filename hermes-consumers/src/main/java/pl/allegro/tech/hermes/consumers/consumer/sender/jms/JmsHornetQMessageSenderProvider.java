@@ -15,8 +15,8 @@ import java.util.HashMap;
 public class JmsHornetQMessageSenderProvider extends AbstractJmsMessageSenderProvider {
 
     @Inject
-    public JmsHornetQMessageSenderProvider(ConfigFactory configFactory) {
-        super(configFactory);
+    public JmsHornetQMessageSenderProvider(ConfigFactory configFactory, JmsTraceAppender traceIdAppender) {
+        super(configFactory, traceIdAppender);
     }
 
     @Override

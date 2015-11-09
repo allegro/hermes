@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.uri.UriUtils;
+
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 import java.net.URI;
@@ -16,10 +17,12 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
 
     protected final ConfigFactory configFactory;
     protected final LoadingCache<URI, ConnectionFactory> connectionFactoryCache;
+    protected final JmsTraceAppender traceIdAppender;
 
-    public AbstractJmsMessageSenderProvider(ConfigFactory configFactory) {
+    public AbstractJmsMessageSenderProvider(ConfigFactory configFactory, JmsTraceAppender traceIdAppender) {
         this.configFactory = configFactory;
         this.connectionFactoryCache = CacheBuilder.newBuilder().build(new ConnectionFactoryLoader());
+        this.traceIdAppender = traceIdAppender;
     }
 
     @Override
@@ -31,7 +34,7 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
                 UriUtils.extractPasswordFromUri(endpointURI)
         );
 
-        return new JmsMessageSender(jmsContext, extractTopicName(endpointURI));
+        return new JmsMessageSender(jmsContext, extractTopicName(endpointURI), traceIdAppender);
     }
 
     @Override

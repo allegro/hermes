@@ -21,12 +21,14 @@ public class Message {
     private long publishingTimestamp;
     private long readingTimestamp;
     private byte[] data;
+    private MessageTrace messageTrace;
 
     private Message() {}
 
-    public Message(String id, String topic, byte[] content, Topic.ContentType contentType, long publishingTimestamp,
+    public Message(String id, String topic, MessageTrace messageTrace, byte[] content, Topic.ContentType contentType, long publishingTimestamp,
                    long readingTimestamp, PartitionOffset partitionOffset) {
         this.id = id;
+        this.messageTrace = messageTrace;
         this.data = content;
         this.topic = topic;
         this.contentType = contentType;
@@ -45,6 +47,10 @@ public class Message {
 
     public long getOffset() {
         return partitionOffset.getOffset();
+    }
+
+    public MessageTrace getMessageTrace() {
+        return messageTrace;
     }
 
     public byte[] getData() {
@@ -113,6 +119,7 @@ public class Message {
 
         public Builder fromMessage(Message message) {
             this.message.id = message.getId();
+            this.message.messageTrace = message.getMessageTrace();
             this.message.data = message.getData();
             this.message.contentType = message.getContentType();
             this.message.topic = message.getTopic();
