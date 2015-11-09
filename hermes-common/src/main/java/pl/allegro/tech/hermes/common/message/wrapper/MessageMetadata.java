@@ -1,23 +1,29 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 
+import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Optional.ofNullable;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MessageMetadata {
 
     private final long timestamp;
     private final String id;
-    private final String traceId;
+    private final Map<String, String> externalMetadata;
 
     @JsonCreator
     public MessageMetadata(@JsonProperty("timestamp") long timestamp,
                            @JsonProperty("id") String id,
-                           @JsonProperty("traceId") String traceId) {
+                           @JsonProperty("externalMetadata") Map<String, String> externalMetadata) {
         this.id = id;
         this.timestamp = timestamp;
-        this.traceId = traceId;
+        this.externalMetadata = ofNullable(externalMetadata).orElseGet(ImmutableMap::<String, String>of);
     }
 
     public String getId() {
@@ -28,8 +34,8 @@ public class MessageMetadata {
         return timestamp;
     }
 
-    public String getTraceId() {
-        return traceId;
+    public Map<String, String> getExternalMetadata() {
+        return ImmutableMap.copyOf(externalMetadata);
     }
 
     @Override

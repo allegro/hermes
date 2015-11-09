@@ -6,5 +6,4 @@ public interface AvroMetadataMarker {
     String METADATA_MARKER = "__metadata";
     Utf8 METADATA_TIMESTAMP_KEY = new Utf8("timestamp");
     Utf8 METADATA_MESSAGE_ID_KEY = new Utf8("messageId");
-    Utf8 METADATA_TRACE_ID_KEY = new Utf8("traceId");
 }

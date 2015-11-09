@@ -28,7 +28,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_ID;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -49,7 +48,7 @@ public class JmsMessageSenderTest {
     private ConfigFactory configFactoryMock;
 
     @Spy
-    private JmsTraceIdAppender traceIdAppender;
+    private JmsMetadataAppender metadataAppender;
 
     @InjectMocks
     private JmsMessageSender messageSender;
@@ -122,6 +121,6 @@ public class JmsMessageSenderTest {
         messageSender.send(SOME_MESSAGE);
 
         // then
-        verify(messageMock).setStringProperty(TRACE_ID.getCamelCaseName(), "traceId");
+        verify(messageMock).setStringProperty("TraceId", "traceId");
     }
 }

@@ -119,12 +119,13 @@ public class KafkaMessageReceiver implements MessageReceiver {
             return new Message(
                     unwrappedContent.getMessageMetadata().getId(),
                     topic.getQualifiedName(),
-                    unwrappedContent.getMessageMetadata().getTraceId(),
                     unwrappedContent.getContent(),
                     kafkaTopic.contentType(),
                     unwrappedContent.getMessageMetadata().getTimestamp(),
                     clock.getTime(),
-                    new PartitionOffset(kafkaTopic.name(), message.offset(), message.partition()));
+                    new PartitionOffset(kafkaTopic.name(), message.offset(), message.partition()),
+                    unwrappedContent.getMessageMetadata().getExternalMetadata()
+            );
 
         } catch (ConsumerTimeoutException consumerTimeoutException) {
             throw new MessageReceivingTimeoutException("No messages received", consumerTimeoutException);

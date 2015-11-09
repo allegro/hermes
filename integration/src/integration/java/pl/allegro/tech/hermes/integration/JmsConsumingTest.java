@@ -4,15 +4,19 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.helper.RemoteJmsEndpoint;
+import pl.allegro.tech.hermes.integration.metadata.TraceContext;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import javax.jms.Message;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
 
+import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class JmsConsumingTest extends IntegrationTest {
@@ -41,7 +45,7 @@ public class JmsConsumingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldPublishAndConsumeJMSMessageWithTraceId() throws Exception {
+    public void shouldPublishAndConsumeJmsMessageWithTraceId() throws Exception {
 
         // given
         String message = "{\"hello\": \"world\"}";
@@ -62,6 +66,32 @@ public class JmsConsumingTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
         assertThat(jmsEndpoint.waitAndGetLastMessage()).assertStringProperty("TraceId", traceId);
+    }
+
+    @Test
+    public void shouldPublishAndConsumeJmsMessageWithTraceHeaders() throws Exception {
+
+        // given
+        String message = "{\"hello\": \"world\"}";
+        TraceContext trace = TraceContext.random();
+
+        // and
+        Topic topic = operations.buildTopic("publishJmsGroupWithTrace", "topic");
+        operations.createSubscription(topic, "subscription", jmsEndpointAddress(JMS_TOPIC_NAME));
+        jmsEndpoint.expectMessages(TestMessage.of("hello", "world"));
+        Invocation.Builder request = createRequestWithTraceHeaders(FRONTEND_URL, topic.getQualifiedName(), trace);;
+
+        // when
+        Response response = request.post(Entity.entity(message, MediaType.APPLICATION_JSON));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        Message lastMessage = jmsEndpoint.waitAndGetLastMessage();
+        assertThat(lastMessage).assertStringProperty("TraceId", trace.getTraceId())
+                .assertStringProperty("SpanId", trace.getSpanId())
+                .assertStringProperty("ParentSpanId", trace.getParentSpanId())
+                .assertStringProperty("TraceSampled", trace.getTraceSampled())
+                .assertStringProperty("TraceReported", trace.getTraceReported());
     }
 
     private String jmsEndpointAddress(String topicName) {

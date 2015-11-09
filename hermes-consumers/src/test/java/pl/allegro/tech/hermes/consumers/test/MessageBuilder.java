@@ -8,17 +8,20 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
+import static com.google.common.collect.ImmutableMap.of;
 
 public final class MessageBuilder {
 
     private String id;
     private String topic;
-    private String traceId;
     private Topic.ContentType contentType;
     private long publishingTimestamp;
     private long readingTimestamp;
     private PartitionOffset partitionOffset;
     private byte[] content;
+    private Map<String, String> externalMetadata;
 
     private MessageBuilder() {
     }
@@ -28,17 +31,17 @@ public final class MessageBuilder {
         return new MessageBuilder()
                 .withId("id")
                 .withTopic("topicId")
-                .withTraceId("traceId")
                 .withContent("aaaaaaaa", StandardCharsets.UTF_8)
                 .withContentType(Topic.ContentType.JSON)
                 .withPublishingTimestamp(123L)
                 .withReadingTimestamp(123L)
-                .withPartitionOffset(new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 123, 1));
+                .withPartitionOffset(new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 123, 1))
+                .withExternalMetadata(of("Trace-Id", "traceId"));
     }
 
     public Message build() {
-        return new Message(id, topic, traceId, content, contentType, publishingTimestamp,
-                readingTimestamp, partitionOffset);
+        return new Message(id, topic, content, contentType, publishingTimestamp,
+                readingTimestamp, partitionOffset, externalMetadata);
     }
 
     public MessageBuilder withId(String id) {
@@ -48,11 +51,6 @@ public final class MessageBuilder {
 
     public MessageBuilder withTopic(String topic) {
         this.topic = topic;
-        return this;
-    }
-
-    public MessageBuilder withTraceId(String traceId) {
-        this.traceId = traceId;
         return this;
     }
 
@@ -83,6 +81,11 @@ public final class MessageBuilder {
 
     public MessageBuilder withPartitionOffset(PartitionOffset partitionOffset) {
         this.partitionOffset = partitionOffset;
+        return this;
+    }
+
+    public MessageBuilder withExternalMetadata(Map<String, String> externalMetadata) {
+        this.externalMetadata = externalMetadata;
         return this;
     }
 }

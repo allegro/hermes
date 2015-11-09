@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMe
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
+import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import javax.ws.rs.core.MediaType;
 import java.util.concurrent.CompletableFuture;
@@ -22,13 +23,13 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
     private final HttpClient client;
     private final ResolvableEndpointAddress endpoint;
     private final long timeout;
-    private final DefaultHttpTraceIdAppender traceIdAppender;
+    private final MetadataAppender<Request> metadataAppender;
 
-    public JettyMessageSender(HttpClient client, ResolvableEndpointAddress endpoint, int timeout, DefaultHttpTraceIdAppender traceIdAppender) {
+    public JettyMessageSender(HttpClient client, ResolvableEndpointAddress endpoint, int timeout, MetadataAppender<Request> metadataAppender) {
         this.client = client;
         this.endpoint = endpoint;
         this.timeout = timeout;
-        this.traceIdAppender = traceIdAppender;
+        this.metadataAppender = metadataAppender;
     }
 
     @Override
@@ -53,7 +54,7 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
     }
 
     private Request appendTraceInfo(Request request, Message message) {
-        return traceIdAppender.appendTraceId(request, message);
+        return metadataAppender.append(request, message);
     }
 
     @Override

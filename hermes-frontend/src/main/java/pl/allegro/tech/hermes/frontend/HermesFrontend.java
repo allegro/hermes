@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerAcknowledgeListener;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerErrorListener;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
+import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
@@ -149,6 +150,10 @@ public final class HermesFrontend {
         public Builder withLogRepository(Function<ServiceLocator, LogRepository> logRepository) {
             logRepositories.add(logRepository);
             return this;
+        }
+
+        public Builder withHeadersPropagator(HeadersPropagator headersPropagator) {
+            return withBinding(headersPropagator, HeadersPropagator.class);
         }
 
         public <T> Builder withBinding(T instance, Class<T> clazz) {
