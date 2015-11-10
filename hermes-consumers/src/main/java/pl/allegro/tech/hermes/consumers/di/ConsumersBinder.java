@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.di;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Request;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
@@ -29,15 +30,16 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.OffsetStoragesFa
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpTraceIdAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsTraceIdAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeoutFactory;
+import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.health.HealthCheckServer;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -51,6 +53,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.workTracking.WorkTracker;
 import pl.allegro.tech.hermes.consumers.supervisor.workTracking.WorkTrackerFactory;
 
 import javax.inject.Singleton;
+import javax.jms.Message;
 import java.util.List;
 
 public class ConsumersBinder extends AbstractBinder {
@@ -85,8 +88,8 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(AvroToJsonMessageConverter.class);
         bindSingleton(MessageConverterResolver.class);
         bindSingleton(AvroSchemaRepositoryMetadataAware.class);
-        bindSingleton(JmsTraceIdAppender.class);
-        bindSingleton(DefaultHttpTraceIdAppender.class);
+        bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {});
+        bind(DefaultHttpMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Request>>() {});
 
         bindSingleton(BlockingChannelFactory.class);
         bindFactory(OffsetStoragesFactory.class).in(Singleton.class).to(new TypeLiteral<List<OffsetsStorage>>() {});

@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.frontend.publishing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.api.TraceInfo;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.converter.ConvertingException;
@@ -21,8 +21,8 @@ import pl.allegro.tech.hermes.frontend.publishing.callbacks.MessageStatePublishi
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
+import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
-import pl.allegro.tech.hermes.frontend.publishing.trace.TraceExtractor;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,8 +56,8 @@ public class PublishingServlet extends HttpServlet {
     private final MessagePublisher messagePublisher;
     private final MessageContentTypeEnforcer contentTypeEnforcer;
     private final MetadataAddingMessageConverter metadataAddingMessageConverter;
+    private final HeadersPropagator headersPropagator;
     private final BrokerListeners listeners;
-    private final TraceExtractor traceExtractor;
 
     private final Integer defaultAsyncTimeout;
     private final Integer longAsyncTimeout;
@@ -73,7 +75,7 @@ public class PublishingServlet extends HttpServlet {
                              BrokerListeners listeners,
                              MessageContentTypeEnforcer contentTypeEnforcer,
                              MetadataAddingMessageConverter metadataAddingMessageConverter,
-                             TraceExtractor traceExtractor) {
+                             HeadersPropagator headersPropagator) {
 
         this.topicsCache = topicsCache;
         this.messageValidators = messageValidators;
@@ -81,6 +83,7 @@ public class PublishingServlet extends HttpServlet {
         this.messagePublisher = messagePublisher;
         this.contentTypeEnforcer = contentTypeEnforcer;
         this.metadataAddingMessageConverter = metadataAddingMessageConverter;
+        this.headersPropagator = headersPropagator;
         this.errorSender = new ErrorSender(objectMapper);
         this.hermesMetrics = hermesMetrics;
         this.trackers = trackers;
@@ -88,25 +91,23 @@ public class PublishingServlet extends HttpServlet {
         this.defaultAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_IDLE_TIMEOUT);
         this.longAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_LONG_IDLE_TIMEOUT);
         this.chunkSize = configFactory.getIntProperty(Configs.FRONTEND_REQUEST_CHUNK_SIZE);
-        this.traceExtractor = traceExtractor;
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         TopicName topicName = parseTopicName(request);
         final String messageId = UUID.randomUUID().toString();
-        final TraceInfo traceInfo = getTraceInfo(request);
         Optional<Topic> topic = topicsCache.getTopic(topicName);
 
         if (topic.isPresent()) {
-            handlePublishAsynchronously(request, response, topic.get(), messageId, traceInfo);
+            handlePublishAsynchronously(request, response, topic.get(), messageId);
         } else {
             String cause = format("Topic %s not exists in group %s", topicName.getName(), topicName.getGroupName());
             errorSender.sendErrorResponse(new ErrorDescription(cause, TOPIC_NOT_EXISTS), response, messageId);
         }
     }
 
-    private void handlePublishAsynchronously(HttpServletRequest request, HttpServletResponse response, Topic topic, String messageId, TraceInfo traceInfo)
+    private void handlePublishAsynchronously(HttpServletRequest request, HttpServletResponse response, Topic topic, String messageId)
             throws IOException {
         final MessageState messageState = new MessageState();
         final AsyncContext asyncContext = request.startAsync();
@@ -121,11 +122,11 @@ public class PublishingServlet extends HttpServlet {
                 messageContent -> asyncContext.start(() -> {
                     try {
                         Message message = contentTypeEnforcer.enforce(request.getContentType(),
-                                new Message(messageId, traceInfo, messageContent, clock.getTime()), topic);
+                                new Message(messageId, messageContent, clock.getTime()), topic);
 
                         messageValidators.check(topic, message.getData());
 
-                        message = metadataAddingMessageConverter.addMetadata(message, topic);
+                        message = metadataAddingMessageConverter.addMetadata(message, topic, headersPropagator.extract(toHeadersMap(request)));
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 
                         messagePublisher.publish(message, topic, messageState,
@@ -146,8 +147,14 @@ public class PublishingServlet extends HttpServlet {
                 throwable -> httpResponder.internalError(throwable, "Error while reading request"));
     }
 
-    private TraceInfo getTraceInfo(HttpServletRequest request) {
-        return this.traceExtractor.extractTraceInformation(request);
+    private Map<String, String> toHeadersMap(HttpServletRequest request) {
+        ImmutableMap.Builder<String, String> builder = ImmutableMap.<String, String>builder();
+        Enumeration<String> headers = request.getHeaderNames();
+        while(headers.hasMoreElements()) {
+            String header = headers.nextElement();
+            builder.put(header, request.getHeader(header));
+        }
+        return builder.build();
     }
 
     private TopicName parseTopicName(HttpServletRequest request) {

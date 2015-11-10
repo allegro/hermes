@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 import javax.inject.Inject;
+import java.util.Map;
 
 public class MetadataAddingMessageConverter {
 
@@ -15,9 +16,9 @@ public class MetadataAddingMessageConverter {
         this.messageContentWrapper = messageContentWrapper;
     }
 
-    public Message addMetadata(Message toEnrich, Topic topic) {
-        byte[] wrappedData = messageContentWrapper.wrap(toEnrich.getData(), toEnrich.getId(), toEnrich.getTraceInfo(),
-                toEnrich.getTimestamp(), topic);
+    public Message addMetadata(Message toEnrich, Topic topic, Map<String, String> externalMetadata) {
+        byte[] wrappedData = messageContentWrapper.wrap(toEnrich.getData(), toEnrich.getId(),
+                toEnrich.getTimestamp(), topic, externalMetadata);
         return toEnrich.withDataReplaced(wrappedData);
     }
 

@@ -3,8 +3,7 @@ package pl.allegro.tech.hermes.common.http;
 public enum MessageMetadataHeaders {
 
     MESSAGE_ID("Hermes-Message-Id"),
-    TOPIC_NAME("Hermes-Topic-Name"),
-    TRACE_ID("Trace-Id");
+    TOPIC_NAME("Hermes-Topic-Name");
 
     private final String headerName;
 

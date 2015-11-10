@@ -29,7 +29,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TRACE_ID;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -68,7 +67,7 @@ public class JettyMessageSenderTest {
     public void setUp() throws Exception {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
         ResolvableEndpointAddress address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver());
-        messageSender = new JettyMessageSender(client, address, 1000, new DefaultHttpTraceIdAppender());
+        messageSender = new JettyMessageSender(client, address, 1000, new DefaultHttpMetadataAppender());
     }
 
     @Test
@@ -135,7 +134,7 @@ public class JettyMessageSenderTest {
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
-        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader(TRACE_ID.getName())).isEqualTo("traceId");
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Trace-Id")).isEqualTo("traceId");
     }
 
     private static final class SimpleEndpointAddressResolver implements EndpointAddressResolver {
