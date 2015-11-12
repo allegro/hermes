@@ -5,19 +5,17 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.admin.AdminOperationsCallback;
-import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.Consumer;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
-import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
-import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.Consumer;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
+import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
 import javax.inject.Inject;
@@ -29,7 +27,7 @@ import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
 import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
-public class ConsumersSupervisor implements AdminOperationsCallback {
+public class ConsumersSupervisor {
 
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumersSupervisor.class);
@@ -45,7 +43,6 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
     private final HermesMetrics hermesMetrics;
     private final OffsetCommitter offsetCommitter;
     private final ConsumerHolder consumerHolder;
-    private final ZookeeperAdminCache adminCache;
     private final SubscriptionLocks subscriptionsLocks;
 
     private final String brokersClusterName;
@@ -61,7 +58,6 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
                                List<MessageCommitter> messageCommitters,
                                List<OffsetsStorage> offsetsStorages,
                                HermesMetrics hermesMetrics,
-                               ZookeeperAdminCache adminCache,
                                UndeliveredMessageLogPersister undeliveredMessageLogPersister) {
         this.subscriptionRepository = subscriptionRepository;
         this.topicRepository = topicRepository;
@@ -70,7 +66,6 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
         this.consumerFactory = consumerFactory;
         this.offsetsStorages = offsetsStorages;
         this.messageCommitters = messageCommitters;
-        this.adminCache = adminCache;
         this.hermesMetrics = hermesMetrics;
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
 
@@ -167,8 +162,6 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
     }
 
     public void start() throws Exception {
-        adminCache.start();
-        adminCache.addCallback(this);
         offsetCommitter.start();
         undeliveredMessageLogPersister.start();
     }
@@ -224,8 +217,7 @@ public class ConsumersSupervisor implements AdminOperationsCallback {
         }
     }
 
-    @Override
-    public void onRetransmissionStarts(SubscriptionName subscriptionName) throws Exception {
+    public void retransmit(SubscriptionName subscriptionName) throws Exception {
         try (CloseableSubscriptionLock subscriptionLock = subscriptionsLocks.lock(subscriptionName)) {
             logger.info("Starting retransmission for subscription {}", subscriptionName);
             deleteConsumerIfExists(subscriptionName, false);

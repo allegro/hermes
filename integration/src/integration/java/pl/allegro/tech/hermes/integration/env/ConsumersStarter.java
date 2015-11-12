@@ -6,9 +6,10 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
-import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
+import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 
 public class ConsumersStarter implements Starter<HermesConsumers> {
 

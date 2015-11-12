@@ -13,6 +13,7 @@ public class ZookeeperPaths {
     public static final String KAFKA_TOPICS_PATH = "kafka_topics";
     public static final String URL_SEPARATOR = "/";
     public static final String CONSUMERS_PATH = "consumers";
+    public static final String CONSUMERS_WORKLOAD_PATH = "consumers-workload";
     public static final String METRICS_PATH = "metrics";
     public static final String ADMIN_PATH = "admin";
 
@@ -90,8 +91,12 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_PATH);
     }
 
-    public String consumersRuntimePath() {
-        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_PATH, "runtime");
+    public String consumersRuntimePath(String cluster) {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH, cluster, "runtime");
+    }
+
+    public String consumersRegistryPath(String cluster) {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH, cluster, "registry");
     }
 
     public String inflightPath(String hostname, TopicName topicName, String subscriptionName, String metricName) {
