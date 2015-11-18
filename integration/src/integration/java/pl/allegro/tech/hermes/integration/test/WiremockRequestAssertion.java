@@ -7,18 +7,18 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class WireMockRequestAssertion extends AbstractAssert<WireMockRequestAssertion, LoggedRequest> {
+public class WiremockRequestAssertion extends AbstractAssert<WiremockRequestAssertion, LoggedRequest> {
 
-    protected WireMockRequestAssertion(LoggedRequest actual) {
-        super(actual, WireMockRequestAssertion.class);
+    protected WiremockRequestAssertion(LoggedRequest actual) {
+        super(actual, WiremockRequestAssertion.class);
     }
 
-    public WireMockRequestAssertion hasHeaderValue(String header, String value) {
+    public WiremockRequestAssertion hasHeaderValue(String header, String value) {
         assertThat(actual.getHeader(header)).isEqualTo(value);
         return this;
     }
 
-    public WireMockRequestAssertion containsAllHeaders(Map<String, String> headers) {
+    public WiremockRequestAssertion containsAllHeaders(Map<String, String> headers) {
         headers.forEach((header, value) -> {
             assertThat(actual.getHeader(header)).isEqualTo(value);
         });

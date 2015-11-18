@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.frontend.publishing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -46,6 +48,8 @@ import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 public class PublishingServlet extends HttpServlet {
+
+    private static final Logger logger = LoggerFactory.getLogger(PublishingServlet.class);
 
     private final HermesMetrics hermesMetrics;
     private final ErrorSender errorSender;
@@ -138,6 +142,7 @@ public class PublishingServlet extends HttpServlet {
                                         new BrokerListenersPublishingCallback(listeners)));
 
                     } catch (InvalidMessageException | ConvertingException | UnsupportedContentTypeException exception) {
+                        logger.warn("Error while parsing message for topic {}", topic.getQualifiedName(), exception);
                         httpResponder.badRequest(exception);
                     } catch (CouldNotLoadSchemaException e) {
                         httpResponder.internalError(e, "Could not load schema for published message");
