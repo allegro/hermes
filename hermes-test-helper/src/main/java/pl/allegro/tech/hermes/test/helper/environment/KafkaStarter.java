@@ -59,12 +59,12 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
     }
 
     private void waitForStartup(int port) {
-        final InetSocketAddress inetSocketAddress = new InetSocketAddress(port);
+        final InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", port);
 
         await().atMost(Duration.FIVE_SECONDS).until(() -> {
             try {
                 Socket socket = new Socket();
-                socket.connect(inetSocketAddress, 10);
+                socket.connect(inetSocketAddress, 1000);
                 return socket.isConnected();
             } catch (IOException e) {
                 return false;
