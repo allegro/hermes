@@ -127,6 +127,28 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldPublishJsonIncompatibleWithSchemaWhileJsonToAvroDryRunModeIsEnabled() {
+        // given
+        Topic topic = topic()
+                .withName("jsonToAvroDryRun.topic")
+                .withJsonToAvroDryRun(true)
+                .withMessageSchema(user.getSchema().toString())
+                .build();
+        operations.buildTopic(topic);
+
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        TestMessage message = TestMessage.random();
+        remoteService.expectMessages(message);
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), message.body());
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+        remoteService.waitUntilReceived();
+    }
+
+    @Test
     public void shouldPublishAndConsumeJsonMessageAfterMigrationFromJsonToAvro() throws Exception {
         // given
         Topic topic = operations.buildTopic("migrated", "topic");
