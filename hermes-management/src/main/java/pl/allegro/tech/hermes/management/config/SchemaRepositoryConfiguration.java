@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.domain.topic.schema.CachedSchemaSourceProvider;
+import pl.allegro.tech.hermes.domain.topic.schema.DefaultCachedSchemaSourceProvider;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.JerseySchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClient;
@@ -72,18 +74,25 @@ public class SchemaRepositoryConfiguration {
     }
 
     @Bean
-    public SchemaRepository<Schema> avroSchemaRepository(SchemaSourceRepository schemaSourceRepository) {
-        return new SchemaRepository<>(
-                Topic.ContentType.AVRO,
-                schemaSourceRepository,
-                createSchemaReloadExecutorService(schemaCacheProperties.getPoolSize(), "avro"),
+    public CachedSchemaSourceProvider cachedSchemaSourceProvider(SchemaSourceRepository schemaSourceRepository) {
+        return new DefaultCachedSchemaSourceProvider(
                 schemaCacheProperties.getRefreshAfterWriteMinutes(),
                 schemaCacheProperties.getExpireAfterWriteMinutes(),
+                createSchemaSourceReloadExecutorService(schemaCacheProperties.getPoolSize()),
+                schemaSourceRepository
+        );
+    }
+
+    @Bean
+    public SchemaRepository<Schema> avroSchemaRepository(CachedSchemaSourceProvider cachedSchemaSourceProvider) {
+        return new SchemaRepository<>(
+                Topic.ContentType.AVRO,
+                cachedSchemaSourceProvider,
                 source -> new Schema.Parser().parse(source.value()));
     }
 
-    private ExecutorService createSchemaReloadExecutorService(int poolSize, String format) {
-        return Executors.newFixedThreadPool(poolSize, new ThreadFactoryBuilder().setNameFormat(format + "-schema-reloader-%d").build());
+    private ExecutorService createSchemaSourceReloadExecutorService(int poolSize) {
+        return Executors.newFixedThreadPool(poolSize, new ThreadFactoryBuilder().setNameFormat("schema-source-reloader-%d").build());
     }
 
 }
