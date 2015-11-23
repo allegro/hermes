@@ -1,37 +1,42 @@
 package pl.allegro.tech.hermes.frontend.services;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.domain.topic.schema.CachedSchemaSourceProvider;
+import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.List;
 
-@Singleton
 public class SchemaPrefetchService {
-    private List<SchemaRepository> schemaRepositories;
-
     private static final Logger logger = LoggerFactory.getLogger(SchemaPrefetchService.class);
 
+    private final CachedSchemaSourceProvider cachedSchemaSourceProvider;
+    private final List<SchemaRepository> schemaRepositories;
+
     @Inject
-    public SchemaPrefetchService(List<SchemaRepository> schemaRepositories) {
+    public SchemaPrefetchService(List<SchemaRepository> schemaRepositories, CachedSchemaSourceProvider cachedSchemaSourceProvider) {
         this.schemaRepositories = schemaRepositories;
+        this.cachedSchemaSourceProvider = cachedSchemaSourceProvider;
     }
 
     public void prefetchFor(Topic topic) {
-        schemaRepositories.stream().forEach(repo -> {
+        cachedSchemaSourceProvider.get(topic).ifPresent(schema -> {
+            logger.info("Successful schema source prefetch for topic {}", topic.getQualifiedName());
+            compileSchema(topic);
+        });
+    }
+
+    private void compileSchema(Topic topic) {
+        schemaRepositories.forEach(schemaRepository -> {
             try {
-                repo.getSchema(topic);
-                logger.info("Successful prefetch of schema for topic {} with content type {} via {} schema repo", topic.getQualifiedName(), topic.getContentType(), repo.supportedContentType());
-            } catch (Exception exception) {
-                logger.info("Unsuccessful prefetch of schema for topic {} with content type {} via {} schema repo. Root cause: {}",
-                    topic.getQualifiedName(),
-                    topic.getContentType(),
-                    repo.supportedContentType(),
-                    ExceptionUtils.getRootCauseMessage(exception));
+                schemaRepository.getSchema(topic);
+                logger.info("Successful schema compilation for topic {}", topic.getQualifiedName());
+            } catch (CouldNotLoadSchemaException exception) {
+                logger.debug("Unsuccessful schema compilation type of {} for topic {}",
+                        schemaRepository.supportedContentType(), topic.getQualifiedName());
             }
         });
     }

@@ -21,8 +21,8 @@ public final class HermesAssertions extends Assertions {
         return new ZookeeperAssertion(zookeeper, ZookeeperAssertion.class, kafkaNamesMapper);
     }
 
-    public static WireMockRequestAssertion assertThat(LoggedRequest request) {
-        return new WireMockRequestAssertion(request);
+    public static WiremockRequestAssertion assertThat(LoggedRequest request) {
+        return new WiremockRequestAssertion(request);
     }
 
     public static JmsMessageAssertion assertThat(Message message) {
