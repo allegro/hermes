@@ -104,7 +104,7 @@ public class PublishingAvroTest extends IntegrationTest {
         operations.buildTopic(topic);
 
         // when
-        Response response = publisher.publish("avro.topic2", "{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\",\"__metadata\": null}");
+        Response response = publisher.publish("avro.topic2", "{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}");
 
         // then
         assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
