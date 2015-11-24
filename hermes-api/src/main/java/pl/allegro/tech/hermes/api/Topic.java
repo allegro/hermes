@@ -84,7 +84,7 @@ public class Topic {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, retentionTime, messageSchema, validationEnabled, validationDryRunEnabled,
-                migratedFromJsonType, trackingEnabled, ack, contentType);
+                migratedFromJsonType, trackingEnabled, ack, contentType, jsonToAvroDryRunEnabled);
     }
 
     @Override
@@ -103,6 +103,7 @@ public class Topic {
             && Objects.equals(this.messageSchema, other.messageSchema)
             && Objects.equals(this.isValidationEnabled(), other.isValidationEnabled())
             && Objects.equals(this.validationDryRunEnabled, other.validationDryRunEnabled)
+            && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
             && Objects.equals(this.trackingEnabled, other.trackingEnabled)
             && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
             && Objects.equals(this.ack, other.ack)

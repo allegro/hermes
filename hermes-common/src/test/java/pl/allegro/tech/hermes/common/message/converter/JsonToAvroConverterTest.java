@@ -31,6 +31,9 @@ public class JsonToAvroConverterTest {
         BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(avro, null);
         assertThat(decoder.readString()).isEqualTo("Bob");
         assertThat(decoder.readInt()).isEqualTo(50);
+        //next field is type of union: [null, string]
+        //binary decoder interprets uions as arrays
+        decoder.readArrayStart();
         assertThat(decoder.readString()).isEqualTo("blue");
     }
 
