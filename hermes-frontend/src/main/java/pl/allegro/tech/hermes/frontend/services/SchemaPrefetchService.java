@@ -33,7 +33,8 @@ public class SchemaPrefetchService {
         schemaRepositories.forEach(schemaRepository -> {
             try {
                 schemaRepository.getSchema(topic);
-                logger.info("Successful schema compilation for topic {}", topic.getQualifiedName());
+                logger.info("Successful schema compilation type of {} for topic {}",
+                        schemaRepository.supportedContentType(), topic.getQualifiedName());
             } catch (CouldNotLoadSchemaException exception) {
                 logger.debug("Unsuccessful schema compilation type of {} for topic {}",
                         schemaRepository.supportedContentType(), topic.getQualifiedName());

@@ -73,7 +73,7 @@ To enable the dry run mode send::
 
     PUT /topics/{topicName}
 
-    {"jsonToAvroDryRunEnabled": true}
+    {"jsonToAvroDryRun": true}
 
 When dry run mode is enabled, try publishing some JSON messages on the migrated topic.
 If there are no logs of type ``Could not convert JSON to AVRO`` then it means that messages are converted successfully and you can disable the dry run mode.
