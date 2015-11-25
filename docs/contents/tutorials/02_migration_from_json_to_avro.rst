@@ -1,18 +1,18 @@
 Migration from JSON to AVRO
 ===========================
 
-The guide explains how to switch data format from JSON to AVRO for existing topic.
+This guide explains how to change data format of an existing JSON topic to `Apache AVRO <https://avro.apache.org/>`_.
 
-Pros
+Pros of migrating topics to AVRO
 ----
 * lower disk & bandwith usage
-* all handled events are valid with schema
-* AVRO & JSON can be published on migrated topic. Hermes converts JSON -> AVRO in flight.
+* all handled events are validated against provided schema
+* still both AVRO & JSON messages are accepted on the migrated topic. Hermes converts all JSON message to AVRO on the fly.
 
 Prerequisite
 ------------
-Prepare AVRO schema which defines structure of published events for migrated topic.
-Add to the schema following field::
+Prepare `AVRO schema <https://avro.apache.org/docs/current/spec.html#schemas>`_ which will define the data structure of published events for the migrated topic.
+Add ``__metadata`` field to the schema as follows::
 
     {
         "name": "__metadata",
@@ -26,7 +26,7 @@ Add to the schema following field::
         "default": null
     }
 
-The field is required. Hermes use it in internals to propagate metadata like `Hermes-Message-Id`.
+The field is **required**. Hermes will use it for its internal purposes (like passing ``Hermes-Message-Id``).
 
 Migration
 ---------
@@ -34,7 +34,7 @@ Migration
 1. Add AVRO schema
 ^^^^^^^^^^^^^^^^^^
 
-Send request with valid AVRO schema to hermes-management on endpoint::
+Send request with a valid AVRO schema to hermes-management on endpoint::
 
     POST /topics/{topicName}/schema?validate=false
 
@@ -62,21 +62,21 @@ Send request with valid AVRO schema to hermes-management on endpoint::
     }
 
 
-`validate=false` means that schema validation is disabled. Right now we are working with topic type of JSON, so schema
+``validate=false`` means that schema validation is disabled. Right now we are working with topic of JSON type, so schema
 would be validated as JSON schema. We don't want that because JSON & AVRO schema have different structures.
 
 2. Enabling dry run mode
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Optional step. Can be done to verify if published events in json format converts properly to AVRO.
-To enable dry run mode send::
+This step is optional. Can be done to verify if published events in JSON format convert properly to AVRO.
+To enable the dry run mode send::
 
     PUT /topics/{topicName}
 
     {"jsonToAvroDryRunEnabled": true}
 
-After dry run mode is enabled, try to publish json messages on migrated topic. If there are no logs type of
-`Could not convert JSON to AVRO` then it means that messages are converted successfully and you can disable dry run mode analogously.
+When dry run mode is enabled, try publishing some JSON messages on the migrated topic.
+If there are no logs of type ``Could not convert JSON to AVRO`` then it means that messages are converted successfully and you can disable the dry run mode.
 
 3. Enabling migration mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -87,12 +87,14 @@ To change topic type from JSON to AVRO send::
     {"migratedFromJsonType": true, "contentType": "AVRO"}
 
 
-After this request additional topic with name `{topicName}_avro` will be created in Kafka.
-All events published on `{topicName}` will be converted to avro and stored in `{topicName}_avro`.
-Hermes also sends all json messages from old kafka topic {topicName}.
+This will create additional ``{topicName}_avro`` topic in Kafka.
+From now on all events published on ``{topicName}`` will be converted to AVRO and stored in ``{topicName}_avro``.
+Hermes will send all JSON messages stored in old kafka topic ``{topicName}`` as well.
 
 Rollback
 ^^^^^^^^
-If something goes wrong in step number 4. or for some reason would you like to go back to JSON topic then you need to change
-topic structure in proper zookeeper node - disable `validation` & `migratedFromJsonType` flags and change
-value of `contentType` to `JSON`.
+If something goes wrong in one of the previous steps or you simply want to change the topic type back to JSON,
+you have to manually modify topic's ``{hermes_root}/groups/{group}/topics/{topic}`` Zookeeper node by:
+
+* disabling ``validation`` & ``migratedFromJsonType`` flags
+* setting ``contentType`` back to ``JSON``.
