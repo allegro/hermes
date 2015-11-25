@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.common.di.CuratorType;
 import javax.inject.Named;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -119,5 +120,13 @@ public abstract class NodeCache<O, C extends StartableCache<O>> extends Startabl
 
     private String cacheNameFromPath(String path) {
         return path.substring(path.lastIndexOf('/') + 1);
+    }
+
+    protected Set<String> getSubcacheKeySet() {
+        return subcacheMap.keySet();
+    }
+
+    protected Set<Map.Entry<String, C>> getSubcacheEntrySet() {
+        return new HashedMap<>(subcacheMap).entrySet();
     }
 }

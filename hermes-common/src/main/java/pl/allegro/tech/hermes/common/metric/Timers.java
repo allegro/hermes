@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.common.metric;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.EXECUTOR_NAME;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.HOSTNAME;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.KAFKA_CLUSTER;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 
@@ -33,7 +34,8 @@ public class Timers {
 
     CONSUMER_READ_LATENCY = "consumer." + HOSTNAME + ".read-latency",
 
+    CONSUMER_WORKLOAD_REBALANCE_DURATION = "consumers-workload." + KAFKA_CLUSTER + ".selective.rebalance-duration",
+
     CONSUMER_EXECUTOR_DURATION = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".duration",
             CONSUMER_EXECUTOR_WAITING = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".waiting";
-
 }

@@ -47,10 +47,10 @@ import pl.allegro.tech.hermes.consumers.subscription.cache.zookeeper.ZookeeperSu
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.workTracking.SupervisorController;
-import pl.allegro.tech.hermes.consumers.supervisor.workTracking.SupervisorControllerFactory;
-import pl.allegro.tech.hermes.consumers.supervisor.workTracking.WorkTracker;
-import pl.allegro.tech.hermes.consumers.supervisor.workTracking.WorkTrackerFactory;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorControllerFactory;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTrackerFactory;
 
 import javax.inject.Singleton;
 import javax.jms.Message;
