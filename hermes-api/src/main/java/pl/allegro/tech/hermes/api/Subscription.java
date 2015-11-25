@@ -167,6 +167,11 @@ public class Subscription {
         return contact;
     }
 
+    @JsonIgnore
+    public boolean isActive() {
+        return state == State.ACTIVE || state == State.PENDING;
+    }
+
     public Subscription anonymizePassword() {
         if (getEndpoint().containsCredentials()) {
             return Builder.subscription().withName(this.getName())

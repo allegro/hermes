@@ -1,22 +1,19 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workTracking;
+package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import com.google.common.base.Joiner;
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class SubscriptionAssignmentPathSerializer {
     private final String prefix;
-    private final String supervisorId;
 
-    public SubscriptionAssignmentPathSerializer(String prefix, String supervisorId) {
+    public SubscriptionAssignmentPathSerializer(String prefix) {
         this.prefix = prefix;
-        this.supervisorId = supervisorId;
     }
 
-    public String serialize(Subscription subscription) {
-        return Joiner.on("/").join(prefix, subscription.toSubscriptionName(), supervisorId);
+    public String serialize(SubscriptionName subscriptionName, String supervisorId) {
+        return Joiner.on("/").join(prefix, subscriptionName, supervisorId);
     }
 
     public SubscriptionAssignment deserialize(String path) {

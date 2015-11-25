@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integration.env;
+package pl.allegro.tech.hermes.test.helper.config;
 
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;

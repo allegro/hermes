@@ -8,10 +8,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.*;
-import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
+import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
@@ -19,9 +21,6 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
-import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
 import java.util.concurrent.CountDownLatch;
@@ -33,7 +32,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
-import static pl.allegro.tech.hermes.api.Subscription.State.*;
+import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
+import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
+import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
@@ -71,9 +72,6 @@ public class ConsumersSupervisorTest {
     private MessageCommitter messageCommitter;
 
     @Mock
-    private ZookeeperAdminCache adminCache;
-
-    @Mock
     private SubscriptionsCache subscriptionsCache;
 
     @Mock
@@ -96,7 +94,7 @@ public class ConsumersSupervisorTest {
         consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository, topicRepository,
                 subscriptionOffsetChangeIndicator, executorService, consumerFactory,
                 Lists.newArrayList(messageCommitter), Lists.newArrayList(offsetsStorage), hermesMetrics,
-                adminCache, undeliveredMessageLogPersister);
+                undeliveredMessageLogPersister);
     }
 
     @Test
@@ -187,7 +185,7 @@ public class ConsumersSupervisorTest {
         when(consumer.getSubscription()).thenReturn(actualSubscription);
 
         //when
-        consumersSupervisor.onRetransmissionStarts(subscription);
+        consumersSupervisor.retransmit(subscription);
 
         //then
         verify(consumer).stopConsuming();

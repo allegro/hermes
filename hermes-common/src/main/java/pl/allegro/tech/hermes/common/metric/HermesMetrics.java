@@ -314,5 +314,17 @@ public class HermesMetrics {
                 .build();
         return metricRegistry.meter(pathCompiler.compile(Meters.CONSUMER_ERRORS_OTHER, pathContext));
     }
+
+    public Timer consumersWorkloadRebalanceDurationTimer(String kafkaCluster) {
+        PathContext pathContext = pathContext().withKafkaCluster(kafkaCluster).build();
+        return metricRegistry.timer(pathCompiler.compile(Timers.CONSUMER_WORKLOAD_REBALANCE_DURATION, pathContext));
+    }
+
+    public void reportConsumersWorkloadStats(String kafkaCluster, int missingResources, int deletedAssignmentsCount, int createdAssignmentsCount) {
+        PathContext pathContext = pathContext().withKafkaCluster(kafkaCluster).build();
+        metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_MISSING_RESOURCES, pathContext)).update(missingResources);
+        metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_CREATED_ASSIGNMENTS, pathContext)).update(createdAssignmentsCount);
+        metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_DELETED_ASSIGNMENTS, pathContext)).update(deletedAssignmentsCount);
+    }
 }
 
