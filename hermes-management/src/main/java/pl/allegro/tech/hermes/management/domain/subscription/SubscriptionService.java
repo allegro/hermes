@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Component
 public class SubscriptionService {
@@ -50,6 +51,10 @@ public class SubscriptionService {
 
     public List<String> listTrackedSubscriptionNames(TopicName topicName) {
         return subscriptionRepository.listTrackedSubscriptionNames(topicName);
+    }
+
+    public List<String> listFilteredSubscriptionNames(TopicName topicName, Predicate<Subscription> filter) {
+        return subscriptionRepository.listFilteredSubscriptionNames(topicName, filter);
     }
 
     public List<Subscription> listSubscriptions(TopicName topicName) {
