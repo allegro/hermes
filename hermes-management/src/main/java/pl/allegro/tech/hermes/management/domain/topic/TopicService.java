@@ -100,6 +100,10 @@ public class TopicService {
         }
     }
 
+    public void touchTopic(TopicName topicName) {
+        topicRepository.touchTopic(topicName);
+    }
+
     public List<String> listQualifiedTopicNames(String groupName) {
         return topicRepository.listTopicNames(groupName).stream()
                 .map(topicName -> new TopicName(groupName, topicName).qualifiedName())

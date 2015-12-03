@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.domain.query.QueryParser;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -29,6 +30,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,18 +48,21 @@ public class SubscriptionsEndpoint {
     private final ApiPreconditions preconditions;
     private final MultiDCAwareService multiDCAwareService;
     private final TimeFormatter timeFormatter;
+    private final QueryParser queryParser;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
                                  TopicService topicService,
                                  ApiPreconditions preconditions,
                                  MultiDCAwareService multiDCAwareService,
-                                 TimeFormatter timeFormatter) {
+                                 TimeFormatter timeFormatter,
+                                 QueryParser queryParser) {
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
         this.preconditions = preconditions;
         this.multiDCAwareService = multiDCAwareService;
         this.timeFormatter = timeFormatter;
+        this.queryParser = queryParser;
     }
 
     @GET
@@ -67,7 +72,6 @@ public class SubscriptionsEndpoint {
             @PathParam("topicName") String qualifiedTopicName,
             @DefaultValue("false") @QueryParam("tracked") boolean tracked) {
 
-
         return tracked?
                 subscriptionService.listTrackedSubscriptionNames(fromQualifiedName(qualifiedTopicName)) :
                 subscriptionService.listSubscriptionNames(fromQualifiedName(qualifiedTopicName));
@@ -75,7 +79,22 @@ public class SubscriptionsEndpoint {
 
     @POST
     @Consumes(APPLICATION_JSON)
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.ADMIN})
+    @Produces(APPLICATION_JSON)
+    @Path("/query")
+    @ApiOperation(value = "Query subscriptions", response = List.class, httpMethod = HttpMethod.POST)
+    public List<String> queryList(
+            @PathParam("topicName") String qualifiedTopicName,
+            String query) throws IOException {
+
+        return subscriptionService.listFilteredSubscriptionNames(
+                fromQualifiedName(qualifiedTopicName),
+                queryParser.parse(query, Subscription.class).toPredicate()
+        );
+    }
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @RolesAllowed({Roles.ANY})
     @ApiOperation(value = "Create subscription", httpMethod = HttpMethod.POST)
     public Response create(@PathParam("topicName") String qualifiedTopicName, Subscription subscription) {
         preconditions.checkConstraints(subscription);
@@ -140,7 +159,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}/state")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription state", httpMethod = HttpMethod.PUT)
     public Response updateState(@PathParam("topicName") String qualifiedTopicName,
                                 @PathParam("subscriptionName") String subscriptionName,
@@ -151,7 +170,7 @@ public class SubscriptionsEndpoint {
 
     @DELETE
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Remove subscription", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionId) {
@@ -162,7 +181,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionName,
@@ -177,7 +196,7 @@ public class SubscriptionsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/retransmission")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription offset", httpMethod = HttpMethod.PUT)
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,

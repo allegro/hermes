@@ -74,6 +74,35 @@ consumer.offset.monitor.enabled                  report difference between curre
 consumer.status.health.port                      expose status message (ok/not ok) on this port                           8000
 ================================================ ======================================================================== =================
 
+
+Distributed work balancing
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These options configure algorithm used to determine which consumer node should handle which active subscriptions.
+
+Available algorithms
+ * mirror - simplest mode which assumes that nodes are handling all active subscriptions (nodes are mirroring each other)
+ * legacy.mirror - legacy version of mirroring mode, does not use any additional zk structures
+ * selective - leader-based selective algorithm which attempts to spread work evenly among all possible nodes
+
+Main principles of *selective* algorithm:
+ 1) subscriptions doesn't need to be handled by all consumer nodes in a cluster (only N number of consumers is enough)
+ 2) consumer nodes should be equally loaded but don't need to be fully loaded all the time
+ 3) single consumer node shouldn't have more responsibility that it can handle, if we have limited resources in a cluster we should fully utilize what we have and select only subset of subscriptions to handle
+
+
+Configuration
+"""""""""""""
+================================================ ======================================================================================== ================= ================================
+Property                                         Description                                                                              Algorithm         Default value
+================================================ ======================================================================================== ================= ================================
+consumer.workload.algorithm                      algorithm used to determine which consumer node should handle which active subscriptions                   legacy.mirror
+consumer.workload.node.id                        identifies particular consumer node in a cluster environment                             mirror,selective  hostname with randomized suffix
+consumer.workload.rebalance.interval.seconds     interval in seconds between rebalancing attempts                                         selective         30
+consumer.workload.consumers.per.subscription     number of consumers that should handle single active subscription                        selective         2
+consumer.workload.max.subscriptions.per.consumer maximum number of subscriptions that single consumer node can handle                     selective         ?
+================================================ ======================================================================================== ================= ================================
+
 HTTP sender
 ^^^^^^^^^^^
 

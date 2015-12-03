@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.Objects;
+
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class SubscriptionName {
@@ -39,5 +41,19 @@ public class SubscriptionName {
     @JsonIgnore
     public String getId() {
         return Subscription.getId(getTopicName(), getName());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SubscriptionName that = (SubscriptionName) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(topicName, that.topicName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, topicName);
     }
 }

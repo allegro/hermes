@@ -11,9 +11,11 @@ import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Function;
 
 public class Hermes {
 
@@ -38,7 +40,12 @@ public class Hermes {
     }
 
     public Hermes withAuthToken(String authToken) {
-        this.filters.add(new OAuth2AuthenticationFeature(authToken));
+        this.filters.add(new OAuth2AuthenticationFeature(clientRequestContext -> authToken));
+        return this;
+    }
+
+    public Hermes withAuthToken(Function<ClientRequestContext, String> authTokenSupplier) {
+        this.filters.add(new OAuth2AuthenticationFeature(authTokenSupplier));
         return this;
     }
 

@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -18,10 +19,13 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepo
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
+import java.util.List;
+
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
@@ -75,7 +79,7 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
         waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
 
         // when
-        subscriptionRepository.updateSubscriptionState(topicName, SUB_NAME, Subscription.State.SUSPENDED);
+        subscriptionRepository.updateSubscriptionState(topicName, SUB_NAME, SUSPENDED);
 
         // then
         assertThat(callback.getChangeLatch().await(5000, MILLISECONDS)).isTrue();
@@ -93,6 +97,36 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
 
         // then
         assertThat(callback.getRemoveLatch().await(5000, MILLISECONDS)).isTrue();
+    }
+
+    @Test
+    public void shouldListAllSubscriptionNames() {
+        // given
+        TopicName topicName = createTopic("new.topic");
+        Subscription s = subscription().withTopicName(topicName).withName(SUB_NAME).build();
+        subscriptionRepository.createSubscription(s);
+        waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
+
+        // when
+        List<SubscriptionName> names = subscriptionCache.listActiveSubscriptionNames();
+
+        // then
+        assertThat(names).contains(s.toSubscriptionName());
+    }
+
+    @Test
+    public void shouldOnlyListActiveSubscriptionNames() {
+        // given
+        TopicName topicName = createTopic("good.topic");
+        Subscription s = subscription().withTopicName(topicName).withName(SUB_NAME).withState(SUSPENDED).build();
+        subscriptionRepository.createSubscription(s);
+        waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
+
+        // when
+        List<SubscriptionName> names = subscriptionCache.listActiveSubscriptionNames();
+
+        // then
+        assertThat(names).doesNotContain(s.toSubscriptionName());
     }
 
     private void waitUntilSubscriptionIsCreated(final TopicName topicName, final String subscriptionName) {

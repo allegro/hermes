@@ -113,6 +113,7 @@ There are 4 roles defined on management endpoints, listed in ``Roles`` class:
 * **ADMIN** - has access to all operations on all entities, can create new Groups
 * **GROUP_OWNER** - has access to all operations in scope of owned group (including subscription management)
 * **SUBSCRIPTION_OWNER** - has access to all operations in scope of owned subscriptions, potentially accross multiple groups
+* **ANY** - any logged in user can create a new subscription
 
 Default implementation of authorization filter does not enforce any access restrictions.
 

@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository implements SubscriptionRepository {
@@ -119,6 +120,14 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     public List<String> listTrackedSubscriptionNames(TopicName topicName) {
         return listSubscriptions(topicName).stream()
                 .filter(Subscription::isTrackingEnabled)
+                .map(Subscription::getName)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> listFilteredSubscriptionNames(TopicName topicName, Predicate<Subscription> filter) {
+        return listSubscriptions(topicName).stream()
+                .filter(filter)
                 .map(Subscription::getName)
                 .collect(Collectors.toList());
     }

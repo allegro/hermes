@@ -22,7 +22,16 @@ dependencies {
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: versions.jersey
 
-    compile group: 'org.apache.avro', name: 'avro', version: '1.7.7'
+    /**
+     * Patched version contains two fixes:
+     *
+     * https://issues.apache.org/jira/browse/AVRO-1582
+     * https://issues.apache.org/jira/browse/AVRO-1717
+     *
+     * They improve conversion of json to avro.
+     * Patched version will be used until mentioned fixes are released in official version of avro.
+     */
+    compile files('./lib/avro-1.8.0-json2avroPatch-SNAPSHOT.jar')
 
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.9'

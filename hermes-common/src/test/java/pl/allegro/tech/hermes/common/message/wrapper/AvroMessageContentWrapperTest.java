@@ -7,6 +7,7 @@ import org.junit.Test;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,7 +37,7 @@ public class AvroMessageContentWrapperTest {
     @Test
     public void shouldWrapAndUnwrapAvroMessageWithMetadata() throws IOException {
         // when
-        byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema());
+        byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema(), Collections.emptyMap());
         UnwrappedMessageContent unwrappedMessageContent = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getSchema());
 
         // then
@@ -49,7 +50,7 @@ public class AvroMessageContentWrapperTest {
     @SuppressWarnings("unchecked")
     public void shouldWrappedMessageContainsMetadata() throws IOException {
         // when
-        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema());
+        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema(), Collections.emptyMap());
 
         // then
         GenericRecord messageWithMetadata = bytesToRecord(wrappedMessage, avroUser.getSchema());

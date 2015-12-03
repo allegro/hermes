@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
@@ -41,7 +42,7 @@ public class KafkaMessageReceiverTest {
     private static final Topic TOPIC = topic().withContentType(Topic.ContentType.JSON).withName("group.topic1").build();
     private static final Integer KAFKA_STREAM_COUNT = 1;
     private static final String CONTENT = "{\"test\":\"a\"}";
-    private static final MessageMetadata METADATA = new MessageMetadata(1L, "unique");
+    private static final MessageMetadata METADATA = new MessageMetadata(1L, "unique", ImmutableMap.of());
     private static final String WRAPPED_MESSAGE_CONTENT =
             format("{\"_w\":true,\"metadata\":{\"id\":\"%s\",\"timestamp\":%d},\"%s\":%s}", METADATA.getId(), METADATA.getTimestamp(), "message", CONTENT);
 

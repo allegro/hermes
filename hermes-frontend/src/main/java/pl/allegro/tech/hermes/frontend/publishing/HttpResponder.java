@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import static java.lang.String.format;
 import static javax.servlet.http.HttpServletResponse.SC_ACCEPTED;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
+import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorCode.TIMEOUT;
 import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
@@ -71,7 +72,7 @@ public class HttpResponder {
     }
 
     public void badRequest(Throwable throwable) {
-        completeError(new ErrorDescription(throwable.getMessage(), VALIDATION_ERROR));
+        completeError(new ErrorDescription(throwable.getMessage() + " Cause: " + getRootCauseMessage(throwable), VALIDATION_ERROR));
     }
 
     public void internalError(Throwable throwable, String message) {
