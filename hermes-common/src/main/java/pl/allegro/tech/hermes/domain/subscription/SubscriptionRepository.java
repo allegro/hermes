@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public interface SubscriptionRepository {
 
@@ -29,4 +30,6 @@ public interface SubscriptionRepository {
     List<Subscription> listSubscriptions(TopicName topicName);
 
     List<String> listTrackedSubscriptionNames(TopicName topicName);
+
+    List<String> listFilteredSubscriptionNames(TopicName topicName, Predicate<Subscription> query);
 }
