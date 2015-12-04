@@ -3,9 +3,9 @@ package pl.allegro.tech.hermes.domain.subscription;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.query.Query;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 public interface SubscriptionRepository {
 
@@ -31,5 +31,5 @@ public interface SubscriptionRepository {
 
     List<String> listTrackedSubscriptionNames(TopicName topicName);
 
-    List<String> listFilteredSubscriptionNames(TopicName topicName, Predicate<Subscription> query);
+    List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query);
 }

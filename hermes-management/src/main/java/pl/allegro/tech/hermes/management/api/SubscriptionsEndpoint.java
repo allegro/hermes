@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
-import pl.allegro.tech.hermes.management.infrastructure.query.QueryParser;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -83,10 +82,7 @@ public class SubscriptionsEndpoint {
             @PathParam("topicName") String qualifiedTopicName,
             String query) throws IOException {
 
-        return subscriptionService.listFilteredSubscriptionNames(
-                fromQualifiedName(qualifiedTopicName),
-                query
-        );
+        return subscriptionService.listFilteredSubscriptionNames(fromQualifiedName(qualifiedTopicName), query);
     }
 
     @POST

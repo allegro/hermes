@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
-import pl.allegro.tech.hermes.management.infrastructure.query.QueryParser;
+import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.List;
@@ -60,7 +60,7 @@ public class SubscriptionService {
     public List<String> listFilteredSubscriptionNames(TopicName topicName, String query) {
         return subscriptionRepository.listFilteredSubscriptionNames(
                 topicName,
-                queryParser.parse(query, Subscription.class).toPredicate()
+                queryParser.parse(query, Subscription.class)
         );
     }
 

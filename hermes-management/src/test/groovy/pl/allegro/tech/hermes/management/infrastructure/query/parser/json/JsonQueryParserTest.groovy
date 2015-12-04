@@ -1,9 +1,10 @@
-package pl.allegro.tech.hermes.management.infrastructure.query.json
+package pl.allegro.tech.hermes.management.infrastructure.query.parser.json
+
 import com.fasterxml.jackson.databind.ObjectMapper
-import pl.allegro.tech.hermes.management.infrastructure.query.ParseException
-import pl.allegro.tech.hermes.management.infrastructure.query.Query
-import pl.allegro.tech.hermes.management.infrastructure.query.QueryParser
+import pl.allegro.tech.hermes.common.query.Query
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.MatcherException
+import pl.allegro.tech.hermes.management.infrastructure.query.parser.ParseException
+import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -99,7 +100,7 @@ class JsonQueryParserTest extends Specification {
                 .collect(Collectors.<SimpleObject>toList())
 
         then:
-        result.isEmpty()
+        result.empty
     }
 
     def "should parse query and match single result"() {
@@ -130,6 +131,110 @@ class JsonQueryParserTest extends Specification {
         then:
         result.size() == 1
         result.first().field == 'green'
+    }
+
+    def "should parse query with ne operator and match multiple results"() {
+
+        given:
+        def query = "{\"query\": {\"field\": {\"ne\": \"green\"}}}"
+
+        when:
+        def result = parse(query, SimpleObject)
+                .filter(colors)
+                .collect(Collectors.<SimpleObject>toList())
+
+        then:
+        result.size() == colors.size() - 1
+        result.count {it.field == 'green'} == 0
+    }
+
+    def "should parse query with not operator and match multiple results"() {
+
+        given:
+        def query = "{\"query\": {\"not\": {\"field\": \"green\"}}}"
+
+        when:
+        def result = parse(query, SimpleObject)
+                .filter(colors)
+                .collect(Collectors.<SimpleObject>toList())
+
+        then:
+        result.size() == colors.size() - 1
+        result.count {it.field == 'green'} == 0
+    }
+
+    def "should parse query with not eq operator and match multiple results"() {
+
+        given:
+        def query = "{\"query\": {\"not\": {\"field\": {\"eq\": \"green\"}}}}"
+
+        when:
+        def result = parse(query, SimpleObject)
+                .filter(colors)
+                .collect(Collectors.<SimpleObject>toList())
+
+        then:
+        result.size() == colors.size() - 1
+        result.count {it.field == 'green'} == 0
+    }
+
+    def "should parse query with in operator and match single result"() {
+
+        given:
+        def query = "{\"query\": {\"field\": {\"in\": [\"green\"]}}}"
+
+        when:
+        def result = parse(query, SimpleObject)
+                .filter(colors)
+                .collect(Collectors.<SimpleObject>toList())
+
+        then:
+        result.size() == 1
+        result.first().field == 'green'
+    }
+
+    def "should parse query with in operator and match multiple results"() {
+
+        given:
+        def query = "{\"query\": {\"field\": {\"in\": [\"red\"]}}}"
+
+        when:
+        def result = parse(query, SimpleObject)
+                .filter(colors)
+                .collect(Collectors.<SimpleObject>toList())
+
+        then:
+        result.size() == 3
+        result*.field == ['red'] * 3
+    }
+
+    def "should parse query with in operator and not match results"() {
+
+        given:
+        def query = "{\"query\": {\"field\": {\"in\": [\"black\"]}}}"
+
+        when:
+        def result = parse(query, SimpleObject)
+                .filter(colors)
+                .collect(Collectors.<SimpleObject>toList())
+
+        then:
+        result.empty
+    }
+
+    def "should parse query with in operator and match all results"() {
+
+        given:
+        def query = "{\"query\": {\"field\": {\"in\": [\"red\", \"blue\", \"green\"]}}}"
+
+        when:
+        def result = parse(query, SimpleObject)
+                .filter(colors)
+                .collect(Collectors.<SimpleObject>toList())
+
+        then:
+        result == colors
+        result.size() == colors.size()
     }
 
     def "should parse query and match nested object"() {

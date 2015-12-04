@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.infrastructure.query;
+package pl.allegro.tech.hermes.management.infrastructure.query.parser;
 
 public class ParseException extends RuntimeException {
 

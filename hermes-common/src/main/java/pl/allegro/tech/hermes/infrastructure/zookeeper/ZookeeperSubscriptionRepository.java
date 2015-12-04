@@ -9,13 +9,13 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository implements SubscriptionRepository {
@@ -125,9 +125,8 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     }
 
     @Override
-    public List<String> listFilteredSubscriptionNames(TopicName topicName, Predicate<Subscription> filter) {
-        return listSubscriptions(topicName).stream()
-                .filter(filter)
+    public List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query) {
+        return query.filter(listSubscriptions(topicName).stream())
                 .map(Subscription::getName)
                 .collect(Collectors.toList());
     }

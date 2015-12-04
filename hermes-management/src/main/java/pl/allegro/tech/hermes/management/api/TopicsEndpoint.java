@@ -60,14 +60,6 @@ public class TopicsEndpoint {
         return tracked? listTracked(groupName) : listNames(groupName);
     }
 
-    public List<String> listTracked(String groupName) {
-        return isNullOrEmpty(groupName) ? topicService.listTrackedTopicNames() : topicService.listTrackedTopicNames(groupName);
-    }
-
-    public List<String> listNames(String groupName) {
-        return isNullOrEmpty(groupName) ? topicService.listQualifiedTopicNames() : topicService.listQualifiedTopicNames(groupName);
-    }
-
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
@@ -135,4 +127,11 @@ public class TopicsEndpoint {
         }
     }
 
+    private List<String> listTracked(String groupName) {
+        return isNullOrEmpty(groupName) ? topicService.listTrackedTopicNames() : topicService.listTrackedTopicNames(groupName);
+    }
+
+    private List<String> listNames(String groupName) {
+        return isNullOrEmpty(groupName) ? topicService.listQualifiedTopicNames() : topicService.listQualifiedTopicNames(groupName);
+    }
 }

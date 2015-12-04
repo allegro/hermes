@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.management.api.auth.AllowAllSecurityContextProvider;
 import pl.allegro.tech.hermes.management.api.auth.SecurityContextProvider;
-import pl.allegro.tech.hermes.management.infrastructure.query.QueryParser;
-import pl.allegro.tech.hermes.management.infrastructure.query.json.JsonQueryParser;
+import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser;
+import pl.allegro.tech.hermes.management.infrastructure.query.parser.json.JsonQueryParser;
 
 import java.util.Optional;
 
