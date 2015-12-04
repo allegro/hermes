@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.api.Topic.ContentType.*;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class TopicManagementTest extends IntegrationTest {
@@ -127,6 +128,52 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(tracked).contains("mixedTrackedGroup.trackedTopic")
                            .doesNotContain("mixedTrackedGroup.untrackedTopic");
+    }
+
+    @Test
+    public void shouldReturnTrackedTopicsWithAvroContentType() {
+        // given
+        operations.buildTopic(topic().withName("avroGroup", "avroTopic").withContentType(AVRO).withTrackingEnabled(false).build());
+        operations.buildTopic(topic().withName("jsonGroup", "jsonTopic").withContentType(JSON).withTrackingEnabled(false).build());
+        operations.buildTopic(topic().withName("avroGroup", "avroTrackedTopic").withContentType(AVRO).withTrackingEnabled(true).build());
+        operations.buildTopic(topic().withName("jsonGroup", "jsonTrackedTopic").withContentType(JSON).withTrackingEnabled(true).build());
+
+        // and
+        String query = "{\"query\": {\"trackingEnabled\": \"true\", \"contentType\": \"AVRO\"}}";
+
+        // when
+        List<String> tracked = management.topic().queryList("", query);
+
+        // then
+        assertThat(tracked).contains("avroGroup.avroTrackedTopic")
+                .doesNotContain(
+                        "avroGroup.avroTopic",
+                        "jsonGroup.jsonTopic",
+                        "jsonGroup.jsonTrackedTopic"
+                );
+    }
+
+    @Test
+    public void shouldReturnTrackedTopicsWithAvroContentTypeForGivenGroup() {
+        // given
+        operations.buildTopic(topic().withName("mixedTrackedGroup", "avroTopic").withContentType(AVRO).withTrackingEnabled(false).build());
+        operations.buildTopic(topic().withName("mixedTrackedGroup", "jsonTopic").withContentType(JSON).withTrackingEnabled(false).build());
+        operations.buildTopic(topic().withName("mixedTrackedGroup", "avroTrackedTopic").withContentType(AVRO).withTrackingEnabled(true).build());
+        operations.buildTopic(topic().withName("mixedTrackedGroup", "jsonTrackedTopic").withContentType(JSON).withTrackingEnabled(true).build());
+
+        // and
+        String query = "{\"query\": {\"trackingEnabled\": \"true\", \"contentType\": \"AVRO\"}}";
+
+        // when
+        List<String> tracked = management.topic().queryList("mixedTrackedGroup", query);
+
+        // then
+        assertThat(tracked).contains("mixedTrackedGroup.avroTrackedTopic")
+                .doesNotContain(
+                        "mixedTrackedGroup.avroTopic",
+                        "mixedTrackedGroup.jsonTopic",
+                        "mixedTrackedGroup.jsonTrackedTopic"
+                );
     }
 
     @Test

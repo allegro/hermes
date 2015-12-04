@@ -7,11 +7,13 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
+import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser;
 
 import javax.inject.Inject;
 import java.time.Clock;
@@ -27,6 +29,7 @@ public class TopicService {
     private final boolean allowRemoval;
     private final TopicRepository topicRepository;
     private final GroupService groupService;
+    private final QueryParser queryParser;
 
     private final TopicMetricsRepository metricRepository;
     private final MultiDCAwareService multiDCAwareService;
@@ -38,6 +41,7 @@ public class TopicService {
     public TopicService(MultiDCAwareService multiDCAwareService,
                         TopicRepository topicRepository,
                         GroupService groupService,
+                        QueryParser queryParser,
                         TopicProperties topicProperties,
                         TopicMetricsRepository metricRepository,
                         TopicValidator topicValidator,
@@ -47,6 +51,7 @@ public class TopicService {
         this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
         this.groupService = groupService;
+        this.queryParser = queryParser;
         this.metricRepository = metricRepository;
         this.topicValidator = topicValidator;
         this.topicContentTypeMigrationService = topicContentTypeMigrationService;
@@ -146,6 +151,24 @@ public class TopicService {
     public List<String> listTrackedTopicNames(String groupName) {
         return listTopics(groupName).stream()
                 .filter(Topic::isTrackingEnabled)
+                .map(Topic::getQualifiedName)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> listFilteredTopicNames(String query) {
+
+        Query<Topic> topicQuery = queryParser.parse(query, Topic.class);
+        return topicQuery.filter(groupService.listGroups().stream()
+                .map(topicRepository::listTopics)
+                .flatMap(List::stream))
+                .map(Topic::getQualifiedName)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> listFilteredTopicNames(String groupName, String query) {
+
+        Query<Topic> topicQuery = queryParser.parse(query, Topic.class);
+        return topicQuery.filter(listTopics(groupName).stream())
                 .map(Topic::getQualifiedName)
                 .collect(Collectors.toList());
     }

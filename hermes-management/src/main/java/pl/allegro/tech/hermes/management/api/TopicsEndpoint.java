@@ -63,6 +63,20 @@ public class TopicsEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @Path("/query")
+    @ApiOperation(value = "Queries topics from group", response = List.class, httpMethod = HttpMethod.POST)
+    public List<String> queryList(
+            @DefaultValue("") @QueryParam("groupName") String groupName,
+            String query) {
+
+        return isNullOrEmpty(groupName) ?
+                topicService.listFilteredTopicNames(query) :
+                topicService.listFilteredTopicNames(groupName, query);
+    }
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     @RolesAllowed({ Roles.GROUP_OWNER, Roles.ADMIN })
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
     public Response create(Topic topic) {

@@ -63,8 +63,10 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
         }
         if (node.isTextual()) {
             return node.asText();
-        } else if (node.isNumber()) {
+        } else if (node.isInt()) {
             return node.asInt();
+        } else if(node.isDouble()) {
+            return node.asDouble();
         }
         return null;
     }

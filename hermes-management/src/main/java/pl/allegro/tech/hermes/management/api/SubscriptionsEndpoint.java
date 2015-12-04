@@ -63,7 +63,7 @@ public class SubscriptionsEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
-    @ApiOperation(value = "List subscriptions", response = List.class, httpMethod = HttpMethod.GET)
+    @ApiOperation(value = "Lists subscriptions", response = List.class, httpMethod = HttpMethod.GET)
     public List<String> list(
             @PathParam("topicName") String qualifiedTopicName,
             @DefaultValue("false") @QueryParam("tracked") boolean tracked) {
@@ -77,7 +77,7 @@ public class SubscriptionsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/query")
-    @ApiOperation(value = "Query subscriptions", response = List.class, httpMethod = HttpMethod.POST)
+    @ApiOperation(value = "Queries subscriptions", response = List.class, httpMethod = HttpMethod.POST)
     public List<String> queryList(
             @PathParam("topicName") String qualifiedTopicName,
             String query) throws IOException {
