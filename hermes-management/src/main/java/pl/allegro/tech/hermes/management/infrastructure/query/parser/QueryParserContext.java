@@ -9,7 +9,7 @@ public interface QueryParserContext {
 
     <T> Matcher<T> parseNode(JsonNode node);
 
-    <T> List<Matcher<T>> parseNodes(JsonNode node);
+    <T> List<Matcher<T>> parseArrayNodes(JsonNode node);
 
     Object parseValue(JsonNode node);
 

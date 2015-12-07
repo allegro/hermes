@@ -18,13 +18,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.StreamSupport.stream;
 import static pl.allegro.tech.hermes.management.infrastructure.query.MatcherQuery.fromMatcher;
+import static pl.allegro.tech.hermes.management.infrastructure.utils.Iterators.stream;
 
 public class JsonQueryParser implements QueryParser, QueryParserContext {
 
@@ -49,7 +48,7 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
 
     @Override
     public <T> Query<T> parse(String query, Class<T> type) {
-        return this.parse(new ByteArrayInputStream(query.getBytes()), type);
+        return parse(new ByteArrayInputStream(query.getBytes()), type);
     }
 
     @Override
@@ -59,8 +58,11 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
     }
 
     @Override
-    public <T> List<Matcher<T>> parseNodes(JsonNode node) {
-        return parseAllAttributes(node);
+    public <T> List<Matcher<T>> parseArrayNodes(JsonNode node) {
+        if(!node.isArray()) {
+            throw new ParseException("Element value was expected to be an array");
+        }
+        return parseObjectArray(node);
     }
 
     @Override
@@ -95,8 +97,12 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
 
     private <T> Query<T> parseQuery(JsonNode node) {
         return fromMatcher(
-                new AndMatcher<>(parseNodes(node))
+                parseCompoundObject(node)
         );
+    }
+
+    private <T> Matcher<T> parseCompoundObject(JsonNode node) {
+        return new AndMatcher<>(parseAllAttributes(node));
     }
 
     private <T> Matcher<T> parseSingleAttribute(String key, JsonNode node) {
@@ -110,14 +116,9 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
     }
 
     private <T> List<Matcher<T>> parseAllAttributes(JsonNode node) {
-        return stream(
-                Spliterators.spliteratorUnknownSize(node.fields(), Spliterator.NONNULL), false)
-                .map(new Function<Map.Entry<String, JsonNode>, Matcher<T>>() {
-                    @Override
-                    public Matcher<T> apply(Map.Entry<String, JsonNode> entry) {
-                        return parseSingleAttribute(entry.getKey(), entry.getValue());
-                    }
-                })
+        return stream(node.fields())
+                .map((Function<Map.Entry<String, JsonNode>, Matcher<T>>)
+                        entry -> parseSingleAttribute(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
 
@@ -128,6 +129,12 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
     private <T> Matcher<T> parseObject(String key, JsonNode node) {
         Map.Entry<String, JsonNode> entry = singleNode(node);
         return MatcherFactories.getMatcherFactory(entry.getKey()).createMatcher(key, entry.getValue(), this);
+    }
+
+    private <T> List<Matcher<T>> parseObjectArray(JsonNode node) {
+        return stream(node.iterator())
+                .map((Function<JsonNode, Matcher<T>>) this::parseCompoundObject)
+                .collect(Collectors.toList());
     }
 
     private <T> Matcher<T> parseAttribute(String key, JsonNode node) {

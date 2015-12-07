@@ -69,13 +69,13 @@ public class MatcherFactories {
         FACTORIES.put(AND, new MatcherFactory() {
             @Override
             public <T> Matcher<T> createMatcher(String path, JsonNode node, QueryParserContext parser) {
-                return new AndMatcher<>(parser.parseNodes(node));
+                return new AndMatcher<>(parser.parseArrayNodes(node));
             }
         });
         FACTORIES.put(OR, new MatcherFactory() {
             @Override
             public <T> Matcher<T> createMatcher(String path, JsonNode node, QueryParserContext parser) {
-                return new OrMatcher<>(parser.parseNodes(node));
+                return new OrMatcher<>(parser.parseArrayNodes(node));
             }
         });
     }

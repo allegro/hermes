@@ -267,6 +267,89 @@ class JsonQueryParserTest extends Specification {
         result*.state == [State.DELETED] * 2
     }
 
+    def "should parse and query and match results"() {
+
+        given:
+        def query = "{\"query\": {\"and\": [{\"state\": \"DELETED\"}]}}"
+
+        when:
+        def result = parse(query, StatefulObject)
+                .filter(states)
+                .collect(Collectors.<StatefulObject>toList())
+
+        then:
+        result.size() == 2
+        result*.state == [State.DELETED] * 2
+    }
+
+    def "should parse and query and match no results"() {
+
+        given:
+        def query = "{\"query\": {\"and\": [{\"state\": \"ACTIVE\"}, {\"state\": \"DELETED\"}]}}"
+
+        when:
+        def result = parse(query, StatefulObject)
+                .filter(states)
+                .collect(Collectors.<StatefulObject>toList())
+
+        then:
+        result.empty
+    }
+
+    def "should fail to parse and query"() {
+
+        given:
+        def query = "{\"query\": {\"and\": {{\"state\": \"DELETED\"}}}}"
+
+        when:
+        parse(query, StatefulObject)
+
+        then:
+        thrown(ParseException.class)
+    }
+
+    def "should parse or query and match results"() {
+
+        given:
+        def query = "{\"query\": {\"or\": [{\"state\": \"DELETED\"}]}}"
+
+        when:
+        def result = parse(query, StatefulObject)
+                .filter(states)
+                .collect(Collectors.<StatefulObject>toList())
+
+        then:
+        result.size() == 2
+        result*.state == [State.DELETED] * 2
+    }
+
+    def "should parse or query and match multiple"() {
+
+        given:
+        def query = "{\"query\": {\"or\": [{\"state\": \"ACTIVE\"}, {\"state\": \"DELETED\"}]}}"
+
+        when:
+        def result = parse(query, StatefulObject)
+                .filter(states)
+                .collect(Collectors.<StatefulObject>toList())
+
+        then:
+        result.size() == states.size()
+        result == states
+    }
+
+    def "should fail to parse or query"() {
+
+        given:
+        def query = "{\"query\": {\"or\": {{\"state\": \"ACTIVE\"}, {\"state\": \"DELETED\"}}}}"
+
+        when:
+        parse(query, StatefulObject)
+
+        then:
+        thrown(ParseException)
+    }
+
     private <T> Query<T> parse(String query, Class<T> object) {
         queryParser.parse(query, object)
     }
