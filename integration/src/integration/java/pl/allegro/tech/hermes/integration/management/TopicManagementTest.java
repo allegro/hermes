@@ -143,4 +143,23 @@ public class TopicManagementTest extends IntegrationTest {
             assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
         });
     }
+
+    @Test
+    public void shouldCreateTopicEvenIfExistsInBrokers() {
+        // given
+        String groupName = "existingTopicFromExternalBroker";
+        String topicName = "topic";
+        String qualifiedTopicName = groupName + "." + topicName;
+
+        brokerOperations.createTopic(qualifiedTopicName);
+        operations.createGroup(groupName);
+
+        // when
+        Response response = management.topic().create(
+                topic().withName(groupName, topicName).applyDefaults().build());
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        Assertions.assertThat(management.topic().get(qualifiedTopicName)).isNotNull();
+    }
 }
