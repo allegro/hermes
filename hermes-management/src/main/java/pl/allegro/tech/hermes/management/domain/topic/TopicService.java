@@ -57,6 +57,15 @@ public class TopicService {
         topicValidator.ensureCreatedTopicIsValid(topic);
         topicRepository.createTopic(topic);
 
+        if (!multiDCAwareService.topicExists(topic)) {
+            createTopicInBrokers(topic);
+        } else {
+            logger.info(String.format("Skipping creating topic %s on brokers, topic already exists", topic.getQualifiedName()));
+        }
+
+    }
+
+    private void createTopicInBrokers(Topic topic) {
         try {
             multiDCAwareService.manageTopic(brokerTopicManagement ->
                 brokerTopicManagement.createTopic(topic)
@@ -66,7 +75,7 @@ public class TopicService {
                     String.format("Could not create topic %s, rollback topic creation.", topic.getQualifiedName()),
                     exception
             );
-            topicRepository.removeTopic(topic.getName());
+            multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
         }
     }
 

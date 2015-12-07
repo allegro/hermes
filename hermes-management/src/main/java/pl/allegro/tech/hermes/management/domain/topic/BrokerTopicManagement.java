@@ -10,4 +10,6 @@ public interface BrokerTopicManagement {
 
     void updateTopic(Topic topic);
 
+    boolean topicExists(Topic topic);
+
 }

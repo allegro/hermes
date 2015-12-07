@@ -48,4 +48,8 @@ public class MultiDCAwareService {
     public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
         return clusters.stream().allMatch(cluster -> cluster.areOffsetsAvailableOnAllKafkaTopics(topic));
     }
+
+    public boolean topicExists(Topic topic) {
+        return clusters.stream().map(brokersClusterService -> brokersClusterService.topicExists(topic)).allMatch(Boolean.TRUE::equals);
+    }
 }
