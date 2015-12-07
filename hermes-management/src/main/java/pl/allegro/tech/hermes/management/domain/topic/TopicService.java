@@ -60,7 +60,7 @@ public class TopicService {
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
         } else {
-            logger.info(String.format("Skipping creating topic %s on brokers, topic already exists", topic.getQualifiedName()));
+            logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
         }
 
     }
