@@ -13,7 +13,9 @@ import pl.allegro.tech.hermes.management.infrastructure.query.parser.ParseExcept
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser;
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParserContext;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
@@ -35,14 +37,19 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
     }
 
     @Override
-    public <T> Query<T> parse(String query, Class<T> type) {
+    public <T> Query<T> parse(InputStream input, Class<T> type) {
         try {
             return parseDocument(
-                    objectMapper.readTree(query)
+                    objectMapper.readTree(input)
             );
         } catch (IOException | MatcherNotFoundException e) {
             throw new ParseException("Query could not be parsed", e);
         }
+    }
+
+    @Override
+    public <T> Query<T> parse(String query, Class<T> type) {
+        return this.parse(new ByteArrayInputStream(query.getBytes()), type);
     }
 
     @Override

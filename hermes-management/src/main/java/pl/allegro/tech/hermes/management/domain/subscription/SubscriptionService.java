@@ -9,9 +9,9 @@ import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
+import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
-import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.List;
@@ -32,21 +32,17 @@ public class SubscriptionService {
 
     private final ApiPreconditions preconditions;
 
-    private final QueryParser queryParser;
-
     @Autowired
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
                                SubscriptionMetricsRepository metricsRepository,
                                UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
-                               ApiPreconditions apiPreconditions,
-                               QueryParser queryParser) {
+                               ApiPreconditions apiPreconditions) {
         this.subscriptionRepository = subscriptionRepository;
         this.metricsRepository = metricsRepository;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
         this.preconditions = apiPreconditions;
-        this.queryParser = queryParser;
     }
 
     public List<String> listSubscriptionNames(TopicName topicName) {
@@ -57,11 +53,8 @@ public class SubscriptionService {
         return subscriptionRepository.listTrackedSubscriptionNames(topicName);
     }
 
-    public List<String> listFilteredSubscriptionNames(TopicName topicName, String query) {
-        return subscriptionRepository.listFilteredSubscriptionNames(
-                topicName,
-                queryParser.parse(query, Subscription.class)
-        );
+    public List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query) {
+        return subscriptionRepository.listFilteredSubscriptionNames(topicName, query);
     }
 
     public List<Subscription> listSubscriptions(TopicName topicName) {

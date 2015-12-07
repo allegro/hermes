@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
-import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser;
 
 import javax.inject.Inject;
 import java.time.Clock;
@@ -29,7 +28,6 @@ public class TopicService {
     private final boolean allowRemoval;
     private final TopicRepository topicRepository;
     private final GroupService groupService;
-    private final QueryParser queryParser;
 
     private final TopicMetricsRepository metricRepository;
     private final MultiDCAwareService multiDCAwareService;
@@ -41,7 +39,6 @@ public class TopicService {
     public TopicService(MultiDCAwareService multiDCAwareService,
                         TopicRepository topicRepository,
                         GroupService groupService,
-                        QueryParser queryParser,
                         TopicProperties topicProperties,
                         TopicMetricsRepository metricRepository,
                         TopicValidator topicValidator,
@@ -51,7 +48,6 @@ public class TopicService {
         this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
         this.groupService = groupService;
-        this.queryParser = queryParser;
         this.metricRepository = metricRepository;
         this.topicValidator = topicValidator;
         this.topicContentTypeMigrationService = topicContentTypeMigrationService;
@@ -155,9 +151,8 @@ public class TopicService {
                 .collect(Collectors.toList());
     }
 
-    public List<String> listFilteredTopicNames(String query) {
+    public List<String> listFilteredTopicNames(Query<Topic> topicQuery) {
 
-        Query<Topic> topicQuery = queryParser.parse(query, Topic.class);
         return topicQuery.filter(groupService.listGroups().stream()
                 .map(topicRepository::listTopics)
                 .flatMap(List::stream))
@@ -165,9 +160,8 @@ public class TopicService {
                 .collect(Collectors.toList());
     }
 
-    public List<String> listFilteredTopicNames(String groupName, String query) {
+    public List<String> listFilteredTopicNames(String groupName, Query<Topic> topicQuery) {
 
-        Query<Topic> topicQuery = queryParser.parse(query, Topic.class);
         return topicQuery.filter(listTopics(groupName).stream())
                 .map(Topic::getQualifiedName)
                 .collect(Collectors.toList());

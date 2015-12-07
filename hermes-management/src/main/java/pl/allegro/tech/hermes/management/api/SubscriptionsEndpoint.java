@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
@@ -80,7 +81,7 @@ public class SubscriptionsEndpoint {
     @ApiOperation(value = "Queries subscriptions", response = List.class, httpMethod = HttpMethod.POST)
     public List<String> queryList(
             @PathParam("topicName") String qualifiedTopicName,
-            String query) throws IOException {
+            Query<Subscription> query) throws IOException {
 
         return subscriptionService.listFilteredSubscriptionNames(fromQualifiedName(qualifiedTopicName), query);
     }
