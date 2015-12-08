@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
 import javax.inject.Inject;
+import java.util.Optional;
 
 public class KafkaCuratorClientFactory implements Factory<CuratorFramework> {
 
@@ -21,7 +22,17 @@ public class KafkaCuratorClientFactory implements Factory<CuratorFramework> {
     @Override
     public CuratorFramework provide() {
         String connectString = configFactory.getStringProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING);
-        return curatorClientFactory.provide(connectString);
+        Optional<CuratorClientFactory.ZookeeperAuthorization> authorization = Optional.empty();
+
+        if (configFactory.getBooleanProperty(Configs.KAFKA_ZOOKEEPER_AUTHORIZATION_ENABLED)) {
+            authorization = Optional.of(new CuratorClientFactory.ZookeeperAuthorization(
+                    configFactory.getStringProperty(Configs.KAFKA_ZOOKEEPER_AUTHORIZATION_SCHEME),
+                    configFactory.getStringProperty(Configs.KAFKA_ZOOKEEPER_AUTHORIZATION_USER),
+                    configFactory.getStringProperty(Configs.KAFKA_ZOOKEEPER_AUTHORIZATION_PASSWORD))
+            );
+        }
+
+        return curatorClientFactory.provide(connectString, authorization);
     }
 
     @Override
