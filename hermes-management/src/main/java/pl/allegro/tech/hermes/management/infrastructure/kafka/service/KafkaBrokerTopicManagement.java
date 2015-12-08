@@ -68,6 +68,11 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
         );
     }
 
+    @Override
+    public boolean topicExists(Topic topic) {
+        return AdminUtils.topicExists(client, topic.getQualifiedName());
+    }
+
     protected boolean isMigrationToNewKafkaTopic(KafkaTopics kafkaTopics) {
         return kafkaTopics.getSecondary().isPresent() &&
                 !AdminUtils.topicExists(client, kafkaTopics.getPrimary().name().asString());
