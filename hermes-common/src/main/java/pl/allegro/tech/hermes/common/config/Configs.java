@@ -9,24 +9,21 @@ import static java.util.UUID.randomUUID;
 public enum Configs {
 
     ZOOKEEPER_CONNECT_STRING("zookeeper.connect.string", "localhost:2181"),
+    ZOOKEEPER_BASE_SLEEP_TIME("zookeeper.base.sleep.time", 1000),
+    ZOOKEEPER_CONNECTION_TIMEOUT("zookeeper.connection.timeout", 10000),
+    ZOOKEEPER_SESSION_TIMEOUT("zookeeper.session.timeout", 10000),
+    ZOOKEEPER_SYNC_TIME("zookeeper.sync.time", 20000),
+
     ZOOKEEPER_AUTHORIZATION_ENABLED("zookeeper.authorization.enabled", false),
     ZOOKEEPER_AUTHORIZATION_SCHEME("zookeeper.authorization.scheme", "digest"),
     ZOOKEEPER_AUTHORIZATION_USER("zookeeper.authorization.user", "user"),
     ZOOKEEPER_AUTHORIZATION_PASSWORD("zookeeper.authorization.password", "password"),
 
-    KAFKA_ZOOKEEPER_CONNECT_STRING("kafka.zookeeper.connect.string", "localhost:2181"),
-    KAFKA_ZOOKEEPER_AUTHORIZATION_ENABLED("kafka.zookeeper.authorization.enabled", false),
-    KAFKA_ZOOKEEPER_AUTHORIZATION_SCHEME("kafka.zookeeper.authorization.scheme", "digest"),
-    KAFKA_ZOOKEEPER_AUTHORIZATION_USER("kafka.zookeeper.authorization.user", "user"),
-    KAFKA_ZOOKEEPER_AUTHORIZATION_PASSWORD("kafka.zookeeper.authorization.password", "password"),
-
-    ZOOKEEPER_BASE_SLEEP_TIME("zookeeper.base.sleep.time", 1000),
-    ZOOKEEPER_CONNECTION_TIMEOUT("zookeeper.connection.timeout", 10000),
-    ZOOKEEPER_SESSION_TIMEOUT("zookeeper.session.timeout", 10000),
-    ZOOKEEPER_SYNC_TIME("zookeeper.sync.time", 20000),
     ZOOKEEPER_MAX_RETRIES("zookeeper.max.retries", 2),
     ZOOKEEPER_ROOT("zookeeper.root", "/hermes"),
     ZOOKEEPER_CACHE_THREAD_POOL_SIZE("zookeeper.cache.thread.pool.size", 5),
+
+    KAFKA_ZOOKEEPER_CONNECT_STRING("kafka.zookeeper.connect.string", "localhost:2181"),
 
     ENVIRONMENT_NAME("environment.name", "dev"),
 

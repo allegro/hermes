@@ -19,14 +19,14 @@ public class CuratorClientFactory {
         private final String user;
         private final String password;
 
-        public ZookeeperAuthorization(String password, String user, String scheme) {
-            this.password = password;
-            this.user = user;
+        public ZookeeperAuthorization(String scheme, String user, String password) {
             this.scheme = scheme;
+            this.user = user;
+            this.password = password;
         }
 
         byte[] getAuth() {
-            return String.join(".", user, password).getBytes();
+            return String.join(":", user, password).getBytes();
         }
     }
 
@@ -36,6 +36,10 @@ public class CuratorClientFactory {
     @Inject
     public CuratorClientFactory(ConfigFactory configFactory) {
         this.configFactory = configFactory;
+    }
+
+    public CuratorFramework provide(String connectString) {
+        return provide(connectString, Optional.empty());
     }
 
     public CuratorFramework provide(String connectString, Optional<ZookeeperAuthorization> zookeeperAuthorization) {
