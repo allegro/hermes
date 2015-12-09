@@ -30,6 +30,14 @@ public interface TopicEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @Path("/query")
+    List<String> queryList(
+            @DefaultValue("") @QueryParam("groupName") String groupName,
+            String query);
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     Response create(Topic topic);
 
     @DELETE

@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
@@ -16,7 +17,6 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareServic
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.management.infrastructure.time.TimeFormatter;
 
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -30,6 +30,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,15 +64,26 @@ public class SubscriptionsEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
-    @ApiOperation(value = "List subscriptions", response = List.class, httpMethod = HttpMethod.GET)
+    @ApiOperation(value = "Lists subscriptions", response = List.class, httpMethod = HttpMethod.GET)
     public List<String> list(
             @PathParam("topicName") String qualifiedTopicName,
             @DefaultValue("false") @QueryParam("tracked") boolean tracked) {
 
-
         return tracked?
                 subscriptionService.listTrackedSubscriptionNames(fromQualifiedName(qualifiedTopicName)) :
                 subscriptionService.listSubscriptionNames(fromQualifiedName(qualifiedTopicName));
+    }
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @Path("/query")
+    @ApiOperation(value = "Queries subscriptions", response = List.class, httpMethod = HttpMethod.POST)
+    public List<String> queryList(
+            @PathParam("topicName") String qualifiedTopicName,
+            Query<Subscription> query) throws IOException {
+
+        return subscriptionService.listFilteredSubscriptionNames(fromQualifiedName(qualifiedTopicName), query);
     }
 
     @POST

@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
+import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
@@ -50,6 +51,10 @@ public class SubscriptionService {
 
     public List<String> listTrackedSubscriptionNames(TopicName topicName) {
         return subscriptionRepository.listTrackedSubscriptionNames(topicName);
+    }
+
+    public List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query) {
+        return subscriptionRepository.listFilteredSubscriptionNames(topicName, query);
     }
 
     public List<Subscription> listSubscriptions(TopicName topicName) {
