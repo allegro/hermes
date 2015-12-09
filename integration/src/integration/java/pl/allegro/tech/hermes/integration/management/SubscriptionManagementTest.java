@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import org.assertj.core.api.Assertions;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
@@ -145,6 +146,28 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldReturnsTrackedAndNotSuspendedSubscriptionsForGivenTopic() {
+
+        // given
+        Topic topic = operations.buildTopic("queried", "topic");
+        Subscription subscription1 = createSubscription(topic, "sub1", true);
+        Subscription subscription2 = createSubscription(topic, "sub2", true);
+        operations.createSubscription(topic, subscription1);
+        operations.createSubscription(topic, subscription2);
+        operations.createSubscription(topic, "sub3", HTTP_ENDPOINT_URL);
+        operations.suspendSubscription(topic, subscription2.getName());
+
+        // and
+        String query = "{\"query\": {\"trackingEnabled\": \"true\", \"state\": {\"ne\": \"SUSPENDED\"}}}";
+
+        // when
+        List<String> tracked = management.subscription().queryList(topic.getQualifiedName(), query);
+
+        // then
+        Assertions.assertThat(tracked).containsExactly(subscription1.getName());
+    }
+
+    @Test
     public void shouldNotAllowSubscriptionNameToContainDollarSign() {
         // given
         Topic topic = operations.buildTopic("dollar", "topic");
@@ -171,5 +194,14 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
     private String publishMessage(String topic, String body) {
         return client.publish(topic, body).join().getMessageId();
+    }
+
+    private Subscription createSubscription(Topic topic, String name, boolean tracked) {
+        return subscription()
+                .withName(name)
+                .withTopicName(topic.getName())
+                .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL))
+                .withSupportTeam("team")
+                .withTrackingEnabled(tracked).build();
     }
 }
