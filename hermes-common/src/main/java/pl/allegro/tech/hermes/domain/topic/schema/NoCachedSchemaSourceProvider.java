@@ -23,6 +23,10 @@ public class NoCachedSchemaSourceProvider implements CachedSchemaSourceProvider 
     }
 
     @Override
+    public void reload(Topic topic) {
+    }
+
+    @Override
     public Optional<SchemaSource> get(Topic topic) {
         return schemaSourceProvider.get(topic);
     }

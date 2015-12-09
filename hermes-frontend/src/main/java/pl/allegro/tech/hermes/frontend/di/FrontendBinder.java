@@ -19,7 +19,6 @@ import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.services.SchemaPrefetchService;
 import pl.allegro.tech.hermes.frontend.validator.AvroTopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.JsonTopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
@@ -40,7 +39,6 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(PublishingServlet.class);
         bindSingleton(MessageValidators.class);
 
-        bindSingleton(SchemaPrefetchService.class);
         bindSingleton(HealthCheckService.class);
         bind(DefaultHeadersPropagator.class).to(HeadersPropagator.class).in(Singleton.class);
 

@@ -72,6 +72,11 @@ public class DefaultCachedSchemaSourceProvider implements CachedSchemaSourceProv
         }
     }
 
+    @Override
+    public void reload(Topic topic) {
+        cache.refresh(topic);
+    }
+
     private void notifyConsumersAboutSchemaReload(Topic topic, SchemaSource schemaSource) {
         schemaReloadedConsumers.forEach(consumer -> consumer.accept(new TopicWithSchema<>(topic, schemaSource)));
     }
