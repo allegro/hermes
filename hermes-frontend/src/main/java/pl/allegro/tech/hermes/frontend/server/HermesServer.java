@@ -13,12 +13,12 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.domain.topic.schema.CachedSchemaSourceProvider;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicCallback;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.services.SchemaPrefetchService;
 
 import javax.inject.Inject;
 import javax.servlet.Servlet;
@@ -44,7 +44,7 @@ public class HermesServer {
     private final TopicsCache topicsCache;
     private final PublishingServlet publishingServlet;
     private final HealthCheckService healthCheckService;
-    private final SchemaPrefetchService schemaPrefetchService;
+    private final CachedSchemaSourceProvider cachedSchemaSource;
     private final int port;
     private final int sslPort;
     private final String host;
@@ -56,14 +56,14 @@ public class HermesServer {
             HermesMetrics hermesMetrics,
             PublishingServlet publishingServlet,
             HealthCheckService healthCheckService,
-            SchemaPrefetchService schemaPrefetchService) {
+            CachedSchemaSourceProvider cachedSchemaSource) {
 
         this.topicsCache = topicsCache;
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.publishingServlet = publishingServlet;
         this.healthCheckService = healthCheckService;
-        this.schemaPrefetchService = schemaPrefetchService;
+        this.cachedSchemaSource = cachedSchemaSource;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
         this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
@@ -74,7 +74,7 @@ public class HermesServer {
         topicsCache.start(Collections.singletonList(new TopicCallback() {
             @Override
             public void onTopicCreated(Topic topic) {
-                schemaPrefetchService.prefetchFor(topic);
+                cachedSchemaSource.reload(topic);
             }
 
             @Override
@@ -84,7 +84,7 @@ public class HermesServer {
 
             @Override
             public void onTopicChanged(Topic topic) {
-                schemaPrefetchService.prefetchFor(topic);
+                cachedSchemaSource.reload(topic);
             }
         }));
         configureServer().start();
