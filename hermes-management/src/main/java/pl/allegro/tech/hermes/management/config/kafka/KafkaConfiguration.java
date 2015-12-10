@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
+import pl.allegro.tech.hermes.common.kafka.JsonToAvroKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPoolConfig;
@@ -65,7 +66,7 @@ public class KafkaConfiguration {
     MultiDCAwareService multiDCAwareService() {
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
             KafkaNamesMapper kafkaNamesMapper = isEmpty(kafkaProperties.getNamespace()) ?
-                    new KafkaNamesMapper(kafkaClustersProperties.getDefaultNamespace()) : new KafkaNamesMapper(kafkaProperties.getNamespace());
+                    new JsonToAvroKafkaNamesMapper(kafkaClustersProperties.getDefaultNamespace()) : new JsonToAvroKafkaNamesMapper((kafkaProperties.getNamespace()));
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties), kafkaNamesMapper);
             SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
