@@ -23,7 +23,6 @@ import pl.allegro.tech.hermes.common.di.factories.SubscriptionOffsetChangeIndica
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
@@ -37,8 +36,8 @@ import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.infrastructure.schema.AvroSchemaRepositoryFactory;
-import pl.allegro.tech.hermes.infrastructure.schema.JsonSchemaRepositoryFactory;
 import pl.allegro.tech.hermes.infrastructure.schema.CachedSchemaSourceProviderFactory;
+import pl.allegro.tech.hermes.infrastructure.schema.JsonSchemaRepositoryFactory;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClientFactory;
 
 import javax.inject.Singleton;
@@ -80,6 +79,6 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(SimpleConsumerPoolFactory.class);
         bindSingletonFactory(SubscriptionOffsetChangeIndicatorFactory.class);
         bindSingletonFactory(PathsCompilerFactory.class);
-        bindFactory(KafkaNamesMapperFactory.class).in(Singleton.class).to(KafkaNamesMapper.class);
+        bindSingletonFactory(KafkaNamesMapperFactory.class);
     }
 }
