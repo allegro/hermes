@@ -10,7 +10,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.kafka.JsonToAvroKafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
@@ -37,7 +38,7 @@ public class KafkaBrokerMessageProducerTest {
     private Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, new ConfigFactory());
 
     private KafkaBrokerMessageProducer producer;
-    private JsonToAvroKafkaNamesMapper kafkaNamesMapper = new JsonToAvroKafkaNamesMapper("ns");
+    private KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns");
 
     @Mock
     private HermesMetrics hermesMetrics;
