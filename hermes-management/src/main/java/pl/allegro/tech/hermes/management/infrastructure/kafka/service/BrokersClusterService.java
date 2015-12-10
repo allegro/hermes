@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.JsonToAvroKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
@@ -16,12 +16,12 @@ public class BrokersClusterService {
     private final SingleMessageReader singleMessageReader;
     private final RetransmissionService retransmissionService;
     private final BrokerTopicManagement brokerTopicManagement;
-    private final KafkaNamesMapper kafkaNamesMapper;
+    private final JsonToAvroKafkaNamesMapper kafkaNamesMapper;
     private final OffsetsAvailableChecker offsetsAvailableChecker;
 
     public BrokersClusterService(String clusterName, SingleMessageReader singleMessageReader,
                                  RetransmissionService retransmissionService, BrokerTopicManagement brokerTopicManagement,
-                                 KafkaNamesMapper kafkaNamesMapper, OffsetsAvailableChecker offsetsAvailableChecker) {
+                                 JsonToAvroKafkaNamesMapper kafkaNamesMapper, OffsetsAvailableChecker offsetsAvailableChecker) {
 
         this.clusterName = clusterName;
         this.singleMessageReader = singleMessageReader;

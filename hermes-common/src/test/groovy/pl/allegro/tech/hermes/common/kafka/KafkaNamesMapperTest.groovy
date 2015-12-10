@@ -11,7 +11,7 @@ class KafkaNamesMapperTest extends Specification {
     @Unroll
     def "should map topic '#topicName' to kafka topic '#kafkaTopicName' for namespace '#namespace'"() {
         given:
-        def mapper = new KafkaNamesMapper(namespace)
+        def mapper = new JsonToAvroKafkaNamesMapper(namespace)
 
         expect:
         mapper.toKafkaTopics(topic().applyDefaults().withName(topicName).build()).primary.name() == KafkaTopicName.valueOf(kafkaTopicName)
@@ -25,7 +25,7 @@ class KafkaNamesMapperTest extends Specification {
     @Unroll
     def "should map subscription id '#subscriptionId' to consumer group '#consumerGroupId' for namespace '#namespace'"() {
         given:
-        def mapper = new KafkaNamesMapper(namespace)
+        def mapper = new JsonToAvroKafkaNamesMapper(namespace)
 
         expect:
         mapper.toConsumerGroupId(subscriptionId) == ConsumerGroupId.valueOf(consumerGroupId)
@@ -38,7 +38,7 @@ class KafkaNamesMapperTest extends Specification {
 
     def "should append '_avro' suffix for topics of type AVRO"() {
         given:
-        def mapper = new KafkaNamesMapper("")
+        def mapper = new JsonToAvroKafkaNamesMapper("")
         def avroTopic = topic().withName("group", "topic").withContentType(Topic.ContentType.AVRO).build()
 
         expect:
@@ -47,7 +47,7 @@ class KafkaNamesMapperTest extends Specification {
 
     def "should map to topics with secondary json topic for topics migrated from json to avro"() {
         given:
-        def mapper = new KafkaNamesMapper("")
+        def mapper = new JsonToAvroKafkaNamesMapper("")
         def migratedTopic = topic().withName("group", "topic").withContentType(Topic.ContentType.AVRO).migratedFromJsonType().build()
 
         when:

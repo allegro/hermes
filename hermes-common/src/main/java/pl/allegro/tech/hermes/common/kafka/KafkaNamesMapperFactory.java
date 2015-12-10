@@ -17,7 +17,7 @@ public class KafkaNamesMapperFactory implements Factory<KafkaNamesMapper> {
 
     @Override
     public KafkaNamesMapper provide() {
-        return new KafkaNamesMapper(namespace);
+        return new KafkaNamesMapperHolder(new JsonToAvroKafkaNamesMapper(namespace));
     }
 
     @Override

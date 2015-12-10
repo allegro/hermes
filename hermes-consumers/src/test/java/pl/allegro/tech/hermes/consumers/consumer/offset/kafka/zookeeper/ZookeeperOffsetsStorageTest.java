@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.offset.kafka.zookeeper;
 import org.junit.After;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.JsonToAvroKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
@@ -18,7 +18,7 @@ public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
 
     private static final KafkaTopicName kafkaTopicName = KafkaTopicName.valueOf("kafka_topic");
 
-    private final ZookeeperOffsetsStorage offsetsStorage = new ZookeeperOffsetsStorage(zookeeperClient, new KafkaNamesMapper("ns"));
+    private final ZookeeperOffsetsStorage offsetsStorage = new ZookeeperOffsetsStorage(zookeeperClient, new JsonToAvroKafkaNamesMapper("ns"));
 
     @After
     public void after() throws Exception {

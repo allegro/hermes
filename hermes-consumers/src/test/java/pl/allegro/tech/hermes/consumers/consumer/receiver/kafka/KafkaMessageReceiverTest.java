@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.JsonToAvroKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageMetadata;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
@@ -64,7 +64,7 @@ public class KafkaMessageReceiverTest {
     @Mock
     private MessageAndMetadata<byte[], byte[]> messageAndMetadata;
 
-    private KafkaNamesMapper kafkaNamesMapper = new KafkaNamesMapper("ns");
+    private JsonToAvroKafkaNamesMapper kafkaNamesMapper = new JsonToAvroKafkaNamesMapper("ns");
 
     private KafkaMessageReceiver kafkaMsgReceiver;
 

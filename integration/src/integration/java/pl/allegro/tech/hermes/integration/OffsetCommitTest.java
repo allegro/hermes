@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.JsonToAvroKafkaNamesMapper;
 import pl.allegro.tech.hermes.integration.env.ConsumersStarter;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -16,7 +16,7 @@ public class OffsetCommitTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
 
-    private KafkaNamesMapper kafkaNamesMapper = new KafkaNamesMapper(KAFKA_NAMESPACE);
+    private JsonToAvroKafkaNamesMapper kafkaNamesMapper = new JsonToAvroKafkaNamesMapper(KAFKA_NAMESPACE);
 
     @BeforeMethod
     public void initializeAlways() {

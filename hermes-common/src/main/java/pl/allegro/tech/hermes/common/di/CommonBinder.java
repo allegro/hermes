@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.common.di.factories.SubscriptionOffsetChangeIndica
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
@@ -79,6 +80,6 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(SimpleConsumerPoolFactory.class);
         bindSingletonFactory(SubscriptionOffsetChangeIndicatorFactory.class);
         bindSingletonFactory(PathsCompilerFactory.class);
-        bindSingletonFactory(KafkaNamesMapperFactory.class);
+        bindFactory(KafkaNamesMapperFactory.class).in(Singleton.class).to(KafkaNamesMapper.class);
     }
 }

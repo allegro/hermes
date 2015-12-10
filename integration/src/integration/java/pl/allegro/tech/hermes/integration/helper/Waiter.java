@@ -10,7 +10,7 @@ import kafka.network.BlockingChannel;
 import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.JsonToAvroKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -32,14 +32,14 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue());
 
-    private final KafkaNamesMapper kafkaNamesMapper;
+    private final JsonToAvroKafkaNamesMapper kafkaNamesMapper;
 
     public Waiter(HermesEndpoints endpoints, CuratorFramework zookeeper, CuratorFramework kafkaZookeeper, String kafkaNamespace) {
         super(endpoints);
         this.endpoints = endpoints;
         this.zookeeper = zookeeper;
         this.kafkaZookeeper = kafkaZookeeper;
-        this.kafkaNamesMapper = new KafkaNamesMapper(kafkaNamespace);
+        this.kafkaNamesMapper = new JsonToAvroKafkaNamesMapper(kafkaNamespace);
     }
 
     public void untilKafkaZookeeperNodeDeletion(final String path) {

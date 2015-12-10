@@ -9,7 +9,7 @@ import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.JsonToAvroKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.zookeeper.ZookeeperMessageCommitter;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
@@ -29,7 +29,7 @@ public class ZookeeperMessageCommitterTest {
 
     private static CuratorFramework curatorClient;
 
-    private ZookeeperMessageCommitter zookeeperMessageCommitter = new ZookeeperMessageCommitter(curatorClient, new KafkaNamesMapper("ns"));
+    private ZookeeperMessageCommitter zookeeperMessageCommitter = new ZookeeperMessageCommitter(curatorClient, new JsonToAvroKafkaNamesMapper("ns"));
 
     @BeforeClass
     public static void beforeClass() throws Exception {
