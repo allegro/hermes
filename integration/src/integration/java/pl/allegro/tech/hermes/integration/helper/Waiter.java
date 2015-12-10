@@ -8,6 +8,8 @@ import kafka.common.ErrorMapping;
 import kafka.javaapi.ConsumerMetadataResponse;
 import kafka.network.BlockingChannel;
 import org.apache.curator.framework.CuratorFramework;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -23,6 +25,8 @@ import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
+
+    private static final Logger logger = LoggerFactory.getLogger(Waiter.class);
 
     private final HermesEndpoints endpoints;
 
@@ -82,10 +86,12 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         );
     }
 
-    private void untilSubscriptionHasState(Topic topic, String subscription, Subscription.State state) {
-        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() ->
-                        endpoints.subscription().get(topic.getQualifiedName(), subscription).getState().equals(state)
-        );
+    private void untilSubscriptionHasState(Topic topic, String subscription, Subscription.State expected) {
+        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() -> {
+            Subscription.State actual = endpoints.subscription().get(topic.getQualifiedName(), subscription).getState();
+            logger.info("Expecting {} subscription state. Actual {}", expected, actual);
+            return expected == actual;
+        });
     }
 
     public void untilSubscriptionEndsReiteration(Topic topic, String subscription) {
