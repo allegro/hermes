@@ -14,6 +14,11 @@ public enum Configs {
     ZOOKEEPER_SESSION_TIMEOUT("zookeeper.session.timeout", 10000),
     ZOOKEEPER_SYNC_TIME("zookeeper.sync.time", 20000),
 
+    ZOOKEEPER_AUTHORIZATION_ENABLED("zookeeper.authorization.enabled", false),
+    ZOOKEEPER_AUTHORIZATION_SCHEME("zookeeper.authorization.scheme", "digest"),
+    ZOOKEEPER_AUTHORIZATION_USER("zookeeper.authorization.user", "user"),
+    ZOOKEEPER_AUTHORIZATION_PASSWORD("zookeeper.authorization.password", "password"),
+
     ZOOKEEPER_MAX_RETRIES("zookeeper.max.retries", 2),
     ZOOKEEPER_ROOT("zookeeper.root", "/hermes"),
     ZOOKEEPER_CACHE_THREAD_POOL_SIZE("zookeeper.cache.thread.pool.size", 5),

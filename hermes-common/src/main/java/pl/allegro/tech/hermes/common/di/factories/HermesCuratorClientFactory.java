@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
 import javax.inject.Inject;
+import java.util.Optional;
 
 public class HermesCuratorClientFactory implements Factory<CuratorFramework> {
 
@@ -21,7 +22,17 @@ public class HermesCuratorClientFactory implements Factory<CuratorFramework> {
     @Override
     public CuratorFramework provide() {
         String connectString = configFactory.getStringProperty(Configs.ZOOKEEPER_CONNECT_STRING);
-        return curatorClientFactory.provide(connectString);
+        Optional<CuratorClientFactory.ZookeeperAuthorization> authorization = Optional.empty();
+
+        if (configFactory.getBooleanProperty(Configs.ZOOKEEPER_AUTHORIZATION_ENABLED)) {
+            authorization = Optional.of(new CuratorClientFactory.ZookeeperAuthorization(
+                    configFactory.getStringProperty(Configs.ZOOKEEPER_AUTHORIZATION_SCHEME),
+                    configFactory.getStringProperty(Configs.ZOOKEEPER_AUTHORIZATION_USER),
+                    configFactory.getStringProperty(Configs.ZOOKEEPER_AUTHORIZATION_PASSWORD))
+            );
+        }
+
+        return curatorClientFactory.provide(connectString, authorization);
     }
 
     @Override
