@@ -26,11 +26,11 @@ public class KafkaNamesMapperHolder implements KafkaNamesMapper {
 
     @Override
     public ConsumerGroupId toConsumerGroupId(String subscriptionId) {
-        return null;
+        return kafkaNamespaceMapper.toConsumerGroupId(subscriptionId);
     }
 
     @Override
     public KafkaTopics toKafkaTopics(Topic topic) {
-        return null;
+        return kafkaNamespaceMapper.toKafkaTopics(topic);
     }
 }
