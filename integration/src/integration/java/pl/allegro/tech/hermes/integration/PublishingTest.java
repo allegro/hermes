@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integration;
 
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.testng.annotations.BeforeClass;
@@ -14,7 +13,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.integration.client.SlowClient;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.Assertions;
-import pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper;
 import pl.allegro.tech.hermes.integration.metadata.TraceContext;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -23,7 +21,6 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
