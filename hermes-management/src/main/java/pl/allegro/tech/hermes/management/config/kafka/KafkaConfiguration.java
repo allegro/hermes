@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.common.avro.JsonAvroConverter;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
@@ -78,8 +79,8 @@ public class KafkaConfiguration {
                 simpleConsumerPool,
                     kafkaNamesMapper
             );
-
-            return new BrokersClusterService(kafkaProperties.getClusterName(), new KafkaSingleMessageReader(kafkaRawMessageReader, avroSchemaRepository),
+            KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, avroSchemaRepository, new JsonAvroConverter());
+            return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper, new OffsetsAvailableChecker(simpleConsumerPool, storage));
         }).collect(toList());
 

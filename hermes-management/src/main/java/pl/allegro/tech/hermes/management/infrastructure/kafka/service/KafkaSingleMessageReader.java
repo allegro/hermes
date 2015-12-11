@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
 import org.apache.avro.Schema;
+import pl.allegro.tech.common.avro.JsonAvroConverter;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
-import pl.allegro.tech.hermes.common.message.converter.AvroToJsonConverter;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 
@@ -12,10 +12,14 @@ import java.nio.charset.Charset;
 public class KafkaSingleMessageReader implements SingleMessageReader {
     private final KafkaRawMessageReader kafkaRawMessageReader;
     private final SchemaRepository<Schema> avroSchemaRepository;
+    private JsonAvroConverter converter;
 
-    public KafkaSingleMessageReader(KafkaRawMessageReader kafkaRawMessageReader, SchemaRepository<Schema> avroSchemaRepository) {
+    public KafkaSingleMessageReader(KafkaRawMessageReader kafkaRawMessageReader,
+                                    SchemaRepository<Schema> avroSchemaRepository,
+                                    JsonAvroConverter converter) {
         this.kafkaRawMessageReader = kafkaRawMessageReader;
         this.avroSchemaRepository = avroSchemaRepository;
+        this.converter = converter;
     }
 
     @Override
@@ -28,6 +32,6 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
     }
 
     private byte[] convertAvroToJson(Schema schema, byte[] bytes) {
-        return AvroToJsonConverter.convert(bytes, schema);
+        return converter.convertToJson(bytes, schema);
     }
 }

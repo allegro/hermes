@@ -23,15 +23,9 @@ dependencies {
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: versions.jersey
 
     /**
-     * Patched version contains two fixes:
-     *
-     * https://issues.apache.org/jira/browse/AVRO-1582
-     * https://issues.apache.org/jira/browse/AVRO-1717
-     *
-     * They improve conversion of json to avro.
-     * Patched version will be used until mentioned fixes are released in official version of avro.
+     * This is an early adoption of json to avro converting library that has not been opensourced and published yet.
      */
-    compile files('./lib/avro-1.8.0-json2avroPatch-SNAPSHOT.jar')
+    compile files('./lib/json-avro-converter-0.1.1.jar')
 
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
@@ -39,6 +33,7 @@ dependencies {
 
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
     compile group: 'io.fastjson', name: 'boon', version: '0.28'
+    compile group: 'org.apache.avro', name: 'avro', version: '1.7.7'
 
     compile group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: '3.1.1'
 
