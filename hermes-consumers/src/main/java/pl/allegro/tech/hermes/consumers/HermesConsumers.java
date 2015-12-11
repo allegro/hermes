@@ -83,7 +83,7 @@ public class HermesConsumers {
             });
 
             kafkaNamesMapper.ifPresent(it -> {
-                serviceLocator.getService(KafkaNamesMapperHolder.class).setKafkaNamespaceMapper(it.apply(serviceLocator));
+                ((KafkaNamesMapperHolder)serviceLocator.getService(KafkaNamesMapper.class)).setKafkaNamespaceMapper(it.apply(serviceLocator));
             });
 
             supervisorController.start();
