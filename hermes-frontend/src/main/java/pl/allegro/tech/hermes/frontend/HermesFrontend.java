@@ -44,7 +44,6 @@ public final class HermesFrontend {
     private HermesFrontend(HooksHandler hooksHandler, List<Binder> binders, List<Function<ServiceLocator, LogRepository>> logRepositories) {
         this.hooksHandler = hooksHandler;
         this.logRepositories = logRepositories;
-
         serviceLocator = createDIContainer(binders);
 
         hermesServer = serviceLocator.getService(HermesServer.class);
@@ -54,7 +53,7 @@ public final class HermesFrontend {
             hooksHandler.addShutdownHook(gracefulShutdownHook());
         }
 
-        hooksHandler.addStartupHook(() -> serviceLocator.getService(HealthCheckService.class).startup());
+        hooksHandler.addStartupHook((serviceLocator) -> serviceLocator.getService(HealthCheckService.class).startup());
         hooksHandler.addShutdownHook(defaultShutdownHook());
     }
 
@@ -82,7 +81,7 @@ public final class HermesFrontend {
                 trackers.add(serviceLocatorLogRepositoryFunction.apply(serviceLocator)));
 
         hermesServer.start();
-        hooksHandler.startup();
+        hooksHandler.startup(serviceLocator);
     }
 
     public void stop() {
@@ -122,12 +121,12 @@ public final class HermesFrontend {
             return new HermesFrontend(hooksHandler, binders, logRepositories);
         }
 
-        public Builder withShutdownHook(Hook hook) {
+        public Builder withShutdownHook(Hook.Shutdown hook) {
             hooksHandler.addShutdownHook(hook);
             return this;
         }
 
-        public Builder withStartupHook(Hook hook) {
+        public Builder withStartupHook(Hook.Startup hook) {
             hooksHandler.addStartupHook(hook);
             return this;
         }
