@@ -2,12 +2,12 @@ package pl.allegro.tech.hermes.frontend.publishing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import pl.allegro.tech.common.avro.AvroConversionException;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.message.converter.ConvertingException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
@@ -137,7 +137,7 @@ public class PublishingServlet extends HttpServlet {
                                         new MetricsPublishingCallback(hermesMetrics, topic),
                                         new BrokerListenersPublishingCallback(listeners)));
 
-                    } catch (InvalidMessageException | ConvertingException | UnsupportedContentTypeException exception) {
+                    } catch (InvalidMessageException | AvroConversionException | UnsupportedContentTypeException exception) {
                         httpResponder.badRequest(exception);
                     } catch (CouldNotLoadSchemaException e) {
                         httpResponder.internalError(e, "Could not load schema for published message");
