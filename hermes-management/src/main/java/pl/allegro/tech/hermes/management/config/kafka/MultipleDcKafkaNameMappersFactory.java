@@ -23,7 +23,7 @@ public interface MultipleDcKafkaNameMappersFactory {
         mappers.putAll(clustersProperties.getClusters().stream()
                 .filter(c -> !c.getNamespace().isEmpty())
                 .collect(toMap(KafkaProperties::getClusterName,
-                        kafkaProperties -> factoryFunction.apply(kafkaProperties.getClusterName()))));
+                        kafkaProperties -> factoryFunction.apply(kafkaProperties.getNamespace()))));
 
         return new KafkaNameMappers(mappers);
     }
