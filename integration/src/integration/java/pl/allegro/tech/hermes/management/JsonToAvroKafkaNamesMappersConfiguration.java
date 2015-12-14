@@ -5,17 +5,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
-import pl.allegro.tech.hermes.management.config.kafka.KafkaNameMappers;
-import pl.allegro.tech.hermes.management.config.kafka.MultipleDcKafkaNameMappersFactory;
+import pl.allegro.tech.hermes.management.config.kafka.KafkaNamesMappers;
+import pl.allegro.tech.hermes.management.config.kafka.MultipleDcKafkaNamesMappersFactory;
 
 @Configuration
-public class JsonToAvroKafkaNameMappersConfiguration implements MultipleDcKafkaNameMappersFactory {
+public class JsonToAvroKafkaNamesMappersConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
     @Autowired
     KafkaClustersProperties kafkaClustersProperties;
 
     @Bean
-    KafkaNameMappers kafkaNameMappers() {
+    KafkaNamesMappers kafkaNameMappers() {
         return createKafkaNamesMapper(kafkaClustersProperties, namespace -> new JsonToAvroMigrationKafkaNamesMapper(namespace));
     }
 }

@@ -12,14 +12,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.common.avro.JsonAvroConverter;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPoolConfig;
-import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
@@ -39,7 +40,7 @@ import static java.util.stream.Collectors.toList;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
-public class KafkaConfiguration implements MultipleDcKafkaNameMappersFactory {
+public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
     @Autowired
     KafkaClustersProperties kafkaClustersProperties;
@@ -66,12 +67,12 @@ public class KafkaConfiguration implements MultipleDcKafkaNameMappersFactory {
     private final List<CuratorFramework> curators = new ArrayList<>();
 
     @Bean
-    MultiDCAwareService multiDCAwareService(KafkaNameMappers kafkaNameMappers) {
+    MultiDCAwareService multiDCAwareService(KafkaNamesMappers kafkaNamesMappers) {
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
-            KafkaNamesMapper kafkaNameMapper = kafkaNameMappers.getMapper(kafkaProperties.getClusterName());
+            KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getClusterName());
 
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
-            BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties), kafkaNameMapper);
+            BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties), kafkaNamesMapper);
 
             SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
             KafkaRawMessageReader kafkaRawMessageReader = new KafkaRawMessageReader(simpleConsumerPool);
@@ -81,11 +82,11 @@ public class KafkaConfiguration implements MultipleDcKafkaNameMappersFactory {
                     messageContentWrapper,
                     subscriptionOffsetChangeIndicator,
                     simpleConsumerPool,
-                    kafkaNameMapper
+                    kafkaNamesMapper
             );
-
-            return new BrokersClusterService(kafkaProperties.getClusterName(), new KafkaSingleMessageReader(kafkaRawMessageReader, avroSchemaRepository),
-                    retransmissionService, brokerTopicManagement, kafkaNameMapper, new OffsetsAvailableChecker(simpleConsumerPool, storage));
+            KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, avroSchemaRepository, new JsonAvroConverter());
+            return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper, new OffsetsAvailableChecker(simpleConsumerPool, storage));
         }).collect(toList());
 
         return new MultiDCAwareService(clusters, adminTool);
@@ -94,7 +95,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNameMappersFactory {
 
     @Bean
     @ConditionalOnMissingBean
-    KafkaNameMappers kafkaNameMappers() {
+    KafkaNamesMappers kafkaNameMappers() {
         return createDefaultKafkaNamesMapper(kafkaClustersProperties);
     }
 

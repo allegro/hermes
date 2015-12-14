@@ -8,13 +8,13 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
-public interface MultipleDcKafkaNameMappersFactory {
+public interface MultipleDcKafkaNamesMappersFactory {
 
-    default KafkaNameMappers createDefaultKafkaNamesMapper(KafkaClustersProperties clustersProperties) {
+    default KafkaNamesMappers createDefaultKafkaNamesMapper(KafkaClustersProperties clustersProperties) {
         return createKafkaNamesMapper(clustersProperties, namespace -> new NamespaceKafkaNamesMapper(namespace));
     }
 
-    default KafkaNameMappers createKafkaNamesMapper(KafkaClustersProperties clustersProperties, Function<String, KafkaNamesMapper> factoryFunction) {
+    default KafkaNamesMappers createKafkaNamesMapper(KafkaClustersProperties clustersProperties, Function<String, KafkaNamesMapper> factoryFunction) {
         Map<String, KafkaNamesMapper> mappers = clustersProperties.getClusters().stream()
                 .filter(c -> c.getNamespace().isEmpty())
                 .collect(toMap(KafkaProperties::getClusterName,
@@ -25,6 +25,6 @@ public interface MultipleDcKafkaNameMappersFactory {
                 .collect(toMap(KafkaProperties::getClusterName,
                         kafkaProperties -> factoryFunction.apply(kafkaProperties.getNamespace()))));
 
-        return new KafkaNameMappers(mappers);
+        return new KafkaNamesMappers(mappers);
     }
 }

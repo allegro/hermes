@@ -5,11 +5,11 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 
 import java.util.Map;
 
-public class KafkaNameMappers {
+public class KafkaNamesMappers {
 
     private final Map<String, KafkaNamesMapper> mappers;
 
-    public KafkaNameMappers(Map<String, KafkaNamesMapper> mappers) {
+    public KafkaNamesMappers(Map<String, KafkaNamesMapper> mappers) {
         this.mappers = ImmutableMap.copyOf(mappers);
     }
 
