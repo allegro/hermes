@@ -78,7 +78,7 @@ public class HermesConsumers {
 
             supervisorController.start();
             healthCheckServer.start();
-            hooksHandler.startup();
+            hooksHandler.startup(serviceLocator);
         } catch (Exception e) {
             logger.error("Exception while starting Hermes Consumers", e);
         }

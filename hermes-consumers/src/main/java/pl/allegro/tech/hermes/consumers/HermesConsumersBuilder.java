@@ -31,12 +31,12 @@ public final class HermesConsumersBuilder {
             new ConsumersBinder(),
             new ProtocolMessageSenderProvidersBinder());
 
-    public HermesConsumersBuilder withShutdownHook(Hook hook) {
+    public HermesConsumersBuilder withShutdownHook(Hook.Shutdown hook) {
         hooksHandler.addShutdownHook(hook);
         return this;
     }
 
-    public HermesConsumersBuilder withStartupHook(Hook hook) {
+    public HermesConsumersBuilder withStartupHook(Hook.Startup hook) {
         hooksHandler.addStartupHook(hook);
         return this;
     }
