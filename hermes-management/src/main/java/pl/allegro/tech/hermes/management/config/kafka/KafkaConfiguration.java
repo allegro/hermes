@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPoolConfig;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
@@ -35,14 +34,12 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit
 import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
-public class KafkaConfiguration {
+public class KafkaConfiguration implements MultipleDcKafkaNameMappersFactory {
 
     @Autowired
     KafkaClustersProperties kafkaClustersProperties;
@@ -98,17 +95,7 @@ public class KafkaConfiguration {
     @Bean
     @ConditionalOnMissingBean
     KafkaNameMappers kafkaNameMappers() {
-        Map<String, KafkaNamesMapper> mappers = kafkaClustersProperties.getClusters().stream()
-                .filter(c -> c.getNamespace().isEmpty())
-                .collect(toMap(KafkaProperties::getClusterName,
-                        p -> new NamespaceKafkaNamesMapper(kafkaClustersProperties.getDefaultNamespace())));
-
-        mappers.putAll(kafkaClustersProperties.getClusters().stream()
-                .filter(c -> !c.getNamespace().isEmpty())
-                .collect(toMap(KafkaProperties::getClusterName,
-                        p -> new NamespaceKafkaNamesMapper(p.getNamespace()))));
-
-        return new KafkaNameMappers(mappers);
+        return createDefaultKafkaNamesMapper(kafkaClustersProperties);
     }
 
     @PreDestroy

@@ -4,21 +4,17 @@ import com.codahale.metrics.MetricRegistry;
 import com.jayway.awaitility.Duration;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.integration.metadata.TraceHeadersPropagator;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.tracker.mongo.frontend.MongoLogRepository;
-
-import java.util.function.Function;
 
 import static com.jayway.awaitility.Awaitility.await;
 
