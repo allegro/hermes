@@ -15,21 +15,22 @@ import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminTool;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 
 import javax.annotation.PostConstruct;
+import java.util.Optional;
 
 @Configuration
 @EnableConfigurationProperties(StorageProperties.class)
@@ -45,12 +46,17 @@ public class StorageConfiguration {
 
     @Bean(name = "storageZookeeper")
     CuratorFramework storageZookeeper() {
-        CuratorFramework curator = CuratorFrameworkFactory.builder()
+        CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                 .connectString(storageProperties.getConnectionString())
                 .sessionTimeoutMs(storageProperties.getSessionTimeout())
                 .connectionTimeoutMs(storageProperties.getConnectTimeout())
-                .retryPolicy(new ExponentialBackoffRetry(storageProperties.getRetrySleep(), storageProperties.getRetryTimes()))
-                .build();
+                .retryPolicy(new ExponentialBackoffRetry(storageProperties.getRetrySleep(), storageProperties.getRetryTimes()));
+
+        Optional.ofNullable(storageProperties.getAuthorization()).ifPresent(it ->
+                builder.authorization(it.getScheme(), (it.getUser() + ":" + it.getPassword()).getBytes())
+        );
+
+        CuratorFramework curator = builder.build();
 
         startAndWaitForConnection(curator);
 

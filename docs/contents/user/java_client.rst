@@ -79,7 +79,7 @@ Requirements:
 
 JVM configured with `ALPN support <http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-starting>`_:
 
-.. code-block::
+.. code-block:: bash
 
     java -Xbootclasspath/p:<path_to_alpn_boot_jar> ...
 

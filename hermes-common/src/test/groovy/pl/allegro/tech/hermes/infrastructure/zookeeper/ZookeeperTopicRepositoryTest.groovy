@@ -112,6 +112,19 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
         repository.getTopicDetails(new TopicName(GROUP, 'update')).description == 'after update'
     }
 
+    def "should touch topic without changing it"() {
+        given:
+        def topic = topic().withName(GROUP, 'touch').withDescription('before update').build()
+        repository.createTopic(topic)
+        wait.untilTopicCreated(GROUP, 'touch')
+
+        when:
+        repository.touchTopic(topic.getName())
+
+        then:
+        repository.getTopicDetails(topic.getName()).description == 'before update'
+    }
+
     def "should throw exception when listing topics from unexistent group"() {
         when:
         repository.listTopics('unknownGroup')

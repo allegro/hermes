@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
@@ -23,12 +24,13 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
     private static final Logger logger = LoggerFactory.getLogger(JmsMessageSender.class);
 
     private final String topicName;
-
     private final JMSContext jmsContext;
+    private final MetadataAppender<javax.jms.Message> metadataAppender;
 
-    public JmsMessageSender(JMSContext jmsContext, String destinationTopic) {
+    public JmsMessageSender(JMSContext jmsContext, String destinationTopic, MetadataAppender<javax.jms.Message> metadataAppender) {
         this.jmsContext = jmsContext;
         this.topicName = destinationTopic;
+        this.metadataAppender = metadataAppender;
     }
 
     @Override
@@ -43,6 +45,8 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
             message.writeBytes(msg.getData());
             message.setStringProperty(TOPIC_NAME.getCamelCaseName(), msg.getTopic());
             message.setStringProperty(MESSAGE_ID.getCamelCaseName(), msg.getId());
+
+            metadataAppender.append(message, msg);
 
             CompletionListener asyncListener = new CompletionListener() {
                 @Override

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @ConfigurationProperties(prefix = "storage")
 public class StorageProperties {
@@ -12,6 +13,9 @@ public class StorageProperties {
     private int retryTimes = 3;
     private int retrySleep = 1000;
     private int sharedCountersExpiration = 72;
+
+    @NestedConfigurationProperty
+    private StorageAuthorizationProperties authorization;
 
     public String getPathPrefix() {
         return pathPrefix;
@@ -67,5 +71,13 @@ public class StorageProperties {
 
     public void setSharedCountersExpiration(int sharedCountersExpiration) {
         this.sharedCountersExpiration = sharedCountersExpiration;
+    }
+
+    public StorageAuthorizationProperties getAuthorization() {
+        return authorization;
+    }
+
+    public void setAuthorization(StorageAuthorizationProperties authorization) {
+        this.authorization = authorization;
     }
 }

@@ -1,12 +1,13 @@
 package pl.allegro.tech.hermes.frontend.publishing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import pl.allegro.tech.common.avro.AvroConversionException;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.message.converter.ConvertingException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.time.Clock;
@@ -20,6 +21,7 @@ import pl.allegro.tech.hermes.frontend.publishing.callbacks.MessageStatePublishi
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
+import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
@@ -32,6 +34,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,6 +56,7 @@ public class PublishingServlet extends HttpServlet {
     private final MessagePublisher messagePublisher;
     private final MessageContentTypeEnforcer contentTypeEnforcer;
     private final MetadataAddingMessageConverter metadataAddingMessageConverter;
+    private final HeadersPropagator headersPropagator;
     private final BrokerListeners listeners;
 
     private final Integer defaultAsyncTimeout;
@@ -69,7 +74,8 @@ public class PublishingServlet extends HttpServlet {
                              MessagePublisher messagePublisher,
                              BrokerListeners listeners,
                              MessageContentTypeEnforcer contentTypeEnforcer,
-                             MetadataAddingMessageConverter metadataAddingMessageConverter) {
+                             MetadataAddingMessageConverter metadataAddingMessageConverter,
+                             HeadersPropagator headersPropagator) {
 
         this.topicsCache = topicsCache;
         this.messageValidators = messageValidators;
@@ -77,6 +83,7 @@ public class PublishingServlet extends HttpServlet {
         this.messagePublisher = messagePublisher;
         this.contentTypeEnforcer = contentTypeEnforcer;
         this.metadataAddingMessageConverter = metadataAddingMessageConverter;
+        this.headersPropagator = headersPropagator;
         this.errorSender = new ErrorSender(objectMapper);
         this.hermesMetrics = hermesMetrics;
         this.trackers = trackers;
@@ -119,7 +126,7 @@ public class PublishingServlet extends HttpServlet {
 
                         messageValidators.check(topic, message.getData());
 
-                        message = metadataAddingMessageConverter.addMetadata(message, topic);
+                        message = metadataAddingMessageConverter.addMetadata(message, topic, headersPropagator.extract(toHeadersMap(request)));
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 
                         messagePublisher.publish(message, topic, messageState,
@@ -130,7 +137,7 @@ public class PublishingServlet extends HttpServlet {
                                         new MetricsPublishingCallback(hermesMetrics, topic),
                                         new BrokerListenersPublishingCallback(listeners)));
 
-                    } catch (InvalidMessageException | ConvertingException | UnsupportedContentTypeException exception) {
+                    } catch (InvalidMessageException | AvroConversionException | UnsupportedContentTypeException exception) {
                         httpResponder.badRequest(exception);
                     } catch (CouldNotLoadSchemaException e) {
                         httpResponder.internalError(e, "Could not load schema for published message");
@@ -138,6 +145,16 @@ public class PublishingServlet extends HttpServlet {
                 }),
                 input -> httpResponder.badRequest(input, "Validation error"),
                 throwable -> httpResponder.internalError(throwable, "Error while reading request"));
+    }
+
+    private Map<String, String> toHeadersMap(HttpServletRequest request) {
+        ImmutableMap.Builder<String, String> builder = ImmutableMap.<String, String>builder();
+        Enumeration<String> headers = request.getHeaderNames();
+        while(headers.hasMoreElements()) {
+            String header = headers.nextElement();
+            builder.put(header, request.getHeader(header));
+        }
+        return builder.build();
     }
 
     private TopicName parseTopicName(HttpServletRequest request) {

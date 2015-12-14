@@ -1,11 +1,13 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
+import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -22,10 +24,18 @@ public class Message {
     private long readingTimestamp;
     private byte[] data;
 
+    private Map<String, String> externalMetadata;
+
     private Message() {}
 
-    public Message(String id, String topic, byte[] content, Topic.ContentType contentType, long publishingTimestamp,
-                   long readingTimestamp, PartitionOffset partitionOffset) {
+    public Message(String id,
+                   String topic,
+                   byte[] content,
+                   Topic.ContentType contentType,
+                   long publishingTimestamp,
+                   long readingTimestamp,
+                   PartitionOffset partitionOffset,
+                   Map<String, String> externalMetadata) {
         this.id = id;
         this.data = content;
         this.topic = topic;
@@ -33,6 +43,7 @@ public class Message {
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
         this.partitionOffset = partitionOffset;
+        this.externalMetadata = externalMetadata;
     }
 
     public long getPublishingTimestamp() {
@@ -72,6 +83,10 @@ public class Message {
 
     public String getId() {
         return id;
+    }
+
+    public Map<String, String> getExternalMetadata() {
+        return ImmutableMap.copyOf(externalMetadata);
     }
 
     @Override
@@ -119,6 +134,7 @@ public class Message {
             this.message.publishingTimestamp = message.getPublishingTimestamp();
             this.message.readingTimestamp = message.getReadingTimestamp();
             this.message.partitionOffset = message.partitionOffset;
+            this.message.externalMetadata = message.getExternalMetadata();
 
             return this;
         }

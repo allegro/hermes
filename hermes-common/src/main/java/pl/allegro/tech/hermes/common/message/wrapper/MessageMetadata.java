@@ -1,19 +1,29 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 
+import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Optional.ofNullable;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MessageMetadata {
 
     private final long timestamp;
     private final String id;
+    private final Map<String, String> externalMetadata;
 
     @JsonCreator
-    public MessageMetadata(@JsonProperty("timestamp") long timestamp, @JsonProperty("id") String id) {
+    public MessageMetadata(@JsonProperty("timestamp") long timestamp,
+                           @JsonProperty("id") String id,
+                           @JsonProperty("externalMetadata") Map<String, String> externalMetadata) {
         this.id = id;
         this.timestamp = timestamp;
+        this.externalMetadata = ofNullable(externalMetadata).orElseGet(ImmutableMap::<String, String>of);
     }
 
     public String getId() {
@@ -22,6 +32,10 @@ public class MessageMetadata {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public Map<String, String> getExternalMetadata() {
+        return ImmutableMap.copyOf(externalMetadata);
     }
 
     @Override
@@ -38,6 +52,7 @@ public class MessageMetadata {
             return false;
         }
         final MessageMetadata other = (MessageMetadata) obj;
-        return Objects.equals(this.id, other.id) && Objects.equals(this.timestamp, other.timestamp);
+        return Objects.equals(this.id, other.id)
+                && Objects.equals(this.timestamp, other.timestamp);
     }
 }

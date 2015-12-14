@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
+import java.util.Map;
 
 public class MessageContentWrapper {
 
@@ -35,11 +36,11 @@ public class MessageContentWrapper {
         throw new UnsupportedContentTypeException(topic);
     }
 
-    public byte[] wrap(byte[] data, String id, long timestamp, Topic topic) {
+    public byte[] wrap(byte[] data, String id, long timestamp, Topic topic, Map<String, String> externalMetadata) {
         if (topic.getContentType() == Topic.ContentType.JSON) {
-            return jsonMessageContentWrapper.wrapContent(data, id, timestamp);
+            return jsonMessageContentWrapper.wrapContent(data, id, timestamp, externalMetadata);
         } else if (topic.getContentType() == Topic.ContentType.AVRO) {
-            return avroMessageContentWrapper.wrapContent(data, id, timestamp, avroSchemaRepository.getSchema(topic));
+            return avroMessageContentWrapper.wrapContent(data, id, timestamp, avroSchemaRepository.getSchema(topic), externalMetadata);
         }
 
         throw new UnsupportedContentTypeException(topic);

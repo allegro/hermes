@@ -3,7 +3,7 @@ dependencies {
     compile project(':hermes-tracker')
     compile project(':hermes-metrics')
 
-    compile group: 'org.glassfish.jersey.connectors', name: 'jersey-jetty-connector', version: versions.jersey
+    compile group: 'org.eclipse.jetty', name: 'jetty-client', version: '9.3.6.v20151106'
 
     compile group: 'javax.jms', name: 'javax.jms-api', version: '2.0'
     compile group: 'com.jayway.jsonpath', name: 'json-path', version: '0.9.1'

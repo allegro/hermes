@@ -49,16 +49,20 @@ public class SubscriptionManagementTest extends IntegrationTest {
         Topic topic = operations.buildTopic("subscribeGroup", "topic");
 
         // when
-        Response response = management.subscription().create(topic.getQualifiedName(),
-                subscription().withName("subscription").withEndpoint(EndpointAddress.of("http://whatever.com")).applyDefaults().build());
+        Response response = management.subscription().create(
+                topic.getQualifiedName(),
+                subscription().withName("subscription").withEndpoint(EndpointAddress.of("http://whatever.com"))
+                        .withSupportTeam("team")
+                        .applyDefaults().build()
+        );
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
         wait.untilSubscriptionCreated(topic, "subscription", false);
-        Assertions.assertThat(management.subscription().list(topic.getQualifiedName(), false)).containsExactly("subscription");
+        assertThat(management.subscription().list(topic.getQualifiedName(), false)).containsExactly("subscription");
         wait.untilSubscriptionIsActivated(topic, "subscription");
     }
-    
+
     @Test
     public void shouldSuspendSubscription() {
         // given
@@ -84,7 +88,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // when
         Response response = management.subscription().remove(topic.getQualifiedName(), "subscription");
-        
+
         // then
         assertThat(response).hasStatus(Response.Status.OK);
         assertThat(management.subscription().list(topic.getQualifiedName(), false)).doesNotContain(
@@ -99,6 +103,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
                 .withTrackingEnabled(true)
+                .withSupportTeam("team")
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
                 .build();
 
@@ -128,6 +133,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
                 .withName("sub")
                 .withTopicName(topic.getName())
                 .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL))
+                .withSupportTeam("team")
                 .withTrackingEnabled(true).build();
         operations.createSubscription(topic, subscription);
         operations.createSubscription(topic, "sub2", HTTP_ENDPOINT_URL);
@@ -137,6 +143,28 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(tracked).containsExactly(subscription.getName());
+    }
+
+    @Test
+    public void shouldReturnsTrackedAndNotSuspendedSubscriptionsForGivenTopic() {
+
+        // given
+        Topic topic = operations.buildTopic("queried", "topic");
+        Subscription subscription1 = createSubscription(topic, "sub1", true);
+        Subscription subscription2 = createSubscription(topic, "sub2", true);
+        operations.createSubscription(topic, subscription1);
+        operations.createSubscription(topic, subscription2);
+        operations.createSubscription(topic, "sub3", HTTP_ENDPOINT_URL);
+        operations.suspendSubscription(topic, subscription2.getName());
+
+        // and
+        String query = "{\"query\": {\"trackingEnabled\": \"true\", \"state\": {\"ne\": \"SUSPENDED\"}}}";
+
+        // when
+        List<String> tracked = management.subscription().queryList(topic.getQualifiedName(), query);
+
+        // then
+        Assertions.assertThat(tracked).containsExactly(subscription1.getName());
     }
 
     @Test
@@ -150,6 +178,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
                     .create(topic.getQualifiedName(), subscription()
                             .withName(name)
                             .withTopicName(topic.getName())
+                            .withSupportTeam("team")
                             .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL)).build());
 
             // then
@@ -159,10 +188,20 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
         Response response = management.subscription().getMessageTrace(topic, subscription, messageId);
-        return response.readEntity(new GenericType<List<Map<String,String>>>() {});
+        return response.readEntity(new GenericType<List<Map<String, String>>>() {
+        });
     }
 
     private String publishMessage(String topic, String body) {
         return client.publish(topic, body).join().getMessageId();
+    }
+
+    private Subscription createSubscription(Topic topic, String name, boolean tracked) {
+        return subscription()
+                .withName(name)
+                .withTopicName(topic.getName())
+                .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL))
+                .withSupportTeam("team")
+                .withTrackingEnabled(tracked).build();
     }
 }

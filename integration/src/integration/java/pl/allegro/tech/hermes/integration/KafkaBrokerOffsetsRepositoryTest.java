@@ -8,13 +8,13 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BlockingChannelFactory;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,7 +42,7 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        kafkaTopicName = new KafkaNamesMapper(KAFKA_NAMESPACE).toKafkaTopics(topic).getPrimary().name();
+        kafkaTopicName = new NamespaceKafkaNamesMapper(KAFKA_NAMESPACE).toKafkaTopics(topic).getPrimary().name();
         subscription = new Subscription.Builder().withTopicName(topic.getName()).withName(subscriptionName).build();
 
         hostnameResolver = mock(HostnameResolver.class);
@@ -57,7 +57,7 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
         wait.waitUntilConsumerMetadataAvailable(subscription, kafkaHost, kafkaPort);
 
         blockingChannelFactory = new BlockingChannelFactory(HostAndPort.fromParts(kafkaHost, kafkaPort), readTimeout);
-        offsetStorage = new BrokerOffsetsRepository(blockingChannelFactory, new SystemClock(), hostnameResolver, new KafkaNamesMapper(KAFKA_NAMESPACE), channelExpTime);
+        offsetStorage = new BrokerOffsetsRepository(blockingChannelFactory, new SystemClock(), hostnameResolver, new NamespaceKafkaNamesMapper(KAFKA_NAMESPACE), channelExpTime);
     }
 
     @Test
@@ -102,7 +102,7 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
         // given
         PartitionOffset partitionOffset = new PartitionOffset(kafkaTopicName, 20, 0);
         blockingChannelFactory = new UnreliableBlockingChannelFactory(HostAndPort.fromParts(kafkaHost, kafkaPort), readTimeout);
-        offsetStorage = new BrokerOffsetsRepository(blockingChannelFactory, new SystemClock(), hostnameResolver, new KafkaNamesMapper(KAFKA_NAMESPACE), channelExpTime);
+        offsetStorage = new BrokerOffsetsRepository(blockingChannelFactory, new SystemClock(), hostnameResolver, new NamespaceKafkaNamesMapper(KAFKA_NAMESPACE), channelExpTime);
 
         // when
         try {

@@ -6,9 +6,12 @@ import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.uri.UriUtils;
+
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
+import javax.jms.Message;
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
 
@@ -16,10 +19,12 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
 
     protected final ConfigFactory configFactory;
     protected final LoadingCache<URI, ConnectionFactory> connectionFactoryCache;
+    protected final MetadataAppender<Message> metadataAppender;
 
-    public AbstractJmsMessageSenderProvider(ConfigFactory configFactory) {
+    public AbstractJmsMessageSenderProvider(ConfigFactory configFactory, MetadataAppender<Message> metadataAppender) {
         this.configFactory = configFactory;
         this.connectionFactoryCache = CacheBuilder.newBuilder().build(new ConnectionFactoryLoader());
+        this.metadataAppender = metadataAppender;
     }
 
     @Override
@@ -31,7 +36,7 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
                 UriUtils.extractPasswordFromUri(endpointURI)
         );
 
-        return new JmsMessageSender(jmsContext, extractTopicName(endpointURI));
+        return new JmsMessageSender(jmsContext, extractTopicName(endpointURI), metadataAppender);
     }
 
     @Override
