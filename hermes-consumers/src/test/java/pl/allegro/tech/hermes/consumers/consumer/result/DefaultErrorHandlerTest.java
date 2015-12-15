@@ -15,12 +15,12 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -77,7 +77,7 @@ public class DefaultErrorHandlerTest {
     public void setUp() {
         when(subscription.getName()).thenReturn(SUBSCRIPTION_NAME);
         when(subscription.getTopicName()).thenReturn(QUALIFIED_TOPIC_NAME);
-        when(clock.getTime()).thenReturn(CURRENT_TIME);
+        when(clock.millis()).thenReturn(CURRENT_TIME);
         defaultErrorHandler = new DefaultErrorHandler(offsetHelper, hermesMetrics, undeliveredMessageLog, clock, trackers, CLUSTER);
         reset(hermesMetrics);
     }

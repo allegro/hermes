@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
@@ -34,6 +33,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Clock;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Optional;
@@ -122,7 +122,7 @@ public class PublishingServlet extends HttpServlet {
                 messageContent -> asyncContext.start(() -> {
                     try {
                         Message message = contentTypeEnforcer.enforce(request.getContentType(),
-                                new Message(messageId, messageContent, clock.getTime()), topic);
+                                new Message(messageId, messageContent, clock.millis()), topic);
 
                         messageValidators.check(topic, message.getData());
 

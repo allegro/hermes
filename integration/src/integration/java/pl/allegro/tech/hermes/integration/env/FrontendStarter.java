@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.integration.metadata.TraceHeadersPropagator;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
@@ -44,6 +45,8 @@ public class FrontendStarter implements Starter<HermesFrontend> {
                     configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
                     serviceLocator.getService(MetricRegistry.class),
                     serviceLocator.getService(PathsCompiler.class)))
+            .withKafkaTopicsNamesMapper(serviceLocator ->
+                    new JsonToAvroMigrationKafkaNamesMapper(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)))
             .build();
 
         client = new OkHttpClient();

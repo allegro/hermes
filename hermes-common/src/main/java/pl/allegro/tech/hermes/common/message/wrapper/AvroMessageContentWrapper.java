@@ -4,8 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
+import pl.allegro.tech.hermes.common.util.MessageId;
 
+import javax.inject.Inject;
+import java.time.Clock;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
@@ -16,24 +21,35 @@ import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.M
 
 public class AvroMessageContentWrapper {
 
+    private final Clock clock;
+
+    @Inject
+    public AvroMessageContentWrapper(Clock clock) {
+        this.clock = clock;
+    }
+
     @SuppressWarnings("unchecked")
     UnwrappedMessageContent unwrapContent(byte[] data, Schema schema) {
         try {
-            GenericRecord record = bytesToRecord(data, schema);
-            Map<Utf8, Utf8> metadata = (Map<Utf8, Utf8>) record.get(METADATA_MARKER);
+            Map<Utf8, Utf8> metadata = (Map<Utf8, Utf8>) bytesToRecord(data, schema).get(METADATA_MARKER);
+            MessageMetadata messageMetadata = getMetadata(metadata);
 
-            long timestamp = Long.parseLong(metadata.remove(METADATA_TIMESTAMP_KEY).toString());
-            String messageId = metadata.remove(METADATA_MESSAGE_ID_KEY).toString();
-            Map<String, String> externalMetadata = extractMetadata(metadata);
-
-            return new UnwrappedMessageContent(
-                new MessageMetadata(
-                    timestamp,
-                    messageId,
-                    externalMetadata),
-                data);
+            return new UnwrappedMessageContent(messageMetadata, data);
         } catch (Exception exception) {
             throw new UnwrappingException("Could not read avro message", exception);
+        }
+    }
+
+    private MessageMetadata getMetadata(Map<Utf8, Utf8> metadata) {
+        if (metadata == null) {
+            long timestamp = clock.millis();
+            return new MessageMetadata(timestamp, MessageId.forTimestamp(timestamp), Collections.EMPTY_MAP);
+        } else {
+            long timestamp = metadata.containsKey(METADATA_TIMESTAMP_KEY) ? timestampFromMetadata(metadata) : clock.millis();
+            String messageId = metadata.containsKey(METADATA_MESSAGE_ID_KEY) ? messageIdFromMetadata(metadata) :
+                    MessageId.forTimestamp(timestamp);
+
+            return new MessageMetadata(timestamp, messageId, extractMetadata(metadata));
         }
     }
 
@@ -47,7 +63,7 @@ public class AvroMessageContentWrapper {
         }
     }
 
-    private static Map<Utf8, Utf8> metadataMap(String id, long timestamp, Map<String, String> externalMetadata) {
+    private Map<Utf8, Utf8> metadataMap(String id, long timestamp, Map<String, String> externalMetadata) {
         ImmutableMap.Builder<Utf8, Utf8> builder = ImmutableMap.<Utf8, Utf8>builder();
         builder.put(METADATA_MESSAGE_ID_KEY, new Utf8(id));
         builder.put(METADATA_TIMESTAMP_KEY, new Utf8(Long.toString(timestamp)));
@@ -55,8 +71,17 @@ public class AvroMessageContentWrapper {
         return builder.build();
     }
 
-    private static Map<String, String> extractMetadata(Map<Utf8, Utf8> metadata) {
-        return metadata.entrySet()
+    private long timestampFromMetadata(Map<Utf8, Utf8> metadata) {
+        return Long.parseLong(metadata.remove(METADATA_TIMESTAMP_KEY).toString());
+    }
+
+    private String messageIdFromMetadata(Map<Utf8, Utf8> metadata) {
+        return metadata.remove(METADATA_MESSAGE_ID_KEY).toString();
+    }
+
+    private Map<String, String> extractMetadata(Map<Utf8, Utf8> metadata) {
+        return Optional.ofNullable(metadata).orElse(Collections.emptyMap())
+                .entrySet()
                 .stream()
                 .collect(Collectors.toMap(
                         entry -> entry.getKey().toString(),
