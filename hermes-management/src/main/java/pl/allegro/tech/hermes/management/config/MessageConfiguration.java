@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
+import java.time.Clock;
+
 @Configuration
 @EnableConfigurationProperties(MessageProperties.class)
 public class MessageConfiguration {
@@ -21,6 +23,9 @@ public class MessageConfiguration {
     @Autowired
     SchemaRepository<Schema> avroSchemaRepository;
 
+    @Autowired
+    Clock clock;
+
     @Bean
     ObjectMapper objectMapper() {
         return new ObjectMapper();
@@ -28,7 +33,7 @@ public class MessageConfiguration {
 
     @Bean
     MessageContentWrapper messageContentWrapper() {
-        return new MessageContentWrapper(jsonMessageContentWrapper(), new AvroMessageContentWrapper(), avroSchemaRepository);
+        return new MessageContentWrapper(jsonMessageContentWrapper(), new AvroMessageContentWrapper(clock), avroSchemaRepository);
     }
 
     private JsonMessageContentWrapper jsonMessageContentWrapper() {

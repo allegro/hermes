@@ -10,11 +10,11 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.time.SystemClock;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.consumers.test.Wait;
 
+import java.time.Clock;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +36,7 @@ public class SubscriptionOffsetCommitQueuesTest {
     private ConfigFactory configFactory = Mockito.mock(ConfigFactory.class);
 
     private SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues =
-            new SubscriptionOffsetCommitQueues(subscription, hermesMetrics, new SystemClock(), configFactory);
+            new SubscriptionOffsetCommitQueues(subscription, hermesMetrics, Clock.systemDefaultZone(), configFactory);
 
     @Before
     public void setUp() {
@@ -44,7 +44,7 @@ public class SubscriptionOffsetCommitQueuesTest {
         Mockito.when(configFactory.getIntProperty(Configs.CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE)).thenReturn(100);
         Mockito.when(configFactory.getIntProperty(Configs.CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD)).thenReturn(10);
 
-        subscriptionOffsetCommitQueues = new SubscriptionOffsetCommitQueues(subscription, hermesMetrics, new SystemClock(), configFactory);
+        subscriptionOffsetCommitQueues = new SubscriptionOffsetCommitQueues(subscription, hermesMetrics, Clock.systemDefaultZone(), configFactory);
     }
 
     @Test

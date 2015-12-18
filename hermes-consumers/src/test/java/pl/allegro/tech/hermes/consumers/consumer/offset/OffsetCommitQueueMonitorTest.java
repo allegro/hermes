@@ -8,7 +8,8 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.time.Clock;
+
+import java.time.Clock;
 
 import static org.mockito.Mockito.*;
 
@@ -74,7 +75,7 @@ public class OffsetCommitQueueMonitorTest {
     @Test
     public void shouldReportIdlenessWhenIdlePeriodIsTooLong() {
         // given
-        when(clock.getTime()).thenReturn(1000L).thenReturn(2_000_000L);
+        when(clock.millis()).thenReturn(1000L).thenReturn(2_000_000L);
 
         // when
         monitor.newOffsetCommit();
@@ -91,7 +92,7 @@ public class OffsetCommitQueueMonitorTest {
     @Test
     public void shouldNotReportIdlenessWhenIdlePeriodIsTooLongButOffsetHasChanged() {
         // given
-        when(clock.getTime()).thenReturn(1000L).thenReturn(1_000_000_000L);
+        when(clock.millis()).thenReturn(1000L).thenReturn(1_000_000_000L);
 
         // when
         monitor.newOffsetCommit();
@@ -107,7 +108,7 @@ public class OffsetCommitQueueMonitorTest {
     @Test
     public void shouldNotReportIdlenessWhenNothingToCommitMethodIsCalledOnce() {
         // given
-        when(clock.getTime()).thenReturn(1000L).thenReturn(1_000_000_000L);
+        when(clock.millis()).thenReturn(1000L).thenReturn(1_000_000_000L);
 
         // when
         monitor.newOffsetCommit();

@@ -16,4 +16,11 @@ public class MessageId {
                 .toString();
 
     }
+
+    public static String forTimestamp(long timestamp) {
+        return HASH_FUNCTION.newHasher()
+                .putLong(timestamp)
+                .hash()
+                .toString();
+    }
 }
