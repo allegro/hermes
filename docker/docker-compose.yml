@@ -3,16 +3,16 @@ zookeeper:
   ports:
     - "2181:2181"
   volumes:
-    - data/zookeeper:/opt/zookeeper-3.4.6/data
+    - ./data/zookeeper:/opt/zookeeper-3.4.6/data
 
 kafka:
-  image: wurstmeister/kafka:0.8.2.0
+  image: wurstmeister/kafka:0.8.2.1
   ports:
     - "9092:9092"
   links:
     - zookeeper:zk
   environment:
-    KAFKA_ADVERTISED_HOST_NAME: 192.168.59.103
+    KAFKA_ADVERTISED_HOST_NAME: 172.17.0.1
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
 
@@ -25,7 +25,7 @@ graphite:
 frontend:
   image: allegro/hermes-frontend
   ports:
-    - "8888:8080"
+    - "8080:8080"
   links:
     - zookeeper:zk
     - kafka
@@ -41,7 +41,7 @@ consumers:
 management:
   image: allegro/hermes-management
   ports:
-    - "8080:8090"
+    - "8090:8090"
   links:
     - zookeeper:zk
     - kafka
