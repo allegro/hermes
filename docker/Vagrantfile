@@ -1,0 +1,64 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "ubuntu/precise64"
+  config.vm.network "private_network", ip: "10.10.10.10"
+  config.vm.hostname = "hermes-docker"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+    vb.name = "hermes-docker"
+  end
+  config.vm.post_up_message = """
+
+
+    ╥⌂
+    ╫▓▄Z,
+    ║▒▒▓▄Å╦
+    ╚▒▒▓▓▌▄▀▄
+     ▒▒▓▓▓▓▌▄▀▄
+     ╡▀▓▓▓▓▓▓▓▄▀▌µ
+     ╫▒╬▀▓▓▓▓▓▓▓▄▄▀▄▄
+      ▓▓▓▄▒▀█▓▓▓▓▓▓▄▄▀█▄▄,
+      ╙▓▓▓▓▓▒▄▒▀█▓▓▓▓▓▓▄▄▀▀█▓▓▌▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄,
+        █▓▓▓▓▓▓▓▒▄▄▒▀▀█▓▓▓▌ ▒▄▄▄▄▌▌▌▌▌▌▌▌▌▌▌▀▀▀██▓▓▄▄
+       '▄▄▀██▓▓▓▓▓▓▓▓▓▓▄▄▄Qδ ▀▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▌▄▌▀█▓▌▄
+        └█▓▒▒▄▄▒▀▀▀███▓▓▓▓▓▓ ╚▄▀█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▄▌█▓▌,
+          ▀▓▓▓▓▓▓▓▓▓▓▒▒▄▄▄▄▄▄╕▀▓▓▌▄▄▌▀▀▀▀▌▌▌▌▄▄▌▌▌▌▀█▓▓▓▓▄▀▓▓╕
+            ▀█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓╦╙▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▄▌▀▓▓▄▀▓▌
+           └▒▒▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▒▄  ▀▓▓▓▓▓▓▓▓▓▓▓███████▓▓▓▓▓▌▄█▓╝
+             ╙█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█▀─╚▌▌▌▄▄▄▄▄▄▓▓▓▓▓▓▓▓▓▓▓▓▓▀▓▓▀
+                `Σ▀▀▀▀▀▀Q▄▄▄▄▒▓▓▓▄╙▓▓▓▓▓▓▓▓▓▓▓███▀▀▀▀██▓▓δ
+                 `╨▒▀█▓▓▓▓▓▓▓▓▓▓▓▓▌▄▀█▓▓█▀▀▄▄▒▀▀▀▀▀▀▀▀▀Γ
+                     `²¥╬▌▀▀███████▀▀▄▄▄█▀Γ.
+                            ΓΓ╙╨▀▀▀▀Γ
+    ,▓Θ
+    ▓▓▌
+    ▓▓▓▓▓▓▌▄   ▄▓▓▓▓▌▄  ▓▓▌▓▓▌`╫▓▓▓▓▓▄▄▓▓▓▌╕  ,▄▓▓▓▓▌▄  ╓▄▓▓▓▓▌▄
+    ▓▓▓   ▓▓µ╓▓▓▀   ▀▓▓ ▓▓▓Γ   █▓█  ▀▓▓Γ └▓▓µ╠▓▓Γ   █▓▓ ▓▓▌ . ▀
+    ▓▓▌   ╫▓▌█▓▓▓▓▓▓▓▓▓∩▓▓µ    █▓▌  ]▓▓   ▓▓▌▓▓▓▓▓▓▓▓▓▓  ▀█▓▓▓▌╕
+    ▓▓▌   ╫▓▌╙▓▓▄  ,▄▌▄ ▓▓µ    █▓▌  ]▓▓   ▓▓▌╙▓▓▄  ,▄▌╕ ,▄, ,╠▓▓
+    ██Γ   ▀█▌  ▀█████▀  ██⌐    ██Θ  ╘██   ██Γ  ▀█████▀  ▀█████▀
+
+
+        * Frontend:           http://10.10.10.10:8080
+        * Management:         http://10.10.10.10:8090
+
+        * Graphite (metrics): http://10.10.10.10:80
+
+   """
+
+  config.vm.provision "docker", images: ["allegro/hermes-frontend", "allegro/hermes-consumers",
+    "allegro/hermes-management", "nickstenning/graphite", "wurstmeister/zookeeper", "wurstmeister/kafka:0.8.2.1"]
+
+  config.vm.provision "shell", inline: <<-EOF
+    curl -LsS https://github.com/docker/compose/releases/download/1.5.2/docker-compose-`uname -s`-`uname -m` \
+        --output /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
+    docker-compose --version
+  EOF
+
+  config.vm.provision "shell", run: "always", inline: <<-EOF
+    docker-compose -f /vagrant/docker-compose.yml up -d
+  EOF
+end
