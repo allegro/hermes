@@ -24,6 +24,8 @@ import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument
 
 public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument> implements LogRepository, LogSchemaAware {
 
+    private static final int DOCUMENT_EXPECTED_SIZE = 1024;
+
     private ConsumersElasticsearchLogRepository(Client elasticClient, String clusterName, int queueSize, int commitInterval,
                                                 IndexFactory indexFactory, String typeName, MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
         super(queueSize, clusterName, metricRegistry, pathsCompiler);
@@ -65,7 +67,7 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
 
     protected XContentBuilder notEndedDocument(MessageMetadata message, long timestamp, String status)
             throws IOException {
-        return jsonBuilder()
+        return jsonBuilder(new BytesStreamOutput(DOCUMENT_EXPECTED_SIZE))
                 .startObject()
                 .field(MESSAGE_ID, message.getId())
                 .field(TIMESTAMP, timestamp)

@@ -22,6 +22,8 @@ import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument
 
 public class FrontendElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument> implements LogRepository, LogSchemaAware {
 
+    private static final int DOCUMENT_EXPECTED_SIZE = 1024;
+
     private FrontendElasticsearchLogRepository(Client elasticClient,
                                                String clusterName,
                                                int queueSize,
@@ -66,7 +68,7 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
 
     protected XContentBuilder notEndedDocument(String messageId, long timestamp, String topicName, String status)
             throws IOException {
-        return jsonBuilder()
+        return jsonBuilder(new BytesStreamOutput(DOCUMENT_EXPECTED_SIZE))
                 .startObject()
                 .field(MESSAGE_ID, messageId)
                 .field(TIMESTAMP, timestamp)
