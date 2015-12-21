@@ -2,16 +2,14 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.consumers;
 
 import com.codahale.metrics.MetricRegistry;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
-import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchQueueCommitter;
-import pl.allegro.tech.hermes.tracker.elasticsearch.IndexFactory;
-import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
-import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
+import pl.allegro.tech.hermes.tracker.elasticsearch.*;
 import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Gauges;
 import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Timers;
 
@@ -22,9 +20,9 @@ import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FAILED;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.SUCCESS;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.DocumentBuilder.build;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
 
-public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<XContentBuilder> implements LogRepository, LogSchemaAware {
+public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument> implements LogRepository, LogSchemaAware {
 
     private ConsumersElasticsearchLogRepository(Client elasticClient, String clusterName, int queueSize, int commitInterval,
                                                 IndexFactory indexFactory, String typeName, MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
@@ -57,11 +55,11 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<X
         queue.offer(document(message, timestamp, INFLIGHT));
     }
 
-    private XContentBuilder document(MessageMetadata message, long createdAt, SentMessageTraceStatus status) {
+    private ElasticsearchDocument document(MessageMetadata message, long createdAt, SentMessageTraceStatus status) {
         return build(() -> notEndedDocument(message, createdAt, status.toString()).endObject());
     }
 
-    private XContentBuilder document(MessageMetadata message, long timestamp, SentMessageTraceStatus status, String reason) {
+    private ElasticsearchDocument document(MessageMetadata message, long timestamp, SentMessageTraceStatus status, String reason) {
         return build(() -> notEndedDocument(message, timestamp, status.toString()).field(REASON, reason).endObject());
     }
 
