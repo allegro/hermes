@@ -76,7 +76,7 @@ public class TopicService {
                     String.format("Could not create topic %s, rollback topic creation.", topic.getQualifiedName()),
                     exception
             );
-            multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
+            topicRepository.removeTopic(topic.getName());
         }
     }
 
