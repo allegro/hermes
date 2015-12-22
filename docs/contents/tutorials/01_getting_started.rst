@@ -103,7 +103,7 @@ So let's create a ``clicks-receiver`` subscription:
 
 .. code-block:: bash
 
-    curl -d '{"name": "clicks-receiver", "endpoint": "http://requestb.in/1isy54g1"}' -H "Content-Type: application/json" http://192.168.59.103:8080/topics/com.example.events.clicks/subscriptions
+    curl -d '{"name": "clicks-receiver", "endpoint": "http://requestb.in/1isy54g1", "supportTeam": "my-team"}' -H "Content-Type: application/json" http://192.168.59.103:8080/topics/com.example.events.clicks/subscriptions
 
 (replace ``http://requestb.in/1isy54g1`` with your local service url or your own RequestBin link)
 
