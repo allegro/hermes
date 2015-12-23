@@ -1,15 +1,13 @@
 package pl.allegro.tech.hermes.integration;
 
+import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.BeforeClass;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
-
-import java.util.Arrays;
 
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 
@@ -31,9 +29,10 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
         this.publisher = new HermesPublisher(FRONTEND_URL);
         this.wait = new Waiter(management, services().zookeeper(), services().kafkaZookeeper(), KAFKA_NAMESPACE);
         this.operations = new HermesAPIOperations(management, wait);
-        this.brokerOperations = new BrokerOperations(Arrays.asList(PRIMARY_ZK_KAFKA_CONNECT, SECONDARY_ZK_KAFKA_CONNECT),
-                CONFIG_FACTORY.getIntProperty(Configs.ZOOKEEPER_SESSION_TIMEOUT),
-                CONFIG_FACTORY.getIntProperty(Configs.ZOOKEEPER_CONNECTION_TIMEOUT));
+        this.brokerOperations = new BrokerOperations(
+                ImmutableMap.of(PRIMARY_KAFKA_CLUSTER_NAME, PRIMARY_ZK_KAFKA_CONNECT,
+                                SECONDARY_KAFKA_CLUSTER_NAME, SECONDARY_ZK_KAFKA_CONNECT),
+                CONFIG_FACTORY);
     }
 
 }
