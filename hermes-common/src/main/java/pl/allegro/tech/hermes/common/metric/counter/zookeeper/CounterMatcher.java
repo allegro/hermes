@@ -7,12 +7,10 @@ import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 class CounterMatcher {
 
     private final String counterName;
-    private final String hostname;
     private String topicName;
     private Optional<String> subscription;
 
-    public CounterMatcher(String counterName, String hostname) {
-        this.hostname = escapeDots(hostname);
+    public CounterMatcher(String counterName) {
         this.counterName = counterName;
         parseCounter(counterName);
     }
@@ -29,19 +27,19 @@ class CounterMatcher {
     }
 
     public boolean isTopicPublished() {
-        return counterName.contains(hostname + ".published.");
+        return counterName.contains("published.");
     }
 
     public boolean isSubscriptionDelivered() {
-        return counterName.contains(hostname + ".delivered.");
+        return counterName.contains("delivered.");
     }
 
     public boolean isSubscriptionDiscarded() {
-        return counterName.contains(hostname + ".discarded");
+        return counterName.contains("discarded");
     }
 
     public boolean isSubscriptionInflight() {
-        return counterName.contains(hostname + ".inflight.");
+        return counterName.contains("inflight.");
     }
 
     public String getTopicName() {

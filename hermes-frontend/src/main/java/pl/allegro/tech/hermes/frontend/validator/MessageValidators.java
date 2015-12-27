@@ -20,8 +20,8 @@ public class MessageValidators {
     }
 
     public void check(Topic topic, byte[] message) {
-        try (Timer.Context globalValidationTimerContext = hermesMetrics.timer(Timers.PRODUCER_VALIDATION_LATENCY).time();
-             Timer.Context topicValidationTimerContext = hermesMetrics.timer(Timers.PRODUCER_VALIDATION_LATENCY, topic.getName()).time()) {
+        try (Timer.Context globalValidationTimerContext = hermesMetrics.timer(Timers.VALIDATION_LATENCY).time();
+             Timer.Context topicValidationTimerContext = hermesMetrics.timer(Timers.VALIDATION_LATENCY, topic.getName()).time()) {
             messageValidators.forEach(v -> v.check(message, topic));
         }
     }

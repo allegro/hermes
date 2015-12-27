@@ -75,6 +75,8 @@ public class ConsumersBinder extends AbstractBinder {
         bind(JettyHttpMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
                 .in(Singleton.class).named("defaultHttpMessageSenderProvider");
 
+        bind("consumer").named("moduleName").to(String.class);
+
         bindSingleton(ConsumersSupervisor.class);
         bindSingleton(MessageSenderFactory.class);
         bindSingleton(ConsumerFactory.class);

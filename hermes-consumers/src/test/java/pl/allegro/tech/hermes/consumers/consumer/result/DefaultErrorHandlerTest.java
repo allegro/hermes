@@ -101,7 +101,7 @@ public class DefaultErrorHandlerTest {
     @Test
     public void shouldAddDiscardedEventToUndeliveredMessageLogWhenPolicyExhausted() {
         //given
-        when(hermesMetrics.counter(Counters.CONSUMER_INFLIGHT, QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME)).thenReturn(counter);
+        when(hermesMetrics.counter(Counters.INFLIGHT, QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME)).thenReturn(counter);
         InternalProcessingException cause = new InternalProcessingException("Test cause.");
 
         //when

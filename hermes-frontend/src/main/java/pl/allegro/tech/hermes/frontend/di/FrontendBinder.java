@@ -39,6 +39,8 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(PublishingServlet.class);
         bindSingleton(MessageValidators.class);
 
+        bind("producer").named("moduleName").to(String.class);
+
         bindSingleton(HealthCheckService.class);
         bind(DefaultHeadersPropagator.class).to(HeadersPropagator.class).in(Singleton.class);
 
