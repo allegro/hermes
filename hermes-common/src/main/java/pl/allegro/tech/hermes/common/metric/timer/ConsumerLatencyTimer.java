@@ -11,8 +11,8 @@ public class ConsumerLatencyTimer {
     private final Timer subscriptionLatencyTimer;
 
     public ConsumerLatencyTimer(HermesMetrics hermesMetrics, TopicName topicName, String subscriptionName) {
-        latencyTimer = hermesMetrics.timer(Timers.CONSUMER_LATENCY);
-        subscriptionLatencyTimer = hermesMetrics.timer(Timers.CONSUMER_SUBSCRIPTION_LATENCY, topicName, subscriptionName);
+        latencyTimer = hermesMetrics.timer(Timers.LATENCY);
+        subscriptionLatencyTimer = hermesMetrics.timer(Timers.SUBSCRIPTION_LATENCY, topicName, subscriptionName);
     }
 
     public Context time() {

@@ -23,9 +23,9 @@ import java.util.TreeMap;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hermes.common.metric.Counters.CONSUMER_DELIVERED;
-import static pl.allegro.tech.hermes.common.metric.Counters.CONSUMER_DISCARDED;
-import static pl.allegro.tech.hermes.common.metric.Counters.PRODUCER_PUBLISHED;
+import static pl.allegro.tech.hermes.common.metric.Counters.DELIVERED;
+import static pl.allegro.tech.hermes.common.metric.Counters.DISCARDED;
+import static pl.allegro.tech.hermes.common.metric.Counters.PUBLISHED;
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -46,13 +46,13 @@ public class ZookeeperCounterReporterTest {
 
     private static PathsCompiler pathsCompiler = new PathsCompiler("localhost.domain");
 
-    public static final String METRIC_NAME_FOR_PUBLISHED = pathsCompiler.compile(PRODUCER_PUBLISHED,
+    public static final String METRIC_NAME_FOR_PUBLISHED = pathsCompiler.compile(PUBLISHED,
             pathContext().withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME).build());
 
-    public static final String METRIC_NAME_FOR_DELIVERED = pathsCompiler.compile(CONSUMER_DELIVERED,
+    public static final String METRIC_NAME_FOR_DELIVERED = pathsCompiler.compile(DELIVERED,
             pathContext().withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME).withSubscription(SUBSCRIPTION_NAME_UNDERSCORE).build());
 
-    public static final String METRIC_NAME_FOR_DISCARDED = pathsCompiler.compile(CONSUMER_DISCARDED,
+    public static final String METRIC_NAME_FOR_DISCARDED = pathsCompiler.compile(DISCARDED,
             pathContext().withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME).withSubscription(SUBSCRIPTION_NAME_UNDERSCORE).build());
 
     @Mock
@@ -78,7 +78,7 @@ public class ZookeeperCounterReporterTest {
     public void before() {
         when(configFactory.getStringProperty(Configs.GRAPHITE_PREFIX)).thenReturn(GRAPHITE_PREFIX);
         when(hostnameResolver.resolve()).thenReturn("localhost.domain");
-        zookeeperCounterReporter = new ZookeeperCounterReporter(metricRegistry, counterStorage, hostnameResolver, configFactory);
+        zookeeperCounterReporter = new ZookeeperCounterReporter(metricRegistry, counterStorage, configFactory);
     }
 
     @Test

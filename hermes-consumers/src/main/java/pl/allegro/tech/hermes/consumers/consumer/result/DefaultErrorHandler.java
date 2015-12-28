@@ -45,7 +45,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
         offsetHelper.remove(message);
 
         updateMeters(subscription);
-        updateMetrics(Counters.CONSUMER_DISCARDED, message, subscription);
+        updateMetrics(Counters.DISCARDED, message, subscription);
 
         undeliveredMessageLog.add(createUndeliveredMessage(subscription, new String(message.getData()), result.getFailure(), clock.millis(),
                 message.getPartition(), message.getOffset(), cluster));
@@ -54,14 +54,14 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     }
 
     private void updateMeters(Subscription subscription) {
-        hermesMetrics.meter(Meters.CONSUMER_DISCARDED_METER).mark();
-        hermesMetrics.meter(Meters.CONSUMER_DISCARDED_TOPIC_METER, subscription.getTopicName()).mark();
-        hermesMetrics.meter(Meters.CONSUMER_DISCARDED_SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark();
+        hermesMetrics.meter(Meters.DISCARDED_METER).mark();
+        hermesMetrics.meter(Meters.DISCARDED_TOPIC_METER, subscription.getTopicName()).mark();
+        hermesMetrics.meter(Meters.DISCARDED_SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark();
     }
 
     @Override
     public void handleFailed(Message message, Subscription subscription, MessageSendingResult result) {
-        hermesMetrics.meter(Meters.CONSUMER_FAILED_METER, subscription.getTopicName(), subscription.getName()).mark();
+        hermesMetrics.meter(Meters.FAILED_METER_SUBSCRIPTION, subscription.getTopicName(), subscription.getName()).mark();
         registerFailureMetrics(subscription, result);
         trackers.get(subscription).logFailed(toMessageMetadata(message, subscription), result.getRootCause());
     }

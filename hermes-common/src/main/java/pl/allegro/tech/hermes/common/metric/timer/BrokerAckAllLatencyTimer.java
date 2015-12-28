@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.common.metric.Timers;
 public class BrokerAckAllLatencyTimer extends BrokerLatencyTimer {
 
     public BrokerAckAllLatencyTimer(HermesMetrics hermesMetrics, TopicName topicName) {
-        super(hermesMetrics.timer(Timers.PRODUCER_ACK_ALL_BROKER_LATENCY),
-                hermesMetrics.timer(Timers.PRODUCER_ACK_ALL_BROKER_TOPIC_LATENCY, topicName));
+        super(hermesMetrics.timer(Timers.ACK_ALL_BROKER_LATENCY),
+                hermesMetrics.timer(Timers.ACK_ALL_BROKER_TOPIC_LATENCY, topicName));
     }
 }

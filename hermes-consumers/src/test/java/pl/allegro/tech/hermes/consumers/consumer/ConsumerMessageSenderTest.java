@@ -90,7 +90,7 @@ public class ConsumerMessageSenderTest {
         when(hermesMetrics.latencyTimer(subscription)).thenReturn(consumerLatencyTimer);
         when(hermesMetrics.consumerErrorsOtherMeter(subscription)).thenReturn(errors);
         when(consumerLatencyTimer.time()).thenReturn(consumerLatencyTimerContext);
-        when(hermesMetrics.meter(Meters.CONSUMER_FAILED_METER, subscription.getTopicName(), subscription.getName())).thenReturn(failedMeter);
+        when(hermesMetrics.meter(Meters.FAILED_METER_SUBSCRIPTION, subscription.getTopicName(), subscription.getName())).thenReturn(failedMeter);
     }
 
     @Test

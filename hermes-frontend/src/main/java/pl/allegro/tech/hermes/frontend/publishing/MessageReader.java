@@ -85,8 +85,8 @@ public class MessageReader implements ReadListener {
     }
 
     private void initParsingTimers() {
-        this.parsingTimerPerTopic = hermesMetrics.timer(Timers.PRODUCER_TOPIC_PARSING_REQUEST, topicName).time();
-        this.parsingTimer = hermesMetrics.timer(Timers.PRODUCER_PARSING_REQUEST).time();
+        this.parsingTimerPerTopic = hermesMetrics.timer(Timers.TOPIC_PARSING_REQUEST, topicName).time();
+        this.parsingTimer = hermesMetrics.timer(Timers.PARSING_REQUEST).time();
     }
 
     private void closeParsingTimers() {

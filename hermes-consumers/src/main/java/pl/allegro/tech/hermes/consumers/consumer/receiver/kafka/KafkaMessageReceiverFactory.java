@@ -47,7 +47,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 receivingTopic,
                 Consumer.createJavaConsumerConnector(consumerConfig),
                 messageContentWrapper,
-                hermesMetrics.timer(Timers.CONSUMER_READ_LATENCY),
+                hermesMetrics.timer(Timers.READ_LATENCY),
                 clock,
                 kafkaNamesMapper,
                 configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT),

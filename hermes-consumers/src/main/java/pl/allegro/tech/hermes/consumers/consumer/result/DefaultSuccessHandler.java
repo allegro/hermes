@@ -24,14 +24,14 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
     public void handle(Message message, Subscription subscription, MessageSendingResult result) {
         offsetHelper.remove(message);
         updateMeters(subscription, result);
-        updateMetrics(Counters.CONSUMER_DELIVERED, message, subscription);
+        updateMetrics(Counters.DELIVERED, message, subscription);
         trackers.get(subscription).logSent(toMessageMetadata(message, subscription));
     }
 
     private void updateMeters(Subscription subscription, MessageSendingResult result) {
-        hermesMetrics.meter(Meters.CONSUMER_METER).mark();
-        hermesMetrics.meter(Meters.CONSUMER_TOPIC_METER, subscription.getTopicName()).mark();
-        hermesMetrics.meter(Meters.CONSUMER_SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark();
+        hermesMetrics.meter(Meters.METER).mark();
+        hermesMetrics.meter(Meters.TOPIC_METER, subscription.getTopicName()).mark();
+        hermesMetrics.meter(Meters.SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark();
         hermesMetrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
     }
 }
