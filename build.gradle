@@ -22,6 +22,11 @@ scmVersion {
     }
 
     versionCreator 'versionWithBranch'
+
+    branchVersionCreators = [
+            'rc': { version, position -> version }
+    ]
+
     versionIncrementer 'branchSpecific', ['rc': 'incrementPrerelease', '.*': 'incrementPatch']
 
     hooks {
