@@ -22,6 +22,7 @@ scmVersion {
     }
 
     versionCreator 'versionWithBranch'
+    versionIncrementer 'branchSpecific', ['rc': 'incrementPrerelease', '.*': 'incrementPatch']
 
     hooks {
         pre 'fileUpdate', [files: ['docs/conf.py'], pattern: {v, p -> /'$v'/ }, replacement: {v, p -> "'$v'"}]
