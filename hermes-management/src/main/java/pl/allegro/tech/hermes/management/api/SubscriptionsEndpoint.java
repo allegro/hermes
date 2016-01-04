@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
+import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -159,6 +160,20 @@ public class SubscriptionsEndpoint {
                                 @PathParam("subscriptionName") String subscriptionName,
                                 Subscription.State state) {
         subscriptionService.updateSubscriptionState(fromQualifiedName(qualifiedTopicName), subscriptionName, state);
+        return responseStatus(OK);
+    }
+
+    @PUT
+    @Consumes(APPLICATION_JSON)
+    @Path("/{subscriptionName}/endpoint")
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
+    @ApiOperation(value = "Update subscription endpoint address", httpMethod = HttpMethod.PUT)
+    public Response updateEndpointAddress(@PathParam("topicName") String qualifiedTopicName,
+                                          @PathParam("subscriptionName") String subscriptionName,
+                                          EndpointAddress endpointAddress) {
+        preconditions.checkConstraints(endpointAddress);
+
+        subscriptionService.updateSubscriptionEndpoint(fromQualifiedName(qualifiedTopicName), subscriptionName, endpointAddress);
         return responseStatus(OK);
     }
 

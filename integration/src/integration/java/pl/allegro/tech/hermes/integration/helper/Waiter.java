@@ -95,6 +95,14 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         });
     }
 
+    public void untilSubscriptionEndpointAddressChanged(Topic topic, String subscription, EndpointAddress expected) {
+        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() -> {
+            EndpointAddress actual = endpoints.subscription().get(topic.getQualifiedName(), subscription).getEndpoint();
+            logger.info("Expecting {} subscription endpoint address. Actual {}", expected, actual);
+            return expected.equals(actual);
+        });
+    }
+
     public void untilSubscriptionEndsReiteration(Topic topic, String subscription) {
         untilSubscriptionHasState(topic, subscription, Subscription.State.ACTIVE);
     }

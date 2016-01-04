@@ -5,6 +5,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -89,6 +90,19 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
         Subscription modifiedSubscription = getSubscriptionDetails(topicName, subscriptionName);
         if (!modifiedSubscription.getState().equals(state)) {
             modifiedSubscription.setState(state);
+            updateSubscription(modifiedSubscription);
+        }
+    }
+
+    @Override
+    public void updateSubscriptionEndpoint(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
+        ensureSubscriptionExists(topicName, subscriptionName);
+
+        logger.info("Changing subscription {} for topic {} endpoint address to {}", subscriptionName, topicName, endpoint.toString());
+
+        Subscription modifiedSubscription = getSubscriptionDetails(topicName, subscriptionName);
+        if (!modifiedSubscription.getEndpoint().equals(endpoint)) {
+            modifiedSubscription.setEndpoint(endpoint);
             updateSubscription(modifiedSubscription);
         }
     }
