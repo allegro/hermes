@@ -134,4 +134,22 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
         then:
         repository.getSubscriptionDetails(TOPIC, 'state').state == Subscription.State.SUSPENDED
     }
+
+    def "should change subscription endpoint"() {
+        given:
+        def subscription = subscription()
+                .withTopicName(TOPIC)
+                .withName('endpoint')
+                .withEndpoint(EndpointAddress.of("http://localhost:8080/v1"))
+                .build()
+
+        repository.createSubscription(subscription)
+        wait.untilSubscriptionCreated(TOPIC, 'endpoint')
+
+        when:
+        repository.updateSubscriptionEndpoint(TOPIC, 'endpoint', EndpointAddress.of("http://localhost:8080/v2"))
+
+        then:
+        repository.getSubscriptionDetails(TOPIC, 'endpoint').endpoint == EndpointAddress.of("http://localhost:8080/v2")
+    }
 }

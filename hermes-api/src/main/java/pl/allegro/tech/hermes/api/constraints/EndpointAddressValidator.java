@@ -36,7 +36,16 @@ public class EndpointAddressValidator implements ConstraintValidator<ValidAddres
 
     @Override
     public boolean isValid(String address, ConstraintValidatorContext context) {
-        return AVAILABLE_PROTOCOLS.contains(EndpointAddress.extractProtocolFromAddress(address)) && isValidUriTemplate(address, context);
+        return isValidProtocol(address, context) && isValidUriTemplate(address, context);
+    }
+
+    private boolean isValidProtocol(String address, ConstraintValidatorContext context) {
+        try {
+            return AVAILABLE_PROTOCOLS.contains(EndpointAddress.extractProtocolFromAddress(address));
+        } catch (IllegalArgumentException e) {
+            createConstraintMessage(context, String.format(PROTOCOL_ADDRESS_FORMAT_INVALID, e.getMessage()));
+            return false;
+        }
     }
 
     private boolean isValidUriTemplate(String address, ConstraintValidatorContext context) {

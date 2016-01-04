@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -92,6 +93,10 @@ public class SubscriptionService {
 
     public Subscription.State getSubscriptionState(TopicName topicName, String subscriptionName) {
         return getSubscriptionDetails(topicName, subscriptionName).getState();
+    }
+
+    public void updateSubscriptionEndpoint(TopicName topicName, String subscriptionName, EndpointAddress endpointAddress) {
+        subscriptionRepository.updateSubscriptionEndpoint(topicName, subscriptionName, endpointAddress);
     }
 
     public SubscriptionMetrics getSubscriptionMetrics(TopicName topicName, String subscriptionName) {

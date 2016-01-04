@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
+import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 
@@ -7,6 +8,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -72,6 +74,13 @@ public interface SubscriptionEndpoint {
     Response updateState(@PathParam("topicName") String qualifiedTopicName,
                          @PathParam("subscriptionName") String subscriptionName,
                          Subscription.State state);
+
+    @PUT
+    @Consumes(APPLICATION_JSON)
+    @Path("/{subscriptionName}/endpoint")
+    public Response updateEndpointAddress(@PathParam("topicName") String qualifiedTopicName,
+                                               @PathParam("subscriptionName") String subscriptionName,
+                                               EndpointAddress endpointAddress);
 
     @DELETE
     @Path("/{subscriptionName}")

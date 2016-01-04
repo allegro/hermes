@@ -81,6 +81,39 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldUpdateSubscriptionEndpoint() throws Throwable {
+        //given
+        Topic topic = operations.buildTopic("updateSubscriptionEndpointAddressGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL + "v1/");
+        wait.untilSubscriptionIsActivated(topic, "subscription");
+
+        // when
+        Response response = management.subscription().updateEndpointAddress(
+                topic.getQualifiedName(),
+                "subscription", EndpointAddress.of(HTTP_ENDPOINT_URL + "v2/"));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+        wait.untilSubscriptionEndpointAddressChanged(topic, "subscription", EndpointAddress.of(HTTP_ENDPOINT_URL + "v2/"));
+    }
+
+    @Test
+    public void shouldValidateNewSubscriptionEndpoint() throws Throwable {
+        //given
+        Topic topic = operations.buildTopic("ValidateNewSubscriptionEndpointGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL + "v1/");
+        wait.untilSubscriptionIsActivated(topic, "subscription");
+
+        // when
+        Response response = management.subscription().updateEndpointAddress(
+                topic.getQualifiedName(),
+                "subscription", EndpointAddress.of("invalidAddress"));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+    }
+
+    @Test
     public void shouldRemoveSubscription() {
         // given
         Topic topic = operations.buildTopic("removeSubscriptionGroup", "topic");

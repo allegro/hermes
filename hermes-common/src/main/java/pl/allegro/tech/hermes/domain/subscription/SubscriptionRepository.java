@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.domain.subscription;
 
+import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -32,4 +33,6 @@ public interface SubscriptionRepository {
     List<String> listTrackedSubscriptionNames(TopicName topicName);
 
     List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query);
+
+    void updateSubscriptionEndpoint(TopicName topicName, String subscriptionName, EndpointAddress endpointAddress);
 }

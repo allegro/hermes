@@ -121,6 +121,10 @@ public class Subscription {
         return endpoint;
     }
 
+    public void setEndpoint(EndpointAddress endpoint) {
+        this.endpoint = endpoint;
+    }
+
     @JsonProperty("topicName")
     public String getQualifiedTopicName() {
         return TopicName.toQualifiedName(topicName);
