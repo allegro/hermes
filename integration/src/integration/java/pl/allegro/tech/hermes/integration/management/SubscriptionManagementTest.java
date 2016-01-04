@@ -81,6 +81,28 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldUpdateSubscriptionEndpoint() throws Throwable {
+        //given
+        Topic topic = operations.buildTopic("updateSubscriptionEndpointAddressGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL + "v1/");
+        wait.untilSubscriptionIsActivated(topic, "subscription");
+
+        // when
+        Response response = management.subscription().update(
+                topic.getQualifiedName(),
+                "subscription", subscription().withName("subscription").withTopicName(topic.getQualifiedName()).withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL)).build());
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+        wait.untilSubscriptionEndpointAddressChanged(topic, "subscription", EndpointAddress.of(HTTP_ENDPOINT_URL));
+        wait.untilSubscriptionIsActivated(topic, "subscription");
+
+        remoteService.expectMessages(MESSAGE.body());
+        publishMessage(topic.getQualifiedName(), MESSAGE.body());
+        remoteService.waitUntilReceived();
+    }
+
+    @Test
     public void shouldRemoveSubscription() {
         // given
         Topic topic = operations.buildTopic("removeSubscriptionGroup", "topic");

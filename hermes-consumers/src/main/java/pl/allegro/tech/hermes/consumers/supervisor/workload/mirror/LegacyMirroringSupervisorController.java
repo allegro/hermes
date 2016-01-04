@@ -64,4 +64,9 @@ public class LegacyMirroringSupervisorController implements SupervisorController
     public void onRetransmissionStarts(SubscriptionName subscription) throws Exception {
         supervisor.retransmit(subscription);
     }
+
+    @Override
+    public void onSubscriptionEndpointAddressChanged(SubscriptionName subscription) throws Exception {
+        supervisor.restartConsumer(subscription);
+    }
 }

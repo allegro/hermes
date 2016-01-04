@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper
 
 import pl.allegro.tech.hermes.api.*
+import pl.allegro.tech.hermes.api.helpers.Patch
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
 import pl.allegro.tech.hermes.test.IntegrationTest
@@ -133,5 +134,25 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
         
         then:
         repository.getSubscriptionDetails(TOPIC, 'state').state == Subscription.State.SUSPENDED
+    }
+
+    def "should change subscription endpoint"() {
+        given:
+        def retrieved = subscription()
+                .withTopicName(TOPIC)
+                .withName('endpoint')
+                .withEndpoint(EndpointAddress.of("http://localhost:8080/v1"))
+                .build()
+
+        repository.createSubscription(retrieved)
+        wait.untilSubscriptionCreated(TOPIC, 'endpoint')
+
+        when:
+        def updated = Patch.apply(retrieved, subscription().withEndpoint(EndpointAddress.of("http://localhost:8080/v2")).build());
+
+        repository.updateSubscription(updated)
+
+        then:
+        repository.getSubscriptionDetails(TOPIC, 'endpoint').endpoint == EndpointAddress.of("http://localhost:8080/v2")
     }
 }

@@ -236,4 +236,10 @@ public class ConsumersSupervisor {
             logger.error("Error while doing retransmission for subscription {}", subscriptionName, e);
         }
     }
+
+    public void restartConsumer(SubscriptionName subscriptionName) throws Exception {
+        logger.info("Restarting consumer for subscription {}", subscriptionName);
+        deleteConsumerIfExists(subscriptionName, false);
+        createAndExecuteConsumer(subscriptionRepository.getSubscriptionDetails(subscriptionName.getTopicName(), subscriptionName.getName()));
+    }
 }
