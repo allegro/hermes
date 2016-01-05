@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.net.URI;
+
+import com.google.common.base.Preconditions;
 import pl.allegro.tech.hermes.api.constraints.ValidAddress;
 import pl.allegro.tech.hermes.api.jackson.EndpointAddressDeserializer;
 import pl.allegro.tech.hermes.api.jackson.EndpointAddressSerializer;
@@ -67,6 +69,8 @@ public class EndpointAddress {
     }
 
     public static String extractProtocolFromAddress(String endpoint) {
+        Preconditions.checkArgument(endpoint.indexOf(':') != -1);
+
         return endpoint.substring(0, endpoint.indexOf(':'));
     }
 
