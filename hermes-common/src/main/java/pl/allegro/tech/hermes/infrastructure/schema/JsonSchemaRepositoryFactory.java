@@ -5,7 +5,7 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.main.JsonSchema;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import org.glassfish.hk2.api.Factory;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.domain.topic.schema.CachedSchemaSourceProvider;
 import pl.allegro.tech.hermes.domain.topic.schema.CouldNotCompileSchemaException;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
@@ -29,7 +29,7 @@ public class JsonSchemaRepositoryFactory implements Factory<SchemaRepository<Jso
     @Override
     public SchemaRepository<JsonSchema> provide() {
         return new SchemaRepository<>(
-                Topic.ContentType.JSON,
+                ContentType.JSON,
                 cachedSchemaSourceProvider,
                 source -> {
                     try {

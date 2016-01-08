@@ -2,11 +2,14 @@ package pl.allegro.tech.hermes.integration;
 
 import com.googlecode.catchexception.CatchException;
 import net.javacrumbs.jsonunit.core.Option;
+import org.apache.avro.Schema;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -21,7 +24,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
-import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 
 public class KafkaSingleMessageReaderTest extends IntegrationTest {
 
@@ -33,7 +36,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @BeforeMethod
     public void initializeAlways() throws Exception {
         remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
-        avroUser = new AvroUser();
+        avroUser = new AvroUser("Bob", 50, "blue");
     }
 
     @Test
@@ -64,11 +67,11 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         Topic topic = topic()
                 .withName("avro.fetch")
                 .withValidation(true)
-                .withMessageSchema(avroUser.getSchema().toString())
+                .withMessageSchema(avroUser.getSchemaAsString())
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
         wait.untilTopicDetailsAreCreated(topic.getName());
-        assertThat(publisher.publish(topic.getQualifiedName(), avroUser.create("Bob", 50, "blue"))
+        assertThat(publisher.publish(topic.getQualifiedName(), avroUser.asBytes())
                 .getStatus()).isEqualTo(CREATED.getStatusCode());
 
         // when
