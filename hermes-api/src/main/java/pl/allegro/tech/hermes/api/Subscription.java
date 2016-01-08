@@ -30,6 +30,8 @@ public class Subscription {
     @Valid
     private EndpointAddress endpoint;
 
+    private ContentType contentType = ContentType.JSON;
+
     private String description;
 
     @Valid
@@ -42,6 +44,7 @@ public class Subscription {
 
     private String contact;
 
+
     public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
@@ -50,8 +53,8 @@ public class Subscription {
     }
 
     public Subscription(TopicName topicName, String name, EndpointAddress endpoint, String description,
-                        SubscriptionPolicy subscriptionPolicy, boolean trackingEnabled,
-                        String supportTeam, String contact) {
+                        SubscriptionPolicy subscriptionPolicy, boolean trackingEnabled, String supportTeam, String contact,
+                        ContentType contentType) {
         this.topicName = topicName;
         this.name = name;
         this.description = description;
@@ -60,6 +63,7 @@ public class Subscription {
         this.trackingEnabled = trackingEnabled;
         this.supportTeam = supportTeam;
         this.contact = contact;
+        this.contentType = contentType == null ? ContentType.JSON : contentType;
     }
 
     @JsonCreator
@@ -70,14 +74,15 @@ public class Subscription {
                         @JsonProperty("subscriptionPolicy") SubscriptionPolicy subscriptionPolicy,
                         @JsonProperty("trackingEnabled") boolean trackingEnabled,
                         @JsonProperty("supportTeam") String supportTeam,
-                        @JsonProperty("contact") String contact) {
+                        @JsonProperty("contact") String contact,
+                        @JsonProperty("contentType") ContentType contentType) {
         this(TopicName.fromQualifiedName(topicName), name, endpoint, description, subscriptionPolicy,
-                trackingEnabled, supportTeam, contact);
+                trackingEnabled, supportTeam, contact, contentType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(endpoint, topicName, name, description, subscriptionPolicy);
+        return Objects.hash(endpoint, topicName, name, description, subscriptionPolicy, contentType);
     }
 
     @Override
@@ -97,7 +102,8 @@ public class Subscription {
                 && Objects.equals(this.subscriptionPolicy, other.subscriptionPolicy)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.supportTeam, other.supportTeam)
-                && Objects.equals(this.contact, other.contact);
+                && Objects.equals(this.contact, other.contact)
+                && Objects.equals(this.contentType, other.contentType);
     }
 
     public SubscriptionName toSubscriptionName() {
@@ -165,6 +171,10 @@ public class Subscription {
 
     public String getContact() {
         return contact;
+    }
+
+    public ContentType getContentType() {
+        return contentType;
     }
 
     @JsonIgnore
@@ -267,6 +277,11 @@ public class Subscription {
 
         public Builder applyDefaults() {
             subscription.subscriptionPolicy = SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().build();
+            return this;
+        }
+
+        public Builder withContentType(ContentType contentType) {
+            subscription.contentType = contentType;
             return this;
         }
     }

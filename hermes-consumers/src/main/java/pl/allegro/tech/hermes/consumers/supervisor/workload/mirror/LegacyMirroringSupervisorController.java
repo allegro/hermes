@@ -66,7 +66,7 @@ public class LegacyMirroringSupervisorController implements SupervisorController
     }
 
     @Override
-    public void onSubscriptionEndpointAddressChanged(SubscriptionName subscription) throws Exception {
+    public void restartConsumer(SubscriptionName subscription) throws Exception {
         supervisor.restartConsumer(subscription);
     }
 }

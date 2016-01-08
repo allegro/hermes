@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaV
 
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 @Component

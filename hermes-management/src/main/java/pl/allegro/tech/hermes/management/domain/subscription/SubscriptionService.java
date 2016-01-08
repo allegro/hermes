@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -91,8 +90,8 @@ public class SubscriptionService {
             subscriptionRepository.updateSubscription(updated);
         }
 
-        if (!retrieved.getEndpoint().equals(subscription.getEndpoint())) {
-            adminTool.subscriptionEndpointAddressChanged(new SubscriptionName(subscription.getName(), subscription.getTopicName()));
+        if (isConsumerRestartNeeded(retrieved, subscription)) {
+            adminTool.restartConsumer(new SubscriptionName(subscription.getName(), subscription.getTopicName()));
         }
     }
 
@@ -119,5 +118,10 @@ public class SubscriptionService {
 
     public List<MessageTrace> getMessageStatus(String qualifiedTopicName, String subscriptionName, String messageId) {
         return logRepository.getMessageStatus(qualifiedTopicName, subscriptionName, messageId);
+    }
+
+    private boolean isConsumerRestartNeeded(Subscription retrieved, Subscription subscription) {
+        return !retrieved.getEndpoint().equals(subscription.getEndpoint()) ||
+               !retrieved.getContentType().equals(subscription.getContentType());
     }
 }

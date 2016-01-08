@@ -32,8 +32,8 @@ public class AvroMessageContentWrapperTest {
 
     @Before
     public void setup() throws IOException {
-        avroUser = new AvroUser();
-        content = avroUser.create("Bob", 10, "red");
+        avroUser = new AvroUser("Bob", 10, "red");
+        content = avroUser.asBytes();
         avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
     }
 

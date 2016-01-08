@@ -30,10 +30,6 @@ public class Topic {
         NONE, LEADER, ALL
     }
 
-    public enum ContentType {
-        JSON, AVRO
-    }
-
     @Valid
     private RetentionTime retentionTime;
 

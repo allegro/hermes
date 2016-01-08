@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.common.kafka
 
-import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.api.ContentType
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -39,7 +39,7 @@ class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
     def "should append '_avro' suffix for topics of type AVRO"() {
         given:
         def mapper = new JsonToAvroMigrationKafkaNamesMapper("")
-        def avroTopic = topic().withName("group", "topic").withContentType(Topic.ContentType.AVRO).build()
+        def avroTopic = topic().withName("group", "topic").withContentType(ContentType.AVRO).build()
 
         expect:
         mapper.toKafkaTopics(avroTopic).primary.name() == KafkaTopicName.valueOf("group.topic_avro")
@@ -48,15 +48,15 @@ class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
     def "should map to topics with secondary json topic for topics migrated from json to avro"() {
         given:
         def mapper = new JsonToAvroMigrationKafkaNamesMapper("")
-        def migratedTopic = topic().withName("group", "topic").withContentType(Topic.ContentType.AVRO).migratedFromJsonType().build()
+        def migratedTopic = topic().withName("group", "topic").withContentType(ContentType.AVRO).migratedFromJsonType().build()
 
         when:
         def topics = mapper.toKafkaTopics(migratedTopic)
 
         then:
-        topics.primary.contentType() == Topic.ContentType.AVRO
+        topics.primary.contentType() == ContentType.AVRO
         topics.secondary.present
-        topics.secondary.get().contentType() == Topic.ContentType.JSON
+        topics.secondary.get().contentType() == ContentType.JSON
     }
 
 }
