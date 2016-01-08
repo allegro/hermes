@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper
 
+import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.TopicName
@@ -18,7 +19,7 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
 
     private static final TopicName TOPIC_NAME = new TopicName(GROUP, 'topic')
 
-    private static final Topic TOPIC = topic().applyDefaults().withContentType(Topic.ContentType.JSON).withName(TOPIC_NAME).build()
+    private static final Topic TOPIC = topic().applyDefaults().withContentType(ContentType.JSON).withName(TOPIC_NAME).build()
 
     private static final String BROKERS_CLUSTER_NAME = 'primary'
 

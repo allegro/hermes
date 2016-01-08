@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import org.apache.avro.Schema;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
@@ -26,10 +27,10 @@ public class MessageContentWrapper {
         return unwrap(data, topic, topic.getContentType());
     }
 
-    public UnwrappedMessageContent unwrap(byte[] data, Topic topic, Topic.ContentType contentType) {
-        if (contentType == Topic.ContentType.JSON) {
+    public UnwrappedMessageContent unwrap(byte[] data, Topic topic, ContentType contentType) {
+        if (contentType == ContentType.JSON) {
             return jsonMessageContentWrapper.unwrapContent(data);
-        } else if (contentType == Topic.ContentType.AVRO) {
+        } else if (contentType == ContentType.AVRO) {
             return avroMessageContentWrapper.unwrapContent(data, avroSchemaRepository.getSchema(topic));
         }
 
@@ -37,9 +38,9 @@ public class MessageContentWrapper {
     }
 
     public byte[] wrap(byte[] data, String id, long timestamp, Topic topic, Map<String, String> externalMetadata) {
-        if (topic.getContentType() == Topic.ContentType.JSON) {
+        if (topic.getContentType() == ContentType.JSON) {
             return jsonMessageContentWrapper.wrapContent(data, id, timestamp, externalMetadata);
-        } else if (topic.getContentType() == Topic.ContentType.AVRO) {
+        } else if (topic.getContentType() == ContentType.AVRO) {
             return avroMessageContentWrapper.wrapContent(data, id, timestamp, avroSchemaRepository.getSchema(topic), externalMetadata);
         }
 
