@@ -35,14 +35,14 @@ public class AvroSchemaRepositoryMetadataAwareTest {
     public void shouldGetSchemaWithoutMetadata() throws IOException {
         // given
         Topic topic = Topic.Builder.topic().withName("group.topic").build();
-        AvroUser avroUser = new AvroUser();
+        AvroUser avroUser = new AvroUser("Bob", 17, "blue");
         when(avroSchemaRepository.getSchema(topic)).thenReturn(avroUser.getSchema());
 
         // when
         Schema schemaWithoutMetadata = avroSchemaRepositoryMetadataAware.getSchemaWithoutMetadata(topic);
 
         // then
-        String jsonUser = new String(converter.convertToJson(avroUser.create("Bob", 17, "blue"), schemaWithoutMetadata));
+        String jsonUser = new String(converter.convertToJson(avroUser.asBytes(), schemaWithoutMetadata));
         assertThatJson(jsonUser).isEqualTo("{\"name\": \"Bob\", \"age\": 17, \"favoriteColor\": \"blue\"}");
     }
 

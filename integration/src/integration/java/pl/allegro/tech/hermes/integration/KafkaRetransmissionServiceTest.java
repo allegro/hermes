@@ -26,7 +26,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.summingLong;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
-import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.message.TestMessage.simpleMessages;
@@ -128,7 +128,7 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
                 .build();
         operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", migratedTopic);
 
-        sendAvroMessageOnTopic(topic, user.createMessage("Barney", 35, "yellow"));
+        sendAvroMessageOnTopic(topic, user.asTestMessage());
 
         wait.untilConsumerCommitsOffset();
 

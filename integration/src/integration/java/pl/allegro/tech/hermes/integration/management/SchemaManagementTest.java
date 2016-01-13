@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.management;
 
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
@@ -90,7 +91,7 @@ public class SchemaManagementTest extends IntegrationTest {
         // given
         AvroUser avroUser = new AvroUser();
         Topic avroTopic = topic().withName("avroGroup", "avroTopic")
-                .withContentType(Topic.ContentType.AVRO)
+                .withContentType(ContentType.AVRO)
                 .withMessageSchema(avroUser.getSchema().toString())
                 .build();
         operations.buildTopic(avroTopic);
@@ -107,7 +108,7 @@ public class SchemaManagementTest extends IntegrationTest {
         // given
         AvroUser avroUser = new AvroUser();
         Topic avroTopic = topic().withName("avroGroup", "avroTopic")
-                .withContentType(Topic.ContentType.AVRO)
+                .withContentType(ContentType.AVRO)
                 .withMessageSchema(avroUser.getSchema().toString())
                 .build();
         operations.buildTopic(avroTopic);

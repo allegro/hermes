@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.domain.topic.schema;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 
@@ -21,11 +22,11 @@ public class SchemaRepository<T> {
     private final List<Consumer<TopicWithSchema<T>>> schemaRemovedConsumers = Lists.newArrayList();
 
     private final SchemaCompiler<T> schemaCompiler;
-    private final Topic.ContentType contentType;
+    private final ContentType contentType;
     private final CachedSchemaSourceProvider cachedSchemaSourceProvider;
     private final Map<Topic, T> compiledSchemas = new ConcurrentHashMap<>();
 
-    public SchemaRepository(Topic.ContentType contentType, CachedSchemaSourceProvider cachedSchemaSourceProvider, SchemaCompiler<T> schemaCompiler) {
+    public SchemaRepository(ContentType contentType, CachedSchemaSourceProvider cachedSchemaSourceProvider, SchemaCompiler<T> schemaCompiler) {
         this.contentType = contentType;
         this.cachedSchemaSourceProvider = cachedSchemaSourceProvider;
         this.schemaCompiler = schemaCompiler;
