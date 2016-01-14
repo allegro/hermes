@@ -120,7 +120,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldGetEventStatus() throws InterruptedException {
         // given
-        Topic topic = operations.buildTopic(topic().withName("eventStatus", "topic").withTrackingEnabled(true).build());
+        Topic topic = operations.buildTopic(topic().withName("eventStatus", "topic").withContentType(Topic.ContentType.JSON).withTrackingEnabled(true).build());
 
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))

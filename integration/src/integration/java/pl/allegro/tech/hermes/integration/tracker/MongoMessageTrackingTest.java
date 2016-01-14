@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.api.Topic.ContentType.JSON;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 
 public class MongoMessageTrackingTest extends IntegrationTest {
@@ -71,7 +72,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     @Test
     public void shouldLogMessagePublishing() {
         // given
-        operations.buildTopic(topic().withName("logMessagePublishing", "topic").withTrackingEnabled(true).build());
+        operations.buildTopic(topic().withName("logMessagePublishing", "topic").withContentType(JSON).withTrackingEnabled(true).build());
         
         // when
         publisher.publish("logMessagePublishing.topic", MESSAGE.body());
@@ -84,7 +85,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     @Test
     public void shouldLogMessageInflightAndSending() {
         // given
-        Topic topic = operations.buildTopic("logMessageSending", "topic");
+        Topic topic = operations.buildTopic(topic().withName("logMessageSending", "topic").withContentType(JSON).build());
         Subscription subscription = subscription().applyDefaults().withName("subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
                 .withTrackingEnabled(true)
@@ -108,7 +109,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldLogMessageDiscarding() {
         // given
-        Topic topic = operations.buildTopic("logMessageDiscarding", "topic");
+        Topic topic = operations.buildTopic(topic().withName("logMessageDiscarding", "topic").withContentType(JSON).build());
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
                 .withTrackingEnabled(true)
@@ -130,7 +131,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldFetchUndeliveredMessagesLogs() {
         // given
-        Topic topic = operations.buildTopic(Topic.Builder.topic().withName("fetchUndeliveredMessagesLogs", "topic").withTrackingEnabled(true).build());
+        Topic topic = operations.buildTopic(topic().withName("fetchUndeliveredMessagesLogs", "topic").withContentType(JSON).withTrackingEnabled(true).build());
 
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
@@ -159,7 +160,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     public void shouldToggleTrackingOnTopicUpdate() {
         // given
         TopicName topicName = new TopicName("toggleTrackingOnTopic", "topic");
-        Topic topic = topic().withName(topicName).withTrackingEnabled(true).build();
+        Topic topic = topic().withName(topicName).withContentType(JSON).withTrackingEnabled(true).build();
         operations.buildTopic(topic);
 
         String firstTracked = publishMessage("toggleTrackingOnTopic.topic", MESSAGE.body());
@@ -183,7 +184,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     public void shouldNotChangeAckWhenEnablingTrackingOnTopic() {
         // given
         TopicName topicName = new TopicName("ackStaysOnTracking", "topic");
-        Topic topic = topic().withName(topicName).withAck(Topic.Ack.ALL).withTrackingEnabled(false).build();
+        Topic topic = topic().withName(topicName).withAck(Topic.Ack.ALL).withContentType(JSON).withTrackingEnabled(false).build();
         operations.buildTopic(topic);
 
         // when
@@ -200,7 +201,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     @Test
     public void shouldToggleTrackingOnSubscriptionUpdate() {
         // given
-        Topic topic = operations.buildTopic("toggleTrackingOnSubscription", "topic");
+        Topic topic = operations.buildTopic(topic().withName("toggleTrackingOnSubscription", "topic").withContentType(JSON).build());
         Subscription subscription = subscription().applyDefaults().withName("subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
                 .withTrackingEnabled(true)
@@ -237,7 +238,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     public void shouldReturnEmptyListIfThereAreNoSentMessages() {
         //given
         assertThat(sentMessages.count()).isZero();
-        Topic topic = operations.buildTopic("returnEmptyListIfThereAreNoSentMessages", "topic");
+        Topic topic = operations.buildTopic(topic().withName("returnEmptyListIfThereAreNoSentMessages", "topic").withContentType(JSON).build());
         operations.createSubscription(topic, "subscription3", INVALID_ENDPOINT_URL);
 
         //when

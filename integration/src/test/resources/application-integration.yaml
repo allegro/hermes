@@ -21,6 +21,7 @@ topic:
   replicationFactor: 1
   partitions: 2
   allowRemoval: true
+  defaultContentType: AVRO
 
 storage:
   pathPrefix: /hermes

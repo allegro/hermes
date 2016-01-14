@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionExcepti
 import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
@@ -42,13 +43,14 @@ import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 public class TopicsEndpoint {
 
     private final TopicService topicService;
-
     private final ApiPreconditions preconditions;
+    private final TopicProperties topicProperties;
 
     @Autowired
-    public TopicsEndpoint(TopicService topicService, ApiPreconditions preconditions) {
+    public TopicsEndpoint(TopicService topicService, ApiPreconditions preconditions, TopicProperties topicProperties) {
         this.topicService = topicService;
         this.preconditions = preconditions;
+        this.topicProperties = topicProperties;
     }
 
     @GET
@@ -82,7 +84,7 @@ public class TopicsEndpoint {
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
     public Response create(Topic topic) {
         preconditions.checkConstraints(topic);
-        topicService.createTopic(topic().applyDefaults().applyPatch(topic).build());
+        topicService.createTopic(topic().applyDefaults().withContentType(topicProperties.getDefaultContentType()).applyPatch(topic).build());
         return status(Response.Status.CREATED).build();
     }
 
