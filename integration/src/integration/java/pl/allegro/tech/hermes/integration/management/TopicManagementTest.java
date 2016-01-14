@@ -227,4 +227,16 @@ public class TopicManagementTest extends IntegrationTest {
         assertThat(brokerOperations.topicExists(qualifiedTopicName, PRIMARY_KAFKA_CLUSTER_NAME)).isTrue();
         assertThat(brokerOperations.topicExists(qualifiedTopicName, SECONDARY_KAFKA_CLUSTER_NAME)).isFalse();
     }
+
+    @Test
+    public void shouldUseDefaultContentTypeServerSide() {
+        // given
+        Topic topic = topic().withName("defaultContentType", "topic").build();
+
+        // when
+        operations.buildTopic(topic);
+
+        // then
+        assertThat(management.topic().get(topic.getQualifiedName()).getContentType()).isEqualTo(AVRO);
+    }
 }
