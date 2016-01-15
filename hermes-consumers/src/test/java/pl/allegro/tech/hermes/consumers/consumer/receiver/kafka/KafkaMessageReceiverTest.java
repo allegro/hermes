@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -40,7 +41,7 @@ import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 @RunWith(MockitoJUnitRunner.class)
 public class KafkaMessageReceiverTest {
 
-    private static final Topic TOPIC = topic().withContentType(Topic.ContentType.JSON).withName("group.topic1").build();
+    private static final Topic TOPIC = topic().withContentType(ContentType.JSON).withName("group.topic1").build();
     private static final Integer KAFKA_STREAM_COUNT = 1;
     private static final String CONTENT = "{\"test\":\"a\"}";
     private static final MessageMetadata METADATA = new MessageMetadata(1L, "unique", ImmutableMap.of());

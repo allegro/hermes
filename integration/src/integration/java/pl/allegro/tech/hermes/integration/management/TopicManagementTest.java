@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
-import static pl.allegro.tech.hermes.api.Topic.ContentType.*;
+import static pl.allegro.tech.hermes.api.ContentType.*;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class TopicManagementTest extends IntegrationTest {

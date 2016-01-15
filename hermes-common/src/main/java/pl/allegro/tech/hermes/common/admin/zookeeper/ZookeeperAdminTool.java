@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.common.exception.SubscriptionEndpointAddressChange
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import static pl.allegro.tech.hermes.common.admin.AdminTool.Operations.RETRANSMIT;
-import static pl.allegro.tech.hermes.common.admin.AdminTool.Operations.SUBSCRIPTION_ENDPOINT_ADDRESS_CHANGED;
+import static pl.allegro.tech.hermes.common.admin.AdminTool.Operations.RESTART_CONSUMER;
 
 public class ZookeeperAdminTool implements AdminTool {
 
@@ -47,9 +47,9 @@ public class ZookeeperAdminTool implements AdminTool {
     }
 
     @Override
-    public void subscriptionEndpointAddressChanged(SubscriptionName subscriptionName) {
+    public void restartConsumer(SubscriptionName subscriptionName) {
         try {
-            executeAdminOperation(subscriptionName, SUBSCRIPTION_ENDPOINT_ADDRESS_CHANGED.name());
+            executeAdminOperation(subscriptionName, RESTART_CONSUMER.name());
         } catch (Exception e) {
             throw new SubscriptionEndpointAddressChangeException(e);
         }
