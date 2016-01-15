@@ -8,8 +8,11 @@ public interface AdminTool {
 
     void retransmit(SubscriptionName subscriptionName);
 
+    void restartConsumer(SubscriptionName subscriptionName);
+
     enum Operations {
 
-        RETRANSMIT
+        RETRANSMIT,
+        RESTART_CONSUMER
     }
 }

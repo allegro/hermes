@@ -8,9 +8,11 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.admin.AdminToolStartupException;
 import pl.allegro.tech.hermes.common.exception.RetransmissionException;
+import pl.allegro.tech.hermes.common.exception.SubscriptionEndpointAddressChangeException;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import static pl.allegro.tech.hermes.common.admin.AdminTool.Operations.RETRANSMIT;
+import static pl.allegro.tech.hermes.common.admin.AdminTool.Operations.RESTART_CONSUMER;
 
 public class ZookeeperAdminTool implements AdminTool {
 
@@ -38,16 +40,28 @@ public class ZookeeperAdminTool implements AdminTool {
     @Override
     public void retransmit(SubscriptionName subscriptionName) {
         try {
-            String path = zookeeperPaths.adminOperationPath(RETRANSMIT.name());
-
-            String createdPath = curatorFramework.create()
-                    .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
-                    .forPath(path, objectMapper.writeValueAsBytes(subscriptionName));
-
-            reaper.addPath(createdPath);
-
+            executeAdminOperation(subscriptionName, RETRANSMIT.name());
         } catch (Exception e) {
             throw new RetransmissionException(e);
         }
+    }
+
+    @Override
+    public void restartConsumer(SubscriptionName subscriptionName) {
+        try {
+            executeAdminOperation(subscriptionName, RESTART_CONSUMER.name());
+        } catch (Exception e) {
+            throw new SubscriptionEndpointAddressChangeException(e);
+        }
+    }
+
+    private void executeAdminOperation(SubscriptionName subscriptionName, String name) throws Exception {
+        String path = zookeeperPaths.adminOperationPath(name);
+
+        String createdPath = curatorFramework.create()
+                .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
+                .forPath(path, objectMapper.writeValueAsBytes(subscriptionName));
+
+        reaper.addPath(createdPath);
     }
 }

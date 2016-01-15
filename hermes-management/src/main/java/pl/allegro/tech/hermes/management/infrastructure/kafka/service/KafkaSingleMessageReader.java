@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
 import org.apache.avro.Schema;
 import pl.allegro.tech.common.avro.JsonAvroConverter;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
@@ -25,7 +26,7 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
     @Override
     public String readMessageAsJson(Topic topic, KafkaTopic kafkaTopic, int partition, long offset) {
         byte[] bytes = kafkaRawMessageReader.readMessage(kafkaTopic, partition, offset);
-        if (topic.getContentType() == Topic.ContentType.AVRO) {
+        if (topic.getContentType() == ContentType.AVRO) {
             bytes = convertAvroToJson(avroSchemaRepository.getSchema(topic), bytes);
         }
         return new String(bytes, Charset.forName("UTF-8"));

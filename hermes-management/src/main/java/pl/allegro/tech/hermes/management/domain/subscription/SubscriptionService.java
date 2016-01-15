@@ -6,8 +6,10 @@ import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
+import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
@@ -31,18 +33,21 @@ public class SubscriptionService {
     private final LogRepository logRepository;
 
     private final ApiPreconditions preconditions;
+    private final AdminTool adminTool;
 
     @Autowired
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
                                SubscriptionMetricsRepository metricsRepository,
                                UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
-                               ApiPreconditions apiPreconditions) {
+                               ApiPreconditions apiPreconditions,
+                               AdminTool adminTool) {
         this.subscriptionRepository = subscriptionRepository;
         this.metricsRepository = metricsRepository;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
         this.preconditions = apiPreconditions;
+        this.adminTool = adminTool;
     }
 
     public List<String> listSubscriptionNames(TopicName topicName) {
@@ -84,6 +89,10 @@ public class SubscriptionService {
         if (!retrieved.equals(updated)) {
             subscriptionRepository.updateSubscription(updated);
         }
+
+        if (isConsumerRestartNeeded(retrieved, subscription)) {
+            adminTool.restartConsumer(new SubscriptionName(subscription.getName(), subscription.getTopicName()));
+        }
     }
 
     public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state) {
@@ -109,5 +118,10 @@ public class SubscriptionService {
 
     public List<MessageTrace> getMessageStatus(String qualifiedTopicName, String subscriptionName, String messageId) {
         return logRepository.getMessageStatus(qualifiedTopicName, subscriptionName, messageId);
+    }
+
+    private boolean isConsumerRestartNeeded(Subscription retrieved, Subscription subscription) {
+        return !retrieved.getEndpoint().equals(subscription.getEndpoint()) ||
+               !retrieved.getContentType().equals(subscription.getContentType());
     }
 }

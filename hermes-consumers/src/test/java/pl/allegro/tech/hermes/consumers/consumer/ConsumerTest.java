@@ -8,6 +8,7 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
@@ -101,7 +102,9 @@ public class ConsumerTest {
     public void setUp() throws Exception {
         when(configFactory.getIntProperty(Configs.REPORT_PERIOD)).thenReturn(10);
         when(configFactory.getIntProperty(Configs.CONSUMER_INFLIGHT_SIZE)).thenReturn(50);
-        when(messageConverterResolver.converterFor(any(Message.class), any(Topic.class))).thenReturn(new NoOperationMessageConverter());
+        when(messageConverterResolver.converterFor(any(Message.class), any(Subscription.class)))
+                .thenReturn(new NoOperationMessageConverter());
+
         consumer = spy(new Consumer(messageReceiver, hermesMetrics, SUBSCRIPTION,
                 consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, messageConverterResolver, TOPIC));
     }

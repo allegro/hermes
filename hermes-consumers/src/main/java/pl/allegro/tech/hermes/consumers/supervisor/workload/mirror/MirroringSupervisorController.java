@@ -93,4 +93,9 @@ public class MirroringSupervisorController implements SupervisorController {
     public void onRetransmissionStarts(SubscriptionName subscription) throws Exception {
         supervisor.retransmit(subscription);
     }
+
+    @Override
+    public void restartConsumer(SubscriptionName subscription) throws Exception {
+        supervisor.restartConsumer(subscription);
+    }
 }

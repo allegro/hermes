@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer;
 
 import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
@@ -18,7 +18,7 @@ public class Message {
     private PartitionOffset partitionOffset;
 
     private String topic;
-    private Topic.ContentType contentType;
+    private ContentType contentType;
 
     private long publishingTimestamp;
     private long readingTimestamp;
@@ -31,7 +31,7 @@ public class Message {
     public Message(String id,
                    String topic,
                    byte[] content,
-                   Topic.ContentType contentType,
+                   ContentType contentType,
                    long publishingTimestamp,
                    long readingTimestamp,
                    PartitionOffset partitionOffset,
@@ -62,7 +62,7 @@ public class Message {
         return data;
     }
 
-    public Topic.ContentType getContentType() {
+    public ContentType getContentType() {
         return contentType;
     }
 
@@ -146,6 +146,12 @@ public class Message {
 
         public Message build() {
             return message;
+        }
+
+        public Builder withContentType(ContentType contentType) {
+            this.message.contentType = contentType;
+
+            return this;
         }
     }
 

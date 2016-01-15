@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.kafka
 
+import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.Topic
@@ -34,7 +35,7 @@ class NamespaceKafkaNamesMapperTest extends Specification {
 
     def "should create KafkaTopic from Topic"() {
         given:
-        def topic = Topic.Builder.topic().withName("pl.group.topic").withContentType(Topic.ContentType.AVRO).build()
+        def topic = Topic.Builder.topic().withName("pl.group.topic").withContentType(ContentType.AVRO).build()
 
         when:
         KafkaTopics kafkaTopics = mapper.toKafkaTopics(topic)
@@ -42,7 +43,7 @@ class NamespaceKafkaNamesMapperTest extends Specification {
         then:
         KafkaTopic primary = kafkaTopics.getPrimary()
         primary.name().asString() == "namespace_pl.group.topic"
-        primary.contentType() == Topic.ContentType.AVRO
+        primary.contentType() == ContentType.AVRO
 
         !kafkaTopics.getSecondary().isPresent()
     }
