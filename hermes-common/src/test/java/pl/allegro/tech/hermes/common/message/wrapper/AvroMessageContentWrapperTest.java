@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static java.lang.Long.valueOf;
-import static java.util.Arrays.copyOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.recordToBytes;
@@ -46,7 +45,7 @@ public class AvroMessageContentWrapperTest {
         // then
         assertThat(unwrappedMessageContent.getMessageMetadata().getId()).isEqualTo(id);
         assertThat(unwrappedMessageContent.getMessageMetadata().getTimestamp()).isEqualTo(timestamp);
-        assertThat(unwrappedMessageContent.getContent()).startsWith(copyOf(content, content.length - 1));
+        assertThat(unwrappedMessageContent.getContent()).contains(content);
     }
 
     @Test
@@ -60,7 +59,7 @@ public class AvroMessageContentWrapperTest {
         Map<Utf8, Utf8> metadata = (Map<Utf8, Utf8>) messageWithMetadata.get(METADATA_MARKER);
         assertThat(metadata.get(METADATA_MESSAGE_ID_KEY).toString()).isEqualTo(id);
         assertThat(valueOf(metadata.get(METADATA_TIMESTAMP_KEY).toString())).isEqualTo(timestamp);
-        assertThat(wrappedMessage).startsWith(copyOf(content, content.length - 1));
+        assertThat(wrappedMessage).contains(content);
     }
 
     @Test
@@ -74,7 +73,7 @@ public class AvroMessageContentWrapperTest {
         //then
         assertThat(unwrappedMessage.getMessageMetadata().getId()).isNotEmpty();
         assertThat(unwrappedMessage.getMessageMetadata().getTimestamp()).isNotNull();
-        assertThat(unwrappedMessage.getContent()).startsWith(copyOf(content, content.length - 1));
+        assertThat(unwrappedMessage.getContent()).startsWith(content);
     }
 
     private byte[] wrapContentWithoutMetadata(byte[] message, Schema schema) throws Exception{
