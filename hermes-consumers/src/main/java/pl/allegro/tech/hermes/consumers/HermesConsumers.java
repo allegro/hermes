@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class HermesConsumers {
 
@@ -31,7 +30,7 @@ public class HermesConsumers {
     private final Trackers trackers;
     private final List<Function<ServiceLocator, LogRepository>> logRepositories;
     private final Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper;
-    private final MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
+    private final MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
     private final MessageSenderProviders messageSendersProviders;
     private final ServiceLocator serviceLocator;
 
@@ -43,7 +42,7 @@ public class HermesConsumers {
 
     HermesConsumers(HooksHandler hooksHandler,
                     List<Binder> binders,
-                    MultiMap<String, Supplier<ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers,
+                    MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers,
                     List<Function<ServiceLocator, LogRepository>> logRepositories,
                     Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper) {
 
@@ -60,11 +59,11 @@ public class HermesConsumers {
 
         supervisorController = serviceLocator.getService(SupervisorController.class);
 
-        hooksHandler.addShutdownHook(() -> {
+        hooksHandler.addShutdownHook((s) -> {
             try {
                 healthCheckServer.stop();
                 supervisorController.shutdown();
-                serviceLocator.shutdown();
+                s.shutdown();
             } catch (InterruptedException e) {
                 logger.error("Exception while shutdown Hermes Consumers", e);
             }
@@ -78,7 +77,7 @@ public class HermesConsumers {
 
             messageSenderProvidersSuppliers.entrySet().stream().forEach(entry -> {
                 entry.getValue().stream().forEach( supplier -> {
-                    messageSendersProviders.put(entry.getKey(), supplier.get());
+                    messageSendersProviders.put(entry.getKey(), supplier.apply(serviceLocator));
                 });
             });
 
@@ -88,14 +87,14 @@ public class HermesConsumers {
 
             supervisorController.start();
             healthCheckServer.start();
-            hooksHandler.startup();
+            hooksHandler.startup(serviceLocator);
         } catch (Exception e) {
             logger.error("Exception while starting Hermes Consumers", e);
         }
     }
 
     public void stop() {
-        hooksHandler.shutdown();
+        hooksHandler.shutdown(serviceLocator);
     }
 
     private ServiceLocator createDIContainer(List<Binder> binders) {
