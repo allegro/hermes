@@ -24,6 +24,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.Topic.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class PublishingAvroTest extends IntegrationTest {
@@ -133,6 +134,7 @@ public class PublishingAvroTest extends IntegrationTest {
                 .withName("jsonToAvroDryRun.topic")
                 .withJsonToAvroDryRun(true)
                 .withMessageSchema(user.getSchema().toString())
+                .withContentType(JSON)
                 .build();
         operations.buildTopic(topic);
 
@@ -151,7 +153,7 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldPublishAndConsumeJsonMessageAfterMigrationFromJsonToAvro() throws Exception {
         // given
-        Topic topic = operations.buildTopic("migrated", "topic");
+        Topic topic = operations.buildTopic(topic().withName("migrated", "topic").applyDefaults().withContentType(JSON).build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         TestMessage beforeMigrationMessage = user.createMessage("Bob", 50, "blue");
