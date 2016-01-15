@@ -7,6 +7,7 @@ import com.github.fge.jsonschema.main.JsonSchema;
 import com.google.common.base.Joiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
@@ -31,7 +32,7 @@ public class JsonTopicMessageValidator implements TopicMessageValidator {
 
     @Override
     public void check(byte[] message, Topic topic) {
-        if (Topic.ContentType.JSON != topic.getContentType() || !topic.isValidationEnabled()) {
+        if (ContentType.JSON != topic.getContentType() || !topic.isValidationEnabled()) {
             return;
         }
 

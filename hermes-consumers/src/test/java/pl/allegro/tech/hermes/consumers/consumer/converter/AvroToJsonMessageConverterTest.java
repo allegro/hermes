@@ -29,8 +29,8 @@ public class AvroToJsonMessageConverterTest {
     public void shouldConvertToJsonWithoutMetadata() throws IOException {
         // given
         Topic topic = topic().withName("group.topic").build();
-        AvroUser avroUser = new AvroUser();
-        Message source = message().withData(avroUser.create("Bob", 18, "blue")).withExternalMetadata(of()).build();
+        AvroUser avroUser = new AvroUser("Bob", 18, "blue");
+        Message source = message().withData(avroUser.asBytes()).withExternalMetadata(of()).build();
         when(avroSchemaRepository.getSchema(topic)).thenReturn(avroUser.getSchema());
         AvroToJsonMessageConverter converter = new AvroToJsonMessageConverter(new AvroSchemaRepositoryMetadataAware(avroSchemaRepository));
 

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import com.jayway.awaitility.Duration;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
@@ -59,12 +60,17 @@ public class HermesAPIOperations {
     }
 
     public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint) {
+        return createSubscription(topic, subscriptionName, endpoint, ContentType.JSON);
+    }
+
+    public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint, ContentType contentType) {
         Subscription subscription = subscription()
                 .applyDefaults()
                 .withName(subscriptionName)
                 .withTopicName(topic.getName())
                 .withEndpoint(of(endpoint))
                 .withSupportTeam("team")
+                .withContentType(contentType)
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
                 .build();
 
@@ -125,6 +131,4 @@ public class HermesAPIOperations {
             return endpoints.topic().get(topicName.qualifiedName()).equals(updated);
         });
     }
-
-
 }

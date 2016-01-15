@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static pl.allegro.tech.hermes.common.admin.AdminTool.Operations.RETRANSMIT;
-import static pl.allegro.tech.hermes.common.admin.AdminTool.Operations.SUBSCRIPTION_ENDPOINT_ADDRESS_CHANGED;
+import static pl.allegro.tech.hermes.common.admin.AdminTool.Operations.RESTART_CONSUMER;
 
 public class ZookeeperAdminCache extends PathChildrenCache implements PathChildrenCacheListener {
 
@@ -37,8 +37,8 @@ public class ZookeeperAdminCache extends PathChildrenCache implements PathChildr
             case CHILD_ADDED:
                 if (event.getData().getPath().contains(RETRANSMIT.name())) {
                     retransmit(client, event);
-                } else if (event.getData().getPath().contains(SUBSCRIPTION_ENDPOINT_ADDRESS_CHANGED.name())) {
-                    changeSubscriptionEndpointAddress(client, event);
+                } else if (event.getData().getPath().contains(RESTART_CONSUMER.name())) {
+                    restartConsumer(client, event);
                 }
 
                 break;
@@ -47,14 +47,16 @@ public class ZookeeperAdminCache extends PathChildrenCache implements PathChildr
         }
     }
 
-    private void changeSubscriptionEndpointAddress(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
+    private void restartConsumer(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
         SubscriptionName subscriptionName = objectMapper.readValue(event.getData().getData(), SubscriptionName.class);
 
         for (AdminOperationsCallback adminCallback : adminCallbacks) {
-            adminCallback.onSubscriptionEndpointAddressChanged(subscriptionName);
+            adminCallback.restartConsumer(subscriptionName);
         }
 
-        client.delete().forPath(event.getData().getPath());
+        if (client.checkExists().forPath(event.getData().getPath()) != null) {
+            client.delete().forPath(event.getData().getPath());
+        }
     }
 
     private void retransmit(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {

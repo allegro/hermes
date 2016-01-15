@@ -6,5 +6,5 @@ public interface AdminOperationsCallback {
 
     void onRetransmissionStarts(SubscriptionName subscription) throws Exception;
 
-    void onSubscriptionEndpointAddressChanged(SubscriptionName subscription) throws Exception;
+    void restartConsumer(SubscriptionName subscription) throws Exception;
 }

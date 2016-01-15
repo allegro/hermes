@@ -8,6 +8,7 @@ import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
 import pl.allegro.tech.common.avro.AvroConversionException;
 import pl.allegro.tech.common.avro.JsonAvroConverter;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.converter.schema.AvroSchemaRepositoryMetadataAware;
@@ -32,6 +33,7 @@ public class AvroToJsonMessageConverter implements MessageConverter {
     public Message convert(Message message, Topic topic) {
         return message()
                 .fromMessage(message)
+                .withContentType(ContentType.JSON)
                 .withData(converter.convertToJson(recordWithoutMetadata(message.getData(), topic)))
                 .build();
     }
