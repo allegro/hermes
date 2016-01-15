@@ -50,4 +50,8 @@ public class BrokersClusterService {
     public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
         return kafkaNamesMapper.toKafkaTopics(topic).allMatch(offsetsAvailableChecker::areOffsetsAvailable);
     }
+
+    public boolean topicExists(Topic topic) {
+        return brokerTopicManagement.topicExists(topic);
+    }
 }

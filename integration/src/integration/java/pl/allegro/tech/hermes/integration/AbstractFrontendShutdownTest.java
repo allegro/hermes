@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
-import pl.allegro.tech.hermes.integration.env.MutableConfigFactory;
+import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 
 public abstract class AbstractFrontendShutdownTest extends IntegrationTest {

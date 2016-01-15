@@ -88,6 +88,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
         Subscription subscription = subscription().applyDefaults().withName("subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
                 .withTrackingEnabled(true)
+                .withSupportTeam("team")
                 .build();
 
         operations.createSubscription(topic, subscription);
@@ -111,6 +112,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
                 .withTrackingEnabled(true)
+                .withSupportTeam("team")
                 .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(3).build())
                 .build();
 
@@ -133,6 +135,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
         Subscription subscription = subscription().withName("subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
                 .withTrackingEnabled(true)
+                .withSupportTeam("team")
                 .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(5).build())
                 .build();
 
@@ -202,6 +205,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
                 .withTrackingEnabled(true)
                 .withTopicName("toggleTrackingOnSubscription", "topic")
+                .withSupportTeam("team")
                 .build();
 
         operations.createSubscription(topic, subscription);

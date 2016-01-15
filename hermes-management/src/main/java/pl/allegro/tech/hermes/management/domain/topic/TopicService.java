@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
+import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
@@ -57,6 +58,15 @@ public class TopicService {
         topicValidator.ensureCreatedTopicIsValid(topic);
         topicRepository.createTopic(topic);
 
+        if (!multiDCAwareService.topicExists(topic)) {
+            createTopicInBrokers(topic);
+        } else {
+            logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
+        }
+
+    }
+
+    private void createTopicInBrokers(Topic topic) {
         try {
             multiDCAwareService.manageTopic(brokerTopicManagement ->
                 brokerTopicManagement.createTopic(topic)
@@ -98,6 +108,10 @@ public class TopicService {
                 topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
             }
         }
+    }
+
+    public void touchTopic(TopicName topicName) {
+        topicRepository.touchTopic(topicName);
     }
 
     public List<String> listQualifiedTopicNames(String groupName) {
@@ -142,6 +156,22 @@ public class TopicService {
     public List<String> listTrackedTopicNames(String groupName) {
         return listTopics(groupName).stream()
                 .filter(Topic::isTrackingEnabled)
+                .map(Topic::getQualifiedName)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> listFilteredTopicNames(Query<Topic> topicQuery) {
+
+        return topicQuery.filter(groupService.listGroups().stream()
+                .map(topicRepository::listTopics)
+                .flatMap(List::stream))
+                .map(Topic::getQualifiedName)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> listFilteredTopicNames(String groupName, Query<Topic> topicQuery) {
+
+        return topicQuery.filter(listTopics(groupName).stream())
                 .map(Topic::getQualifiedName)
                 .collect(Collectors.toList());
     }

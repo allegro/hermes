@@ -64,6 +64,7 @@ public class HermesAPIOperations {
                 .withName(subscriptionName)
                 .withTopicName(topic.getName())
                 .withEndpoint(of(endpoint))
+                .withSupportTeam("team")
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
                 .build();
 

@@ -14,6 +14,11 @@ public enum Configs {
     ZOOKEEPER_SESSION_TIMEOUT("zookeeper.session.timeout", 10000),
     ZOOKEEPER_SYNC_TIME("zookeeper.sync.time", 20000),
 
+    ZOOKEEPER_AUTHORIZATION_ENABLED("zookeeper.authorization.enabled", false),
+    ZOOKEEPER_AUTHORIZATION_SCHEME("zookeeper.authorization.scheme", "digest"),
+    ZOOKEEPER_AUTHORIZATION_USER("zookeeper.authorization.user", "user"),
+    ZOOKEEPER_AUTHORIZATION_PASSWORD("zookeeper.authorization.password", "password"),
+
     ZOOKEEPER_MAX_RETRIES("zookeeper.max.retries", 2),
     ZOOKEEPER_ROOT("zookeeper.root", "/hermes"),
     ZOOKEEPER_CACHE_THREAD_POOL_SIZE("zookeeper.cache.thread.pool.size", 5),
@@ -107,7 +112,10 @@ public enum Configs {
     CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE("consumer.offset.commit.queue.alert.size", 20_000),
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
     CONSUMER_WORKLOAD_ALGORITHM("consumer.workload.algorithm", "legacy.mirror"),
-    CONSUMER_WORKLOAD_ID("consumer.workload.id",
+    CONSUMER_WORKLOAD_REBALANCE_INTERVAL("consumer.workload.rebalance.interval.seconds", 30),
+    CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION("consumer.workload.consumers.per.subscription", 2),
+    CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER("consumer.workload.max.subscriptions.per.consumer", 200),
+    CONSUMER_WORKLOAD_NODE_ID("consumer.workload.node.id",
             new InetAddressHostnameResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits())),
 
     GRAPHITE_HOST("graphite.host", "localhost"),

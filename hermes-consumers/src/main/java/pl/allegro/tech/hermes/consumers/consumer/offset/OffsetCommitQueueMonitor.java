@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.MetricsDeltaCalculator;
-import pl.allegro.tech.hermes.common.time.Clock;
+
+import java.time.Clock;
 
 public class OffsetCommitQueueMonitor {
 
@@ -81,6 +82,6 @@ public class OffsetCommitQueueMonitor {
     }
 
     private long currentTimestampSec() {
-        return clock.getTime() / 1000;
+        return clock.millis() / 1000;
     }
 }

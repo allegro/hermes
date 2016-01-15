@@ -9,6 +9,7 @@ public class PathContext {
     private final Optional<String> subscription;
     private final Optional<String> kafkaTopic;
     private final Optional<Integer> partition;
+    private final Optional<String> kafkaCluster;
     private final Optional<Integer> httpCode;
     private final Optional<String> httpCodeFamily;
     private final Optional<String> executorName;
@@ -18,6 +19,7 @@ public class PathContext {
                         Optional<String> subscription,
                         Optional<String> kafkaTopic,
                         Optional<Integer> partition,
+                        Optional<String> kafkaCluster,
                         Optional<Integer> httpCode,
                         Optional<String> httpCodeFamily,
                         Optional<String> executorName)  {
@@ -26,6 +28,7 @@ public class PathContext {
         this.subscription = subscription;
         this.kafkaTopic = kafkaTopic;
         this.partition = partition;
+        this.kafkaCluster = kafkaCluster;
         this.httpCode = httpCode;
         this.httpCodeFamily = httpCodeFamily;
         this.executorName = executorName;
@@ -51,6 +54,10 @@ public class PathContext {
         return partition;
     }
 
+    public Optional<String> getKafkaCluster() {
+        return kafkaCluster;
+    }
+
     public Optional<Integer> getHttpCode() {
         return httpCode;
     }
@@ -74,6 +81,7 @@ public class PathContext {
         private Optional<String> subscription = Optional.empty();
         private Optional<String> kafkaTopic = Optional.empty();
         private Optional<Integer> partition = Optional.empty();
+        private Optional<String> kafkaCluster = Optional.empty();
         private Optional<Integer> httpCode = Optional.empty();
         private Optional<String> httpCodeFamily = Optional.empty();
         private Optional<String> executorName = Optional.empty();
@@ -103,6 +111,11 @@ public class PathContext {
             return this;
         }
 
+        public Builder withKafkaCluster(String kafkaCluster) {
+            this.kafkaCluster = Optional.of(kafkaCluster);
+            return this;
+        }
+
         public Builder withHttpCode(int httpCode) {
             this.httpCode = Optional.of(httpCode);
             return this;
@@ -119,7 +132,7 @@ public class PathContext {
         }
 
         public PathContext build() {
-            return new PathContext(group, topic, subscription, kafkaTopic, partition, httpCode, httpCodeFamily, executorName);
+            return new PathContext(group, topic, subscription, kafkaTopic, partition, kafkaCluster, httpCode, httpCodeFamily, executorName);
         }
     }
 }

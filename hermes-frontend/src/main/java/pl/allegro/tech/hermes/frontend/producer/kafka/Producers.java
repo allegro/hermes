@@ -39,12 +39,12 @@ public class Producers {
     }
 
     public void registerGauges(HermesMetrics metrics) {
-        registerTotalBytesGauge(leaderConfirms, metrics, Gauges.PRODUCER_LEADER_CONFIRMS_BUFFER_TOTAL_BYTES);
-        registerAvailableBytesGauge(leaderConfirms, metrics, Gauges.PRODUCER_LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES);
-        registerTotalBytesGauge(everyoneConfirms, metrics, Gauges.PRODUCER_EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES);
-        registerAvailableBytesGauge(everyoneConfirms, metrics, Gauges.PRODUCER_EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES);
-        registerCompressionRateGauge(leaderConfirms, metrics, Gauges.PRODUCER_LEADER_CONFIRMS_COMPRESSION_RATE);
-        registerCompressionRateGauge(everyoneConfirms, metrics, Gauges.PRODUCER_EVERYONE_CONFIRMS_COMPRESSION_RATE);
+        registerTotalBytesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_BUFFER_TOTAL_BYTES);
+        registerAvailableBytesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES);
+        registerTotalBytesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES);
+        registerAvailableBytesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES);
+        registerCompressionRateGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_COMPRESSION_RATE);
+        registerCompressionRateGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_COMPRESSION_RATE);
     }
 
     public void maybeRegisterNodeMetricsGauges(HermesMetrics metrics) {
@@ -98,7 +98,7 @@ public class Producers {
                                                String producerName,
                                                Node node) {
 
-        String gauge = Gauges.PRODUCER_JMX_PREFIX + "." + producerName + "-" + metricName + "." + escapeDots(node.host());
+        String gauge = Gauges.JMX_PREFIX + "." + producerName + "-" + metricName + "." + escapeDots(node.host());
         registerGauge(producer, metrics, gauge,
                 entry -> entry.getKey().group().equals("producer-node-metrics")
                         && entry.getKey().name().equals(metricName)

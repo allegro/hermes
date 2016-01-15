@@ -29,12 +29,11 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
     private static final TimeUnit DURATION_UNIT = TimeUnit.MILLISECONDS;
 
     private final CounterStorage counterStorage;
-    private final HostnameResolver hostnameResolver;
 
     public ZookeeperCounterReporter(MetricRegistry registry,
                                     CounterStorage counterStorage,
-                                    HostnameResolver hostnameResolver,
-                                    ConfigFactory config) {
+                                    ConfigFactory config
+                                    ) {
         super(
                 registry,
                 ZOOKEEPER_REPORTER_NAME,
@@ -43,7 +42,6 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
                 DURATION_UNIT
         );
         this.counterStorage = counterStorage;
-        this.hostnameResolver = hostnameResolver;
     }
 
     @Override
@@ -63,7 +61,7 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
             return;
         }
 
-        CounterMatcher matcher = new CounterMatcher(counterName, hostnameResolver.resolve());
+        CounterMatcher matcher = new CounterMatcher(counterName);
         long value = counter.getCount();
 
         if (matcher.isSubscriptionInflight()) {

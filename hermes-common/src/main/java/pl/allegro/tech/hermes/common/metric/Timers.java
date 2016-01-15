@@ -2,38 +2,38 @@ package pl.allegro.tech.hermes.common.metric;
 
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.EXECUTOR_NAME;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.HOSTNAME;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.KAFKA_CLUSTER;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 
 public class Timers {
 
     public static final String
+            ACK_ALL_BROKER_LATENCY = "ack-all.broker-latency",
+            ACK_ALL_BROKER_TOPIC_LATENCY = ACK_ALL_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
 
-    PRODUCER_ACK_ALL_BROKER_LATENCY = "producer." + HOSTNAME + ".ack-all.broker-latency",
-            PRODUCER_ACK_ALL_BROKER_TOPIC_LATENCY = PRODUCER_ACK_ALL_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
+            ACK_LEADER_BROKER_LATENCY = "ack-leader.broker-latency",
+            ACK_LEADER_BROKER_TOPIC_LATENCY = ACK_LEADER_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
 
-    PRODUCER_ACK_LEADER_BROKER_LATENCY = "producer." + HOSTNAME + ".ack-leader.broker-latency",
-            PRODUCER_ACK_LEADER_BROKER_TOPIC_LATENCY = PRODUCER_ACK_LEADER_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
+            PARSING_REQUEST = "parsing-request",
+            TOPIC_PARSING_REQUEST = PARSING_REQUEST + "." + GROUP + "." + TOPIC,
 
-    PRODUCER_PARSING_REQUEST = "producer." + HOSTNAME + ".parsing-request",
-            PRODUCER_TOPIC_PARSING_REQUEST = PRODUCER_PARSING_REQUEST + "." + GROUP + "." + TOPIC,
+            ACK_ALL_LATENCY = "ack-all.latency",
+            ACK_ALL_TOPIC_LATENCY = ACK_ALL_LATENCY + "." + GROUP + "." + TOPIC,
 
-    PRODUCER_ACK_ALL_LATENCY = "producer." + HOSTNAME + ".ack-all.latency",
-            PRODUCER_ACK_ALL_TOPIC_LATENCY = PRODUCER_ACK_ALL_LATENCY + "." + GROUP + "." + TOPIC,
+            ACK_LEADER_LATENCY = "ack-leader.latency",
+            PRODUCER_ACK_LEADER_TOPIC_LATENCY = ACK_LEADER_LATENCY + "." + GROUP + "." + TOPIC,
 
-    PRODUCER_ACK_LEADER_LATENCY = "producer." + HOSTNAME + ".ack-leader.latency",
-            PRODUCER_ACK_LEADER_TOPIC_LATENCY = PRODUCER_ACK_LEADER_LATENCY + "." + GROUP + "." + TOPIC,
+            VALIDATION_LATENCY = "validation-latency",
+            VALIDATION_TOPIC_LATENCY = VALIDATION_LATENCY + "." + TOPIC,
 
-    PRODUCER_VALIDATION_LATENCY = "producer." + HOSTNAME + ".validation-latency",
-            PRODUCER_VALIDATION_TOPIC_LATENCY = "producer." + HOSTNAME + ".validation-latency." + TOPIC,
+            LATENCY = "latency",
+            SUBSCRIPTION_LATENCY = LATENCY + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
 
-    CONSUMER_LATENCY = "consumer." + HOSTNAME + ".latency",
-            CONSUMER_SUBSCRIPTION_LATENCY = CONSUMER_LATENCY + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
+            READ_LATENCY = "read-latency",
 
-    CONSUMER_READ_LATENCY = "consumer." + HOSTNAME + ".read-latency",
+            CONSUMER_WORKLOAD_REBALANCE_DURATION = "consumers-workload." + KAFKA_CLUSTER + ".selective.rebalance-duration",
 
-    CONSUMER_EXECUTOR_DURATION = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".duration",
-            CONSUMER_EXECUTOR_WAITING = "consumer." + HOSTNAME + ".executors." + EXECUTOR_NAME + ".waiting";
-
+            EXECUTOR_DURATION = "executors." + EXECUTOR_NAME + ".duration",
+            EXECUTOR_WAITING = "executors." + EXECUTOR_NAME + ".waiting";
 }

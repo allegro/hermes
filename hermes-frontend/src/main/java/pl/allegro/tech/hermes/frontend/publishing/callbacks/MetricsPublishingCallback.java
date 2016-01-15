@@ -36,8 +36,8 @@ public class MetricsPublishingCallback implements PublishingCallback {
     @Override
     public void onPublished(Message message, Topic topic) {
         brokerLatencyTimer.close();
-        hermesMetrics.meter(Meters.PRODUCER_METER).mark();
-        hermesMetrics.meter(Meters.PRODUCER_TOPIC_METER, topic.getName()).mark();
-        hermesMetrics.counter(Counters.PRODUCER_PUBLISHED, topic.getName()).inc();
+        hermesMetrics.meter(Meters.METER).mark();
+        hermesMetrics.meter(Meters.TOPIC_METER, topic.getName()).mark();
+        hermesMetrics.counter(Counters.PUBLISHED, topic.getName()).inc();
     }
 }

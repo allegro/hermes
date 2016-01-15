@@ -8,11 +8,14 @@ import kafka.common.ErrorMapping;
 import kafka.javaapi.ConsumerMetadataResponse;
 import kafka.network.BlockingChannel;
 import org.apache.curator.framework.CuratorFramework;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
+import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
@@ -23,6 +26,8 @@ import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
+
+    private static final Logger logger = LoggerFactory.getLogger(Waiter.class);
 
     private final HermesEndpoints endpoints;
 
@@ -39,7 +44,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         this.endpoints = endpoints;
         this.zookeeper = zookeeper;
         this.kafkaZookeeper = kafkaZookeeper;
-        this.kafkaNamesMapper = new KafkaNamesMapper(kafkaNamespace);
+        this.kafkaNamesMapper = new NamespaceKafkaNamesMapper(kafkaNamespace);
     }
 
     public void untilKafkaZookeeperNodeDeletion(final String path) {
@@ -82,10 +87,20 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         );
     }
 
-    private void untilSubscriptionHasState(Topic topic, String subscription, Subscription.State state) {
-        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() ->
-                        endpoints.subscription().get(topic.getQualifiedName(), subscription).getState().equals(state)
-        );
+    private void untilSubscriptionHasState(Topic topic, String subscription, Subscription.State expected) {
+        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() -> {
+            Subscription.State actual = endpoints.subscription().get(topic.getQualifiedName(), subscription).getState();
+            logger.info("Expecting {} subscription state. Actual {}", expected, actual);
+            return expected == actual;
+        });
+    }
+
+    public void untilSubscriptionEndpointAddressChanged(Topic topic, String subscription, EndpointAddress expected) {
+        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() -> {
+            EndpointAddress actual = endpoints.subscription().get(topic.getQualifiedName(), subscription).getEndpoint();
+            logger.info("Expecting {} subscription endpoint address. Actual {}", expected, actual);
+            return expected.equals(actual);
+        });
     }
 
     public void untilSubscriptionEndsReiteration(Topic topic, String subscription) {

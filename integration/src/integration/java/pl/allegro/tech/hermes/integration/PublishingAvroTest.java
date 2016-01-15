@@ -9,8 +9,13 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -99,7 +104,7 @@ public class PublishingAvroTest extends IntegrationTest {
         operations.buildTopic(topic);
 
         // when
-        Response response = publisher.publish("avro.topic2", "{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\",\"__metadata\": null}");
+        Response response = publisher.publish("avro.topic2", "{\"name\":\"Bob\",\"age\":50,\"favoriteColor\":\"blue\"}");
 
         // then
         assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
@@ -119,6 +124,28 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void shouldPublishJsonIncompatibleWithSchemaWhileJsonToAvroDryRunModeIsEnabled() {
+        // given
+        Topic topic = topic()
+                .withName("jsonToAvroDryRun.topic")
+                .withJsonToAvroDryRun(true)
+                .withMessageSchema(user.getSchema().toString())
+                .build();
+        operations.buildTopic(topic);
+
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        TestMessage message = TestMessage.random();
+        remoteService.expectMessages(message);
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), message.body());
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+        remoteService.waitUntilReceived();
     }
 
     @Test
@@ -151,4 +178,33 @@ public class PublishingAvroTest extends IntegrationTest {
         remoteService.waitUntilReceived();
     }
 
+    @Test
+    public void shouldPublishAvroAndConsumeJsonMessageWithTraceId() throws IOException{
+
+        // given
+        byte[] avroMessage = user.create("John Doe", 44, "black");
+        String jsonMessage = "{\"name\":\"John Doe\",\"age\":44,\"favoriteColor\":\"black\"}";
+        String traceId = UUID.randomUUID().toString();
+
+        // and
+        Topic topic = operations.buildTopic(topic()
+                .withName("avro.topic")
+                .withValidation(true)
+                .withMessageSchema(user.getSchema().toString())
+                .withContentType(AVRO).build()
+        );
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        remoteService.expectMessages(jsonMessage);
+        WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
+
+        // when
+        Response response = client
+                .request()
+                .header("Trace-Id", traceId)
+                .post(Entity.entity(avroMessage, MediaType.valueOf("avro/binary")));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("Trace-Id", traceId);
+    }
 }

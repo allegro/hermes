@@ -20,12 +20,12 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
-import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.CannotCommitOffsetToBrokerException;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import javax.inject.Inject;
+import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +122,7 @@ public class BrokerOffsetsRepository {
     private Map<TopicAndPartition, OffsetAndMetadata> createOffset(PartitionOffset partitionOffset) {
         Map<TopicAndPartition, OffsetAndMetadata> offset = new LinkedHashMap<>();
         TopicAndPartition topicAndPartition = new TopicAndPartition(partitionOffset.getTopic().asString(), partitionOffset.getPartition());
-        offset.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset(), EMPTY_METADATA, clock.getTime()));
+        offset.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset(), EMPTY_METADATA, clock.millis()));
         return offset;
     }
 

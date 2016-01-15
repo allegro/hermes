@@ -2,14 +2,12 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.frontend;
 
 import com.codahale.metrics.MetricRegistry;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
-import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchQueueCommitter;
-import pl.allegro.tech.hermes.tracker.elasticsearch.IndexFactory;
-import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
-import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
+import pl.allegro.tech.hermes.tracker.elasticsearch.*;
 import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Gauges;
 import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Timers;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
@@ -20,9 +18,11 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.INFLIGHT;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.DocumentBuilder.build;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
 
-public class FrontendElasticsearchLogRepository extends BatchingLogRepository<XContentBuilder> implements LogRepository, LogSchemaAware {
+public class FrontendElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument> implements LogRepository, LogSchemaAware {
+
+    private static final int DOCUMENT_EXPECTED_SIZE = 1024;
 
     private FrontendElasticsearchLogRepository(Client elasticClient,
                                                String clusterName,
@@ -68,7 +68,7 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<XC
 
     protected XContentBuilder notEndedDocument(String messageId, long timestamp, String topicName, String status)
             throws IOException {
-        return jsonBuilder()
+        return jsonBuilder(new BytesStreamOutput(DOCUMENT_EXPECTED_SIZE))
                 .startObject()
                 .field(MESSAGE_ID, messageId)
                 .field(TIMESTAMP, timestamp)

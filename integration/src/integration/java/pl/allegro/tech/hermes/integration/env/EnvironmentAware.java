@@ -39,6 +39,8 @@ public interface EnvironmentAware {
 
     String PRIMARY_KAFKA_CLUSTER_NAME = CONFIG_FACTORY.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 
+    String PRIMARY_ZK_KAFKA_CONNECT = CONFIG_FACTORY.getStringProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING);
+
     String SECONDARY_KAFKA_CLUSTER_NAME = "secondary";
 
     int SECONDARY_KAFKA_PORT = 9094;

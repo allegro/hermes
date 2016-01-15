@@ -72,6 +72,15 @@ public abstract class ZookeeperBasedRepository {
         }
     }
 
+    protected void touch(String path) {
+        try {
+            byte[] oldData = zookeeper.getData().forPath(path);
+            zookeeper.setData().forPath(path, oldData);
+        } catch (Exception ex) {
+            throw new InternalProcessingException(ex);
+        }
+    }
+
     protected void remove(String path) {
         try {
             zookeeper.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);

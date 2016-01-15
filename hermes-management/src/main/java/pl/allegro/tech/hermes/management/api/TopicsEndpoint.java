@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
+import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
@@ -60,12 +61,18 @@ public class TopicsEndpoint {
         return tracked? listTracked(groupName) : listNames(groupName);
     }
 
-    public List<String> listTracked(String groupName) {
-        return isNullOrEmpty(groupName) ? topicService.listTrackedTopicNames() : topicService.listTrackedTopicNames(groupName);
-    }
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @Path("/query")
+    @ApiOperation(value = "Queries topics from group", response = List.class, httpMethod = HttpMethod.POST)
+    public List<String> queryList(
+            @DefaultValue("") @QueryParam("groupName") String groupName,
+            Query<Topic> query) {
 
-    public List<String> listNames(String groupName) {
-        return isNullOrEmpty(groupName) ? topicService.listQualifiedTopicNames() : topicService.listQualifiedTopicNames(groupName);
+        return isNullOrEmpty(groupName) ?
+                topicService.listFilteredTopicNames(query) :
+                topicService.listFilteredTopicNames(groupName, query);
     }
 
     @POST
@@ -82,7 +89,7 @@ public class TopicsEndpoint {
     @DELETE
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
-    @RolesAllowed({ Roles.ADMIN })
+    @RolesAllowed({ Roles.GROUP_OWNER, Roles.ADMIN })
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName) {
         topicService.removeTopic(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)));
@@ -135,4 +142,11 @@ public class TopicsEndpoint {
         }
     }
 
+    private List<String> listTracked(String groupName) {
+        return isNullOrEmpty(groupName) ? topicService.listTrackedTopicNames() : topicService.listTrackedTopicNames(groupName);
+    }
+
+    private List<String> listNames(String groupName) {
+        return isNullOrEmpty(groupName) ? topicService.listQualifiedTopicNames() : topicService.listQualifiedTopicNames(groupName);
+    }
 }

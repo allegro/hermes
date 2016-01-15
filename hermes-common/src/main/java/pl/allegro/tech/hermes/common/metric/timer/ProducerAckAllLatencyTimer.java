@@ -7,6 +7,6 @@ import pl.allegro.tech.hermes.common.metric.Timers;
 public class ProducerAckAllLatencyTimer extends ProducerLatencyTimer {
 
     public ProducerAckAllLatencyTimer(HermesMetrics hermesMetrics, TopicName topicName) {
-        super(hermesMetrics.timer(Timers.PRODUCER_ACK_ALL_LATENCY), hermesMetrics.timer(Timers.PRODUCER_ACK_ALL_TOPIC_LATENCY, topicName));
+        super(hermesMetrics.timer(Timers.ACK_ALL_LATENCY), hermesMetrics.timer(Timers.ACK_ALL_TOPIC_LATENCY, topicName));
     }
 }

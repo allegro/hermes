@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
-import java.util.Optional;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
@@ -8,6 +7,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 public class ConsumerHolder implements Iterable<Consumer> {
 

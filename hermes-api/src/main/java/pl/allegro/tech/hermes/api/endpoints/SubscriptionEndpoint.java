@@ -27,6 +27,13 @@ public interface SubscriptionEndpoint {
 
     @POST
     @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @Path("/query")
+    List<String> queryList(@PathParam("topicName") String qualifiedTopicName,
+                                  String query);
+
+    @POST
+    @Consumes(APPLICATION_JSON)
     Response create(@PathParam("topicName") String qualifiedTopicName,
                     Subscription subscription);
 

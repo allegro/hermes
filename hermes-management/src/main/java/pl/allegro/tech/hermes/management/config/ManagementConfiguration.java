@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.NoOpSubscriptionLagSource;
@@ -66,6 +67,6 @@ public class ManagementConfiguration {
 
     @Bean
     public Clock clock() {
-        return Clock.systemDefaultZone();
+        return new ClockFactory().provide();
     }
 }

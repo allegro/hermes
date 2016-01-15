@@ -18,11 +18,11 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
-import pl.allegro.tech.hermes.common.time.Clock;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 
+import java.time.Clock;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -122,8 +122,10 @@ public class KafkaMessageReceiver implements MessageReceiver {
                     unwrappedContent.getContent(),
                     kafkaTopic.contentType(),
                     unwrappedContent.getMessageMetadata().getTimestamp(),
-                    clock.getTime(),
-                    new PartitionOffset(kafkaTopic.name(), message.offset(), message.partition()));
+                    clock.millis(),
+                    new PartitionOffset(kafkaTopic.name(), message.offset(), message.partition()),
+                    unwrappedContent.getMessageMetadata().getExternalMetadata()
+            );
 
         } catch (ConsumerTimeoutException consumerTimeoutException) {
             throw new MessageReceivingTimeoutException("No messages received", consumerTimeoutException);

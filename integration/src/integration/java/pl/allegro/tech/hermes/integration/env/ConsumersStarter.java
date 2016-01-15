@@ -6,9 +6,10 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
-import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
+import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 
 public class ConsumersStarter implements Starter<HermesConsumers> {
 
@@ -21,6 +22,8 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
     public void start() throws Exception {
         LOGGER.info("Starting Hermes Consumers");
         consumers = HermesConsumers.consumers()
+            .withKafkaTopicsNamesMapper(serviceLocator ->
+                    new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())
             .withBinding(configFactory, ConfigFactory.class)
                 .withLogRepository(serviceLocator -> new MongoLogRepository(FongoFactory.hermesDB(),
                         10,

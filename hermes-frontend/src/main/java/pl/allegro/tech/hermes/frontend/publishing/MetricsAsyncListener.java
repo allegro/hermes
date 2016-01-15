@@ -44,9 +44,9 @@ class MetricsAsyncListener implements AsyncListener {
         hermesMetrics.httpStatusCodeMeter(responseStatus, topicName).mark();
 
         if (Family.SUCCESSFUL != Family.familyOf(responseStatus)) {
-            hermesMetrics.meter(Meters.PRODUCER_FAILED_METER).mark();
-            hermesMetrics.meter(Meters.PRODUCER_FAILED_TOPIC_METER, topicName).mark();
-            hermesMetrics.counter(Counters.PRODUCER_UNPUBLISHED, topicName).inc();
+            hermesMetrics.meter(Meters.FAILED_METER).mark();
+            hermesMetrics.meter(Meters.FAILED_TOPIC_METER, topicName).mark();
+            hermesMetrics.counter(Counters.UNPUBLISHED, topicName).inc();
         }
     }
 
