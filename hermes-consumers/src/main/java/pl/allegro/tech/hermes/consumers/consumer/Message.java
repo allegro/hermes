@@ -144,6 +144,11 @@ public class Message {
             return this;
         }
 
+        public Builder withExternalMetadata(Map<String, String> externalMetadata) {
+            this.message.externalMetadata = externalMetadata;
+            return this;
+        }
+
         public Message build() {
             return message;
         }
