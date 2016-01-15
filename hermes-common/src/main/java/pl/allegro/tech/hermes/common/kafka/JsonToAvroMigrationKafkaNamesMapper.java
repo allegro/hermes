@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.kafka;
 
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.function.Function;
@@ -21,7 +22,7 @@ public class JsonToAvroMigrationKafkaNamesMapper extends NamespaceKafkaNamesMapp
     }
 
     private Function<Topic, KafkaTopic> mapToJsonKafkaTopic = it ->
-            new KafkaTopic(KafkaTopicName.valueOf(it.getQualifiedName()), Topic.ContentType.JSON);
+            new KafkaTopic(KafkaTopicName.valueOf(it.getQualifiedName()), ContentType.JSON);
 
     private Function<KafkaTopic, KafkaTopic> appendContentTypeSuffix = kafkaTopic -> {
         switch (kafkaTopic.contentType()) {

@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.test;
 
 
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -16,7 +16,7 @@ public final class MessageBuilder {
 
     private String id;
     private String topic;
-    private Topic.ContentType contentType;
+    private ContentType contentType;
     private long publishingTimestamp;
     private long readingTimestamp;
     private PartitionOffset partitionOffset;
@@ -32,7 +32,7 @@ public final class MessageBuilder {
                 .withId("id")
                 .withTopic("topicId")
                 .withContent("aaaaaaaa", StandardCharsets.UTF_8)
-                .withContentType(Topic.ContentType.JSON)
+                .withContentType(ContentType.JSON)
                 .withPublishingTimestamp(123L)
                 .withReadingTimestamp(123L)
                 .withPartitionOffset(new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 123, 1))
@@ -64,7 +64,7 @@ public final class MessageBuilder {
         return this;
     }
 
-    public MessageBuilder withContentType(Topic.ContentType contentType) {
+    public MessageBuilder withContentType(ContentType contentType) {
         this.contentType = contentType;
         return this;
     }

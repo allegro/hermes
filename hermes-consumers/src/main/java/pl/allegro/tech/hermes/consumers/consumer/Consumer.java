@@ -69,7 +69,7 @@ public class Consumer implements Runnable {
 
                 Message message = messageReceiver.next();
 
-                Message convertedMessage = messageConverterResolver.converterFor(message, topic).convert(message, topic);
+                Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
 
                 sendMessage(convertedMessage);
             } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {

@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.common.kafka;
 
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.ContentType;
 
 import java.util.Objects;
 
@@ -9,9 +9,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class KafkaTopic {
 
     private final KafkaTopicName name;
-    private final Topic.ContentType contentType;
+    private final ContentType contentType;
 
-    public KafkaTopic(KafkaTopicName name, Topic.ContentType contentType) {
+    public KafkaTopic(KafkaTopicName name, ContentType contentType) {
         this.name = checkNotNull(name);
         this.contentType = checkNotNull(contentType);
     }
@@ -20,7 +20,7 @@ public class KafkaTopic {
         return name;
     }
 
-    public Topic.ContentType contentType() {
+    public ContentType contentType() {
         return contentType;
     }
 

@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.infrastructure.schema;
 
 import org.apache.avro.Schema;
 import org.glassfish.hk2.api.Factory;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.domain.topic.schema.CachedSchemaSourceProvider;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
@@ -20,7 +20,7 @@ public class AvroSchemaRepositoryFactory implements Factory<SchemaRepository<Sch
     @Override
     public SchemaRepository<Schema> provide() {
         return new SchemaRepository<>(
-            Topic.ContentType.AVRO,
+            ContentType.AVRO,
             cachedSchemaSourceProvider,
             source -> new Schema.Parser().parse(source.value()));
     }

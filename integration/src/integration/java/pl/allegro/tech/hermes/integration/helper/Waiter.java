@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
@@ -44,7 +45,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         this.endpoints = endpoints;
         this.zookeeper = zookeeper;
         this.kafkaZookeeper = kafkaZookeeper;
-        this.kafkaNamesMapper = new NamespaceKafkaNamesMapper(kafkaNamespace);
+        this.kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(kafkaNamespace);
     }
 
     public void untilKafkaZookeeperNodeDeletion(final String path) {
@@ -92,6 +93,14 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
             Subscription.State actual = endpoints.subscription().get(topic.getQualifiedName(), subscription).getState();
             logger.info("Expecting {} subscription state. Actual {}", expected, actual);
             return expected == actual;
+        });
+    }
+
+    public void untilSubscriptionContentTypeChanged(Topic topic, String subscription, ContentType expected) {
+        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() -> {
+            ContentType actual = endpoints.subscription().get(topic.getQualifiedName(), subscription).getContentType();
+            logger.info("Expecting {} subscription endpoint address. Actual {}", expected, actual);
+            return expected.equals(actual);
         });
     }
 
@@ -202,7 +211,11 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     private void untilZookeeperNodeCreation(final String path, final CuratorFramework zookeeper) {
-        waitAtMost(adjust(20), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath(path) != null);
+        waitAtMost(adjust(60), TimeUnit.SECONDS).until(() -> {
+            CuratorFramework zk = zookeeper;
+            String p = path;
+            return zookeeper.checkExists().forPath(path) != null;
+        });
     }
 
     private void untilZookeeperNodeDeletion(final String path, final CuratorFramework zookeeper) {

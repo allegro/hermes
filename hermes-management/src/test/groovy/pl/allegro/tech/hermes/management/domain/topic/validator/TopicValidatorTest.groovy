@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.topic.validator
 
-import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
@@ -56,15 +56,15 @@ class TopicValidatorTest extends Specification {
         thrown TopicValidationException
 
         where:
-        previousType | updatedType
-        Topic.ContentType.JSON | Topic.ContentType.AVRO
-        Topic.ContentType.AVRO | Topic.ContentType.JSON
+        previousType     | updatedType
+        ContentType.JSON | ContentType.AVRO
+        ContentType.AVRO | ContentType.JSON
     }
 
     def "should fail when changing content type from avro to json and unsetting migratedToJsonType flag"() {
         given:
-        def jsonTopic = topic().applyDefaults().withContentType(Topic.ContentType.AVRO).migratedFromJsonType().build()
-        def updatedTopic = topic().applyDefaults().withContentType(Topic.ContentType.JSON).build()
+        def jsonTopic = topic().applyDefaults().withContentType(ContentType.AVRO).migratedFromJsonType().build()
+        def updatedTopic = topic().applyDefaults().withContentType(ContentType.JSON).build()
 
         when:
         topicValidator.ensureUpdatedTopicIsValid(updatedTopic, jsonTopic)
@@ -75,8 +75,8 @@ class TopicValidatorTest extends Specification {
 
     def "should fail when changing content type from json to avro and avro schema not available"() {
         given:
-        def jsonTopic = topic().applyDefaults().withContentType(Topic.ContentType.JSON).build()
-        def migratedTopic = topic().applyDefaults().withContentType(Topic.ContentType.AVRO).migratedFromJsonType().build()
+        def jsonTopic = topic().applyDefaults().withContentType(ContentType.JSON).build()
+        def migratedTopic = topic().applyDefaults().withContentType(ContentType.AVRO).migratedFromJsonType().build()
         avroSchemaRepository.getSchema(migratedTopic) >> { throw new CouldNotLoadSchemaException("", new RuntimeException()) }
 
         when:
@@ -88,8 +88,8 @@ class TopicValidatorTest extends Specification {
 
     def "should not fail when changing content type from json to avro and avro schema is available"() {
         given:
-        def jsonTopic = topic().applyDefaults().withContentType(Topic.ContentType.JSON).build()
-        def migratedTopic = topic().applyDefaults().withContentType(Topic.ContentType.AVRO).migratedFromJsonType().build()
+        def jsonTopic = topic().applyDefaults().withContentType(ContentType.JSON).build()
+        def migratedTopic = topic().applyDefaults().withContentType(ContentType.AVRO).migratedFromJsonType().build()
         avroSchemaRepository.getSchema(migratedTopic) >> new AvroUser().schema
 
         when:
