@@ -1,34 +1,43 @@
 package pl.allegro.tech.hermes.common.hook;
 
+import ch.qos.logback.classic.LoggerContext;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class HooksHandler {
-    private final List<Hook> startupHooks = new ArrayList<>();
-    private final List<Hook> shutdownHooks = new ArrayList<>();
 
-    public void addStartupHook(Hook hook) {
+    private final List<ServiceAwareHook> startupHooks = new ArrayList<>();
+    private final List<ServiceAwareHook> shutdownHooks = new ArrayList<>();
+
+    public void addStartupHook(ServiceAwareHook hook) {
         startupHooks.add(hook);
     }
 
-    public void addShutdownHook(Hook hook) {
+    public void addShutdownHook(ServiceAwareHook hook) {
         shutdownHooks.add(hook);
     }
 
-    public void shutdown() {
-        shutdownHooks.forEach(Hook::apply);
+    public void shutdown(ServiceLocator serviceLocator) {
+        try {
+            shutdownHooks.forEach(c -> c.accept(serviceLocator));
+        } finally {
+            ((LoggerContext) LoggerFactory.getILoggerFactory()).stop();
+        }
     }
 
-    public void startup() {
-        registerGlobalShutdownHook();
-        startupHooks.forEach(Hook::apply);
+    public void startup(ServiceLocator serviceLocator) {
+        registerGlobalShutdownHook(serviceLocator);
+        startupHooks.forEach(c -> c.accept(serviceLocator));
     }
 
-    private void registerGlobalShutdownHook() {
+    private void registerGlobalShutdownHook(ServiceLocator serviceLocator) {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                shutdown();
+                shutdown(serviceLocator);
             }
         });
     }

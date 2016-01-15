@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
 import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
+import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperHolder;
 import pl.allegro.tech.hermes.frontend.di.FrontendBinder;
@@ -62,11 +63,11 @@ public final class HermesFrontend {
             hooksHandler.addShutdownHook(gracefulShutdownHook());
         }
 
-        hooksHandler.addStartupHook(() -> serviceLocator.getService(HealthCheckService.class).startup());
+        hooksHandler.addStartupHook((s) -> s.getService(HealthCheckService.class).startup());
         hooksHandler.addShutdownHook(defaultShutdownHook());
     }
 
-    private AbstractShutdownHook gracefulShutdownHook() {
+    private ServiceAwareHook gracefulShutdownHook() {
         return new AbstractShutdownHook() {
             @Override
             public void shutdown() throws InterruptedException {
@@ -94,11 +95,11 @@ public final class HermesFrontend {
         });
 
         hermesServer.start();
-        hooksHandler.startup();
+        hooksHandler.startup(serviceLocator);
     }
 
     public void stop() {
-        hooksHandler.shutdown();
+        hooksHandler.shutdown(serviceLocator);
     }
 
     public <T> T getService(Class<T> clazz) {
@@ -135,14 +136,22 @@ public final class HermesFrontend {
             return new HermesFrontend(hooksHandler, binders, logRepositories, kafkaNamesMapper);
         }
 
-        public Builder withShutdownHook(Hook hook) {
-            hooksHandler.addShutdownHook(hook);
+        public Builder withStartupHook(ServiceAwareHook hook) {
+            hooksHandler.addStartupHook(hook);
             return this;
         }
 
         public Builder withStartupHook(Hook hook) {
-            hooksHandler.addStartupHook(hook);
+            return withStartupHook(s -> hook.apply());
+        }
+
+        public Builder withShutdownHook(ServiceAwareHook hook) {
+            hooksHandler.addShutdownHook(hook);
             return this;
+        }
+
+        public Builder withShutdownHook(Hook hook) {
+            return withShutdownHook(s -> hook.apply());
         }
 
         public Builder withBrokerTimeoutListener(BrokerTimeoutListener brokerTimeoutListener) {

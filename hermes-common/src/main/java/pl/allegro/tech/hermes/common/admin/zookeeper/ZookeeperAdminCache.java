@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static pl.allegro.tech.hermes.common.admin.AdminTool.Operations.RETRANSMIT;
+import static pl.allegro.tech.hermes.common.admin.AdminTool.Operations.SUBSCRIPTION_ENDPOINT_ADDRESS_CHANGED;
 
 public class ZookeeperAdminCache extends PathChildrenCache implements PathChildrenCacheListener {
 
@@ -35,17 +36,35 @@ public class ZookeeperAdminCache extends PathChildrenCache implements PathChildr
         switch (event.getType()) {
             case CHILD_ADDED:
                 if (event.getData().getPath().contains(RETRANSMIT.name())) {
-                    SubscriptionName subscriptionName = objectMapper.readValue(event.getData().getData(), SubscriptionName.class);
-
-                    for (AdminOperationsCallback adminCallback : adminCallbacks) {
-                        adminCallback.onRetransmissionStarts(subscriptionName);
-                    }
-                    client.delete().forPath(event.getData().getPath());
+                    retransmit(client, event);
+                } else if (event.getData().getPath().contains(SUBSCRIPTION_ENDPOINT_ADDRESS_CHANGED.name())) {
+                    changeSubscriptionEndpointAddress(client, event);
                 }
+
                 break;
             default:
                 break;
         }
+    }
+
+    private void changeSubscriptionEndpointAddress(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
+        SubscriptionName subscriptionName = objectMapper.readValue(event.getData().getData(), SubscriptionName.class);
+
+        for (AdminOperationsCallback adminCallback : adminCallbacks) {
+            adminCallback.onSubscriptionEndpointAddressChanged(subscriptionName);
+        }
+
+        client.delete().forPath(event.getData().getPath());
+    }
+
+    private void retransmit(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
+        SubscriptionName subscriptionName = objectMapper.readValue(event.getData().getData(), SubscriptionName.class);
+
+        for (AdminOperationsCallback adminCallback : adminCallbacks) {
+            adminCallback.onRetransmissionStarts(subscriptionName);
+        }
+
+        client.delete().forPath(event.getData().getPath());
     }
 
     public void addCallback(AdminOperationsCallback callback) {
