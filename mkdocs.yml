@@ -1,0 +1,49 @@
+site_name: Hermes
+site_description: Hermes - fast and reliable message broker with HTTP interface.
+site_author: Skylab
+
+repo_url: https://github.com/allegro/hermes
+
+docs_dir: docs/docs
+theme_dir: docs/theme
+
+extra_css:
+    - styles.css
+
+markdown_extensions:
+    - toc:
+        anchorlink: true
+
+extra:
+    version: '0.8.2'
+    brand_image: 'img/hermes-mini.png'
+
+pages:
+  - Home: 'index.md'
+  - 'Quickstart': 'quickstart.md'
+  - Overview:
+    - 'Architecture': 'overview/architecture.md'
+    - 'Data model': 'overview/data-model.md'
+    - 'Features maturity': 'overview/features-maturity.md'
+  - User Guide:
+    - 'Publishing': 'user/publishing.md'
+    - 'Publishing JSON': 'user/publishing-json.md'
+    - 'Publishing AVRO': 'user/publishing-avro.md'
+    - 'Subscribing': 'user/subscribing.md'
+    - 'Ownership and permissions': 'user/permissions.md'
+    - 'Java Client': 'user/java-client.md'
+  - Deployment:
+      - 'Packaging': 'deployment/packaging.md'
+      - 'Deployment': 'deployment/deployment.md'
+      - 'Metrics': 'deployment/metrics.md'
+  - Configuration:
+    - 'Kafka and Zookeeper': 'configuration/kafka-and-zookeeper.md'
+    - 'Metrics': 'configuration/metrics.md'
+    - 'Access security': 'configuration/security.md'
+    - 'Consumers rate limiter': 'configuration/rate-limiting.md'
+    - 'Buffer persistence': 'configuration/buffer-persistence.md'
+    - 'Message internal format': 'configuration/internal-format.md'
+    - 'Message tracking': 'configuration/message-tracking.md'
+    - 'Schema repository': 'configuration/schema-repository.md'
+    - 'Tuning Frontend': 'configuration/frontend-tuning.md'
+    - 'Tuning Consumers': 'configuration/consumers-tuning.md'
