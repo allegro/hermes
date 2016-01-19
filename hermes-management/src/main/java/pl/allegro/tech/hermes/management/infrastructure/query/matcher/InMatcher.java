@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.management.infrastructure.query.graph.ObjectGraph;
 
 import java.util.Arrays;
 
-public class InMatcher<T> implements Matcher<T> {
+public class InMatcher implements Matcher {
 
     private final String attribute;
 
@@ -17,7 +17,7 @@ public class InMatcher<T> implements Matcher<T> {
     }
 
     @Override
-    public boolean match(T value) {
+    public boolean match(Object value) {
 
         try {
             if (values == null || values.length == 0) {

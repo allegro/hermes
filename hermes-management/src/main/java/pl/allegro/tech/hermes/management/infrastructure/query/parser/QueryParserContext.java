@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface QueryParserContext {
 
-    <T> Matcher<T> parseNode(JsonNode node);
+    Matcher parseNode(JsonNode node);
 
-    <T> List<Matcher<T>> parseArrayNodes(JsonNode node);
+    List<Matcher> parseArrayNodes(JsonNode node);
 
     Object parseValue(JsonNode node);
 

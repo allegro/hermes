@@ -1,15 +1,15 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.matcher;
 
-public class NotMatcher<T> implements Matcher<T> {
+public class NotMatcher implements Matcher {
 
-    private final Matcher<T> matcher;
+    private final Matcher matcher;
 
-    public NotMatcher(Matcher<T> matcher) {
+    public NotMatcher(Matcher matcher) {
         this.matcher = matcher;
     }
 
     @Override
-    public boolean match(T value) {
+    public boolean match(Object value) {
         return !matcher.match(value);
     }
 }
