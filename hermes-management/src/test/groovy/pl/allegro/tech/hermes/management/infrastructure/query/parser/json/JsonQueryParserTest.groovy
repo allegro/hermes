@@ -1,14 +1,16 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.parser.json
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.common.query.Query
-import pl.allegro.tech.hermes.management.infrastructure.query.matcher.MatcherException
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.ParseException
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser
 import spock.lang.Specification
 import spock.lang.Subject
 
 import java.util.stream.Collectors
+
+import static pl.allegro.tech.hermes.api.Topic.Builder.topic
 
 class JsonQueryParserTest extends Specification {
 
@@ -60,18 +62,18 @@ class JsonQueryParserTest extends Specification {
         thrown(ParseException)
     }
 
-    def "should fail to execute query"() {
+    def "should return empty result for query with unknown field"() {
 
         given:
         def query = "{\"query\": {\"unknown\": \"any\"}}"
 
         when:
-        parse(query, SimpleObject)
+        def result = parse(query, SimpleObject)
                 .filter(colors)
                 .collect(Collectors.<SimpleObject>toList())
 
         then:
-        thrown(MatcherException)
+        result.size() == 0
     }
 
     def "should parse query and match everything"() {
@@ -116,6 +118,26 @@ class JsonQueryParserTest extends Specification {
         then:
         result.size() == 1
         result.first().field == 'green'
+    }
+
+    def "should parse query and match non java bean object"() {
+
+        given:
+        def queryWithNonJavaBeanField = """{"query": {"migratedFromJsonType": true}}"""
+
+        def topics = [
+                topic().migratedFromJsonType().build(),
+                topic().build(),
+        ] as List<Topic>
+
+        when:
+        def result = parse(queryWithNonJavaBeanField, Topic)
+                .filter(topics)
+                .collect(Collectors.<Topic>toList())
+
+        then:
+        result.size() == 1
+        result.get(0).wasMigratedFromJsonType() == true
     }
 
     def "should parse query with eq operator and match single result"() {

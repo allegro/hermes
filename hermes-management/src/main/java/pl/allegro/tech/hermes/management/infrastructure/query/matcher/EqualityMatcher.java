@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.management.infrastructure.query.matcher;
 import org.apache.commons.jxpath.JXPathException;
 import pl.allegro.tech.hermes.management.infrastructure.query.graph.ObjectGraph;
 
-public class EqualityMatcher<T> implements Matcher<T> {
+public class EqualityMatcher implements Matcher {
 
     private final String attribute;
 
@@ -15,7 +15,7 @@ public class EqualityMatcher<T> implements Matcher<T> {
     }
 
     @Override
-    public boolean match(T value) {
+    public boolean match(Object value) {
         try {
             if (expected == null) {
                 return false;

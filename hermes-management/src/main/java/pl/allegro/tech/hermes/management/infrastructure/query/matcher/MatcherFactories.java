@@ -1,9 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.matcher;
 
 
-import com.fasterxml.jackson.databind.JsonNode;
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator;
-import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParserContext;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -42,41 +40,11 @@ public class MatcherFactories {
     }
 
     private static void registerFactories() {
-        FACTORIES.put(EQ, new MatcherFactory() {
-            @Override
-            public <T> Matcher<T> createMatcher(String path, JsonNode node, QueryParserContext parser) {
-                return new EqualityMatcher<>(path, parser.parseValue(node));
-            }
-        });
-        FACTORIES.put(NE, new MatcherFactory() {
-            @Override
-            public <T> Matcher<T> createMatcher(String path, JsonNode node, QueryParserContext parser) {
-                return new NotMatcher<>(new EqualityMatcher<>(path, parser.parseValue(node)));
-            }
-        });
-        FACTORIES.put(IN, new MatcherFactory() {
-            @Override
-            public <T> Matcher<T> createMatcher(String path, JsonNode node, QueryParserContext parser) {
-                return new InMatcher<>(path, parser.parseArrayValue(node));
-            }
-        });
-        FACTORIES.put(NOT, new MatcherFactory() {
-            @Override
-            public <T> Matcher<T> createMatcher(String path, JsonNode node, QueryParserContext parser) {
-                return new NotMatcher<>(parser.parseNode(node));
-            }
-        });
-        FACTORIES.put(AND, new MatcherFactory() {
-            @Override
-            public <T> Matcher<T> createMatcher(String path, JsonNode node, QueryParserContext parser) {
-                return new AndMatcher<>(parser.parseArrayNodes(node));
-            }
-        });
-        FACTORIES.put(OR, new MatcherFactory() {
-            @Override
-            public <T> Matcher<T> createMatcher(String path, JsonNode node, QueryParserContext parser) {
-                return new OrMatcher<>(parser.parseArrayNodes(node));
-            }
-        });
+        FACTORIES.put(EQ, (path, node, parser) -> new EqualityMatcher(path, parser.parseValue(node)));
+        FACTORIES.put(NE, (path, node, parser) -> new NotMatcher(new EqualityMatcher(path, parser.parseValue(node))));
+        FACTORIES.put(IN, (path, node, parser) -> new InMatcher(path, parser.parseArrayValue(node)));
+        FACTORIES.put(NOT, (path, node, parser) -> new NotMatcher(parser.parseNode(node)));
+        FACTORIES.put(AND, (path, node, parser) -> new AndMatcher(parser.parseArrayNodes(node)));
+        FACTORIES.put(OR, (path, node, parser) -> new OrMatcher(parser.parseArrayNodes(node)));
     }
 }

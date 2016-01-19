@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.StreamSupport.stream;
@@ -52,13 +51,13 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
     }
 
     @Override
-    public <T> Matcher<T> parseNode(JsonNode node) {
+    public Matcher parseNode(JsonNode node) {
         Map.Entry<String, JsonNode> entry = singleNode(node);
         return parseSingleAttribute(entry.getKey(), entry.getValue());
     }
 
     @Override
-    public <T> List<Matcher<T>> parseArrayNodes(JsonNode node) {
+    public List<Matcher> parseArrayNodes(JsonNode node) {
         if(!node.isArray()) {
             throw new ParseException("Element value was expected to be an array");
         }
@@ -72,6 +71,8 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
         }
         if (node.isTextual()) {
             return node.asText();
+        } else if (node.isBoolean()) {
+            return node.asBoolean();
         } else if (node.isInt()) {
             return node.asInt();
         } else if(node.isDouble()) {
@@ -96,16 +97,14 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
     }
 
     private <T> Query<T> parseQuery(JsonNode node) {
-        return fromMatcher(
-                parseCompoundObject(node)
-        );
+        return fromMatcher(parseCompoundObject(node), objectMapper);
     }
 
-    private <T> Matcher<T> parseCompoundObject(JsonNode node) {
-        return new AndMatcher<>(parseAllAttributes(node));
+    private Matcher parseCompoundObject(JsonNode node) {
+        return new AndMatcher(parseAllAttributes(node));
     }
 
-    private <T> Matcher<T> parseSingleAttribute(String key, JsonNode node) {
+    private <T> Matcher parseSingleAttribute(String key, JsonNode node) {
         if(isOperator(key)) {
             return parseOperator(key, node);
         } else if (node.isObject()) {
@@ -115,29 +114,28 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
         }
     }
 
-    private <T> List<Matcher<T>> parseAllAttributes(JsonNode node) {
+    private <T> List<Matcher> parseAllAttributes(JsonNode node) {
         return stream(node.fields())
-                .map((Function<Map.Entry<String, JsonNode>, Matcher<T>>)
-                        entry -> parseSingleAttribute(entry.getKey(), entry.getValue()))
+                .map(entry -> parseSingleAttribute(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
 
-    private <T> Matcher<T> parseOperator(String key, JsonNode node) {
+    private <T> Matcher parseOperator(String key, JsonNode node) {
         return MatcherFactories.getMatcherFactory(key).createMatcher(key, node, this);
     }
 
-    private <T> Matcher<T> parseObject(String key, JsonNode node) {
+    private <T> Matcher parseObject(String key, JsonNode node) {
         Map.Entry<String, JsonNode> entry = singleNode(node);
         return MatcherFactories.getMatcherFactory(entry.getKey()).createMatcher(key, entry.getValue(), this);
     }
 
-    private <T> List<Matcher<T>> parseObjectArray(JsonNode node) {
+    private <T> List<Matcher> parseObjectArray(JsonNode node) {
         return stream(node.iterator())
-                .map((Function<JsonNode, Matcher<T>>) this::parseCompoundObject)
+                .map(this::parseCompoundObject)
                 .collect(Collectors.toList());
     }
 
-    private <T> Matcher<T> parseAttribute(String key, JsonNode node) {
+    private <T> Matcher parseAttribute(String key, JsonNode node) {
         return MatcherFactories.defaultMatcher().createMatcher(key, node, this);
     }
 

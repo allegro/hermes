@@ -5,5 +5,5 @@ import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser
 
 public interface MatcherFactory {
 
-    <T> Matcher<T> createMatcher(String path, JsonNode value, QueryParserContext context);
+    Matcher createMatcher(String path, JsonNode value, QueryParserContext context);
 }
