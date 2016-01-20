@@ -91,7 +91,7 @@ public class SubscriptionService {
             subscriptionRepository.updateSubscription(updated);
         }
 
-        if (!retrieved.getEndpoint().equals(subscription.getEndpoint())) {
+        if (!retrieved.getEndpoint().equals(updated.getEndpoint())) {
             adminTool.subscriptionEndpointAddressChanged(new SubscriptionName(subscription.getName(), subscription.getTopicName()));
         }
     }
