@@ -64,6 +64,18 @@ public abstract class ZookeeperBasedRepository {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    protected <T> T readFrom(String path, Class<T> clazz, PostProcessor postProcessor) {
+        try {
+            byte[] data = zookeeper.getData().forPath(path);
+            return (T) postProcessor.invoke(data, mapper.readValue(data, clazz));
+        } catch (JsonMappingException exception) {
+            throw new MalformedDataException(path, exception);
+        } catch (Exception ex) {
+            throw new InternalProcessingException(ex);
+        }
+    }
+
     protected void overwrite(String path, Object value) {
         try {
             zookeeper.setData().forPath(path, mapper.writeValueAsBytes(value));
@@ -87,5 +99,9 @@ public abstract class ZookeeperBasedRepository {
         } catch (Exception ex) {
             throw new InternalProcessingException(ex);
         }
+    }
+
+    interface PostProcessor {
+         Object invoke(byte[] data, Object value);
     }
 }

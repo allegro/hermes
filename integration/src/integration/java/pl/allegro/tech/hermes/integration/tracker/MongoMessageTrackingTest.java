@@ -7,6 +7,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
@@ -21,24 +22,27 @@ import pl.allegro.tech.hermes.integration.env.FongoFactory;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.integration.test.HermesAssertions;
-import pl.allegro.tech.hermes.tracker.mongo.LogSchemaAware;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
+import pl.allegro.tech.hermes.tracker.mongo.LogSchemaAware;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static javax.ws.rs.client.ClientBuilder.newClient;
-import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
+import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
-import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
+import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class MongoMessageTrackingTest extends IntegrationTest {
 
@@ -248,6 +252,96 @@ public class MongoMessageTrackingTest extends IntegrationTest {
         assertThat(readSentMessages(response)).isEmpty();
     }
 
+    @Test
+    public void shouldLogBatchIdInMessageTrace() {
+        // given
+        TestMessage message = TestMessage.simple();
+        TestMessage[] batch = { message };
+        Topic topic = operations.buildTopic(topic().withName("logBatchIdInMessageTrace", "topic").withContentType(JSON).build());
+
+        BatchSubscriptionPolicy subscriptionPolicy = batchSubscriptionPolicy()
+                .withBatchSize(2)
+                .withBatchVolume(100)
+                .withBatchTime(1000)
+                .withMessageTtl(100)
+                .withMessageBackoff(10)
+                .withRequestTimeout(100)
+                .build();
+
+        Subscription subscription = subscription().applyDefaults().withName("subscription")
+                .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
+                .withTrackingEnabled(true)
+                .withSubscriptionPolicy(subscriptionPolicy)
+                .withSupportTeam("supportTeam")
+                .build();
+
+        operations.createSubscription(topic, subscription);
+        remoteService.expectMessages(batch);
+
+        // when
+        String messageId1 = publishMessage("logBatchIdInMessageTrace.topic", message.body());
+        String messageId2 = publishMessage("logBatchIdInMessageTrace.topic", message.body());
+        wait.untilReceivedAnyMessage(sentMessages);
+
+        // then
+        wait.untilMessageIdLogged(sentMessages, messageId1);
+        wait.untilMessageIdLogged(sentMessages, messageId2);
+
+        assertThat(findAllBatchIdsByTopic(sentMessages, "logBatchSending.topic").get(messageId1))
+                .isEqualTo(findAllBatchIdsByTopic(sentMessages, "logBatchSending.topic").get(messageId2));
+    }
+
+    @Test
+    public void shouldLogBatchInflightAndSending() {
+        // given
+        TestMessage message = TestMessage.simple();
+        TestMessage[] batch = { message };
+        Topic topic = operations.buildTopic(topic().withName("logBatchInflightAndSending", "topic").withContentType(JSON).build());
+
+        BatchSubscriptionPolicy subscriptionPolicy = singleMessageBatchPolicy();
+
+        Subscription subscription = subscription().applyDefaults().withName("subscription")
+                .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL))
+                .withTrackingEnabled(true)
+                .withSubscriptionPolicy(subscriptionPolicy)
+                .withSupportTeam("supportTeam")
+                .build();
+
+        operations.createSubscription(topic, subscription);
+        remoteService.expectMessages(batch);
+
+        // when
+        publishMessage("logBatchInflightAndSending.topic", message.body());
+
+        // then
+        wait.untilMessageTraceLogged(sentMessages, SentMessageTraceStatus.SUCCESS);
+        assertThat(findAllStatusesByTopic(sentMessages, "logBatchInflightAndSending.topic")).contains("INFLIGHT", "SUCCESS");
+    }
+
+    @Test
+    public void shouldLogBatchDiscarding() {
+        // given
+        Topic topic = operations.buildTopic(topic().withName("logBatchDiscarding", "topic").withContentType(JSON).build());
+
+        BatchSubscriptionPolicy subscriptionPolicy = singleMessageBatchPolicy();
+
+        Subscription subscription = subscription().applyDefaults().withName("subscription")
+                .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
+                .withTrackingEnabled(true)
+                .withSubscriptionPolicy(subscriptionPolicy)
+                .withSupportTeam("supportTeam")
+                .build();
+
+        operations.createSubscription(topic, subscription);
+
+        // when
+        publisher.publish("logBatchDiscarding.topic", MESSAGE.body());
+
+        // then
+        wait.untilMessageTraceLogged(sentMessages, SentMessageTraceStatus.DISCARDED);
+        assertThat(findAllStatusesByTopic(sentMessages, "logBatchDiscarding.topic")).contains("FAILED", "DISCARDED");
+    }
+
     private List<SentMessageTrace> readSentMessages(Response response) {
         HermesAssertions.assertThat(response).hasStatus(Response.Status.OK);
         return asList(response.readEntity(SentMessageTrace[].class));
@@ -258,6 +352,16 @@ public class MongoMessageTrackingTest extends IntegrationTest {
                 .stream().map((dbo) -> dbo.get("messageId").toString()).collect(Collectors.toList());
     }
 
+    private Map<String, String> findAllBatchIdsByTopic(DBCollection collection, String topicName) {
+        Map<String, String> ids = new HashMap<>();
+
+        collection.find(new BasicDBObject("topicName", topicName)).toArray().forEach(dbObject -> {
+            ids.putIfAbsent(dbObject.get("messageId").toString(), dbObject.get("batchId").toString());
+        });
+
+        return ids;
+    }
+
     private List<String> findAllStatusesByTopic(DBCollection collection, String topicName) {
         return collection.find(new BasicDBObject("topicName", topicName)).toArray()
                 .stream().map((dbo) -> dbo.get("status").toString()).collect(Collectors.toList());
@@ -265,5 +369,16 @@ public class MongoMessageTrackingTest extends IntegrationTest {
 
     private String publishMessage(String qualifiedTopicName, String body) {
         return client.publish(qualifiedTopicName, body).join().getMessageId();
+    }
+
+    private BatchSubscriptionPolicy singleMessageBatchPolicy() {
+        return batchSubscriptionPolicy()
+                .withBatchSize(1)
+                .withBatchVolume(200)
+                .withBatchTime(1)
+                .withMessageTtl(100)
+                .withMessageBackoff(10)
+                .withRequestTimeout(100)
+                .build();
     }
 }

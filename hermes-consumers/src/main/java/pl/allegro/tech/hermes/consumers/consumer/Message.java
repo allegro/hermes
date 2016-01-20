@@ -119,6 +119,10 @@ public class Message {
         return partitionOffset.getTopic();
     }
 
+    public PartitionOffset getPartitionOffset() {
+        return partitionOffset;
+    }
+
     public static class Builder {
         private final Message message;
 

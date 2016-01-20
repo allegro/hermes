@@ -35,4 +35,5 @@ dependencies {
     compile group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: '1.5.5'
     compile group: 'junit', name: 'junit', version: '4.11'
     compile group: 'org.testng', name: 'testng', version: '6.8.8'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.1'
 }

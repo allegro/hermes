@@ -110,7 +110,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
 
         await().atMost(ONE_MINUTE).until(() -> {
             status.clear();
-            status.addAll(logRepository.getMessageStatus(messageMetadata.getTopic(), messageMetadata.getSubscription(), messageMetadata.getId()));
+            status.addAll(logRepository.getMessageStatus(messageMetadata.getTopic(), messageMetadata.getSubscription(), messageMetadata.getMessageId()));
             return status.size() == 2;
         });
 
@@ -118,7 +118,8 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     }
 
     private SentMessageTrace sentMessageTrace(MessageMetadata messageMetadata, long timestamp, SentMessageTraceStatus status) {
-        return new SentMessageTrace(messageMetadata.getId(),
+        return new SentMessageTrace(messageMetadata.getMessageId(),
+                messageMetadata.getBatchId(),
                 timestamp,
                 messageMetadata.getSubscription(),
                 messageMetadata.getTopic(),
@@ -131,7 +132,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     }
 
     private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, long timestamp, PublishedMessageTraceStatus status) {
-        return new PublishedMessageTrace(messageMetadata.getId(),
+        return new PublishedMessageTrace(messageMetadata.getMessageId(),
                 timestamp,
                 messageMetadata.getTopic(),
                 status,

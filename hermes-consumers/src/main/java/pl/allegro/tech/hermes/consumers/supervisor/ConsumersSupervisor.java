@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
+import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
@@ -204,9 +205,13 @@ public class ConsumersSupervisor {
 
     private void createAndExecuteConsumer(Subscription subscription) {
         logger.info("Creating consumer for {}", subscription.getId());
-        Consumer consumer = consumerFactory.createConsumer(subscription);
-        consumerHolder.add(subscription.getTopicName(), subscription.getName(), consumer);
-        executor.execute(consumer);
+        try {
+            Consumer consumer = consumerFactory.createConsumer(subscription);
+            consumerHolder.add(subscription.getTopicName(), subscription.getName(), consumer);
+            executor.execute(consumer);
+        } catch (Exception ex) {
+            logger.info("Failed to create consumer for subscription {} ", subscription.getId(), ex);
+        }
     }
 
     private void removeOffsets(TopicName topicName, String subscriptionName, List<PartitionOffset> offsetsToRemove) throws Exception {

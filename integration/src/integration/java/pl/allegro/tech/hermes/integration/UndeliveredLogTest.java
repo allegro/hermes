@@ -36,8 +36,7 @@ public class UndeliveredLogTest extends IntegrationTest {
         Response response = management.subscription().getLatestUndeliveredMessage("logUndelivered.topic", "subscription");
 
         // then
-        assertThat(response.getStatusInfo().getFamily()).isEqualTo(SUCCESSFUL);
-
+        wait.until(() -> assertThat(response.getStatusInfo().getFamily()).isEqualTo(SUCCESSFUL));
     }
 
 }

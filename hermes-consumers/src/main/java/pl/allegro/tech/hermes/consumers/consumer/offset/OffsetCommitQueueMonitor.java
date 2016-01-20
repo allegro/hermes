@@ -58,7 +58,7 @@ public class OffsetCommitQueueMonitor {
     }
 
     private boolean idlePeriodDurationAlert() {
-        return (offsetChangeTimestampSec + offsetCommitAdditionalIdlePeriodAlert + subscription.getSubscriptionPolicy().getMessageTtl() < currentTimestampSec());
+        return (offsetChangeTimestampSec + offsetCommitAdditionalIdlePeriodAlert + subscription.getSerialSubscriptionPolicy().getMessageTtl() < currentTimestampSec());
     }
 
     private boolean alertSizeExceeded(long size) {

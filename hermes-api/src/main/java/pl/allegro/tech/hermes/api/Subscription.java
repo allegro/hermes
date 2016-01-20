@@ -10,8 +10,10 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.Map;
 import java.util.Objects;
 
+import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 import static pl.allegro.tech.hermes.api.helpers.Replacer.replaceInAll;
 
@@ -35,7 +37,10 @@ public class Subscription {
     private String description;
 
     @Valid
-    private SubscriptionPolicy subscriptionPolicy;
+    private SubscriptionPolicy serialSubscriptionPolicy;
+
+    @Valid
+    private BatchSubscriptionPolicy batchSubscriptionPolicy;
 
     private boolean trackingEnabled;
 
@@ -44,6 +49,7 @@ public class Subscription {
 
     private String contact;
 
+    private DeliveryType deliveryType = DeliveryType.SERIAL;
 
     public enum State {
         PENDING, ACTIVE, SUSPENDED
@@ -53,17 +59,19 @@ public class Subscription {
     }
 
     public Subscription(TopicName topicName, String name, EndpointAddress endpoint, String description,
-                        SubscriptionPolicy subscriptionPolicy, boolean trackingEnabled, String supportTeam, String contact,
-                        ContentType contentType) {
+                        Map<String, Object> subscriptionPolicy, boolean trackingEnabled, String supportTeam, String contact,
+                        ContentType contentType, DeliveryType deliveryType) {
         this.topicName = topicName;
         this.name = name;
         this.description = description;
-        this.subscriptionPolicy = subscriptionPolicy;
         this.endpoint = endpoint;
         this.trackingEnabled = trackingEnabled;
         this.supportTeam = supportTeam;
         this.contact = contact;
         this.contentType = contentType == null ? ContentType.JSON : contentType;
+        this.deliveryType = deliveryType;
+        this.batchSubscriptionPolicy = this.deliveryType == DeliveryType.BATCH ? createBatchPolicy(subscriptionPolicy) : null;
+        this.serialSubscriptionPolicy = this.deliveryType == DeliveryType.SERIAL ? createSerialPolicy(subscriptionPolicy) : null;
     }
 
     @JsonCreator
@@ -71,18 +79,27 @@ public class Subscription {
                         @JsonProperty("name") String name,
                         @JsonProperty("endpoint") EndpointAddress endpoint,
                         @JsonProperty("description") String description,
-                        @JsonProperty("subscriptionPolicy") SubscriptionPolicy subscriptionPolicy,
+                        @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
                         @JsonProperty("trackingEnabled") boolean trackingEnabled,
                         @JsonProperty("supportTeam") String supportTeam,
                         @JsonProperty("contact") String contact,
-                        @JsonProperty("contentType") ContentType contentType) {
+                        @JsonProperty("contentType") ContentType contentType,
+                        @JsonProperty("deliveryType") DeliveryType deliveryType) {
         this(TopicName.fromQualifiedName(topicName), name, endpoint, description, subscriptionPolicy,
-                trackingEnabled, supportTeam, contact, contentType);
+                trackingEnabled, supportTeam, contact, contentType, deliveryType);
+    }
+
+    private BatchSubscriptionPolicy createBatchPolicy(Map<String, Object> subscriptionPolicy) {
+        return batchSubscriptionPolicy().applyPatch(subscriptionPolicy).build();
+    }
+
+    private SubscriptionPolicy createSerialPolicy(Map<String, Object> subscriptionPolicy) {
+        return SubscriptionPolicy.Builder.subscriptionPolicy().applyPatch(subscriptionPolicy).build();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(endpoint, topicName, name, description, subscriptionPolicy, contentType);
+        return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy, contentType);
     }
 
     @Override
@@ -99,7 +116,8 @@ public class Subscription {
                 && Objects.equals(this.topicName, other.topicName)
                 && Objects.equals(this.name, other.name)
                 && Objects.equals(this.description, other.description)
-                && Objects.equals(this.subscriptionPolicy, other.subscriptionPolicy)
+                && Objects.equals(this.serialSubscriptionPolicy, other.serialSubscriptionPolicy)
+                && Objects.equals(this.batchSubscriptionPolicy, other.batchSubscriptionPolicy)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.supportTeam, other.supportTeam)
                 && Objects.equals(this.contact, other.contact)
@@ -145,8 +163,8 @@ public class Subscription {
         return description;
     }
 
-    public void setSubscriptionPolicy(SubscriptionPolicy subscriptionPolicy) {
-        this.subscriptionPolicy = subscriptionPolicy;
+    public void setSerialSubscriptionPolicy(SubscriptionPolicy serialSubscriptionPolicy) {
+        this.serialSubscriptionPolicy = serialSubscriptionPolicy;
     }
 
     public State getState() {
@@ -157,8 +175,9 @@ public class Subscription {
         this.state = state;
     }
 
-    public SubscriptionPolicy getSubscriptionPolicy() {
-        return subscriptionPolicy;
+    @JsonProperty("subscriptionPolicy")
+    public Object getSubscriptionPolicy() {
+        return isBatchSubscription() ? batchSubscriptionPolicy : serialSubscriptionPolicy;
     }
 
     public boolean isTrackingEnabled() {
@@ -177,6 +196,25 @@ public class Subscription {
         return contentType;
     }
 
+    public DeliveryType getDeliveryType() {
+        return deliveryType;
+    }
+
+    @JsonIgnore
+    public boolean isBatchSubscription() {
+        return this.deliveryType == DeliveryType.BATCH;
+    }
+
+    @JsonIgnore
+    public BatchSubscriptionPolicy getBatchSubscriptionPolicy() {
+        return batchSubscriptionPolicy;
+    }
+
+    @JsonIgnore
+    public SubscriptionPolicy getSerialSubscriptionPolicy() {
+        return serialSubscriptionPolicy;
+    }
+
     @JsonIgnore
     public boolean isActive() {
         return state == State.ACTIVE || state == State.PENDING;
@@ -189,7 +227,8 @@ public class Subscription {
                     .withTopicName(this.getTopicName())
                     .withEndpoint(this.getEndpoint().anonymizePassword())
                     .withState(this.getState())
-                    .withSubscriptionPolicy(this.getSubscriptionPolicy())
+                    .withSubscriptionPolicy(this.getSerialSubscriptionPolicy())
+                    .withSubscriptionPolicy(this.getBatchSubscriptionPolicy())
                     .withTrackingEnabled(this.trackingEnabled)
                     .withSupportTeam(this.supportTeam)
                     .withContact(this.contact)
@@ -240,8 +279,15 @@ public class Subscription {
             return this;
         }
 
+        public Builder withSubscriptionPolicy(BatchSubscriptionPolicy subscriptionPolicy) {
+            subscription.batchSubscriptionPolicy = subscriptionPolicy;
+            subscription.deliveryType = DeliveryType.BATCH;
+            return this;
+        }
+
         public Builder withSubscriptionPolicy(SubscriptionPolicy subscriptionPolicy) {
-            subscription.subscriptionPolicy = subscriptionPolicy;
+            subscription.serialSubscriptionPolicy = subscriptionPolicy;
+            subscription.deliveryType = DeliveryType.SERIAL;
             return this;
         }
 
@@ -262,9 +308,21 @@ public class Subscription {
 
         public Builder applyPatch(Subscription subscription) {
             if (subscription != null) {
+                clearPolicyIfDeliveryTypeChanged(subscription);
                 this.subscription = Patch.apply(this.subscription, subscription);
             }
             return this;
+        }
+
+        private void clearPolicyIfDeliveryTypeChanged(Subscription subscription) {
+            if (isDeliveryTypeChanged(subscription)) {
+                this.subscription.serialSubscriptionPolicy = null;
+                this.subscription.batchSubscriptionPolicy = null;
+            }
+        }
+
+        private boolean isDeliveryTypeChanged(Subscription subscription) {
+            return subscription.deliveryType != null && this.subscription.deliveryType != subscription.deliveryType;
         }
 
         public static Builder subscription() {
@@ -276,7 +334,11 @@ public class Subscription {
         }
 
         public Builder applyDefaults() {
-            subscription.subscriptionPolicy = SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().build();
+            if (subscription.deliveryType == DeliveryType.BATCH) {
+                subscription.batchSubscriptionPolicy = batchSubscriptionPolicy().applyDefaults().build();
+            } else {
+                subscription.serialSubscriptionPolicy = SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().build();
+            }
             return this;
         }
 

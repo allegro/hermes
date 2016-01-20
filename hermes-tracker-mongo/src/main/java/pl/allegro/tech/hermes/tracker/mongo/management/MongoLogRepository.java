@@ -64,6 +64,7 @@ public class MongoLogRepository implements LogRepository, LogSchemaAware {
 
         return new SentMessageTrace(
                 object.getString(MESSAGE_ID),
+                object.getString(BATCH_ID),
                 object.getLong(TIMESTAMP),
                 object.getString(SUBSCRIPTION),
                 object.getString(TOPIC_NAME),

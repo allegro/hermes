@@ -38,9 +38,13 @@ public class MessageContentWrapper {
     }
 
     public byte[] wrap(byte[] data, String id, long timestamp, Topic topic, Map<String, String> externalMetadata) {
-        if (topic.getContentType() == ContentType.JSON) {
+        return wrap(data, id, timestamp, topic, topic.getContentType(), externalMetadata);
+    }
+
+    public byte[] wrap(byte[] data, String id, long timestamp, Topic topic, ContentType contentType, Map<String, String> externalMetadata) {
+        if (contentType == ContentType.JSON) {
             return jsonMessageContentWrapper.wrapContent(data, id, timestamp, externalMetadata);
-        } else if (topic.getContentType() == ContentType.AVRO) {
+        } else if (contentType == ContentType.AVRO) {
             return avroMessageContentWrapper.wrapContent(data, id, timestamp, avroSchemaRepository.getSchema(topic), externalMetadata);
         }
 

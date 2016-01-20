@@ -13,6 +13,6 @@ class MaximumOutputRateCalculator {
 
     double calculateMaximumOutputRate(Subscription subscription) {
         int numberOfConsumersOnSubscription = hermesMetrics.countActiveConsumers(subscription);
-        return subscription.getSubscriptionPolicy().getRate().doubleValue() / Math.max(numberOfConsumersOnSubscription, 1);
+        return subscription.getSerialSubscriptionPolicy().getRate().doubleValue() / Math.max(numberOfConsumersOnSubscription, 1);
     }
 }

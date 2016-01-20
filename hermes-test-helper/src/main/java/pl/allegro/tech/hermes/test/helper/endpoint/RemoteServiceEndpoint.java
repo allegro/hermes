@@ -92,6 +92,12 @@ public class RemoteServiceEndpoint {
         receivedRequests.stream().map(LoggedRequest::getBodyAsString).forEach(requestBodyConsumer::accept);
     }
 
+    public void waitUntilReceived(Duration duration, int numberOfExpectedMessages, Consumer<String> requestBodyConsumer) {
+        logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
+        await().atMost(duration).until(() -> receivedRequests.size() == numberOfExpectedMessages);
+        receivedRequests.stream().map(request -> request.getBodyAsString()).forEach(requestBodyConsumer::accept);
+    }
+
     public void waitUntilReceived() {
         this.waitUntilReceived(60);
     }

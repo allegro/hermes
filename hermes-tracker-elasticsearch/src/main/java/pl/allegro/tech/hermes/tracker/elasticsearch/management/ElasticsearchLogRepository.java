@@ -128,6 +128,7 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
 
     private SentMessageTrace toSentMessageTrace(SearchHit h) {
         return new SentMessageTrace(h.field(MESSAGE_ID).getValue(),
+                h.field(BATCH_ID).getValue(),
                 h.field(TIMESTAMP).<Number>getValue().longValue(),
                 h.field(SUBSCRIPTION).getValue(),
                 h.field(TOPIC_NAME).getValue(),
