@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 
@@ -113,6 +114,6 @@ public class SchemaRepositoryTest {
     }
 
     private SchemaRepository<String> schemaRepository(SchemaCompiler<String> schemaCompiler) {
-        return new SchemaRepository<>(Topic.ContentType.AVRO, cachedSchemaSourceProvider, schemaCompiler);
+        return new SchemaRepository<>(ContentType.AVRO, cachedSchemaSourceProvider, schemaCompiler);
     }
 }

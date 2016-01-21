@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.domain.topic.schema.CachedSchemaSourceProvider;
 import pl.allegro.tech.hermes.domain.topic.schema.DefaultCachedSchemaSourceProvider;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
@@ -86,7 +86,7 @@ public class SchemaRepositoryConfiguration {
     @Bean
     public SchemaRepository<Schema> avroSchemaRepository(CachedSchemaSourceProvider cachedSchemaSourceProvider) {
         return new SchemaRepository<>(
-                Topic.ContentType.AVRO,
+                ContentType.AVRO,
                 cachedSchemaSourceProvider,
                 source -> new Schema.Parser().parse(source.value()));
     }

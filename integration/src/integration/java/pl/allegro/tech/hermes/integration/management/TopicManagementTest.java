@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
-import static pl.allegro.tech.hermes.api.Topic.ContentType.*;
+import static pl.allegro.tech.hermes.api.ContentType.*;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class TopicManagementTest extends IntegrationTest {
@@ -226,5 +226,17 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(brokerOperations.topicExists(qualifiedTopicName, PRIMARY_KAFKA_CLUSTER_NAME)).isTrue();
         assertThat(brokerOperations.topicExists(qualifiedTopicName, SECONDARY_KAFKA_CLUSTER_NAME)).isFalse();
+    }
+
+    @Test
+    public void shouldUseDefaultContentTypeServerSide() {
+        // given
+        Topic topic = topic().withName("defaultContentType", "topic").build();
+
+        // when
+        operations.buildTopic(topic);
+
+        // then
+        assertThat(management.topic().get(topic.getQualifiedName()).getContentType()).isEqualTo(AVRO);
     }
 }

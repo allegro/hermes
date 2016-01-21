@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Topic;
 
 @ConfigurationProperties(prefix = "topic")
 public class TopicProperties {
@@ -12,6 +14,8 @@ public class TopicProperties {
     private boolean allowRemoval = false;
 
     private boolean uncleanLeaderElectionEnabled = false;
+
+    private ContentType defaultContentType = ContentType.JSON;
 
     public int getReplicationFactor() {
         return replicationFactor;
@@ -43,5 +47,13 @@ public class TopicProperties {
 
     public void setUncleanLeaderElectionEnabled(boolean uncleanLeaderElectionEnabled) {
         this.uncleanLeaderElectionEnabled = uncleanLeaderElectionEnabled;
+    }
+
+    public ContentType getDefaultContentType() {
+        return defaultContentType;
+    }
+
+    public void setDefaultContentType(ContentType defaultContentType) {
+        this.defaultContentType = defaultContentType;
     }
 }

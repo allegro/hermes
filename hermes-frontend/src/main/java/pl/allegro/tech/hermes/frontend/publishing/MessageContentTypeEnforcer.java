@@ -13,8 +13,8 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import javax.inject.Inject;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static pl.allegro.tech.hermes.api.Topic.ContentType.AVRO;
-import static pl.allegro.tech.hermes.api.Topic.ContentType.JSON;
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.ContentType.JSON;
 
 public class MessageContentTypeEnforcer {
 

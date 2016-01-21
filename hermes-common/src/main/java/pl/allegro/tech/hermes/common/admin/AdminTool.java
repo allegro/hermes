@@ -8,11 +8,11 @@ public interface AdminTool {
 
     void retransmit(SubscriptionName subscriptionName);
 
-    void subscriptionEndpointAddressChanged(SubscriptionName subscriptionName);
+    void restartConsumer(SubscriptionName subscriptionName);
 
     enum Operations {
 
         RETRANSMIT,
-        SUBSCRIPTION_ENDPOINT_ADDRESS_CHANGED
+        RESTART_CONSUMER
     }
 }

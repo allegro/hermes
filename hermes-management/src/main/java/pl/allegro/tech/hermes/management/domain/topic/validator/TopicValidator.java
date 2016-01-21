@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.topic.validator;
 import org.apache.avro.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
@@ -25,7 +26,7 @@ public class TopicValidator {
 
     public void ensureUpdatedTopicIsValid(Topic updated, Topic previous) {
         if (migrationFromJsonTypeFlagChangedToTrue(updated, previous)) {
-            if (updated.getContentType() != Topic.ContentType.AVRO) {
+            if (updated.getContentType() != ContentType.AVRO) {
                 throw new TopicValidationException("Change content type to AVRO together with setting migratedFromJsonType flag");
             }
 
