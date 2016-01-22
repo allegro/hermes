@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.infrastructure.schema.validator
 
 import groovy.json.JsonBuilder
 import org.apache.commons.io.IOUtils
+import pl.allegro.tech.hermes.common.exception.InvalidSchemaException
 import spock.lang.Specification
 
 class AvroSchemaValidatorTest extends Specification {

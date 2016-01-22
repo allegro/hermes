@@ -17,7 +17,7 @@ import static java.time.Duration.ofMinutes;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.assertj.core.api.StrictAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.SchemaSource.valueOf;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
