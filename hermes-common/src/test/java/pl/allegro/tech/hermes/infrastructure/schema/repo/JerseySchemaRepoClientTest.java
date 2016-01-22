@@ -5,15 +5,26 @@ import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
+import pl.allegro.tech.hermes.common.exception.InvalidSchemaException;
+import pl.allegro.tech.hermes.common.exception.SchemaRepoException;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.util.Optional;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.assertj.core.api.StrictAssertions.assertThat;
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JerseySchemaRepoClientTest {
 
@@ -51,6 +62,18 @@ public class JerseySchemaRepoClientTest {
     }
 
     @Test
+    public void shouldThrowExceptionForUnsuccessfulSubjectRegistration() {
+        // given
+        wireMockRule.stubFor(put(subjectUrl()).willReturn(serverErrorResponse()));
+
+        // when
+        catchException(client).registerSubject(SUBJECT);
+
+        // then
+        assertThat((Throwable) caughtException()).isInstanceOf(SchemaRepoException.class);
+    }
+
+    @Test
     public void shouldReturnEmptyOptionalIfLatestSchemaDoesNotExist() {
         // given
         wireMockRule.stubFor(get(latestSchemaUrl()).willReturn(notFoundResponse()));
@@ -76,11 +99,38 @@ public class JerseySchemaRepoClientTest {
 
     @Test
     public void shouldRegisterSchema() {
-        // given & when
+        // given
+        wireMockRule.stubFor(put(registerSchemaUrl()).willReturn(okResponse()));
+
+        // when
         client.registerSchema(SUBJECT, "{}");
 
         // then
         verify(1, putRequestedFor(registerSchemaUrl()).withHeader("Content-type", equalTo(MediaType.TEXT_PLAIN)).withRequestBody(equalTo("{}")));
+    }
+
+    @Test
+    public void shouldThrowExceptionForInvalidSchemaRegistration() {
+        // given
+        wireMockRule.stubFor(put(registerSchemaUrl()).willReturn(badRequestResponse()));
+
+        // when
+        catchException(client).registerSchema(SUBJECT, "{}");
+
+        // then
+        assertThat((Throwable) caughtException()).isInstanceOf(InvalidSchemaException.class);
+    }
+
+    @Test
+    public void shouldThrowSchemaRepoExceptionForSchemaRegistration() {
+        // given
+        wireMockRule.stubFor(put(registerSchemaUrl()).willReturn(serverErrorResponse()));
+
+        // when
+        catchException(client).registerSchema(SUBJECT, "{}");
+
+        // then
+        assertThat((Throwable) caughtException()).isInstanceOf(SchemaRepoException.class);
     }
 
     private UrlMatchingStrategy subjectUrl() {
@@ -99,7 +149,15 @@ public class JerseySchemaRepoClientTest {
         return aResponse().withStatus(200);
     }
 
+    private ResponseDefinitionBuilder serverErrorResponse() {
+        return aResponse().withStatus(500);
+    }
+
     private ResponseDefinitionBuilder notFoundResponse() {
         return aResponse().withStatus(404);
+    }
+
+    private ResponseDefinitionBuilder badRequestResponse() {
+        return aResponse().withStatus(400);
     }
 }

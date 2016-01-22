@@ -6,6 +6,7 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.common.exception.InvalidSchemaException;
 
 import java.io.IOException;
 import java.util.ArrayList;
