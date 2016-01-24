@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
-
 class CounterMatcher {
 
     private final String counterName;
@@ -27,19 +25,19 @@ class CounterMatcher {
     }
 
     public boolean isTopicPublished() {
-        return counterName.contains("published.");
+        return counterName.startsWith("published.");
     }
 
     public boolean isSubscriptionDelivered() {
-        return counterName.contains("delivered.");
+        return counterName.startsWith("delivered.");
     }
 
     public boolean isSubscriptionDiscarded() {
-        return counterName.contains("discarded");
+        return counterName.startsWith("discarded.");
     }
 
     public boolean isSubscriptionInflight() {
-        return counterName.contains("inflight.");
+        return counterName.startsWith("inflight.");
     }
 
     public String getTopicName() {
