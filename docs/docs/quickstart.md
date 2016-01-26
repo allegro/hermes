@@ -31,45 +31,28 @@ git checkout hermes-{version}
 
 ## Checking the setup
 
-If the system is running, you should be able to invoke some management endpoint by making a call to Hermes REST API:
-
-```bash
-curl http://10.10.10.10:8090/topics
-[]
-```
+If the system is running, you should see Hermes Console when visiting Vagrant public IP in the browser. Just head to
+[http://10.10.10.10/](http://10.10.10.10/).
 
 ## Creating group and topic
 
 Now you're ready to create a **topic** for publishing messages.
 
 In Hermes messages are published on topics which are aggregated into **groups**.
-So, you'll need to create a group first, let's name it `com.example.events`:
+So, you'll need to create a group first, let's name it `com.example.events`.
 
-```bash
-curl -d '{"groupName": "com.example.events"}' -H "Content-Type: application/json" http://10.10.10.10:8090/groups
-```
+* head to [Hermes Console](http://10.10.10.10/#/groups)
+* click the blue plus button
+* enter group name: `com.example.events`
+* all the other information is required, but just enter whatever for now
 
-Now we can list groups to ensure it's been created:
+At this point, you should see your group on the group list. Now let's add new `clicks` topic to our group:
 
-```bash
-curl http://10.10.10.10:8090/groups
-["com.example.events"]
-```
-
-Okay, now it's time to create a topic in our group. Imagine you want to track user clicks, so we name it `com.example.events.clicks`:
-
-```
-curl -d '{"name": "com.example.events.clicks"}' -H "Content-Type: application/json" http://10.10.10.10:8090/topics
-```
-
-And list topics:
-
-```bash
-curl http://10.10.10.10:8090/topics
-["com.example.events.clicks"]
-```
-
-Voila!
+* click the group header ([direct link to com.example.events group](http://10.10.10.10/#/groups/com.example.events))
+* click the blue plus button
+* enter topic name: `clicks`
+* enter some description
+* change content type to JSON - we don't want to add AVRO schema yet for the sake of simplicity
 
 ## Publishing and receiving messages
 
@@ -78,18 +61,11 @@ where to send messages published on a topic. You can have many subscriptions on 
 
 So let's create a `clicks-receiver` subscription:
 
-```bash
-curl -d '{"name": "clicks-receiver", "endpoint": "http://requestb.in/1isy54g1", "supportTeam": "my-team"}' -H "Content-Type: application/json" http://10.10.10.10:8090/topics/com.example.events.clicks/subscriptions
-```
-
-(replace `http://requestb.in/1isy54g1` with your local service url or your own RequestBin link)
-
-List topic subscriptions:
-
-```bash
-curl http://10.10.10.10:8090/topics/com.example.events.clicks/subscriptions
-["clicks-receiver"]
-```
+* click the topic header ([direct link to com.example.events.clicks group](http://10.10.10.10/#/groups/com.example.events/topics/com.example.events.clicks))
+* click the blue plus button
+* enter subscription name: `clicks-receiver`
+* set the endpoint to which messages will be sent, in this example we can use `http://requestb.in/1isy54g1`
+* enter some description and contact data
 
 Now it's time for a grand finale. Let's publish a message on our topic (note that default Hermes publishing port is `8080`):
 
@@ -105,7 +81,7 @@ curl -v -d '{"id": 12345, "page": "main"}' http://10.10.10.10:8080/topics/com.ex
 (the first time you publish something you might see 408 Request Time-out status: a lot of machinery needs to warm up,
 just hit retry)
 
-Congratulations! The message should be delivered to your service or visible via e.g. ``http://requestb.in/1isy54g1?inspect``.
+Congratulations! The message should be delivered to your service or visible via e.g. `http://requestb.in/1isy54g1?inspect`.
 
 ## Stopping the system
 
