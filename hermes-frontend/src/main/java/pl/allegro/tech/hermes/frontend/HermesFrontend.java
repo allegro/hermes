@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperHolder;
 import pl.allegro.tech.hermes.frontend.di.FrontendBinder;
+import pl.allegro.tech.hermes.frontend.di.PersistentBufferExtension;
 import pl.allegro.tech.hermes.frontend.di.TrackersBinder;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerAcknowledgeListener;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerErrorListener;
@@ -94,6 +95,8 @@ public final class HermesFrontend {
             ((KafkaNamesMapperHolder)serviceLocator.getService(KafkaNamesMapper.class)).setKafkaNamespaceMapper(it.apply(serviceLocator));
         });
 
+        serviceLocator.getService(PersistentBufferExtension.class).extend();
+
         hermesServer.start();
         hooksHandler.startup(serviceLocator);
     }
@@ -125,14 +128,17 @@ public final class HermesFrontend {
         private static final int CUSTOM_BINDER_HIGH_PRIORITY = 10;
 
         private final HooksHandler hooksHandler = new HooksHandler();
-        private final List<Binder> binders = Lists.newArrayList(new CommonBinder(), new FrontendBinder());
+        private final List<Binder> binders = Lists.newArrayList(
+                new CommonBinder(),
+                new FrontendBinder(hooksHandler)
+        );
         private final BrokerListeners listeners = new BrokerListeners();
         private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();
         private Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper = Optional.empty();
 
         public HermesFrontend build() {
             withDefaultRankBinding(listeners, BrokerListeners.class);
-            binders.add(new TrackersBinder(new ArrayList<LogRepository>()));
+            binders.add(new TrackersBinder(new ArrayList<>()));
             return new HermesFrontend(hooksHandler, binders, logRepositories, kafkaNamesMapper);
         }
 

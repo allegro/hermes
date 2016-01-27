@@ -9,8 +9,6 @@ Hermes Frontend API has option to register callbacks triggered during different 
 
 ## ChronicleMap implementation
 
-    Mechanism described below is not currently OpenSourced.
-
 Default implementation uses [OpenHFT ChronicleMap](https://github.com/OpenHFT/Chronicle-Map) to persist unsent messages
 to disk. Map structure is continuously persisted to disk, as it is stored in offheap memory as
 [memory mapped file](https://en.wikipedia.org/wiki/Memory-mapped_file).
@@ -23,11 +21,18 @@ There is additional protection against flooding subscribers with outdated events
 storage, Hermes filters out messages older than N hours, where N is a system parameter and is set to 3 days by default.
 This might be useful when reviving Frontend nodes that have been down for a longer period of time.
 
-Option                                 | Description                                            | Default value
--------------------------------------- | ------------------------------------------------------ | --------------
-messages.local.storage.max.age.hours   | ignore messages in buffer that are older than N hours  | 72
-messages.local.storage.directory       | location of memory mapped files                        | /tmp/<tmp dir>
-messages.loading.wait.for.topics.cache | how much seconds to wait on startup for topics to load | 10
+Option                                          | Description                                            | Default value
+----------------------------------------------- | ------------------------------------------------------ | --------------
+frontend.messages.local.storage.enabled         | enable persistent buffer                               | true
+frontend.messages.local.storage.max.age.hours   | ignore messages in buffer that are older than N hours  | 72
+frontend.messages.local.storage.directory       | location of memory mapped files                        | /tmp/<tmp dir>
+frontend.messages.loading.wait.for.topics.cache | how much seconds to wait on startup for topics to load | 10
+
+### Buffer files
+
+Buffer is persisted into `hermes-buffer.dat` file in storage directory. On startup, if previous persistence file exists,
+it is renamed to `hermes-buffer-<timestamp>.dat`. This is a temporary file, deleted after all messages are
+read and sent to Kafka.
 
 ## Custom implementation
 

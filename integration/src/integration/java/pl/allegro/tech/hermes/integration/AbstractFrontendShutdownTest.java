@@ -8,14 +8,15 @@ import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
+import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 public abstract class AbstractFrontendShutdownTest extends IntegrationTest {
 
-    public static final int FRONTEND_PORT = 8991;
-    public static final String FRONTEND_URL = "http://0.0.0.0:" + FRONTEND_PORT;
+    public static final int FRONTEND_PORT = Ports.nextAvailable();
+    public static final String FRONTEND_URL = "http://127.0.0.1:" + FRONTEND_PORT;
 
-    HermesPublisher publisher;
-    HermesServer hermesServer;
+    protected HermesPublisher publisher;
+    protected HermesServer hermesServer;
 
     private HermesFrontend hermesFrontend;
 
@@ -23,8 +24,8 @@ public abstract class AbstractFrontendShutdownTest extends IntegrationTest {
     public void setup() throws Exception {
         ConfigFactory configFactory = new MutableConfigFactory()
                 .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
-                .overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false)
-                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
+                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
+                .overrideProperty(Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
 
         hermesFrontend = HermesFrontend.frontend()
                 .withBinding(configFactory, ConfigFactory.class)
