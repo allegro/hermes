@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
+import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -31,14 +32,14 @@ import static org.junit.Assert.assertTrue;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
 
-@RunWith(MockitoJUnitRunner.class)
 public class JettyMessageSenderTest {
 
     private static final String MESSAGE_BODY = "aaaaaaaaaaaaaaaa";
     private static final Message SOME_MESSAGE = withTestMessage()
             .withContent(MESSAGE_BODY, StandardCharsets.UTF_8)
             .build();
-    private static final int ENDPOINT_PORT = 23215;
+
+    private static final int ENDPOINT_PORT = 18081;
     private static final EndpointAddress ENDPOINT = EndpointAddress.of(format("http://localhost:%d/", ENDPOINT_PORT));
 
     private static HttpClient client;
