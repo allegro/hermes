@@ -1,0 +1,102 @@
+<section ng-controller="TopicController">
+
+    <ol class="breadcrumb">
+        <li><a href="#/">home</a></li>
+        <li><a href="#/groups">groups</a></li>
+        <li><a ng-href="#/groups/{{groupName}}">{{groupName}}</a></li>
+        <li class="active">{{topicName}}</li>
+    </ol>
+
+    <div class="pull-right">
+        <button class="btn btn-primary" ng-click="edit()">Edit</button>
+        <button class="btn btn-danger" ng-click="remove()">Remove</button>
+    </div>
+
+    <h1><small>Topic:</small> {{topic.name}}</h1>
+    <p class="lead">{{topic.description}}</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Metrics</h3>
+                </div>
+                <div class="panel-body">
+                    <p><strong><a ng-href="{{metricsUrls.rate}}">Rate:</a></strong> {{metrics.rate | number:2}}</p>
+                    <p><strong><a ng-href="{{metricsUrls.deliveryRate}}">Delivery rate:</a></strong> {{metrics.deliveryRate | number:2}}</p>
+                    <p><strong><a ng-href="{{metricsUrls.published}}">Published:</a></strong> {{metrics.published}}</p>
+                    <p><strong><a ng-href="{{metricsUrls.latency}}">Latency</a></strong></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Properties</h3>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        <strong>Content type:</strong> {{topic.contentType}}
+                    </p>
+                    <p>
+                        <strong>Acknowlegment:</strong> {{topic.ack == 'ALL' ? 'all brokers' : 'leader only'}}
+                        <span uib-popover='Specifies the strength of guarantees that acknowledged message was indeed persisted. In "Leader" mode ACK is required only from topic leader, which is fast and gives 99.99999% guarantee. It might be not enough when cluster is unstable. "All" mode means message needs to be saved on all replicas before sending ACK, which is quite slow but gives 100% guarantee that message has been persisted.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p>
+                        <strong>Retention time:</strong> {{topic.retentionTime.duration}} days
+                        <span uib-popover='For how many days message is available for subscribers after being published.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p><strong>Tracking enabled:</strong> {{topic.trackingEnabled}}</p>
+                    <p>
+                        <strong>Validation enabled:</strong> {{topic.validation}}
+                        <span uib-popover='Should messages be validated against provided schema. Invalid messages are discarded and 400 response code is sent to publisher. Always on for Avro topics.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div style="position: relative">
+                    <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showMessageSchema = !showMessageSchema"></span>
+                </div>
+                <div class="panel-heading" ng-click="showMessageSchema = !showMessageSchema">
+                    <h3 class="panel-title">Message schema</h3>
+                </div>
+                <div class="panel-body" uib-collapse="!showMessageSchema">
+                    <pre class="pre-scrollable">
+{{messageSchema}}
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="list-group">
+            <div class="list-group-item">
+                <div class="pull-right">
+                    <button class="btn btn-primary" ng-click="addSubscription()"><span class="glyphicon glyphicon-plus"></span></button>
+                </div>
+                <h4>
+                    Subscriptions
+                </h4>
+            </div>
+            <a ng-href="#/groups/{{groupName}}/topics/{{topicName}}/subscriptions/{{subscription.name}}" class="list-group-item" ng-repeat="subscription in subscriptions">
+                <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                <strong>{{subscription.name}}</strong>
+                <div class="pull-right">
+                    <span class="label {{subscription.details.state === 'ACTIVE' ? 'label-success' : 'label-danger'}}" >{{subscription.details.state}}</span>
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                </div>
+            </a>
+        </div>
+
+        <div ng-show="fetching" class="text-center">
+            <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
+        </div>
+    </div>
+
+</section>

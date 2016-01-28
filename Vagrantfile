@@ -2,11 +2,11 @@
 # vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "ubuntu/precise64"
+  config.vm.box = "ubuntu/vivid64"
   config.vm.network "private_network", ip: "10.10.10.10"
   config.vm.hostname = "hermes"
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "1024"
+    vb.memory = "1500"
     vb.name = "hermes"
   end
   config.vm.post_up_message = """
@@ -41,6 +41,7 @@ Vagrant.configure(2) do |config|
     ██Γ   ▀█▌  ▀█████▀  ██⌐    ██Θ  ╘██   ██Γ  ▀█████▀  ▀█████▀
 
 
+        * Console:       http://10.10.10.10
         * Frontend:      http://10.10.10.10:8080
         * Management:    http://10.10.10.10:8090
 

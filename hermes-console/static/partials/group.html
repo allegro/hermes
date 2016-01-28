@@ -1,0 +1,41 @@
+<section ng-controller="GroupController">
+
+    <ol class="breadcrumb">
+        <li><a href="#/">home</a></li>
+        <li><a href="#/groups">groups</a></li>
+        <li class="active">{{groupName}}</li>
+    </ol>
+
+    <div class="pull-right">
+        <button class="btn btn-primary" ng-click="edit()">Edit</button>
+        <button class="btn btn-danger" ng-click="remove()">Remove</button>
+    </div>
+
+    <h1><small>Group:</small> {{group.groupName}}</h1>
+    <h3><small>Team:</small> {{group.supportTeam || 'none'}} <small>Contact:</small> {{group.contact || 'none'}} <small>Owner:</small> {{group.technicalOwner|| 'none'}}</h3>
+
+    <div class="row">
+        <div class="list-group">
+            <div class="list-group-item">
+                <div class="pull-right">
+                    <button class="btn btn-primary" ng-click="addTopic()"><span class="glyphicon glyphicon-plus"></span></button>
+                </div>
+                <h4>
+                    Topics
+                </h4>
+            </div>
+            <a ng-href="#/groups/{{groupName}}/topics/{{topic.name}}" hover-delay="fetchSubscriptions(topic)" class="list-group-item" ng-repeat="topic in topics">
+                <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                <strong>{{topic.name}}</strong>
+                <div class="pull-right">
+                    <span class="label label-info">subscriptions: {{topic.subscriptions ? topic.subscriptions.length : '?'}}</span>
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                </div>
+            </a>
+        </div>
+
+        <div ng-show="fetching" class="text-center">
+            <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
+        </div>
+    </div>
+</section>

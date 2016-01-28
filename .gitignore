@@ -15,3 +15,17 @@ classes
 # sphinx
 _build
 .vagrant
+
+# hermes-console
+
+hermes-console/dist
+hermes-console/build
+hermes-console/out
+hermes-console/coverage
+hermes-console/test_out
+
+hermes-console/static/components
+
+hermes-console/node_modules
+hermes-console/config.json
+

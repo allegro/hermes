@@ -1,0 +1,28 @@
+<section ng-controller="HomeController">
+
+    <div class="hero-box text-center">
+        <img src="img/hermes-logo-full.png" alt="Hermes"/>
+    </div>
+
+    <div class="row" style="margin-bottom: 2em;">
+        <div class="col-md-6 col-md-offset-3">
+            <a class="btn btn-main btn-block" ng-href="#/groups">
+                <i class="fa fa-cogs"></i> Console
+            </a>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 col-md-offset-3">
+            <a class="btn btn-main btn-block" ng-href="{{statsDashboard}}" target="_blank">
+                <i class="fa fa-bar-chart"></i> Stats
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a class="btn btn-main btn-block" ng-href="{{docs}}" target="_blank">
+                <i class="fa fa-book"></i> Docs
+            </a>
+        </div>
+    </div>
+</section>

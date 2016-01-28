@@ -5,6 +5,7 @@ This section covers basic operational aspects of deploying Hermes. For more on c
 * [how to connect to Kafka and Zookeeper](/configuration/kafka-and-zookeeper)
 * [how to fine tune Frontend](/configuration/frontend-tuning)
 * [how to fine tune Consumers](/configuration/consumers-tuning)
+* [how to configure Console](/configuration/console)
 * [how to publish metrics](/configuration/metrics)
 
 ## Dependencies
@@ -24,7 +25,22 @@ performance and easy maintenance, each Hermes module should also be deployed on 
 
 ## Requirements
 
-All Hermes modules require **Java 8** to work.
+All Hermes Java modules require **Java 8** to work. Hermes Console has no external dependencies.
+
+## Passing environment variables
+
+All Java modules share the same bundling strategy: Gradle distZips. In order to pass any command line options to
+executables use:
+
+* `HERMES_<module name>_OPTS` for application options
+* `JAVA_OPTS` for Java specific options
+
+for example:
+
+```bash
+export HERMES_FRONTEND_OPTS="-Dfrontend.port=8090"
+export JAVA_OPTS="-Xmx2g"
+```
 
 ## Frontend and Consumers
 
@@ -34,11 +50,26 @@ Hermes Frontend and Consumers modules use [Netflix Archaius](https://github.com/
 
 To read external configuration from any URL (local file or remote HTTP source), specify its location in system property:
 
-```
--Darchaius.configurationSource.additionalUrls=file:///opt/hermes/conf/frontend.properties
+```bash
+export HERMES_FRONTEND_OPTS="-Darchaius.configurationSource.additionalUrls=file:///opt/hermes/conf/frontend.properties"
+export HERMES_CONSUMERS_OPTS="-Darchaius.configurationSource.additionalUrls=file:///opt/hermes/conf/consumers.properties"
 ```
 
 Configuration is stored in Java properties format.
+
+### Overwriting configuration using ENV
+
+It is possible to overwrite any configuration variable using environment variable:
+
+```bash
+export HERMES_FRONTEND_OPTS="-D<configuration-option>=<value>"
+```
+
+for example:
+
+```bash
+export HERMES_FRONTEND_OPTS="-Dfrontend.port=8090 -Dfrontend.idle.timeout=30"
+```
 
 ### Java options
 
@@ -57,4 +88,30 @@ to provide external configuration file is to export an environment variable:
 
 ```
 SPRING_CONFIG_LOCATION="file:///opt/hermes/conf/management.properties"
+```
+
+### Overwriting configuration using ENV
+
+```bash
+export HERMES_MANAGEMENT_OPTS="--<configuration-option>=<value>"
+```
+
+```bash
+export HERMES_MANAGEMENT_OPTS="--server.port=8070"
+```
+
+## Console
+
+Hermes Console is a simple Single Page Application served using NodeJS. It accepts two arguments:
+
+* `-p` or `HERMES_CONSOLE_PORT` env variable to specify port (default: 8000)
+* `-c` or `HERMES_CONSOLE_CONFIG` env variable to specify configuration file (default: `./config.json`)
+
+The `config.json` file is mandatory, Hermes Console will crash when unable to read it. See
+[configuring Hermes Console](/configuration/console) section for more information.
+
+Hermes Console has no dependencies and will run out of box on Linux machines. To run it, use provided script:
+
+```
+./run.sh -p 8000 -c /etc/hermes-console/config.json
 ```
