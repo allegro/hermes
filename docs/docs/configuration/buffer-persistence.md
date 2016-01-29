@@ -23,10 +23,10 @@ This might be useful when reviving Frontend nodes that have been down for a long
 
 Option                                          | Description                                            | Default value
 ----------------------------------------------- | ------------------------------------------------------ | --------------
-frontend.messages.local.storage.enabled         | enable persistent buffer                               | true
+frontend.messages.local.storage.enabled         | enable persistent buffer                               | false
 frontend.messages.local.storage.max.age.hours   | ignore messages in buffer that are older than N hours  | 72
 frontend.messages.local.storage.directory       | location of memory mapped files                        | /tmp/<tmp dir>
-frontend.messages.loading.wait.for.topics.cache | how much seconds to wait on startup for topics to load | 10
+frontend.messages.loading.wait.for.topics.cache | how many seconds to wait on startup for topics to load | 10
 
 ### Buffer files
 

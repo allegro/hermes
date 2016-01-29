@@ -90,7 +90,7 @@ public enum Configs {
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
 
-    MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", true),
+    MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", false),
     MESSAGES_LOCAL_STORAGE_DIRECTORY("frontend.messages.local.storage.directory", Files.createTempDir().getAbsolutePath()),
     MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS("frontend.messages.local.storage.max.age.hours", 72),
     MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE("frontend.messages.loading.wait.for.topics.cache", 10),
