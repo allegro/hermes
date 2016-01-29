@@ -1,0 +1,40 @@
+<section ng-controller="GroupsController">
+
+    <ol class="breadcrumb">
+        <li><a href="#/">home</a></li>
+        <li class="active">groups</li>
+    </ol>
+
+    <h1>Groups</h1>
+
+    <div class="row">
+        <div class="input-group col-md-2 col-md-offset-10">
+            <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span></div>
+            <input class="form-control" ng-model="search.name" placeholder="search...">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="list-group">
+            <div class="list-group-item">
+                <div class="pull-right">
+                    <button class="btn btn-primary" ng-click="addGroup()"><span class="glyphicon glyphicon-plus"></span></button>
+                </div>
+                <h4>&nbsp;</h4>
+            </div>
+
+            <a ng-href="#/groups/{{group.name}}" class="list-group-item" ng-repeat="group in groups| filter:search:strict">
+                <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                <strong>{{group.name}}</strong>
+                <div class="pull-right">
+                    <span class="label label-info">topics: {{group.topics.length}}</span>
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                </div>
+            </a>
+        </div>
+
+        <div ng-show="fetching" class="text-center">
+            <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
+        </div>
+    </div>
+</section>

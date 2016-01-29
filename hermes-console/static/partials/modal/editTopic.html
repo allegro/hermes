@@ -1,0 +1,73 @@
+<section>
+    <div class="modal-header">
+        <h3 class="modal-title" ng-show="operation === 'ADD'"><small>Create topic:</small> {{topic.name.indexOf(groupName) === 0 ? '' : groupName}}.{{topic.shortName}}</h3>
+        <h3 class="modal-title" ng-show="operation === 'EDIT'"><small>Edit topic:</small> {{topic.name}}</h3>
+    </div>
+    <div class="modal-body">
+        <form name="topicForm" class="form-horizontal" role="form">
+            <div ng-hide="!authEnabled.headers || isAuthorized" class="form-group {{topicForm.groupPassword.$valid ? '' : 'has-error'}}">
+                <label for="groupPassword" class="col-md-3 control-label">Group password</label>
+                <div class="col-md-9">
+                    <input class="form-control" type="password" ng-required="!isAuthorized && authEnabled.headers" id="groupPassword" name="groupPassword" placeholder="password for group {{groupName}}" ng-model="groupPassword"/>
+                </div>
+            </div>
+            <div class="form-group {{topicForm.topicName.$valid ? '' : 'has-error'}}" ng-show="operation === 'ADD'">
+                <label for="topicName" class="col-md-3 control-label">Name</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="topicName" required name="topicName" placeholder="name of topic, without group prefix" ng-model="topic.shortName" ng-pattern="/^[a-zA-Z0-9_-]+$/"/>
+                </div>
+            </div>
+            <div class="form-group {{topicForm.topicDescription.$valid ? '' : 'has-error'}}">
+                <label for="topicDescription" class="col-md-3 control-label">Description</label>
+                <div class="col-md-9">
+                    <input class="form-control" required id="topicDescription" name="topicDescription" placeholder="what type of messages you publish?" ng-model="topic.description"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="topicType" class="col-md-3 control-label">Content type</label>
+                <div class="col-md-9">
+                    <select id="topicType" class="form-control" ng-disabled="operation === 'EDIT'" ng-model="topic.contentType">
+                        <option>AVRO</option>
+                        <option>JSON</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group {{topicForm.topicRetention.$valid ? '' : 'has-error'}}">
+                <label for="topicRetention" class="col-md-3 control-label">Retention time</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" min="0" max="7" required class="form-control" id="topicRetention" name="topicRetention" ng-model="topic.retentionTime.duration" placeholder="how much time should we keep them for subscribers?"/>
+                        <span class="input-group-addon">days</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group {{topicForm.messageSchema.$valid ? '' : 'has-error'}}">
+                <label for="messageSchema" class="col-md-3 control-label" ng-show="topic.contentType === 'AVRO'"><a href="http://avro.apache.org/docs/current/spec.html">AVRO schema</a></label>
+                <label for="messageSchema" class="col-md-3 control-label" ng-show="topic.contentType === 'JSON'"><a href="http://json-schema.org/documentation.html">JSON schema</a></label>
+                <div class="col-md-9">
+                    <textarea class="form-control" id="messageSchema" ng-required="topic.validation || topic.contentType === 'AVRO'"
+                              name="messageSchema" placeholder="Message schema"
+                              ng-model="messageSchema" rows="25"></textarea>
+                    <div class="alert alert-info margin-top-10" ng-show="topic.contentType === 'AVRO'">
+                        Schema definition should contain an additional field (for Hermes internal usage):<br>
+                        {"name": "__metadata", "type": ["null", {"type": "map", "values": "string"}],"default": null}
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" ng-show="topic.contentType === 'JSON'">
+                <div class="col-md-offset-3 col-md-9">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="messageValidation" name="messageValidation" ng-model="topic.validation"/>
+                            Validate events with specified schema.
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" ng-disabled="topicForm.$invalid" ng-click="save()">Save</button>
+        <button class="btn btn-warning" ng-click="$dismiss()">Cancel</button>
+    </div>
+</section>

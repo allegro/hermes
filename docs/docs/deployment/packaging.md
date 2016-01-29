@@ -8,8 +8,14 @@ This is the simplest way to start. Clone the repository and build distribution p
 
 ```bash
 git clone https://github.com/allegro/hermes.git
+
+# build hermes
 cd hermes
 ./gradlew distZip -Pdistribution
+
+# build hermes-console
+cd hermes-console
+./package.sh
 ```
 
 This will cause distribution packages for all modules to build. Look for them in:
@@ -17,6 +23,7 @@ This will cause distribution packages for all modules to build. Look for them in
 * hermes-frontend/build/distribution/hermes-frontend-{version}.zip
 * hermes-consumers/build/distribution/hermes-consumers-{version}.zip
 * hermes-management/build/distribution/hermes-management-{version}.zip
+* hermes-console/dist/hermes-console.zip
 
 Having deployed Vanilla Hermes, you can only use configuration options to alter the behavior.
 
