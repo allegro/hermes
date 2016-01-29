@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
+import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.ws.rs.core.Response;
 
@@ -20,8 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MultipleKafkaTest extends IntegrationTest {
 
-    private final int frontendPort = 6793;
-    private final String frontendUrl = "http://localhost:" + frontendPort + "/";
+    private static final int FRONTEND_PORT = Ports.nextAvailable();
+    private static final String FRONTEND_URL = "http://localhost:" + FRONTEND_PORT + "/";
 
     private HermesPublisher publisher;
     private RemoteServiceEndpoint remoteService;
@@ -42,7 +43,7 @@ public class MultipleKafkaTest extends IntegrationTest {
 
     @BeforeMethod
     public void initializeAlways() {
-        this.publisher = new HermesPublisher(frontendUrl);
+        this.publisher = new HermesPublisher(FRONTEND_URL);
         this.remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
     }
 
@@ -76,8 +77,8 @@ public class MultipleKafkaTest extends IntegrationTest {
     }
 
     private FrontendStarter setupFrontend() throws Exception {
-        FrontendStarter frontend = new FrontendStarter(frontendUrl);
-        frontend.overrideProperty(Configs.FRONTEND_PORT, frontendPort);
+        FrontendStarter frontend = new FrontendStarter(FRONTEND_PORT, false);
+        frontend.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
         frontend.overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false);
         frontend.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, SECONDARY_KAFKA_CONNECT);
