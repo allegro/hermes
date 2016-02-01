@@ -2,6 +2,12 @@
 
 NAME=hermes-console
 
+if [ -z ${1+x} ]; then
+    ARCHIVE_NAME=hermes-console
+else
+    ARCHIVE_NAME=$1
+fi
+
 NODE_VERSION="v5.1.0"
 NODE_DIST="node-$NODE_VERSION-linux-x64"
 
@@ -25,15 +31,15 @@ printf "Running NPM and bower\n"
 npm install --production --yes
 node_modules/.bin/bower install --allow-root
 
-printf "Creating package: dist/$NAME.zip\n"
+printf "Creating package: dist/$ARCHIVE_NAME.zip\n"
 
 # first step - create base directory and copy contents
-mkdir -p dist/$NAME
-cp -r node_modules package.json serve.js static run.sh dist/$NAME
-(cd dist && cp -r node $NAME)
+mkdir -p dist/$ARCHIVE_NAME
+cp -r node_modules package.json serve.js static run.sh dist/$ARCHIVE_NAME
+(cd dist && cp -r node $ARCHIVE_NAME)
 
 # second step - create zip
-(cd dist && zip --quiet --symlinks --recurse-paths $NAME.zip $NAME)
+(cd dist && zip --quiet --symlinks --recurse-paths $ARCHIVE_NAME.zip $ARCHIVE_NAME)
 
 # cleanup
-rm -rf dist/$NAME
+rm -rf dist/$ARCHIVE_NAME

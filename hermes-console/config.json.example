@@ -10,7 +10,7 @@
         "discovery": {
             "type": "simple",
             "simple": {
-                "url": "http://hs-management1.hermes-prod.pl-kra-3.dc4.local:8080"
+                "url": "http://localhost:8080"
             },
             "consul": {
                 "serviceName": "hermes-management",
