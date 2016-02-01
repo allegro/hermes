@@ -25,10 +25,15 @@ printf "Running NPM and bower\n"
 npm install --production --yes
 node_modules/.bin/bower install --allow-root
 
-printf "Creating package: dist/hermes-console.zip\n"
+printf "Creating package: dist/$NAME.zip\n"
 
-# first step - create base archive
-zip --quiet --symlinks --recurse-paths dist/hermes-console.zip node_modules package.json serve.js static run.sh
+# first step - create base directory and copy contents
+mkdir -p dist/$NAME
+cp -r node_modules package.json serve.js static run.sh dist/$NAME
+(cd dist && cp -r node $NAME)
 
-# second step - add node distribution to archive root
-(cd dist && zip --quiet --symlinks --recurse-paths hermes-console.zip node)
+# second step - create zip
+(cd dist && zip --quiet --symlinks --recurse-paths $NAME.zip $NAME)
+
+# cleanup
+rm -rf dist/$NAME
