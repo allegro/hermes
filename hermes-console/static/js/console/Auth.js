@@ -33,7 +33,7 @@ auth.controller('AuthController', ['$scope', '$rootScope', 'AuthService', 'toast
     };
 }]);
 
-auth.service('AuthService', ['AUTH_OAUTH_CONFIG', function(config) {
+auth.service('AuthService', ['AUTH_OAUTH_CONFIG', function(authConfig) {
 
     this.init = function() {
         hello.init({
@@ -41,7 +41,7 @@ auth.service('AuthService', ['AUTH_OAUTH_CONFIG', function(config) {
                 name: 'auth',
                 oauth: {
                     version: 2,
-                    auth: config.url
+                    auth: authConfig.url
                 },
                 scope: {
                     basic: ''
@@ -53,12 +53,12 @@ auth.service('AuthService', ['AUTH_OAUTH_CONFIG', function(config) {
             }
         });
         hello.init({
-            auth: config.scope
+            auth: authConfig.scope
         });
     };
 
     this.login = function(config) {
-        var options = angular.extend({display: 'popup', scope: config.scope}, config);
+        var options = angular.extend({display: 'popup', scope: authConfig.scope}, config);
         return hello('auth').login(options);
     };
 
@@ -79,11 +79,11 @@ auth.service('AuthService', ['AUTH_OAUTH_CONFIG', function(config) {
     };
 
     this.isEnabled = function() {
-        return config.enabled;
-    }
+        return authConfig.enabled;
+    };
 
     this.isAuthorized = function() {
-        if(config.enabled) {
+        if(authConfig.enabled) {
             var response = hello('auth').getAuthResponse();
             var now = new Date().getTime() / 1000;
             // this is just a soft validation for UI, token must be validated on server
