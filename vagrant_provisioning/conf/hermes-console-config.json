@@ -7,7 +7,12 @@
     "docs": "http://hermes-pubsub.rtfd.org"
   },
   "hermes": {
-    "url": "http://PUBLIC_IP:8090"
+    "discovery": {
+      "type": "simple",
+      "simple": {
+        "url": "http://PUBLIC_IP:8090"
+      }
+    }
   },
   "metrics": {
     "type": "graphite",
