@@ -7,10 +7,10 @@ options that can be changed to fine tune the [Undertow HTTP server](http://under
 
 Hermes Frontend can be configured to send the response after no longer than specific timeout. This prevents long-running
 requests in case of Kafka downtime and helps to reason about service SLA. This is related to
-[response codes](user/publishing/#response-codes): depending on whether message has been persisted in Kafka before the
+[response codes](/user/publishing/#response-codes): depending on whether message has been persisted in Kafka before the
 timeout, publisher receives **201** or **202** response code.
 
-You can change the timeout values separately for messages with different [acknowledgment levels](user/publishing/#acknowledgment-level).
+You can change the timeout values separately for messages with different [acknowledgment levels](/user/publishing/#acknowledgment-level).
 To do so, use
 
 * `frontend.idle.timeout` for leader ACK
