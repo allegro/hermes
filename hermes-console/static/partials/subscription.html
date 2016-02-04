@@ -1,0 +1,243 @@
+<section ng-controller="SubscriptionController">
+
+    <ol class="breadcrumb">
+        <li><a href="#/">home</a></li>
+        <li><a href="#/groups">groups</a></li>
+        <li><a ng-href="#/groups/{{groupName}}">{{groupName}}</a></li>
+        <li><a ng-href="#/groups/{{groupName}}/topics/{{topicName}}">{{topicName}}</a></li>
+        <li class="active">{{subscriptionName}}</li>
+    </ol>
+
+    <div class="pull-right">
+        <button ng-show="subscription.state === 'ACTIVE'" class="btn btn-warning" ng-click="suspend()">Suspend</button>
+        <button ng-show="subscription.state === 'SUSPENDED'" class="btn btn-success" ng-click="activate()">Activate</button>
+        <button class="btn btn-primary" ng-click="edit()">Edit</button>
+        <button class="btn btn-danger" ng-click="remove()">Remove</button>
+    </div>
+
+    <h2><small>Subscription:</small> {{subscription.name}}</h2>
+    <h3><small>Endpoint:</small> {{subscription.endpoint}}</h3>
+    <h3><small>Team:</small> {{subscription.supportTeam}} <small>Contact:</small> {{subscription.contact}}</h3>
+    <p class="lead">{{subscription.description}}</p>
+
+    <div class="row text-center">
+        <div class="col-md-12">
+            <p class="alert {{subscription.state === 'ACTIVE' ? 'alert-success' : 'alert-danger'}}">
+                {{subscription.state}}
+            </p>
+        </div>
+    </div>
+
+    <div class="row" ng-show="!health.healthy">
+        <div class="col-md-12">
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Subscription health problems</h3>
+                </div>
+                <div class="panel-body">
+                    <p ng-show="health.lagging">
+                        <b>Subscription lag is growing</b>. Examine output rate and service response codes, looks like it is
+                        not consuming at full speed.
+                    </p>
+                    <p ng-show="health.slowReceiver">
+                        <b>Consumption rate is lower than topic production rate</b>. Examine output rate and service response codes.
+                        If everything is well, take a look at maximum rate, maybe it is too low?
+                    </p>
+                    <p ng-show="health.malfunctioning">
+                        <b>Consuming service returns a lot of 5xx codes</b>. Looks like it might be malfuncioning or doesn't know
+                        how to handle messages. Take a look at "Last undelivered message" for more information.
+                    </p>
+                    <p ng-show="health.malformedEvents">
+                        <b>Consuming service returns a lot of 4xx codes</b>. Maybe you are receiving some malformed messages?
+                        If this is normal behavior, switch <b>Retry on 4xx satus</b> flag to false. This way Hermes will
+                        not try to resend malformed messages, reducing traffic.
+                    </p>
+                    <p ng-show="health.slow">
+                        <b>Consuming service times out a lot</b>. Hermes times out after 1 second, if you are not able to process
+                        message during this time, connection is reset and delivery fails.
+                    </p>
+                    <p ng-show="health.unreachable">
+                        <b>Unable to connect to consuming service instances</b>. It is either network issue or your service instance
+                        is down.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Subscription metrics</h3>
+                </div>
+                <div class="panel-body">
+                    <p><strong><a ng-href="{{metricsUrls.rate}}">Delivery rate:</a></strong> {{metrics.rate | number:2}}</p>
+                    <p><strong><a ng-href="{{metricsUrls.delivered}}">Delivered:</a></strong> {{metrics.delivered}}</p>
+                    <p><strong><a ng-href="{{metricsUrls.discarded}}">Discarded:</a></strong> {{metrics.discarded}}</p>
+                    <p>
+                        <strong><a ng-href="{{metricsUrls.lag}}">Lag:</a></strong> {{metrics.lag}}
+                        <span uib-popover='Total number of events waiting to be delivered. Each subscription has a "natural" lag, which depends on production rate.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p>
+                        <strong><a ng-href="{{metricsUrls.outputRate}}">Output rate</a></strong>
+                        <span uib-popover='Maximum sending rate calculated based on receiving service performance. For well-performing service output rate should be equal to rate limit.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Service response metrics</h3>
+                </div>
+                <div class="panel-body">
+                    <p><strong><a ng-href="{{metricsUrls['2xx']}}">2xx</a></strong></p>
+                    <p><strong><a ng-href="{{metricsUrls['4xx']}}">4xx</a></strong></p>
+                    <p><strong><a ng-href="{{metricsUrls['5xx']}}">5xx</a></strong></p>
+                    <p><strong><a ng-href="{{metricsUrls.timeouts}}">Network timeouts</a></strong></p>
+                    <p><strong><a ng-href="{{metricsUrls.networkErrors}}">Other network errors</a></strong></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Properties</h3>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        <strong>Content type:</strong> {{subscription.contentType}}
+                    </p>
+                    <p>
+                        <strong>Rate limit:</strong> {{subscription.subscriptionPolicy.rate}}
+                        <span uib-popover='Maximum rate defined by user. Maximum rate calculated by algorithm can be observed in "Output rate" metric.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p>
+                        <strong>Message TTL:</strong> {{subscription.subscriptionPolicy.messageTtl}} seconds
+                        <span uib-popover='Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p><strong>Tracking enabled:</strong> {{subscription.trackingEnabled}}</p>
+                    <p>
+                        <strong>Retry on 4xx status:</strong> {{subscription.subscriptionPolicy.retryClientErrors}}
+                        <span uib-popover='If false, message will not be retried when service responds with 4xx status (i.e. Bad Request).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p>
+                        <strong>Retry backoff:</strong> {{subscription.subscriptionPolicy.messageBackoff}} milliseconds
+                        <span uib-popover='Minimum amount of time between consecutive message retries.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Messages retransmission</h3>
+                </div>
+                <div class="panel-body">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input class="form-control" style="width: 250px" type="input" readonly placeholder="since..." id="retransmitFromDate"/>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" id="retransmitCalendarButton"><span class="glyphicon glyphicon-time"></span></button>
+                                </span>
+                            </div>
+                            <button class="btn btn-danger" ng-click="retransmit()"></span> Retransmit</button>
+                            <span class="loading-in-panel" ng-show="retransmissionLoading">
+                                <i class=" fa fa-circle-o-notch fa-spin fa-2x"></i>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6" ng-show="lastUndelivered.message">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Last undelivered message</h3>
+                </div>
+                <div class="panel-body">
+                    <p><strong>Time:</strong> {{lastUndelivered.timestamp | date:'yyyy-MM-dd HH:mm:ss'}}</p>
+                    <p><strong>Reason:</strong> {{lastUndelivered.reason}}</p>
+                    <p>
+                        <strong>Message:</strong>
+                        <pre class="pre-scrollable">
+{{lastUndelivered.message}}
+                        </pre>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6" ng-show="subscription.trackingEnabled">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Show event trace</h3>
+                </div>
+                <div class="panel-body">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <input class="form-control" style="width: 350px" type="input" id="eventId" name="eventId" placeholder="event id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" ng-model="eventId"/>
+                            <button class="btn btn-primary" ng-click="showTrace()"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+                        </div>
+                    </form>
+
+                    <h5>&nbsp;</h5>
+
+                    <table class="table" ng-show="eventTrace.length > 0">
+                        <th>Phase</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <tbody>
+                            <tr ng-repeat="trace in eventTrace">
+                                <td>{{trace.subscription ? 'SENDING' : 'RECEIVING'}}</td>
+                                <td>{{trace.timestamp | date:'yyyy-MM-dd HH:mm:ss.sss'}}</td>
+                                <td>{{trace.status}} {{trace.status != 'SUCCESS' ? trace.reason : ''}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p ng-show="eventTrace.length == 0 && eventId">No matches found - is the id correct? Remember we keep traces for 14 days.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-12" ng-show="undelivered">
+
+            <div class="panel panel-danger">
+
+                <div class="panel-heading">
+                    <h3 class="panel-title">Last 100 undelivered messages</h3>
+                </div>
+
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>MessageId</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                        <th>Timestamp</th>
+                        <th> </th>
+                    </tr>
+
+                    <tr ng-repeat="msglog in undelivered">
+                        <td>{{$index + 1}}</td>
+                        <td>{{msglog.messageId}}</td>
+                        <td>{{msglog.status}}</td>
+                        <td>{{msglog.reason}}</td>
+                        <td>{{msglog.timestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                        <td><button type="button" class="btn-xs btn-primary" ng-show="msglog.isPreviewable()"
+                                    ng-click="previewMessage(msglog.cluster, msglog.partition, msglog.offset, msglog.messageId)">
+                            <span class="glyphicon glyphicon-search"></span></button></td>
+                    </tr>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+</section>

@@ -1,5 +1,10 @@
 package pl.allegro.tech.hermes.infrastructure.schema.repo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.common.exception.InvalidSchemaException;
+import pl.allegro.tech.hermes.common.exception.SchemaRepoException;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -8,7 +13,11 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Optional;
 
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+
 public class JerseySchemaRepoClient implements SchemaRepoClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(JerseySchemaRepoClient.class);
 
     private final WebTarget target;
 
@@ -18,7 +27,12 @@ public class JerseySchemaRepoClient implements SchemaRepoClient {
 
     @Override
     public void registerSubject(String subject) {
-        target.path(subject).request().put(Entity.entity("", MediaType.APPLICATION_FORM_URLENCODED_TYPE));
+        Response response = target.path(subject).request().put(Entity.entity("", MediaType.APPLICATION_FORM_URLENCODED_TYPE));
+        if (SUCCESSFUL != response.getStatusInfo().getFamily()) {
+            logger.error("Failure subject registration in schema repo. Subject: {}, response code: {}, details: {}",
+                    subject, response.getStatus(), response.readEntity(String.class));
+            throw new SchemaRepoException("Failure subject registration in schema-repo.");
+        }
     }
 
     @Override
@@ -28,7 +42,26 @@ public class JerseySchemaRepoClient implements SchemaRepoClient {
 
     @Override
     public void registerSchema(String subject, String schema) {
-        target.path(subject).path("register").request().put(Entity.entity(schema, MediaType.TEXT_PLAIN));
+        Response response = target.path(subject).path("register").request().put(Entity.entity(schema, MediaType.TEXT_PLAIN));
+        checkResponse(response.getStatusInfo(), subject, response.readEntity(String.class));
+    }
+
+    private void checkResponse(Response.StatusType statusType, String subject, String response) {
+        switch (statusType.getFamily()) {
+            case SUCCESSFUL:
+                logger.info("Successful write to schema repo for subject {}", subject);
+                break;
+            case CLIENT_ERROR:
+                logger.warn("Invalid schema for subject {}. Details: {}", subject, response);
+                throw new InvalidSchemaException("Invalid schema. For more details see schema-repo logs.");
+            case SERVER_ERROR:
+                logger.error("Failure write to schema repo for subject {}. Reason: {}", subject, response);
+                throw new SchemaRepoException("Failure write to schema-repo.");
+            default:
+                logger.error("Unknown response from schema-repo. Subject {}, http status {}, Details: {}",
+                        subject, statusType.getStatusCode(), response);
+                throw new SchemaRepoException("Unknown response from schema-repo");
+        }
     }
 
     @Override

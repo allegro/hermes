@@ -1,0 +1,55 @@
+
+.logo-mini {
+    margin-top: -12px;
+    height: 40px;
+}
+
+.hero-box {
+    margin-bottom: 4em;
+    margin-top: 4em;
+}
+
+.margin-top-10 {
+    margin-top: 10px;
+}
+
+.input-dropdown-menu {
+    margin-top: 35px;
+}
+
+span.helpme {
+    color: #428bca;
+    padding: .2em .6em .2em;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25em;
+}
+
+.panel-body.collapsing:not(.in) {
+    padding: 0px;
+}
+
+.btn-main {
+    color: #428bca;
+    background-color: #f5f5f5;
+    font-weight: bold;
+    font-size: 2em;
+    border-color: #e7e7e7;
+}
+
+.btn-main:hover, .btn-main:focus {
+    color: #2a6496;
+}
+
+.auth-pane {
+    margin: 10px;
+}
+
+.loading-in-panel {
+    margin-left: 100px;
+}
+
+a.navbar-brand.console-title {
+    color: #2a6496;
+}

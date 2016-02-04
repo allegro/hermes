@@ -1,0 +1,41 @@
+{
+    "console": {
+        "title": "hermes console" // page title
+    },
+    "dashboard": {
+        "metrics": "", // link to metrics dashboard
+        "docs": "http://hermes-pubsub.rtfd.org" // link to documentation
+    },
+    "hermes": {
+        "discovery": {
+            "type": "simple",
+            "simple": {
+                "url": "http://localhost:8080"
+            },
+            "consul": {
+                "serviceName": "hermes-management",
+                "agentUrl": "http://localhost:8500"
+            }
+        }
+    },
+    "metrics": {
+        "type": "graphite", // active metric store type
+        "graphite": {
+            "url": "localhost:8091",
+            "prefix": "hermes"
+        }
+    },
+    "auth": {
+        "oauth": {
+            "enabled": false,
+            "url": "localhost:8092/auth",
+            "clientId": "hermes",
+            "scope": "hermes"
+        },
+        "headers": {
+            "enabled": false,
+            "groupHeader": "Hermes-Group-Password",
+            "adminHeader": "Hermes-Admin-Password"
+        }
+    }
+}

@@ -1,12 +1,12 @@
-package pl.allegro.tech.hermes.management.domain.topic.schema;
+package pl.allegro.tech.hermes.management.infrastructure.schema;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.TopicFieldSchemaSourceProvider;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceRepository;
 
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 

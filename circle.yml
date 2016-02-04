@@ -1,0 +1,14 @@
+machine:
+  java:
+    version: oraclejdk8
+
+general:
+  branches:
+    only:
+      - master
+      - develop
+
+test:
+  override:
+    - "./gradlew check"
+    - "./gradlew -Ptests.timeout.multiplier=3 integrationTest"

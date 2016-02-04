@@ -28,7 +28,7 @@ scmVersion {
     ]
 
     hooks {
-        pre 'fileUpdate', [files: ['mkdocs.yml'], pattern: {v, p -> /'$v'/ }, replacement: {v, p -> "'$v'"}]
+        pre 'fileUpdate', [files: ['mkdocs.yml', 'hermes-console/package.json'], pattern: {v, p -> /$v/ }, replacement: {v, p -> "$v"}]
         pre 'commit'
     }
 }
@@ -152,5 +152,5 @@ nexusStaging {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.4'
+    gradleVersion = '2.10'
 }

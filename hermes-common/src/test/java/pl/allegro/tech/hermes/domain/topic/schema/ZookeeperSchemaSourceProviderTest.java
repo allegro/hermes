@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 import java.util.Optional;
 
 import static com.googlecode.catchexception.CatchException.catchException;
-import static org.assertj.core.api.StrictAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
 public class ZookeeperSchemaSourceProviderTest extends ZookeeperBaseTest {

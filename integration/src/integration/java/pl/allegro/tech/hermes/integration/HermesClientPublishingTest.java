@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.integration;
 import com.squareup.okhttp.OkHttpClient;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.client.HermesClient;
@@ -94,7 +93,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
         HermesResponse response = client.publish(topic.qualifiedName(), message.body()).join();
 
         // then
-        assertThat(response.wasPublished()).isTrue();
+        assertThat(response.isSuccess()).isTrue();
         assertThat(response.getMessageId()).isNotEmpty();
     }
 
@@ -106,7 +105,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
         HermesResponse response = client.publish(topic.qualifiedName(), message.body()).join();
 
         // then
-        assertThat(response.wasPublished()).isFalse();
+        assertThat(response.isFailure()).isTrue();
     }
 
     private OkHttpClient getOkHttpClientWithSslContextConfigured() {

@@ -3,8 +3,10 @@ package pl.allegro.tech.hermes.frontend.di;
 import org.I0Itec.zkclient.ZkClient;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepositoryListFactory;
+import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.zookeeper.ZookeeperTopicsCacheFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
@@ -33,11 +35,19 @@ import java.util.List;
 
 public class FrontendBinder extends AbstractBinder {
 
+    private final HooksHandler hooksHandler;
+
+    public FrontendBinder(HooksHandler hooksHandler) {
+        this.hooksHandler = hooksHandler;
+    }
+
     @Override
     protected void configure() {
         bindSingleton(HermesServer.class);
         bindSingleton(PublishingServlet.class);
         bindSingleton(MessageValidators.class);
+
+        bind(hooksHandler).to(HooksHandler.class);
 
         bind("producer").named("moduleName").to(String.class);
 
@@ -57,6 +67,9 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MetadataAddingMessageConverter.class);
         bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {});
         bindFactory(SchemaRepositoryListFactory.class).in(Singleton.class).to(new TypeLiteral<List<SchemaRepository>>() {});
+
+        bindSingleton(BackupMessagesLoader.class);
+        bindSingleton(PersistentBufferExtension.class);
     }
 
     private <T> void bindSingleton(Class<T> clazz) {
