@@ -2,7 +2,9 @@ package pl.allegro.tech.hermes.test.helper.environment;
 
 import com.jayway.awaitility.Duration;
 import kafka.server.KafkaConfig;
+import kafka.server.KafkaServer;
 import kafka.server.KafkaServerStartable;
+import kafka.utils.Time;
 import org.apache.commons.io.FileUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -76,6 +78,9 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
     public void stop() throws Exception {
         logger.info("Stopping in-memory Kafka");
         kafka.shutdown();
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA i should freeze");
+        kafka.awaitShutdown();
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Kafka stopped");
     }
 
     @Override
