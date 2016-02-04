@@ -77,6 +77,8 @@ project.sourceSets {
 
 task integrationTest(type: Test) {
     jvmArgs "-Xbootclasspath/p:" + project.configurations.alpnboot.asPath
+    maxHeapSize "2g"
+
     group = 'Verification'
     description = 'Runs the integration tests.'
 
