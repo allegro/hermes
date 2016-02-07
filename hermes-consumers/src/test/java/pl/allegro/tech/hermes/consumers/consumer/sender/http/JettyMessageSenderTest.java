@@ -7,8 +7,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -20,7 +18,6 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -34,12 +31,12 @@ import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessa
 
 public class JettyMessageSenderTest {
 
-    private static final String MESSAGE_BODY = "aaaaaaaaaaaaaaaa";
+    private static final String MESSAGE_BODY = "This is a test message";
     private static final Message SOME_MESSAGE = withTestMessage()
             .withContent(MESSAGE_BODY, StandardCharsets.UTF_8)
             .build();
 
-    private static final int ENDPOINT_PORT = 18081;
+    private static final int ENDPOINT_PORT = Ports.nextAvailable();
     private static final EndpointAddress ENDPOINT = EndpointAddress.of(format("http://localhost:%d/", ENDPOINT_PORT));
 
     private static HttpClient client;
@@ -54,8 +51,9 @@ public class JettyMessageSenderTest {
         wireMockServer.start();
 
         client = new HttpClient();
-        client.setExecutor(Executors.newFixedThreadPool(10));
         client.setCookieStore(new HttpCookieStore.Empty());
+        client.setConnectTimeout(1000);
+        client.setIdleTimeout(1000);
         client.start();
     }
 

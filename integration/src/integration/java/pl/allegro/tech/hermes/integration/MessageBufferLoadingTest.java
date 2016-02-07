@@ -83,23 +83,26 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         frontend.overrideProperty(KAFKA_ZOOKEEPER_CONNECT_STRING, KAFKA_ZK_CONNECT_STRING);
         frontend.start();
 
-        ChronicleMapMessageRepository backupRepository = createBackupRepository(
-                frontend.config().getStringProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY)
-        );
+        try {
+            ChronicleMapMessageRepository backupRepository = createBackupRepository(
+                    frontend.config().getStringProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY)
+            );
 
-        assertThat(publisher.publish("backupGroup.uniqueTopic", "message").getStatus()).isEqualTo(CREATED.getStatusCode());
+            assertThat(publisher.publish("backupGroup.uniqueTopic", "message").getStatus()).isEqualTo(CREATED.getStatusCode());
 
-        // when
-        kafka.stop();
-        assertThat(publisher.publish("backupGroup.uniqueTopic", "message").getStatus()).isEqualTo(ACCEPTED.getStatusCode());
+            // when
+            kafka.stop();
+            assertThat(publisher.publish("backupGroup.uniqueTopic", "message").getStatus()).isEqualTo(ACCEPTED.getStatusCode());
 
-        // then
-        await().atMost(3, SECONDS).until(() -> assertThat(backupRepository.findAll()).hasSize(1));
+            // then
+            await().atMost(10, SECONDS).until(() -> assertThat(backupRepository.findAll()).hasSize(1));
 
-        // after
-        kafka.start();
-        frontend.stop();
-        kafka.stop();
+        } finally {
+            // after
+            kafka.start();
+            frontend.stop();
+            kafka.stop();
+        }
     }
 
     @Test

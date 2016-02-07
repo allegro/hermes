@@ -20,7 +20,7 @@ public class Waiter {
     }
 
     public void untilSubscriptionCreated(Topic topic, String subscription, boolean isTracked) {
-        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() ->
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
             endpoints.subscription().list(topic.getQualifiedName(), isTracked).contains(subscription)
         );
     }

@@ -9,6 +9,9 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 public class HermesShutdownHandler extends GracefulShutdownHandler {
 
     private static final int MILLIS = 1000;
+
+    private static final int TOLERANCE_BYTES = 5;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(HermesShutdownHandler.class);
 
     private final HermesMetrics metrics;
@@ -24,6 +27,7 @@ public class HermesShutdownHandler extends GracefulShutdownHandler {
         awaitShutdown();
         LOGGER.info("Awaiting buffer flush");
         awaitBufferFlush();
+        LOGGER.info("Shutdown complete");
     }
 
     private void awaitBufferFlush() throws InterruptedException {
@@ -33,7 +37,8 @@ public class HermesShutdownHandler extends GracefulShutdownHandler {
     }
 
     private boolean isBufferEmpty() {
-        LOGGER.info("Available {}, total {} bytes", metrics.getBufferAvailablesBytes(), metrics.getBufferTotalBytes());
-        return metrics.getBufferAvailablesBytes() == metrics.getBufferTotalBytes();
+        long bufferUsedBytes = (long)(metrics.getBufferTotalBytes() - metrics.getBufferAvailablesBytes());
+        LOGGER.info("Buffer flush: {} bytes still in use", bufferUsedBytes);
+        return  bufferUsedBytes < TOLERANCE_BYTES;
     }
 }

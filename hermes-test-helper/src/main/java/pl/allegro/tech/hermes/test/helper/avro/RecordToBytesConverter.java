@@ -16,13 +16,14 @@ import java.io.IOException;
 public interface RecordToBytesConverter {
 
     static byte[] recordToBytes(GenericRecord record, Schema schema) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(out, null);
-        DatumWriter<GenericRecord> writer = new GenericDatumWriter<>(schema);
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(out, null);
+            DatumWriter<GenericRecord> writer = new GenericDatumWriter<>(schema);
 
-        writer.write(record, encoder);
-        encoder.flush();
-        return out.toByteArray();
+            writer.write(record, encoder);
+            encoder.flush();
+            return out.toByteArray();
+        }
     }
 
     static GenericRecord bytesToRecord(byte [] data, Schema schema) throws IOException {

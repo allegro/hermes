@@ -23,6 +23,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class RemoteServiceEndpoint {
 
@@ -77,7 +78,7 @@ public class RemoteServiceEndpoint {
 
     public void waitUntilReceived(long seconds) {
         logger.info("Expecting to receive {} messages", expectedMessages.size());
-        await().atMost(new Duration(seconds, TimeUnit.SECONDS)).until(() -> receivedRequests.size() == expectedMessages.size());
+        await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() -> receivedRequests.size() == expectedMessages.size());
         assertThat(receivedRequests.stream().map(LoggedRequest::getBodyAsString).collect(toList())).containsAll(expectedMessages);
     }
 
@@ -87,7 +88,7 @@ public class RemoteServiceEndpoint {
 
     public void waitUntilReceived(long seconds, int numberOfExpectedMessages, Consumer<String> requestBodyConsumer) {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
-        await().atMost(new Duration(seconds, TimeUnit.SECONDS)).until(() -> receivedRequests.size() == numberOfExpectedMessages);
+        await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() -> receivedRequests.size() == numberOfExpectedMessages);
         receivedRequests.stream().map(LoggedRequest::getBodyAsString).forEach(requestBodyConsumer::accept);
     }
 
