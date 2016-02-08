@@ -4,7 +4,6 @@ import com.codahale.metrics.MetricRegistry;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
-import java.net.NoRouteToHostException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
@@ -40,8 +39,6 @@ public class HermesClientTest {
         HermesResponse response = client.publish(TOPIC, CONTENT).join();
 
         // then
-        assertThat(response.wasPublished()).isTrue();
-        assertThat(response.wasAccepted()).isTrue();
         assertThat(response.isSuccess()).isTrue();
         assertThat(response.isFailure()).isFalse();
         assertThat(response.getHttpStatus()).isEqualTo(status);
@@ -57,8 +54,6 @@ public class HermesClientTest {
         HermesResponse response = client.publish(TOPIC, CONTENT).join();
 
         // then
-        assertThat(response.wasPublished()).isFalse();
-        assertThat(response.wasAccepted()).isTrue();
         assertThat(response.isSuccess()).isTrue();
         assertThat(response.getHttpStatus()).isEqualTo(202);
     }
@@ -74,8 +69,6 @@ public class HermesClientTest {
                 HermesResponse response = client.publish(TOPIC, CONTENT).join();
 
                 // then
-                assertThat(response.wasPublished()).isFalse();
-                assertThat(response.wasAccepted()).isFalse();
                 assertThat(response.isSuccess()).isFalse();
                 assertThat(response.isFailure()).isTrue();
             });
