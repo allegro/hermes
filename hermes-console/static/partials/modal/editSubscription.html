@@ -67,7 +67,7 @@
                 <label for="subscriptionMessageTtl" class="col-md-3 control-label">Inflight message TTL</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="0" max="1000000" step="1" required class="form-control" id="subscriptionMessageTtl" name="subscriptionMessageTtl" placeholder="Time when message can be resent to endpoint after failed sending attempts" ng-model="subscription.subscriptionPolicy.messageTtl"/>
+                        <input type="number" min="0" max="7200" step="1" required class="form-control" id="subscriptionMessageTtl" name="subscriptionMessageTtl" placeholder="Time when message can be resent to endpoint after failed sending attempts" ng-model="subscription.subscriptionPolicy.messageTtl"/>
                         <span class="input-group-addon">seconds</span>
                     </div>
                 </div>

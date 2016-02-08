@@ -27,9 +27,16 @@ import java.util.concurrent.Semaphore;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
+import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.retryAfter;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
@@ -268,6 +275,38 @@ public class ConsumerMessageSenderTest {
         verifyErrorHandlerHandleFailed(message, subscriptionWithBackoff, 1 + executionTime / senderBackoffTime);
     }
 
+    @Test
+    public void shouldBackoffRetriesOnRetryAfter() throws InterruptedException {
+        // given
+        int retrySeconds = 1;
+        Message message = message();
+        doReturn(backoff(retrySeconds)).doReturn(success()).when(messageSender).send(message);
+
+        // when
+        sender.sendMessage(message);
+
+        // then
+        verifyRateLimiterFailedSendingCountedTimes(1);
+        verifyRateLimiterSuccessfulSendingCountedTimes(1);
+        verifySemaphoreReleased();
+    }
+
+    @Test
+    public void shouldNotRetryOnRetryAfterAboveTtl() throws InterruptedException {
+        // given
+        int retrySeconds = subscription.getSerialSubscriptionPolicy().getMessageTtl();
+        Message message = message();
+        doReturn(backoff(retrySeconds)).when(messageSender).send(message);
+
+        // when
+        sender.sendMessage(message);
+
+        // then
+        verifyRateLimiterFailedSendingCountedTimes(1);
+        verifyRateLimiterSuccessfulSendingCountedTimes(0);
+        verifySemaphoreReleased();
+    }
+
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
         return new ConsumerMessageSender(subscription, messageSender, successHandler, errorHandler, rateLimiter,
                 Executors.newSingleThreadExecutor(), inflightSemaphore, hermesMetrics, ASYNC_TIMEOUT_MS,
@@ -339,6 +378,10 @@ public class ConsumerMessageSenderTest {
 
     private CompletableFuture<MessageSendingResult> failure(int statusCode) {
         return CompletableFuture.completedFuture(failedResult(statusCode));
+    }
+
+    private CompletableFuture<MessageSendingResult> backoff(int seconds) {
+        return CompletableFuture.completedFuture(retryAfter(seconds));
     }
 
     private void verifySemaphoreReleased() {

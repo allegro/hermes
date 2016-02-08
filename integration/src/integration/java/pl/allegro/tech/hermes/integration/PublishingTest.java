@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.Assertions;
 import pl.allegro.tech.hermes.integration.metadata.TraceContext;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
-import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -35,11 +34,11 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.glassfish.jersey.client.ClientProperties.REQUEST_ENTITY_PROCESSING;
 import static org.glassfish.jersey.client.RequestEntityProcessing.CHUNKED;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PublishingTest extends IntegrationTest {
 
@@ -347,5 +346,26 @@ public class PublishingTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
         assertThat(remoteService.waitAndGetLastRequest()).containsAllHeaders(trace.asMap());
+    }
+
+    @Test
+    public void shouldRetryWithDelayOnRetryAfterEndpointResponse() {
+        // given
+        int retryAfterSeconds = 1;
+        String message = "hello";
+        remoteService.retryMessage(message, retryAfterSeconds);
+
+        // and
+        Topic topic = operations.buildTopic("retryAfterTopic", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+
+        // when
+        publisher.publish(topic.getQualifiedName(), message);
+
+        // then
+        remoteService.waitUntilReceived();
+
+        assertThat(remoteService.durationBetweenFirstAndLastRequest()
+                .minusSeconds(retryAfterSeconds).isNegative()).isFalse();
     }
 }

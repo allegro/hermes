@@ -54,7 +54,7 @@ public class DefaultSuccessHandlerTest {
 
     private DefaultSuccessHandler defaultRetryHandler;
 
-    private MessageSendingResult result = new MessageSendingResult();
+    private MessageSendingResult result = MessageSendingResult.succeededResult();
 
     @Before
     public void setUp() {

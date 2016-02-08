@@ -74,11 +74,11 @@ public class Message {
         return topic;
     }
 
-    public boolean isTtlExceeded(int ttlSeconds) {
+    public boolean isTtlExceeded(long ttlMillis) {
 
         long currentTimestamp = System.currentTimeMillis();
 
-        return currentTimestamp > readingTimestamp + TimeUnit.SECONDS.toMillis(ttlSeconds);
+        return currentTimestamp > readingTimestamp + ttlMillis;
     }
 
     public String getId() {
