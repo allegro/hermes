@@ -6,11 +6,13 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
+import pl.allegro.tech.hermes.integration.test.HermesAssertions;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +22,8 @@ import static java.util.stream.IntStream.range;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
 public class KafkaSingleMessageReaderTest extends IntegrationTest {
 
@@ -68,8 +70,9 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
         wait.untilTopicDetailsAreCreated(topic.getName());
-        assertThat(publisher.publish(topic.getQualifiedName(), avroUser.asBytes())
-                .getStatus()).isEqualTo(CREATED.getStatusCode());
+
+        Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
+        HermesAssertions.assertThat(response).hasStatus(CREATED);
 
         // when
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);

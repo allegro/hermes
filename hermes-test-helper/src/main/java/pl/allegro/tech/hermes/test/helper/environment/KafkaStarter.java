@@ -76,6 +76,7 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
     public void stop() throws Exception {
         logger.info("Stopping in-memory Kafka");
         kafka.shutdown();
+        kafka.awaitShutdown();
     }
 
     @Override

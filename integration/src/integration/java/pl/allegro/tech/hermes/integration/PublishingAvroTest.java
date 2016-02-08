@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import net.javacrumbs.jsonunit.core.Option;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -58,9 +59,9 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // when
         Response response = publisher.publish("publishAvroConsumeJson.topic", user.asBytes());
+        assertThat(response).hasStatus(CREATED);
 
         // then
-        assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
         remoteService.waitUntilReceived(json -> assertThatJson(json).isEqualTo(user.asJson()));
     }
 
@@ -76,9 +77,9 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // when
         Response response = publisher.publish("publishAvroConsumeAvro.topic", user.asBytes());
+        assertThat(response).hasStatus(CREATED);
 
         // then
-        assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
         remoteService.waitUntilReceived(body -> {
             AvroUser avroUser = AvroUser.create(user.getSchema(), body.getBytes());
             assertThat(avroUser.getName()).isEqualTo("Bob");
@@ -88,7 +89,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldSendAvroAfterSubscriptionContentTypeChanged() throws InterruptedException, ExecutionException, TimeoutException, IOException {
+    public void shouldSendAvroAfterSubscriptionContentTypeChanged() throws Exception {
         // given
         Topic topic = operations.buildTopic(topic()
                 .withName("publishAvroAfterTopicEditing.topic")
@@ -97,8 +98,10 @@ public class PublishingAvroTest extends IntegrationTest {
                 .withContentType(AVRO).build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, JSON);
 
-        assertThat(publisher.publish("publishAvroAfterTopicEditing.topic", user.asBytes())).hasStatus(CREATED);
-        remoteService.waitUntilReceived(json -> assertThatJson(json).isEqualTo(user.asJson()));
+        Response response = publisher.publish("publishAvroAfterTopicEditing.topic", user.asBytes());
+        assertThat(response).hasStatus(CREATED);
+
+        remoteService.waitUntilReceived(json -> assertThatJson(json).when(Option.IGNORING_EXTRA_FIELDS).isEqualTo(user.asJson()));
         remoteService.reset();
 
         //when
@@ -109,7 +112,7 @@ public class PublishingAvroTest extends IntegrationTest {
         wait.untilSubscriptionContentTypeChanged(topic, "subscription", ContentType.AVRO);
         wait.untilSubscriptionIsActivated(topic, "subscription");
 
-        assertThat(publisher.publish("publishAvroAfterTopicEditing.topic", user.asBytes())).hasStatus(CREATED);
+        publisher.publish("publishAvroAfterTopicEditing.topic", user.asBytes());
 
         //then
         remoteService.waitUntilReceived(body -> {
@@ -204,9 +207,9 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), message.body());
+        assertThat(response).hasStatus(CREATED);
 
         // then
-        assertThat(response).hasStatus(CREATED);
         remoteService.waitUntilReceived();
     }
 
@@ -234,9 +237,9 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), afterMigrationMessage.withEmptyAvroMetadata().body());
+        assertThat(response).hasStatus(CREATED);
 
         // then
-        assertThat(response).hasStatus(CREATED);
         remoteService.waitUntilReceived();
     }
 

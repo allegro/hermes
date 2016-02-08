@@ -153,7 +153,7 @@ public enum Configs {
 
     private final Object defaultValue;
 
-    private Configs(String name, Object defaultValue) {
+    Configs(String name, Object defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
     }

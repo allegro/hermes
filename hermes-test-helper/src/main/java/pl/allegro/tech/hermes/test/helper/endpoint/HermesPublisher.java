@@ -7,6 +7,8 @@ import pl.allegro.tech.hermes.test.helper.client.Hermes;
 
 import javax.ws.rs.core.Response;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 public class HermesPublisher {
 
@@ -24,7 +26,7 @@ public class HermesPublisher {
     public Response publish(String qualifiedTopicName, byte[] message) {
         return topicEndpoint.publishMessage(qualifiedTopicName, message);
     }
-    
+
     private Hermes hermes(String hermesFrontendUrl) {
         return new Hermes(hermesFrontendUrl).withManagementConfig(integrationTestsConfig()).withPublisherConfig(integrationTestsConfig());
     }

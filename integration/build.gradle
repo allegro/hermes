@@ -76,7 +76,12 @@ project.sourceSets {
 }
 
 task integrationTest(type: Test) {
-    jvmArgs "-Xbootclasspath/p:" + project.configurations.alpnboot.asPath
+    jvmArgs = [
+                "-Xbootclasspath/p:${project.configurations.alpnboot.asPath}",
+                project.hasProperty('tests.timeout.multiplier') ? "-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}" : ''
+            ]
+    maxHeapSize "2g"
+
     group = 'Verification'
     description = 'Runs the integration tests.'
 
