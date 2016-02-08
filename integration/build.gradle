@@ -76,10 +76,12 @@ project.sourceSets {
 }
 
 task integrationTest(type: Test) {
-    jvmArgs = [
-                "-Xbootclasspath/p:${project.configurations.alpnboot.asPath}",
-                project.hasProperty('tests.timeout.multiplier') ? "-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}" : ''
-            ]
+    def args = ["-Xbootclasspath/p:${project.configurations.alpnboot.asPath}"]
+    if(project.hasProperty('tests.timeout.multiplier')) {
+        args += "-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"
+    }
+
+    jvmArgs = args
     maxHeapSize "2g"
 
     group = 'Verification'
