@@ -29,6 +29,17 @@ To start using `HermesClient`, add it as an dependency:
 compile group: 'pl.allegro.tech.hermes', name: 'hermes-client', version: versions.hermes
 ```
 
+Client should be always built using `HermesClientBuilder`, which allows on setting:
+
+```java
+HermesClientBuilder.hermesClient(...)
+    .withURI(...) // Hermes URI
+    .withRetries(...) // how many times retry in case of errors, default: 3
+    .withDefaultContentType(...) // what Content-Type to use when none set, default: application/json
+    .withMetrics(metricsRegistry) // see Metrics section below
+    .build();
+```
+
 
 ### Spring - AsyncRestTemplate
 
@@ -97,9 +108,11 @@ assertThat(response.getMessageId()).isNotEmpty();
 **Requirement**: dependency `io.dropwizard.metrics:metrics-core` must be provided at runtime.
 
 ```java
+MetricRegistry registry = myMetricRegistryFactory.createMetricRegistry();
+
 HermesClient client = HermesClientBuilder.hermesClient(sender)
     .withURI(URI.create("http://localhost:8080"))
-    .withMetrics(new MetricRegistry())
+    .withMetrics(registry)
     .build();
 ```
 
