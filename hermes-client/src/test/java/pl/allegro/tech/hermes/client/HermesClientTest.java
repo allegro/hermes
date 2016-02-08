@@ -4,6 +4,8 @@ import com.codahale.metrics.MetricRegistry;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
+import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -98,17 +100,29 @@ public class HermesClientTest {
     public void shouldCloseTimerAfterCompleteExceptionally() {
         // given
         MetricRegistry metrics = new MetricRegistry();
-        HermesClient client = hermesClient((uri, msg) -> {
-            CompletableFuture<HermesResponse> future = new CompletableFuture<>();
-            future.completeExceptionally(new RuntimeException());
-            return future;
-        }).withMetrics(metrics).build();
+        HermesClient client = hermesClient((uri, msg) -> failingFuture(new RuntimeException()))
+                .withMetrics(metrics).build();
 
         // when
         silence(() -> client.publish(TOPIC, CONTENT).join());
 
         // then
         assertThat(metrics.getTimers()).containsKey("hermes-client.my_group.topicName.latency");
+    }
+
+    @Test
+    public void shouldRegisterFailureMetrics() {
+        // given
+        MetricRegistry metrics = new MetricRegistry();
+        SocketTimeoutException timeoutException = new SocketTimeoutException();
+        HermesClient client = hermesClient((uri, msg) -> failingFuture(timeoutException))
+                .withMetrics(metrics).build();
+
+        // when
+        client.publish(TOPIC, CONTENT).join();
+
+        // then
+        assertThat(metrics.getCounters()).containsKey("hermes-client.my_group.topicName.failure");
     }
 
     @Test
@@ -173,10 +187,14 @@ public class HermesClientTest {
     private HermesSender getExceptionallyFailingCountDownSender(CountDownLatch latch) {
         return (uri, msg) -> {
             latch.countDown();
-            CompletableFuture<HermesResponse> future = new CompletableFuture<>();
-            future.completeExceptionally(new RuntimeException("Sending failed"));
-            return future;
+            return failingFuture(new RuntimeException("Sending failed"));
         };
+    }
+
+    private CompletableFuture<HermesResponse> failingFuture(Throwable throwable) {
+        CompletableFuture<HermesResponse> future = new CompletableFuture<>();
+        future.completeExceptionally(throwable);
+        return future;
     }
 
     private HermesSender getCountDownSender(CountDownLatch latch, int status) {

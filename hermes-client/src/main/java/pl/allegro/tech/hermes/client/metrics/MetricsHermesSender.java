@@ -27,6 +27,9 @@ public class MetricsHermesSender implements HermesSender {
             if (resp != null) {
                 metrics.counter(prefix + ".status." + resp.getHttpStatus()).inc();
             }
+            if (cause != null) {
+                metrics.counter(prefix + ".failure").inc();
+            }
         });
     }
 }
