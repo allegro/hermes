@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.ClientProperties;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
@@ -23,8 +21,8 @@ public class HermesEndpoints {
 
     public HermesEndpoints(String hermesFrontendUrl) {
         Hermes hermes = new Hermes(hermesFrontendUrl)
-                .withManagementConfig(integrationTestsConfig())
-                .withPublisherConfig(integrationTestsConfig());
+                .withManagementConfig(JerseyClientFactory.createConfig())
+                .withPublisherConfig(JerseyClientFactory.createConfig());
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
         this.subscriptionEndpoint = hermes.createSubscriptionEndpoint();
@@ -52,14 +50,6 @@ public class HermesEndpoints {
 
     public SchemaEndpoint schema() {
         return schemaEndpoint;
-    }
-
-    private static ClientConfig integrationTestsConfig() {
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.property(ClientProperties.ASYNC_THREADPOOL_SIZE, 10);
-        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, 5000);
-        clientConfig.property(ClientProperties.READ_TIMEOUT, 5000);
-        return clientConfig;
     }
 
     public List<String> findTopics(Topic topic, boolean tracking) {

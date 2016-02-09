@@ -19,7 +19,10 @@ import static pl.allegro.tech.hermes.api.ContentType.JSON;
 public class MessageContentTypeEnforcer {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageContentTypeEnforcer.class);
+
     private final JsonToAvroMessageConverter jsonToAvroMessageConverter;
+
+    private static final String APPLICATION_JSON_WITH_DELIM = APPLICATION_JSON + ";";
 
     @Inject
     public MessageContentTypeEnforcer(SchemaRepository<Schema> schemaRepository) {
@@ -27,16 +30,25 @@ public class MessageContentTypeEnforcer {
     }
 
     public Message enforce(String messageContentType, Message message, Topic topic) {
-        if (APPLICATION_JSON.equalsIgnoreCase(messageContentType) && AVRO == topic.getContentType()) {
-            return jsonToAvroMessageConverter.convert(message, topic); // TODO make this resilient to schema repository failures
+        if (topic.getContentType() == AVRO && isJSON(messageContentType)) {
+            return jsonToAvroMessageConverter.convert(message, topic);
         } else if (topic.isJsonToAvroDryRunEnabled() && JSON == topic.getContentType()) {
-            try {
-                jsonToAvroMessageConverter.convert(message, topic);
-            } catch (AvroConversionException exception) {
-                logger.warn("Unsuccessful message conversion from JSON to AVRO on topic {} in dry run mode",
-                        topic.getQualifiedName(), exception);
-            }
+            performDryRunValidation(message, topic);
         }
         return message;
+    }
+
+    private boolean isJSON(String contentType) {
+        return contentType != null && (contentType.length() > APPLICATION_JSON.length() ?
+                contentType.startsWith(APPLICATION_JSON_WITH_DELIM) : contentType.equals(APPLICATION_JSON));
+    }
+
+    private void performDryRunValidation(Message message, Topic topic) {
+        try {
+            jsonToAvroMessageConverter.convert(message, topic);
+        } catch (AvroConversionException exception) {
+            logger.warn("Unsuccessful message conversion from JSON to AVRO on topic {} in dry run mode",
+                    topic.getQualifiedName(), exception);
+        }
     }
 }

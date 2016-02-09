@@ -1,13 +1,9 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.ClientProperties;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.test.helper.client.Hermes;
 
 import javax.ws.rs.core.Response;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class HermesPublisher {
@@ -28,15 +24,8 @@ public class HermesPublisher {
     }
 
     private Hermes hermes(String hermesFrontendUrl) {
-        return new Hermes(hermesFrontendUrl).withManagementConfig(integrationTestsConfig()).withPublisherConfig(integrationTestsConfig());
+        return new Hermes(hermesFrontendUrl)
+                .withManagementConfig(JerseyClientFactory.createConfig())
+                .withPublisherConfig(JerseyClientFactory.createConfig());
     }
-
-    private static ClientConfig integrationTestsConfig() {
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.property(ClientProperties.ASYNC_THREADPOOL_SIZE, 10);
-        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, 5000);
-        clientConfig.property(ClientProperties.READ_TIMEOUT, 5000);
-        return clientConfig;
-    }
-    
 }
