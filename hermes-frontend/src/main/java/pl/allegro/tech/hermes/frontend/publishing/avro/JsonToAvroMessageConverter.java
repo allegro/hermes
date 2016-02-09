@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.frontend.publishing.avro;
 
 import org.apache.avro.Schema;
-import pl.allegro.tech.common.avro.JsonAvroConverter;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class JsonToAvroMessageConverter {
 
