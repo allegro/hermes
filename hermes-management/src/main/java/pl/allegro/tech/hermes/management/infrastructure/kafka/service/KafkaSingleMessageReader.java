@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
 import org.apache.avro.Schema;
-import pl.allegro.tech.common.avro.JsonAvroConverter;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import java.nio.charset.Charset;
 

@@ -22,10 +22,7 @@ dependencies {
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: versions.jersey
 
-    /**
-     * This is an early adoption of json to avro converting library that has not been opensourced and published yet.
-     */
-    compile files('./lib/json-avro-converter-0.1.2.jar')
+    compile group: 'tech.allegro.schema.json2avro', name: 'converter', version: '0.2.2'
 
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
