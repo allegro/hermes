@@ -10,7 +10,7 @@ public class HermesClientBuilder {
 
     private HermesSender sender;
     private URI uri = URI.create("http://localhost:8080");
-    private String defaultContentType = "application/json; charset=utf-8";
+    private String defaultContentType = "application/json";
     private int retries = 3;
     private Predicate<HermesResponse> retryCondition = new HermesClientBasicRetryCondition();
 
