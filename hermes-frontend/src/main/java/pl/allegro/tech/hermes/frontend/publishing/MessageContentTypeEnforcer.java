@@ -3,12 +3,12 @@ package pl.allegro.tech.hermes.frontend.publishing;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.common.avro.AvroConversionException;
-import pl.allegro.tech.common.avro.JsonAvroConverter;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.frontend.publishing.avro.JsonToAvroMessageConverter;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import tech.allegro.schema.json2avro.converter.AvroConversionException;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import javax.inject.Inject;
 

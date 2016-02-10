@@ -14,7 +14,6 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Clock;
 
-import static java.lang.String.format;
 import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
@@ -38,9 +37,13 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
 
     @Override
     public void handleDiscarded(Message message, Subscription subscription, MessageSendingResult result) {
-        LOGGER.info(format("Failed deliver message to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                subscription.getEndpoint(), message.getId(), message.getOffset(), message.getPartition(), subscription.getId(),
-                result.getRootCause()), result.getFailure());
+        if(!result.hasHttpAnswer() && !result.isTimeout()) {
+            LOGGER.warn(
+                    "Abnormal delivery failure: subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
+                    subscription.getId(), result.getRootCause(), subscription.getEndpoint(), message.getId(),
+                    message.getPartition(), message.getOffset(), result.getFailure()
+            );
+        }
 
         offsetHelper.remove(message);
 

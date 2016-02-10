@@ -6,12 +6,12 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
-import pl.allegro.tech.common.avro.AvroConversionException;
-import pl.allegro.tech.common.avro.JsonAvroConverter;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.converter.schema.AvroSchemaRepositoryMetadataAware;
+import tech.allegro.schema.json2avro.converter.AvroConversionException;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import javax.inject.Inject;
 import java.io.IOException;
