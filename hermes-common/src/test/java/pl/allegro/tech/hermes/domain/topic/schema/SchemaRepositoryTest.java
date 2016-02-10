@@ -74,6 +74,7 @@ public class SchemaRepositoryTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldNotifyConsumerAboutReloadedSchema() throws InterruptedException {
         // given
         ArgumentCaptor<Consumer> consumerCaptor = ArgumentCaptor.forClass(Consumer.class);
@@ -96,6 +97,7 @@ public class SchemaRepositoryTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldPrecompileSchemaForReloadedSource() {
         // given
         Topic topic = topic().withName("group.topic").build();

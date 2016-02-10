@@ -12,7 +12,6 @@ dependencies {
 
     provided group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 
-
     testCompile project(':hermes-test-helper')
     testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
         exclude group: 'com.jayway.jsonpath', module: 'json-path'
