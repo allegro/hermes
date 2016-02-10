@@ -29,7 +29,7 @@ export PATH=$(pwd)/dist/node/bin:$PATH
 printf "Running NPM and bower\n"
 
 npm install --production --yes
-node_modules/.bin/bower install --allow-root
+node_modules/.bin/bower install --allow-root -F
 
 printf "Creating package: dist/$ARCHIVE_NAME.zip\n"
 
