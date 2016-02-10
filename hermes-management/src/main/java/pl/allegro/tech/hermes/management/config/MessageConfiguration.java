@@ -26,10 +26,8 @@ public class MessageConfiguration {
     @Autowired
     Clock clock;
 
-    @Bean
-    ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Bean
     MessageContentWrapper messageContentWrapper() {
@@ -37,7 +35,7 @@ public class MessageConfiguration {
     }
 
     private JsonMessageContentWrapper jsonMessageContentWrapper() {
-        return new JsonMessageContentWrapper(messageProperties.getContentRoot(), messageProperties.getMetadataContentRoot(), objectMapper());
+        return new JsonMessageContentWrapper(messageProperties.getContentRoot(), messageProperties.getMetadataContentRoot(), objectMapper);
     }
 
 }
