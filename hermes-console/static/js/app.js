@@ -52,7 +52,7 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
                             config.headers.Authorization = 'Token ' + AuthService.getAccessToken();
                         } else if (authConfig.headers.enabled) {
                             config.headers[authConfig.headers.groupHeader] = $rootScope.password;
-                            config.headers[authConfig.headers.groupHeader] = $rootScope.rootPassword;
+                            config.headers[authConfig.headers.adminHeader] = $rootScope.rootPassword;
                         }
                         return config;
                     }
