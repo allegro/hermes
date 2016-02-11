@@ -19,7 +19,7 @@ import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceRepository;
-import pl.allegro.tech.hermes.management.domain.topic.schema.TopicFieldSchemaSourceRepository;
+import pl.allegro.tech.hermes.management.infrastructure.schema.TopicFieldSchemaSourceRepository;
 import pl.allegro.tech.hermes.management.infrastructure.schema.SchemaRepoSchemaSourceRepository;
 import pl.allegro.tech.hermes.management.infrastructure.schema.ZookeeperSchemaSourceRepository;
 

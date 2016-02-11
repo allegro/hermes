@@ -3,10 +3,9 @@ package pl.allegro.tech.hermes.integration;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class HermesServerGracefulShutdownTest extends AbstractFrontendShutdownTest {
 
@@ -19,6 +18,6 @@ public class HermesServerGracefulShutdownTest extends AbstractFrontendShutdownTe
         Response response = publisher.publish("topic", TestMessage.of("hello", "world").body());
 
         //then
-        assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+        assertThat(response).hasStatus(Response.Status.SERVICE_UNAVAILABLE);
     }
 }

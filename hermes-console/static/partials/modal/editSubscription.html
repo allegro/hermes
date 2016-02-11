@@ -1,0 +1,98 @@
+<section>
+    <div class="modal-header">
+        <h3 class="modal-title" ng-show="operation === 'ADD'"><small>Create:</small> {{subscription.name}}</h3>
+        <h3 class="modal-title" ng-show="operation === 'EDIT'"><small>Edit:</small> {{subscription.name}}</h3>
+    </div>
+    <div class="modal-body">
+        <form name="subscriptionForm" class="form-horizontal" role="form">
+            <div ng-hide="!authEnabled.headers || isAuthorized" class="form-group {{subscriptionForm.groupPassword.$valid ? '' : 'has-error'}}">
+                <label for="groupPassword" class="col-md-3 control-label">Group password</label>
+                <div class="col-md-9">
+                    <input class="form-control" type="password" id="groupPassword" name="groupPassword" ng-required="!isAuthorized && authEnabled.headers" placeholder="password for group {{groupName}}" ng-model="groupPassword"/>
+                </div>
+            </div>
+
+            <div class="form-group {{subscriptionForm.subscriptionName.$valid ? '' : 'has-error'}} " ng-show="operation === 'ADD'">
+                <label for="subscriptionName" class="col-md-3 control-label">Name</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="subscriptionName" name="subscriptionName" required placeholder="name of subscription" ng-model="subscription.name" ng-pattern="/^[a-zA-Z0-9.-]+$/"/>
+                </div>
+            </div>
+
+            <div class="form-group {{subscriptionForm.subscriptionEndpoint.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionEndpoint" class="col-md-3 control-label">Endpoint</label>
+                <div class="col-md-9">
+                    <input class="form-control" endpoint="" id="subscriptionEndpoint" name="subscriptionEndpoint" required placeholder="where to send messages" ng-model="subscription.endpoint"/>
+                </div>
+            </div>
+            <div class="form-group {{subscriptionForm.subscriptionDescription.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionDescription" class="col-md-3 control-label">Description</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="subscriptionDescription" name="subscriptionDescription" required placeholder="who and why subscribes?" ng-model="subscription.description"/>
+                </div>
+            </div>
+            <div class="form-group {{subscriptionForm.subscriptionSupportTeam.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionSupportTeam" class="col-md-3 control-label">Team</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="subscriptionSupportTeam" name="subscriptionSupportTeam" required placeholder="comma delimited names of groups that will have rights to manage this subscription" ng-model="subscription.supportTeam"/>
+                </div>
+            </div>
+            <div class="form-group {{subscriptionForm.subscriptionContact.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionContact" class="col-md-3 control-label">Contact</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="subscriptionContact" name="subscriptionContact" required placeholder="contact email" ng-model="subscription.contact"/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="subscriptionType" class="col-md-3 control-label">Content type</label>
+                <div class="col-md-9">
+                    <select required class="form-control" id="subscriptionType" name="subscriptionType" ng-model="subscription.contentType">
+                        <option value="JSON">JSON</option>
+                        <option value="AVRO">AVRO</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group {{subscriptionForm.subscriptionRateLimit.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionRateLimit" class="col-md-3 control-label">Rate limit</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" min="0" max="5000" step="10" required class="form-control" id="subscriptionRateLimit" name="subscriptionRateLimit" placeholder="limit of messages sent by Hermes" ng-model="subscription.subscriptionPolicy.rate"/>
+                        <span class="input-group-addon">messages/second</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group {{subscriptionForm.subscriptionMessageTtl.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionMessageTtl" class="col-md-3 control-label">Inflight message TTL</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" min="0" max="1000000" step="1" required class="form-control" id="subscriptionMessageTtl" name="subscriptionMessageTtl" placeholder="Time when message can be resent to endpoint after failed sending attempts" ng-model="subscription.subscriptionPolicy.messageTtl"/>
+                        <span class="input-group-addon">seconds</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group {{subscriptionForm.retryClientErrors.$valid ? '' : 'has-error'}}">
+                <label for="retryClientErrors" class="col-md-3 control-label">Retry on 4xx status</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="checkbox" id="retryClientErrors" name="retryClientErrors" ng-model="subscription.subscriptionPolicy.retryClientErrors"/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group {{subscriptionForm.subscriptionMessageBackoff.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionMessageBackoff" class="col-md-3 control-label">Retry backoff</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" min="0" max="1000000" step="1" required class="form-control" id="subscriptionMessageBackoff" name="subscriptionMessageBackoff" placeholder="Delay between send attempts of failed requests" ng-model="subscription.subscriptionPolicy.messageBackoff"/>
+                        <span class="input-group-addon">milliseconds</span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" ng-disabled="subscriptionForm.$invalid" ng-click="save()">Save</button>
+        <button class="btn btn-warning" ng-click="$dismiss()">Cancel</button>
+    </div>
+</section>

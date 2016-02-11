@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.infrastructure.schema.validator
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.json.JsonBuilder
+import pl.allegro.tech.hermes.common.exception.InvalidSchemaException
 import spock.lang.Specification
 
 class JsonSchemaValidatorTest extends Specification {

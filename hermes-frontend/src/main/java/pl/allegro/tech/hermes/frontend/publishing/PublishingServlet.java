@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.frontend.publishing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import pl.allegro.tech.common.avro.AvroConversionException;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -25,6 +24,7 @@ import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessage
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
+import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
 import javax.inject.Inject;
 import javax.servlet.AsyncContext;

@@ -22,6 +22,7 @@ public class EndpointAddressValidator implements ConstraintValidator<ValidAddres
 
     static {
         AVAILABLE_PROTOCOLS.add("http");
+        AVAILABLE_PROTOCOLS.add("https");
         AVAILABLE_PROTOCOLS.add("jms");
     }
 

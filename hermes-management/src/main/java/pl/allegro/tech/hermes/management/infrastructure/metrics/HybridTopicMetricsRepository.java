@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.management.domain.topic.TopicMetricsRepository;
@@ -28,13 +29,17 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
 
     private final ZookeeperPaths zookeeperPaths;
 
+    private final SubscriptionRepository subscriptionRepository;
+
     @Autowired
     public HybridTopicMetricsRepository(GraphiteClient graphiteClient, MetricsPaths metricsPaths,
-                                        SharedCounter sharedCounter, ZookeeperPaths zookeeperPaths) {
+                                        SharedCounter sharedCounter, ZookeeperPaths zookeeperPaths,
+                                        SubscriptionRepository subscriptionRepository) {
         this.graphiteClient = graphiteClient;
         this.metricsPaths = metricsPaths;
         this.sharedCounter = sharedCounter;
         this.zookeeperPaths = zookeeperPaths;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     @Override
@@ -48,6 +53,7 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
                 .withRate(metrics.metricValue(rateMetric))
                 .withDeliveryRate(metrics.metricValue(deliveryRateMetric))
                 .withPublished(sharedCounter.getValue(zookeeperPaths.topicMetricPath(topicName, "published")))
+                .withSubscriptions(subscriptionRepository.listSubscriptionNames(topicName).size())
                 .build();
     }
 

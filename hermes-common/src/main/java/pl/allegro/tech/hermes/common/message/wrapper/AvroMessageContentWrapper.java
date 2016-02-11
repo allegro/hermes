@@ -40,6 +40,7 @@ public class AvroMessageContentWrapper {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private MessageMetadata getMetadata(Map<Utf8, Utf8> metadata) {
         if (metadata == null) {
             long timestamp = clock.millis();

@@ -5,7 +5,7 @@ language: java
 install: ./gradlew assemble
 script:
   - "./gradlew check"
-  - "./gradlew -Ptests.timeout.multiplier=3 integrationTest"
+  - "./gradlew -Ptests.timeout.multiplier=3 integrationTest -i"
 
 jdk:
   - oraclejdk8
@@ -14,3 +14,8 @@ addons:
   apt:
     packages:
       - oracle-java8-installer
+
+branches:
+  only:
+      - master
+      - develop

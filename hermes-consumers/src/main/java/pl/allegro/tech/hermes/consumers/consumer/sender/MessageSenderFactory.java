@@ -20,6 +20,7 @@ public class MessageSenderFactory {
 
         this.messageSenderProviders = messageSenderProviders;
         this.messageSenderProviders.putIfProtocolAbsent("http", defaultHttpMessageSenderProvider);
+        this.messageSenderProviders.putIfProtocolAbsent("https", defaultHttpMessageSenderProvider);
         this.messageSenderProviders.putIfProtocolAbsent("jms", defaultJmsMessageSenderProvider);
 
         this.messageSenderProviders.startAll();

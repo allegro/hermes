@@ -1,0 +1,45 @@
+<section>
+    <div class="modal-header">
+        <h3 class="modal-title" ng-show="operation === 'ADD'"><small>Create group:</small> {{group.groupName}}</h3>
+        <h3 class="modal-title" ng-show="operation === 'EDIT'"><small>Edit group:</small> {{group.groupName}}</h3>
+    </div>
+    <div class="modal-body">
+        <form name="groupForm" class="form-horizontal" role="form">
+            <div ng-hide="!authEnabled.headers || isAuthorized" class="form-group {{groupForm.rootPassword.$valid ? '' : 'has-error'}}">
+                <label for="rootPassword" class="col-md-3 control-label">Root password</label>
+                <div class="col-md-9">
+                    <input class="form-control" type="password" ng-required="!isAuthorized && authEnabled.headers" id="rootPassword" name="rootPassword" placeholder="root password" ng-model="rootPassword"/>
+                </div>
+            </div>
+            <div class="form-group {{groupForm.groupName.$valid ? '' : 'has-error'}}">
+                <label for="groupName" class="col-md-3 control-label">Name</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="groupName" required name="groupName" placeholder="group name" ng-model="group.groupName" ng-disabled="operation === 'EDIT'"/>
+                </div>
+            </div>
+
+            <div class="form-group {{groupForm.technicalOwner.$valid ? '' : 'has-error'}}">
+                <label for="technicalOwner" class="col-md-3 control-label">Technical owner</label>
+                <div class="col-md-9">
+                    <input class="form-control" required id="technicalOwner" name="technicalOwner" placeholder="who requested and owns this group" ng-model="group.technicalOwner"/>
+                </div>
+            </div>
+            <div class="form-group {{groupForm.supportTeam.$valid ? '' : 'has-error'}}">
+                <label for="supportTeam" class="col-md-3 control-label">Support team</label>
+                <div class="col-md-9">
+                    <input class="form-control" required id="supportTeam" name="supportTeam" placeholder="comma delimited names of groups that will have rights to manage this group" ng-model="group.supportTeam"/>
+                </div>
+            </div>
+            <div class="form-group {{groupForm.contact.$valid ? '' : 'has-error'}}">
+                <label for="contact" class="col-md-3 control-label">Contact</label>
+                <div class="col-md-9">
+                    <input class="form-control" required id="contact" name="contact" placeholder="team contact" ng-model="group.contact"/>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" ng-disabled="groupForm.$invalid" ng-click="save()">Save</button>
+        <button class="btn btn-warning" ng-click="$dismiss()">Cancel</button>
+    </div>
+</section>

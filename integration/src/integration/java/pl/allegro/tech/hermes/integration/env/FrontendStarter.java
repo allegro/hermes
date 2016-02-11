@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.integration.metadata.TraceHeadersPropagator;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
@@ -17,20 +16,28 @@ import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.tracker.mongo.frontend.MongoLogRepository;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
 
 public class FrontendStarter implements Starter<HermesFrontend> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FrontendStarter.class);
 
     private final MutableConfigFactory configFactory;
-    private final String frontendUrl;
+    private final int port;
     private HermesFrontend hermesFrontend;
     private OkHttpClient client;
 
 
-    public FrontendStarter(String frontendUrl) {
-        this.frontendUrl = frontendUrl;
+    public FrontendStarter(int port) {
+        this.port = port;
         configFactory = new MutableConfigFactory();
+        configFactory.overrideProperty(FRONTEND_PORT, port);
+    }
+
+    public FrontendStarter(int port, boolean sslEnabled) {
+        this(port);
+        configFactory.overrideProperty(FRONTEND_SSL_ENABLED, sslEnabled);
     }
 
     @Override
@@ -65,6 +72,10 @@ public class FrontendStarter implements Starter<HermesFrontend> {
         return hermesFrontend;
     }
 
+    public ConfigFactory config() {
+        return configFactory;
+    }
+
     public void overrideProperty(Configs config, Object value) {
         configFactory.overrideProperty(config, value);
     }
@@ -73,7 +84,7 @@ public class FrontendStarter implements Starter<HermesFrontend> {
 
         await().atMost(Duration.TEN_SECONDS).until(() -> {
             Request request = new Request.Builder()
-                    .url(frontendUrl)
+                    .url("http://localhost:" + port)
                     .build();
 
             return client.newCall(request).execute().code() == 200;

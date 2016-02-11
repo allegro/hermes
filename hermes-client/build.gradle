@@ -4,6 +4,9 @@ dependencies {
     provided group: 'org.springframework', name: 'spring-web', version: '4.1.4.RELEASE'
     provided group: 'com.squareup.okhttp', name: 'okhttp', version: '2.4.0'
     provided group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
+
+    testCompile project(":hermes-test-helper")
+    testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
 }
 
 apply plugin: 'idea'

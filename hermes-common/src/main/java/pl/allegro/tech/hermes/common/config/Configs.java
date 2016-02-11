@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.config;
 
+import com.google.common.io.Files;
 import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
 
 import static java.lang.Math.abs;
@@ -89,6 +90,11 @@ public enum Configs {
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
 
+    MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", false),
+    MESSAGES_LOCAL_STORAGE_DIRECTORY("frontend.messages.local.storage.directory", Files.createTempDir().getAbsolutePath()),
+    MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS("frontend.messages.local.storage.max.age.hours", 72),
+    MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE("frontend.messages.loading.wait.for.topics.cache", 10),
+
     CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 20),
     CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE("consumer.sender.async.timeout.thread.pool.size", 32),
@@ -147,7 +153,7 @@ public enum Configs {
 
     private final Object defaultValue;
 
-    private Configs(String name, Object defaultValue) {
+    Configs(String name, Object defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
     }

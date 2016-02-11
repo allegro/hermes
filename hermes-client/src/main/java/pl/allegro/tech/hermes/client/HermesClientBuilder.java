@@ -7,9 +7,11 @@ import java.net.URI;
 import java.util.function.Predicate;
 
 public class HermesClientBuilder {
+
     private HermesSender sender;
     private URI uri = URI.create("http://localhost:8080");
-    private int retries = 0;
+    private String defaultContentType = "application/json";
+    private int retries = 3;
     private Predicate<HermesResponse> retryCondition = new HermesClientBasicRetryCondition();
 
     public HermesClientBuilder(HermesSender sender) {
@@ -21,7 +23,7 @@ public class HermesClientBuilder {
     }
 
     public HermesClient build() {
-        return new HermesClient(sender, uri, retries, retryCondition);
+        return new HermesClient(sender, uri, defaultContentType, retries, retryCondition);
     }
 
     public HermesClientBuilder withURI(URI uri) {
@@ -31,6 +33,11 @@ public class HermesClientBuilder {
 
     public HermesClientBuilder withMetrics(MetricRegistry metrics) {
         this.sender = new MetricsHermesSender(sender, metrics);
+        return this;
+    }
+
+    public HermesClientBuilder withDefaultContentType(String defaultContentType) {
+        this.defaultContentType = defaultContentType;
         return this;
     }
 

@@ -27,11 +27,10 @@ public final class MessageBuilder {
     }
 
     public static MessageBuilder withTestMessage() {
-
         return new MessageBuilder()
                 .withId("id")
                 .withTopic("topicId")
-                .withContent("aaaaaaaa", StandardCharsets.UTF_8)
+                .withContent("Some test message", StandardCharsets.UTF_8)
                 .withContentType(ContentType.JSON)
                 .withPublishingTimestamp(123L)
                 .withReadingTimestamp(123L)

@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
-import static org.assertj.core.api.StrictAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ZookeeperOffsetsStorageTest extends ZookeeperBaseTest {
 
