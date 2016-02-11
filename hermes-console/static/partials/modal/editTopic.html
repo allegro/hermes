@@ -42,15 +42,25 @@
                 </div>
             </div>
             <div class="form-group {{topicForm.messageSchema.$valid ? '' : 'has-error'}}">
-                <label for="messageSchema" class="col-md-3 control-label" ng-show="topic.contentType === 'AVRO'"><a href="http://avro.apache.org/docs/current/spec.html">AVRO schema</a></label>
-                <label for="messageSchema" class="col-md-3 control-label" ng-show="topic.contentType === 'JSON'"><a href="http://json-schema.org/documentation.html">JSON schema</a></label>
+                <label for="messageSchema" class="col-md-3 control-label" ng-show="topic.contentType === 'AVRO'">
+                    <a href="http://hermes-pubsub.rtfd.org/en/latest/user/publishing-avro/" target="_blank">AVRO schema</a>
+                </label>
+                <label for="messageSchema" class="col-md-3 control-label" ng-show="topic.contentType === 'JSON'">
+                    <a href="http://hermes-pubsub.rtfd.org/en/latest/user/publishing-json/" target="_blank">JSON schema</a>
+                </label>
                 <div class="col-md-9">
                     <textarea class="form-control" id="messageSchema" ng-required="topic.validation || topic.contentType === 'AVRO'"
                               name="messageSchema" placeholder="Message schema"
                               ng-model="messageSchema" rows="25"></textarea>
-                    <div class="alert alert-info margin-top-10" ng-show="topic.contentType === 'AVRO'">
-                        Schema definition should contain an additional field (for Hermes internal usage):<br>
-                        {"name": "__metadata", "type": ["null", {"type": "map", "values": "string"}],"default": null}
+                    <div class="alert alert-info" ng-show="topic.contentType === 'AVRO'">
+                        Schema definition <b>must contain</b> an additional field for Hermes internal use:<br>
+                        <pre>
+{
+    "name": "__metadata", "default": null,
+    "type": ["null", {"type": "map", "values": "string"}],
+    "doc": "Field used in Hermes internals to propagate metadata"
+}
+                        </pre>
                     </div>
                 </div>
             </div>
