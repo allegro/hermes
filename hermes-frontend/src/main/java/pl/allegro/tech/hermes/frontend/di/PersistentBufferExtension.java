@@ -2,16 +2,12 @@ package pl.allegro.tech.hermes.frontend.di;
 
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.buffer.BrokerListener;
 import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
-import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
-import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.inject.Inject;
 import java.io.File;

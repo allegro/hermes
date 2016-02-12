@@ -25,7 +25,12 @@ public class ChronicleMapMessageRepository implements MessageRepository {
             logger.info("Creating backup storage in path: {}", file.getAbsolutePath());
             map = ChronicleMapBuilder.of(String.class, ChronicleMapEntryValue.class).createPersistedTo(file);
         } catch (IOException e) {
+            logger.error("Failed to load backup storage file from path {}", file.getAbsoluteFile(), e);
             throw new ChronicleMapCreationException(e);
+        }
+
+        if(map == null) {
+            logger.error("Backup file could not be read - check if it was not corrupted.");
         }
     }
 

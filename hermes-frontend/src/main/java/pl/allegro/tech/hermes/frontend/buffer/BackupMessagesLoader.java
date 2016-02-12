@@ -41,7 +41,7 @@ public class BackupMessagesLoader {
     private final TopicsCache topicsCache;
     private final Trackers trackers;
     private final int secondsToWaitForTopicsCache;
-    private final int messsageMaxAgeHours;
+    private final int messageMaxAgeHours;
 
     @Inject
     public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
@@ -56,7 +56,7 @@ public class BackupMessagesLoader {
         this.topicsCache = topicsCache;
         this.trackers = trackers;
         this.secondsToWaitForTopicsCache = config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE);
-        this.messsageMaxAgeHours = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS);
+        this.messageMaxAgeHours = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS);
     }
 
     public void loadMessages(MessageRepository messageRepository) {
@@ -64,21 +64,27 @@ public class BackupMessagesLoader {
 
         logger.info("Loading {} messages from backup storage.", messages.size());
 
+        int sentCounter = 0;
+        int discardedCounter = 0;
         for (BackupMessage backupMessage : messages) {
             Message message = new Message(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
             Optional<Topic> topic = loadTopic(fromQualifiedName(backupMessage.getQualifiedTopicName()));
             if (topic.isPresent() && isNotStale(backupMessage)) {
+                sentCounter++;
                 sendMessage(message, topic.get());
             } else {
+                discardedCounter++;
                 logger.warn("Not sending stale message {} {} {}", backupMessage.getMessageId(), backupMessage.getQualifiedTopicName(),
                         new String(backupMessage.getData(), Charset.defaultCharset()));
             }
         }
+
+        logger.info("Loaded and sent {} messages and discarded {} messages from the backup storage", sentCounter, discardedCounter);
     }
 
     private boolean isNotStale(BackupMessage backupMessage) {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(backupMessage.getTimestamp()), ZoneId.systemDefault())
-                .isAfter(LocalDateTime.now().minusHours(messsageMaxAgeHours));
+                .isAfter(LocalDateTime.now().minusHours(messageMaxAgeHours));
     }
 
     private void sendMessage(Message message, Topic topic) {
