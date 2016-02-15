@@ -48,7 +48,7 @@ allprojects {
             jackson     : '2.5.1',
             jersey      : '2.12',
             curator     : '2.7.0',
-            wiremock    : '1.47',
+            wiremock    : '1.58',
             fongo       : '1.6.1',
             spock       : '1.0-groovy-2.4',
             alpn_api    : '1.1.2.v20150522'
@@ -59,6 +59,8 @@ allprojects {
     }
 
     dependencies {
+        compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.7'
+
         testCompile group: 'junit', name: 'junit', version: '4.11'
         testCompile group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.2'
         testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'

@@ -25,6 +25,7 @@ public class OkHttpHermesSender implements HermesSender {
 
         RequestBody body = RequestBody.create(MediaType.parse(message.getContentType()), message.getBody());
         Request request = new Request.Builder()
+                .addHeader(HermesSender.SCHEMA_VERSION_HEADER, Integer.toString(message.getSchemaVersion()))
                 .post(body)
                 .url(uri.toString())
                 .build();

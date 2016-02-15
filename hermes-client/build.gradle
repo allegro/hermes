@@ -1,3 +1,7 @@
+plugins {
+    id 'groovy'
+}
+
 dependencies {
     provided group: 'io.dropwizard.metrics', name: 'metrics-core', version: '3.1.1'
     provided group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
@@ -5,7 +9,9 @@ dependencies {
     provided group: 'com.squareup.okhttp', name: 'okhttp', version: '2.4.0'
     provided group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 
-    testCompile project(":hermes-test-helper")
+
+    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testCompile group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
 }
 
