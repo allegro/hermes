@@ -52,6 +52,10 @@ public final class TestMessage {
         return toString();
     }
 
+    public Map<String, Object> getContent() {
+        return content;
+    }
+
     @Override
     public String toString() {
         try {
@@ -60,5 +64,4 @@ public final class TestMessage {
             throw new RuntimeException(e);
         }
     }
-
 }

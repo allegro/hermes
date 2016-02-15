@@ -1,7 +1,9 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import com.jayway.awaitility.Duration;
+import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
@@ -13,6 +15,7 @@ import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.EndpointAddress.of;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
@@ -130,5 +133,34 @@ public class HermesAPIOperations {
         waitAtMost(Duration.ONE_MINUTE).until(() -> {
             return endpoints.topic().get(topicName.qualifiedName()).equals(updated);
         });
+    }
+
+    public void createBatchSubscription(Topic topic, String endpoint, int messageTtl, int messageBackoff, int batchSize, int batchTime, int batchVolume, boolean retryOnClientErrors) {
+        BatchSubscriptionPolicy policy = batchSubscriptionPolicy()
+                .applyDefaults()
+                .withMessageTtl(messageTtl)
+                .withMessageBackoff(messageBackoff)
+                .withBatchSize(batchSize)
+                .withBatchTime(batchTime)
+                .withBatchVolume(batchVolume)
+                .withClientErrorRetry(retryOnClientErrors)
+                .withRequestTimeout(100)
+                .build();
+
+        createBatchSubscription(topic, endpoint, policy);
+    }
+
+    public void createBatchSubscription(Topic topic, String endpoint, BatchSubscriptionPolicy policy) {
+        Subscription subscription = subscription()
+                .applyDefaults()
+                .withContentType(ContentType.JSON)
+                .withSupportTeam("supportTeam")
+                .withSubscriptionPolicy(policy)
+                .withName("batchSubscription")
+                .withTopicName(topic.getQualifiedName())
+                .withEndpoint(new EndpointAddress(endpoint))
+                .build();
+
+        createSubscription(topic, subscription);
     }
 }

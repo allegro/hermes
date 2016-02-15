@@ -8,7 +8,6 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
@@ -32,6 +31,7 @@ import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -42,6 +42,7 @@ import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConsumerTest {
@@ -95,7 +96,7 @@ public class ConsumerTest {
     @Mock
     private  ConsumerMessageSender sender;
 
-    private Consumer consumer;
+    private SerialConsumer consumer;
 
     @Before
     @SuppressWarnings("unchecked")
@@ -105,8 +106,11 @@ public class ConsumerTest {
         when(messageConverterResolver.converterFor(any(Message.class), any(Subscription.class)))
                 .thenReturn(new NoOperationMessageConverter());
 
-        consumer = spy(new Consumer(messageReceiver, hermesMetrics, SUBSCRIPTION,
+        consumer = spy(new SerialConsumer(messageReceiver, hermesMetrics, SUBSCRIPTION,
                 consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, messageConverterResolver, TOPIC));
+
+        doNothing().when(consumer).setThreadName();
+        doNothing().when(consumer).unsetThreadName();
     }
 
     @Test
@@ -171,8 +175,12 @@ public class ConsumerTest {
     public void shouldUpdateSubscriptionPolicy() {
         // given
         Subscription newSubscription = createSubscription();
-        SubscriptionPolicy newSubscriptionPolicy = new SubscriptionPolicy(2, 500, false, 10);
-        newSubscription.setSubscriptionPolicy(newSubscriptionPolicy);
+        SubscriptionPolicy newSubscriptionPolicy = subscriptionPolicy()
+                .withRate(2)
+                .withMessageTtl(500)
+                .withMessageBackoff(10)
+                .build();
+        newSubscription.setSerialSubscriptionPolicy(newSubscriptionPolicy);
 
         // when
         consumer.updateSubscription(newSubscription);
@@ -181,7 +189,7 @@ public class ConsumerTest {
         ArgumentCaptor<Subscription> captor = ArgumentCaptor.forClass(Subscription.class);
 
         verify(consumerRateLimiter).updateSubscription(captor.capture());
-        assertThat(captor.getValue().getSubscriptionPolicy()).isEqualTo(newSubscriptionPolicy);
+        assertThat(captor.getValue().getSerialSubscriptionPolicy()).isEqualTo(newSubscriptionPolicy);
     }
 
     private Subscription createSubscription() {

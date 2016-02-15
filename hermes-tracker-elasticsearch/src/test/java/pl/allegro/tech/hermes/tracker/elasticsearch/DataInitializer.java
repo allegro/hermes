@@ -32,7 +32,7 @@ public class DataInitializer implements LogSchemaAware {
     public void indexPublishedMessage(MessageMetadata messageMetadata, long timestamp, PublishedMessageTraceStatus status) throws IOException {
         XContentBuilder publishedContent = jsonBuilder()
                 .startObject()
-                .field(MESSAGE_ID, messageMetadata.getId())
+                .field(MESSAGE_ID, messageMetadata.getMessageId())
                 .field(TIMESTAMP, timestamp)
                 .field(STATUS, status)
                 .field(TOPIC_NAME, messageMetadata.getTopic())
@@ -47,7 +47,8 @@ public class DataInitializer implements LogSchemaAware {
     public void indexSentMessage(MessageMetadata messageMetadata, long timestamp, SentMessageTraceStatus status, String reason) throws IOException {
         XContentBuilder content = jsonBuilder()
                 .startObject()
-                .field(MESSAGE_ID, messageMetadata.getId())
+                .field(MESSAGE_ID, messageMetadata.getMessageId())
+                .field(BATCH_ID, messageMetadata.getBatchId())
                 .field(TIMESTAMP, timestamp)
                 .field(PUBLISH_TIMESTAMP, messageMetadata.getPublishingTimestamp())
                 .field(TOPIC_NAME, messageMetadata.getTopic())

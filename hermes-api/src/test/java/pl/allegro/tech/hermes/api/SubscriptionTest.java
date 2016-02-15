@@ -49,7 +49,7 @@ public class SubscriptionTest {
         Subscription subscription = mapper.readValue(json, Subscription.class);
 
         // then
-        assertThat(subscription.getSubscriptionPolicy().getMessageBackoff()).isEqualTo(100);
+        assertThat(subscription.getSerialSubscriptionPolicy().getMessageBackoff()).isEqualTo(100);
     }
 
     @Test

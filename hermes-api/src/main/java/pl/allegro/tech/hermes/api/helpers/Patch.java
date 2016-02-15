@@ -1,7 +1,9 @@
 package pl.allegro.tech.hermes.api.helpers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,8 +11,11 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Patch {
+
     private static final ObjectMapper MAPPER = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
 
     @SuppressWarnings("unchecked")
     public static <T1, T2> T1 apply(T1 left, T2 right) {

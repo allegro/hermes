@@ -1,3 +1,7 @@
+plugins {
+    id 'groovy'
+}
+
 dependencies {
     compile project(':hermes-common')
     compile project(':hermes-tracker')
@@ -9,13 +13,15 @@ dependencies {
     compile group: 'com.jayway.jsonpath', name: 'json-path', version: '0.9.1'
     compile group: 'joda-time', name: 'joda-time', version: '2.5'
 
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.1'
+    compile group: 'com.github.rholder', name: 'guava-retrying', version: '2.0.0'
+
     compile(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
 
     testCompile project(':hermes-test-helper')
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
-    testCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.1'
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
 
     testCompile(group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock) {
@@ -29,6 +35,8 @@ dependencies {
     testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
         exclude group: 'com.jayway.jsonpath', module: 'json-path'
     }
+
+    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
 }
 
 if (project.hasProperty('distribution')) {

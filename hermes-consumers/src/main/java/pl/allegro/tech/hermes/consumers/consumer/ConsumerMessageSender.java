@@ -92,7 +92,7 @@ public class ConsumerMessageSender {
     }
 
     private boolean isTtlExceeded(Message message) {
-        return message.isTtlExceeded(subscription.getSubscriptionPolicy().getMessageTtl());
+        return message.isTtlExceeded(subscription.getSerialSubscriptionPolicy().getMessageTtl());
     }
 
     private void handleFailedSending(Message message, MessageSendingResult result) {
@@ -119,7 +119,7 @@ public class ConsumerMessageSender {
     }
 
     private boolean shouldRetrySending(MessageSendingResult result) {
-        return !result.succeeded() && (!result.isClientError() || subscription.getSubscriptionPolicy().isRetryClientErrors());
+        return !result.succeeded() && (!result.isClientError() || subscription.getSerialSubscriptionPolicy().isRetryClientErrors());
     }
 
     class ResponseHandlingListener implements java.util.function.Consumer<MessageSendingResult> {
@@ -142,7 +142,7 @@ public class ConsumerMessageSender {
                 handleFailedSending(message, result);
                 if (!isTtlExceeded(message) && shouldRetrySending(result)) {
                     retrySingleThreadExecutor.schedule(() -> retrySending(result),
-                            subscription.getSubscriptionPolicy().getMessageBackoff(), TimeUnit.MILLISECONDS);
+                            subscription.getSerialSubscriptionPolicy().getMessageBackoff(), TimeUnit.MILLISECONDS);
                 } else {
                     handleMessageDiscarding(message, result);
                 }

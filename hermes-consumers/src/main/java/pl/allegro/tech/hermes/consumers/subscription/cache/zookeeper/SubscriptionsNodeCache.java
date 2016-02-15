@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.cache.zookeeper.StartableCache;
+import pl.allegro.tech.hermes.domain.subscription.DeliveryTypeMigration;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionCallback;
 
 import java.io.IOException;
@@ -84,6 +85,7 @@ class SubscriptionsNodeCache extends StartableCache<SubscriptionCallback> implem
     }
 
     private Subscription readSubscription(ChildData event) throws IOException {
-        return objectMapper.readValue(event.getData(), Subscription.class);
+        Subscription subscription = objectMapper.readValue(event.getData(), Subscription.class);
+        return DeliveryTypeMigration.migrate(event.getData(), subscription, objectMapper);
     }
 }

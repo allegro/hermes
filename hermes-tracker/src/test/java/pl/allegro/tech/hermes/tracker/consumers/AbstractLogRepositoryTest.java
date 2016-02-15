@@ -7,8 +7,8 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
-import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
 import pl.allegro.tech.hermes.test.helper.retry.Retry;
+import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
 
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
@@ -74,5 +74,21 @@ public abstract class AbstractLogRepositoryTest {
         awaitUntilMessageIsPersisted(topic, SUBSCRIPTION, id, DISCARDED);
     }
 
+    @Test
+    public void shouldLogBatchIdInSentMessage() throws Exception {
+        // given
+        String messageId = "messageId";
+        String batchId = "batchId";
+        String topic = "group.sentBatchMessage";
+
+        // when
+        logRepository.logSuccessful(TestMessageMetadata.of(messageId, batchId, topic, SUBSCRIPTION), 1234L);
+
+        // then
+        awaitUntilBatchMessageIsPersisted(topic, SUBSCRIPTION, messageId, batchId, SUCCESS);
+    }
+
     protected abstract void awaitUntilMessageIsPersisted(String topic, String subscription, String id, SentMessageTraceStatus status) throws Exception;
+
+    protected abstract void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId, SentMessageTraceStatus status) throws Exception;
 }

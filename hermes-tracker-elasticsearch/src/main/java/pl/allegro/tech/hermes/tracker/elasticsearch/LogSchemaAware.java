@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.tracker.elasticsearch;
 public interface LogSchemaAware {
 
     String MESSAGE_ID = "messageId";
+    String BATCH_ID = "batchId";
     String TIMESTAMP = "timestamp";
     String PUBLISH_TIMESTAMP = "publish_timestamp";
     String STATUS = "status";

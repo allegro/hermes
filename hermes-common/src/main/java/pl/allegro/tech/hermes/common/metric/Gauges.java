@@ -12,6 +12,8 @@ public class Gauges {
             LEADER_CONFIRMS_BUFFER_TOTAL_BYTES = "leader-confirms-buffer-total-bytes",
             LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES = "leader-confirms-buffer-available-bytes",
             LEADER_CONFIRMS_COMPRESSION_RATE = "leader-confirms-compression-rate-avg",
+            BATCH_BUFFER_TOTAL_BYTES = "batch-buffer-total-bytes",
+            BATCH_BUFFER_AVAILABLE_BYTES = "batch-buffer-available-bytes",
             JMX_PREFIX = "jmx",
 
             THREADS = "threads",

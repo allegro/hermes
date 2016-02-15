@@ -11,6 +11,7 @@ import java.util.Objects;
 public class SentMessageTrace implements MessageTrace {
 
     private final String messageId;
+    private final String batchId;
     private final String subscription;
     private final long timestamp;
     private final SentMessageTraceStatus status;
@@ -23,6 +24,7 @@ public class SentMessageTrace implements MessageTrace {
 
     @JsonCreator
     public SentMessageTrace(@JsonProperty("messageId") String messageId,
+                            @JsonProperty("batchId") String batchId,
                             @JsonProperty("timestamp") Long timestamp,
                             @JsonProperty("subscription") String subscription,
                             @JsonProperty("topicName") String topicName,
@@ -33,6 +35,7 @@ public class SentMessageTrace implements MessageTrace {
                             @JsonProperty("offset") Long offset,
                             @JsonProperty("cluster") String cluster) {
         this.messageId = messageId;
+        this.batchId = batchId;
         this.timestamp = timestamp;
         this.subscription = subscription;
         this.status = status;
@@ -54,6 +57,7 @@ public class SentMessageTrace implements MessageTrace {
             String cause, Long loggingTime, Integer partition, Long offset, String cluster) {
         return new SentMessageTrace(
                 null,
+                null,
                 loggingTime,
                 subscription,
                 qualifiedTopicName,
@@ -70,6 +74,7 @@ public class SentMessageTrace implements MessageTrace {
                                                                  Throwable cause, Long loggingTime, Integer partition, Long offset, String cluster) {
         return new SentMessageTrace(
                 null,
+                null,
                 loggingTime,
                 subscription,
                 topicName.qualifiedName(),
@@ -84,6 +89,10 @@ public class SentMessageTrace implements MessageTrace {
 
     public String getMessageId() {
         return messageId;
+    }
+
+    public String getBatchId() {
+        return batchId;
     }
 
     public Long getTimestamp() {

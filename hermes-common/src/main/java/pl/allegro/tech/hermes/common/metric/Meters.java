@@ -8,6 +8,7 @@ public class Meters {
         METER = "meter",
         TOPIC_METER = METER + "." + GROUP + "." + TOPIC,
         SUBSCRIPTION_METER = TOPIC_METER + "." + SUBSCRIPTION,
+        SUBSCRIPTION_BATCH_METER = TOPIC_METER + "." + SUBSCRIPTION + ".batch",
 
         FAILED_METER = "failed-meter",
         FAILED_TOPIC_METER = FAILED_METER + "." + GROUP + "." + TOPIC,

@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.api.helper;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.helpers.Patch;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
@@ -90,10 +93,30 @@ public class PatchTest {
         SubscriptionPolicy patch = subscriptionPolicy().withMessageTtl(8).withRate(200).build();
 
         //when
-        SubscriptionPolicy result = Patch.apply(subscription, subscription().withSubscriptionPolicy(patch).build()).getSubscriptionPolicy();
+        SubscriptionPolicy result = Patch.apply(subscription, subscription().withSubscriptionPolicy(patch).build()).getSerialSubscriptionPolicy();
 
         //then
         assertThat(result.getMessageTtl()).isEqualTo(patch.getMessageTtl());
         assertThat(result.getRate()).isEqualTo(patch.getRate());
+    }
+
+    @Test
+    public void shouldNotFailOnUnknownProperties() {
+        Map<String, Object> subscriptionPolicy = ImmutableMap.of(
+                "unknownProperty", true,
+                "rate", 10,
+                "messageTtl", 10,
+                "messageBackoff", 10,
+                "retryClientErrors", true
+        );
+
+        //when
+        SubscriptionPolicy result = Patch.apply(subscriptionPolicy().applyDefaults().build(), subscriptionPolicy);
+
+        //then
+        assertThat(result.getMessageTtl()).isEqualTo(10);
+        assertThat(result.getRate()).isEqualTo(10);
+        assertThat(result.getMessageBackoff()).isEqualTo(10);
+        assertThat(result.isRetryClientErrors()).isTrue();
     }
 }

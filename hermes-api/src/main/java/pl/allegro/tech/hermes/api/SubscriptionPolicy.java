@@ -25,8 +25,8 @@ public class SubscriptionPolicy {
     private SubscriptionPolicy() { }
 
     @JsonCreator
-    public SubscriptionPolicy(@JsonProperty("rate") int rate, @JsonProperty("messageTtl") int messageTtl,
-                              @JsonProperty("retryClientErrors") boolean retryClientErrors,
+    public SubscriptionPolicy(@JsonProperty("rate") Integer rate, @JsonProperty("messageTtl") Integer messageTtl,
+                              @JsonProperty("retryClientErrors") Boolean retryClientErrors,
                               @JsonProperty("messageBackoff") Integer messageBackoff) {
         this.rate = rate;
         this.messageTtl = messageTtl;
@@ -77,7 +77,7 @@ public class SubscriptionPolicy {
         return messageTtl;
     }
 
-    public boolean isRetryClientErrors() {
+    public Boolean isRetryClientErrors() {
         return retryClientErrors;
     }
 
@@ -131,7 +131,7 @@ public class SubscriptionPolicy {
             return subscriptionPolicy;
         }
 
-        public Builder applyPatch(SubscriptionPolicy update) {
+        public <T> Builder applyPatch(T update) {
             if (update != null) {
                 subscriptionPolicy = Patch.apply(subscriptionPolicy, update);
             }

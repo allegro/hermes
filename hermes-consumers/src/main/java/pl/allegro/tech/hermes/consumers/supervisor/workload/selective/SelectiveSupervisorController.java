@@ -13,7 +13,8 @@ import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 
-import static java.util.Collections.emptyList;
+import java.util.Collections;
+
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
@@ -62,10 +63,16 @@ public class SelectiveSupervisorController implements SupervisorController {
     }
 
     @Override
+    public void onSubscriptionChanged(Subscription subscription) {
+        logger.info("Updating subscription {}", subscription.getId());
+        supervisor.updateSubscription(subscription);
+    }
+
+    @Override
     public void start() throws Exception {
         adminCache.start();
         adminCache.addCallback(this);
-        subscriptionsCache.start(emptyList());
+        subscriptionsCache.start(Collections.singleton(this));
         workTracker.start(ImmutableList.of(this));
         supervisor.start();
         consumersRegistry.start();
@@ -112,4 +119,6 @@ public class SelectiveSupervisorController implements SupervisorController {
             supervisor.restartConsumer(subscription);
         }
     }
+
+
 }

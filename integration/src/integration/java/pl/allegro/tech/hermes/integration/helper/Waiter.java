@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.helper;
 
 import com.jayway.awaitility.Duration;
+import com.jayway.awaitility.core.ConditionFactory;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import kafka.api.ConsumerMetadataRequest;
@@ -21,6 +22,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
@@ -211,11 +213,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     private void untilZookeeperNodeCreation(final String path, final CuratorFramework zookeeper) {
-        waitAtMost(adjust(60), TimeUnit.SECONDS).until(() -> {
-            CuratorFramework zk = zookeeper;
-            String p = path;
-            return zookeeper.checkExists().forPath(path) != null;
-        });
+        waitAtMost(adjust(60), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath(path) != null);
     }
 
     private void untilZookeeperNodeDeletion(final String path, final CuratorFramework zookeeper) {
@@ -241,5 +239,13 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
                 BlockingChannel.UseDefaultBufferSize(),
                 BlockingChannel.UseDefaultBufferSize(),
                 (int) adjust(Duration.TEN_SECONDS).getValueInMS());
+    }
+
+    public ConditionFactory awaitAtMost(Duration duration) {
+        return waitAtMost(adjust(duration));
+    }
+
+    public void until(Runnable runnable) {
+        awaitAtMost(adjust(new Duration(30, TimeUnit.SECONDS))).until(runnable);
     }
 }

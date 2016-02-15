@@ -37,6 +37,15 @@ public class MongoLogRepositoryTest extends AbstractLogRepositoryTest implements
         });
     }
 
+    @Override
+    protected void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId, SentMessageTraceStatus status) throws Exception {
+        await().atMost(ONE_SECOND).until(() -> {
+            List<SentMessageTrace> messages = getLastUndeliveredMessages(topic, subscription, status);
+            assertThat(messages).hasSize(1).extracting(MESSAGE_ID).containsExactly(messageId);
+            assertThat(messages).hasSize(1).extracting(BATCH_ID).containsExactly(batchId);
+        });
+    }
+
     private List<SentMessageTrace> getLastUndeliveredMessages(String topicName, String subscriptionName, SentMessageTraceStatus status) {
         try (
                 DBCursor cursor = database.getCollection(COLLECTION_SENT_NAME)
@@ -54,6 +63,7 @@ public class MongoLogRepositoryTest extends AbstractLogRepositoryTest implements
         BasicDBObject object = (BasicDBObject) rawObject;
         return new SentMessageTrace(
                 object.getString(MESSAGE_ID),
+                object.getString(BATCH_ID),
                 object.getLong(TIMESTAMP),
                 object.getString(LogSchemaAware.SUBSCRIPTION),
                 object.getString(TOPIC_NAME),
