@@ -52,7 +52,6 @@ public class BatchMonitoring {
         metrics.meter(Meters.DISCARDED_METER).mark(batch.size());
         metrics.meter(Meters.DISCARDED_TOPIC_METER, subscription.getTopicName()).mark(batch.size());
         metrics.meter(Meters.DISCARDED_SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark(batch.size());
-        metrics.decrementInflightCounter(subscription);
         batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logDiscarded(m, reason));
     }
 
