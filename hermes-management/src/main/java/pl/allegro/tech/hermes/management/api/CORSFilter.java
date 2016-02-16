@@ -21,7 +21,8 @@ public class CORSFilter implements ContainerResponseFilter {
                 "X-Requested-With",
                 "Content-Type",
                 "Accept",
-                "Origin"
+                "Origin",
+                "Authorization"
         );
     }
 }
