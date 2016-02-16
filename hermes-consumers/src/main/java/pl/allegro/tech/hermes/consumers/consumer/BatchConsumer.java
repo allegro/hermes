@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
 import static com.github.rholder.retry.WaitStrategies.fixedWait;
-import static java.lang.String.format;
 import static java.util.Optional.of;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
