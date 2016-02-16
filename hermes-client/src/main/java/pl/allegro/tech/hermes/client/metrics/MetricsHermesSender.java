@@ -20,7 +20,7 @@ public class MetricsHermesSender implements HermesSender {
 
     @Override
     public CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
-        String prefix = "hermes-client." + message.getSanitizedTopic();
+        String prefix = "hermes-client." + sanitizeTopic(message.getTopic());
         Timer.Context ctx = metrics.timer(prefix + ".latency").time();
         return sender.send(uri, message).whenComplete((resp, cause) -> {
             ctx.close();
@@ -31,5 +31,12 @@ public class MetricsHermesSender implements HermesSender {
                 metrics.counter(prefix + ".failure").inc();
             }
         });
+    }
+
+    private String sanitizeTopic(String topic) {
+        int lastDot = topic.lastIndexOf(".");
+        char[] sanitized = topic.replaceAll("\\.", "_").toCharArray();
+        sanitized[lastDot] = '.';
+        return String.valueOf(sanitized);
     }
 }

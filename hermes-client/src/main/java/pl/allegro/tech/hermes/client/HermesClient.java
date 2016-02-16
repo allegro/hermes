@@ -10,6 +10,10 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.IntStream.range;
 
 public class HermesClient {
+
+    private static final String APPLICATION_JSON = "application/json;charset=UTF-8";
+    private static final String AVRO_BINARY = "avro/binary";
+
     private final HermesSender sender;
     private final String uri;
     private final String defaultContentType;
@@ -24,12 +28,32 @@ public class HermesClient {
         this.retryCondition = retryCondition;
     }
 
+    public CompletableFuture<HermesResponse> publishJSON(String topic, byte[] message) {
+        return publish(topic, APPLICATION_JSON, message);
+    }
+
+    public CompletableFuture<HermesResponse> publishJSON(String topic, String message) {
+        return publish(topic, APPLICATION_JSON, message);
+    }
+
+    public CompletableFuture<HermesResponse> publishAvro(String topic, int schemaVersion, byte[] message) {
+        return publish(topic, AVRO_BINARY, schemaVersion, message);
+    }
+
     public CompletableFuture<HermesResponse> publish(String topic, String message) {
         return publish(topic, defaultContentType, message);
     }
 
+    public CompletableFuture<HermesResponse> publish(String topic, String contentType, byte[] message) {
+        return publish(new HermesMessage(topic, contentType, message));
+    }
+
     public CompletableFuture<HermesResponse> publish(String topic, String contentType, String message) {
-        return publish(new HermesMessage(topic, message, contentType));
+        return publish(new HermesMessage(topic, contentType, message));
+    }
+
+    public CompletableFuture<HermesResponse> publish(String topic, String contentType, int schemaVersion, byte[] message) {
+        return publish(new HermesMessage(topic, contentType, schemaVersion, message));
     }
 
     public CompletableFuture<HermesResponse> publish(HermesMessage message) {

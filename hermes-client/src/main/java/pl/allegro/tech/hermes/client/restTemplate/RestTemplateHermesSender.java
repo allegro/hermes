@@ -29,6 +29,7 @@ public class RestTemplateHermesSender implements HermesSender {
         CompletableFuture<HermesResponse> future = new CompletableFuture<>();
         template.postForEntity(uri, new HttpEntity<>(message.getBody(), new LinkedMultiValueMap<String, String>() {{
             add(CONTENT_TYPE, message.getContentType());
+            add(SCHEMA_VERSION_HEADER, Integer.toString(message.getSchemaVersion()));
         }}), String.class)
                 .addCallback(new ListenableFutureCallback<ResponseEntity>() {
                     @Override
