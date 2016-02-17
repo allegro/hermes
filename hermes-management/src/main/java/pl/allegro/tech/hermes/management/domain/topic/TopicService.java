@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.topic;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
@@ -16,7 +17,6 @@ import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
-import javax.inject.Inject;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
@@ -38,7 +38,7 @@ public class TopicService {
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
     private final Clock clock;
 
-    @Inject
+    @Autowired
     public TopicService(MultiDCAwareService multiDCAwareService,
                         TopicRepository topicRepository,
                         GroupService groupService,
@@ -126,7 +126,7 @@ public class TopicService {
     }
 
     public List<String> listQualifiedTopicNames() {
-        return groupService.listGroups().stream()
+        return groupService.listGroupNames().stream()
                 .map(this::listQualifiedTopicNames)
                 .flatMap(List::stream)
                 .sorted()
@@ -150,7 +150,7 @@ public class TopicService {
     }
 
     public List<String> listTrackedTopicNames() {
-        return groupService.listGroups().stream()
+        return groupService.listGroupNames().stream()
                 .map(topicRepository::listTopics)
                 .flatMap(List::stream)
                 .filter(Topic::isTrackingEnabled)
@@ -165,19 +165,31 @@ public class TopicService {
                 .collect(Collectors.toList());
     }
 
-    public List<String> listFilteredTopicNames(Query<Topic> topicQuery) {
-
-        return topicQuery.filter(groupService.listGroups().stream()
-                .map(topicRepository::listTopics)
-                .flatMap(List::stream))
+    public List<String> listFilteredTopicNames(Query<Topic> query) {
+        return queryTopic(query)
+                .stream()
                 .map(Topic::getQualifiedName)
                 .collect(Collectors.toList());
     }
 
-    public List<String> listFilteredTopicNames(String groupName, Query<Topic> topicQuery) {
-
-        return topicQuery.filter(listTopics(groupName).stream())
+    public List<String> listFilteredTopicNames(String groupName, Query<Topic> query) {
+        return query.filter(listTopics(groupName))
                 .map(Topic::getQualifiedName)
+                .collect(Collectors.toList());
+    }
+
+    public List<Topic> queryTopic(Query<Topic> query) {
+        return query
+                .filter(getAllTopics())
+                .collect(Collectors.toList());
+    }
+
+    public List<Topic> getAllTopics() {
+        return groupService
+                .listGroupNames()
+                .stream()
+                .map(topicRepository::listTopics)
+                .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
 }

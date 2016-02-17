@@ -47,7 +47,7 @@ public class GroupsEndpoint {
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "List groups", response = List.class, httpMethod = HttpMethod.GET)
     public List<String> list() {
-        return groupService.listGroups();
+        return groupService.listGroupNames();
     }
 
 

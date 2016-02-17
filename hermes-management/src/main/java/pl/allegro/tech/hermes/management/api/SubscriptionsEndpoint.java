@@ -30,7 +30,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,8 +76,7 @@ public class SubscriptionsEndpoint {
     @ApiOperation(value = "Queries subscriptions", response = List.class, httpMethod = HttpMethod.POST)
     public List<String> queryList(
             @PathParam("topicName") String qualifiedTopicName,
-            Query<Subscription> query) throws IOException {
-
+            Query<Subscription> query) {
         return subscriptionService.listFilteredSubscriptionNames(fromQualifiedName(qualifiedTopicName), query);
     }
 

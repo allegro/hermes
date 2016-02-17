@@ -115,19 +115,4 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
                 .map(subscription -> getSubscriptionDetails(topicName, subscription))
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public List<String> listTrackedSubscriptionNames(TopicName topicName) {
-        return listSubscriptions(topicName).stream()
-                .filter(Subscription::isTrackingEnabled)
-                .map(Subscription::getName)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query) {
-        return query.filter(listSubscriptions(topicName).stream())
-                .map(Subscription::getName)
-                .collect(Collectors.toList());
-    }
 }

@@ -4,10 +4,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
-import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
-import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
-import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
-import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.*;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.client.ClientBuilder;
@@ -73,6 +70,10 @@ public class Hermes {
 
     public SubscriptionEndpoint createSubscriptionEndpoint() {
         return createProxy(url, SubscriptionEndpoint.class, managementConfig);
+    }
+
+    public QueryEndpoint createQueryEndpoint() {
+        return createProxy(url, QueryEndpoint.class, managementConfig);
     }
 
     public AsyncMessagePublisher createAsyncMessagePublisher() {
