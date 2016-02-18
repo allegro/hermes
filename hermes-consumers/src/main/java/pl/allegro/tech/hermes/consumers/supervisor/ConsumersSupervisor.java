@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
-import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
@@ -23,9 +22,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
-import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
-import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
+import static pl.allegro.tech.hermes.api.Subscription.State.*;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class ConsumersSupervisor {
@@ -232,7 +229,7 @@ public class ConsumersSupervisor {
 
             for (PartitionOffset partitionOffset : offsets) {
                 for (OffsetsStorage s: offsetsStorages) {
-                    s.setSubscriptionOffset(Subscription.fromSubscriptionName(subscriptionName), partitionOffset);
+                    s.setSubscriptionOffset(subscriptionName, partitionOffset);
                 }
             }
             createAndExecuteConsumer(subscriptionRepository.getSubscriptionDetails(subscriptionName.getTopicName(), subscriptionName.getName()));

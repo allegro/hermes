@@ -1,25 +1,22 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
-import com.jayway.awaitility.Duration;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 
 import javax.ws.rs.core.Response;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
-import static pl.allegro.tech.hermes.api.EndpointAddress.of;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class HermesAPIOperations {
 
@@ -35,15 +32,13 @@ public class HermesAPIOperations {
         if (endpoints.group().list().contains(group)) {
             return;
         }
-        assertThat(endpoints.group().create(Group.from(group)).getStatus()).isEqualTo(CREATED.getStatusCode());
+        assertThat(endpoints.group().create(new Group(group, "owner", "team", "contact")).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilGroupCreated(group);
     }
 
     public Topic createTopic(String group, String topic) {
-        Topic created = topic()
-                .applyDefaults()
-                .withName(group, topic)
+        Topic created = topic(group, topic)
                 .withRetentionTime(1000)
                 .withDescription("Test topic")
                 .build();
@@ -67,12 +62,8 @@ public class HermesAPIOperations {
     }
 
     public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint, ContentType contentType) {
-        Subscription subscription = subscription()
-                .applyDefaults()
-                .withName(subscriptionName)
-                .withTopicName(topic.getName())
-                .withEndpoint(of(endpoint))
-                .withSupportTeam("team")
+        Subscription subscription = subscription(topic, subscriptionName)
+                .withEndpoint(endpoint)
                 .withContentType(contentType)
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
                 .build();
@@ -109,30 +100,22 @@ public class HermesAPIOperations {
         return endpoints.subscription().updateState(topic.getQualifiedName(), subscription, Subscription.State.ACTIVE);
     }
 
-    public void updateSubscription(String group, String topic, String subscription, Subscription updated) {
+    public void updateSubscription(String group, String topic, String subscription, PatchData patch) {
         String qualifiedTopicName = group + "." + topic;
 
-        assertThat(endpoints.subscription().update(qualifiedTopicName, subscription, updated).getStatus()).isEqualTo(OK.getStatusCode());
-
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
-            return endpoints.subscription().get(qualifiedTopicName, subscription).equals(updated);
-        });
+        assertThat(endpoints.subscription().update(qualifiedTopicName, subscription, patch).getStatus()).isEqualTo(OK.getStatusCode());
     }
 
     public Topic getTopic(String group, String topic) {
         return endpoints.topic().get(group + "." + topic);
     }
 
-    public void updateTopic(String group, String topic, Topic updated) {
-        updateTopic(new TopicName(group, topic), updated);
+    public void updateTopic(String group, String topic, PatchData patch) {
+        updateTopic(new TopicName(group, topic), patch);
     }
 
-    public void updateTopic(TopicName topicName, Topic updated) {
-        assertThat(endpoints.topic().update(topicName.qualifiedName(), updated).getStatus()).isEqualTo(OK.getStatusCode());
-
-        waitAtMost(Duration.ONE_MINUTE).until(() -> {
-            return endpoints.topic().get(topicName.qualifiedName()).equals(updated);
-        });
+    public void updateTopic(TopicName topicName, PatchData patch) {
+        assertThat(endpoints.topic().update(topicName.qualifiedName(), patch).getStatus()).isEqualTo(OK.getStatusCode());
     }
 
     public void createBatchSubscription(Topic topic, String endpoint, int messageTtl, int messageBackoff, int batchSize, int batchTime, int batchVolume, boolean retryOnClientErrors) {
@@ -151,14 +134,10 @@ public class HermesAPIOperations {
     }
 
     public void createBatchSubscription(Topic topic, String endpoint, BatchSubscriptionPolicy policy) {
-        Subscription subscription = subscription()
-                .applyDefaults()
+        Subscription subscription = subscription(topic, "batchSubscription")
+                .withEndpoint(endpoint)
                 .withContentType(ContentType.JSON)
-                .withSupportTeam("supportTeam")
                 .withSubscriptionPolicy(policy)
-                .withName("batchSubscription")
-                .withTopicName(topic.getQualifiedName())
-                .withEndpoint(new EndpointAddress(endpoint))
                 .build();
 
         createSubscription(topic, subscription);

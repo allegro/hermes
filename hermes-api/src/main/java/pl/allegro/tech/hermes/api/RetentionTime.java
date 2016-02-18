@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class RetentionTime {
 
-    @Min(0)
+    @Min(1)
     private final int duration;
 
     public RetentionTime(@JsonProperty("duration") int duration) {

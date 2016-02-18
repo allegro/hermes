@@ -3,27 +3,32 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 public class Topic {
-    @Valid @NotNull
+
+    @Valid
+    @NotNull
     private TopicName name;
 
+    @NotNull
     private String description;
 
     private String messageSchema;
 
-    private boolean validationEnabled;
+    private boolean validationEnabled = false;
 
-    private boolean validationDryRunEnabled;
+    private boolean validationDryRunEnabled = false;
 
-    private boolean jsonToAvroDryRunEnabled;
+    private boolean jsonToAvroDryRunEnabled = false;
 
+    @NotNull
     private Ack ack;
+
+    @NotNull
     private ContentType contentType;
 
     public enum Ack {
@@ -31,16 +36,15 @@ public class Topic {
     }
 
     @Valid
-    private RetentionTime retentionTime;
+    @NotNull
+    private RetentionTime retentionTime = RetentionTime.of(1);
 
-    private boolean trackingEnabled;
+    private boolean trackingEnabled = false;
 
-    private boolean migratedFromJsonType;
-
-    private Topic() { }
+    private boolean migratedFromJsonType = false;
 
     public Topic(TopicName name, String description, RetentionTime retentionTime, String messageSchema,
-                 boolean validationEnabled, boolean validationDryRunEnabled, boolean migratedFromJsonType, 
+                 boolean validationEnabled, boolean validationDryRunEnabled, boolean migratedFromJsonType,
                  Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled) {
         this.name = name;
         this.description = description;
@@ -68,7 +72,6 @@ public class Topic {
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
             @JsonProperty("contentType") ContentType contentType) {
-
         this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, messageSchema, validationEnabled,
                 validationDryRunEnabled, migratedFromJsonType, ack, trackingEnabled, contentType, jsonToAvroDryRunEnabled);
     }
@@ -94,16 +97,16 @@ public class Topic {
         final Topic other = (Topic) obj;
 
         return Objects.equals(this.name, other.name)
-            && Objects.equals(this.description, other.description)
-            && Objects.equals(this.retentionTime, other.retentionTime)
-            && Objects.equals(this.messageSchema, other.messageSchema)
-            && Objects.equals(this.isValidationEnabled(), other.isValidationEnabled())
-            && Objects.equals(this.validationDryRunEnabled, other.validationDryRunEnabled)
-            && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
-            && Objects.equals(this.trackingEnabled, other.trackingEnabled)
-            && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
-            && Objects.equals(this.ack, other.ack)
-            && Objects.equals(this.contentType, other.contentType);
+                && Objects.equals(this.description, other.description)
+                && Objects.equals(this.retentionTime, other.retentionTime)
+                && Objects.equals(this.messageSchema, other.messageSchema)
+                && Objects.equals(this.isValidationEnabled(), other.isValidationEnabled())
+                && Objects.equals(this.validationDryRunEnabled, other.validationDryRunEnabled)
+                && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
+                && Objects.equals(this.trackingEnabled, other.trackingEnabled)
+                && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
+                && Objects.equals(this.ack, other.ack)
+                && Objects.equals(this.contentType, other.contentType);
     }
 
     @JsonProperty("name")
@@ -167,104 +170,5 @@ public class Topic {
     @JsonIgnore
     public boolean isReplicationConfirmRequired() {
         return getAck() == Ack.ALL;
-    }
-
-    public static class Builder {
-        private Topic topic;
-
-        public Builder() {
-            topic = new Topic();
-        }
-
-        public Builder withName(String groupName, String topicName) {
-            topic.name = new TopicName(groupName, topicName);
-            return this;
-        }
-
-        public Builder withName(TopicName topicName) {
-            topic.name = topicName;
-            return this;
-        }
-
-        public Builder withName(String qualifiedName) {
-            topic.name = TopicName.fromQualifiedName(qualifiedName);
-            return this;
-        }
-
-        public Builder withDescription(String description) {
-            topic.description = description;
-            return this;
-        }
-
-        public Builder withRetentionTime(RetentionTime retentionTime) {
-            topic.retentionTime = retentionTime;
-            return this;
-        }
-
-        public Builder withRetentionTime(int retentionTime) {
-            topic.retentionTime = new RetentionTime(retentionTime);
-            return this;
-        }
-
-        public Builder withMessageSchema(String messageSchema) {
-            topic.messageSchema = messageSchema;
-            return this;
-        }
-
-        public Builder withValidation(boolean enabled) {
-            topic.validationEnabled = enabled;
-            return this;
-        }
-
-        public Builder withValidationDryRun(boolean enabled) {
-            topic.validationDryRunEnabled = enabled;
-            return this;
-        }
-
-        public Builder withJsonToAvroDryRun(boolean enabled) {
-            topic.jsonToAvroDryRunEnabled = enabled;
-            return this;
-        }
-
-        public Builder withAck(Ack ack) {
-            topic.ack = ack;
-            return this;
-        }
-
-        public Builder applyPatch(Object update) {
-            if (update != null) {
-                topic = Patch.apply(topic, update);
-            }
-            return this;
-        }
-
-        public Builder applyDefaults() {
-            topic.retentionTime = new RetentionTime(1);
-            topic.contentType = ContentType.JSON;
-            return this;
-        }
-
-        public static Builder topic() {
-            return new Builder();
-        }
-
-        public Builder withTrackingEnabled(boolean enabled) {
-            topic.trackingEnabled = enabled;
-            return this;
-        }
-
-        public Builder withContentType(ContentType contentType) {
-            topic.contentType = contentType;
-            return this;
-        }
-
-        public Builder migratedFromJsonType() {
-            topic.migratedFromJsonType = true;
-            return this;
-        }
-
-        public Topic build() {
-            return topic;
-        }
     }
 }

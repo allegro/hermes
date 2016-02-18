@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.query.Query;
-import pl.allegro.tech.hermes.domain.subscription.DeliveryTypeMigration;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
@@ -97,8 +96,7 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     @Override
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
         ensureSubscriptionExists(topicName, subscriptionName);
-        return readFrom(paths.subscriptionPath(topicName, subscriptionName), Subscription.class,
-                (data, subscription) -> DeliveryTypeMigration.migrate(data, (Subscription) subscription, mapper));
+        return readFrom(paths.subscriptionPath(topicName, subscriptionName), Subscription.class);
     }
 
     @Override

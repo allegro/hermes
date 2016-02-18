@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTrace;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
@@ -33,6 +34,7 @@ public class SubscriptionService {
     private final LogRepository logRepository;
 
     private final ApiPreconditions preconditions;
+
     private final AdminTool adminTool;
 
     @Autowired
@@ -67,6 +69,7 @@ public class SubscriptionService {
     }
 
     public void createSubscription(Subscription subscription) {
+        preconditions.checkConstraints(subscription);
         subscriptionRepository.createSubscription(subscription);
     }
 
@@ -78,12 +81,9 @@ public class SubscriptionService {
         subscriptionRepository.removeSubscription(topicName, subscriptionName);
     }
 
-    public void updateSubscription(Subscription subscription) {
-        Subscription retrieved = subscriptionRepository.getSubscriptionDetails(
-                subscription.getTopicName(), subscription.getName()
-        );
-
-        Subscription updated = Patch.apply(retrieved, subscription);
+    public void updateSubscription(TopicName topicName, String subscriptionName, PatchData patch) {
+        Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+        Subscription updated = Patch.apply(retrieved, patch);
         preconditions.checkConstraints(updated);
 
         if (!retrieved.equals(updated)) {
@@ -91,7 +91,7 @@ public class SubscriptionService {
         }
 
         if (isConsumerRestartNeeded(retrieved, updated)) {
-            adminTool.restartConsumer(new SubscriptionName(subscription.getName(), subscription.getTopicName()));
+            adminTool.restartConsumer(new SubscriptionName(updated.getName(), updated.getTopicName()));
         }
     }
 

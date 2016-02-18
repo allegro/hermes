@@ -4,13 +4,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 
-import static org.mockito.Mockito.*;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OutputRateCalculatorTest {
@@ -30,7 +32,7 @@ public class OutputRateCalculatorTest {
         when(config.getIntProperty(Configs.CONSUMER_RATE_LIMITER_SLOW_MODE_DELAY)).thenReturn(1);
         when(config.getIntProperty(Configs.CONSUMER_RATE_LIMITER_HEARTBEAT_MODE_DELAY)).thenReturn(60);
 
-        subscription = Subscription.Builder.subscription().applyDefaults().withSubscriptionPolicy(
+        subscription = subscription("group.topic", "subscription").withSubscriptionPolicy(
                 SubscriptionPolicy.Builder.subscriptionPolicy().withRate(200).build()
         ).build();
 

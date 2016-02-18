@@ -5,15 +5,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 import org.hibernate.validator.constraints.NotEmpty;
-import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 import static pl.allegro.tech.hermes.api.helpers.Replacer.replaceInAll;
 
@@ -32,8 +31,10 @@ public class Subscription {
     @Valid
     private EndpointAddress endpoint;
 
+    @NotNull
     private ContentType contentType = ContentType.JSON;
 
+    @NotNull
     private String description;
 
     @Valid
@@ -42,59 +43,73 @@ public class Subscription {
     @Valid
     private BatchSubscriptionPolicy batchSubscriptionPolicy;
 
-    private boolean trackingEnabled;
+    private boolean trackingEnabled = false;
 
     @NotNull
     private String supportTeam;
 
     private String contact;
 
+    @NotNull
     private DeliveryType deliveryType = DeliveryType.SERIAL;
 
     public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
 
-    private Subscription() {
-    }
-
-    public Subscription(TopicName topicName, String name, EndpointAddress endpoint, String description,
-                        Map<String, Object> subscriptionPolicy, boolean trackingEnabled, String supportTeam, String contact,
+    public Subscription(TopicName topicName,
+                        String name,
+                        EndpointAddress endpoint,
+                        State state,
+                        String description,
+                        Object subscriptionPolicy,
+                        boolean trackingEnabled,
+                        String supportTeam,
+                        String contact,
                         ContentType contentType, DeliveryType deliveryType) {
         this.topicName = topicName;
         this.name = name;
-        this.description = description;
         this.endpoint = endpoint;
+        this.state = state;
+        this.description = description;
         this.trackingEnabled = trackingEnabled;
         this.supportTeam = supportTeam;
         this.contact = contact;
         this.contentType = contentType == null ? ContentType.JSON : contentType;
         this.deliveryType = deliveryType;
-        this.batchSubscriptionPolicy = this.deliveryType == DeliveryType.BATCH ? createBatchPolicy(subscriptionPolicy) : null;
-        this.serialSubscriptionPolicy = this.deliveryType == DeliveryType.SERIAL ? createSerialPolicy(subscriptionPolicy) : null;
+        this.batchSubscriptionPolicy = this.deliveryType == DeliveryType.BATCH ? (BatchSubscriptionPolicy) subscriptionPolicy : null;
+        this.serialSubscriptionPolicy = this.deliveryType == DeliveryType.SERIAL ? (SubscriptionPolicy) subscriptionPolicy : null;
     }
 
     @JsonCreator
-    public Subscription(@JsonProperty("topicName") String topicName,
-                        @JsonProperty("name") String name,
-                        @JsonProperty("endpoint") EndpointAddress endpoint,
-                        @JsonProperty("description") String description,
-                        @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
-                        @JsonProperty("trackingEnabled") boolean trackingEnabled,
-                        @JsonProperty("supportTeam") String supportTeam,
-                        @JsonProperty("contact") String contact,
-                        @JsonProperty("contentType") ContentType contentType,
-                        @JsonProperty("deliveryType") DeliveryType deliveryType) {
-        this(TopicName.fromQualifiedName(topicName), name, endpoint, description, subscriptionPolicy,
-                trackingEnabled, supportTeam, contact, contentType, deliveryType);
-    }
+    public static Subscription create(@JsonProperty("topicName") String topicName,
+                                      @JsonProperty("name") String name,
+                                      @JsonProperty("endpoint") EndpointAddress endpoint,
+                                      @JsonProperty("state") State state,
+                                      @JsonProperty("description") String description,
+                                      @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
+                                      @JsonProperty("trackingEnabled") boolean trackingEnabled,
+                                      @JsonProperty("supportTeam") String supportTeam,
+                                      @JsonProperty("contact") String contact,
+                                      @JsonProperty("contentType") ContentType contentType,
+                                      @JsonProperty("deliveryType") DeliveryType deliveryType) {
+        DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
+        Map<String, Object> validSubscriptionPolicy = subscriptionPolicy == null ? new HashMap<>() : subscriptionPolicy;
 
-    private BatchSubscriptionPolicy createBatchPolicy(Map<String, Object> subscriptionPolicy) {
-        return batchSubscriptionPolicy().applyPatch(subscriptionPolicy).build();
-    }
-
-    private SubscriptionPolicy createSerialPolicy(Map<String, Object> subscriptionPolicy) {
-        return SubscriptionPolicy.Builder.subscriptionPolicy().applyPatch(subscriptionPolicy).build();
+        return new Subscription(
+                TopicName.fromQualifiedName(topicName),
+                name,
+                endpoint,
+                state,
+                description,
+                validDeliveryType == DeliveryType.SERIAL ?
+                        SubscriptionPolicy.create(validSubscriptionPolicy) : BatchSubscriptionPolicy.create(validSubscriptionPolicy),
+                trackingEnabled,
+                supportTeam,
+                contact,
+                contentType,
+                validDeliveryType
+        );
     }
 
     @Override
@@ -135,10 +150,6 @@ public class Subscription {
 
     public static String getId(TopicName topicName, String subscriptionName) {
         return Joiner.on("_").join(replaceInAll("_", "__", topicName.getGroupName(), topicName.getName(), subscriptionName));
-    }
-
-    public static Subscription fromSubscriptionName(SubscriptionName subscriptionName) {
-        return Builder.subscription().withTopicName(subscriptionName.getTopicName()).withName(subscriptionName.getName()).build();
     }
 
     public EndpointAddress getEndpoint() {
@@ -222,129 +233,20 @@ public class Subscription {
 
     public Subscription anonymizePassword() {
         if (getEndpoint().containsCredentials()) {
-            return Builder.subscription().withName(this.getName())
-                    .withDescription(this.description)
-                    .withTopicName(this.getTopicName())
-                    .withEndpoint(this.getEndpoint().anonymizePassword())
-                    .withState(this.getState())
-                    .withSubscriptionPolicy(this.getSerialSubscriptionPolicy())
-                    .withSubscriptionPolicy(this.getBatchSubscriptionPolicy())
-                    .withTrackingEnabled(this.trackingEnabled)
-                    .withSupportTeam(this.supportTeam)
-                    .withContact(this.contact)
-                    .build();
+            return new Subscription(
+                    topicName,
+                    name,
+                    endpoint.anonymizePassword(),
+                    state,
+                    description,
+                    deliveryType == DeliveryType.SERIAL ? serialSubscriptionPolicy : batchSubscriptionPolicy,
+                    trackingEnabled,
+                    supportTeam,
+                    contact,
+                    contentType,
+                    deliveryType
+            );
         }
         return this;
-    }
-
-    public static class Builder {
-        private Subscription subscription;
-
-        public Builder() {
-            subscription = new Subscription();
-        }
-
-        public Builder withTopicName(String groupName, String topicName) {
-            subscription.topicName = new TopicName(groupName, topicName);
-            return this;
-        }
-
-        public Builder withTopicName(String qualifiedName) {
-            subscription.topicName = TopicName.fromQualifiedName(qualifiedName);
-            return this;
-        }
-
-        public Builder withTopicName(TopicName topicName) {
-            subscription.topicName = topicName;
-            return this;
-        }
-
-        public Builder withName(String name) {
-            subscription.name = name;
-            return this;
-        }
-
-        public Builder withState(State state) {
-            subscription.state = state;
-            return this;
-        }
-
-        public Builder withEndpoint(EndpointAddress endpointUri) {
-            subscription.endpoint = endpointUri;
-            return this;
-        }
-
-        public Builder withDescription(String description) {
-            subscription.description = description;
-            return this;
-        }
-
-        public Builder withSubscriptionPolicy(BatchSubscriptionPolicy subscriptionPolicy) {
-            subscription.batchSubscriptionPolicy = subscriptionPolicy;
-            subscription.deliveryType = DeliveryType.BATCH;
-            return this;
-        }
-
-        public Builder withSubscriptionPolicy(SubscriptionPolicy subscriptionPolicy) {
-            subscription.serialSubscriptionPolicy = subscriptionPolicy;
-            subscription.deliveryType = DeliveryType.SERIAL;
-            return this;
-        }
-
-        public Builder withTrackingEnabled(boolean trackingEnabled) {
-            subscription.trackingEnabled = trackingEnabled;
-            return this;
-        }
-
-        public Builder withSupportTeam(String supportTeam) {
-            subscription.supportTeam = supportTeam;
-            return this;
-        }
-
-        public Builder withContact(String contact) {
-            subscription.contact = contact;
-            return this;
-        }
-
-        public Builder applyPatch(Subscription subscription) {
-            if (subscription != null) {
-                clearPolicyIfDeliveryTypeChanged(subscription);
-                this.subscription = Patch.apply(this.subscription, subscription);
-            }
-            return this;
-        }
-
-        private void clearPolicyIfDeliveryTypeChanged(Subscription subscription) {
-            if (isDeliveryTypeChanged(subscription)) {
-                this.subscription.serialSubscriptionPolicy = null;
-                this.subscription.batchSubscriptionPolicy = null;
-            }
-        }
-
-        private boolean isDeliveryTypeChanged(Subscription subscription) {
-            return subscription.deliveryType != null && this.subscription.deliveryType != subscription.deliveryType;
-        }
-
-        public static Builder subscription() {
-            return new Builder();
-        }
-
-        public Subscription build() {
-            return subscription;
-        }
-
-        public Builder applyDefaults() {
-            if (subscription.deliveryType == DeliveryType.BATCH) {
-                subscription.batchSubscriptionPolicy = batchSubscriptionPolicy().applyDefaults().build();
-            } else {
-                subscription.serialSubscriptionPolicy = SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().build();
-            }
-            return this;
-        }
-
-        public Builder withContentType(ContentType contentType) {
-            subscription.contentType = contentType;
-            return this;
-        }
     }
 }

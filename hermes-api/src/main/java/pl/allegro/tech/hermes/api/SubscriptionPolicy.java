@@ -1,37 +1,51 @@
 package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.util.Map;
 import java.util.Objects;
 
 public class SubscriptionPolicy {
 
-    private static final Integer DEFAULT_MESSAGE_BACKOFF = 100;
+    private static final int DEFAULT_RATE = 400;
+    private static final int DEFAULT_MESSAGE_TTL = 3600;
+    private static final int DEFAULT_MESSAGE_BACKOFF = 100;
 
     @Min(1)
-    private Integer rate;
+    private int rate;
 
     @Min(0)
-    private Integer messageTtl;
+    @Max(7200)
+    private int messageTtl = 3600;
 
     @Min(0)
-    private Integer messageBackoff;
+    private int messageBackoff = 100;
 
     private boolean retryClientErrors = false;
 
     private SubscriptionPolicy() { }
 
-    @JsonCreator
-    public SubscriptionPolicy(@JsonProperty("rate") Integer rate, @JsonProperty("messageTtl") Integer messageTtl,
-                              @JsonProperty("retryClientErrors") Boolean retryClientErrors,
-                              @JsonProperty("messageBackoff") Integer messageBackoff) {
+    public SubscriptionPolicy(int rate,
+                              int messageTtl,
+                              boolean retryClientErrors,
+                              int messageBackoff) {
         this.rate = rate;
         this.messageTtl = messageTtl;
         this.retryClientErrors = retryClientErrors;
-        this.messageBackoff = messageBackoff != null ? messageBackoff : DEFAULT_MESSAGE_BACKOFF;
+        this.messageBackoff = messageBackoff;
+    }
+
+    @JsonCreator
+    public static SubscriptionPolicy create(Map<String, Object> properties) {
+        return new SubscriptionPolicy(
+                (Integer) properties.getOrDefault("rate", DEFAULT_RATE),
+                (Integer) properties.getOrDefault("messageTtl", DEFAULT_MESSAGE_TTL),
+                (Boolean) properties.getOrDefault("retryClientErrors", false),
+                (Integer) properties.getOrDefault("messageBackoff", DEFAULT_MESSAGE_BACKOFF)
+        );
     }
 
     @Override
@@ -64,7 +78,6 @@ public class SubscriptionPolicy {
                 .toString();
     }
 
-    //<editor-fold desc="Getters/Setters">
     public Integer getRate() {
         return rate;
     }
@@ -84,11 +97,8 @@ public class SubscriptionPolicy {
     public Integer getMessageBackoff() {
         return messageBackoff;
     }
-    //</editor-fold>
 
     public static class Builder {
-        private static final Integer DEFAULT_RATE = 400;
-        private static final Integer DEFAULT_MESSAGE_TTL = 3600;
 
         private SubscriptionPolicy subscriptionPolicy;
 
@@ -99,7 +109,6 @@ public class SubscriptionPolicy {
         public Builder applyDefaults() {
             subscriptionPolicy.rate = DEFAULT_RATE;
             subscriptionPolicy.messageTtl = DEFAULT_MESSAGE_TTL;
-            subscriptionPolicy.messageBackoff = DEFAULT_MESSAGE_BACKOFF;
             return this;
         }
 
@@ -131,7 +140,7 @@ public class SubscriptionPolicy {
             return subscriptionPolicy;
         }
 
-        public <T> Builder applyPatch(T update) {
+        public <T> Builder applyPatch(PatchData update) {
             if (update != null) {
                 subscriptionPolicy = Patch.apply(subscriptionPolicy, update);
             }

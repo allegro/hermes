@@ -15,11 +15,12 @@ import java.util.concurrent.CountDownLatch;
 
 import static java.time.Duration.ofMinutes;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.SchemaSource.valueOf;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class DefaultCachedSchemaSourceProviderTest {
 
@@ -35,7 +36,7 @@ public class DefaultCachedSchemaSourceProviderTest {
         // given
         Queue<SchemaSource> sources = new LinkedList<>(asList(valueOf("s1"), valueOf("s2")));
         CachedSchemaSourceProvider cachedSchema = cachedSchemaSourceProvider(topic -> ofNullable(sources.poll()));
-        Topic topic = topic().build();
+        Topic topic = topic("group.topic").build();
 
         // when
         Optional<SchemaSource> schema1 = cachedSchema.get(topic);
@@ -51,7 +52,7 @@ public class DefaultCachedSchemaSourceProviderTest {
         // given
         Queue<SchemaSource> sources = new LinkedList<>(asList(valueOf("s1"), valueOf("s2")));
         CachedSchemaSourceProvider cachedSchema = cachedSchemaSourceProvider(topic -> ofNullable(sources.poll()));
-        Topic topic = topic().build();
+        Topic topic = topic("group.topic").build();
 
         // when
         cachedSchema.get(topic);
@@ -72,7 +73,7 @@ public class DefaultCachedSchemaSourceProviderTest {
             assertThat(topicWithSchema.getSchema()).isEqualTo(valueOf("s2"));
             reloadSchemaLatch.countDown();
         });
-        Topic topic = topic().build();
+        Topic topic = topic("group.topic").build();
 
         // when
         cachedSchema.get(topic);
@@ -86,9 +87,9 @@ public class DefaultCachedSchemaSourceProviderTest {
     @Test
     public void shouldNotifyConsumersAboutSchemaRemove() throws InterruptedException {
         // given
-        Topic someTopic = topic().withName("old.topic").build();
+        Topic someTopic = topic("old.topic").build();
         CountDownLatch removeSchemaLatch = new CountDownLatch(1);
-        CachedSchemaSourceProvider cachedSchema = cachedSchemaSourceProvider(topic -> ofNullable(valueOf("schema")));
+        CachedSchemaSourceProvider cachedSchema = cachedSchemaSourceProvider(topic -> Optional.of(valueOf("schema")));
         cachedSchema.onRemove(topicWithSchema -> {
             assertThat(topicWithSchema.getTopic().getQualifiedName()).isEqualTo(someTopic.getQualifiedName());
             removeSchemaLatch.countDown();
@@ -106,9 +107,9 @@ public class DefaultCachedSchemaSourceProviderTest {
     @Test
     public void shouldReturnOldSchemaWhenSchemaReloadingFailed() {
         // given
-        Queue<SchemaSource> sources = new LinkedList<>(asList(valueOf("s1")));
+        Queue<SchemaSource> sources = new LinkedList<>(singletonList(valueOf("s1")));
         CachedSchemaSourceProvider cachedSchema = cachedSchemaSourceProvider(topic -> ofNullable(sources.remove()));
-        Topic topic = topic().build();
+        Topic topic = topic("group.topic").build();
 
         // when
         cachedSchema.get(topic);

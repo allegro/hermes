@@ -17,6 +17,7 @@ import java.util.Properties;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.util.stream.Collectors.toMap;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 /**
@@ -37,7 +38,7 @@ public class BrokerOperations {
 
     public BrokerOperations(Map<String, String> kafkaZkConnection, int sessionTimeout, int connectionTimeout, String namespace) {
         zkClients = kafkaZkConnection.entrySet().stream()
-                .collect(toMap(e -> e.getKey(),
+                .collect(toMap(Map.Entry::getKey,
                                e -> new ZkClient(e.getValue(), sessionTimeout, connectionTimeout, ZKStringSerializer$.MODULE$)));
 
         kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(namespace);
@@ -52,7 +53,7 @@ public class BrokerOperations {
     }
 
     private void createTopic(String topicName, ZkClient c) {
-        Topic topic = new Topic.Builder().withName(topicName).applyDefaults().build();
+        Topic topic = topic(topicName).build();
         kafkaNamesMapper.toKafkaTopics(topic).forEach(kafkaTopic -> {
             AdminUtils.createTopic(c, kafkaTopic.name().asString(), DEFAULT_PARTITIONS, DEFAULT_REPLICATION_FACTOR, new Properties());
 
@@ -64,7 +65,7 @@ public class BrokerOperations {
     }
 
     public boolean topicExists(String topicName, String kafkaClusterName) {
-        Topic topic = new Topic.Builder().withName(topicName).applyDefaults().build();
+        Topic topic = topic(topicName).build();
         return kafkaNamesMapper.toKafkaTopics(topic)
                 .allMatch(kafkaTopic -> AdminUtils.topicExists(zkClients.get(kafkaClusterName), kafkaTopic.name().asString()) &&
                         !isMarkedForDeletion(kafkaClusterName, kafkaTopic));

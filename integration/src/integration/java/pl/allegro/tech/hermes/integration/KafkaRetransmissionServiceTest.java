@@ -5,14 +5,16 @@ import com.google.common.collect.Multimaps;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -25,8 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static java.util.stream.Collectors.summingLong;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
-import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.message.TestMessage.simpleMessages;
@@ -120,13 +121,12 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         sendMessagesOnTopic(topic, 1);
         wait.untilConsumerCommitsOffset();
 
-        Topic migratedTopic = topic()
-                .applyPatch(topic)
-                .withContentType(AVRO)
-                .withMessageSchema(user.getSchema().toString())
-                .migratedFromJsonType()
+        PatchData patch = patchData()
+                .set("contentType", ContentType.AVRO)
+                .set("messageSchema", user.getSchemaAsString())
+                .set("migratedFromJsonType", true)
                 .build();
-        operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", migratedTopic);
+        operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", patch);
 
         sendAvroMessageOnTopic(topic, user.asTestMessage());
 

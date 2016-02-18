@@ -11,18 +11,22 @@ import kafka.network.BlockingChannel;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
+import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
-import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
@@ -225,7 +229,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         channel.connect();
 
         waitAtMost(adjust((Duration.ONE_MINUTE))).until(() -> {
-            channel.send(new ConsumerMetadataRequest(kafkaNamesMapper.toConsumerGroupId(subscription).asString(),
+            channel.send(new ConsumerMetadataRequest(kafkaNamesMapper.toConsumerGroupId(subscription.toSubscriptionName()).asString(),
                     ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
             ConsumerMetadataResponse metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
             return metadataResponse.errorCode() == ErrorMapping.NoError();

@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
+import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
@@ -26,18 +27,11 @@ import java.util.concurrent.Semaphore;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hermes.api.EndpointAddress.of;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConsumerMessageSenderTest {
@@ -327,8 +321,8 @@ public class ConsumerMessageSenderTest {
                 .build();
     }
 
-    private Subscription.Builder subscriptionBuilderWithTestValues() {
-        return subscription().withTopicName("group.topic").withName("subscription").withEndpoint(of("http://localhost:8008"));
+    private SubscriptionBuilder subscriptionBuilderWithTestValues() {
+        return subscription("group.topic","subscription");
     }
 
     private RuntimeException exception() {

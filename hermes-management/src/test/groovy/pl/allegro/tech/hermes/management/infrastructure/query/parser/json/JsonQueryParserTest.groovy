@@ -10,7 +10,7 @@ import spock.lang.Subject
 
 import java.util.stream.Collectors
 
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class JsonQueryParserTest extends Specification {
 
@@ -126,8 +126,8 @@ class JsonQueryParserTest extends Specification {
         def queryWithNonJavaBeanField = """{"query": {"migratedFromJsonType": true}}"""
 
         def topics = [
-                topic().migratedFromJsonType().build(),
-                topic().build(),
+                topic('group.topic1').migratedFromJsonType().build(),
+                topic('group.topic2').build(),
         ] as List<Topic>
 
         when:
@@ -137,7 +137,7 @@ class JsonQueryParserTest extends Specification {
 
         then:
         result.size() == 1
-        result.get(0).wasMigratedFromJsonType() == true
+        result.get(0).wasMigratedFromJsonType()
     }
 
     def "should parse query with eq operator and match single result"() {

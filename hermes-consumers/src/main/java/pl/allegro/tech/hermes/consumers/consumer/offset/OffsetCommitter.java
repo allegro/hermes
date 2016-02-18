@@ -52,7 +52,7 @@ public class OffsetCommitter implements Runnable {
             for (PartitionOffset partitionOffset : consumer.getOffsetsToCommit()) {
                 for (MessageCommitter messageCommitter : messageCommitters) {
                     try {
-                        messageCommitter.commitOffset(subscription, partitionOffset);
+                        messageCommitter.commitOffset(subscription.toSubscriptionName(), partitionOffset);
                     } catch (Exception e) {
                         LOGGER.error(String.format("Failed to commit offsets for subscription %s using message committer: %s",
                                 subscription.getId(),

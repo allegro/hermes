@@ -17,28 +17,19 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.containing;
-import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.resetAllScenarios;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.util.Comparator.comparingLong;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.*;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class BatchRetryPolicyTest extends IntegrationTest {
 
     public static final String HEALTHY = "healthy";
-    private WireMockServer wireMockRule;
+
+    private WireMockServer remoteServer;
+    private WireMock wireMock;
 
     String failedRequestBody = "{\"body\":\"failed\"}";
     String successfulRequestBody = "{\"body\":\"successful\"}";
@@ -47,19 +38,20 @@ public class BatchRetryPolicyTest extends IntegrationTest {
 
     @BeforeMethod
     public void beforeMethod() {
-        resetAllScenarios();
+        wireMock.resetScenarios();
     }
 
     @BeforeClass
     public void beforeClass() {
-        wireMockRule = new WireMockServer(Ports.nextAvailable());
-        wireMockRule.start();
-        WireMock.configureFor("localhost", wireMockRule.port());
+        remoteServer = new WireMockServer(Ports.nextAvailable());
+        remoteServer.start();
+
+        wireMock = new WireMock("localhost", remoteServer.port());
     }
 
     @AfterClass
     public void afterClass() {
-        wireMockRule.stop();
+        remoteServer.stop();
     }
 
     @Test
@@ -68,13 +60,13 @@ public class BatchRetryPolicyTest extends IntegrationTest {
         Topic topic = operations.buildTopic("group", "retryUntilRequestSuccessful");
         createSingleMessageBatchSubscription(topic);
 
-        stubFor(post(topicUrl(topic))
+        wireMock.register(post(topicUrl(topic))
                 .inScenario(topic.getQualifiedName())
                 .whenScenarioStateIs(Scenario.STARTED)
                 .willReturn(aResponse().withStatus(SC_INTERNAL_SERVER_ERROR))
                 .willSetStateTo(HEALTHY));
 
-        stubFor(post(topicUrl(topic))
+        wireMock.register(post(topicUrl(topic))
                 .inScenario(topic.getQualifiedName())
                 .whenScenarioStateIs(HEALTHY)
                 .willReturn(aResponse().withStatus(SC_CREATED)));
@@ -92,7 +84,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
         Topic topic = operations.buildTopic("group", "notRetryIfRequestSuccessful");
         createSingleMessageBatchSubscription(topic);
 
-        stubFor(post(topicUrl(topic)).willReturn(aResponse().withStatus(SC_CREATED)));
+        wireMock.register(post(topicUrl(topic)).willReturn(aResponse().withStatus(SC_CREATED)));
 
         //when
         publish(topic, TestMessage.simple());
@@ -107,11 +99,11 @@ public class BatchRetryPolicyTest extends IntegrationTest {
         Topic topic = operations.buildTopic("group", "retryUntilTtlExceeded");
         createSingleMessageBatchSubscription(topic, 100, 20);
 
-        stubFor(post(topicUrl(topic))
+        wireMock.register(post(topicUrl(topic))
                 .withRequestBody(containing("failed"))
                 .willReturn(aResponse().withStatus(SC_INTERNAL_SERVER_ERROR)));
 
-        stubFor(post(topicUrl(topic))
+        wireMock.register(post(topicUrl(topic))
                 .withRequestBody(containing("successful"))
                 .willReturn(aResponse().withStatus(SC_CREATED)));
 
@@ -138,13 +130,13 @@ public class BatchRetryPolicyTest extends IntegrationTest {
         Topic topic = operations.buildTopic("group", "retryOnClientErrors");
         createSingleMessageBatchSubscription(topic, true);
 
-        stubFor(post(topicUrl(topic))
+        wireMock.register(post(topicUrl(topic))
                 .inScenario(topic.getQualifiedName())
                 .whenScenarioStateIs(Scenario.STARTED)
                 .willReturn(aResponse().withStatus(SC_BAD_REQUEST))
                 .willSetStateTo(HEALTHY));
 
-        stubFor(post(topicUrl(topic))
+        wireMock.register(post(topicUrl(topic))
                 .inScenario(topic.getQualifiedName())
                 .whenScenarioStateIs(HEALTHY)
                 .willReturn(aResponse().withStatus(SC_CREATED)));
@@ -162,11 +154,11 @@ public class BatchRetryPolicyTest extends IntegrationTest {
         Topic topic = operations.buildTopic("group", "notRetryOnClientErrors");
         createSingleMessageBatchSubscription(topic, false);
 
-        stubFor(post(topicUrl(topic))
+        wireMock.register(post(topicUrl(topic))
                 .withRequestBody(containing("failed"))
                 .willReturn(aResponse().withStatus(SC_BAD_REQUEST)));
 
-        stubFor(post(topicUrl(topic))
+        wireMock.register(post(topicUrl(topic))
                 .withRequestBody(containing("successful"))
                 .willReturn(aResponse().withStatus(SC_CREATED)));
 
@@ -196,7 +188,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     }
 
     private List<LoggedRequest> recordedRequests(Topic topic) {
-        List<LoggedRequest> requests = findAll(postRequestedFor(topicUrl(topic)));
+        List<LoggedRequest> requests = wireMock.find(postRequestedFor(topicUrl(topic)));
         requests.sort(comparingLong(req -> req.getLoggedDate().getTime()));
         return requests;
     }
@@ -218,7 +210,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     }
 
     private String subscriptionEndpoint(String topicName) {
-        return "http://localhost:" + wireMockRule.port() + "/" + topicName;
+        return "http://localhost:" + remoteServer.port() + "/" + topicName;
     }
 
     private String readMessage(String body) {

@@ -18,8 +18,8 @@ import static java.util.Arrays.stream;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class BatchDeliveryTest extends IntegrationTest {
     private RemoteServiceEndpoint remoteService;
@@ -99,8 +99,7 @@ public class BatchDeliveryTest extends IntegrationTest {
         // given
         AvroUser user = new AvroUser("Bob", 50, "blue");
 
-        Topic topic = topic()
-                .withName("batch.avro.topic")
+        Topic topic = topic("batch.avro.topic")
                 .withValidation(true)
                 .withMessageSchema(user.getSchemaAsString())
                 .withContentType(AVRO).build();

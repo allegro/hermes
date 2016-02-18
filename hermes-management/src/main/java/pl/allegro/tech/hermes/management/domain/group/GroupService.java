@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -47,14 +48,14 @@ public class GroupService {
         }
     }
 
-    public void updateGroup(Group group) {
+    public void updateGroup(String groupName, PatchData patch) {
         try {
-            Group retrieved = groupRepository.getGroupDetails(group.getGroupName());
-            Group modified = Patch.apply(retrieved, group);
+            Group retrieved = groupRepository.getGroupDetails(groupName);
+            Group modified = Patch.apply(retrieved, patch);
             groupRepository.updateGroup(modified);
         } catch (MalformedDataException exception) {
-            logger.warn("Problem with reading details of group {}. Overriding them.", group.getGroupName());
-            groupRepository.updateGroup(group);
+            logger.warn("Problem with reading details of group {}.", groupName);
+            throw exception;
         }
     }
 }

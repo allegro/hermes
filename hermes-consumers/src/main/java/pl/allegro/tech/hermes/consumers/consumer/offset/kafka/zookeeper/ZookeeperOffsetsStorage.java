@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.offset.kafka.zookeeper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import org.apache.curator.framework.CuratorFramework;
-import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -29,7 +29,7 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     }
 
     @Override
-    public void setSubscriptionOffset(Subscription subscription, PartitionOffset partitionOffset) {
+    public void setSubscriptionOffset(SubscriptionName subscription, PartitionOffset partitionOffset) {
         try {
             String offsetPath = getPartitionOffsetPath(subscription, partitionOffset.getTopic(), partitionOffset.getPartition());
 
@@ -58,7 +58,7 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     }
 
     @Override
-    public long getSubscriptionOffset(Subscription subscription, KafkaTopicName kafkaTopicName, int partitionId) {
+    public long getSubscriptionOffset(SubscriptionName subscription, KafkaTopicName kafkaTopicName, int partitionId) {
         try {
             byte[] offset = curatorFramework.getData().forPath(getPartitionOffsetPath(subscription, kafkaTopicName, partitionId));
             return Long.valueOf(new String(offset));
@@ -68,7 +68,7 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     }
 
     @VisibleForTesting
-    protected String getPartitionOffsetPath(Subscription subscription, KafkaTopicName kafkaTopicName, int partition) {
+    protected String getPartitionOffsetPath(SubscriptionName subscription, KafkaTopicName kafkaTopicName, int partition) {
         return KafkaZookeeperPaths.partitionOffsetPath(
                 kafkaNamesMapper.toConsumerGroupId(subscription),
                 kafkaTopicName,

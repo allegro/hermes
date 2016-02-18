@@ -39,7 +39,7 @@ import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.apache.commons.io.FileUtils.copyFile;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class MessageBufferLoadingTest extends IntegrationTest {
@@ -108,7 +108,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     @Test
     public void shouldLoadMessageFromBackupStorage() throws Exception {
         // given
-        Topic topic = topic().withContentType(ContentType.JSON).withName("backupGroup", "topic").build();
+        Topic topic = topic("backupGroup", "topic").withContentType(ContentType.JSON).build();
         File backup = backupFileWithOneMessage(topic);
 
         operations.createSubscription(operations.buildTopic(topic), "subscription", HTTP_ENDPOINT_URL);

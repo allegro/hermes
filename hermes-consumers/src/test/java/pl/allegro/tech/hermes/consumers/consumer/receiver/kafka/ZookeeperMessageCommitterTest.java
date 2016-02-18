@@ -8,6 +8,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
@@ -19,8 +20,7 @@ import java.nio.charset.Charset;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
-import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class ZookeeperMessageCommitterTest {
 
@@ -44,7 +44,7 @@ public class ZookeeperMessageCommitterTest {
     @Test
     public void shouldCommitOffsetsIfNoEntryExists() throws Exception {
         //when
-        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
+        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
 
         //then
         assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
@@ -53,10 +53,10 @@ public class ZookeeperMessageCommitterTest {
     @Test
     public void shouldCommitOffsetsIfEntryExists() throws Exception {
         //given
-        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
+        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
 
         //when
-        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 0));
+        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 0));
 
         //then
         assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
@@ -65,10 +65,10 @@ public class ZookeeperMessageCommitterTest {
     @Test
     public void shouldCommitCorrectOffset() throws Exception {
         //given
-        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
+        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
 
         //when
-        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 1));
+        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 1));
 
         //then
         assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
@@ -78,7 +78,7 @@ public class ZookeeperMessageCommitterTest {
     @Test
     public void shouldRemoveOffset() throws Exception {
         //given
-        zookeeperMessageCommitter.commitOffset(subscriptionForTopic(SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
+        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
 
         //when
         zookeeperMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", KAFKA_TOPIC, 0);
@@ -86,12 +86,6 @@ public class ZookeeperMessageCommitterTest {
         //then
         assertNull(curatorClient.checkExists().forPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
     }
-
-    private Subscription subscriptionForTopic(TopicName topicName) throws MalformedURLException {
-        return subscription().withTopicName(topicName).withName("sub1").withEndpoint(EndpointAddress.of("http://touk.pl"))
-            .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build()).build();
-    }
-
 
     private long getOffsetForPath(String path) throws Exception {
         byte[] bytes = curatorClient.getData().forPath(path);

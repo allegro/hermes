@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.Assertions;
 import pl.allegro.tech.hermes.integration.metadata.TraceContext;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
+import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -34,7 +35,8 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.glassfish.jersey.client.ClientProperties.REQUEST_ENTITY_PROCESSING;
 import static org.glassfish.jersey.client.RequestEntityProcessing.CHUNKED;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -175,13 +177,12 @@ public class PublishingTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldTreatMessageWithInvalidInterpolationAsUndelivered() {
         // given
-        Subscription subscription = Subscription.Builder.subscription().applyDefaults().withName("subscription")
+        Topic topic = operations.buildTopic("publishInvalidInterpolatedGroup", "topic");
+        Subscription subscription = subscription(topic, "subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL + "{template}/"))
-                .withSupportTeam("team")
                 .withSubscriptionPolicy(
                         SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().withMessageTtl(1).build()
                 ).build();
-        Topic topic = operations.buildTopic("publishInvalidInterpolatedGroup", "topic");
         operations.createSubscription(topic, subscription);
 
         TestMessage message = TestMessage.of("hello", "world");
@@ -262,7 +263,7 @@ public class PublishingTest extends IntegrationTest {
         //given
         String message = "{\"id\": 6}";
         operations.buildTopic(
-                topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
+                topic("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
 
         //when
         Response response = publisher.publish("schema.topic", message);
@@ -276,7 +277,7 @@ public class PublishingTest extends IntegrationTest {
         // given
         String messageInvalidWithSchema = "{\"id\": \"shouldBeNumber\"}";
         operations.buildTopic(
-                topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
+                topic("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
 
         //when
         Response response = publisher.publish("schema.topic", messageInvalidWithSchema);
@@ -290,7 +291,7 @@ public class PublishingTest extends IntegrationTest {
         // given
         String invalidMessage = "{\"id\": \"shouldBeNumber\"}";
         operations.buildTopic(
-                topic().withName("schema.topicWithValidationDryRun")
+                topic("schema.topicWithValidationDryRun")
                         .withValidation(true)
                         .withValidationDryRun(true)
                         .withMessageSchema(schema)

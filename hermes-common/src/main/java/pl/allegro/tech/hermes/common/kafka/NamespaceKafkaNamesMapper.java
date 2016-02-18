@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.common.kafka;
 
-import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.function.Function;
@@ -16,7 +16,7 @@ public class NamespaceKafkaNamesMapper implements KafkaNamesMapper {
     }
 
     @Override
-    public ConsumerGroupId toConsumerGroupId(Subscription subscription) {
+    public ConsumerGroupId toConsumerGroupId(SubscriptionName subscription) {
         return toConsumerGroupId(subscription.getId());
     }
 
@@ -36,7 +36,7 @@ public class NamespaceKafkaNamesMapper implements KafkaNamesMapper {
     protected Function<KafkaTopic, KafkaTopic> appendNamespace = it ->
             new KafkaTopic(KafkaTopicName.valueOf(appendNamespace(it.name().asString())), it.contentType());
 
-    protected Function<KafkaTopic, KafkaTopics> mapToKafkaTopics = it -> new KafkaTopics(it);
+    protected Function<KafkaTopic, KafkaTopics> mapToKafkaTopics = KafkaTopics::new;
 
     private String appendNamespace(String name) {
         return namespace.isEmpty()? name : namespace + SEPARATOR + name;

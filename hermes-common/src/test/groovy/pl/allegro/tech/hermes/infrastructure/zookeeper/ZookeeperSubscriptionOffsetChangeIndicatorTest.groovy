@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper
 
-import pl.allegro.tech.hermes.api.ContentType
-import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
@@ -10,8 +8,9 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
+import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
 
@@ -19,7 +18,7 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
 
     private static final TopicName TOPIC_NAME = new TopicName(GROUP, 'topic')
 
-    private static final Topic TOPIC = topic().applyDefaults().withContentType(ContentType.JSON).withName(TOPIC_NAME).build()
+    private static final Topic TOPIC = topic(TOPIC_NAME).build()
 
     private static final String BROKERS_CLUSTER_NAME = 'primary'
 
@@ -30,7 +29,7 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
 
     void setup() {
         if (!groupRepository.groupExists(GROUP)) {
-            groupRepository.createGroup(Group.from(GROUP))
+            groupRepository.createGroup(group(GROUP).build())
             topicRepository.createTopic(TOPIC)
         }
         primaryKafkaTopicName = kafkaNamesMapper.toKafkaTopics(TOPIC).primary.name()
@@ -38,7 +37,7 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
 
     def "should set offsets for subscription to indicate that they should be changed in Kafka"() {
         given:
-        subscriptionRepository.createSubscription(subscription().withName('override').withTopicName(TOPIC_NAME).build())
+        subscriptionRepository.createSubscription(subscription(TOPIC_NAME, 'override').build())
         wait.untilSubscriptionCreated(TOPIC_NAME, 'override')
 
         when:
@@ -51,7 +50,7 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
 
     def "should extract changed offsets"() {
         given:
-        subscriptionRepository.createSubscription(subscription().withName('read').withTopicName(TOPIC_NAME).build())
+        subscriptionRepository.createSubscription(subscription(TOPIC_NAME, 'read').build())
         wait.untilSubscriptionCreated(TOPIC_NAME, 'read')
         indicator.setSubscriptionOffset(TOPIC_NAME, 'read', BROKERS_CLUSTER_NAME, new PartitionOffset(primaryKafkaTopicName, 10, 1))
 

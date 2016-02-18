@@ -18,6 +18,7 @@ import java.time.Clock;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class SubscriptionOffsetCommitQueuesTest {
 
@@ -25,8 +26,7 @@ public class SubscriptionOffsetCommitQueuesTest {
     private static final int SECOND_PARTITION = 1;
     private static final KafkaTopicName KAFKA_TOPIC = KafkaTopicName.valueOf("kafka_topic");
 
-    private Subscription subscription = Subscription.Builder.subscription()
-            .applyDefaults().withSubscriptionPolicy(
+    private Subscription subscription = subscription("group.topic", "subscription").withSubscriptionPolicy(
                     SubscriptionPolicy.Builder.subscriptionPolicy()
                             .applyDefaults().withRate(1000).withMessageTtl(5).build()
             ).build();

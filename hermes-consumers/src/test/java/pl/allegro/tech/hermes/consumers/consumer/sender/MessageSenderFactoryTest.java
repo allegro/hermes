@@ -6,13 +6,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageSenderFactoryTest {
@@ -27,7 +26,7 @@ public class MessageSenderFactoryTest {
     public void shouldCreateCustomProtocolMessageSender() {
         // given
         final String endpoint = "myProtocol://service";
-        Subscription subscription = subscription().withEndpoint(EndpointAddress.of(endpoint)).build();
+        Subscription subscription = subscription("group.topic", "subscription", endpoint).build();
 
         MessageSenderFactory messageSenderFactory = new MessageSenderFactory(
             providersFrom("myProtocol", messageSenderProvider), defaultMessageSenderProvider, defaultMessageSenderProvider
@@ -44,7 +43,7 @@ public class MessageSenderFactoryTest {
         MessageSenderFactory messageSenderFactory = new MessageSenderFactory(
             new MessageSenderProviders(), messageSenderProvider, defaultMessageSenderProvider
         );
-        Subscription subscription = subscription().withEndpoint(EndpointAddress.of(endpoint)).build();
+        Subscription subscription = subscription("group.topic", "subscription", endpoint).build();
 
         // when & then
         assertThat(messageSenderFactory.create(subscription)).isEqualTo(messageSenderProvider.create(endpoint));
@@ -57,7 +56,7 @@ public class MessageSenderFactoryTest {
         MessageSenderFactory messageSenderFactory = new MessageSenderFactory(
                 new MessageSenderProviders(), defaultMessageSenderProvider, messageSenderProvider
         );
-        Subscription subscription = subscription().withEndpoint(EndpointAddress.of(endpoint)).build();
+        Subscription subscription = subscription("group.topic", "subscription", endpoint).build();
 
         // when & then
         assertThat(messageSenderFactory.create(subscription)).isEqualTo(messageSenderProvider.create(endpoint));
@@ -69,7 +68,7 @@ public class MessageSenderFactoryTest {
         MessageSenderFactory messageSenderFactory = new MessageSenderFactory(
             new MessageSenderProviders(), defaultMessageSenderProvider, defaultMessageSenderProvider
         );
-        Subscription subscription = subscription().withEndpoint(EndpointAddress.of("unknown://localhost:8080/test")).build();
+        Subscription subscription = subscription("group.topic", "subscription", "unknown://localhost:8080/test").build();
 
         // when
         catchException(messageSenderFactory).create(subscription);
@@ -83,7 +82,7 @@ public class MessageSenderFactoryTest {
     public void shouldOverrideDefaultProtocolMessageSender() {
         // given
         final String endpoint = "http://service";
-        Subscription subscription = subscription().withEndpoint(EndpointAddress.of(endpoint)).build();
+        Subscription subscription = subscription("group.topic", "subscription", endpoint).build();
         MessageSenderFactory messageSenderFactory = new MessageSenderFactory(
             providersFrom("http", messageSenderProvider), defaultMessageSenderProvider, defaultMessageSenderProvider
         );

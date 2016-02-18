@@ -11,8 +11,8 @@ import javax.ws.rs.core.Response;
 import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
-import static pl.allegro.tech.hermes.api.Group.Builder.group;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class GroupManagementTest extends IntegrationTest {
@@ -20,7 +20,7 @@ public class GroupManagementTest extends IntegrationTest {
     @Test
     public void shouldCreateGroup() {
         // given when
-        Response response = management.group().create(Group.from("testGroup"));
+        Response response = management.group().create(group("testGroup").build());
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
@@ -32,8 +32,9 @@ public class GroupManagementTest extends IntegrationTest {
         // given
         final String groupName = "groupToUpdate";
         final String supportTeam = "Skylab";
+
         operations.createGroup(groupName);
-        Group modifiedGroup = group().withGroupName(groupName).withSupportTeam(supportTeam).build();
+        Group modifiedGroup = group(groupName).withSupportTeam(supportTeam).build();
 
         // when
         management.group().update(groupName, modifiedGroup);
@@ -55,7 +56,7 @@ public class GroupManagementTest extends IntegrationTest {
     @Test
     void shouldCreateAndFetchGroupDetails() throws InterruptedException {
         //given
-        Group group = new Group("groupWithDetails", "owner", "team", "contact");
+        Group group = group("groupWithDetails").build();
         management.group().create(group);
 
         //when
@@ -68,7 +69,7 @@ public class GroupManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnBadRequestStatusWhenAttemptToCreateGroupWithInvalidCharactersWasMade() {
         // given
-        Group groupWithNameWithSpaces = Group.from("group;` name with spaces");
+        Group groupWithNameWithSpaces = group("group;` name with spaces").build();
 
         // when
         Response response = management.group().create(groupWithNameWithSpaces);
@@ -94,7 +95,7 @@ public class GroupManagementTest extends IntegrationTest {
     public void shouldNotAllowOnRemovingNonEmptyGroup() {
         // given
         operations.createGroup("removeNonemptyGroup");
-        operations.createTopic(topic().withName("removeNonemptyGroup", "topic").build());
+        operations.createTopic(topic("removeNonemptyGroup", "topic").build());
 
         // when
         Response response = management.group().delete("removeNonemptyGroup");
@@ -107,7 +108,7 @@ public class GroupManagementTest extends IntegrationTest {
     public void shouldNotAllowDollarSigns() {
         Stream.of("$name", "na$me", "name$").forEach(name -> {
             // when
-            Response response = management.group().create(Group.from(name));
+            Response response = management.group().create(group(name).build());
 
             // then
             assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
