@@ -43,20 +43,20 @@ public class JerseySchemaRepoClient implements SchemaRepoClient {
     @Override
     public void registerSchema(String subject, String schema) {
         Response response = target.path(subject).path("register").request().put(Entity.entity(schema, MediaType.TEXT_PLAIN));
-        checkResponse(response.getStatusInfo(), subject, response.readEntity(String.class));
+        checkSchemaRegistration(response.getStatusInfo(), subject, response.readEntity(String.class));
     }
 
-    private void checkResponse(Response.StatusType statusType, String subject, String response) {
+    private void checkSchemaRegistration(Response.StatusType statusType, String subject, String response) {
         switch (statusType.getFamily()) {
             case SUCCESSFUL:
                 logger.info("Successful write to schema repo for subject {}", subject);
                 break;
             case CLIENT_ERROR:
                 logger.warn("Invalid schema for subject {}. Details: {}", subject, response);
-                throw new InvalidSchemaException("Invalid schema. For more details see schema-repo logs.");
+                throw new InvalidSchemaException(String.format("Invalid schema. Reason: %s", response));
             case SERVER_ERROR:
                 logger.error("Failure write to schema repo for subject {}. Reason: {}", subject, response);
-                throw new SchemaRepoException("Failure write to schema-repo.");
+                throw new SchemaRepoException("Failure writing to schema-repo.");
             default:
                 logger.error("Unknown response from schema-repo. Subject {}, http status {}, Details: {}",
                         subject, statusType.getStatusCode(), response);
