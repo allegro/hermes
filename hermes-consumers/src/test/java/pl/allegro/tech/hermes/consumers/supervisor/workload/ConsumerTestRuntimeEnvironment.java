@@ -101,7 +101,7 @@ public class ConsumerTestRuntimeEnvironment {
         WorkTracker workTracker = new WorkTracker(curator, objectMapper, paths.consumersRuntimePath(CLUSTER_NAME), id, executorService, subscriptionRepository);
         ConsumerNodesRegistry registry = new ConsumerNodesRegistry(curator, executorService, paths.consumersRegistryPath(CLUSTER_NAME), id);
         SubscriptionsCache subscriptionsCache = new ZookeeperSubscriptionsCacheFactory(curator, configFactory, objectMapper).provide();
-        return new SelectiveSupervisorController(supervisor, subscriptionsCache, workTracker, registry, mock(ZookeeperAdminCache.class), configFactory, metrics);
+        return new SelectiveSupervisorController(supervisor, subscriptionsCache, workTracker, registry, mock(ZookeeperAdminCache.class), executorService, configFactory, metrics);
     }
 
     public SelectiveSupervisorController node(String id) {
