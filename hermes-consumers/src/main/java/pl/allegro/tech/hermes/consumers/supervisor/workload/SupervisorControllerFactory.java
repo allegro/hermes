@@ -23,8 +23,10 @@ import javax.inject.Provider;
 import java.util.Map;
 
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.LEGACY_MIRROR;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.MIRROR;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.SELECTIVE;
@@ -46,7 +48,9 @@ public class SupervisorControllerFactory implements Factory<SupervisorController
                 LEGACY_MIRROR, () -> new LegacyMirroringSupervisorController(supervisor, subscriptionsCache, adminCache, configs),
                 MIRROR, () -> new MirroringSupervisorController(supervisor, subscriptionsCache, workTracker, adminCache, configs),
                 SELECTIVE, () -> new SelectiveSupervisorController(supervisor, subscriptionsCache, workTracker,
-                                                                  createConsumersRegistry(configs, curator), adminCache, configs, metrics));
+                                                                  createConsumersRegistry(configs, curator), adminCache,
+                                                                  newFixedThreadPool(configs.getIntProperty(CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE)),
+                                                                  configs, metrics));
     }
 
     private static ConsumerNodesRegistry createConsumersRegistry(ConfigFactory configs, CuratorFramework curator) {
