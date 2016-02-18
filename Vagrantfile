@@ -48,6 +48,13 @@ Vagrant.configure(2) do |config|
    """
 
   config.vm.provision "shell", path: "vagrant_provisioning/init.sh"
+
   config.vm.provision "shell", path: "vagrant_provisioning/start.sh", run: "always"
+
+  config.vm.provision "frontend", type: "shell", path: "vagrant_provisioning/install_hermes_module.sh", args: "frontend"
+  config.vm.provision "consumers", type: "shell", path: "vagrant_provisioning/install_hermes_module.sh", args: "consumers"
+  config.vm.provision "management", type: "shell", path: "vagrant_provisioning/install_hermes_module.sh", args: "management"
+
+  config.vm.provision "console", type: "shell", path: "vagrant_provisioning/install_console.sh"
 
 end
