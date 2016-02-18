@@ -1,7 +1,7 @@
 Hermes
 ======
 
-[![Build Status](https://circleci.com/gh/allegro/hermes.svg?style=shield&circle-token=:circle-token)](https://travis-ci.org/allegro/hermes)
+[![Build Status](https://travis-ci.org/allegro/hermes.svg?branch=master)](https://travis-ci.org/allegro/hermes)
 [![Documentation Status](https://readthedocs.org/projects/hermes-pubsub/badge/?version=latest)](https://readthedocs.org/projects/hermes-pubsub/?badge=latest)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/pl.allegro.tech.hermes/hermes-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/pl.allegro.tech.hermes/hermes-client)
 [![Join the chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/allegro/hermes?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
