@@ -82,16 +82,16 @@ flag on subscription.
 
 ## Retries
 
-Hermes Consumers has been optimized towards maximizing chances of successful message delivery. Retries policy is
+Hermes Consumers have been optimized towards maximizing chances of successful message delivery. Retry policy is
 simple for the client to grasp, as it is configured using only two parameters: **Inflight Time To Live (TTL)**
 and **Retry backoff**.
 
 **Inflight TTL** is specified in seconds and it limits for how long the message will be kept inflight - read out of
 Kafka, but not delivered to subscriber yet. During this period of time Hermes Consumers tries to deliver the message.
 In case of failure, next delivery is scheduled after minimum of **retry backoff** time, which is specified in milliseconds.
-Message offset will not be committed to broker unless it retry limit has been exhausted (it has been delivered or discarded).
+Message offset will not be committed to broker unless it's retry limit has been exhausted (it has been delivered or discarded).
 
-How many times a message can be retired? Very rough calculation can be made using this formula:
+How many times a message can be retried? Very rough calculation can be made using this formula:
 
 ```
 retries = to_millis(inflight_ttl) / retry_backoff
@@ -104,6 +104,22 @@ of subscribing services are time constrained in one way or another. It is much e
 failure the rescue team has one hour to fix the problem before any event will be discarded.
 
 By default inflight TTL is set to 3600 seconds (an hour) and retry backoff is set to 100ms.
+We set a hard limit for the inflight TTL to 7200 seconds (two hours).
+
+## Back pressure
+
+The client is able to signal it can't handle the message at the moment and Hermes Consumer will retry delivery after
+minimum of given delay.
+
+The endpoint can return **Retry-After** header, with the amount of seconds to backoff, combined with status **503**.
+
+Regardless of the provided delay, the **Inflight TTL** of the message still applies in this situation,
+therefore the endpoint needs to ensure the total delay of consecutive **Retry-After** responses does not exceed this value.
+In case it does, the message is discarded.
+
+An important limitation to remember is that the offset won't be committed until the message is either
+successfully delivered or discarded and in case of consumer failure all messages following (even when successfully processed)
+will be resent.
 
 ### Last undelivered message
 

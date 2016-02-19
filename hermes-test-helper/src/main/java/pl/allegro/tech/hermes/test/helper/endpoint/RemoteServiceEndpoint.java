@@ -16,10 +16,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +41,7 @@ public class RemoteServiceEndpoint {
     private List<String> expectedMessages = new ArrayList<>();
 
     private int returnedStatusCode = 200;
+    private int retryStatusCode = 503;
 
     public RemoteServiceEndpoint(WireMockServer service) {
         this(service, "/");
@@ -72,6 +77,24 @@ public class RemoteServiceEndpoint {
                 .willReturn(aResponse().withStatus(returnedStatusCode))));
     }
 
+    public void retryMessage(String message, int delay) {
+        receivedRequests.clear();
+        expectedMessages = Arrays.asList(message, message);
+        listener.register(
+                post(urlEqualTo(path))
+                        .inScenario("retrying")
+                        .whenScenarioStateIs(STARTED)
+                        .willSetStateTo("retried")
+                        .willReturn(aResponse()
+                                .withStatus(retryStatusCode)
+                                .withHeader("Retry-After", Integer.toString(delay))));
+        listener.register(
+                post(urlEqualTo(path))
+                        .inScenario("retrying")
+                        .whenScenarioStateIs("retried")
+                        .willReturn(aResponse().withStatus(returnedStatusCode)));
+    }
+
     public void setReturnedStatusCode(int statusCode) {
         returnedStatusCode = statusCode;
     }
@@ -80,6 +103,10 @@ public class RemoteServiceEndpoint {
         logger.info("Expecting to receive {} messages", expectedMessages.size());
         await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() -> receivedRequests.size() == expectedMessages.size());
         assertThat(receivedRequests.stream().map(LoggedRequest::getBodyAsString).collect(toList())).containsAll(expectedMessages);
+    }
+
+    public void waitUntilReceived(long seconds, int numberOfExpectedMessages) {
+        waitUntilReceived(seconds, numberOfExpectedMessages, body -> {});
     }
 
     public void waitUntilReceived(Consumer<String> requestBodyConsumer) {
@@ -114,6 +141,20 @@ public class RemoteServiceEndpoint {
 
     public LoggedRequest getLastReceivedRequest() {
         return Iterables.getLast(receivedRequests);
+    }
+
+    public LoggedRequest getFirstReceivedRequest() {
+        LoggedRequest item = Iterables.getFirst(receivedRequests, null);
+        if (item == null) {
+            throw new NoSuchElementException();
+        }
+        return item;
+    }
+
+    public java.time.Duration durationBetweenFirstAndLastRequest() {
+        return java.time.Duration.between(
+                getFirstReceivedRequest().getLoggedDate().toInstant(),
+                getLastReceivedRequest().getLoggedDate().toInstant());
     }
 
     public LoggedRequest waitAndGetLastRequest() {

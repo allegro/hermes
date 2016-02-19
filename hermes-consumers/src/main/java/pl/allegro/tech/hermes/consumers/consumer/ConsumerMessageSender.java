@@ -92,7 +92,13 @@ public class ConsumerMessageSender {
     }
 
     private boolean isTtlExceeded(Message message) {
-        return message.isTtlExceeded(subscription.getSerialSubscriptionPolicy().getMessageTtl());
+        return willExceedTtl(message, 0);
+    }
+
+    private boolean willExceedTtl(Message message, long delay) {
+        long ttl = TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
+        long remainingTtl = Math.max(ttl - delay, 0);
+        return message.isTtlExceeded(remainingTtl);
     }
 
     private void handleFailedSending(Message message, MessageSendingResult result) {
@@ -115,10 +121,10 @@ public class ConsumerMessageSender {
     }
 
     private boolean shouldReduceSendingRate(MessageSendingResult result) {
-        return shouldRetrySending(result);
+        return subscriptionAllowsResending(result);
     }
 
-    private boolean shouldRetrySending(MessageSendingResult result) {
+    private boolean subscriptionAllowsResending(MessageSendingResult result) {
         return !result.succeeded() && (!result.isClientError() || subscription.getSerialSubscriptionPolicy().isRetryClientErrors());
     }
 
@@ -140,13 +146,26 @@ public class ConsumerMessageSender {
                 handleMessageSendingSuccess(message, result);
             } else {
                 handleFailedSending(message, result);
-                if (!isTtlExceeded(message) && shouldRetrySending(result)) {
-                    retrySingleThreadExecutor.schedule(() -> retrySending(result),
-                            subscription.getSerialSubscriptionPolicy().getMessageBackoff(), TimeUnit.MILLISECONDS);
-                } else {
+                if (!attemptResending(result)) {
                     handleMessageDiscarding(message, result);
                 }
             }
+        }
+
+        private boolean attemptResending(MessageSendingResult result) {
+            long delay = extractRetryDelay(result);
+            if (!willExceedTtl(message, delay) && subscriptionAllowsResending(result)) {
+                retrySingleThreadExecutor.schedule(() -> retrySending(result),
+                        delay, TimeUnit.MILLISECONDS);
+                return true;
+            }
+            return false;
+        }
+
+        private long extractRetryDelay(MessageSendingResult result) {
+            long defaultBackoff = subscription.getSerialSubscriptionPolicy().getMessageBackoff();
+            long ttlMillis = TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
+            return result.getRetryAfterMillis().map(delay -> Math.min(delay, ttlMillis)).orElse(defaultBackoff);
         }
 
         private void retrySending(MessageSendingResult result) {
