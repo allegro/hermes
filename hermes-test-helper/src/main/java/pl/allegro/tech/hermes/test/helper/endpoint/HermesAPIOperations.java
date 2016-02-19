@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.ws.rs.core.Response;
 
@@ -115,7 +116,12 @@ public class HermesAPIOperations {
     }
 
     public void updateTopic(TopicName topicName, PatchData patch) {
+        Topic beforeUpdate = endpoints.topic().get(topicName.qualifiedName());
+        Topic reference = Patch.apply(beforeUpdate, patch);
+
         assertThat(endpoints.topic().update(topicName.qualifiedName(), patch).getStatus()).isEqualTo(OK.getStatusCode());
+
+        wait.untilTopicUpdated(reference);
     }
 
     public void createBatchSubscription(Topic topic, String endpoint, int messageTtl, int messageBackoff, int batchSize, int batchTime, int batchVolume, boolean retryOnClientErrors) {

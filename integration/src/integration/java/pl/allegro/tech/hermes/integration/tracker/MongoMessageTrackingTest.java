@@ -8,7 +8,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
-import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
@@ -305,13 +304,18 @@ public class MongoMessageTrackingTest extends IntegrationTest {
         assertThat(findAllStatusesByTopic(sentMessages, "logBatchInflightAndSending.topic")).contains("INFLIGHT", "SUCCESS");
     }
 
-    @Test(enabled = false)
-    @Unreliable
+    @Test
     public void shouldLogBatchDiscarding() {
         // given
         Topic topic = operations.buildTopic(topic("logBatchDiscarding", "topic").withContentType(JSON).build());
 
-        BatchSubscriptionPolicy subscriptionPolicy = singleMessageBatchPolicy();
+        BatchSubscriptionPolicy subscriptionPolicy = batchSubscriptionPolicy()
+                .withBatchSize(1)
+                .withBatchVolume(200)
+                .withBatchTime(1)
+                .withMessageTtl(1)
+                .withMessageBackoff(1000)
+                .withRequestTimeout(1).build();
 
         Subscription subscription = subscription("logBatchDiscarding.topic", "subscription", INVALID_ENDPOINT_URL)
                 .withTrackingEnabled(true)

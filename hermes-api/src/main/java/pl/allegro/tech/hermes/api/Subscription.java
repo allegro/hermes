@@ -57,7 +57,7 @@ public class Subscription {
         PENDING, ACTIVE, SUSPENDED
     }
 
-    public Subscription(TopicName topicName,
+    private Subscription(TopicName topicName,
                         String name,
                         EndpointAddress endpoint,
                         State state,
@@ -79,6 +79,34 @@ public class Subscription {
         this.deliveryType = deliveryType;
         this.batchSubscriptionPolicy = this.deliveryType == DeliveryType.BATCH ? (BatchSubscriptionPolicy) subscriptionPolicy : null;
         this.serialSubscriptionPolicy = this.deliveryType == DeliveryType.SERIAL ? (SubscriptionPolicy) subscriptionPolicy : null;
+    }
+
+    public static Subscription createSerialSubscription(TopicName topicName,
+                        String name,
+                        EndpointAddress endpoint,
+                        State state,
+                        String description,
+                        SubscriptionPolicy subscriptionPolicy,
+                        boolean trackingEnabled,
+                        String supportTeam,
+                        String contact,
+                        ContentType contentType) {
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
+                contact, contentType, DeliveryType.SERIAL);
+    }
+
+    public static Subscription createBatchSubscription(TopicName topicName,
+                                                        String name,
+                                                        EndpointAddress endpoint,
+                                                        State state,
+                                                        String description,
+                                                        BatchSubscriptionPolicy subscriptionPolicy,
+                                                        boolean trackingEnabled,
+                                                        String supportTeam,
+                                                        String contact,
+                                                        ContentType contentType) {
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
+                contact, contentType, DeliveryType.BATCH);
     }
 
     @JsonCreator
@@ -239,7 +267,7 @@ public class Subscription {
                     endpoint.anonymizePassword(),
                     state,
                     description,
-                    deliveryType == DeliveryType.SERIAL ? serialSubscriptionPolicy : batchSubscriptionPolicy,
+                    deliveryType == DeliveryType.BATCH ? batchSubscriptionPolicy : serialSubscriptionPolicy,
                     trackingEnabled,
                     supportTeam,
                     contact,

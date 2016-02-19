@@ -72,11 +72,19 @@ public class SubscriptionBuilder {
     }
 
     public Subscription build() {
-        return new Subscription(
-                topicName, name, endpoint, state, description,
-                deliveryType == DeliveryType.SERIAL ? serialSubscriptionPolicy : batchSubscriptionPolicy,
-                trackingEnabled, supportTeam, contact, contentType, deliveryType
-        );
+        if (deliveryType == DeliveryType.SERIAL) {
+            return Subscription.createSerialSubscription(
+                    topicName, name, endpoint, state, description,
+                    serialSubscriptionPolicy,
+                    trackingEnabled, supportTeam, contact, contentType
+            );
+        } else {
+            return Subscription.createBatchSubscription(
+                    topicName, name, endpoint, state, description,
+                    batchSubscriptionPolicy,
+                    trackingEnabled, supportTeam, contact, contentType
+            );
+        }
     }
 
     public SubscriptionBuilder withEndpoint(EndpointAddress endpoint) {
