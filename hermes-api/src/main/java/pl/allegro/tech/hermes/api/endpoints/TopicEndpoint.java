@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 
@@ -49,7 +50,7 @@ public interface TopicEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
-    Response update(@PathParam("topicName") String qualifiedTopicName, Topic update);
+    Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch);
 
     @GET
     @Produces(APPLICATION_JSON)

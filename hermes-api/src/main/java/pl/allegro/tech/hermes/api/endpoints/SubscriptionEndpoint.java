@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 
@@ -83,7 +84,7 @@ public interface SubscriptionEndpoint {
     @Path("/{subscriptionName}")
     Response update(@PathParam("topicName") String qualifiedTopicName,
                     @PathParam("subscriptionName") String subscriptionName,
-                    Subscription subscription);
+                    PatchData patch);
 
     @PUT
     @Consumes(APPLICATION_JSON)

@@ -10,7 +10,7 @@ import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 
 public class UndeliveredLogTest extends IntegrationTest {
@@ -21,11 +21,10 @@ public class UndeliveredLogTest extends IntegrationTest {
     public void shouldLogUndeliveredMessage() {
         // given
         Topic topic = operations.buildTopic("logUndelivered", "topic");
-        Subscription subscription = subscription().withName("subscription")
+        Subscription subscription = subscription(topic, "subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
                 .withTrackingEnabled(true)
                 .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(0).build())
-                .withSupportTeam("team")
                 .build();
 
         operations.createSubscription(topic, subscription);

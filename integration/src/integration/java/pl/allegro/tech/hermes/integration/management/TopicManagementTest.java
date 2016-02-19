@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.integration.management;
 
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
@@ -11,10 +10,11 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
-import static pl.allegro.tech.hermes.api.ContentType.*;
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class TopicManagementTest extends IntegrationTest {
 
@@ -25,7 +25,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         // when
         Response response = management.topic().create(
-                topic().withName("createTopicGroup", "topic").applyDefaults().build());
+                topic("createTopicGroup", "topic").build());
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
@@ -62,8 +62,7 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldNotAllowOnDeletingTopicWithSubscriptions() {
         // given
         Topic topic = operations.buildTopic("removeNonemptyTopicGroup", "topic");
-        operations.createSubscription(topic,
-                subscription().withName("subscription").withEndpoint(EndpointAddress.of("http://whatever.com")).withSupportTeam("team").applyDefaults().build());
+        operations.createSubscription(topic, subscription(topic, "subscription").build());
 
         // when
         Response response = management.topic().remove("removeNonemptyTopicGroup.topic");
@@ -83,7 +82,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         // when
         Response response = management.topic().create(
-                topic().withName("recreateTopicGroup", "topic").applyDefaults().build());
+                topic("recreateTopicGroup", "topic").build());
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
@@ -94,10 +93,10 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldNotAllowOnCreatingSameTopicTwice() {
         // given
         operations.createGroup("overrideTopicGroup");
-        operations.createTopic(topic().withName("overrideTopicGroup", "topic").build());
+        operations.createTopic(topic("overrideTopicGroup", "topic").build());
 
         // when
-        Response response = management.topic().create(topic().withName("overrideTopicGroup", "topic").build());
+        Response response = management.topic().create(topic("overrideTopicGroup", "topic").build());
 
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST).hasErrorCode(ErrorCode.TOPIC_ALREADY_EXISTS);
@@ -106,8 +105,8 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnTopicsThatAreCurrentlyTracked() {
         // given
-        operations.buildTopic(topic().withName("trackedGroup", "topic").withTrackingEnabled(true).build());
-        operations.buildTopic(topic().withName("untrackedGroup", "topic").withTrackingEnabled(false).build());
+        operations.buildTopic(topic("trackedGroup", "topic").withTrackingEnabled(true).build());
+        operations.buildTopic(topic("untrackedGroup", "topic").withTrackingEnabled(false).build());
 
         // when
         List<String> tracked = management.topic().list("", true);
@@ -119,8 +118,8 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnTopicsThatAreCurrentlyTrackedForGivenGroup() {
         // given
-        operations.buildTopic(topic().withName("mixedTrackedGroup", "trackedTopic").withTrackingEnabled(true).build());
-        operations.buildTopic(topic().withName("mixedTrackedGroup", "untrackedTopic").withTrackingEnabled(false).build());
+        operations.buildTopic(topic("mixedTrackedGroup", "trackedTopic").withTrackingEnabled(true).build());
+        operations.buildTopic(topic("mixedTrackedGroup", "untrackedTopic").withTrackingEnabled(false).build());
 
         // when
         List<String> tracked = management.topic().list("mixedTrackedGroup", true);
@@ -133,10 +132,10 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnTrackedTopicsWithAvroContentType() {
         // given
-        operations.buildTopic(topic().withName("avroGroup", "avroTopic").withContentType(AVRO).withTrackingEnabled(false).build());
-        operations.buildTopic(topic().withName("jsonGroup", "jsonTopic").withContentType(JSON).withTrackingEnabled(false).build());
-        operations.buildTopic(topic().withName("avroGroup", "avroTrackedTopic").withContentType(AVRO).withTrackingEnabled(true).build());
-        operations.buildTopic(topic().withName("jsonGroup", "jsonTrackedTopic").withContentType(JSON).withTrackingEnabled(true).build());
+        operations.buildTopic(topic("avroGroup", "avroTopic").withContentType(AVRO).withTrackingEnabled(false).build());
+        operations.buildTopic(topic("jsonGroup", "jsonTopic").withContentType(JSON).withTrackingEnabled(false).build());
+        operations.buildTopic(topic("avroGroup", "avroTrackedTopic").withContentType(AVRO).withTrackingEnabled(true).build());
+        operations.buildTopic(topic("jsonGroup", "jsonTrackedTopic").withContentType(JSON).withTrackingEnabled(true).build());
 
         // and
         String query = "{\"query\": {\"trackingEnabled\": \"true\", \"contentType\": \"AVRO\"}}";
@@ -156,10 +155,10 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnTrackedTopicsWithAvroContentTypeForGivenGroup() {
         // given
-        operations.buildTopic(topic().withName("mixedTrackedGroup", "avroTopic").withContentType(AVRO).withTrackingEnabled(false).build());
-        operations.buildTopic(topic().withName("mixedTrackedGroup", "jsonTopic").withContentType(JSON).withTrackingEnabled(false).build());
-        operations.buildTopic(topic().withName("mixedTrackedGroup", "avroTrackedTopic").withContentType(AVRO).withTrackingEnabled(true).build());
-        operations.buildTopic(topic().withName("mixedTrackedGroup", "jsonTrackedTopic").withContentType(JSON).withTrackingEnabled(true).build());
+        operations.buildTopic(topic("mixedTrackedGroup", "avroTopic").withContentType(AVRO).withTrackingEnabled(false).build());
+        operations.buildTopic(topic("mixedTrackedGroup", "jsonTopic").withContentType(JSON).withTrackingEnabled(false).build());
+        operations.buildTopic(topic("mixedTrackedGroup", "avroTrackedTopic").withContentType(AVRO).withTrackingEnabled(true).build());
+        operations.buildTopic(topic("mixedTrackedGroup", "jsonTrackedTopic").withContentType(JSON).withTrackingEnabled(true).build());
 
         // and
         String query = "{\"query\": {\"trackingEnabled\": \"true\", \"contentType\": \"AVRO\"}}";
@@ -184,7 +183,7 @@ public class TopicManagementTest extends IntegrationTest {
         Stream.of("$name", "na$me", "name$").forEach(topic -> {
             // when
             Response response = management.topic().create(
-                    topic().withName("dollar", topic).applyDefaults().build());
+                    topic("dollar", topic).build());
 
             // then
             assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
@@ -203,7 +202,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         // when
         Response response = management.topic().create(
-                topic().withName(groupName, topicName).applyDefaults().build());
+                topic(groupName, topicName).build());
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
@@ -221,22 +220,10 @@ public class TopicManagementTest extends IntegrationTest {
         operations.createGroup(groupName);
 
         // when
-        management.topic().create(topic().withName(groupName, topicName).applyDefaults().build());
+        management.topic().create(topic(groupName, topicName).build());
 
         // then
         assertThat(brokerOperations.topicExists(qualifiedTopicName, PRIMARY_KAFKA_CLUSTER_NAME)).isTrue();
         assertThat(brokerOperations.topicExists(qualifiedTopicName, SECONDARY_KAFKA_CLUSTER_NAME)).isFalse();
-    }
-
-    @Test
-    public void shouldUseDefaultContentTypeServerSide() {
-        // given
-        Topic topic = topic().withName("defaultContentType", "topic").build();
-
-        // when
-        operations.buildTopic(topic);
-
-        // then
-        assertThat(management.topic().get(topic.getQualifiedName()).getContentType()).isEqualTo(AVRO);
     }
 }

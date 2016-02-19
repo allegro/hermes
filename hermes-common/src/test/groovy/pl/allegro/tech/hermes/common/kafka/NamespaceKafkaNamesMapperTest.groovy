@@ -3,9 +3,11 @@ package pl.allegro.tech.hermes.common.kafka
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
-import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.api.TopicName
 import spock.lang.Specification
 
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class NamespaceKafkaNamesMapperTest extends Specification {
 
@@ -13,10 +15,10 @@ class NamespaceKafkaNamesMapperTest extends Specification {
 
     def "should create consumer group id from subscription"() {
         given:
-        Subscription subscription = Subscription.fromSubscriptionName(SubscriptionName.fromString('pl.group.topic$subscription'))
+        SubscriptionName subscriptionName = new SubscriptionName('subscription', TopicName.fromQualifiedName('pl.group.topic'))
 
         when:
-        ConsumerGroupId consumerGroupId = mapper.toConsumerGroupId(subscription)
+        ConsumerGroupId consumerGroupId = mapper.toConsumerGroupId(subscriptionName)
 
         then:
         consumerGroupId.asString() == "namespace_pl.group_topic_subscription"
@@ -24,7 +26,7 @@ class NamespaceKafkaNamesMapperTest extends Specification {
 
     def "should create consumer group id from subscription id"() {
         given:
-        String subscriptionId = Subscription.fromSubscriptionName(SubscriptionName.fromString('pl.group.topic$subscription')).getId()
+        String subscriptionId = subscription('pl.group.topic', 'subscription').build().getId()
 
         when:
         ConsumerGroupId consumerGroupId = mapper.toConsumerGroupId(subscriptionId)
@@ -35,7 +37,7 @@ class NamespaceKafkaNamesMapperTest extends Specification {
 
     def "should create KafkaTopic from Topic"() {
         given:
-        def topic = Topic.Builder.topic().withName("pl.group.topic").withContentType(ContentType.AVRO).build()
+        def topic = topic("pl.group.topic").withContentType(ContentType.AVRO).build()
 
         when:
         KafkaTopics kafkaTopics = mapper.toKafkaTopics(topic)

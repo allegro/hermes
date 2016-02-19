@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class WorkTrackerTest extends ZookeeperBaseTest {
     static String basePath = "/hermes/consumers/runtime";
@@ -131,7 +132,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
 
     private Subscription anySubscription() {
         SubscriptionName name = SubscriptionName.fromString("com.test.topic$" + Math.abs(UUID.randomUUID().getMostSignificantBits()));
-        Subscription subscription = Subscription.fromSubscriptionName(name);
+        Subscription subscription = subscription(name).build();
         given(subscriptionRepository.getSubscriptionDetails(name)).willReturn(subscription);
         return subscription;
     }

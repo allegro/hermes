@@ -9,8 +9,8 @@ import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
@@ -26,7 +26,7 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should create topic"() {
         when:
-        repository.createTopic(topic().withName(GROUP, 'create').build())
+        repository.createTopic(topic(GROUP, 'create').build())
         wait.untilTopicCreated(GROUP, 'create')
 
         then:
@@ -35,11 +35,11 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should throw exception when trying to create topic that already exists"() {
         given:
-        repository.createTopic(topic().withName(GROUP, 'duplicate').build())
+        repository.createTopic(topic(GROUP, 'duplicate').build())
         wait.untilTopicCreated(GROUP, 'duplicate')
 
         when:
-        repository.createTopic(topic().withName(GROUP, 'duplicate').build())
+        repository.createTopic(topic(GROUP, 'duplicate').build())
 
         then:
         thrown(TopicAlreadyExistsException)
@@ -47,7 +47,7 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should throw exception when trying to create topic for unknown group"() {
         when:
-        repository.createTopic(topic().withName('unknownGroup', 'unknown').build())
+        repository.createTopic(topic('unknownGroup', 'unknown').build())
 
         then:
         thrown(GroupNotExistsException)
@@ -55,8 +55,8 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should list all topic names"() {
         given:
-        repository.createTopic(topic().withName(GROUP, 'listName1').build())
-        repository.createTopic(topic().withName(GROUP, 'listName2').build())
+        repository.createTopic(topic(GROUP, 'listName1').build())
+        repository.createTopic(topic(GROUP, 'listName2').build())
         wait.untilTopicCreated(GROUP, 'listName1')
         wait.untilTopicCreated(GROUP, 'listName2')
 
@@ -69,8 +69,8 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should list all topics"() {
         given:
-        Topic topic1 = topic().withName(GROUP, 'list1').build()
-        Topic topic2 = topic().withName(GROUP, 'list2').build()
+        Topic topic1 = topic(GROUP, 'list1').build()
+        Topic topic2 = topic(GROUP, 'list2').build()
         repository.createTopic(topic1)
         repository.createTopic(topic2)
 
@@ -87,7 +87,7 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should load topic details"() {
         given:
-        repository.createTopic(topic().withName(GROUP, 'details').withDescription('description').withValidation(true).build())
+        repository.createTopic(topic(GROUP, 'details').withDescription('description').withValidation(true).build())
         wait.untilTopicCreated(GROUP, 'details')
 
         when:
@@ -100,10 +100,10 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should update topic"() {
         given:
-        repository.createTopic(topic().withName(GROUP, 'update').withDescription('before update').build())
+        repository.createTopic(topic(GROUP, 'update').withDescription('before update').build())
         wait.untilTopicCreated(GROUP, 'update')
 
-        Topic modifiedTopic = topic().withName(GROUP, 'update').withDescription('after update').build()
+        Topic modifiedTopic = topic(GROUP, 'update').withDescription('after update').build()
 
         when:
         repository.updateTopic(modifiedTopic)
@@ -114,7 +114,7 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should touch topic without changing it"() {
         given:
-        def topic = topic().withName(GROUP, 'touch').withDescription('before update').build()
+        def topic = topic(GROUP, 'touch').withDescription('before update').build()
         repository.createTopic(topic)
         wait.untilTopicCreated(GROUP, 'touch')
 
@@ -151,7 +151,7 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should remove topic"() {
         given:
-        repository.createTopic(topic().withName(GROUP, 'remove').build())
+        repository.createTopic(topic(GROUP, 'remove').build())
         wait.untilTopicCreated(GROUP, 'remove')
 
         when:
@@ -163,11 +163,9 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should throw exception when trying to remove topic with subscriptions"() {
         given:
-        repository.createTopic(topic().withName(GROUP, 'removeWithSubscriptions').build())
+        repository.createTopic(topic(GROUP, 'removeWithSubscriptions').build())
         wait.untilTopicCreated(GROUP, 'removeWithSubscriptions')
-        subscriptionRepository.createSubscription(subscription()
-                .withTopicName(GROUP, 'removeWithSubscriptions')
-                .withName('ups').build())
+        subscriptionRepository.createSubscription(subscription("${GROUP}.removeWithSubscriptions", 'ups').build())
         wait.untilSubscriptionCreated(new TopicName(GROUP, 'removeWithSubscriptions'), 'ups')
 
         when:

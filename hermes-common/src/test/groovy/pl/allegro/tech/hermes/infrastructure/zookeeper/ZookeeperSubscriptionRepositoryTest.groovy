@@ -1,12 +1,17 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper
 
-import pl.allegro.tech.hermes.api.*
+import pl.allegro.tech.hermes.api.EndpointAddress
+import pl.allegro.tech.hermes.api.Group
+import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.api.helpers.Patch
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription
+import static pl.allegro.tech.hermes.api.PatchData.patchData
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
 
@@ -19,13 +24,13 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
     void setup() {
         if(!groupRepository.groupExists(GROUP)) {
             groupRepository.createGroup(Group.from(GROUP))
-            topicRepository.createTopic(Topic.Builder.topic().withName(TOPIC).build())
+            topicRepository.createTopic(topic(TOPIC).build())
         }
     }
     
     def "should create subscription"() {
         given:
-        repository.createSubscription(subscription().withTopicName(TOPIC).withName('create').build())
+        repository.createSubscription(subscription(TOPIC, 'create').build())
         wait.untilSubscriptionCreated(TOPIC, 'create')
         
         expect:
@@ -34,7 +39,7 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
     
     def "should throw exception when trying to add subscription to unknonw topic"() {
         when:
-        repository.createSubscription(subscription().withTopicName(GROUP, 'unknown').withName('unknown').build())
+        repository.createSubscription(subscription("${GROUP}.unknown", 'unknown').build())
         
         then:
         thrown(TopicNotExistsException)
@@ -42,8 +47,8 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
     
     def "should return names of all defined subscriptions"() {
         given:
-        repository.createSubscription(subscription().withTopicName(TOPIC).withName('listNames1').build())
-        repository.createSubscription(subscription().withTopicName(TOPIC).withName('listNames2').build())
+        repository.createSubscription(subscription(TOPIC, 'listNames1').build())
+        repository.createSubscription(subscription(TOPIC, 'listNames2').build())
         wait.untilSubscriptionCreated(TOPIC, 'listNames1')
         wait.untilSubscriptionCreated(TOPIC, 'listNames2')
         
@@ -53,7 +58,7 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
     
     def "should return true when subscription exists"() {
         given:
-        repository.createSubscription(subscription().withTopicName(TOPIC).withName('exists').build())
+        repository.createSubscription(subscription(TOPIC, 'exists').build())
         wait.untilSubscriptionCreated(TOPIC, 'exists')
         
         expect:
@@ -75,11 +80,8 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
     
     def "should return subscription details"() {
         given:
-        repository.createSubscription(subscription()
-                .withTopicName(TOPIC)
-                .withName('details')
+        repository.createSubscription(subscription(TOPIC, 'details', EndpointAddress.of('hello'))
                 .withDescription('my description')
-                .withEndpoint(EndpointAddress.of('hello'))
                 .build())
         wait.untilSubscriptionCreated(TOPIC, 'details')
         
@@ -101,8 +103,8 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
     
     def "should return details of topics subscriptions"() {
         given:
-        Subscription subscription1 = subscription().withTopicName(TOPIC).withName('list1').build()
-        Subscription subscription2 = subscription().withTopicName(TOPIC).withName('list2').build()
+        Subscription subscription1 = subscription(TOPIC, 'list1').build()
+        Subscription subscription2 = subscription(TOPIC, 'list2').build()
         repository.createSubscription(subscription1)
         repository.createSubscription(subscription2)
         wait.untilSubscriptionCreated(TOPIC, 'list1')
@@ -114,7 +116,7 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
     
     def "should remove subscription"() {
         given:
-        repository.createSubscription(subscription().withTopicName(TOPIC).withName('remove').build())
+        repository.createSubscription(subscription(TOPIC, 'remove').build())
         wait.untilSubscriptionCreated(TOPIC, 'remove')
 
         when:
@@ -126,7 +128,7 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
     
     def "should change subscription state"() {
         given:
-        repository.createSubscription(subscription().withTopicName(TOPIC).withName('state').build())
+        repository.createSubscription(subscription(TOPIC, 'state').build())
         wait.untilSubscriptionCreated(TOPIC, 'state')
         
         when:
@@ -138,18 +140,14 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
 
     def "should change subscription endpoint"() {
         given:
-        def retrieved = subscription()
-                .withTopicName(TOPIC)
-                .withName('endpoint')
-                .withEndpoint(EndpointAddress.of("http://localhost:8080/v1"))
-                .build()
+        def retrieved = subscription(TOPIC, 'endpoint', EndpointAddress.of("http://localhost:8080/v1")).build()
 
         repository.createSubscription(retrieved)
         wait.untilSubscriptionCreated(TOPIC, 'endpoint')
 
-        when:
-        def updated = Patch.apply(retrieved, subscription().withEndpoint(EndpointAddress.of("http://localhost:8080/v2")).build());
+        def updated = Patch.apply(retrieved, patchData().set("endpoint", EndpointAddress.of("http://localhost:8080/v2")).build());
 
+        when:
         repository.updateSubscription(updated)
 
         then:

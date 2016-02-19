@@ -4,14 +4,13 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
-import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
@@ -35,7 +34,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.status;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
 @Component
 @Path("/topics")
@@ -43,14 +41,10 @@ import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 public class TopicsEndpoint {
 
     private final TopicService topicService;
-    private final ApiPreconditions preconditions;
-    private final TopicProperties topicProperties;
 
     @Autowired
-    public TopicsEndpoint(TopicService topicService, ApiPreconditions preconditions, TopicProperties topicProperties) {
+    public TopicsEndpoint(TopicService topicService) {
         this.topicService = topicService;
-        this.preconditions = preconditions;
-        this.topicProperties = topicProperties;
     }
 
     @GET
@@ -83,8 +77,7 @@ public class TopicsEndpoint {
     @RolesAllowed({ Roles.GROUP_OWNER, Roles.ADMIN })
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
     public Response create(Topic topic) {
-        preconditions.checkConstraints(topic);
-        topicService.createTopic(topic().applyDefaults().withContentType(topicProperties.getDefaultContentType()).applyPatch(topic).build());
+        topicService.createTopic(topic);
         return status(Response.Status.CREATED).build();
     }
 
@@ -104,8 +97,8 @@ public class TopicsEndpoint {
     @Path("/{topicName}")
     @RolesAllowed({ Roles.GROUP_OWNER, Roles.ADMIN })
     @ApiOperation(value = "Update topic", httpMethod = HttpMethod.PUT)
-    public Response update(@PathParam("topicName") String qualifiedTopicName, Topic update) {
-        topicService.updateTopic(topic().applyPatch(update).withName(qualifiedTopicName).build());
+    public Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch) {
+        topicService.updateTopic(TopicName.fromQualifiedName(qualifiedTopicName), patch);
         return status(Response.Status.OK).build();
     }
 

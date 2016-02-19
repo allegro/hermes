@@ -15,7 +15,7 @@ import java.util.Optional;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class SchemaRepoSchemaSourceProviderTest {
 
@@ -23,7 +23,7 @@ public class SchemaRepoSchemaSourceProviderTest {
 
     private static final SchemaRepoSchemaSourceProvider sourceProvider = new SchemaRepoSchemaSourceProvider(new SchemaRepoClientFactory(new ConfigFactory()).provide());
 
-    private static final Topic topic = topic().withName("someGroup.someTopic").build();
+    private static final Topic topic = topic("someGroup.someTopic").build();
 
     @Rule
     public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(2876));

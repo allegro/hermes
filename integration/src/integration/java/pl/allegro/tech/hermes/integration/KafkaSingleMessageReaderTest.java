@@ -23,7 +23,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class KafkaSingleMessageReaderTest extends IntegrationTest {
 
@@ -63,8 +63,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldFetchSingleAvroMessage() throws IOException {
         // given
-        Topic topic = topic()
-                .withName("avro.fetch")
+        Topic topic = topic("avro.fetch")
                 .withValidation(true)
                 .withMessageSchema(avroUser.getSchemaAsString())
                 .withContentType(AVRO).build();

@@ -4,10 +4,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
-import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
 
 import static org.mockito.Mockito.verify;
 
@@ -19,20 +20,19 @@ public class BrokerMessageCommitterTest {
     @Mock
     private BrokerOffsetsRepository brokerOffsetsRepository;
 
-
     @Test
     public void shouldCommitOffset() throws Exception {
         //given
         int offset = 0;
         int partition = 0;
-        Subscription subscription = Subscription.Builder.subscription().withTopicName("group", "topic").withName("sub").build();
+        SubscriptionName subscriptionName =  new SubscriptionName("sub", TopicName.fromQualifiedName("group.topic"));
 
         BrokerMessageCommitter brokerMessageCommitter = new BrokerMessageCommitter(brokerOffsetsRepository);
 
         //when
-        brokerMessageCommitter.commitOffset(subscription, new PartitionOffset(KAFKA_TOPIC, offset, partition));
+        brokerMessageCommitter.commitOffset(subscriptionName, new PartitionOffset(KAFKA_TOPIC, offset, partition));
 
         //then
-        verify(brokerOffsetsRepository).save(subscription, new PartitionOffset(KAFKA_TOPIC, offset + 1, partition));
+        verify(brokerOffsetsRepository).save(subscriptionName, new PartitionOffset(KAFKA_TOPIC, offset + 1, partition));
     }
 }

@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MaximumOutputRateCalculatorTest {
@@ -28,8 +29,8 @@ public class MaximumOutputRateCalculatorTest {
     @Test
     public void shouldCalculateMaximumConsumerRateAsPartOfOverallSubscriptionRateLimit() {
         // given
-        Subscription subscription = Subscription.Builder.subscription()
-                .applyDefaults().withSubscriptionPolicy(
+        Subscription subscription = subscription("group.topic", "subscription")
+                .withSubscriptionPolicy(
                         SubscriptionPolicy.Builder.subscriptionPolicy()
                                 .applyDefaults().withRate(1000).build()
                 ).build();

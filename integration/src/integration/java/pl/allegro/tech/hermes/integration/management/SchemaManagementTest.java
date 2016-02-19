@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class SchemaManagementTest extends IntegrationTest {
@@ -90,7 +90,7 @@ public class SchemaManagementTest extends IntegrationTest {
     public void shouldNotRemoveAvroSchema() throws IOException {
         // given
         AvroUser avroUser = new AvroUser();
-        Topic avroTopic = topic().withName("avroGroup", "avroTopic")
+        Topic avroTopic = topic("avroGroup", "avroTopic")
                 .withContentType(ContentType.AVRO)
                 .withMessageSchema(avroUser.getSchema().toString())
                 .build();
@@ -107,7 +107,7 @@ public class SchemaManagementTest extends IntegrationTest {
     public void shouldNotSaveInvalidAvroSchema() throws IOException {
         // given
         AvroUser avroUser = new AvroUser();
-        Topic avroTopic = topic().withName("avroGroup", "avroTopic")
+        Topic avroTopic = topic("avroGroup", "avroTopic")
                 .withContentType(ContentType.AVRO)
                 .withMessageSchema(avroUser.getSchema().toString())
                 .build();

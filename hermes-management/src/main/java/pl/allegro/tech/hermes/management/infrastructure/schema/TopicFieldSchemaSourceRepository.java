@@ -2,13 +2,12 @@ package pl.allegro.tech.hermes.management.infrastructure.schema;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.TopicFieldSchemaSourceProvider;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceRepository;
-
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
 public class TopicFieldSchemaSourceRepository extends TopicFieldSchemaSourceProvider implements SchemaSourceRepository {
 
@@ -30,7 +29,7 @@ public class TopicFieldSchemaSourceRepository extends TopicFieldSchemaSourceProv
     }
 
     private void saveValue(String rawSchema, Topic topic) {
-        topicService.updateTopic(topic().applyPatch(topic).withMessageSchema(rawSchema).build());
+        topicService.updateTopic(topic.getName(), PatchData.patchData().set("messageSchema", rawSchema).build());
     }
 
 }

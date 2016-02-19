@@ -1,47 +1,50 @@
 package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.validation.constraints.Min;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class BatchSubscriptionPolicy {
 
-    @Min(0)
-    private Integer messageTtl;
+    private static final int DEFAULT_MESSAGE_TTL = 60 * 1000;
+    private static final int DEFAULT_MESSAGE_BACKOFF = 500;
+    private static final int DEFAULT_REQUEST_TIMEOUT = 30 * 1000;
+    private static final int DEFAULT_BATCH_SIZE = 100;
+    private static final int DEFAULT_BATCH_TIME = 30 * 1000;
+    private static final int DEFAULT_BATCH_VOLUME = 64 * 1000;
 
     @Min(0)
-    private Integer messageBackoff;
+    private int messageTtl;
 
-    private boolean retryClientErrors = false;
+    private boolean retryClientErrors;
 
-    @Min(1)
-    private Integer batchSize;
-
-    @Min(1)
-    private Integer batchTime;
+    @Min(0)
+    private int messageBackoff;
 
     @Min(1)
-    private Integer batchVolume;
+    private int requestTimeout;
 
     @Min(1)
-    private Integer requestTimeout;
+    private int batchSize;
 
-    private BatchSubscriptionPolicy() {
-    }
+    @Min(1)
+    private int batchTime;
 
-    @JsonCreator
-    public BatchSubscriptionPolicy(@JsonProperty("messageTtl") Integer messageTtl,
-                                   @JsonProperty("retryClientErrors") Boolean retryClientErrors,
-                                   @JsonProperty("messageBackoff") Integer messageBackoff,
-                                   @JsonProperty("requestTimeout") Integer requestTimeout,
-                                   @JsonProperty("batchSize") Integer batchSize,
-                                   @JsonProperty("batchTime") Integer batchTime,
-                                   @JsonProperty("batchVolume") Integer batchVolume) {
+    @Min(1)
+    private int batchVolume;
+
+    private BatchSubscriptionPolicy() {}
+
+    public BatchSubscriptionPolicy(int messageTtl,
+                                   boolean retryClientErrors,
+                                   int messageBackoff,
+                                   int requestTimeout,
+                                   int batchSize,
+                                   int batchTime,
+                                   int batchVolume) {
         this.messageTtl = messageTtl;
         this.retryClientErrors = retryClientErrors;
         this.messageBackoff = messageBackoff;
@@ -49,6 +52,19 @@ public class BatchSubscriptionPolicy {
         this.batchSize = batchSize;
         this.batchTime = batchTime;
         this.batchVolume = batchVolume;
+    }
+
+    @JsonCreator
+    public static BatchSubscriptionPolicy create(Map<String, Object> properties) {
+        return new BatchSubscriptionPolicy(
+                (Integer) properties.getOrDefault("messageTtl", DEFAULT_MESSAGE_TTL),
+                (Boolean) properties.getOrDefault("retryClientErrors", false),
+                (Integer) properties.getOrDefault("messageBackoff", DEFAULT_MESSAGE_BACKOFF),
+                (Integer) properties.getOrDefault("requestTimeout", DEFAULT_REQUEST_TIMEOUT),
+                (Integer) properties.getOrDefault("batchSize", DEFAULT_BATCH_SIZE),
+                (Integer) properties.getOrDefault("batchTime", DEFAULT_BATCH_TIME),
+                (Integer) properties.getOrDefault("batchVolume", DEFAULT_BATCH_VOLUME)
+        );
     }
 
     @Override
@@ -174,19 +190,12 @@ public class BatchSubscriptionPolicy {
         }
 
         public Builder applyDefaults() {
-            subscriptionPolicy.messageTtl = 60 * 1000;
-            subscriptionPolicy.messageBackoff = 500;
-            subscriptionPolicy.requestTimeout = 30 * 1000;
-            subscriptionPolicy.batchSize = 100;
-            subscriptionPolicy.batchTime = 30 * 1000;
-            subscriptionPolicy.batchVolume = 64 * 1000;
-
             return this;
         }
 
-        public <T> Builder applyPatch(T changes) {
-            if (changes != null) {
-                subscriptionPolicy = Patch.apply(subscriptionPolicy, changes);
+        public <T> Builder applyPatch(PatchData patch) {
+            if (patch != null) {
+                subscriptionPolicy = Patch.apply(subscriptionPolicy, patch);
             }
             return this;
         }

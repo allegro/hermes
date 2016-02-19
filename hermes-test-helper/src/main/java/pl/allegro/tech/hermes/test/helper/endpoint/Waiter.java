@@ -36,5 +36,11 @@ public class Waiter {
             endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName())
         );
     }
+
+    public void untilTopicUpdated(Topic reference) {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+                endpoints.topic().get(reference.getQualifiedName()).equals(reference)
+        );
+    }
 }
 

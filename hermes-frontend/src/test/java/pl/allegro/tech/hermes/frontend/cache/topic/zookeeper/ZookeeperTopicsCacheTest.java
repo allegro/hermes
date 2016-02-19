@@ -18,7 +18,7 @@ import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class ZookeeperTopicsCacheTest extends ZookeeperBaseTest {
 
@@ -54,7 +54,7 @@ public class ZookeeperTopicsCacheTest extends ZookeeperBaseTest {
     @Test
     public void shouldNotifyOfNewTopic() throws Exception {
         // when
-        topicRepository.createTopic(topic().applyDefaults().withName(QUALIFIED_NAME).build());
+        topicRepository.createTopic(topic(QUALIFIED_NAME).build());
 
         // then
         assertThat(callback.getCreateLatch().await(2000, MILLISECONDS)).isTrue();
@@ -63,11 +63,11 @@ public class ZookeeperTopicsCacheTest extends ZookeeperBaseTest {
     @Test
     public void shouldNotifyOfTopicUpdate() throws Exception {
         // given
-        topicRepository.createTopic(topic().applyDefaults().withName(QUALIFIED_NAME).build());
+        topicRepository.createTopic(topic(QUALIFIED_NAME).build());
         waitUntilTopicIsCreated(TOPIC_NAME);
 
         // when
-        topicRepository.updateTopic(topic().applyDefaults().withName(QUALIFIED_NAME).withRetentionTime(5).build());
+        topicRepository.updateTopic(topic(QUALIFIED_NAME).withRetentionTime(5).build());
 
         // then
         assertThat(callback.getChangeLatch().await(5000, MILLISECONDS)).isTrue();
@@ -76,7 +76,7 @@ public class ZookeeperTopicsCacheTest extends ZookeeperBaseTest {
     @Test
     public void shouldNotifyOfRemovedTopics() throws Exception {
         // given
-        topicRepository.createTopic(topic().applyDefaults().withName(QUALIFIED_NAME).build());
+        topicRepository.createTopic(topic(QUALIFIED_NAME).build());
         waitUntilTopicIsCreated(TOPIC_NAME);
 
         // when
@@ -89,7 +89,7 @@ public class ZookeeperTopicsCacheTest extends ZookeeperBaseTest {
     @Test
     public void shouldTopicNotExistsAfterRemove() {
         // given
-        topicRepository.createTopic(topic().applyDefaults().withName(QUALIFIED_NAME).build());
+        topicRepository.createTopic(topic(QUALIFIED_NAME).build());
         waitUntilTopicIsCreated(TOPIC_NAME);
 
         // when

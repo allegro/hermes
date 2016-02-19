@@ -30,18 +30,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -51,14 +44,9 @@ public class ConsumerTest {
             .withContent("{\"username\":\"ala\"}", StandardCharsets.UTF_8)
             .build();
 
-    private static final Subscription SUBSCRIPTION = Subscription.Builder.subscription()
-            .withTopicName(new TopicName("group", "topic"))
-            .withName("subscription")
-            .withEndpoint(EndpointAddress.of("http://localhost"))
-            .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
-            .build();
+    private static final Subscription SUBSCRIPTION = subscription("group.topic", "subscription").build();
 
-    private static final Topic TOPIC = Topic.Builder.topic().withName("group", "topic").build();
+    private static final Topic TOPIC = topic("group", "topic").build();
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ConfigFactory configFactory;
@@ -174,7 +162,7 @@ public class ConsumerTest {
     @Test
     public void shouldUpdateSubscriptionPolicy() {
         // given
-        Subscription newSubscription = createSubscription();
+        Subscription newSubscription = subscription("group.topic", "subscription").build();
         SubscriptionPolicy newSubscriptionPolicy = subscriptionPolicy()
                 .withRate(2)
                 .withMessageTtl(500)
@@ -190,13 +178,5 @@ public class ConsumerTest {
 
         verify(consumerRateLimiter).updateSubscription(captor.capture());
         assertThat(captor.getValue().getSerialSubscriptionPolicy()).isEqualTo(newSubscriptionPolicy);
-    }
-
-    private Subscription createSubscription() {
-        return subscription().applyDefaults()
-                .withTopicName(TopicName.fromQualifiedName("group1.topic"))
-                .withName("name")
-                .withDescription("desc")
-                .build();
     }
 }

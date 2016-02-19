@@ -38,8 +38,9 @@ import static org.apache.commons.lang.math.RandomUtils.nextInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class ConsumerTestRuntimeEnvironment {
@@ -78,13 +79,13 @@ public class ConsumerTestRuntimeEnvironment {
     }
 
     public SubscriptionName createSubscription(String subscriptionName) {
-        Subscription subscription = Subscription.fromSubscriptionName(SubscriptionName.fromString(subscriptionName));
+        Subscription subscription = subscription(SubscriptionName.fromString(subscriptionName)).build();
         Group group = Group.from(subscription.getTopicName().getGroupName());
         if (!groupRepository.groupExists(group.getGroupName())) {
             groupRepository.createGroup(group);
         }
         if (!topicRepository.topicExists(subscription.getTopicName())) {
-            topicRepository.createTopic(topic().applyDefaults().withName(subscription.getTopicName()).build());
+            topicRepository.createTopic(topic(subscription.getTopicName()).build());
         }
         subscriptionRepository.createSubscription(subscription);
         await().atMost(adjust(ONE_SECOND)).until(() -> subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName()));

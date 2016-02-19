@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.io.File;
@@ -29,7 +30,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 
 public class BackupMessagesLoaderTest {
 
@@ -48,7 +48,7 @@ public class BackupMessagesLoaderTest {
     private File tempDir;
 
     private final TopicName topicName = TopicName.fromQualifiedName("pl.allegro.tech.hermes.test");
-    private final Topic topic = topic().withName(topicName).build();
+    private final Topic topic = TopicBuilder.topic(topicName).build();
 
     @Before
     public void setUp() throws Exception {

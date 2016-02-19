@@ -4,7 +4,7 @@ import pl.allegro.tech.hermes.api.ContentType
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
 
@@ -14,7 +14,7 @@ class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
         def mapper = new JsonToAvroMigrationKafkaNamesMapper(namespace)
 
         expect:
-        mapper.toKafkaTopics(topic().applyDefaults().withName(topicName).build()).primary.name() == KafkaTopicName.valueOf(kafkaTopicName)
+        mapper.toKafkaTopics(topic(topicName).build()).primary.name() == KafkaTopicName.valueOf(kafkaTopicName)
 
         where:
         namespace | topicName     | kafkaTopicName
@@ -39,7 +39,7 @@ class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
     def "should append '_avro' suffix for topics of type AVRO"() {
         given:
         def mapper = new JsonToAvroMigrationKafkaNamesMapper("")
-        def avroTopic = topic().withName("group", "topic").withContentType(ContentType.AVRO).build()
+        def avroTopic = topic("group", "topic").withContentType(ContentType.AVRO).build()
 
         expect:
         mapper.toKafkaTopics(avroTopic).primary.name() == KafkaTopicName.valueOf("group.topic_avro")
@@ -48,7 +48,7 @@ class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
     def "should map to topics with secondary json topic for topics migrated from json to avro"() {
         given:
         def mapper = new JsonToAvroMigrationKafkaNamesMapper("")
-        def migratedTopic = topic().withName("group", "topic").withContentType(ContentType.AVRO).migratedFromJsonType().build()
+        def migratedTopic = topic("group", "topic").withContentType(ContentType.AVRO).migratedFromJsonType().build()
 
         when:
         def topics = mapper.toKafkaTopics(migratedTopic)

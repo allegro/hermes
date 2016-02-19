@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class SubscriptionTest {
 
@@ -55,21 +57,21 @@ public class SubscriptionTest {
     @Test
     public void shouldApplyPatchToSubscriptionPolicy() {
         //given
-        SubscriptionPolicy message = subscriptionPolicy().withRate(8).build();
+        PatchData patch = patchData().set("rate", 8).build();
 
         //when
         SubscriptionPolicy subscription = subscriptionPolicy()
                 .withRate(1)
-                .applyPatch(message).build();
+                .applyPatch(patch).build();
 
         //then
-        assertThat(subscription.getRate()).isEqualTo(message.getRate());
+        assertThat(subscription.getRate()).isEqualTo(8);
     }
 
     @Test
     public void shouldAnonymizePassword() {
         // given
-        Subscription subscription = Subscription.Builder.subscription().withEndpoint(new EndpointAddress("http://user:password@service/path")).build();
+        Subscription subscription = subscription("group.topic", "subscription").withEndpoint("http://user:password@service/path").build();
 
         // when & then
         assertThat(subscription.anonymizePassword().getEndpoint()).isEqualTo(new EndpointAddress("http://user:*****@service/path"));

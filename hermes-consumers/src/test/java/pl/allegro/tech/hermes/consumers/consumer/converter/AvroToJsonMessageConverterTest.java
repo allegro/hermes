@@ -16,8 +16,8 @@ import java.io.IOException;
 import static com.google.common.collect.ImmutableMap.of;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AvroToJsonMessageConverterTest {
@@ -28,7 +28,7 @@ public class AvroToJsonMessageConverterTest {
     @Test
     public void shouldConvertToJsonWithoutMetadata() throws IOException {
         // given
-        Topic topic = topic().withName("group.topic").build();
+        Topic topic = topic("group.topic").build();
         AvroUser avroUser = new AvroUser("Bob", 18, "blue");
         Message source = message().withData(avroUser.asBytes()).withExternalMetadata(of()).build();
         when(avroSchemaRepository.getSchema(topic)).thenReturn(avroUser.getSchema());
