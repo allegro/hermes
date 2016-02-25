@@ -29,6 +29,8 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageCommitterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.OffsetStoragesFactory;
+import pl.allegro.tech.hermes.consumers.consumer.result.undelivered.LogUndeliveredMessageHandler;
+import pl.allegro.tech.hermes.consumers.consumer.result.undelivered.UndeliveredMessageHandlers;
 import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
@@ -110,6 +112,8 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(UndeliveredMessageLogPersister.class);
         bindFactory(ByteBufferMessageBatchFactoryProvider.class).in(Singleton.class).to(MessageBatchFactory.class);
         bind(HttpMessageBatchSenderFactory.class).to(MessageBatchSenderFactory.class).in(Singleton.class);
+        bindSingleton(LogUndeliveredMessageHandler.class);
+        bindSingleton(UndeliveredMessageHandlers.class);
     }
 
     private <T> void bindSingleton(Class<T> clazz) {

@@ -13,20 +13,19 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
-import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
+import pl.allegro.tech.hermes.consumers.consumer.result.undelivered.UndeliveredMessageHandlers;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Clock;
 
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
 
@@ -40,8 +39,6 @@ public class DefaultErrorHandlerTest {
     private static final TopicName QUALIFIED_TOPIC_NAME = new TopicName(GROUP_NAME, TOPIC_NAME);
     private static final String SUBSCRIPTION_NAME = "subscription0";
     private static final String MESSAGE_CONTENT = "test";
-    private static final Long CURRENT_TIME = 8L;
-    private static final String CLUSTER = "cluster";
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private HermesMetrics hermesMetrics;
@@ -63,10 +60,10 @@ public class DefaultErrorHandlerTest {
             .build();
 
     @Mock
-    private Clock clock;
+    private Counter counter;
 
     @Mock
-    private Counter counter;
+    private UndeliveredMessageHandlers undeliveredMessageHandlers;
 
     private TestTrackers trackers = new TestTrackers();
 
@@ -77,8 +74,7 @@ public class DefaultErrorHandlerTest {
     public void setUp() {
         when(subscription.getName()).thenReturn(SUBSCRIPTION_NAME);
         when(subscription.getTopicName()).thenReturn(QUALIFIED_TOPIC_NAME);
-        when(clock.millis()).thenReturn(CURRENT_TIME);
-        defaultErrorHandler = new DefaultErrorHandler(offsetHelper, hermesMetrics, undeliveredMessageLog, clock, trackers, CLUSTER);
+        defaultErrorHandler = new DefaultErrorHandler(offsetHelper, hermesMetrics, trackers, undeliveredMessageHandlers);
         reset(hermesMetrics);
     }
 
@@ -101,14 +97,13 @@ public class DefaultErrorHandlerTest {
     @Test
     public void shouldAddDiscardedEventToUndeliveredMessageLogWhenPolicyExhausted() {
         //given
-        when(hermesMetrics.counter(Counters.INFLIGHT, QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME)).thenReturn(counter);
         InternalProcessingException cause = new InternalProcessingException("Test cause.");
+        MessageSendingResult result = failedResult(cause);
 
         //when
-        defaultErrorHandler.handleDiscarded(message, subscription, failedResult(cause));
+        defaultErrorHandler.handleDiscarded(message, subscription, result);
 
         //then
-        verify(undeliveredMessageLog)
-                .add(createUndeliveredMessage(subscription, MESSAGE_CONTENT, cause, CURRENT_TIME, PARTITION, OFFSET, CLUSTER));
+        verify(undeliveredMessageHandlers).handleDiscarded(message, subscription, result);
     }
 }
