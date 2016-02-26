@@ -26,7 +26,7 @@ class ZookeeperSubscriptionsCache extends ZookeeperCacheBase implements Subscrip
 
         super(configFactory, curatorClient);
 
-        groupsNodeCache = new GroupsNodeCache(curatorClient, objectMapper, paths.groupsPath(), executorService);
+        groupsNodeCache = new GroupsNodeCache(curatorClient, objectMapper, paths.groupsPath(), eventExecutor, processingExecutor);
     }
 
     @Override
@@ -39,7 +39,7 @@ class ZookeeperSubscriptionsCache extends ZookeeperCacheBase implements Subscrip
     public void stop() {
         try {
             groupsNodeCache.stop();
-            executorService.shutdown();
+            super.stop();
         } catch (Exception ex) {
             throw new InternalProcessingException(ex);
         }
