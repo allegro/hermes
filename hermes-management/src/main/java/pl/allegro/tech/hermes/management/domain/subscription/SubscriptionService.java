@@ -9,16 +9,19 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class SubscriptionService {
@@ -26,6 +29,8 @@ public class SubscriptionService {
     private static final int LAST_MESSAGE_COUNT = 100;
 
     private final SubscriptionRepository subscriptionRepository;
+
+    private final TopicService topicService;
 
     private final SubscriptionMetricsRepository metricsRepository;
 
@@ -39,12 +44,14 @@ public class SubscriptionService {
 
     @Autowired
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
+                               TopicService topicService,
                                SubscriptionMetricsRepository metricsRepository,
                                UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
                                ApiPreconditions apiPreconditions,
                                AdminTool adminTool) {
         this.subscriptionRepository = subscriptionRepository;
+        this.topicService = topicService;
         this.metricsRepository = metricsRepository;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
@@ -57,11 +64,16 @@ public class SubscriptionService {
     }
 
     public List<String> listTrackedSubscriptionNames(TopicName topicName) {
-        return subscriptionRepository.listTrackedSubscriptionNames(topicName);
+        return listSubscriptions(topicName).stream()
+                .filter(Subscription::isTrackingEnabled)
+                .map(Subscription::getName)
+                .collect(Collectors.toList());
     }
 
     public List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query) {
-        return subscriptionRepository.listFilteredSubscriptionNames(topicName, query);
+        return query.filter(listSubscriptions(topicName))
+                .map(Subscription::getName)
+                .collect(Collectors.toList());
     }
 
     public List<Subscription> listSubscriptions(TopicName topicName) {
@@ -124,5 +136,20 @@ public class SubscriptionService {
         return !retrieved.getEndpoint().equals(subscription.getEndpoint()) ||
                !retrieved.getContentType().equals(subscription.getContentType()) ||
                !retrieved.getDeliveryType().equals(subscription.getDeliveryType());
+    }
+
+    public List<Subscription> querySubscription(Query<Subscription> query) {
+        return query
+                .filter(getAllSubscriptions())
+                .collect(Collectors.toList());
+    }
+
+    public List<Subscription> getAllSubscriptions() {
+        return topicService.getAllTopics()
+                .stream()
+                .map(Topic::getName)
+                .map(this::listSubscriptions)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 }

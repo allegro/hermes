@@ -8,6 +8,7 @@ import java.util.Map;
 
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.AND;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.EQ;
+import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.LIKE;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.IN;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.NE;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.NOT;
@@ -42,6 +43,7 @@ public class MatcherFactories {
     private static void registerFactories() {
         FACTORIES.put(EQ, (path, node, parser) -> new EqualityMatcher(path, parser.parseValue(node)));
         FACTORIES.put(NE, (path, node, parser) -> new NotMatcher(new EqualityMatcher(path, parser.parseValue(node))));
+        FACTORIES.put(LIKE, (path, node, parser) -> new LikeMatcher(path, parser.parseValue(node)));
         FACTORIES.put(IN, (path, node, parser) -> new InMatcher(path, parser.parseArrayValue(node)));
         FACTORIES.put(NOT, (path, node, parser) -> new NotMatcher(parser.parseNode(node)));
         FACTORIES.put(AND, (path, node, parser) -> new AndMatcher(parser.parseArrayNodes(node)));

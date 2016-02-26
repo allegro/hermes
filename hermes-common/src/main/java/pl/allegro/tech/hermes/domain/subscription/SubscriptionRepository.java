@@ -28,8 +28,4 @@ public interface SubscriptionRepository {
     List<String> listSubscriptionNames(TopicName topicName);
 
     List<Subscription> listSubscriptions(TopicName topicName);
-
-    List<String> listTrackedSubscriptionNames(TopicName topicName);
-
-    List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query);
 }
