@@ -5,8 +5,8 @@ language: java
 
 install: ./gradlew assemble
 script:
-  - "./gradlew check"
-  - "./gradlew -Ptests.timeout.multiplier=3 integrationTest -i"
+  - travis_wait "./gradlew check"
+  - travis_wait "./gradlew -Ptests.timeout.multiplier=3 integrationTest -i"
 
 jdk:
   - oraclejdk8
