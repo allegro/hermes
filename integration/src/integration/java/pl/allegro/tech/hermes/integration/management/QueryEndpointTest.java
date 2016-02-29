@@ -48,7 +48,7 @@ public class QueryEndpointTest extends IntegrationTest {
         groups.forEach(g -> management.group().create(g));
 
         // when
-        List<Group> found = management.query().queryGroup(query);
+        List<Group> found = management.query().queryGroups(query);
 
         // then
         assertListMatches(groups, found, positions);
@@ -79,7 +79,7 @@ public class QueryEndpointTest extends IntegrationTest {
         List<Topic> topics = asList(topic1, topic2, topic3, topic4);
 
         // when
-        List<Topic> found = management.query().queryTopic(query);
+        List<Topic> found = management.query().queryTopics(query);
 
         // then
         assertListMatches(topics, found, positions);
@@ -111,7 +111,7 @@ public class QueryEndpointTest extends IntegrationTest {
         List<Subscription> subscriptions = asList(subscription1, subscription2, subscription3, subscription4);
 
         // when
-        List<Subscription> found = management.query().querySubscription(query);
+        List<Subscription> found = management.query().querySubscriptions(query);
 
         // then
         assertListMatches(subscriptions, found, positions);

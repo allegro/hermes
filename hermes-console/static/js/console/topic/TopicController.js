@@ -92,7 +92,7 @@ topics.controller('TopicController', ['TopicRepository', 'TopicMetrics', '$scope
                         return topicName;
                     },
                     subscription: function () {
-                        return subscriptionFactory.create();
+                        return subscriptionFactory.create(topicName);
                     }
                 }
             }).result.then(function () {

@@ -215,8 +215,9 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
 
 subscriptions.factory('SubscriptionFactory', [function () {
         return {
-            create: function () {
+            create: function (topicName) {
                 return {
+                    topicName: topicName,
                     name: '',
                     endpoint: '',
                     description: '',

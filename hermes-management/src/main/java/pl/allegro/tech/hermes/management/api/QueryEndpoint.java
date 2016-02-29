@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.query.Query;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -21,6 +21,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Path("query")
 @Component
 public class QueryEndpoint {
+
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
     private final GroupService groupService;
@@ -35,25 +36,25 @@ public class QueryEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @Path("/group")
-    public List<Group> queryGroup(Query<Group> query) {
+    @Path("/groups")
+    public List<Group> queryGroups(Query<Group> query) {
         return groupService.queryGroup(query);
     }
 
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @Path("/subscription")
-    public List<Subscription> querySubscription(Query<Subscription> query) {
-        return subscriptionService.querySubscription(query);
+    @Path("/topics")
+    public List<Topic> queryTopics(Query<Topic> query) {
+        return topicService.queryTopic(query);
     }
 
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @Path("/topic")
-    public List<Topic> queryTopic(Query<Topic> query) {
-        return topicService.queryTopic(query);
+    @Path("/subscriptions")
+    public List<Subscription> querySubscriptions(Query<Subscription> query) {
+        return subscriptionService.querySubscription(query);
     }
 }
 

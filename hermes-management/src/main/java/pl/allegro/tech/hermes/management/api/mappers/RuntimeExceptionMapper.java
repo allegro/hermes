@@ -1,20 +1,25 @@
 package pl.allegro.tech.hermes.management.api.mappers;
 
-import pl.allegro.tech.hermes.api.ErrorCode;
+import com.google.common.base.Throwables;
+import org.boon.Maps;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 @Provider
-public class RuntimeExceptionMapper extends AbstractExceptionMapper<RuntimeException> {
+public class RuntimeExceptionMapper implements ExceptionMapper<RuntimeException> {
 
     @Override
-    Response.Status httpStatus() {
-        return Response.Status.INTERNAL_SERVER_ERROR;
-    }
-
-    @Override
-    ErrorCode errorCode() {
-        return ErrorCode.INTERNAL_ERROR;
+    public Response toResponse(RuntimeException exception) {
+        return Response
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .entity(Maps.map(
+                        "message", exception.getMessage(),
+                        "details", Throwables.getStackTraceAsString(exception)
+                ))
+                .build();
     }
 }

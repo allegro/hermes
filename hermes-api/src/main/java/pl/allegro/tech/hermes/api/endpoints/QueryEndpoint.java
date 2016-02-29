@@ -4,8 +4,10 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 
-import javax.ws.rs.*;
-
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -16,20 +18,21 @@ public interface QueryEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @Path("/group")
-    List<Group> queryGroup(String query);
+    @Path("/groups")
+    List<Group> queryGroups(String query);
 
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @Path("/subscription")
-    List<Subscription> querySubscription(String query);
+    @Path("/topics")
+    List<Topic> queryTopics(String query);
 
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @Path("/topic")
-    List<Topic> queryTopic(String query);
+    @Path("/subscriptions")
+    List<Subscription> querySubscriptions(String query);
+
 }
 
 

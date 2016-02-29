@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import pl.allegro.tech.hermes.common.query.Query;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.Matcher;
 
 import java.util.Map;

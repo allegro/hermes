@@ -63,7 +63,7 @@ groups.controller('GroupController', ['GroupRepository', '$scope', '$location', 
                         return groupName;
                     },
                     topic: function () {
-                        return {retentionTime: {duration: 1}, contentType: 'AVRO'};
+                        return {retentionTime: {duration: 1}, contentType: 'AVRO', ack: 'LEADER'};
                     },
                     messageSchema: function() {
                         return null;
