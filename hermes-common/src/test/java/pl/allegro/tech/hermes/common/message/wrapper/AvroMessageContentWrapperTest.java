@@ -6,6 +6,7 @@ import org.apache.avro.util.Utf8;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -74,6 +75,19 @@ public class AvroMessageContentWrapperTest {
         assertThat(unwrappedMessage.getMessageMetadata().getId()).isNotEmpty();
         assertThat(unwrappedMessage.getMessageMetadata().getTimestamp()).isNotNull();
         assertThat(unwrappedMessage.getContent()).startsWith(content);
+    }
+
+    @Test
+    public void shouldFailToWrapUsingFutureSchema() throws IOException {
+        // when
+        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, AvroUserSchemaLoader.load("/schema/user_v2.avsc"), Collections.emptyMap());
+
+        // then
+        GenericRecord messageWithMetadata = bytesToRecord(wrappedMessage, avroUser.getSchema());
+        Map<Utf8, Utf8> metadata = (Map<Utf8, Utf8>) messageWithMetadata.get(METADATA_MARKER);
+        assertThat(metadata.get(METADATA_MESSAGE_ID_KEY).toString()).isEqualTo(id);
+        assertThat(valueOf(metadata.get(METADATA_TIMESTAMP_KEY).toString())).isEqualTo(timestamp);
+        assertThat(wrappedMessage).contains(content);
     }
 
     private byte[] wrapContentWithoutMetadata(byte[] message, Schema schema) throws Exception{

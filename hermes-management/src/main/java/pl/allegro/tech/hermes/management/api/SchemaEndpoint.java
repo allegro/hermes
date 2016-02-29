@@ -37,6 +37,16 @@ public class SchemaEndpoint {
                 .orElse(Response.noContent().build());
     }
 
+    @GET
+    @Produces(APPLICATION_JSON)
+    @ApiOperation(value = "Get schema", httpMethod = HttpMethod.GET)
+    public Response get(@PathParam("topicName") String qualifiedTopicName, int version) {
+        Optional<SchemaSource> schemaSource = schemaSourceService.getSchemaSource(qualifiedTopicName, version);
+        return schemaSource.map(SchemaSource::value)
+                .map(v -> Response.ok(v).build())
+                .orElse(Response.noContent().build());
+    }
+
     @POST
     @Consumes(APPLICATION_JSON)
     @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})

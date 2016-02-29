@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.exception.SchemaRepoException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -34,7 +35,7 @@ public class JerseySchemaRepoClientTest {
     private static final SchemaRepoClient client = new JerseySchemaRepoClient(ClientBuilder.newClient(), URI.create("http://localhost:2876/schema-repo/"));
 
     @Rule
-    public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(2876));
+    public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(2876).usingFilesUnderClasspath("schema-repo-stub"));
 
     @Test
     public void shouldCheckIfSubjectIsRegistered() {
@@ -135,6 +136,42 @@ public class JerseySchemaRepoClientTest {
         assertThat((Throwable) caughtException()).isInstanceOf(SchemaRepoException.class);
     }
 
+    @Test
+    public void shouldReturnSchemaVersions() {
+        // given
+        wireMockRule.stubFor(get(allSchemasUrl()).willReturn(okResponse().withBodyFile("all-schemas-response.json").withHeader("Content-Type", "application/json")));
+
+        // when
+        List<Integer> versions = client.getSchemaVersions(SUBJECT);
+
+        // then
+        assertThat(versions).containsExactly(2, 1, 0);
+    }
+
+    @Test
+    public void shouldReturnEmptySchemaVersionsIfNoSchemasAreRegistered() {
+        // given
+        wireMockRule.stubFor(get(allSchemasUrl()).willReturn(okResponse().withBody("").withHeader("Content-Type", "application/json")));
+
+        // when
+        List<Integer> versions = client.getSchemaVersions(SUBJECT);
+
+        // then
+        assertThat(versions).isEmpty();
+    }
+
+    @Test
+    public void shouldReturnEmptySchemaVersionsIfSubjectDoesntExist() {
+        // given
+        wireMockRule.stubFor(get(allSchemasUrl()).willReturn(notFoundResponse()));
+
+        // when
+        List<Integer> versions = client.getSchemaVersions(SUBJECT);
+
+        // then
+        assertThat(versions).isEmpty();
+    }
+
     private UrlMatchingStrategy subjectUrl() {
         return urlEqualTo(ROOT_DIR + SUBJECT);
     }
@@ -145,6 +182,10 @@ public class JerseySchemaRepoClientTest {
 
     private UrlMatchingStrategy registerSchemaUrl() {
         return urlEqualTo(ROOT_DIR + SUBJECT + "/register");
+    }
+
+    private UrlMatchingStrategy allSchemasUrl() {
+        return urlEqualTo(ROOT_DIR + SUBJECT + "/all");
     }
 
     private ResponseDefinitionBuilder okResponse() {

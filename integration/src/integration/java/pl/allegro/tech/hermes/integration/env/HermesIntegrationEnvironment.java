@@ -39,6 +39,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         STARTERS.put(ConsumersStarter.class, new ConsumersStarter());
         STARTERS.put(FrontendStarter.class, new FrontendStarter(FRONTEND_PORT));
         STARTERS.put(ManagementStarter.class, new ManagementStarter(MANAGEMENT_PORT));
+        STARTERS.put(SchemaRepoStarter.class, new SchemaRepoStarter(SCHEMA_REPO_PORT));
     }
 
     private CuratorFramework zookeeper;

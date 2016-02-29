@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClient;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 
 public class SchemaRepoSchemaSourceProvider implements SchemaSourceProvider {
@@ -19,5 +20,15 @@ public class SchemaRepoSchemaSourceProvider implements SchemaSourceProvider {
     @Override
     public Optional<SchemaSource> get(Topic topic) {
         return schemaRepoClient.getLatestSchema(topic.getQualifiedName()).map(SchemaSource::valueOf);
+    }
+
+    @Override
+    public Optional<SchemaSource> get(Topic topic, int version) {
+        return schemaRepoClient.getSchema(topic.getQualifiedName(), version).map(SchemaSource::valueOf);
+    }
+
+    @Override
+    public List<Integer> versions(Topic topic) {
+        return schemaRepoClient.getSchemaVersions(topic.getQualifiedName());
     }
 }

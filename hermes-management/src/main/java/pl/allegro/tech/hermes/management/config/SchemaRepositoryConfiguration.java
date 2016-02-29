@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.config;
 
+import com.github.fge.jsonschema.main.JsonSchema;
 import org.apache.curator.framework.CuratorFramework;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.avro.Schema;
@@ -11,9 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.domain.topic.schema.CachedSchemaSourceProvider;
-import pl.allegro.tech.hermes.domain.topic.schema.DefaultCachedSchemaSourceProvider;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.domain.topic.schema.*;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.JerseySchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -85,11 +84,25 @@ public class SchemaRepositoryConfiguration {
     }
 
     @Bean
+    public SchemaSourceProvider schemaSourceProvider(SchemaSourceRepository schemaSourceRepository) {
+        return schemaSourceRepository;
+    }
+
+    @Bean
     public SchemaRepository<Schema> avroSchemaRepository(CachedSchemaSourceProvider cachedSchemaSourceProvider) {
         return new SchemaRepository<>(
                 ContentType.AVRO,
                 cachedSchemaSourceProvider,
                 source -> new Schema.Parser().parse(source.value()));
+    }
+
+    @Bean
+    public AggregateSchemaRepository aggregateSchemaRepository(SchemaSourceProvider schemaSourceProvider) {
+        SchemaVersionsRepository schemaVersionsRepository = new SimpleSchemaVersionsRepository(schemaSourceProvider);
+        ConcreteSchemaRepository<Schema> avroSchemaRepository = new CachedConcreteSchemaRepository<>(schemaSourceProvider, 2000,
+                source -> new Schema.Parser().parse(source.value()));
+
+        return new AggregateSchemaRepository(schemaVersionsRepository, avroSchemaRepository, null);
     }
 
     private ExecutorService createSchemaSourceReloadExecutorService(int poolSize) {

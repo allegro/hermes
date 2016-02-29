@@ -10,6 +10,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
+import javax.ws.rs.client.WebTarget;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Function;
@@ -79,6 +80,11 @@ public class Hermes {
     public AsyncMessagePublisher createAsyncMessagePublisher() {
         String resource = TopicEndpoint.class.getAnnotation(Path.class).value();
         return new AsyncMessagePublisher(getClientBuilder(publisherConfig).build().target(url).path(resource));
+    }
+
+    public WebTarget createWebTargetForPublishing() {
+        String resource = TopicEndpoint.class.getAnnotation(Path.class).value();
+        return getClientBuilder(publisherConfig).build().target(url).path(resource);
     }
 
     private <T> T createProxy(String url, Class<T> endpoint, ClientConfig clientConfig) {

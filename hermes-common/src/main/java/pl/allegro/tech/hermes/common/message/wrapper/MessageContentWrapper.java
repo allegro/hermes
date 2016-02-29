@@ -1,9 +1,8 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.domain.topic.schema.AggregateSchemaRepository;
 
 import javax.inject.Inject;
 import java.util.Map;
@@ -12,15 +11,15 @@ public class MessageContentWrapper {
 
     private final JsonMessageContentWrapper jsonMessageContentWrapper;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
-    private final SchemaRepository<Schema> avroSchemaRepository;
+    private final AggregateSchemaRepository schemaRepository;
 
     @Inject
     public MessageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
                                  AvroMessageContentWrapper avroMessageContentWrapper,
-                                 SchemaRepository<Schema> avroSchemaRepository) {
+                                 AggregateSchemaRepository schemaRepository) {
         this.jsonMessageContentWrapper = jsonMessageContentWrapper;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
-        this.avroSchemaRepository = avroSchemaRepository;
+        this.schemaRepository = schemaRepository;
     }
 
     public UnwrappedMessageContent unwrap(byte[] data, Topic topic) {
@@ -31,7 +30,7 @@ public class MessageContentWrapper {
         if (contentType == ContentType.JSON) {
             return jsonMessageContentWrapper.unwrapContent(data);
         } else if (contentType == ContentType.AVRO) {
-            return avroMessageContentWrapper.unwrapContent(data, avroSchemaRepository.getSchema(topic));
+            return avroMessageContentWrapper.unwrapContent(data, schemaRepository.getAvroSchema(topic).getSchema());
         }
 
         throw new UnsupportedContentTypeException(topic);
@@ -45,7 +44,7 @@ public class MessageContentWrapper {
         if (contentType == ContentType.JSON) {
             return jsonMessageContentWrapper.wrapContent(data, id, timestamp, externalMetadata);
         } else if (contentType == ContentType.AVRO) {
-            return avroMessageContentWrapper.wrapContent(data, id, timestamp, avroSchemaRepository.getSchema(topic), externalMetadata);
+            return avroMessageContentWrapper.wrapContent(data, id, timestamp, schemaRepository.getAvroSchema(topic).getSchema(), externalMetadata);
         }
 
         throw new UnsupportedContentTypeException(topic);

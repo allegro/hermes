@@ -22,12 +22,15 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import static com.google.common.collect.ImmutableMap.of;
 import static javax.ws.rs.core.Response.Status.*;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SCHEMA_VERSION;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader.load;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PublishingAvroTest extends IntegrationTest {
@@ -77,12 +80,7 @@ public class PublishingAvroTest extends IntegrationTest {
         assertThat(response).hasStatus(CREATED);
 
         // then
-        remoteService.waitUntilReceived(body -> {
-            AvroUser avroUser = AvroUser.create(user.getSchema(), body.getBytes());
-            assertThat(avroUser.getName()).isEqualTo("Bob");
-            assertThat(avroUser.getAge()).isEqualTo(50);
-            assertThat(avroUser.getFavoriteColor()).isEqualTo("blue");
-        });
+        remoteService.waitUntilReceived(body -> assertBodyDeserializesIntoUser(body, user));
     }
 
     @Test
@@ -111,13 +109,7 @@ public class PublishingAvroTest extends IntegrationTest {
         publisher.publish("publishAvroAfterTopicEditing.topic", user.asBytes());
 
         //then
-        remoteService.waitUntilReceived(body -> {
-            System.out.println(body);
-            AvroUser avroUser = AvroUser.create(user.getSchema(), body.getBytes());
-            assertThat(avroUser.getName()).isEqualTo("Bob");
-            assertThat(avroUser.getAge()).isEqualTo(50);
-            assertThat(avroUser.getFavoriteColor()).isEqualTo("blue");
-        });
+        remoteService.waitUntilReceived(body -> assertBodyDeserializesIntoUser(body, user));
     }
 
     @Test
@@ -259,4 +251,31 @@ public class PublishingAvroTest extends IntegrationTest {
         assertThat(response).hasStatus(Response.Status.CREATED);
         assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("Trace-Id", traceId);
     }
+
+    @Test
+    public void shouldUseExplicitSchemaVersionWhenPublishingAndConsuming() throws IOException {
+        // given
+        Topic topic = operations.buildTopic(topic("explicitSchemaVersion.topic").withValidation(true).withContentType(AVRO).build());
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
+
+        assertThat(management.schema().save(topic.getQualifiedName(), load("/schema/user.avsc").toString())).hasStatus(CREATED);
+        assertThat(management.schema().save(topic.getQualifiedName(), load("/schema/user_v2.avsc").toString())).hasStatus(CREATED);
+
+        // when
+        assertThat(publisher.publishAvro(topic.getQualifiedName(), user.asBytes(), of(SCHEMA_VERSION.getName(), "0"))).hasStatus(CREATED);
+
+        // then
+        remoteService.waitUntilRequestReceived(request -> {
+            assertThat(request.getHeaders().getHeader(SCHEMA_VERSION.getName())).isEqualTo(0);
+            assertBodyDeserializesIntoUser(request.getBodyAsString(), user);
+        });
+    }
+
+    private void assertBodyDeserializesIntoUser(String body, AvroUser user) {
+        AvroUser avroUser = AvroUser.create(user.getSchema(), body.getBytes());
+        assertThat(avroUser.getName()).isEqualTo(user.getName());
+        assertThat(avroUser.getAge()).isEqualTo(user.getAge());
+        assertThat(avroUser.getFavoriteColor()).isEqualTo(user.getFavoriteColor());
+    }
+
 }

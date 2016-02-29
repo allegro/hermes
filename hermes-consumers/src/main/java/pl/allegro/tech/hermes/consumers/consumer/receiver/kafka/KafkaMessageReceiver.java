@@ -114,7 +114,10 @@ public class KafkaMessageReceiver implements MessageReceiver {
         MessageAndMetadata<byte[], byte[]> message = null;
         try (Timer.Context readingTimerContext = readingTimer.time()) {
             message = iterator.next();
+            // TODO unwrap from magic frame
             UnwrappedMessageContent unwrappedContent = messageContentWrapper.unwrap(message.message(), topic, kafkaTopic.contentType());
+
+            // TODO add schema version to external metadata map
 
             return new Message(
                     unwrappedContent.getMessageMetadata().getId(),

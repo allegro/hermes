@@ -30,4 +30,9 @@ public class NoCachedSchemaSourceProvider implements CachedSchemaSourceProvider 
     public Optional<SchemaSource> get(Topic topic) {
         return schemaSourceProvider.get(topic);
     }
+
+    @Override
+    public Optional<SchemaSource> get(Topic topic, int version) {
+        return schemaSourceProvider.get(topic, version);
+    }
 }

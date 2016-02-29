@@ -124,9 +124,10 @@ public class PublishingServlet extends HttpServlet {
                         Message message = contentTypeEnforcer.enforce(request.getContentType(),
                                 new Message(messageId, messageContent, clock.millis()), topic);
 
-                        messageValidators.check(topic, message.getData());
+                        messageValidators.check(topic, message.getData());  // TODO validate against exact schema version
 
                         message = metadataAddingMessageConverter.addMetadata(message, topic, headersPropagator.extract(toHeadersMap(request)));
+                        // TODO add magic frame
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
 
                         messagePublisher.publish(message, topic, messageState,

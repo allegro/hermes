@@ -14,7 +14,7 @@ public interface EnvironmentAware {
     int HTTP_ENDPOINT_PORT = 18081;
 
     int MANAGEMENT_PORT = 18082;
-    
+
     String HTTP_ENDPOINT_URL = "http://localhost:" + HTTP_ENDPOINT_PORT + "/";
 
     int FRONTEND_PORT = CONFIG_FACTORY.getIntProperty(Configs.FRONTEND_PORT);
@@ -36,6 +36,8 @@ public interface EnvironmentAware {
     int GRAPHITE_SERVER_PORT = 18023;
 
     int OAUTH_SERVER_PORT = 19999;
+
+    int SCHEMA_REPO_PORT = 2876;
 
     String PRIMARY_KAFKA_CLUSTER_NAME = CONFIG_FACTORY.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 

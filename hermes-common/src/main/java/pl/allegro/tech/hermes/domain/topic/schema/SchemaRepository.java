@@ -59,6 +59,10 @@ public class SchemaRepository<T> {
         });
     }
 
+    public T getSchema(Topic topic, String schemaVersion) {
+        throw new UnsupportedOperationException();
+    }
+
     public void onReload(Consumer<TopicWithSchema<T>> topicWithSchemaConsumer) {
         schemaReloadedConsumers.add(topicWithSchemaConsumer);
     }

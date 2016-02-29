@@ -15,7 +15,6 @@ public class AvroUser {
     private static final String NAME_FIELD = "name";
     private static final String AGE_FIELD = "age";
     private static final String FAVORITE_COLOR_FIELD = "favoriteColor";
-    private static final String METADATA_FIELD = "__metadata";
 
     private final Schema schema;
     private final GenericRecord record;

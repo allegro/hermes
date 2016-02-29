@@ -54,11 +54,13 @@ public class CachedSchemaSourceProviderFactory implements Factory<CachedSchemaSo
             case TOPIC_FIELD:
                 return new NoCachedSchemaSourceProvider(new TopicFieldSchemaSourceProvider());
         }
-        return new DefaultCachedSchemaSourceProvider(
-                configFactory.getIntProperty(SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES),
-                configFactory.getIntProperty(SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES),
-                createSchemaReloadExecutorService(configFactory.getIntProperty(SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE)),
-                schemaSourceProvider);
+        return configFactory.getBooleanProperty(Configs.SCHEMA_CACHE_ENABLED)?
+                new DefaultCachedSchemaSourceProvider(
+                        configFactory.getIntProperty(SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES),
+                        configFactory.getIntProperty(SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES),
+                        createSchemaReloadExecutorService(configFactory.getIntProperty(SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE)),
+                        schemaSourceProvider) : new NoCachedSchemaSourceProvider(schemaSourceProvider);
+
 
     }
 

@@ -12,6 +12,10 @@ public interface SchemaEndpoint {
     @Produces(APPLICATION_JSON)
     Response get(@PathParam("topicName") String qualifiedTopicName);
 
+    @GET
+    @Produces(APPLICATION_JSON)
+    Response get(@PathParam("topicName") String qualifiedTopicName, int version);
+
     @POST
     @Consumes(APPLICATION_JSON)
     Response save(@PathParam("topicName") String qualifiedTopicName, String schema);

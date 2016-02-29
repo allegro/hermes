@@ -52,4 +52,9 @@ public class SchemaSourceService {
     private Topic findTopic(String qualifiedTopicName) {
         return topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
     }
+
+    public Optional<SchemaSource> getSchemaSource(String qualifiedTopicName, int version) {
+        Topic topic = findTopic(qualifiedTopicName);
+        return schemaSourceRepository.get(topic, version);
+    }
 }
