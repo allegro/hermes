@@ -9,7 +9,6 @@ public enum Operator {
     NE("ne"),
     LIKE("like"),
     IN("in"),
-
     NOT("not"),
     AND("and"),
     OR("or");

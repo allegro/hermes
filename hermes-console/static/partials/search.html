@@ -5,28 +5,58 @@
         <li class="active">search</li>
     </ol>
 
-    <h1>Search Subscriptions</h1>
+    <h1>Search</h1>
 
-    <div class="row">
-        <div class="input-group col-md-7 col-md-offset-2">
-            <div class="btn input-group-addon" ng-click="searchSubscriptions()"><span class="glyphicon glyphicon-search"></span></div>
-            <input class="form-control" ng-model="endpoint" placeholder="endpoint... (regexp value)">
+    <div class="row" style="margin-bottom: 2em;">
+        <form name="searchForm" class="form-inline col-md-6 col-md-offset-3">
+            <div class="form-group">
+                <select class="form-control" ng-model="entity">
+                    <option value="topic">topics</option>
+                    <option value="subscription">subscriptions</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <select class="form-control" ng-model="property">
+                    <option value="name">by name</option>
+                    <option value="supportTeam">by support team</option>
+                    <option value="endpoint">by endpoint</option>
+                </select>
+            </div>
+
+            <div class="form-group {{searchForm.pattern.$valid ? '' : 'has-error'}}">
+                <input name="pattern" id="pattern" class="form-control" placeholder="regex pattern" ng-model="pattern" required/>
+            </div>
+
+            <button type="submit" class="btn btn-primary" ng-disabled="searchForm.$invalid"  ng-click="search()"><i class="fa fa-search"></i></button>
         </div>
     </div>
 
     <div class="row">
         <div class="list-group">
-            <a ng-href="#/groups/{{getGroup(subscription.topicName)}}/topics/{{subscription.topicName}}/subscriptions/{{subscription.name}}"
-               class="list-group-item" ng-repeat="subscription in subscriptions">
-
-                <div class="col-md-1 small">{{$index + 1}}</div>
-                <div class="col-md-3 strong"><strong>{{subscription.topicName}}.{{subscription.name}}</strong></div>
-                <span>{{subscription.endpoint}}</span>
+            <a ng-href="{{item.url}}" class="list-group-item" ng-repeat="item in items">
                 <div class="pull-right">
-                    <span class="label {{subscription.state === 'ACTIVE' ? 'label-success' : 'label-danger'}}" >{{subscription.state}}</span>
                     <span class="glyphicon glyphicon-chevron-right"></span>
                 </div>
+
+                <h4 class="list-group-item-heading">
+                    {{item.name}}
+                </h4>
+
+                <p class="list-group-item-text" style="margin-top: 1em;">
+                    <span class="" ng-repeat="object in item.data">
+                        <strong>{{object.label}}:</strong> {{object.value}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </span>
+                </p>
             </a>
+        </div>
+
+        <div ng-show="state.noResults" class="text-center">
+            No items found
+        </div>
+
+        <div ng-show="state.notSearched" class="text-center">
+            Search for something
         </div>
 
         <div ng-show="fetching" class="text-center">

@@ -1,26 +1,76 @@
 var search = angular.module('hermes.search', []);
 
-search.controller('SearchController', ['SearchRepository', '$scope', function(searchRepository, $scope) {
+search.controller('SearchController', ['$scope', '$stateParams', 'SearchRepository',
+    function($scope, $stateParams, searchRepository) {
+
+    $scope.entity = $stateParams.entity || 'subscription';
+    $scope.property = $stateParams.property || 'endpoint';
+    $scope.operator = $stateParams.operator || 'like';
+    $scope.pattern = $stateParams.pattern || '';
 
     $scope.fetching = false;
+    $scope.state = {
+        notSearched: true,
+        noResults: false
+    };
 
-    $scope.searchSubscriptions = function () {
+    $scope.search = function() {
         $scope.fetching = true;
-        searchRepository.searchSubscriptions($scope.endpoint).then(function (subscriptions) {
-            $scope.subscriptions = subscriptions;
+        var query = createQuery($scope.property, $scope.operator, $scope.pattern);
+
+        searchRepository.search($scope.entity, query).then(function (items) {
+            $scope.items = postProcess($scope.entity, items);
             $scope.fetching = false;
+            $scope.state.notSearched = false;
+            $scope.state.noResults = !items || items.length == 0;
         });
     };
 
-    $scope.getGroup = function(topicName) {
-        return topicName.substring(0, topicName.lastIndexOf("."));
-    };
+    function createQuery(property, operator, value) {
+        var query = {};
+        query[property] = {};
 
+        var sanitizedOperator = operator || 'like';
+        query[property][sanitizedOperator] = value;
+
+        return {query: query};
+    }
+
+    function postProcess(entity, items) {
+        if (entity === 'topic') {
+            return _.map(items, function(item) {
+                var fullName = decomposeTopicName(item.name);
+                return {
+                    name: item.name,
+                    data: [],
+                    url: '#/groups/' + fullName.group + '/topics/' + item.name
+                };
+            });
+        }
+        else if (entity === 'subscription') {
+            return _.map(items, function(item) {
+                var fullName = decomposeTopicName(item.topicName);
+                return {
+                    name: item.topicName + '.' + item.name,
+                    data: [{label: 'endpoint', value: item.endpoint}, {label: 'support team', value: item.supportTeam}, {label: 'status', value: item.state}],
+                    url: '#/groups/' + fullName.group + '/topics/' + item.topicName + '/subscriptions/' + item.name
+                };
+            });
+        }
+    }
+
+    function decomposeTopicName(topicName) {
+        return {
+            group: topicName.substring(0, topicName.lastIndexOf(".")),
+            topic: topicName.substring(topicName.lastIndexOf(".") + 1)
+        };
+    }
 }]);
 
 search.factory('SearchRepository', ['$resource', 'DiscoveryService',
     function ($resource, discovery) {
-        var querySubscriptions = $resource(discovery.resolve('/query/subscription'), null, {query: {method: 'POST', isArray: true}});
+        var querySubscriptions = $resource(discovery.resolve('/query/subscriptions'), null, {query: {method: 'POST', isArray: true}});
+        var queryTopics = $resource(discovery.resolve('/query/topics'), null, {query: {method: 'POST', isArray: true}});
 
         var endpointQuery = function(endpoint) {
             return { query: {
@@ -32,8 +82,13 @@ search.factory('SearchRepository', ['$resource', 'DiscoveryService',
         };
 
         return {
-            searchSubscriptions: function (endpoint) {
-                return querySubscriptions.query(endpointQuery(endpoint)).$promise;
+            search: function (entity, query) {
+                if (entity === 'topic') {
+                    return queryTopics.query(query).$promise;
+                }
+                else if (entity === 'subscription') {
+                    return querySubscriptions.query(query).$promise;
+                }
             }
         };
     }]);

@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.management.api.reader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import pl.allegro.tech.hermes.common.query.Query;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser;
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.json.JsonQueryParser;
 

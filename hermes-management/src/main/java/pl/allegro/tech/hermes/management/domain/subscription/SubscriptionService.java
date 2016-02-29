@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
-import pl.allegro.tech.hermes.common.query.Query;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;

@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.common.query;
+package pl.allegro.tech.hermes.api;
 
 import java.util.Collection;
 import java.util.stream.Stream;

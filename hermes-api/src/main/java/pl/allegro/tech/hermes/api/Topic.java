@@ -52,7 +52,7 @@ public class Topic {
         this.messageSchema = messageSchema;
         this.validationEnabled = validationEnabled;
         this.validationDryRunEnabled = validationDryRunEnabled;
-        this.ack = ack;
+        this.ack = (ack == null ? Ack.LEADER : ack);
         this.trackingEnabled = trackingEnabled;
         this.migratedFromJsonType = migratedFromJsonType;
         this.contentType = contentType;

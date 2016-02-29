@@ -70,7 +70,7 @@ public class Subscription {
         this.topicName = topicName;
         this.name = name;
         this.endpoint = endpoint;
-        this.state = state;
+        this.state = state != null ? state : State.PENDING;
         this.description = description;
         this.trackingEnabled = trackingEnabled;
         this.supportTeam = supportTeam;

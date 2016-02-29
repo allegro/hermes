@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.management.infrastructure.query.parser.json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import pl.allegro.tech.hermes.common.query.Query;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.AndMatcher;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.Matcher;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.MatcherFactories;
