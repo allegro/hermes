@@ -10,7 +10,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.apache.commons.lang.exception.ExceptionUtils.getRootCause;
+import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;
 
 public class GraphiteClient {
 
@@ -36,7 +36,7 @@ public class GraphiteClient {
             queryGraphite(metrics).stream().forEach(metric -> response.addMetricValue(metric.getTarget(), getFirstValue(metric)));
             return response;
         } catch (Exception exception) {
-            logger.warn("Unable to read from Graphite. {}", getRootCause(exception).getMessage());
+            logger.warn("Unable to read from Graphite. {}", getRootCauseMessage(exception));
             return GraphiteMetrics.unavailable(metrics);
         }
     }

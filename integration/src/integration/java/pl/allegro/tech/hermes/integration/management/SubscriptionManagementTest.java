@@ -5,12 +5,14 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
+import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -25,6 +27,8 @@ import static com.jayway.awaitility.Awaitility.await;
 import static java.net.URI.create;
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
+import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem.SLOW;
+import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -36,11 +40,13 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
     private HermesClient client;
+    private GraphiteEndpoint graphiteEndpoint;
 
     @BeforeMethod
     public void initializeAlways() {
         remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
         client = hermesClient(new JerseyHermesSender(newClient())).withURI(create("http://localhost:" + FRONTEND_PORT)).build();
+        graphiteEndpoint = new GraphiteEndpoint(SharedServices.services().graphiteHttpMock());
     }
 
     @Test
@@ -191,6 +197,67 @@ public class SubscriptionManagementTest extends IntegrationTest {
             // then
             assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
         });
+    }
+
+    @Test
+    public void shouldReturnHealthyStatusForAHealthySubscription() {
+        // given
+        String groupName = "healthHealthy";
+        String topicName = "topic";
+        String subscriptionName = "subscription";
+
+        // and
+        Topic topic = operations.buildTopic(groupName, topicName);
+        operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
+        graphiteEndpoint.returnMetricForTopic(groupName, topicName, 100, 100);
+        graphiteEndpoint.returnMetricForSubscription(groupName, topicName, subscriptionName, 100);
+
+        // when
+        SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
+
+        // then
+        assertThat(subscriptionHealth).isEqualTo(SubscriptionHealth.HEALTHY);
+    }
+
+    @Test
+    public void shouldReturnUnhealthyStatusWithAProblemForASlowSubscription() {
+        // given
+        String groupName = "healthUnhealthy";
+        String topicName = "topic";
+        String subscriptionName = "subscription";
+
+        // and
+        Topic topic = operations.buildTopic(groupName, topicName);
+        operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
+        graphiteEndpoint.returnMetricForTopic(groupName, topicName, 100, 50);
+        graphiteEndpoint.returnMetricForSubscription(groupName, topicName, subscriptionName, 50);
+
+        // when
+        SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
+
+        // then
+        assertThat(subscriptionHealth.getStatus()).isEqualTo(UNHEALTHY);
+        assertThat(subscriptionHealth.getProblems()).containsOnly(SLOW);
+    }
+
+    @Test
+    public void shouldReturnNoDataStatusWhenGraphiteRespondsWithAnError() {
+        // given
+        String groupName = "healthNoData";
+        String topicName = "topic";
+        String subscriptionName = "subscription";
+
+        // and
+        Topic topic = operations.buildTopic(groupName, topicName);
+        operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
+        graphiteEndpoint.returnServerErrorForAllTopics();
+        graphiteEndpoint.returnMetricForSubscription(groupName, topicName, subscriptionName, 100);
+
+        // when
+        SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
+
+        // then
+        assertThat(subscriptionHealth).isEqualTo(SubscriptionHealth.NO_DATA);
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
