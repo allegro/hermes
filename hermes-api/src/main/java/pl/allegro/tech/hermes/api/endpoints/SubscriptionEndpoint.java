@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.api.endpoints;
 
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 
 import javax.ws.rs.Consumes;
@@ -31,7 +32,7 @@ public interface SubscriptionEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/query")
     List<String> queryList(@PathParam("topicName") String qualifiedTopicName,
-                                  String query);
+                           String query);
 
     @POST
     @Consumes(APPLICATION_JSON)
@@ -54,7 +55,8 @@ public interface SubscriptionEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/undelivered/last")
     Response getLatestUndeliveredMessage(@PathParam("topicName") String qualifiedTopicName,
-                                @PathParam("subscriptionName") String subscriptionName);
+                                         @PathParam("subscriptionName") String subscriptionName);
+
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/undelivered")
@@ -66,6 +68,12 @@ public interface SubscriptionEndpoint {
     @Path("/{subscriptionName}/metrics")
     SubscriptionMetrics getMetrics(@PathParam("topicName") String qualifiedTopicName,
                                    @PathParam("subscriptionName") String subscriptionName);
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/{subscriptionName}/health")
+    SubscriptionHealth getHealth(@PathParam("topicName") String qualifiedTopicName,
+                                 @PathParam("subscriptionName") String subscriptionName);
 
     @PUT
     @Consumes(APPLICATION_JSON)

@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.MonitoringDetails;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
@@ -33,6 +34,8 @@ public class SubscriptionBuilder {
     private String supportTeam = "team";
 
     private String contact = "contact";
+
+    private MonitoringDetails monitoringDetails = MonitoringDetails.EMPTY;
 
     private DeliveryType deliveryType = DeliveryType.SERIAL;
 
@@ -76,13 +79,13 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, contentType
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, contentType
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType
             );
         }
     }
@@ -131,6 +134,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withContact(String contact) {
         this.contact = contact;
+        return this;
+    }
+
+    public SubscriptionBuilder withMonitoringDetails (MonitoringDetails monitoringDetails) {
+        this.monitoringDetails = monitoringDetails;
         return this;
     }
 

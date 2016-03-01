@@ -28,35 +28,35 @@
         </div>
     </div>
 
-    <div class="row" ng-show="!health.healthy">
+    <div class="row" ng-show="health.status === 'UNHEALTHY'">
         <div class="col-md-12">
             <div class="panel panel-danger">
                 <div class="panel-heading">
                     <h3 class="panel-title">Subscription health problems</h3>
                 </div>
                 <div class="panel-body">
-                    <p ng-show="health.lagging">
+                    <p ng-show="health.problems.lagging">
                         <b>Subscription lag is growing</b>. Examine output rate and service response codes, looks like it is
                         not consuming at full speed.
                     </p>
-                    <p ng-show="health.slowReceiver">
+                    <p ng-show="health.problems.slow">
                         <b>Consumption rate is lower than topic production rate</b>. Examine output rate and service response codes.
                         If everything is well, take a look at maximum rate, maybe it is too low?
                     </p>
-                    <p ng-show="health.malfunctioning">
-                        <b>Consuming service returns a lot of 5xx codes</b>. Looks like it might be malfuncioning or doesn't know
+                    <p ng-show="health.problems.malfunctioning">
+                        <b>Consuming service returns a lot of 5xx codes</b>. Looks like it might be malfunctioning or doesn't know
                         how to handle messages. Take a look at "Last undelivered message" for more information.
                     </p>
-                    <p ng-show="health.malformedEvents">
+                    <p ng-show="health.problems.receivingMalformedMessages">
                         <b>Consuming service returns a lot of 4xx codes</b>. Maybe you are receiving some malformed messages?
-                        If this is normal behavior, switch <b>Retry on 4xx satus</b> flag to false. This way Hermes will
+                        If this is normal behavior, switch <b>Retry on 4xx status</b> flag to false. This way Hermes will
                         not try to resend malformed messages, reducing traffic.
                     </p>
-                    <p ng-show="health.slow">
+                    <p ng-show="health.problems.timingOut">
                         <b>Consuming service times out a lot</b>. Hermes times out after 1 second, if you are not able to process
                         message during this time, connection is reset and delivery fails.
                     </p>
-                    <p ng-show="health.unreachable">
+                    <p ng-show="health.problems.unreachable">
                         <b>Unable to connect to consuming service instances</b>. It is either network issue or your service instance
                         is down.
                     </p>
@@ -143,6 +143,14 @@
                     <p>
                         <strong>Retry backoff:</strong> {{subscription.subscriptionPolicy.messageBackoff}} milliseconds
                         <span uib-popover='Minimum amount of time between consecutive message retries.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p>
+                        <strong>Monitoring severity:</strong> {{subscription.monitoringDetails.severity}}
+                        <span uib-popover="How important should be the subscription's health for the monitoring." popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p>
+                        <strong>Monitoring reaction:</strong> {{subscription.monitoringDetails.reaction}}
+                        <span uib-popover='Information for monitoring how to react when the subscription becomes unhealthy (e.g. team name or Pager Duty ID).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                 </div>
             </div>
