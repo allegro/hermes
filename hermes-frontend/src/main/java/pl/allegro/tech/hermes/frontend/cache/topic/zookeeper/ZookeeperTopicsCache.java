@@ -27,7 +27,7 @@ public class ZookeeperTopicsCache extends ZookeeperCacheBase implements TopicsCa
 
         super(configFactory, curatorClient);
 
-        groupsNodeCache = new GroupsNodeCache(curatorClient, objectMapper, paths.groupsPath(), executorService);
+        groupsNodeCache = new GroupsNodeCache(curatorClient, objectMapper, paths.groupsPath(), eventExecutor);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ZookeeperTopicsCache extends ZookeeperCacheBase implements TopicsCa
     public void stop() {
         try {
             groupsNodeCache.stop();
-            executorService.shutdown();
+            super.stop();
         } catch (Exception ex) {
             throw new InternalProcessingException(ex);
         }

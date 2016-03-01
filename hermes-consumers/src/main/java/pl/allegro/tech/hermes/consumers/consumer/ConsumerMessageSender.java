@@ -72,7 +72,7 @@ public class ConsumerMessageSender {
                 return;
             } catch (RuntimeException e) {
                 handleFailedSending(message, failedResult(e));
-                if (isTtlExceeded(message)) {
+                if (!consumerIsConsuming || isTtlExceeded(message)) {
                     handleMessageDiscarding(message, failedResult(e));
                     return;
                 }
@@ -140,7 +140,7 @@ public class ConsumerMessageSender {
                 handleMessageSendingSuccess(message, result);
             } else {
                 handleFailedSending(message, result);
-                if (!isTtlExceeded(message) && shouldRetrySending(result)) {
+                if (consumerIsConsuming && !isTtlExceeded(message) && shouldRetrySending(result)) {
                     retrySingleThreadExecutor.schedule(() -> retrySending(result),
                             subscription.getSubscriptionPolicy().getMessageBackoff(), TimeUnit.MILLISECONDS);
                 } else {
