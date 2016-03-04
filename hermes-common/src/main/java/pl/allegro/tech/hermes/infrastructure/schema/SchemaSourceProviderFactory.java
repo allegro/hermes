@@ -35,7 +35,7 @@ public class SchemaSourceProviderFactory implements Factory<SchemaSourceProvider
             case ZOOKEEPER:
                 return new ZookeeperSchemaSourceProvider(curatorFramework, zookeeperPaths);
             case TOPIC_FIELD:
-                return new NoCachedSchemaSourceProvider(new TopicFieldSchemaSourceProvider());
+                return new TopicFieldSchemaSourceProvider();
             default:
                 throw new IllegalStateException("Unknown schema repository type " + schemaRepositoryType);
         }

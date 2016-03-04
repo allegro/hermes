@@ -255,7 +255,7 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldUseExplicitSchemaVersionWhenPublishingAndConsuming() throws IOException {
         // given
-        Topic topic = operations.buildTopic(topic("explicitSchemaVersion.topic").withValidation(true).withContentType(AVRO).build());
+        Topic topic = operations.buildTopic(topic("explicitSchemaVersion.topic").withValidation(true).withContentType(AVRO).withSchemaVersionAwareSerialization().build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
 
         assertThat(management.schema().save(topic.getQualifiedName(), load("/schema/user.avsc").toString())).hasStatus(CREATED);
@@ -266,7 +266,7 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         remoteService.waitUntilRequestReceived(request -> {
-            assertThat(request.getHeaders().getHeader(SCHEMA_VERSION.getName())).isEqualTo(0);
+            assertThat(request.getHeaders().getHeader(SCHEMA_VERSION.getName()).firstValue()).isEqualTo("0");
             assertBodyDeserializesIntoUser(request.getBodyAsString(), user);
         });
     }

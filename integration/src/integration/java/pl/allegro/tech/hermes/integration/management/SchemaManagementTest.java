@@ -26,10 +26,10 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldSaveSchemaForExistingTopic() {
         // given
-        operations.buildTopic("schemaGroup", "schemaTopic");
+        operations.buildTopic("schemaGroup1", "schemaTopic1");
 
         // when
-        Response response = management.schema().save("schemaGroup.schemaTopic", "{}");
+        Response response = management.schema().save("schemaGroup1.schemaTopic1", "{}");
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
@@ -38,11 +38,11 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnSchemaForTopic() {
         // given
-        operations.buildTopic("schemaGroup", "schemaTopic");
-        management.schema().save("schemaGroup.schemaTopic", "{}");
+        operations.buildTopic("schemaGroup2", "schemaTopic2");
+        management.schema().save("schemaGroup2.schemaTopic2", "{}");
 
         // when
-        Response response = management.schema().get("schemaGroup.schemaTopic");
+        Response response = management.schema().get("schemaGroup2.schemaTopic2");
 
         // then
         assertThat(response.readEntity(String.class)).isEqualTo("{}");
@@ -51,27 +51,13 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldRespondWithNoContentOnMissingSchema() {
         // given
-        operations.buildTopic("schemaGroup", "schemaTopic");
+        operations.buildTopic("schemaGroup3", "schemaTopic3");
 
         // when
-        Response response = management.schema().get("schemaGroup.schemaTopic");
+        Response response = management.schema().get("schemaGroup3.schemaTopic3");
 
         // then
         assertThat(response).hasStatus(Response.Status.NO_CONTENT);
-    }
-
-    @Test
-    public void shouldRemoveJsonSchema() {
-        // given
-        operations.buildTopic("schemaGroup", "schemaTopic");
-        management.schema().save("schemaGroup.schemaTopic", "{}");
-
-        // when
-        management.schema().delete("schemaGroup.schemaTopic");
-
-        // then
-        Response getResponse = management.schema().get("schemaGroup.schemaTopic");
-        assertThat(getResponse).hasStatus(Response.Status.NO_CONTENT);
     }
 
     @Test

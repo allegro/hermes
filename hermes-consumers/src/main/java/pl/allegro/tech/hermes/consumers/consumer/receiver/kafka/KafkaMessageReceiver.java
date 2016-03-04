@@ -9,6 +9,7 @@ import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -17,10 +18,12 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import java.time.Clock;
 import java.util.Collection;
@@ -40,6 +43,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
 
     private final ConsumerConnector consumerConnector;
     private final MessageContentWrapper messageContentWrapper;
+    private final SchemaRepository schemaRepository;
     private final Timer readingTimer;
     private final Clock clock;
     private final BlockingQueue<Message> readQueue;
@@ -50,13 +54,14 @@ public class KafkaMessageReceiver implements MessageReceiver {
 
     public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, MessageContentWrapper messageContentWrapper,
                                 Timer readingTimer, Clock clock, KafkaNamesMapper kafkaNamesMapper,
-                                Integer kafkaStreamCount, Integer readTimeout, SubscriptionName subscriptionName) {
+                                Integer kafkaStreamCount, Integer readTimeout, SubscriptionName subscriptionName, SchemaRepository schemaRepository) {
         this.topic = topic;
         this.consumerConnector = consumerConnector;
         this.messageContentWrapper = messageContentWrapper;
         this.readingTimer = readingTimer;
         this.clock = clock;
         this.readTimeout = readTimeout;
+        this.schemaRepository = schemaRepository;
 
         Collection<KafkaTopic> topics = getKafkaTopics(topic, kafkaNamesMapper);
 
@@ -114,16 +119,15 @@ public class KafkaMessageReceiver implements MessageReceiver {
         MessageAndMetadata<byte[], byte[]> message = null;
         try (Timer.Context readingTimerContext = readingTimer.time()) {
             message = iterator.next();
-            // TODO unwrap from magic frame
-            UnwrappedMessageContent unwrappedContent = messageContentWrapper.unwrap(message.message(), topic, kafkaTopic.contentType());
 
-            // TODO add schema version to external metadata map
+            UnwrappedMessageContent unwrappedContent = getUnwrappedMessageContent(message);
 
             return new Message(
                     unwrappedContent.getMessageMetadata().getId(),
                     topic.getQualifiedName(),
                     unwrappedContent.getContent(),
                     kafkaTopic.contentType(),
+                    unwrappedContent.getSchema(),
                     unwrappedContent.getMessageMetadata().getTimestamp(),
                     clock.millis(),
                     new PartitionOffset(kafkaTopic.name(), message.offset(), message.partition()),
@@ -139,6 +143,15 @@ public class KafkaMessageReceiver implements MessageReceiver {
             }
             throw new InternalProcessingException("Message received failed", e);
         }
+    }
+
+    private UnwrappedMessageContent getUnwrappedMessageContent(MessageAndMetadata<byte[], byte[]> message) {
+        if (topic.getContentType() == ContentType.AVRO) {
+            return messageContentWrapper.unwrapAvro(message.message(), topic, version -> schemaRepository.getAvroSchema(topic, version));
+        } else if (topic.getContentType() == ContentType.JSON) {
+            return messageContentWrapper.unwrapJson(message.message());
+        }
+        throw new UnsupportedContentTypeException(topic);
     }
 
     @Override

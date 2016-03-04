@@ -5,10 +5,12 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.google.common.collect.ImmutableMap.of;
 
@@ -24,6 +26,7 @@ public final class MessageBuilder {
     private PartitionOffset partitionOffset;
     private byte[] content;
     private Map<String, String> externalMetadata;
+    private Optional<CompiledSchema<Object>> schema = Optional.empty();
 
     private MessageBuilder() {
     }
@@ -45,7 +48,7 @@ public final class MessageBuilder {
     }
 
     public Message build() {
-        return new Message(id, topic, content, contentType, publishingTimestamp,
+        return new Message(id, topic, content, contentType, schema, publishingTimestamp,
                 readingTimestamp, partitionOffset, externalMetadata);
     }
 

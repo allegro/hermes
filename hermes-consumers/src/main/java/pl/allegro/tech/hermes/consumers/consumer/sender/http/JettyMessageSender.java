@@ -17,10 +17,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import static java.lang.String.valueOf;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.RETRY_COUNT;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SCHEMA_VERSION;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.AvroMediaType.AVRO_BINARY;
 
 public class JettyMessageSender extends CompletableFutureAwareMessageSender {
@@ -60,6 +62,9 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
                 .header(HttpHeader.CONTENT_TYPE.toString(), contentTypeToMediaType.apply(message.getContentType()))
                 .timeout(timeout, TimeUnit.MILLISECONDS)
                 .content(new BytesContentProvider(message.getData()));
+
+        message.getSchema().ifPresent(schema -> request.header(SCHEMA_VERSION.getName(), valueOf(schema.getVersion().value())));
+
         return appendTraceInfo(request, message);
     }
 

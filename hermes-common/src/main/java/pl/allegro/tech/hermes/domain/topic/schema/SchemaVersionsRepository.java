@@ -2,12 +2,19 @@ package pl.allegro.tech.hermes.domain.topic.schema;
 
 import pl.allegro.tech.hermes.api.Topic;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SchemaVersionsRepository {
 
-    boolean schemaVersionExists(Topic topic, int version);
+    default boolean schemaVersionExists(Topic topic, SchemaVersion version) {
+        return versions(topic).contains(version);
+    }
 
-    Optional<Integer> latestSchemaVersion(Topic topic);
+    default Optional<SchemaVersion> latestSchemaVersion(Topic topic) {
+        return versions(topic).stream().findFirst();
+    }
+
+    List<SchemaVersion> versions(Topic topic);
 
 }

@@ -11,16 +11,17 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class CachedSchemaVersionsRepository extends AbstractSchemaVersionsRepository {
+import static java.util.Collections.emptyList;
+
+public class CachedSchemaVersionsRepository implements SchemaVersionsRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(CachedSchemaVersionsRepository.class);
 
-    private final LoadingCache<Topic, List<Integer>> versionsCache;
+    private final LoadingCache<Topic, List<SchemaVersion>> versionsCache;
 
     public CachedSchemaVersionsRepository(SchemaSourceProvider schemaSourceProvider, ExecutorService versionsReloader,
                                           int refreshAfterWriteMinutes, int expireAfterWriteMinutes) {
@@ -38,16 +39,16 @@ public class CachedSchemaVersionsRepository extends AbstractSchemaVersionsReposi
     }
 
     @Override
-    protected Optional<List<Integer>> versions(Topic topic) {
+    public List<SchemaVersion> versions(Topic topic) {
         try {
-            return Optional.of(versionsCache.get(topic));
+            return versionsCache.get(topic);
         } catch (ExecutionException e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
-            return Optional.empty();
+            return emptyList();
         }
     }
 
-    private static class SchemaVersionsLoader extends CacheLoader<Topic, List<Integer>> {
+    private static class SchemaVersionsLoader extends CacheLoader<Topic, List<SchemaVersion>> {
 
         private final SchemaSourceProvider schemaSourceProvider;
         private final ExecutorService versionsReloader;
@@ -58,14 +59,14 @@ public class CachedSchemaVersionsRepository extends AbstractSchemaVersionsReposi
         }
 
         @Override
-        public List<Integer> load(Topic topic) throws Exception {
+        public List<SchemaVersion> load(Topic topic) throws Exception {
             logger.info("Loading schema versions for topic {}", topic.getQualifiedName());
             return schemaSourceProvider.versions(topic);
         }
 
         @Override
-        public ListenableFuture<List<Integer>> reload(Topic topic, List<Integer> oldVersions) throws Exception {
-            ListenableFutureTask<List<Integer>> task = ListenableFutureTask.create(() -> {
+        public ListenableFuture<List<SchemaVersion>> reload(Topic topic, List<SchemaVersion> oldVersions) throws Exception {
+            ListenableFutureTask<List<SchemaVersion>> task = ListenableFutureTask.create(() -> {
                 logger.info("Reloading schema versions for topic {}", topic.getQualifiedName());
                 try {
                     return schemaSourceProvider.versions(topic);

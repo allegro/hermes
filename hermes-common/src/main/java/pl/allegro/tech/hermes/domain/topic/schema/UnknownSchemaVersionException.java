@@ -6,8 +6,8 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class UnknownSchemaVersionException extends HermesException {
 
-    public UnknownSchemaVersionException(Topic topic, int version) {
-        super("Unknown schema version " + version + " for topic " + topic.getQualifiedName());
+    public UnknownSchemaVersionException(Topic topic, SchemaVersion version) {
+        super("Unknown schema version " + version.value() + " for topic " + topic.getQualifiedName());
     }
 
     @Override

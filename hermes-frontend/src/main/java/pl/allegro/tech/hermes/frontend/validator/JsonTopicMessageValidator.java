@@ -9,56 +9,56 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
+import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class JsonTopicMessageValidator implements TopicMessageValidator {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonTopicMessageValidator.class);
     private static final Charset UTF_8 = Charset.forName("UTF-8");
-    private final SchemaRepository<JsonSchema> schemaRepository;
     private final ObjectMapper objectMapper;
 
     @Inject
-    public JsonTopicMessageValidator(SchemaRepository<JsonSchema> schemaRepository, ObjectMapper objectMapper) {
-        this.schemaRepository = schemaRepository;
+    public JsonTopicMessageValidator(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     @Override
-    public void check(byte[] message, Topic topic) {
+    public void check(Message message, Topic topic) {
         if (ContentType.JSON != topic.getContentType() || !topic.isValidationEnabled()) {
             return;
         }
 
-        List<String> errors = validate(schemaRepository.getSchema(topic), message);
+        List<String> errors = validate(message.<JsonSchema>getCompiledSchema(), message.getData());
 
         if (!errors.isEmpty()) {
             if (topic.isValidationDryRunEnabled()) {
                 logger.info("Message incompatible with JSON schema for topic {}, errors: {}, message body: {}",
-                        topic.getQualifiedName(), Joiner.on(";").join(errors), new String(message, UTF_8));
+                        topic.getQualifiedName(), Joiner.on(";").join(errors), new String(message.getData(), UTF_8));
             } else {
                 throw new InvalidMessageException("Message incompatible with JSON schema", errors);
             }
         }
     }
 
-    private List<String> validate(JsonSchema jsonSchema, byte[] message) {
+    private List<String> validate(Optional<CompiledSchema<JsonSchema>> jsonSchema, byte[] message) {
         List<String> errors = new ArrayList<>();
 
         try {
             JsonNode messageNode = objectMapper.readTree(message);
 
-            ProcessingReport report = jsonSchema.validateUnchecked(messageNode);
+            ProcessingReport report = jsonSchema.get().getSchema().validateUnchecked(messageNode);
 
             report.forEach(processingMessage -> errors.add(processingMessage.getMessage()));
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.warn("Error while deserializing message: " + new String(message), e);
             errors.add("Problem with message deserialization. Is this correct JSON format?");
         }

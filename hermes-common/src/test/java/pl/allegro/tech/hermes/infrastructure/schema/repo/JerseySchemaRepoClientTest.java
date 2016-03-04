@@ -7,6 +7,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import pl.allegro.tech.hermes.common.exception.InvalidSchemaException;
 import pl.allegro.tech.hermes.common.exception.SchemaRepoException;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
@@ -142,10 +143,10 @@ public class JerseySchemaRepoClientTest {
         wireMockRule.stubFor(get(allSchemasUrl()).willReturn(okResponse().withBodyFile("all-schemas-response.json").withHeader("Content-Type", "application/json")));
 
         // when
-        List<Integer> versions = client.getSchemaVersions(SUBJECT);
+        List<SchemaVersion> versions = client.getSchemaVersions(SUBJECT);
 
         // then
-        assertThat(versions).containsExactly(2, 1, 0);
+        assertThat(versions).containsExactly(SchemaVersion.valueOf(2), SchemaVersion.valueOf(1), SchemaVersion.valueOf(0));
     }
 
     @Test
@@ -154,7 +155,7 @@ public class JerseySchemaRepoClientTest {
         wireMockRule.stubFor(get(allSchemasUrl()).willReturn(okResponse().withBody("").withHeader("Content-Type", "application/json")));
 
         // when
-        List<Integer> versions = client.getSchemaVersions(SUBJECT);
+        List<SchemaVersion> versions = client.getSchemaVersions(SUBJECT);
 
         // then
         assertThat(versions).isEmpty();
@@ -166,7 +167,7 @@ public class JerseySchemaRepoClientTest {
         wireMockRule.stubFor(get(allSchemasUrl()).willReturn(notFoundResponse()));
 
         // when
-        List<Integer> versions = client.getSchemaVersions(SUBJECT);
+        List<SchemaVersion> versions = client.getSchemaVersions(SUBJECT);
 
         // then
         assertThat(versions).isEmpty();

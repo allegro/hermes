@@ -6,9 +6,10 @@ import pl.allegro.tech.hermes.api.Topic;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Optional;
 
-public class SimpleSchemaVersionsRepository extends AbstractSchemaVersionsRepository {
+import static java.util.Collections.emptyList;
+
+public class SimpleSchemaVersionsRepository implements SchemaVersionsRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleSchemaVersionsRepository.class);
 
@@ -20,12 +21,12 @@ public class SimpleSchemaVersionsRepository extends AbstractSchemaVersionsReposi
     }
 
     @Override
-    protected Optional<List<Integer>> versions(Topic topic) {
+    public List<SchemaVersion> versions(Topic topic) {
         try {
-            return Optional.of(schemaSourceProvider.versions(topic));
+            return schemaSourceProvider.versions(topic);
         } catch (Exception e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
-            return Optional.empty();
+            return emptyList();
         }
     }
 }

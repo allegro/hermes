@@ -24,6 +24,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.MessageMetadata;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import java.time.Clock;
 import java.util.List;
@@ -65,6 +66,9 @@ public class KafkaMessageReceiverTest {
     @Mock
     private MessageAndMetadata<byte[], byte[]> messageAndMetadata;
 
+    @Mock
+    private SchemaRepository schemaRepository;
+
     private KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns");
 
     private KafkaMessageReceiver kafkaMsgReceiver;
@@ -76,9 +80,9 @@ public class KafkaMessageReceiverTest {
         Map<String, Integer> expectedTopicCountMap = singletonMap("ns_group.topic1", KAFKA_STREAM_COUNT);
         when(consumerConnector.createMessageStreams(expectedTopicCountMap)).thenReturn(consumerMap);
         when(messageAndMetadata.message()).thenReturn(WRAPPED_MESSAGE_CONTENT.getBytes());
-        when(messageContentWrapper.unwrap(WRAPPED_MESSAGE_CONTENT.getBytes(), TOPIC, TOPIC.getContentType())).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
+        when(messageContentWrapper.unwrapJson(WRAPPED_MESSAGE_CONTENT.getBytes())).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
         kafkaMsgReceiver = new KafkaMessageReceiver(TOPIC, consumerConnector, messageContentWrapper,
-                timer, Clock.systemDefaultZone(), kafkaNamesMapper, KAFKA_STREAM_COUNT, 100, SubscriptionName.fromString("ns_group.topic$sub"));
+                timer, Clock.systemDefaultZone(), kafkaNamesMapper, KAFKA_STREAM_COUNT, 100, SubscriptionName.fromString("ns_group.topic$sub"), schemaRepository);
     }
 
     @After

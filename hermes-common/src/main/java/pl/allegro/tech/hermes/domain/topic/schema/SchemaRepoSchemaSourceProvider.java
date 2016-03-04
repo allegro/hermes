@@ -23,12 +23,12 @@ public class SchemaRepoSchemaSourceProvider implements SchemaSourceProvider {
     }
 
     @Override
-    public Optional<SchemaSource> get(Topic topic, int version) {
+    public Optional<SchemaSource> get(Topic topic, SchemaVersion version) {
         return schemaRepoClient.getSchema(topic.getQualifiedName(), version).map(SchemaSource::valueOf);
     }
 
     @Override
-    public List<Integer> versions(Topic topic) {
+    public List<SchemaVersion> versions(Topic topic) {
         return schemaRepoClient.getSchemaVersions(topic.getQualifiedName());
     }
 }

@@ -13,6 +13,10 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
     static final Duration REFRESH_TIME = Duration.ofMinutes(10)
     static final Duration EXPIRE_TIME = Duration.ofMinutes(60)
 
+    static final SchemaVersion v2 = SchemaVersion.valueOf(2)
+    static final SchemaVersion v1 = SchemaVersion.valueOf(1)
+    static final SchemaVersion v0 = SchemaVersion.valueOf(0)
+
     def schemaSourceProvider = Stub(SchemaSourceProvider)
     def ticker = new FakeTicker()
     def versionsRepository = new CachedSchemaVersionsRepository(schemaSourceProvider, MoreExecutors.sameThreadExecutor(),
@@ -22,24 +26,24 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
 
     def "should indicate if schema version exists"() {
         given:
-        schemaSourceProvider.versions(topic) >> [1, 0]
+        schemaSourceProvider.versions(topic) >> [v1, v0]
 
         expect:
         versionsRepository.schemaVersionExists(topic, version) == expectedResult
 
         where:
         version | expectedResult
-        2       | false
-        1       | true
-        0       | true
+        v2      | false
+        v1      | true
+        v0      | true
     }
 
     def "should provide latest schema version"() {
         given:
-        schemaSourceProvider.versions(topic) >> [1, 0]
+        schemaSourceProvider.versions(topic) >> [v1, v0]
 
         expect:
-        versionsRepository.latestSchemaVersion(topic).get() == 1
+        versionsRepository.latestSchemaVersion(topic).get() == v1
     }
 
     def "should empty latest schema version for topic without schema versions available"() {
@@ -52,24 +56,24 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
 
     def "should respond using cached schema versions if schema versions didn't expire"() {
         given:
-        schemaSourceProvider.versions(topic) >>> [[1, 0], [2, 1, 0]]
+        schemaSourceProvider.versions(topic) >>> [[v1, v0], [v2, v1, v0]]
         versionsRepository.latestSchemaVersion(topic)
         ticker.advance(REFRESH_TIME.minusMinutes(1))
 
         expect:
-        !versionsRepository.schemaVersionExists(topic, 2)
-        versionsRepository.latestSchemaVersion(topic).get() == 1
+        !versionsRepository.schemaVersionExists(topic, v2)
+        versionsRepository.latestSchemaVersion(topic).get() == v1
     }
 
     def "should respond using fresh schema versions if schema versions did expire"() {
         given:
-        schemaSourceProvider.versions(topic) >>> [[1, 0], [2, 1, 0]]
+        schemaSourceProvider.versions(topic) >>> [[v1, v0], [v2, v1, v0]]
         versionsRepository.latestSchemaVersion(topic)
         ticker.advance(REFRESH_TIME.plusMinutes(1))
 
         expect:
-        versionsRepository.schemaVersionExists(topic, 2)
-        versionsRepository.latestSchemaVersion(topic).get() == 2
+        versionsRepository.schemaVersionExists(topic, v2)
+        versionsRepository.latestSchemaVersion(topic).get() == v2
     }
 
     def "should respond with stale data if refresh failed"() {
@@ -79,7 +83,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
             if (failing) {
                 throw new RuntimeException("failing mode on")
             }
-            return [1, 0]
+            return [v1, v0]
         }
         versionsRepository.latestSchemaVersion(topic)
 
@@ -87,8 +91,8 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         failing = true
 
         expect:
-        versionsRepository.schemaVersionExists(topic, 1)
-        versionsRepository.latestSchemaVersion(topic).get() == 1
+        versionsRepository.schemaVersionExists(topic, v1)
+        versionsRepository.latestSchemaVersion(topic).get() == v1
     }
 
     private static class FakeTicker extends Ticker {

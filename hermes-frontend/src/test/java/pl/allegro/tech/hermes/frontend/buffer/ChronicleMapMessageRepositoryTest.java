@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
+import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 import java.io.File;
@@ -29,7 +30,7 @@ public class ChronicleMapMessageRepositoryTest {
         byte[] messageContent = "hello world".getBytes();
         long timestamp = System.currentTimeMillis();
         String id = "id1";
-        Message message = new Message(id, messageContent, timestamp);
+        Message message = new JsonMessage(id, messageContent, timestamp);
         String qualifiedName = "groupName.topic";
 
         Topic topic = topic(qualifiedName).build();

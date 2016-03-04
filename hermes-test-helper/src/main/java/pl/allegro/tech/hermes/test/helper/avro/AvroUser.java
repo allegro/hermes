@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.test.helper.avro;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
+import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.io.IOException;
@@ -84,5 +86,13 @@ public class AvroUser {
         user.put(FAVORITE_COLOR_FIELD, favoriteColor);
 
         return user;
+    }
+
+    public CompiledSchema<Schema> getCompiledSchema(SchemaVersion version) {
+        return new CompiledSchema<>(getSchema(), version);
+    }
+
+    public CompiledSchema<Schema> getCompiledSchema() {
+        return getCompiledSchema(SchemaVersion.valueOf(0));
     }
 }

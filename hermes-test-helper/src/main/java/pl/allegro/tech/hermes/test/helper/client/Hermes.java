@@ -97,7 +97,7 @@ public class Hermes {
 
     private static ClientConfig getDefaultManagementConfig() {
         ClientConfig clientConfig = new ClientConfig();
-        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
+        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, DEFAULT_MANAGEMENT_READ_TIMEOUT);
         clientConfig.property(ClientProperties.READ_TIMEOUT, DEFAULT_MANAGEMENT_READ_TIMEOUT);
 
         return clientConfig;

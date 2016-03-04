@@ -5,6 +5,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
 import pl.allegro.tech.hermes.common.util.MessageId;
+import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
 import javax.inject.Inject;
 import java.time.Clock;
@@ -29,12 +30,12 @@ public class AvroMessageContentWrapper {
     }
 
     @SuppressWarnings("unchecked")
-    UnwrappedMessageContent unwrapContent(byte[] data, Schema schema) {
+    UnwrappedMessageContent unwrapContent(byte[] data, CompiledSchema<Schema> schema) {
         try {
-            Map<Utf8, Utf8> metadata = (Map<Utf8, Utf8>) bytesToRecord(data, schema).get(METADATA_MARKER);
+            Map<Utf8, Utf8> metadata = (Map<Utf8, Utf8>) bytesToRecord(data, schema.getSchema()).get(METADATA_MARKER);
             MessageMetadata messageMetadata = getMetadata(metadata);
 
-            return new UnwrappedMessageContent(messageMetadata, data);
+            return new UnwrappedMessageContent(messageMetadata, data, schema);
         } catch (Exception exception) {
             throw new UnwrappingException("Could not read avro message", exception);
         }

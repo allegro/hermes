@@ -10,14 +10,14 @@ public interface SchemaSourceProvider {
 
     Optional<SchemaSource> get(Topic topic);
 
-    default Optional<SchemaSource> get(Topic topic, int version) {
-        throw new UnsupportedOperationException("sry");
+    default Optional<SchemaSource> get(Topic topic, SchemaVersion version) {
+        throw new UnsupportedOperationException("schema versioning not supported");
     }
 
     /**
      * @return a sorted list of versions in descending order.
      */
-    default List<Integer> versions(Topic topic) {
-        throw new UnsupportedOperationException("sorry dude");
+    default List<SchemaVersion> versions(Topic topic) {
+        throw new UnsupportedOperationException("schema versioning not supported");
     }
 }

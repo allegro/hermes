@@ -2,12 +2,12 @@ package pl.allegro.tech.hermes.domain.topic.schema;
 
 import java.util.Objects;
 
-public class VersionedSchema<T> {
+public class CompiledSchema<T> {
 
     private final T schema;
-    private final int version;
+    private final SchemaVersion version;
 
-    public VersionedSchema(T schema, int version) {
+    public CompiledSchema(T schema, SchemaVersion version) {
         this.schema = schema;
         this.version = version;
     }
@@ -16,7 +16,7 @@ public class VersionedSchema<T> {
         return schema;
     }
 
-    public int getVersion() {
+    public SchemaVersion getVersion() {
         return version;
     }
 
@@ -34,8 +34,8 @@ public class VersionedSchema<T> {
             return false;
         }
 
-        VersionedSchema<?> that = (VersionedSchema<?>) o;
-        return version == that.version && Objects.equals(schema, that.schema);
+        CompiledSchema<?> that = (CompiledSchema<?>) o;
+        return Objects.equals(version, that.version) && Objects.equals(schema, that.schema);
     }
 
     @Override

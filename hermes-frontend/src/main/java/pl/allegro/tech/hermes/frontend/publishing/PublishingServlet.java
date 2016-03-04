@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -10,6 +9,7 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaMissingException;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.AsyncContextExecutionCallback;
@@ -18,11 +18,9 @@ import pl.allegro.tech.hermes.frontend.publishing.callbacks.HttpPublishingCallba
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MessageStatePublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
-import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
-import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
-import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
@@ -33,9 +31,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.Clock;
-import java.util.Enumeration;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,13 +46,9 @@ public class PublishingServlet extends HttpServlet {
     private final ErrorSender errorSender;
     private final Trackers trackers;
     private final TopicsCache topicsCache;
-    private final MessageValidators messageValidators;
-    private final Clock clock;
     private final MessagePublisher messagePublisher;
-    private final MessageContentTypeEnforcer contentTypeEnforcer;
-    private final MetadataAddingMessageConverter metadataAddingMessageConverter;
-    private final HeadersPropagator headersPropagator;
     private final BrokerListeners listeners;
+    private final MessageFactory messageFactory;
 
     private final Integer defaultAsyncTimeout;
     private final Integer longAsyncTimeout;
@@ -69,21 +60,13 @@ public class PublishingServlet extends HttpServlet {
                              ObjectMapper objectMapper,
                              ConfigFactory configFactory,
                              Trackers trackers,
-                             MessageValidators messageValidators,
-                             Clock clock,
                              MessagePublisher messagePublisher,
                              BrokerListeners listeners,
-                             MessageContentTypeEnforcer contentTypeEnforcer,
-                             MetadataAddingMessageConverter metadataAddingMessageConverter,
-                             HeadersPropagator headersPropagator) {
+                             MessageFactory messageFactory) {
 
         this.topicsCache = topicsCache;
-        this.messageValidators = messageValidators;
-        this.clock = clock;
         this.messagePublisher = messagePublisher;
-        this.contentTypeEnforcer = contentTypeEnforcer;
-        this.metadataAddingMessageConverter = metadataAddingMessageConverter;
-        this.headersPropagator = headersPropagator;
+        this.messageFactory = messageFactory;
         this.errorSender = new ErrorSender(objectMapper);
         this.hermesMetrics = hermesMetrics;
         this.trackers = trackers;
@@ -121,15 +104,8 @@ public class PublishingServlet extends HttpServlet {
         new MessageReader(request, chunkSize, topic.getName(), hermesMetrics, messageState,
                 messageContent -> asyncContext.start(() -> {
                     try {
-                        Message message = contentTypeEnforcer.enforce(request.getContentType(),
-                                new Message(messageId, messageContent, clock.millis()), topic);
-
-                        messageValidators.check(topic, message.getData());  // TODO validate against exact schema version
-
-                        message = metadataAddingMessageConverter.addMetadata(message, topic, headersPropagator.extract(toHeadersMap(request)));
-                        // TODO add magic frame
+                        Message message = messageFactory.create(request, topic, messageId, messageContent);
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
-
                         messagePublisher.publish(message, topic, messageState,
                                 listeners,
                                 new AsyncContextExecutionCallback(asyncContext,
@@ -140,22 +116,12 @@ public class PublishingServlet extends HttpServlet {
 
                     } catch (InvalidMessageException | AvroConversionException | UnsupportedContentTypeException exception) {
                         httpResponder.badRequest(exception);
-                    } catch (CouldNotLoadSchemaException e) {
+                    } catch (CouldNotLoadSchemaException | SchemaMissingException e) {
                         httpResponder.internalError(e, "Could not load schema for published message");
                     }
                 }),
                 input -> httpResponder.badRequest(input, "Validation error"),
                 throwable -> httpResponder.internalError(throwable, "Error while reading request"));
-    }
-
-    private Map<String, String> toHeadersMap(HttpServletRequest request) {
-        ImmutableMap.Builder<String, String> builder = ImmutableMap.<String, String>builder();
-        Enumeration<String> headers = request.getHeaderNames();
-        while(headers.hasMoreElements()) {
-            String header = headers.nextElement();
-            builder.put(header, request.getHeader(header));
-        }
-        return builder.build();
     }
 
     private TopicName parseTopicName(HttpServletRequest request) {

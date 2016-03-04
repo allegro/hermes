@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.integration.env;
 
-import pl.allegro.tech.hermes.integration.helper.schemarepo.SchemaRepo;
+import org.schemarepo.config.Config;
+import org.schemarepo.server.RepositoryServer;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 
-public class SchemaRepoStarter implements Starter<SchemaRepo> {
+import java.util.Properties;
+
+public class SchemaRepoStarter implements Starter<RepositoryServer> {
     private final int port;
-    private SchemaRepo repositoryServer;
+    private RepositoryServer repositoryServer;
 
     public SchemaRepoStarter(int port) {
         this.port = port;
@@ -13,7 +16,10 @@ public class SchemaRepoStarter implements Starter<SchemaRepo> {
 
     @Override
     public void start() throws Exception {
-        repositoryServer = new SchemaRepo(port);
+        Properties properties = new Properties();
+        properties.put(Config.REPO_CLASS, "org.schemarepo.InMemoryRepository");
+        properties.put(Config.JETTY_PORT, port);
+        repositoryServer = new RepositoryServer(properties);
         repositoryServer.start();
     }
 
@@ -23,7 +29,7 @@ public class SchemaRepoStarter implements Starter<SchemaRepo> {
     }
 
     @Override
-    public SchemaRepo instance() {
+    public RepositoryServer instance() {
         return repositoryServer;
     }
 }
