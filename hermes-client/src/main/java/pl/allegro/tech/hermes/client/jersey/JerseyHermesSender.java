@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.client.HermesSender;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -23,9 +24,9 @@ public class JerseyHermesSender implements HermesSender {
     @Override
     public CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
         CompletableFuture<HermesResponse> future = new CompletableFuture<>();
-        client.target(uri).request()
-                .header(HermesSender.SCHEMA_VERSION_HEADER, message.getSchemaVersion())
-                .async()
+        Invocation.Builder builder = client.target(uri).request();
+        message.consumeHeaders(builder::header);
+        builder.async()
                 .post(Entity.entity(message.getBody(), message.getContentType()),
                         new InvocationCallback<Response>() {
                             @Override

@@ -8,11 +8,9 @@ import java.util.function.Predicate;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.IntStream.range;
+import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
 
 public class HermesClient {
-
-    private static final String APPLICATION_JSON = "application/json;charset=UTF-8";
-    private static final String AVRO_BINARY = "avro/binary";
 
     private final HermesSender sender;
     private final String uri;
@@ -29,36 +27,36 @@ public class HermesClient {
     }
 
     public CompletableFuture<HermesResponse> publishJSON(String topic, byte[] message) {
-        return publish(topic, APPLICATION_JSON, message);
+        return publish(hermesMessage(topic, message).json().build());
     }
 
     public CompletableFuture<HermesResponse> publishJSON(String topic, String message) {
-        return publish(topic, APPLICATION_JSON, message);
+        return publish(hermesMessage(topic, message).json().build());
     }
 
     public CompletableFuture<HermesResponse> publishAvro(String topic, int schemaVersion, byte[] message) {
-        return publish(topic, AVRO_BINARY, schemaVersion, message);
+        return publish(hermesMessage(topic, message).avro(schemaVersion).build());
     }
 
     public CompletableFuture<HermesResponse> publish(String topic, String message) {
-        return publish(topic, defaultContentType, message);
+        return publish(hermesMessage(topic, message).withContentType(defaultContentType).build());
     }
 
     public CompletableFuture<HermesResponse> publish(String topic, String contentType, byte[] message) {
-        return publish(new HermesMessage(topic, contentType, message));
+        return publish(hermesMessage(topic, message).withContentType(contentType).build());
     }
 
     public CompletableFuture<HermesResponse> publish(String topic, String contentType, String message) {
-        return publish(new HermesMessage(topic, contentType, message));
+        return publish(hermesMessage(topic, message).withContentType(contentType).build());
     }
 
     public CompletableFuture<HermesResponse> publish(String topic, String contentType, int schemaVersion, byte[] message) {
-        return publish(new HermesMessage(topic, contentType, schemaVersion, message));
+        return publish(hermesMessage(topic, message).withContentType(contentType).withSchemaVersion(schemaVersion).build());
     }
 
     public CompletableFuture<HermesResponse> publish(HermesMessage message) {
-        HermesMessage messageWithContent = message.getContentType() == null ? HermesMessage.appendContentType(message, defaultContentType) : message;
-        return publish(messageWithContent, (response) -> retryCondition.test(response) ? sendOnce(messageWithContent) : completedFuture(response));
+        HermesMessage messageWithContentType = message.getContentType() == null ? HermesMessage.appendContentType(message, defaultContentType) : message;
+        return publish(messageWithContentType, (response) -> retryCondition.test(response) ? sendOnce(messageWithContentType) : completedFuture(response));
     }
 
     private CompletableFuture<HermesResponse> publish(HermesMessage message, Function<HermesResponse, CompletionStage<HermesResponse>> retryDecision) {
