@@ -60,6 +60,17 @@ passed on to Hermes in `Schema-Version` header.
 hermesClient.publishAvro("com.group.avro", 1, avroMessage.getBytes());
 ```
 
+You can also use `HermesMessage#Builder` to create HermesMessage object, to e.g. pass custom headers:
+
+```java
+hermesClient.publish(
+    HermesMessage.hermesMessage("com.group.topic", "{hello: 1}")
+        .json()
+        .withHeader("My-Header", "header value")
+        .build()
+);
+```
+
 Publication reuslts in returning `HermesResponse` object:
 
 ```java

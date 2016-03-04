@@ -24,8 +24,9 @@ public class OkHttpHermesSender implements HermesSender {
         CompletableFuture<HermesResponse> future = new CompletableFuture<>();
 
         RequestBody body = RequestBody.create(MediaType.parse(message.getContentType()), message.getBody());
-        Request request = new Request.Builder()
-                .addHeader(HermesSender.SCHEMA_VERSION_HEADER, Integer.toString(message.getSchemaVersion()))
+        Request.Builder builder = new Request.Builder();
+        message.consumeHeaders(builder::addHeader);
+        Request request = builder
                 .post(body)
                 .url(uri.toString())
                 .build();
