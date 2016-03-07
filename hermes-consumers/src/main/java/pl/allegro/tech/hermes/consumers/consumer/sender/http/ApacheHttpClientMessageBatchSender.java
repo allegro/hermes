@@ -18,6 +18,7 @@ import java.net.URI;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.BATCH_ID;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.RETRY_COUNT;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.AvroMediaType.AVRO_BINARY;
 
 public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
@@ -59,6 +60,7 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
         httpPost.addHeader(HTTP.CONN_KEEP_ALIVE, "true");
         httpPost.addHeader(BATCH_ID.getName(), batch.getId());
         httpPost.addHeader(HTTP.CONTENT_TYPE, contentType.getMimeType());
+        httpPost.addHeader(RETRY_COUNT.getName(), Integer.toString(batch.getRetryCounter()));
         return send(httpPost);
     }
 

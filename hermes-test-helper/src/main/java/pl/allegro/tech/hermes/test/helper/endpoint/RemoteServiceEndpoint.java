@@ -151,6 +151,10 @@ public class RemoteServiceEndpoint {
         return item;
     }
 
+    public boolean receivedMessageWithHeader(String header, String value) {
+        return receivedRequests.stream().anyMatch(r -> r.header(header).containsValue(value));
+    }
+
     public java.time.Duration durationBetweenFirstAndLastRequest() {
         return java.time.Duration.between(
                 getFirstReceivedRequest().getLoggedDate().toInstant(),

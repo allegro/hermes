@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 @NotThreadSafe
 public class JsonMessageBatch implements MessageBatch {
+
     private final Clock clock;
 
     private final int maxBatchTime;
@@ -31,6 +32,7 @@ public class JsonMessageBatch implements MessageBatch {
     private int elements = 0;
     private long batchStart;
     private boolean closed = false;
+    private int retryCounter = 0;
 
     public JsonMessageBatch(String id, ByteBuffer buffer, int size, int batchTime, Clock clock) {
         this.id = id;
@@ -143,5 +145,15 @@ public class JsonMessageBatch implements MessageBatch {
     @Override
     public int getCapacity() {
         return byteBuffer.capacity();
+    }
+
+    @Override
+    public void incrementRetryCounter() {
+        this.retryCounter++;
+    }
+
+    @Override
+    public int getRetryCounter() {
+        return retryCounter;
     }
 }

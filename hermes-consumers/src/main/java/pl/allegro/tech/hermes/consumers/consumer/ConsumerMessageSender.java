@@ -87,7 +87,7 @@ public class ConsumerMessageSender {
     private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
         rateLimiter.acquire();
         ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
-        final CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
+        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
     }
 
@@ -121,7 +121,7 @@ public class ConsumerMessageSender {
     }
 
     private boolean shouldReduceSendingRate(MessageSendingResult result) {
-        return subscriptionAllowsResending(result);
+        return !result.isRetryLater() && subscriptionAllowsResending(result);
     }
 
     private boolean subscriptionAllowsResending(MessageSendingResult result) {
@@ -146,35 +146,34 @@ public class ConsumerMessageSender {
                 handleMessageSendingSuccess(message, result);
             } else {
                 handleFailedSending(message, result);
-                if (!attemptResending(result)) {
+                message.incrementRetryCounter();
+
+                long retryDelay = extractRetryDelay(result);
+                if (shouldAttemptResending(result, retryDelay)) {
+                    retrySingleThreadExecutor.schedule(() -> retrySending(result), retryDelay, TimeUnit.MILLISECONDS);
+                } else {
                     handleMessageDiscarding(message, result);
                 }
             }
         }
 
-        private boolean attemptResending(MessageSendingResult result) {
-            long delay = extractRetryDelay(result);
-            if (!willExceedTtl(message, delay) && subscriptionAllowsResending(result)) {
-                retrySingleThreadExecutor.schedule(() -> retrySending(result),
-                        delay, TimeUnit.MILLISECONDS);
-                return true;
-            }
-            return false;
+        private boolean shouldAttemptResending(MessageSendingResult result, long retryDelay) {
+            return !willExceedTtl(message, retryDelay) && subscriptionAllowsResending(result);
         }
 
         private long extractRetryDelay(MessageSendingResult result) {
             long defaultBackoff = subscription.getSerialSubscriptionPolicy().getMessageBackoff();
-            long ttlMillis = TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
-            return result.getRetryAfterMillis().map(delay -> Math.min(delay, ttlMillis)).orElse(defaultBackoff);
+            long ttl = TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
+            return result.getRetryAfterMillis().map(delay -> Math.min(delay, ttl)).orElse(defaultBackoff);
         }
 
         private void retrySending(MessageSendingResult result) {
             if (result.isLoggable()) {
                 logger.info(
-                    format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                        subscription.getEndpoint().getEndpoint(), message.getId(), message.getOffset(), message.getPartition(),
-                        subscription.getId(), result.getRootCause()),
-                    result.getFailure());
+                        format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
+                                subscription.getEndpoint().getEndpoint(), message.getId(), message.getOffset(), message.getPartition(),
+                                subscription.getId(), result.getRootCause()),
+                        result.getFailure());
             }
             sendMessage(message);
         }

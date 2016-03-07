@@ -365,7 +365,8 @@ public class PublishingTest extends IntegrationTest {
         // then
         remoteService.waitUntilReceived();
 
-        assertThat(remoteService.durationBetweenFirstAndLastRequest()
-                .minusSeconds(retryAfterSeconds).isNegative()).isFalse();
+        assertThat(remoteService.durationBetweenFirstAndLastRequest().minusSeconds(retryAfterSeconds).isNegative()).isFalse();
+        assertThat(remoteService.receivedMessageWithHeader("Hermes-Retry-Count", "0")).isTrue();
+        assertThat(remoteService.receivedMessageWithHeader("Hermes-Retry-Count", "1")).isTrue();
     }
 }

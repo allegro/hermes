@@ -14,6 +14,8 @@ import static com.google.common.collect.ImmutableMap.of;
 
 public final class MessageBuilder {
 
+    public static final String TEST_MESSAGE_CONTENT = "Some test message";
+
     private String id;
     private String topic;
     private ContentType contentType;
@@ -26,11 +28,15 @@ public final class MessageBuilder {
     private MessageBuilder() {
     }
 
+    public static Message testMessage() {
+        return MessageBuilder.withTestMessage().build();
+    }
+
     public static MessageBuilder withTestMessage() {
         return new MessageBuilder()
                 .withId("id")
                 .withTopic("topicId")
-                .withContent("Some test message", StandardCharsets.UTF_8)
+                .withContent(TEST_MESSAGE_CONTENT, StandardCharsets.UTF_8)
                 .withContentType(ContentType.JSON)
                 .withPublishingTimestamp(123L)
                 .withReadingTimestamp(123L)

@@ -55,7 +55,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldRetryUntilRequestSuccessful() throws Throwable {
+    public void shouldRetryUntilRequestSuccessfulAndSendRetryCounterInHeader() throws Throwable {
         //given
         Topic topic = operations.buildTopic("group", "retryUntilRequestSuccessful");
         createSingleMessageBatchSubscription(topic);
@@ -75,7 +75,12 @@ public class BatchRetryPolicyTest extends IntegrationTest {
         publish(topic, TestMessage.simple());
 
         //then
-        wait.until(() -> assertThat(recordedRequests(topic)).hasSize(2));
+        wait.until(() -> {
+            List<LoggedRequest> requests = recordedRequests(topic);
+            assertThat(requests).hasSize(2);
+            assertThat(requests.get(0).header("Hermes-Retry-Count").containsValue("0")).isTrue();
+            assertThat(requests.get(1).header("Hermes-Retry-Count").containsValue("1")).isTrue();
+        });
     }
 
     @Test

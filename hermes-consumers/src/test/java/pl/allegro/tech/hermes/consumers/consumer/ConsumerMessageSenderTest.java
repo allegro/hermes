@@ -276,7 +276,7 @@ public class ConsumerMessageSenderTest {
     }
 
     @Test
-    public void shouldBackoffRetriesOnRetryAfter() throws InterruptedException {
+    public void shouldNotBackoffRetriesOnRetryAfter() throws InterruptedException {
         // given
         int retrySeconds = 1;
         Message message = message();
@@ -286,8 +286,8 @@ public class ConsumerMessageSenderTest {
         sender.sendMessage(message);
 
         // then
-        verifyRateLimiterFailedSendingCountedTimes(1);
-        verifyRateLimiterSuccessfulSendingCountedTimes(1);
+        verifyRateLimiterFailedSendingCountedTimes(0);
+        verifyRateLimiterSuccessfulSendingCountedTimes(2);
         verifySemaphoreReleased();
     }
 
@@ -302,8 +302,8 @@ public class ConsumerMessageSenderTest {
         sender.sendMessage(message);
 
         // then
-        verifyRateLimiterFailedSendingCountedTimes(1);
-        verifyRateLimiterSuccessfulSendingCountedTimes(0);
+        verifyRateLimiterSuccessfulSendingCountedTimes(1);
+        verifyErrorHandlerHandleDiscarded(message, subscription);
         verifySemaphoreReleased();
     }
 
@@ -327,6 +327,10 @@ public class ConsumerMessageSenderTest {
 
     private void verifyErrorHandlerHandleFailed(Message message, Subscription subscription, int times, int timeout) {
         verify(errorHandler, timeout(timeout).times(times)).handleFailed(eq(message), eq(subscription), any(MessageSendingResult.class));
+    }
+
+    private void verifyErrorHandlerHandleDiscarded(Message message, Subscription subscription) {
+        verify(errorHandler, timeout(1000).times(1)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
     }
 
     private void verifyLatencyTimersCountedTimes(int timeCount, int closeCount) {
