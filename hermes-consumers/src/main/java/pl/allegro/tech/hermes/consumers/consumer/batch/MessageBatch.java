@@ -9,16 +9,19 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 public interface MessageBatch {
-    void append(byte[] data, MessageMetadata batchMessageMetadata) throws BufferOverflowException;
-
-    boolean canFit(byte[] data);
 
     default boolean isReadyForDelivery() {
         return isClosed() || isFull() || isExpired();
     }
 
+    void append(byte[] data, MessageMetadata batchMessageMetadata) throws BufferOverflowException;
+
+    boolean canFit(byte[] data);
+
     boolean isExpired();
+
     boolean isClosed();
+
     boolean isFull();
 
     String getId();
@@ -42,4 +45,8 @@ public interface MessageBatch {
     boolean isBiggerThanTotalCapacity(byte[] data);
 
     int getCapacity();
+
+    void incrementRetryCounter();
+
+    int getRetryCounter();
 }

@@ -20,6 +20,7 @@ import java.util.function.Function;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.RETRY_COUNT;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.AvroMediaType.AVRO_BINARY;
 
 public class JettyMessageSender extends CompletableFutureAwareMessageSender {
@@ -55,6 +56,7 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
                 .method(HttpMethod.POST)
                 .header(HttpHeader.KEEP_ALIVE.toString(), "true")
                 .header(MESSAGE_ID.getName(), message.getId())
+                .header(RETRY_COUNT.getName(), Integer.toString(message.getRetryCounter()))
                 .header(HttpHeader.CONTENT_TYPE.toString(), contentTypeToMediaType.apply(message.getContentType()))
                 .timeout(timeout, TimeUnit.MILLISECONDS)
                 .content(new BytesContentProvider(message.getData()));

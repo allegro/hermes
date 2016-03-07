@@ -73,7 +73,8 @@ with new status name in body (quotation marks are important!):
 
 Hermes treats any response with **2xx** status code as successful delivery (e.g. 200 or 201).
 
-Responses with **5xx** status code or any network issues (e.g. connection timeout) are always treated as failures.
+Responses with **5xx** status code or any network issues (e.g. connection timeout) are treated as failures, unless it
+is **503** code, descirbed in [back pressure section](#back-pressure).
 
 Responses with **4xx** status code are treated as failures, but by default they are not retried. This is because
 usually when subscriber responds with *400 Bad Message* it means this message is somehow invalid and will never be parsed,
@@ -106,12 +107,25 @@ failure the rescue team has one hour to fix the problem before any event will be
 By default inflight TTL is set to 3600 seconds (an hour) and retry backoff is set to 100ms.
 We set a hard limit for the inflight TTL to 7200 seconds (two hours).
 
+### Retries counter
+
+Each message sent by Hermes using HTTP sender comes with an additional header: **Hermes-Retry-Count**. It contains a number
+of retries for this specific message done by this Consumer instance. 
+
+The number of retries is counted locally, meaning it can not be treated as a global counter of delivery attempts.
+This counter will reset when:
+
+* Consumer instance is shut down before committing the offset to Kafka and other instance attempts to deliver this
+    message
+* messages are retransmitted
+
 ## Back pressure
 
 The client is able to signal it can't handle the message at the moment and Hermes Consumer will retry delivery after
 minimum of given delay.
 
-The endpoint can return **Retry-After** header, with the amount of seconds to backoff, combined with status **503**.
+The endpoint can return **Retry-After** header, with the amount of seconds to backoff, combined with status **503**. This
+is the only case when returning **5xx** code does not result in slowing down the overall [sending speed](#rate-limiting).
 
 Regardless of the provided delay, the **Inflight TTL** of the message still applies in this situation,
 therefore the endpoint needs to ensure the total delay of consecutive **Retry-After** responses does not exceed this value.
@@ -120,34 +134,6 @@ In case it does, the message is discarded.
 An important limitation to remember is that the offset won't be committed until the message is either
 successfully delivered or discarded and in case of consumer failure all messages following (even when successfully processed)
 will be resent.
-
-### Last undelivered message
-
-It is possible to easily retrieve contents of last undelivered message, along with timestamp and reason why it could
-not be delivered.
-
-```
-/topics/{topicName}/subscriptions/{subscriptionName}/undelivered/last
-```
-
-It will return **404 Not Found** if there is no message to display. Otherwise it information in following format:
-
-```json
-{
-    "timestamp": 1452952981548,
-    "subscription": "subscription-name",
-    "topicName": "group.topic-name",
-    "status": "DISCARDED",
-    "reason": "Total timeout elapsed",
-    "message": "body of a message",
-    "partition": 5,
-    "offset": 368741824,
-    "cluster": "primary"
-}
-```
-
-Partition, offset and cluster specify the position of this message in Kafka, in case it was needed to retrieve it or
-to start the retransmission.
 
 ## Rate limiting
 
@@ -183,6 +169,34 @@ and include:
 * **codes4xx**: number of requests per second that end in returning 4xx HTTP response
 * **codes5xx**: number of requests per second that end in returning 5xx HTTP response
 * **rate**: current sending rate
+
+## Last undelivered message
+
+It is possible to easily retrieve contents of last undelivered message, along with timestamp and reason why it could
+not be delivered.
+
+```
+/topics/{topicName}/subscriptions/{subscriptionName}/undelivered/last
+```
+
+It will return **404 Not Found** if there is no message to display. Otherwise it information in following format:
+
+```json
+{
+    "timestamp": 1452952981548,
+    "subscription": "subscription-name",
+    "topicName": "group.topic-name",
+    "status": "DISCARDED",
+    "reason": "Total timeout elapsed",
+    "message": "body of a message",
+    "partition": 5,
+    "offset": 368741824,
+    "cluster": "primary"
+}
+```
+
+Partition, offset and cluster specify the position of this message in Kafka, in case it was needed to retrieve it or
+to start the retransmission.
 
 ## Retransmission
 
