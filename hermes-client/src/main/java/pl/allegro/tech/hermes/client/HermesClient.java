@@ -1,6 +1,9 @@
 package pl.allegro.tech.hermes.client;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -14,16 +17,25 @@ public class HermesClient {
 
     private final HermesSender sender;
     private final String uri;
-    private final String defaultContentType;
+    private final Map<String, String> defaultHeaders;
     private final int retries;
     private final Predicate<HermesResponse> retryCondition;
 
-    HermesClient(HermesSender sender, URI uri, String defaultContentType, int retries, Predicate<HermesResponse> retryCondition) {
+    HermesClient(HermesSender sender,
+                 URI uri,
+                 Map<String, String> defaultHeaders,
+                 int retries,
+                 Predicate<HermesResponse> retryCondition) {
         this.sender = sender;
-        this.uri = uri.toString() + "/topics/";
-        this.defaultContentType = defaultContentType;
+        this.uri = createUri(uri);
+        this.defaultHeaders = Collections.unmodifiableMap(new HashMap<>(defaultHeaders));
         this.retries = retries;
         this.retryCondition = retryCondition;
+    }
+
+    private String createUri(URI uri) {
+        String uriString = uri.toString();
+        return uriString + (uriString.endsWith("/") ? "" : "/" ) + "topics/";
     }
 
     public CompletableFuture<HermesResponse> publishJSON(String topic, byte[] message) {
@@ -39,7 +51,7 @@ public class HermesClient {
     }
 
     public CompletableFuture<HermesResponse> publish(String topic, String message) {
-        return publish(hermesMessage(topic, message).withContentType(defaultContentType).build());
+        return publish(hermesMessage(topic, message).build());
     }
 
     public CompletableFuture<HermesResponse> publish(String topic, String contentType, byte[] message) {
@@ -55,8 +67,8 @@ public class HermesClient {
     }
 
     public CompletableFuture<HermesResponse> publish(HermesMessage message) {
-        HermesMessage messageWithContentType = message.getContentType() == null ? HermesMessage.appendContentType(message, defaultContentType) : message;
-        return publish(messageWithContentType, (response) -> retryCondition.test(response) ? sendOnce(messageWithContentType) : completedFuture(response));
+        HermesMessage.appendDefaults(message, defaultHeaders);
+        return publish(message, (response) -> retryCondition.test(response) ? sendOnce(message) : completedFuture(response));
     }
 
     private CompletableFuture<HermesResponse> publish(HermesMessage message, Function<HermesResponse, CompletionStage<HermesResponse>> retryDecision) {

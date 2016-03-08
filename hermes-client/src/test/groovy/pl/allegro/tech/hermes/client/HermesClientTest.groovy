@@ -120,6 +120,41 @@ class HermesClientTest extends Specification {
         latch.count == 2
     }
 
+    def "should append default headers to message"() {
+        given:
+        Map<String, String> headers = [:]
+        HermesClient client = hermesClient(getHeaderScrapingSender(headers))
+            .withDefaultContentType('my/content')
+            .withDefaultHeaderValue('Header', 'Value')
+            .build()
+
+        when:
+        client.publish(HermesMessage.hermesMessage(TOPIC, CONTENT).build()).join()
+
+        then:
+        headers['Content-Type'] == 'my/content'
+        headers['Header'] == 'Value'
+    }
+
+    def "should overwrite default headers when specific values provided"() {
+        given:
+        Map<String, String> headers = [:]
+        HermesClient client = hermesClient(getHeaderScrapingSender(headers))
+                .withDefaultContentType('my/content')
+                .withDefaultHeaderValue('Header', 'Value')
+                .build()
+
+        when:
+        client.publish(HermesMessage.hermesMessage(TOPIC, CONTENT)
+                .json()
+                .withHeader('Header', 'OtherValue')
+                .build()).join()
+
+        then:
+        headers['Content-Type'] == 'application/json;charset=UTF-8'
+        headers['Header'] == 'OtherValue'
+    }
+
     private HermesSender getExceptionallyFailingCountDownSender(CountDownLatch latch) {
         return { uri, msg ->
             latch.countDown();
@@ -145,6 +180,13 @@ class HermesClientTest extends Specification {
         return { uri, msg ->
             latch.countDown();
             return completedFuture({ status.get() } as HermesResponse);
+        };
+    }
+
+    private HermesSender getHeaderScrapingSender(Map<String, String> headers) {
+        return { uri, msg ->
+            headers.putAll(msg.headers)
+            return completedFuture({ 201 } as HermesResponse);
         };
     }
 }

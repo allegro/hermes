@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.client;
 import com.codahale.metrics.MetricRegistry;
 import pl.allegro.tech.hermes.client.metrics.MetricsHermesSender;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.net.URI;
 import java.util.function.Predicate;
 
@@ -10,12 +12,13 @@ public class HermesClientBuilder {
 
     private HermesSender sender;
     private URI uri = URI.create("http://localhost:8080");
-    private String defaultContentType = "application/json";
+    private final Map<String, String> defaultHeaders = new HashMap<>();
     private int retries = 3;
     private Predicate<HermesResponse> retryCondition = new HermesClientBasicRetryCondition();
 
     public HermesClientBuilder(HermesSender sender) {
         this.sender = sender;
+        this.defaultHeaders.put(HermesMessage.CONTENT_TYPE_HEADER, HermesMessage.APPLICATION_JSON);
     }
 
     public static HermesClientBuilder hermesClient(HermesSender sender) {
@@ -23,7 +26,7 @@ public class HermesClientBuilder {
     }
 
     public HermesClient build() {
-        return new HermesClient(sender, uri, defaultContentType, retries, retryCondition);
+        return new HermesClient(sender, uri, defaultHeaders, retries, retryCondition);
     }
 
     public HermesClientBuilder withURI(URI uri) {
@@ -37,7 +40,12 @@ public class HermesClientBuilder {
     }
 
     public HermesClientBuilder withDefaultContentType(String defaultContentType) {
-        this.defaultContentType = defaultContentType;
+        defaultHeaders.put(HermesMessage.CONTENT_TYPE_HEADER, defaultContentType);
+        return this;
+    }
+
+    public HermesClientBuilder withDefaultHeaderValue(String header, String value) {
+        defaultHeaders.put(header, value);
         return this;
     }
 
