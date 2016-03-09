@@ -223,6 +223,7 @@ subscriptions.factory('SubscriptionFactory', [function () {
                     description: '',
                     supportTeam: '',
                     contact: '',
+                    deliveryType: 'SERIAL',
                     contentType: 'JSON',
                     subscriptionPolicy: {
                         messageTtl: 3600,
