@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
@@ -29,6 +30,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -50,6 +52,9 @@ public class ConsumerMessageSenderTest {
 
     @Mock
     private MessageSender messageSender;
+
+    @Mock
+    private MessageSenderFactory messageSenderFactory;
 
     @Mock
     private SuccessHandler successHandler;
@@ -307,8 +312,27 @@ public class ConsumerMessageSenderTest {
         verifySemaphoreReleased();
     }
 
+    @Test
+    public void shouldDeliverToModifiedEndpoint() {
+        // given
+        Message message = message();
+        Subscription subscriptionWithModfiedEndpoint = subscriptionWithEndpoint("http://somewhere:9876");
+        MessageSender otherMessageSender = mock(MessageSender.class);
+
+        when(messageSenderFactory.create(subscriptionWithModfiedEndpoint)).thenReturn(otherMessageSender);
+        when(otherMessageSender.send(message)).thenReturn(success());
+
+        // when
+        sender.updateSubscription(subscriptionWithModfiedEndpoint);
+        sender.sendMessage(message);
+
+        // then
+        verify(otherMessageSender).send(message);
+    }
+
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
-        return new ConsumerMessageSender(subscription, messageSender, successHandler, errorHandler, rateLimiter,
+        when(messageSenderFactory.create(subscription)).thenReturn(messageSender);
+        return new ConsumerMessageSender(subscription, messageSenderFactory, successHandler, errorHandler, rateLimiter,
                 Executors.newSingleThreadExecutor(), inflightSemaphore, hermesMetrics, ASYNC_TIMEOUT_MS,
                 new FutureAsyncTimeout<>(MessageSendingResult::loggedFailResult, Executors.newSingleThreadScheduledExecutor()));
     }
@@ -364,6 +388,10 @@ public class ConsumerMessageSenderTest {
                 .build();
     }
 
+    private Subscription subscriptionWithEndpoint(String endpoint) {
+        return subscriptionBuilderWithTestValues().withEndpoint(endpoint).build();
+    }
+
     private SubscriptionBuilder subscriptionBuilderWithTestValues() {
         return subscription("group.topic","subscription");
     }
@@ -397,7 +425,6 @@ public class ConsumerMessageSenderTest {
     }
 
     private Message messageWithTimestamp(long timestamp) {
-
         return MessageBuilder
                 .withTestMessage()
                 .withContent("{\"username\":\"ala\"}", StandardCharsets.UTF_8)

@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
@@ -31,16 +32,17 @@ public class ConsumerMessageSender {
     private final SuccessHandler successHandler;
     private final ErrorHandler errorHandler;
     private final ConsumerRateLimiter rateLimiter;
-    private final MessageSender messageSender;
+    private final MessageSenderFactory messageSenderFactory;
     private final Semaphore inflightSemaphore;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
     private ConsumerLatencyTimer consumerLatencyTimer;
+    private MessageSender messageSender;
     private Subscription subscription;
 
     private volatile boolean consumerIsConsuming = true;
 
-    public ConsumerMessageSender(Subscription subscription, MessageSender messageSender, SuccessHandler successHandler,
+    public ConsumerMessageSender(Subscription subscription, MessageSenderFactory messageSenderFactory, SuccessHandler successHandler,
                                  ErrorHandler errorHandler, ConsumerRateLimiter rateLimiter, ExecutorService deliveryReportingExecutor,
                                  Semaphore inflightSemaphore, HermesMetrics hermesMetrics, int asyncTimeoutMs,
                                  FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout) {
@@ -48,7 +50,8 @@ public class ConsumerMessageSender {
         this.successHandler = successHandler;
         this.errorHandler = errorHandler;
         this.rateLimiter = rateLimiter;
-        this.messageSender = messageSender;
+        this.messageSenderFactory = messageSenderFactory;
+        this.messageSender = messageSenderFactory.create(subscription);
         this.subscription = subscription;
         this.inflightSemaphore = inflightSemaphore;
         this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1);
@@ -80,8 +83,12 @@ public class ConsumerMessageSender {
         }
     }
 
-    public void updateSubscription(Subscription newSubscription) {
+    public synchronized void updateSubscription(Subscription newSubscription) {
+        boolean endpointUpdated = !this.subscription.getEndpoint().equals(newSubscription.getEndpoint());
         this.subscription = newSubscription;
+        if (endpointUpdated) {
+            this.messageSender = messageSenderFactory.create(newSubscription);
+        }
     }
 
     private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
