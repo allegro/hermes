@@ -72,7 +72,7 @@ public class ConsumerMessageSender {
                 return;
             } catch (RuntimeException e) {
                 handleFailedSending(message, failedResult(e));
-                if (isTtlExceeded(message)) {
+                if (!consumerIsConsuming || isTtlExceeded(message)) {
                     handleMessageDiscarding(message, failedResult(e));
                     return;
                 }
@@ -149,7 +149,7 @@ public class ConsumerMessageSender {
                 message.incrementRetryCounter();
 
                 long retryDelay = extractRetryDelay(result);
-                if (shouldAttemptResending(result, retryDelay)) {
+                if (consumerIsConsuming && shouldAttemptResending(result, retryDelay)) {
                     retrySingleThreadExecutor.schedule(() -> retrySending(result), retryDelay, TimeUnit.MILLISECONDS);
                 } else {
                     handleMessageDiscarding(message, result);

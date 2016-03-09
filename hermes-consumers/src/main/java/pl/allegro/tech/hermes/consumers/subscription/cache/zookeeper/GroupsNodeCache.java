@@ -12,14 +12,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 class GroupsNodeCache extends NodeCache<SubscriptionCallback, TopicsNodeCache> {
+    private final ExecutorService processingExecutor;
 
-    public GroupsNodeCache(CuratorFramework curatorClient, ObjectMapper objectMapper, String path, ExecutorService executorService) {
-        super(curatorClient, objectMapper, path, executorService);
+    public GroupsNodeCache(CuratorFramework curatorClient, ObjectMapper objectMapper, String path, ExecutorService eventExecutor, ExecutorService processingExecutor) {
+        super(curatorClient, objectMapper, path, eventExecutor);
+        this.processingExecutor = processingExecutor;
     }
 
     @Override
     protected TopicsNodeCache createSubcache(String path) {
-        return new TopicsNodeCache(curatorClient, objectMapper, topicsNodePath(path), executorService);
+        return new TopicsNodeCache(curatorClient, objectMapper, topicsNodePath(path), executorService, processingExecutor);
     }
 
     private String topicsNodePath(String path) {

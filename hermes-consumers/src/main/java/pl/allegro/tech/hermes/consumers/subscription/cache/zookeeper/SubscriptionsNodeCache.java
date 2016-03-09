@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.cache.zookeeper.StartableCache;
+import pl.allegro.tech.hermes.common.cache.queue.QueueTask;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionCallback;
 
 import java.io.IOException;
@@ -25,11 +26,14 @@ class SubscriptionsNodeCache extends StartableCache<SubscriptionCallback> implem
 
     private final ObjectMapper objectMapper;
 
-    public SubscriptionsNodeCache(CuratorFramework client, ObjectMapper objectMapper,
-                                  String path, ExecutorService executorService) {
+    private final ExecutorService processingExecutor;
 
-        super(client, path, executorService);
+    public SubscriptionsNodeCache(CuratorFramework client, ObjectMapper objectMapper,
+                                  String path, ExecutorService eventExecutor, ExecutorService processingExecutor) {
+
+        super(client, path, eventExecutor);
         this.objectMapper = objectMapper;
+        this.processingExecutor = processingExecutor;
         getListenable().addListener(this);
     }
 
@@ -48,17 +52,20 @@ class SubscriptionsNodeCache extends StartableCache<SubscriptionCallback> implem
         switch (event.getType()) {
             case CHILD_ADDED:
                 for (SubscriptionCallback callback : callbacks) {
-                    callback.onSubscriptionCreated(subscription);
+                    processingExecutor.execute(new QueueTask(() -> callback.onSubscriptionCreated(subscription),
+                            subscription, subscription.getState(), event.getType()));
                 }
                 break;
             case CHILD_REMOVED:
                 for (SubscriptionCallback callback : callbacks) {
-                    callback.onSubscriptionRemoved(subscription);
+                    processingExecutor.execute(new QueueTask(() -> callback.onSubscriptionRemoved(subscription),
+                            subscription, subscription.getState(), event.getType()));
                 }
                 break;
             case CHILD_UPDATED:
                 for (SubscriptionCallback callback : callbacks) {
-                    callback.onSubscriptionChanged(subscription);
+                    processingExecutor.execute(new QueueTask(() -> callback.onSubscriptionChanged(subscription),
+                            subscription, subscription.getState(), event.getType()));
                 }
                 break;
             default:
