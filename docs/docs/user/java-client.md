@@ -36,6 +36,7 @@ HermesClient client = HermesClientBuilder.hermesClient(...)
     .withURI(...) // Hermes URI
     .withRetries(...) // how many times retry in case of errors, default: 3
     .withDefaultContentType(...) // what Content-Type to use when none set, default: application/json
+    .withDefaultHeaderValue(...) // append default headers added to each message
     .withMetrics(metricsRegistry) // see Metrics section below
     .build();
 ```

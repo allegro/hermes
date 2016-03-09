@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.client;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,13 +11,11 @@ import java.util.function.BiConsumer;
  */
 public class HermesMessage {
 
-    private static final String APPLICATION_JSON = "application/json;charset=UTF-8";
+    static final String APPLICATION_JSON = "application/json;charset=UTF-8";
     private static final String AVRO_BINARY = "avro/binary";
 
-    private static final String SCHEMA_VERSION_HEADER = "Schema-Version";
-    private static final String CONTENT_TYPE_HEADER = "Content-Type";
-
-    private static final Charset CHARSET = Charset.forName("UTF-8");
+    static final String SCHEMA_VERSION_HEADER = "Schema-Version";
+    static final String CONTENT_TYPE_HEADER = "Content-Type";
 
     private final String topic;
     private final byte[] body;
@@ -53,16 +51,16 @@ public class HermesMessage {
 
     /**
      * Message on given topic with given MIME Content Type.
-     *
+     * <p>
      * Use builder via: HermesMessage#hermesMessage instead.
      *
-     * @param topic topic name
+     * @param topic       topic name
      * @param contentType MIME content type
-     * @param body body which will be translated to byte[] using UTF-8 charset
+     * @param body        body which will be translated to byte[] using UTF-8 charset
      */
     @Deprecated
     public HermesMessage(String topic, String contentType, String body) {
-        this(topic, contentType, body.getBytes(CHARSET));
+        this(topic, contentType, body.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -81,8 +79,19 @@ public class HermesMessage {
         return new Builder(topic, content);
     }
 
-    static HermesMessage appendContentType(HermesMessage message, String contentType) {
-        message.headers.put(CONTENT_TYPE_HEADER, contentType);
+    /**
+     * This method modifies the state of HermesMessage in order to avoid additional
+     * allocation when appending default values. Using same HermesMessage in multiple
+     * HermesClient objects with different defaults is very unlikely, as is sending the same
+     * message in multiple threads (which could cause issues with concurrent modification of
+     * map).
+     */
+    static HermesMessage appendDefaults(HermesMessage message, Map<String, String> headers) {
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            if (!message.headers.containsKey(entry.getKey())) {
+                message.headers.put(entry.getKey(), entry.getValue());
+            }
+        }
         return message;
     }
 
@@ -117,7 +126,7 @@ public class HermesMessage {
 
     @Override
     public String toString() {
-        return new String(getBody(), CHARSET);
+        return new String(getBody(), StandardCharsets.UTF_8);
     }
 
     public static class Builder {
@@ -132,7 +141,7 @@ public class HermesMessage {
         }
 
         private Builder(String topic, String body) {
-            this(topic, body.getBytes(CHARSET));
+            this(topic, body.getBytes(StandardCharsets.UTF_8));
         }
 
         public HermesMessage build() {
