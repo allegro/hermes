@@ -18,6 +18,8 @@ public interface GroupRepository {
 
     List<String> listGroupNames();
 
+    List<Group> listGroups();
+
     Group getGroupDetails(String groupName);
 
 }

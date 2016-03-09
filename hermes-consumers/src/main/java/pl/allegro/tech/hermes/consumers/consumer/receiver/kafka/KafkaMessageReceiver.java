@@ -39,7 +39,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaMessageReceiver.class);
 
     private final ConsumerConnector consumerConnector;
-    private final MessageContentWrapper contentWrapper;
+    private final MessageContentWrapper messageContentWrapper;
     private final Timer readingTimer;
     private final Clock clock;
     private final BlockingQueue<Message> readQueue;
@@ -48,12 +48,12 @@ public class KafkaMessageReceiver implements MessageReceiver {
     private final Topic topic;
     private volatile boolean consuming = true;
 
-    public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, MessageContentWrapper contentWrapper,
+    public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, MessageContentWrapper messageContentWrapper,
                                 Timer readingTimer, Clock clock, KafkaNamesMapper kafkaNamesMapper,
                                 Integer kafkaStreamCount, Integer readTimeout, SubscriptionName subscriptionName) {
         this.topic = topic;
         this.consumerConnector = consumerConnector;
-        this.contentWrapper = contentWrapper;
+        this.messageContentWrapper = messageContentWrapper;
         this.readingTimer = readingTimer;
         this.clock = clock;
         this.readTimeout = readTimeout;
@@ -114,7 +114,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
         MessageAndMetadata<byte[], byte[]> message = null;
         try (Timer.Context readingTimerContext = readingTimer.time()) {
             message = iterator.next();
-            UnwrappedMessageContent unwrappedContent = contentWrapper.unwrap(message.message(), topic, kafkaTopic.contentType());
+            UnwrappedMessageContent unwrappedContent = messageContentWrapper.unwrap(message.message(), topic, kafkaTopic.contentType());
 
             return new Message(
                     unwrappedContent.getMessageMetadata().getId(),

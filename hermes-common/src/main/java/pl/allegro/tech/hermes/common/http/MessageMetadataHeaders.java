@@ -3,7 +3,9 @@ package pl.allegro.tech.hermes.common.http;
 public enum MessageMetadataHeaders {
 
     MESSAGE_ID("Hermes-Message-Id"),
-    TOPIC_NAME("Hermes-Topic-Name");
+    BATCH_ID("Hermes-Batch-Id"),
+    TOPIC_NAME("Hermes-Topic-Name"),
+    RETRY_COUNT("Hermes-Retry-Count");
 
     private final String headerName;
 

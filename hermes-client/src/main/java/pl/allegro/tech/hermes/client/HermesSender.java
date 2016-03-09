@@ -5,5 +5,6 @@ import java.util.concurrent.CompletableFuture;
 
 @FunctionalInterface
 public interface HermesSender {
+
     CompletableFuture<HermesResponse> send(URI uri, HermesMessage message);
 }

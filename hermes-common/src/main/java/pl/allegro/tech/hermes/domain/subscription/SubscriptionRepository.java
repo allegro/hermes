@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.domain.subscription;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.query.Query;
 
 import java.util.List;
 
@@ -28,8 +27,4 @@ public interface SubscriptionRepository {
     List<String> listSubscriptionNames(TopicName topicName);
 
     List<Subscription> listSubscriptions(TopicName topicName);
-
-    List<String> listTrackedSubscriptionNames(TopicName topicName);
-
-    List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query);
 }

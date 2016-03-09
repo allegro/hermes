@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TrackersTest {
@@ -23,8 +23,8 @@ public class TrackersTest {
 
     @Test
     public void shouldDispatchCorrectTracker() {
-        assertThat(trackers.get(subscription().withTrackingEnabled(false).build())).isEqualTo(noOperationDeliveryTracker);
-        assertThat(trackers.get(subscription().withTrackingEnabled(true).build())).isEqualTo(messageDeliveryTracker);
+        assertThat(trackers.get(subscription("group.topic", "sub").withTrackingEnabled(false).build())).isEqualTo(noOperationDeliveryTracker);
+        assertThat(trackers.get(subscription("group.topic", "sub").withTrackingEnabled(true).build())).isEqualTo(messageDeliveryTracker);
     }
 
 }

@@ -6,6 +6,7 @@ import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -24,8 +25,16 @@ public class SubscriptionOffsetCommitQueues {
     }
 
     public void put(Message message) {
-        OffsetCommitQueue helper = queues.getUnchecked(new TopicPartition(message.getKafkaTopic(), message.getPartition()));
-        helper.put(message.getOffset());
+        put(message.getKafkaTopic(), message.getPartition(), message.getOffset());
+    }
+
+    public void put(PartitionOffset offset) {
+        put(offset.getTopic(), offset.getPartition(), offset.getOffset());
+    }
+
+    public void put(KafkaTopicName topic, int partition, long offset) {
+        OffsetCommitQueue helper = queues.getUnchecked(new TopicPartition(topic, partition));
+        helper.put(offset);
     }
 
     public void remove(Message message) {
@@ -38,6 +47,15 @@ public class SubscriptionOffsetCommitQueues {
         queues.asMap().forEach((topicAndPartition, queue) -> queue.poll().ifPresent(offset ->
                 offsets.add(new PartitionOffset(topicAndPartition.getTopic(), offset, topicAndPartition.getPartition()))));
         return offsets;
+    }
+
+    public void putAllDelivered(List<PartitionOffset> partitionOffsets) {
+        partitionOffsets.forEach(this::putDelivered);
+    }
+
+    public void putDelivered(PartitionOffset partitionOffset) {
+        OffsetCommitQueue helper = queues.getUnchecked(new TopicPartition(partitionOffset.getTopic(), partitionOffset.getPartition()));
+        helper.markDelivered(partitionOffset.getOffset());
     }
 
     private static final class OffsetCommitQueueLoader extends CacheLoader<TopicPartition, OffsetCommitQueue> {

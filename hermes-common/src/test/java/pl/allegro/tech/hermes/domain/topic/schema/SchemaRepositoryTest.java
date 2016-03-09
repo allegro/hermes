@@ -21,7 +21,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.SchemaSource.valueOf;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SchemaRepositoryTest {
@@ -34,7 +34,7 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldThrowExceptionWhenFailedToLoadSchema() {
         // given
-        Topic topic = topic().build();
+        Topic topic = topic("group.topic").build();
         when(cachedSchemaSourceProvider.get(topic)).thenThrow(new RuntimeException("Cannot load schema"));
         SchemaRepository<String> schemaRepository = schemaRepository(uppercaseCompiler);
 
@@ -48,7 +48,7 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldThrowExceptionWhenFailedToCompileSchema() {
         // given
-        Topic topic = topic().build();
+        Topic topic = topic("group.topic").build();
         when(cachedSchemaSourceProvider.get(topic)).thenReturn(of(valueOf("abc")));
         SchemaRepository<String> schemaRepository = schemaRepository(schemaSource -> {throw new RuntimeException("Cannot compile");});
 
@@ -62,7 +62,7 @@ public class SchemaRepositoryTest {
     @Test
     public void shouldReturnCompiledSchema() {
         // given
-        Topic topic = topic().build();
+        Topic topic = topic("group.topic").build();
         when(cachedSchemaSourceProvider.get(topic)).thenReturn(of(valueOf("abc")));
         SchemaRepository<String> schemaRepository = schemaRepository(uppercaseCompiler);
 
@@ -89,7 +89,7 @@ public class SchemaRepositoryTest {
 
         // when
         ((Consumer<TopicWithSchema<SchemaSource>>) consumerCaptor.getValue()).accept(new TopicWithSchema<>(
-                topic().withName("group.topic").build(),
+                topic("group.topic").build(),
                 valueOf("abc")));
 
         // then
@@ -100,7 +100,7 @@ public class SchemaRepositoryTest {
     @SuppressWarnings("unchecked")
     public void shouldPrecompileSchemaForReloadedSource() {
         // given
-        Topic topic = topic().withName("group.topic").build();
+        Topic topic = topic("group.topic").build();
         ArgumentCaptor<Consumer> consumerCaptor = ArgumentCaptor.forClass(Consumer.class);
         SchemaRepository<String> schemaRepository = schemaRepository(uppercaseCompiler);
         verify(cachedSchemaSourceProvider).onReload(consumerCaptor.capture());

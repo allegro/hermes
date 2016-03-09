@@ -2,19 +2,21 @@ package pl.allegro.tech.hermes.management.domain.topic;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
-import pl.allegro.tech.hermes.common.query.Query;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
+import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
-import javax.inject.Inject;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
@@ -29,22 +31,24 @@ public class TopicService {
     private final TopicRepository topicRepository;
     private final GroupService groupService;
 
+    private final ApiPreconditions preconditions;
     private final TopicMetricsRepository metricRepository;
     private final MultiDCAwareService multiDCAwareService;
     private final TopicValidator topicValidator;
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
     private final Clock clock;
 
-    @Inject
+    @Autowired
     public TopicService(MultiDCAwareService multiDCAwareService,
                         TopicRepository topicRepository,
                         GroupService groupService,
                         TopicProperties topicProperties,
-                        TopicMetricsRepository metricRepository,
+                        ApiPreconditions preconditions, TopicMetricsRepository metricRepository,
                         TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
                         Clock clock) {
         this.multiDCAwareService = multiDCAwareService;
+        this.preconditions = preconditions;
         this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
         this.groupService = groupService;
@@ -57,6 +61,7 @@ public class TopicService {
     public void createTopic(Topic topic) {
         topicValidator.ensureCreatedTopicIsValid(topic);
         topicRepository.createTopic(topic);
+        preconditions.checkConstraints(topic);
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
@@ -88,11 +93,11 @@ public class TopicService {
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
     }
 
-    public void updateTopic(Topic topic) {
-        groupService.checkGroupExists(topic.getName().getGroupName());
+    public void updateTopic(TopicName topicName, PatchData patch) {
+        groupService.checkGroupExists(topicName.getGroupName());
 
-        Topic retrieved = getTopicDetails(topic.getName());
-        Topic modified = Patch.apply(retrieved, topic);
+        Topic retrieved = getTopicDetails(topicName);
+        Topic modified = Patch.apply(retrieved, patch);
 
         topicValidator.ensureUpdatedTopicIsValid(modified, retrieved);
 
@@ -121,7 +126,7 @@ public class TopicService {
     }
 
     public List<String> listQualifiedTopicNames() {
-        return groupService.listGroups().stream()
+        return groupService.listGroupNames().stream()
                 .map(this::listQualifiedTopicNames)
                 .flatMap(List::stream)
                 .sorted()
@@ -145,7 +150,7 @@ public class TopicService {
     }
 
     public List<String> listTrackedTopicNames() {
-        return groupService.listGroups().stream()
+        return groupService.listGroupNames().stream()
                 .map(topicRepository::listTopics)
                 .flatMap(List::stream)
                 .filter(Topic::isTrackingEnabled)
@@ -160,19 +165,31 @@ public class TopicService {
                 .collect(Collectors.toList());
     }
 
-    public List<String> listFilteredTopicNames(Query<Topic> topicQuery) {
-
-        return topicQuery.filter(groupService.listGroups().stream()
-                .map(topicRepository::listTopics)
-                .flatMap(List::stream))
+    public List<String> listFilteredTopicNames(Query<Topic> query) {
+        return queryTopic(query)
+                .stream()
                 .map(Topic::getQualifiedName)
                 .collect(Collectors.toList());
     }
 
-    public List<String> listFilteredTopicNames(String groupName, Query<Topic> topicQuery) {
-
-        return topicQuery.filter(listTopics(groupName).stream())
+    public List<String> listFilteredTopicNames(String groupName, Query<Topic> query) {
+        return query.filter(listTopics(groupName))
                 .map(Topic::getQualifiedName)
+                .collect(Collectors.toList());
+    }
+
+    public List<Topic> queryTopic(Query<Topic> query) {
+        return query
+                .filter(getAllTopics())
+                .collect(Collectors.toList());
+    }
+
+    public List<Topic> getAllTopics() {
+        return groupService
+                .listGroupNames()
+                .stream()
+                .map(topicRepository::listTopics)
+                .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
 }

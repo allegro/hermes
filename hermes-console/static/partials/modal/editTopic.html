@@ -23,6 +23,32 @@
                     <input class="form-control" required id="topicDescription" name="topicDescription" placeholder="what type of messages you publish?" ng-model="topic.description"/>
                 </div>
             </div>
+            <div class="form-group {{topicForm.topicRetention.$valid ? '' : 'has-error'}}">
+                <label for="topicRetention" class="col-md-3 control-label">Retention time</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" min="0" max="7" required class="form-control" id="topicRetention" name="topicRetention" ng-model="topic.retentionTime.duration" placeholder="how long should we keep them for subscribers?"/>
+                        <span class="input-group-addon">days</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="topicAck" class="col-md-3 control-label">Kafka ACK Level</label>
+                <div class="col-md-9">
+                    <select id="topicAck" class="form-control" ng-model="topic.ack">
+                        <option>LEADER</option>
+                        <option>ALL</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="trackingEnabled" class="col-md-3 control-label">Tracking enabled</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="checkbox" id="trackingEnabled" name="trackingEnabled" ng-model="topic.trackingEnabled"/>
+                    </div>
+                </div>
+            </div>
             <div class="form-group">
                 <label for="topicType" class="col-md-3 control-label">Content type</label>
                 <div class="col-md-9">
@@ -30,15 +56,6 @@
                         <option>AVRO</option>
                         <option>JSON</option>
                     </select>
-                </div>
-            </div>
-            <div class="form-group {{topicForm.topicRetention.$valid ? '' : 'has-error'}}">
-                <label for="topicRetention" class="col-md-3 control-label">Retention time</label>
-                <div class="col-md-9">
-                    <div class="input-group">
-                        <input type="number" min="0" max="7" required class="form-control" id="topicRetention" name="topicRetention" ng-model="topic.retentionTime.duration" placeholder="how much time should we keep them for subscribers?"/>
-                        <span class="input-group-addon">days</span>
-                    </div>
                 </div>
             </div>
             <div class="form-group {{topicForm.messageSchema.$valid ? '' : 'has-error'}}">

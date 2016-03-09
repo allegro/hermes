@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.helper;
 
 import com.jayway.awaitility.Duration;
+import com.jayway.awaitility.core.ConditionFactory;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import kafka.api.ConsumerMetadataRequest;
@@ -10,13 +11,18 @@ import kafka.network.BlockingChannel;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
+import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
-import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
@@ -211,11 +217,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     private void untilZookeeperNodeCreation(final String path, final CuratorFramework zookeeper) {
-        waitAtMost(adjust(60), TimeUnit.SECONDS).until(() -> {
-            CuratorFramework zk = zookeeper;
-            String p = path;
-            return zookeeper.checkExists().forPath(path) != null;
-        });
+        waitAtMost(adjust(60), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath(path) != null);
     }
 
     private void untilZookeeperNodeDeletion(final String path, final CuratorFramework zookeeper) {
@@ -227,7 +229,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         channel.connect();
 
         waitAtMost(adjust((Duration.ONE_MINUTE))).until(() -> {
-            channel.send(new ConsumerMetadataRequest(kafkaNamesMapper.toConsumerGroupId(subscription).asString(),
+            channel.send(new ConsumerMetadataRequest(kafkaNamesMapper.toConsumerGroupId(subscription.toSubscriptionName()).asString(),
                     ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
             ConsumerMetadataResponse metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
             return metadataResponse.errorCode() == ErrorMapping.NoError();
@@ -241,5 +243,13 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
                 BlockingChannel.UseDefaultBufferSize(),
                 BlockingChannel.UseDefaultBufferSize(),
                 (int) adjust(Duration.TEN_SECONDS).getValueInMS());
+    }
+
+    public ConditionFactory awaitAtMost(Duration duration) {
+        return waitAtMost(adjust(duration));
+    }
+
+    public void until(Runnable runnable) {
+        awaitAtMost(adjust(new Duration(30, TimeUnit.SECONDS))).until(runnable);
     }
 }

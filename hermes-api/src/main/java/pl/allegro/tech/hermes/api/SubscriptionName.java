@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
@@ -11,10 +13,8 @@ public class SubscriptionName {
     private String name;
     private TopicName topicName;
 
-    private SubscriptionName() {
-    }
-
-    public SubscriptionName(String name, TopicName topicName) {
+    @JsonCreator
+    public SubscriptionName(@JsonProperty("name") String name, @JsonProperty("topicName") TopicName topicName) {
         this.name = name;
         this.topicName = topicName;
     }

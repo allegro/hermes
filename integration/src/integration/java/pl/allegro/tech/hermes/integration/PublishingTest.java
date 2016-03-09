@@ -34,10 +34,11 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.glassfish.jersey.client.ClientProperties.REQUEST_ENTITY_PROCESSING;
 import static org.glassfish.jersey.client.RequestEntityProcessing.CHUNKED;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PublishingTest extends IntegrationTest {
 
@@ -175,13 +176,12 @@ public class PublishingTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldTreatMessageWithInvalidInterpolationAsUndelivered() {
         // given
-        Subscription subscription = Subscription.Builder.subscription().applyDefaults().withName("subscription")
+        Topic topic = operations.buildTopic("publishInvalidInterpolatedGroup", "topic");
+        Subscription subscription = subscription(topic, "subscription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL + "{template}/"))
-                .withSupportTeam("team")
                 .withSubscriptionPolicy(
                         SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().withMessageTtl(1).build()
                 ).build();
-        Topic topic = operations.buildTopic("publishInvalidInterpolatedGroup", "topic");
         operations.createSubscription(topic, subscription);
 
         TestMessage message = TestMessage.of("hello", "world");
@@ -262,7 +262,7 @@ public class PublishingTest extends IntegrationTest {
         //given
         String message = "{\"id\": 6}";
         operations.buildTopic(
-                topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
+                topic("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
 
         //when
         Response response = publisher.publish("schema.topic", message);
@@ -276,7 +276,7 @@ public class PublishingTest extends IntegrationTest {
         // given
         String messageInvalidWithSchema = "{\"id\": \"shouldBeNumber\"}";
         operations.buildTopic(
-                topic().withName("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
+                topic("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
 
         //when
         Response response = publisher.publish("schema.topic", messageInvalidWithSchema);
@@ -290,7 +290,7 @@ public class PublishingTest extends IntegrationTest {
         // given
         String invalidMessage = "{\"id\": \"shouldBeNumber\"}";
         operations.buildTopic(
-                topic().withName("schema.topicWithValidationDryRun")
+                topic("schema.topicWithValidationDryRun")
                         .withValidation(true)
                         .withValidationDryRun(true)
                         .withMessageSchema(schema)
@@ -346,5 +346,27 @@ public class PublishingTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
         assertThat(remoteService.waitAndGetLastRequest()).containsAllHeaders(trace.asMap());
+    }
+
+    @Test
+    public void shouldRetryWithDelayOnRetryAfterEndpointResponse() {
+        // given
+        int retryAfterSeconds = 1;
+        String message = "hello";
+        remoteService.retryMessage(message, retryAfterSeconds);
+
+        // and
+        Topic topic = operations.buildTopic("retryAfterTopic", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+
+        // when
+        publisher.publish(topic.getQualifiedName(), message);
+
+        // then
+        remoteService.waitUntilReceived();
+
+        assertThat(remoteService.durationBetweenFirstAndLastRequest().minusSeconds(retryAfterSeconds).isNegative()).isFalse();
+        assertThat(remoteService.receivedMessageWithHeader("Hermes-Retry-Count", "0")).isTrue();
+        assertThat(remoteService.receivedMessageWithHeader("Hermes-Retry-Count", "1")).isTrue();
     }
 }

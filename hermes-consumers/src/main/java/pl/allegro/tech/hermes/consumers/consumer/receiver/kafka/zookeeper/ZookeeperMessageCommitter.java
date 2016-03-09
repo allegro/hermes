@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.zookeeper;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
@@ -23,7 +24,7 @@ public class ZookeeperMessageCommitter implements MessageCommitter {
     }
 
     @Override
-    public void commitOffset(Subscription subscription, PartitionOffset partitionOffset) throws Exception {
+    public void commitOffset(SubscriptionName subscription, PartitionOffset partitionOffset) throws Exception {
         long firstToRead = partitionOffset.getOffset() + 1;
         byte[] data = String.valueOf(firstToRead).getBytes(Charset.forName("UTF-8"));
         String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(

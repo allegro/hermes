@@ -22,9 +22,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
-import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
-import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
+import static pl.allegro.tech.hermes.api.Subscription.State.*;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class ConsumersSupervisor {
@@ -204,9 +202,13 @@ public class ConsumersSupervisor {
 
     private void createAndExecuteConsumer(Subscription subscription) {
         logger.info("Creating consumer for {}", subscription.getId());
-        Consumer consumer = consumerFactory.createConsumer(subscription);
-        consumerHolder.add(subscription.getTopicName(), subscription.getName(), consumer);
-        executor.execute(consumer);
+        try {
+            Consumer consumer = consumerFactory.createConsumer(subscription);
+            consumerHolder.add(subscription.getTopicName(), subscription.getName(), consumer);
+            executor.execute(consumer);
+        } catch (Exception ex) {
+            logger.info("Failed to create consumer for subscription {} ", subscription.getId(), ex);
+        }
     }
 
     private void removeOffsets(TopicName topicName, String subscriptionName, List<PartitionOffset> offsetsToRemove) throws Exception {
@@ -227,7 +229,7 @@ public class ConsumersSupervisor {
 
             for (PartitionOffset partitionOffset : offsets) {
                 for (OffsetsStorage s: offsetsStorages) {
-                    s.setSubscriptionOffset(Subscription.fromSubscriptionName(subscriptionName), partitionOffset);
+                    s.setSubscriptionOffset(subscriptionName, partitionOffset);
                 }
             }
             createAndExecuteConsumer(subscriptionRepository.getSubscriptionDetails(subscriptionName.getTopicName(), subscriptionName.getName()));

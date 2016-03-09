@@ -1,17 +1,13 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import com.google.common.collect.ImmutableMap;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
-@SuppressFBWarnings({ "EI_EXPOSE_REP", "EI_EXPOSE_REP2" })
 public class Message {
 
     private String id;
@@ -23,6 +19,8 @@ public class Message {
     private long publishingTimestamp;
     private long readingTimestamp;
     private byte[] data;
+
+    private int retryCounter = 0;
 
     private Map<String, String> externalMetadata;
 
@@ -44,6 +42,10 @@ public class Message {
         this.readingTimestamp = readingTimestamp;
         this.partitionOffset = partitionOffset;
         this.externalMetadata = externalMetadata;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public long getPublishingTimestamp() {
@@ -74,15 +76,17 @@ public class Message {
         return topic;
     }
 
-    public boolean isTtlExceeded(int ttlSeconds) {
-
+    public boolean isTtlExceeded(long ttlMillis) {
         long currentTimestamp = System.currentTimeMillis();
-
-        return currentTimestamp > readingTimestamp + TimeUnit.SECONDS.toMillis(ttlSeconds);
+        return currentTimestamp > readingTimestamp + ttlMillis;
     }
 
-    public String getId() {
-        return id;
+    public void incrementRetryCounter() {
+        this.retryCounter++;
+    }
+
+    public int getRetryCounter() {
+        return retryCounter;
     }
 
     public Map<String, String> getExternalMetadata() {
@@ -91,7 +95,7 @@ public class Message {
 
     @Override
     public int hashCode() {
-        return Objects.hash(topic, data, contentType, publishingTimestamp, readingTimestamp, partitionOffset);
+        return Objects.hash(id);
     }
 
     @Override
@@ -103,12 +107,7 @@ public class Message {
             return false;
         }
         final Message other = (Message) obj;
-        return Objects.equals(this.topic, other.topic)
-                && Objects.equals(this.publishingTimestamp, other.publishingTimestamp)
-                && Objects.equals(this.readingTimestamp, other.readingTimestamp)
-                && Arrays.equals(this.data, other.data)
-                && Objects.equals(this.contentType, other.contentType)
-                && Objects.equals(this.partitionOffset, other.partitionOffset);
+        return Objects.equals(this.id, other.id);
     }
 
     public static Builder message() {
@@ -117,6 +116,10 @@ public class Message {
 
     public KafkaTopicName getKafkaTopic() {
         return partitionOffset.getTopic();
+    }
+
+    public PartitionOffset getPartitionOffset() {
+        return partitionOffset;
     }
 
     public static class Builder {

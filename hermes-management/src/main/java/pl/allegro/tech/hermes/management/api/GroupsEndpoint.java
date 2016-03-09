@@ -6,6 +6,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
@@ -46,7 +47,7 @@ public class GroupsEndpoint {
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "List groups", response = List.class, httpMethod = HttpMethod.GET)
     public List<String> list() {
-        return groupService.listGroups();
+        return groupService.listGroupNames();
     }
 
 
@@ -74,8 +75,8 @@ public class GroupsEndpoint {
     @Path("/{groupName}")
     @ApiOperation(value = "Update group", response = String.class, httpMethod = HttpMethod.PUT)
     @RolesAllowed(Roles.ADMIN)
-    public Response update(@PathParam("groupName") String groupName, Group group) {
-        groupService.updateGroup(Group.Builder.group().applyPatch(group).withGroupName(groupName).build());
+    public Response update(@PathParam("groupName") String groupName, PatchData patch) {
+        groupService.updateGroup(groupName, patch);
         return responseStatus(Response.Status.NO_CONTENT);
     }
 

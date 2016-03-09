@@ -5,12 +5,10 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.common.query.Query;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
@@ -114,21 +112,6 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     public List<Subscription> listSubscriptions(TopicName topicName) {
         return listSubscriptionNames(topicName).stream()
                 .map(subscription -> getSubscriptionDetails(topicName, subscription))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<String> listTrackedSubscriptionNames(TopicName topicName) {
-        return listSubscriptions(topicName).stream()
-                .filter(Subscription::isTrackingEnabled)
-                .map(Subscription::getName)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query) {
-        return query.filter(listSubscriptions(topicName).stream())
-                .map(Subscription::getName)
                 .collect(Collectors.toList());
     }
 }

@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.common.kafka;
 
-import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 
 public class KafkaNamesMapperHolder implements KafkaNamesMapper {
@@ -20,7 +20,7 @@ public class KafkaNamesMapperHolder implements KafkaNamesMapper {
     }
 
     @Override
-    public ConsumerGroupId toConsumerGroupId(Subscription subscription) {
+    public ConsumerGroupId toConsumerGroupId(SubscriptionName subscription) {
         return kafkaNamespaceMapper.toConsumerGroupId(subscription);
     }
 

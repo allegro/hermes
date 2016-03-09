@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
@@ -20,22 +21,22 @@ public class TopicContentTypeMigrationService {
     public static final Duration CHECK_OFFSETS_AVAILABLE_TIMEOUT = Duration.ofSeconds(1);
     public static final Duration INTERVAL_BETWEEN_OFFSETS_AVAILABLE_CHECK_RETRIES = Duration.ofMillis(500);
 
-    private final SubscriptionService subscriptionService;
+    private final SubscriptionRepository subscriptionRepository;
     private final MultiDCAwareService multiDCAwareService;
     private final Clock clock;
 
     @Autowired
-    public TopicContentTypeMigrationService(SubscriptionService subscriptionService,
+    public TopicContentTypeMigrationService(SubscriptionRepository subscriptionRepository,
                                             MultiDCAwareService multiDCAwareService,
                                             Clock clock) {
-        this.subscriptionService = subscriptionService;
+        this.subscriptionRepository = subscriptionRepository;
         this.multiDCAwareService = multiDCAwareService;
         this.clock = clock;
     }
 
     public void notifySubscriptions(Topic topic, Instant beforeMigrationInstant) {
         waitUntilOffsetsAvailableOnAllKafkaTopics(topic, CHECK_OFFSETS_AVAILABLE_TIMEOUT);
-        subscriptionService.listSubscriptionNames(topic.getName()).forEach(s ->
+        subscriptionRepository.listSubscriptionNames(topic.getName()).forEach(s ->
                 notifySingleSubscription(topic, beforeMigrationInstant, s)
         );
     }

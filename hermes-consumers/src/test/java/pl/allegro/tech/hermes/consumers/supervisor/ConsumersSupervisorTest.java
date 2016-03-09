@@ -7,7 +7,12 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.SubscriptionPolicy;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
@@ -15,7 +20,7 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.Consumer;
+import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
@@ -31,21 +36,20 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
-import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
 import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConsumersSupervisorTest {
 
     private static final String SOME_SUBSCRIPTION_NAME = "sub";
     private static final TopicName SOME_TOPIC_NAME = new TopicName("group1", "topic1");
-    private static final Topic SOME_TOPIC = topic().applyDefaults().withName(SOME_TOPIC_NAME).build();
-    private static final Subscription SOME_SUBSCRIPTION = createSubscription(SOME_TOPIC_NAME, SOME_SUBSCRIPTION_NAME);
+    private static final Topic SOME_TOPIC = topic(SOME_TOPIC_NAME).build();
+    private static final Subscription SOME_SUBSCRIPTION = subscription(SOME_TOPIC_NAME, SOME_SUBSCRIPTION_NAME).build();
 
     @Mock
     private SubscriptionRepository subscriptionRepository;
@@ -60,7 +64,7 @@ public class ConsumersSupervisorTest {
     private ConsumersExecutorService executorService;
 
     @Mock
-    private Consumer consumer;
+    private SerialConsumer consumer;
 
     @Mock
     private ConsumerFactory consumerFactory;
@@ -99,21 +103,21 @@ public class ConsumersSupervisorTest {
 
     @Test
     public void shouldRunConsumerWhenPendingSubscriptionCreated() {
-        consumersSupervisor.assignConsumerForSubscription(createSubscription(SOME_TOPIC_NAME, "sub1", PENDING));
+        consumersSupervisor.assignConsumerForSubscription(subscription(SOME_TOPIC_NAME, "sub1").build());
 
-        verify(executorService).execute(any(Consumer.class));
+        verify(executorService).execute(any(SerialConsumer.class));
     }
 
     @Test
     public void shouldRunConsumerWhenActiveSubscriptionCreated() {
-        consumersSupervisor.assignConsumerForSubscription(createSubscription(SOME_TOPIC_NAME, "sub1", ACTIVE));
+        consumersSupervisor.assignConsumerForSubscription(subscription(SOME_TOPIC_NAME, "sub1").withState(ACTIVE).build());
 
-        verify(executorService).execute(any(Consumer.class));
+        verify(executorService).execute(any(SerialConsumer.class));
     }
 
     @Test
     public void shouldChangeSubscriptionStateToActiveWhenCreatingConsumer() {
-        Subscription subscription = createSubscription(SOME_TOPIC_NAME, "sub1", PENDING);
+        Subscription subscription = subscription(SOME_TOPIC_NAME, "sub1").build();
 
         consumersSupervisor.assignConsumerForSubscription(subscription);
 
@@ -123,9 +127,9 @@ public class ConsumersSupervisorTest {
 
     @Test
     public void shouldNotRunConsumerWhenSuspendedSubscriptionCreated() {
-        consumersSupervisor.assignConsumerForSubscription(createSubscription(SOME_TOPIC_NAME, "sub1", SUSPENDED));
+        consumersSupervisor.assignConsumerForSubscription(subscription(SOME_TOPIC_NAME, "sub1").withState(SUSPENDED).build());
 
-        verify(executorService, never()).execute(any(Consumer.class));
+        verify(executorService, never()).execute(any(SerialConsumer.class));
     }
 
     @Test
@@ -149,10 +153,10 @@ public class ConsumersSupervisorTest {
 
     @Test
     public void shouldStopConsumerOnSuspend() {
-        Subscription subscription = createSubscription(SOME_TOPIC_NAME, "sub1");
+        Subscription subscription = subscription(SOME_TOPIC_NAME, "sub1").build();
         consumersSupervisor.assignConsumerForSubscription(subscription);
         when(consumer.getSubscription()).thenReturn(subscription);
-        Subscription modifiedSubscription = createSubscription(SOME_TOPIC_NAME, "sub1", SUSPENDED);
+        Subscription modifiedSubscription = subscription(SOME_TOPIC_NAME, "sub1").withState(SUSPENDED).build();
 
         consumersSupervisor.notifyConsumerOnSubscriptionUpdate(modifiedSubscription);
 
@@ -161,7 +165,7 @@ public class ConsumersSupervisorTest {
 
     @Test
     public void shouldCreateConsumerOnResume() {
-        Subscription subscription = createSubscription(SOME_TOPIC_NAME, "sub1", ACTIVE);
+        Subscription subscription = subscription(SOME_TOPIC_NAME, "sub1").withState(ACTIVE).build();
 
         consumersSupervisor.notifyConsumerOnSubscriptionUpdate(subscription);
 
@@ -174,7 +178,7 @@ public class ConsumersSupervisorTest {
         String subscriptionName = "subscriptionName1";
         String brokersClusterName = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
         PartitionOffset partitionOffset = new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 100L, 0);
-        Subscription actualSubscription = createSubscription(SOME_TOPIC_NAME, subscriptionName, ACTIVE);
+        Subscription actualSubscription = subscription(SOME_TOPIC_NAME, subscriptionName).withState(ACTIVE).build();
         SubscriptionName subscription = new SubscriptionName(subscriptionName, SOME_TOPIC_NAME);
         consumersSupervisor.notifyConsumerOnSubscriptionUpdate(actualSubscription);
         when(subscriptionOffsetChangeIndicator.getSubscriptionOffsets(SOME_TOPIC, subscriptionName, brokersClusterName))
@@ -190,15 +194,15 @@ public class ConsumersSupervisorTest {
         //then
         verify(consumer).stopConsuming();
         verify(subscriptionOffsetChangeIndicator).getSubscriptionOffsets(SOME_TOPIC, subscriptionName, brokersClusterName);
-        verify(offsetsStorage).setSubscriptionOffset(Subscription.fromSubscriptionName(subscription), partitionOffset);
+        verify(offsetsStorage).setSubscriptionOffset(subscription, partitionOffset);
     }
 
     @Test
     public void shouldStopRegisteredConsumers() throws Exception {
-        Consumer firstConsumer = mock(Consumer.class);
-        Subscription firstSubscription = createSubscription(SOME_TOPIC_NAME, "sub1");
-        Consumer secondConsumer = mock(Consumer.class);
-        Subscription secondSubscription = createSubscription(SOME_TOPIC_NAME, "sub2");
+        SerialConsumer firstConsumer = mock(SerialConsumer.class);
+        Subscription firstSubscription = subscription(SOME_TOPIC_NAME, "sub1").build();
+        SerialConsumer secondConsumer = mock(SerialConsumer.class);
+        Subscription secondSubscription = subscription(SOME_TOPIC_NAME, "sub2").build();
         when(consumerFactory.createConsumer(firstSubscription)).thenReturn(firstConsumer);
         when(consumerFactory.createConsumer(secondSubscription)).thenReturn(secondConsumer);
 
@@ -220,15 +224,22 @@ public class ConsumersSupervisorTest {
 
         consumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
 
-        verify(executorService, never()).execute(any(Consumer.class));
+        verify(executorService, never()).execute(any(SerialConsumer.class));
     }
 
     @Test
     public void shouldUpdateConsumerSubscription() {
         // given
-        final Subscription oldSubscription = createSubscription(SOME_TOPIC_NAME, SOME_SUBSCRIPTION_NAME);
-        Subscription newSubscription = createSubscription(SOME_TOPIC_NAME, SOME_SUBSCRIPTION_NAME);
-        newSubscription.setSubscriptionPolicy(new SubscriptionPolicy(2, 1000, false, 10));
+        final Subscription oldSubscription = subscription(SOME_TOPIC_NAME, SOME_SUBSCRIPTION_NAME).build();
+        Subscription newSubscription = subscription(SOME_TOPIC_NAME, SOME_SUBSCRIPTION_NAME).build();
+        SubscriptionPolicy policy = subscriptionPolicy()
+                .withRate(2)
+                .withMessageTtl(1000)
+                .withMessageBackoff(10)
+                .build();
+
+        newSubscription.setSerialSubscriptionPolicy(policy);
+
         newSubscription.setState(Subscription.State.ACTIVE);
 
         when(consumer.getSubscription()).thenReturn(oldSubscription);
@@ -241,18 +252,18 @@ public class ConsumersSupervisorTest {
         // then
         ArgumentCaptor<Subscription> captor = ArgumentCaptor.forClass(Subscription.class);
         verify(consumerFactory).createConsumer(captor.capture());
-        assertThat(captor.getValue().getSubscriptionPolicy()).isEqualTo(oldSubscription.getSubscriptionPolicy());
+        assertThat(captor.getValue().getSerialSubscriptionPolicy()).isEqualTo(oldSubscription.getSerialSubscriptionPolicy());
 
         verifyNoMoreInteractions(consumerFactory);
 
         verify(consumer).updateSubscription(captor.capture());
-        assertThat(captor.getValue().getSubscriptionPolicy()).isEqualTo(newSubscription.getSubscriptionPolicy());
+        assertThat(captor.getValue().getSerialSubscriptionPolicy()).isEqualTo(newSubscription.getSerialSubscriptionPolicy());
     }
 
     @Test
     public void shouldNotCreateSecondConsumerOnDuplicatedEvent() throws InterruptedException {
         // given
-        final Subscription subscription = createSubscription(SOME_TOPIC_NAME, "sub1", PENDING);
+        final Subscription subscription = subscription(SOME_TOPIC_NAME, "sub1").build();
         final CountDownLatch latch = new CountDownLatch(100);
 
         // when
@@ -267,20 +278,4 @@ public class ConsumersSupervisorTest {
         // then
         verify(consumerFactory, times(1)).createConsumer(subscription);
     }
-
-    private static Subscription createSubscription(TopicName topicName, String subscriptionName, Subscription.State state) {
-        Subscription subscription = createSubscription(topicName, subscriptionName);
-        subscription.setState(state);
-        return subscription;
-    }
-
-    private static Subscription createSubscription(TopicName topicName, String subscriptionName) {
-        return subscription().applyDefaults()
-                .withTopicName(topicName)
-                .withName(subscriptionName)
-                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
-                .withDescription("desc")
-                .build();
-    }
-
 }

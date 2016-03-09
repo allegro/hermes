@@ -7,8 +7,8 @@ public enum Operator {
 
     EQ("eq"),
     NE("ne"),
+    LIKE("like"),
     IN("in"),
-
     NOT("not"),
     AND("and"),
     OR("or");

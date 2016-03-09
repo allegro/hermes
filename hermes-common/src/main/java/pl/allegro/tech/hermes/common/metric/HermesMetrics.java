@@ -32,6 +32,7 @@ import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFF
 import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.LEADER_CONFIRMS_BUFFER_TOTAL_BYTES;
+import static pl.allegro.tech.hermes.common.metric.Timers.SUBSCRIPTION_LATENCY;
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 public class HermesMetrics {
@@ -184,6 +185,10 @@ public class HermesMetrics {
         getInflightCounter(subscription).dec();
     }
 
+    public void decrementInflightCounter(Subscription subscription, int size) {
+        getInflightCounter(subscription).dec(size);
+    }
+
     public static void close(Timer.Context... timers) {
         for (Timer.Context timer : timers) {
             if (timer != null) {
@@ -333,6 +338,10 @@ public class HermesMetrics {
         metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_MISSING_RESOURCES, pathContext)).update(missingResources);
         metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_CREATED_ASSIGNMENTS, pathContext)).update(createdAssignmentsCount);
         metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_DELETED_ASSIGNMENTS, pathContext)).update(deletedAssignmentsCount);
+    }
+
+    public Timer subscriptionLatencyTimer(Subscription subscription) {
+        return timer(SUBSCRIPTION_LATENCY, subscription.getTopicName(), subscription.getName());
     }
 }
 

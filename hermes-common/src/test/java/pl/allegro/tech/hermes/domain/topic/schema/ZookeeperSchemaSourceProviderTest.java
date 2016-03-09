@@ -15,7 +15,7 @@ import java.util.Optional;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class ZookeeperSchemaSourceProviderTest extends ZookeeperBaseTest {
 
@@ -26,7 +26,7 @@ public class ZookeeperSchemaSourceProviderTest extends ZookeeperBaseTest {
     @Test
     public void shouldGetTopicSchemaFromZookeeper() throws Exception {
         // given
-        Topic topic = topic().withName("org.hermes.schema", "existing").build();
+        Topic topic = topic("org.hermes.schema", "existing").build();
         zookeeperClient.create().creatingParentsIfNeeded().forPath("/test/groups/org.hermes.schema/topics/existing/schema", AVRO_SCHEMA.getBytes());
 
         // when
@@ -39,7 +39,7 @@ public class ZookeeperSchemaSourceProviderTest extends ZookeeperBaseTest {
     @Test
     public void shouldReturnEmptyWhenSchemaNotFound() {
         // given
-        Topic topic = topic().withName("org.hermes.schema", "notExisting").build();
+        Topic topic = topic("org.hermes.schema", "notExisting").build();
 
         // when
         Optional<SchemaSource> schemaSource = provider.get(topic);
@@ -51,7 +51,7 @@ public class ZookeeperSchemaSourceProviderTest extends ZookeeperBaseTest {
     @Test
     public void shouldThrowExceptionWhenCouldNotConnectToZK() {
         // given
-        Topic topic = topic().withName("org.hermes.schema", "broken").build();
+        Topic topic = topic("org.hermes.schema", "broken").build();
         CuratorFramework notStartedClient = CuratorFrameworkFactory.newClient(zookeeperServer.getConnectString(), new ExponentialBackoffRetry(100, 1));
         ZookeeperSchemaSourceProvider brokenProvider = new ZookeeperSchemaSourceProvider(notStartedClient, new ZookeeperPaths("/test"));
 

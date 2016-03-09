@@ -1,14 +1,12 @@
 package pl.allegro.tech.hermes.api.helpers;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class Replacer {
+public final class Replacer {
+
     public static List<String> replaceInAll(String regex, String replacement, String... strings) {
-        List<String> result = new ArrayList<String>();
-        for (String string : strings) {
-            result.add(string.replaceAll(regex, replacement));
-        }
-        return result;
+        return Arrays.stream(strings).map(s -> s.replaceAll(regex, replacement)).collect(Collectors.toList());
     }
 }

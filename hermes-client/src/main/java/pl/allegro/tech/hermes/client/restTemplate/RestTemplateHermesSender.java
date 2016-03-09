@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.client.HermesSender;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 
 public class RestTemplateHermesSender implements HermesSender {
@@ -28,7 +27,7 @@ public class RestTemplateHermesSender implements HermesSender {
     public CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
         CompletableFuture<HermesResponse> future = new CompletableFuture<>();
         template.postForEntity(uri, new HttpEntity<>(message.getBody(), new LinkedMultiValueMap<String, String>() {{
-            add(CONTENT_TYPE, message.getContentType());
+            message.consumeHeaders(this::add);
         }}), String.class)
                 .addCallback(new ListenableFutureCallback<ResponseEntity>() {
                     @Override

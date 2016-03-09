@@ -1,4 +1,5 @@
 package pl.allegro.tech.hermes.management.infrastructure.schema
+
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -9,7 +10,7 @@ import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperWaiter
 import spock.lang.Shared
 import spock.lang.Specification
 
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class ZookeeperSchemaSourceRepositorySpec extends Specification {
 
@@ -38,7 +39,7 @@ class ZookeeperSchemaSourceRepositorySpec extends Specification {
 
     def "should save schema in zookeeper"() {
         given:
-        def topic = topic().withName("org.hermes.schema", "save").build()
+        def topic = topic("org.hermes.schema", "save").build()
 
         when:
         repository.save(SchemaSource.valueOf("schema"), topic)
@@ -49,7 +50,7 @@ class ZookeeperSchemaSourceRepositorySpec extends Specification {
 
     def "should delete schema from zookeeper"() {
         given:
-        def topic = topic().withName("org.hermes.schema", "delete").build()
+        def topic = topic("org.hermes.schema", "delete").build()
         zookeeperClient.create().creatingParentsIfNeeded().forPath("/test/groups/org.hermes.schema/topics/delete/schema", "toBeRemoved".bytes)
 
         when:

@@ -3,16 +3,19 @@ package pl.allegro.tech.hermes.management.domain.group;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.helpers.Patch;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Service
+@Component
 public class GroupService {
 
     private static final Logger logger = LoggerFactory.getLogger(GroupService.class);
@@ -24,7 +27,11 @@ public class GroupService {
         this.groupRepository = groupRepository;
     }
 
-    public List<String> listGroups() {
+    public List<Group> listGroups() {
+        return groupRepository.listGroups();
+    }
+
+    public List<String> listGroupNames() {
         return groupRepository.listGroupNames();
     }
 
@@ -47,14 +54,21 @@ public class GroupService {
         }
     }
 
-    public void updateGroup(Group group) {
+    public void updateGroup(String groupName, PatchData patch) {
         try {
-            Group retrieved = groupRepository.getGroupDetails(group.getGroupName());
-            Group modified = Patch.apply(retrieved, group);
+            Group retrieved = groupRepository.getGroupDetails(groupName);
+            Group modified = Patch.apply(retrieved, patch);
             groupRepository.updateGroup(modified);
         } catch (MalformedDataException exception) {
-            logger.warn("Problem with reading details of group {}. Overriding them.", group.getGroupName());
-            groupRepository.updateGroup(group);
+            logger.warn("Problem with reading details of group {}.", groupName);
+            throw exception;
         }
     }
+
+    public List<Group> queryGroup(Query<Group> query) {
+        return query
+                .filter(listGroups())
+                .collect(Collectors.toList());
+    }
+
 }

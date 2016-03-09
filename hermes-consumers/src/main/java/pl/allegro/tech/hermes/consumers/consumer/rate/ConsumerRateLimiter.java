@@ -35,7 +35,7 @@ public class ConsumerRateLimiter {
 
     public void initialize() {
         adjustConsumerRate();
-        hermesMetrics.registerOutputRateGauge(subscription.getTopicName(), subscription.getName(), () -> rateLimiter.getRate());
+        hermesMetrics.registerOutputRateGauge(subscription.getTopicName(), subscription.getName(), rateLimiter::getRate);
         rateLimitSupervisor.register(this);
     }
 

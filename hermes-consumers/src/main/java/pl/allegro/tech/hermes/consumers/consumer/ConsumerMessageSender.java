@@ -87,12 +87,18 @@ public class ConsumerMessageSender {
     private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
         rateLimiter.acquire();
         ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
-        final CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
+        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
     }
 
     private boolean isTtlExceeded(Message message) {
-        return message.isTtlExceeded(subscription.getSubscriptionPolicy().getMessageTtl());
+        return willExceedTtl(message, 0);
+    }
+
+    private boolean willExceedTtl(Message message, long delay) {
+        long ttl = TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
+        long remainingTtl = Math.max(ttl - delay, 0);
+        return message.isTtlExceeded(remainingTtl);
     }
 
     private void handleFailedSending(Message message, MessageSendingResult result) {
@@ -115,11 +121,11 @@ public class ConsumerMessageSender {
     }
 
     private boolean shouldReduceSendingRate(MessageSendingResult result) {
-        return shouldRetrySending(result);
+        return !result.isRetryLater() && subscriptionAllowsResending(result);
     }
 
-    private boolean shouldRetrySending(MessageSendingResult result) {
-        return !result.succeeded() && (!result.isClientError() || subscription.getSubscriptionPolicy().isRetryClientErrors());
+    private boolean subscriptionAllowsResending(MessageSendingResult result) {
+        return !result.succeeded() && (!result.isClientError() || subscription.getSerialSubscriptionPolicy().isRetryClientErrors());
     }
 
     class ResponseHandlingListener implements java.util.function.Consumer<MessageSendingResult> {
@@ -140,22 +146,34 @@ public class ConsumerMessageSender {
                 handleMessageSendingSuccess(message, result);
             } else {
                 handleFailedSending(message, result);
-                if (consumerIsConsuming && !isTtlExceeded(message) && shouldRetrySending(result)) {
-                    retrySingleThreadExecutor.schedule(() -> retrySending(result),
-                            subscription.getSubscriptionPolicy().getMessageBackoff(), TimeUnit.MILLISECONDS);
+                message.incrementRetryCounter();
+
+                long retryDelay = extractRetryDelay(result);
+                if (consumerIsConsuming && shouldAttemptResending(result, retryDelay)) {
+                    retrySingleThreadExecutor.schedule(() -> retrySending(result), retryDelay, TimeUnit.MILLISECONDS);
                 } else {
                     handleMessageDiscarding(message, result);
                 }
             }
         }
 
+        private boolean shouldAttemptResending(MessageSendingResult result, long retryDelay) {
+            return !willExceedTtl(message, retryDelay) && subscriptionAllowsResending(result);
+        }
+
+        private long extractRetryDelay(MessageSendingResult result) {
+            long defaultBackoff = subscription.getSerialSubscriptionPolicy().getMessageBackoff();
+            long ttl = TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
+            return result.getRetryAfterMillis().map(delay -> Math.min(delay, ttl)).orElse(defaultBackoff);
+        }
+
         private void retrySending(MessageSendingResult result) {
             if (result.isLoggable()) {
                 logger.info(
-                    format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                        subscription.getEndpoint().getEndpoint(), message.getId(), message.getOffset(), message.getPartition(),
-                        subscription.getId(), result.getRootCause()),
-                    result.getFailure());
+                        format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
+                                subscription.getEndpoint().getEndpoint(), message.getId(), message.getOffset(), message.getPartition(),
+                                subscription.getId(), result.getRootCause()),
+                        result.getFailure());
             }
             sendMessage(message);
         }

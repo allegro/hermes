@@ -3,21 +3,25 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTrace;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
-import pl.allegro.tech.hermes.common.query.Query;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class SubscriptionService {
@@ -26,6 +30,8 @@ public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
 
+    private final TopicService topicService;
+
     private final SubscriptionMetricsRepository metricsRepository;
 
     private final UndeliveredMessageLog undeliveredMessageLog;
@@ -33,16 +39,19 @@ public class SubscriptionService {
     private final LogRepository logRepository;
 
     private final ApiPreconditions preconditions;
+
     private final AdminTool adminTool;
 
     @Autowired
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
+                               TopicService topicService,
                                SubscriptionMetricsRepository metricsRepository,
                                UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
                                ApiPreconditions apiPreconditions,
                                AdminTool adminTool) {
         this.subscriptionRepository = subscriptionRepository;
+        this.topicService = topicService;
         this.metricsRepository = metricsRepository;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
@@ -55,11 +64,16 @@ public class SubscriptionService {
     }
 
     public List<String> listTrackedSubscriptionNames(TopicName topicName) {
-        return subscriptionRepository.listTrackedSubscriptionNames(topicName);
+        return listSubscriptions(topicName).stream()
+                .filter(Subscription::isTrackingEnabled)
+                .map(Subscription::getName)
+                .collect(Collectors.toList());
     }
 
     public List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query) {
-        return subscriptionRepository.listFilteredSubscriptionNames(topicName, query);
+        return query.filter(listSubscriptions(topicName))
+                .map(Subscription::getName)
+                .collect(Collectors.toList());
     }
 
     public List<Subscription> listSubscriptions(TopicName topicName) {
@@ -67,6 +81,7 @@ public class SubscriptionService {
     }
 
     public void createSubscription(Subscription subscription) {
+        preconditions.checkConstraints(subscription);
         subscriptionRepository.createSubscription(subscription);
     }
 
@@ -78,12 +93,9 @@ public class SubscriptionService {
         subscriptionRepository.removeSubscription(topicName, subscriptionName);
     }
 
-    public void updateSubscription(Subscription subscription) {
-        Subscription retrieved = subscriptionRepository.getSubscriptionDetails(
-                subscription.getTopicName(), subscription.getName()
-        );
-
-        Subscription updated = Patch.apply(retrieved, subscription);
+    public void updateSubscription(TopicName topicName, String subscriptionName, PatchData patch) {
+        Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+        Subscription updated = Patch.apply(retrieved, patch);
         preconditions.checkConstraints(updated);
 
         if (!retrieved.equals(updated)) {
@@ -91,7 +103,7 @@ public class SubscriptionService {
         }
 
         if (isConsumerRestartNeeded(retrieved, updated)) {
-            adminTool.restartConsumer(new SubscriptionName(subscription.getName(), subscription.getTopicName()));
+            adminTool.restartConsumer(new SubscriptionName(updated.getName(), updated.getTopicName()));
         }
     }
 
@@ -122,6 +134,22 @@ public class SubscriptionService {
 
     private boolean isConsumerRestartNeeded(Subscription retrieved, Subscription subscription) {
         return !retrieved.getEndpoint().equals(subscription.getEndpoint()) ||
-               !retrieved.getContentType().equals(subscription.getContentType());
+               !retrieved.getContentType().equals(subscription.getContentType()) ||
+               !retrieved.getDeliveryType().equals(subscription.getDeliveryType());
+    }
+
+    public List<Subscription> querySubscription(Query<Subscription> query) {
+        return query
+                .filter(getAllSubscriptions())
+                .collect(Collectors.toList());
+    }
+
+    public List<Subscription> getAllSubscriptions() {
+        return topicService.getAllTopics()
+                .stream()
+                .map(Topic::getName)
+                .map(this::listSubscriptions)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 }

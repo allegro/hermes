@@ -3,7 +3,11 @@ package pl.allegro.tech.hermes.integration;
 import com.googlecode.catchexception.CatchException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.SubscriptionPolicy;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicMetrics;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
@@ -17,6 +21,7 @@ import java.util.UUID;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class MetricsTest extends IntegrationTest {
 
@@ -75,7 +80,8 @@ public class MetricsTest extends IntegrationTest {
 
         // then
         assertThat(metrics.getRate()).isEqualTo("15");
-        assertThat(metrics.getDelivered()).isEqualTo(2); //we have same instance of metric registry in frontend and consumer, so metrics reporting is duplicated
+        //we have same instance of metric registry in frontend and consumer, so metrics reporting is duplicated
+        assertThat(metrics.getDelivered()).isEqualTo(2);
         assertThat(metrics.getDiscarded()).isEqualTo(0);
         assertThat(metrics.getInflight()).isEqualTo(0);
     }
@@ -188,11 +194,8 @@ public class MetricsTest extends IntegrationTest {
     public void shouldReportHttpErrorCodeMetrics() {
         //given
         Topic topic = operations.buildTopic("statusErrorGroup", "topic");
-        operations.createSubscription(topic, Subscription.Builder.subscription()
-                .withTopicName(topic.getName())
-                .withName("subscription")
-                .withSupportTeam("team")
-                .withEndpoint(new EndpointAddress(HTTP_ENDPOINT_URL))
+        operations.createSubscription(topic, subscription(topic, "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
                 .withSubscriptionPolicy(SubscriptionPolicy.Builder.subscriptionPolicy()
                         .applyDefaults()
                         .withMessageTtl(0)

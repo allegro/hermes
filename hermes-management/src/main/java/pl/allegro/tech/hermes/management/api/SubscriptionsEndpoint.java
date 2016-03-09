@@ -4,13 +4,13 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.MessageTrace;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.query.Query;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -30,14 +30,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 @Path("topics/{topicName}/subscriptions")
@@ -45,19 +43,16 @@ public class SubscriptionsEndpoint {
 
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
-    private final ApiPreconditions preconditions;
     private final MultiDCAwareService multiDCAwareService;
     private final TimeFormatter timeFormatter;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
                                  TopicService topicService,
-                                 ApiPreconditions preconditions,
                                  MultiDCAwareService multiDCAwareService,
                                  TimeFormatter timeFormatter) {
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
-        this.preconditions = preconditions;
         this.multiDCAwareService = multiDCAwareService;
         this.timeFormatter = timeFormatter;
     }
@@ -69,7 +64,7 @@ public class SubscriptionsEndpoint {
             @PathParam("topicName") String qualifiedTopicName,
             @DefaultValue("false") @QueryParam("tracked") boolean tracked) {
 
-        return tracked?
+        return tracked ?
                 subscriptionService.listTrackedSubscriptionNames(fromQualifiedName(qualifiedTopicName)) :
                 subscriptionService.listSubscriptionNames(fromQualifiedName(qualifiedTopicName));
     }
@@ -81,8 +76,7 @@ public class SubscriptionsEndpoint {
     @ApiOperation(value = "Queries subscriptions", response = List.class, httpMethod = HttpMethod.POST)
     public List<String> queryList(
             @PathParam("topicName") String qualifiedTopicName,
-            Query<Subscription> query) throws IOException {
-
+            Query<Subscription> query) {
         return subscriptionService.listFilteredSubscriptionNames(fromQualifiedName(qualifiedTopicName), query);
     }
 
@@ -91,10 +85,7 @@ public class SubscriptionsEndpoint {
     @RolesAllowed({Roles.ANY})
     @ApiOperation(value = "Create subscription", httpMethod = HttpMethod.POST)
     public Response create(@PathParam("topicName") String qualifiedTopicName, Subscription subscription) {
-        preconditions.checkConstraints(subscription);
-
-        subscriptionService.createSubscription(
-                subscription().applyDefaults().applyPatch(subscription).withTopicName(qualifiedTopicName).build());
+        subscriptionService.createSubscription(subscription);
         return responseStatus(Response.Status.CREATED);
     }
 
@@ -179,10 +170,8 @@ public class SubscriptionsEndpoint {
     @ApiOperation(value = "Update subscription", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionName,
-                           Subscription subscription) {
-        subscriptionService.updateSubscription(
-                subscription().withTopicName(qualifiedTopicName).withName(subscriptionName).applyPatch(subscription).build()
-        );
+                           PatchData patch) {
+        subscriptionService.updateSubscription(TopicName.fromQualifiedName(qualifiedTopicName), subscriptionName, patch);
         return responseStatus(OK);
     }
 

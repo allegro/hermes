@@ -23,6 +23,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class HermesConsumersBuilder {
+    private static final int RANK_HIGHER_THAN_DEFAULT = 10;
 
     private final HooksHandler hooksHandler = new HooksHandler();
     private final MessageSenderProviders messageSendersProviders = new MessageSenderProviders();
@@ -79,11 +80,10 @@ public final class HermesConsumersBuilder {
     }
 
     public <T> HermesConsumersBuilder withBinding(T instance, Class<T> clazz, String name) {
-        final int rankHigherThanDefault = 10;
         binders.add(new AbstractBinder() {
             @Override
             protected void configure() {
-                bind(instance).to(clazz).named(name).ranked(rankHigherThanDefault);
+                bind(instance).to(clazz).named(name).ranked(RANK_HIGHER_THAN_DEFAULT);
             }
         });
         return this;

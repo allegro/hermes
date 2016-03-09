@@ -2,7 +2,8 @@ package pl.allegro.tech.hermes.tracker.consumers;
 
 public class MessageMetadata {
 
-    private final String id;
+    private final String messageId;
+    private final String batchId;
     private final long offset;
     private final int partition;
     private final String topic;
@@ -10,9 +11,15 @@ public class MessageMetadata {
     private final long publishingTimestamp;
     private final long readingTimestamp;
 
-    public MessageMetadata(String id, long offset, int partition, String topic, String subscription,
+    public MessageMetadata(String messageId, long offset, int partition, String topic, String subscription,
                            long publishingTimestamp, long readingTimestamp) {
-        this.id = id;
+        this(messageId, "", offset, partition, topic, subscription, publishingTimestamp, readingTimestamp);
+    }
+
+    public MessageMetadata(String messageId, String batchId, long offset, int partition, String topic, String subscription,
+                           long publishingTimestamp, long readingTimestamp) {
+        this.messageId = messageId;
+        this.batchId = batchId;
         this.offset = offset;
         this.partition = partition;
         this.topic = topic;
@@ -21,8 +28,8 @@ public class MessageMetadata {
         this.readingTimestamp = readingTimestamp;
     }
 
-    public String getId() {
-        return id;
+    public String getMessageId() {
+        return messageId;
     }
 
     public long getOffset() {
@@ -47,5 +54,9 @@ public class MessageMetadata {
 
     public long getReadingTimestamp() {
         return readingTimestamp;
+    }
+
+    public String getBatchId() {
+        return batchId;
     }
 }

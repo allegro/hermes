@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class ChronicleMapMessageRepositoryTest {
 
@@ -31,7 +32,7 @@ public class ChronicleMapMessageRepositoryTest {
         Message message = new Message(id, messageContent, timestamp);
         String qualifiedName = "groupName.topic";
 
-        Topic topic = Topic.Builder.topic().withName(qualifiedName).build();
+        Topic topic = topic(qualifiedName).build();
 
         //when
         messageRepository.save(message, topic);

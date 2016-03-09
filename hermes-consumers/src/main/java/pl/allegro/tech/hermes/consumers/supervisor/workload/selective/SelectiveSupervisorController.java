@@ -13,7 +13,9 @@ import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 
-import static java.util.Collections.emptyList;
+import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
@@ -29,6 +31,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     private final ZookeeperAdminCache adminCache;
     private ConfigFactory configFactory;
     private HermesMetrics metrics;
+    private ExecutorService assignmentExecutor;
 
     private static final Logger logger = LoggerFactory.getLogger(SelectiveSupervisorController.class);
 
@@ -37,6 +40,7 @@ public class SelectiveSupervisorController implements SupervisorController {
                                          WorkTracker workTracker,
                                          ConsumerNodesRegistry consumersRegistry,
                                          ZookeeperAdminCache adminCache,
+                                         ExecutorService assignmentExecutor,
                                          ConfigFactory configFactory,
                                          HermesMetrics metrics) {
 
@@ -45,27 +49,40 @@ public class SelectiveSupervisorController implements SupervisorController {
         this.workTracker = workTracker;
         this.consumersRegistry = consumersRegistry;
         this.adminCache = adminCache;
+        this.assignmentExecutor = assignmentExecutor;
         this.configFactory = configFactory;
         this.metrics = metrics;
     }
 
     @Override
     public void onSubscriptionAssigned(Subscription subscription) {
-        logger.info("Assigning consumer for {}", subscription.getId());
-        supervisor.assignConsumerForSubscription(subscription);
+        logger.info("Scheduling assignment consumer for {}", subscription.getId());
+        assignmentExecutor.execute(() -> {
+            logger.info("Assigning consumer for {}", subscription.getId());
+            supervisor.assignConsumerForSubscription(subscription);
+        });
     }
 
     @Override
     public void onAssignmentRemoved(SubscriptionName subscription) {
-        logger.info("Removing assignment from consumer for {}", subscription.getId());
-        supervisor.deleteConsumerForSubscriptionName(subscription);
+        logger.info("Scheduling assignment removal consumer for {}", subscription.getId());
+        assignmentExecutor.execute(() -> {
+            logger.info("Removing assignment from consumer for {}", subscription.getId());
+            supervisor.deleteConsumerForSubscriptionName(subscription);
+        });
+    }
+
+    @Override
+    public void onSubscriptionChanged(Subscription subscription) {
+        logger.info("Updating subscription {}", subscription.getId());
+        supervisor.updateSubscription(subscription);
     }
 
     @Override
     public void start() throws Exception {
         adminCache.start();
         adminCache.addCallback(this);
-        subscriptionsCache.start(emptyList());
+        subscriptionsCache.start(Collections.singleton(this));
         workTracker.start(ImmutableList.of(this));
         supervisor.start();
         consumersRegistry.start();
@@ -112,4 +129,6 @@ public class SelectiveSupervisorController implements SupervisorController {
             supervisor.restartConsumer(subscription);
         }
     }
+
+
 }

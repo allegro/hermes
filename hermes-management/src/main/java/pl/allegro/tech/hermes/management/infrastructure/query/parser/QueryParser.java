@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.parser;
 
-import pl.allegro.tech.hermes.common.query.Query;
+import pl.allegro.tech.hermes.api.Query;
 
 import java.io.InputStream;
 

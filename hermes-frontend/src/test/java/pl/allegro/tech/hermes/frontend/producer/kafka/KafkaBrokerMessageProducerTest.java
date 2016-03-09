@@ -22,14 +22,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KafkaBrokerMessageProducerTest {
 
     private static final Long TIMESTAMP = 1L;
     private static final String MESSAGE_ID = "id";
-    private static final Topic TOPIC = topic().applyDefaults().withName("group.topic").build();
+    private static final Topic TOPIC = topic("group.topic").build();
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);
     private static final Message MESSAGE = new Message(MESSAGE_ID, CONTENT, TIMESTAMP);
 
@@ -90,7 +90,7 @@ public class KafkaBrokerMessageProducerTest {
     @Test
     public void shouldUseEveryoneConfirmProducerForTopicWithAckAll() {
         //given
-        Topic topic = topic().applyDefaults().withName("group.all").withAck(Topic.Ack.ALL).build();
+        Topic topic = topic("group.all").withAck(Topic.Ack.ALL).build();
 
         //when
         producer.send(MESSAGE, topic, new DoNothing());

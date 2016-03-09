@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactor
 import java.io.IOException;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.BATCH_ID;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.CLUSTER;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.MESSAGE_ID;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.REASON;
@@ -94,6 +95,7 @@ public class SchemaManager {
                     .startObject("_all").field("enabled", false).endObject()
                     .startObject("properties")
                     .startObject(MESSAGE_ID).field("type", "string").field("index", "not_analyzed").endObject()
+                    .startObject(BATCH_ID).field("type", "string").field("index", "not_analyzed").endObject()
                     .startObject(STATUS).field("type", "string").field("index", "not_analyzed").endObject()
                     .startObject(TOPIC_NAME).field("type", "string").field("index", "not_analyzed").endObject()
                     .startObject(SUBSCRIPTION).field("type", "string").field("index", "not_analyzed").endObject()

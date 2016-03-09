@@ -12,16 +12,15 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import java.time.Clock;
 
 import static org.mockito.Mockito.*;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class OffsetCommitQueueMonitorTest {
 
-    private Subscription subscription = Subscription.Builder.subscription()
-            .applyDefaults().withSubscriptionPolicy(
+    private Subscription subscription = subscription("group.topic", "subscription")
+            .withSubscriptionPolicy(
                     SubscriptionPolicy.Builder.subscriptionPolicy()
                             .applyDefaults().withRate(1000).withMessageTtl(5).build()
             )
-            .withTopicName("group", "topic")
-            .withName("subscription")
             .build();
 
     private HermesMetrics hermesMetrics = Mockito.mock(HermesMetrics.class);

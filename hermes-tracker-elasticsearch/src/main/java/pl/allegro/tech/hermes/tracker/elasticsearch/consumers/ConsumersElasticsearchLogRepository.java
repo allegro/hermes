@@ -69,7 +69,8 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
             throws IOException {
         return jsonBuilder(new BytesStreamOutput(DOCUMENT_EXPECTED_SIZE))
                 .startObject()
-                .field(MESSAGE_ID, message.getId())
+                .field(MESSAGE_ID, message.getMessageId())
+                .field(BATCH_ID, message.getBatchId())
                 .field(TIMESTAMP, timestamp)
                 .field(PUBLISH_TIMESTAMP, message.getPublishingTimestamp())
                 .field(TOPIC_NAME, message.getTopic())

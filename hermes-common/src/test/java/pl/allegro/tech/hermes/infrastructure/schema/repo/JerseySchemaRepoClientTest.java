@@ -112,13 +112,15 @@ public class JerseySchemaRepoClientTest {
     @Test
     public void shouldThrowExceptionForInvalidSchemaRegistration() {
         // given
-        wireMockRule.stubFor(put(registerSchemaUrl()).willReturn(badRequestResponse()));
+        wireMockRule.stubFor(put(registerSchemaUrl()).willReturn(forbiddenResponse("something's wrong")));
 
         // when
         catchException(client).registerSchema(SUBJECT, "{}");
 
         // then
-        assertThat((Throwable) caughtException()).isInstanceOf(InvalidSchemaException.class);
+        assertThat((Throwable) caughtException())
+                .isInstanceOf(InvalidSchemaException.class)
+                .hasMessageContaining("something's wrong");
     }
 
     @Test
@@ -157,7 +159,7 @@ public class JerseySchemaRepoClientTest {
         return aResponse().withStatus(404);
     }
 
-    private ResponseDefinitionBuilder badRequestResponse() {
-        return aResponse().withStatus(400);
+    private ResponseDefinitionBuilder forbiddenResponse(String body) {
+        return aResponse().withStatus(403).withBody(body);
     }
 }

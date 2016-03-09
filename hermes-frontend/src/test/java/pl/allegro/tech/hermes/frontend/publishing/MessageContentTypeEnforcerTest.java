@@ -13,6 +13,7 @@ import java.io.IOException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class MessageContentTypeEnforcerTest {
 
@@ -26,7 +27,7 @@ public class MessageContentTypeEnforcerTest {
     @Test
     public void shouldConvertToAvroWhenReceivedJSONOnAvroTopic() throws IOException {
         // given
-        Topic topic = Topic.Builder.topic().withName("enforcer", "json2avro").withContentType(ContentType.AVRO).build();
+        Topic topic = topic("enforcer", "json2avro").withContentType(ContentType.AVRO).build();
         Message message = new Message("1", avroMessage.asJson().getBytes(), 1234);
 
         when(schemaRepository.getSchema(topic)).thenReturn(avroMessage.getSchema());
@@ -41,7 +42,7 @@ public class MessageContentTypeEnforcerTest {
     @Test
     public void shouldStringContentTypeOfAdditionalOptionsWhenInterpretingIt() throws IOException {
         // given
-        Topic topic = Topic.Builder.topic().withName("enforcer", "json2avro-encoding").withContentType(ContentType.AVRO).build();
+        Topic topic = topic("enforcer", "json2avro-encoding").withContentType(ContentType.AVRO).build();
         Message message = new Message("1", avroMessage.asJson().getBytes(), 1234);
 
         when(schemaRepository.getSchema(topic)).thenReturn(avroMessage.getSchema());
@@ -56,7 +57,7 @@ public class MessageContentTypeEnforcerTest {
     @Test
     public void shouldNotConvertWhenReceivingJSONOnJSONTopic() throws IOException {
         // given
-        Topic topic = Topic.Builder.topic().withName("enforcer", "json2json").withContentType(ContentType.JSON).build();
+        Topic topic = topic("enforcer", "json2json").withContentType(ContentType.JSON).build();
         Message message = new Message("1", avroMessage.asJson().getBytes(), 1234);
 
         // when
@@ -69,7 +70,7 @@ public class MessageContentTypeEnforcerTest {
     @Test
     public void shouldNotConvertWhenReceivingAvroOnAvroTopic() throws IOException {
         // given
-        Topic topic = Topic.Builder.topic().withName("enforcer", "avro2avro").withContentType(ContentType.AVRO).build();
+        Topic topic = topic("enforcer", "avro2avro").withContentType(ContentType.AVRO).build();
         Message message = new Message("1", avroMessage.asBytes(), 1234);
 
         // when

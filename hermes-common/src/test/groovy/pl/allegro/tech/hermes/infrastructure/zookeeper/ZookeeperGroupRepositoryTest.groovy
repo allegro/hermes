@@ -5,7 +5,8 @@ import pl.allegro.tech.hermes.domain.group.GroupNotEmptyException
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic
+import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class ZookeeperGroupRepositoryTest extends IntegrationTest {
 
@@ -13,7 +14,7 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
     
     def "should create group"() {
         when:
-        repository.createGroup(Group.from('createGroup'))
+        repository.createGroup(group('createGroup').build())
         wait.untilGroupCreated('createGroup')
 
         then:
@@ -36,8 +37,7 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
 
     def "should return group details"() {
         given:
-        Group group = Group.Builder.group().withGroupName('groupDetails')
-                .withSupportTeam('team').withTechnicalOwner('owner').build()
+        Group group = group('groupDetails').withSupportTeam('team').withTechnicalOwner('owner').build()
         repository.createGroup(group)
         wait.untilGroupCreated('groupDetails')
 
@@ -51,10 +51,10 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
 
     def "should update group"() {
         given:
-        repository.createGroup(Group.Builder.group().withGroupName('updateGroup').withSupportTeam('team1').build())
+        repository.createGroup(group('updateGroup').withSupportTeam('team1').build())
         wait.untilGroupCreated('updateGroup')
 
-        Group modifiedGroup  = Group.Builder.group().withGroupName('updateGroup').withSupportTeam('skylab').build()
+        Group modifiedGroup  = group('updateGroup').withSupportTeam('skylab').build()
 
         when:
         repository.updateGroup(modifiedGroup)
@@ -85,9 +85,9 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
 
     def "should not allow on removing nonempty groups"() {
         given:
-        repository.createGroup(Group.from('nonemptyGroup'))
+        repository.createGroup(group('nonemptyGroup').build())
         wait.untilGroupCreated('nonemptyGroup')
-        topicRepository.createTopic(topic().withName('nonemptyGroup', 'topic').build())
+        topicRepository.createTopic(topic('nonemptyGroup', 'topic').build())
         wait.untilTopicCreated('nonemptyGroup', 'topic')
         
         when:

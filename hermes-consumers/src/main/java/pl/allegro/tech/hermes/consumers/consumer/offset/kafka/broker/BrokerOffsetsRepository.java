@@ -14,15 +14,15 @@ import kafka.javaapi.OffsetCommitResponse;
 import kafka.javaapi.OffsetFetchRequest;
 import kafka.javaapi.OffsetFetchResponse;
 import kafka.network.BlockingChannel;
-import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.CannotCommitOffsetToBrokerException;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import javax.inject.Inject;
 import java.time.Clock;
@@ -43,7 +43,7 @@ public class BrokerOffsetsRepository {
     private final Clock clock;
     private final KafkaNamesMapper kafkaNamesMapper;
 
-    private final LoadingCache<Subscription, BlockingChannel> channels;
+    private final LoadingCache<SubscriptionName, BlockingChannel> channels;
     private final String clientId;
 
     @Inject
@@ -63,9 +63,9 @@ public class BrokerOffsetsRepository {
 
         channels = CacheBuilder.newBuilder()
                 .expireAfterAccess(channelExpTime, TimeUnit.SECONDS)
-                .removalListener((RemovalNotification<Subscription, BlockingChannel> notification) -> notification.getValue().disconnect())
-                .build(new CacheLoader<Subscription, BlockingChannel>() {
-                    public BlockingChannel load(Subscription key) {
+                .removalListener((RemovalNotification<SubscriptionName, BlockingChannel> notification) -> notification.getValue().disconnect())
+                .build(new CacheLoader<SubscriptionName, BlockingChannel>() {
+                    public BlockingChannel load(SubscriptionName key) {
                         BlockingChannel channel = blockingChannelFactory.create(kafkaNamesMapper.toConsumerGroupId(key));
                         channel.connect();
                         return channel;
@@ -73,7 +73,7 @@ public class BrokerOffsetsRepository {
                 });
     }
 
-    public void save(Subscription subscription, PartitionOffset partitionOffset) throws ExecutionException {
+    public void save(SubscriptionName subscription, PartitionOffset partitionOffset) throws ExecutionException {
         OffsetCommitRequest commitRequest = createCommitRequest(subscription, partitionOffset);
         OffsetCommitResponse commitResponse;
         try {
@@ -94,7 +94,7 @@ public class BrokerOffsetsRepository {
         }
     }
 
-    public void saveIfOffsetInThePast(Subscription subscription, PartitionOffset partitionOffset) throws ExecutionException {
+    public void saveIfOffsetInThePast(SubscriptionName subscription, PartitionOffset partitionOffset) throws ExecutionException {
         long currentOffset = find(subscription, partitionOffset.getTopic(), partitionOffset.getPartition());
 
         if (currentOffset == -1 || currentOffset > partitionOffset.getOffset()) {
@@ -102,13 +102,13 @@ public class BrokerOffsetsRepository {
         }
     }
 
-    private OffsetCommitResponse commitOffset(Subscription subscription, OffsetCommitRequest commitRequest) throws ExecutionException {
+    private OffsetCommitResponse commitOffset(SubscriptionName subscription, OffsetCommitRequest commitRequest) throws ExecutionException {
         BlockingChannel channel = channels.get(subscription);
         channel.send(commitRequest.underlying());
         return OffsetCommitResponse.readFrom(channel.receive().buffer());
     }
 
-    private OffsetCommitRequest createCommitRequest(Subscription subscription, PartitionOffset partitionOffset) {
+    private OffsetCommitRequest createCommitRequest(SubscriptionName subscription, PartitionOffset partitionOffset) {
         Map<TopicAndPartition, OffsetAndMetadata> offset = createOffset(partitionOffset);
 
         return new OffsetCommitRequest(
@@ -127,7 +127,7 @@ public class BrokerOffsetsRepository {
     }
 
 
-    public long find(Subscription subscription, KafkaTopicName kafkaTopicName, int partitionId) {
+    public long find(SubscriptionName subscription, KafkaTopicName kafkaTopicName, int partitionId) {
         ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription);
         BlockingChannel channel = blockingChannelFactory.create(groupId);
         channel.connect();

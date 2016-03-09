@@ -23,6 +23,7 @@ dependencies {
     }
 
     compile group: 'commons-jxpath', name: 'commons-jxpath', version: '1.3'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.1'
 
     testCompile project(':hermes-test-helper')
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.spring

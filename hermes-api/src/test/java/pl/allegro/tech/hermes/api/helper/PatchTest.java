@@ -1,99 +1,85 @@
 package pl.allegro.tech.hermes.api.helper;
 
 import org.junit.Test;
-import pl.allegro.tech.hermes.api.ErrorDescription;
-import pl.allegro.tech.hermes.api.ErrorCode;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
+import java.util.HashMap;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static pl.allegro.tech.hermes.api.PatchData.patchData;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PatchTest {
 
     @Test
-    public void shouldApplyObject() {
+    public void shouldApplyPatch() {
         // given
-        SubscriptionPolicy policy1 = subscriptionPolicy().applyDefaults().build();
-        SubscriptionPolicy policy2 = subscriptionPolicy().withRate(10).withMessageTtl(30).build();
-        
-        SubscriptionPolicy expectedPolicy = subscriptionPolicy().applyDefaults().withRate(10).withMessageTtl(30).build();
+        SubscriptionPolicy policy = SubscriptionPolicy.create(new HashMap<>());
+        PatchData patch = patchData().set("rate", 10).set("messageTtl", 30).build();
+
+        // when
+        SubscriptionPolicy patched = Patch.apply(policy, patch);
 
         // when & then
-        assertThat(Patch.apply(policy1, policy2)).isEqualTo(expectedPolicy);
-    }
-
-    @Test
-    public void shouldNotOverrideFieldsWhichWhereNotSupposedToBePatched() {
-        //given
-        SubscriptionPolicy policy = subscriptionPolicy().applyDefaults().build();
-
-        //when
-        SubscriptionPolicy patched =  Patch.apply(policy, subscriptionPolicy().build());
-
-        //then
-        assertThat(patched).isEqualTo(policy);
-    }
-
-    @Test
-    public void shouldApplyPatchToFieldsWhichWhereMeantToBePatched() {
-        //given
-        SubscriptionPolicy policy = subscriptionPolicy().withRate(10).build();
-        SubscriptionPolicy changes = subscriptionPolicy().withRate(8).withMessageTtl(2).build();
-
-        //when
-        SubscriptionPolicy patched =  Patch.apply(policy, changes);
-
-        //then
-        assertThat(patched.getRate()).isEqualTo(changes.getRate());
-        assertThat(patched.getMessageTtl()).isEqualTo(changes.getMessageTtl());
+        assertThat(patched.getRate()).isEqualTo(10);
+        assertThat(patched.getMessageTtl()).isEqualTo(30);
     }
 
     @Test(expected = NullPointerException.class)
     public void shouldThrowExceptionForNullValues() {
-        //when
+        // when
         Patch.apply(null, null);
 
-        //then
-        //exception is thrown
+        // then
+        // exception is thrown
     }
 
     @Test
-    public void shouldApplyPatchesEvenForDifferentClassHierarchies() {
+    public void shouldIgnoreUnknownFields() {
         //given
         SubscriptionPolicy policy = subscriptionPolicy().withRate(10).build();
-        SubscriptionPolicy changes = subscriptionPolicy().withRate(8).build();
+        PatchData patch = patchData().set("unknown", 10).set("messageTtl", 30).build();
 
-        //when
-        SubscriptionPolicy patched = Patch.apply(policy, changes);
+        // when
+        SubscriptionPolicy patched = Patch.apply(policy, patch);
 
-        //then
-        assertThat(patched.getRate()).isEqualTo(changes.getRate());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowExceptionIfClassesFieldNamesAreIncompatible() {
-        //given
-        SubscriptionPolicy policy = subscriptionPolicy().withRate(10).build();
-        ErrorDescription changes = new ErrorDescription("foobar", ErrorCode.INTERNAL_ERROR);
-
-        //when
-        Patch.apply(policy, changes);
+        // then
+        assertThat(patched.getMessageTtl()).isEqualTo(30);
     }
 
     @Test
     public void shouldPatchNestedObjects() {
-        //given
-        Subscription subscription = subscription().applyDefaults().build();
-        SubscriptionPolicy patch = subscriptionPolicy().withMessageTtl(8).withRate(200).build();
+        // given
+        Subscription subscription = subscription("group.topic", "sub").build();
+        PatchData patch = patchData().set(
+                "subscriptionPolicy", patchData().set("rate", 200).set("messageTtl", 8).build().getPatch()
+        ).build();
 
-        //when
-        SubscriptionPolicy result = Patch.apply(subscription, subscription().withSubscriptionPolicy(patch).build()).getSubscriptionPolicy();
+        // when
+        SubscriptionPolicy result = Patch.apply(subscription, patch).getSerialSubscriptionPolicy();
 
-        //then
-        assertThat(result.getMessageTtl()).isEqualTo(patch.getMessageTtl());
-        assertThat(result.getRate()).isEqualTo(patch.getRate());
+        // then
+        assertThat(result.getMessageTtl()).isEqualTo(8);
+        assertThat(result.getRate()).isEqualTo(200);
+    }
+
+    @Test
+    public void shouldNotResetPrimitiveFields() {
+        // given
+        Topic topic = topic("group.topic").withTrackingEnabled(true).build();
+        PatchData patch = patchData().set("validation", true).build();
+
+        // when
+        Topic patched = Patch.apply(topic, patch);
+
+        // then
+        assertThat(patched.isTrackingEnabled()).isTrue();
+        assertThat(patched.isValidationEnabled()).isTrue();
     }
 }

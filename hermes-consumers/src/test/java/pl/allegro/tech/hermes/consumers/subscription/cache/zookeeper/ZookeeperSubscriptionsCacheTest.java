@@ -24,10 +24,10 @@ import java.util.List;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.Subscription.Builder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
-import static pl.allegro.tech.hermes.api.Topic.Builder.topic;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
 
@@ -36,7 +36,7 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     private ConfigFactory configFactory = new ConfigFactory();
     private CountingSubscriptionCallback callback = new CountingSubscriptionCallback();
     private ZookeeperSubscriptionsCache subscriptionCache;
-    
+
     private GroupRepository groupRepository;
     private TopicRepository topicRepository;
     private SubscriptionRepository subscriptionRepository;
@@ -45,11 +45,11 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     public void setUp() throws Exception {
         zookeeperClient.create().creatingParentsIfNeeded().forPath("/hermes/groups");
         ZookeeperPaths paths = new ZookeeperPaths("/hermes");
-        
+
         groupRepository = new ZookeeperGroupRepository(zookeeperClient, objectMapper, paths);
         topicRepository = new ZookeeperTopicRepository(zookeeperClient, objectMapper, paths, groupRepository);
         subscriptionRepository = new ZookeeperSubscriptionRepository(zookeeperClient, objectMapper, paths, topicRepository);
-        
+
         subscriptionCache = new ZookeeperSubscriptionsCache(zookeeperClient, configFactory, objectMapper);
         subscriptionCache.start(ImmutableList.of(callback));
     }
@@ -64,7 +64,7 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     public void shouldNotifyOfNewSubscriptions() throws Exception {
         // given
         TopicName topicName = createTopic("new.topic");
-        subscriptionRepository.createSubscription(subscription().withTopicName(topicName).withName(SUB_NAME).build());
+        subscriptionRepository.createSubscription(subscription(topicName, SUB_NAME).build());
         waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
 
         // then
@@ -75,7 +75,7 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     public void shouldNotifyOfSubscriptionStateChanged() throws Exception {
         // given
         TopicName topicName = createTopic("update.topic");
-        subscriptionRepository.createSubscription(subscription().withTopicName(topicName).withName(SUB_NAME).build());
+        subscriptionRepository.createSubscription(subscription(topicName, SUB_NAME).build());
         waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
 
         // when
@@ -89,7 +89,7 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     public void shouldNotifyOfRemovedTopics() throws Exception {
         // given
         TopicName topicName = createTopic("remove.topic");
-        subscriptionRepository.createSubscription(subscription().withTopicName(topicName).withName(SUB_NAME).build());
+        subscriptionRepository.createSubscription(subscription(topicName, SUB_NAME).build());
         waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
 
         // when
@@ -103,7 +103,7 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     public void shouldListAllSubscriptionNames() {
         // given
         TopicName topicName = createTopic("new.topic");
-        Subscription s = subscription().withTopicName(topicName).withName(SUB_NAME).build();
+        Subscription s = subscription(topicName, SUB_NAME).build();
         subscriptionRepository.createSubscription(s);
         waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
 
@@ -118,7 +118,7 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     public void shouldOnlyListActiveSubscriptionNames() {
         // given
         TopicName topicName = createTopic("good.topic");
-        Subscription s = subscription().withTopicName(topicName).withName(SUB_NAME).withState(SUSPENDED).build();
+        Subscription s = subscription(topicName, SUB_NAME).withState(SUSPENDED).build();
         subscriptionRepository.createSubscription(s);
         waitUntilSubscriptionIsCreated(topicName, SUB_NAME);
 
@@ -138,7 +138,7 @@ public class ZookeeperSubscriptionsCacheTest extends ZookeeperBaseTest {
     private TopicName createTopic(String qualifiedTopicName) {
         TopicName topicName = fromQualifiedName(qualifiedTopicName);
         groupRepository.createGroup(Group.from(topicName.getGroupName()));
-        topicRepository.createTopic(topic().applyDefaults().withName(topicName).build());
+        topicRepository.createTopic(topic(topicName).build());
 
         return topicName;
     }
