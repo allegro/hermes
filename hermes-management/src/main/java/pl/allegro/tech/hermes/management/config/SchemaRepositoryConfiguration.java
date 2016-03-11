@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.management.infrastructure.schema.TopicFieldSchemaS
 import pl.allegro.tech.hermes.management.infrastructure.schema.SchemaRepoSchemaSourceRepository;
 import pl.allegro.tech.hermes.management.infrastructure.schema.ZookeeperSchemaSourceRepository;
 
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.net.URI;
 
@@ -61,8 +62,8 @@ public class SchemaRepositoryConfiguration {
     @Bean
     @ConditionalOnMissingBean(SchemaSourceRepository.class)
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_repo")
-    public SchemaSourceRepository schemaRepoSchemaSourceRepository() {
-        SchemaRepoClient client = new JerseySchemaRepoClient(ClientBuilder.newClient(), URI.create(schemaRepositoryProperties.getServerUrl()));
+    public SchemaSourceRepository schemaRepoSchemaSourceRepository(Client jerseyClient) {
+        SchemaRepoClient client = new JerseySchemaRepoClient(jerseyClient, URI.create(schemaRepositoryProperties.getServerUrl()));
         return new SchemaRepoSchemaSourceRepository(client);
     }
 
