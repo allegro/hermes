@@ -74,31 +74,31 @@
                 </div>
             </div>
 
-            <div class="form-group {{subscriptionForm.batchSize.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'BATCH'">
+            <div class="form-group {{subscriptionForm.subscriptionBatchSize.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'BATCH'">
                 <label for="subscriptionBatchSize" class="col-md-3 control-label">Batch size</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="1" max="1000000" step="1" required class="form-control" id="subscriptionBatchSize" name="subscriptionBatchSize" placeholder="Desired number of messages in a single batch." ng-model="subscription.subscriptionPolicy.batchSize"/>
+                        <input type="number" min="1" max="1000000" step="1" ng-required="subscription.deliveryType === 'BATCH'" class="form-control" id="subscriptionBatchSize" name="subscriptionBatchSize" placeholder="Desired number of messages in a single batch." ng-model="subscription.subscriptionPolicy.batchSize"/>
                         <span class="input-group-addon">messages</span>
                     </div>
                 </div>
             </div>
 
-            <div class="form-group {{subscriptionForm.batchTime.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'BATCH'">
+            <div class="form-group {{subscriptionForm.subscriptionBatchTime.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'BATCH'">
                 <label for="subscriptionBatchTime" class="col-md-3 control-label">Batch time window</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="1" max="1000000" step="1" required class="form-control" id="subscriptionBatchTime" name="subscriptionBatchTime" placeholder="Max time between arrival of first message to batch delivery attempt." ng-model="subscription.subscriptionPolicy.batchTime"/>
+                        <input type="number" min="1" max="1000000" step="1" ng-required="subscription.deliveryType === 'BATCH'" class="form-control" id="subscriptionBatchTime" name="subscriptionBatchTime" placeholder="Max time between arrival of first message to batch delivery attempt." ng-model="subscription.subscriptionPolicy.batchTime"/>
                         <span class="input-group-addon">milliseconds</span>
                     </div>
                 </div>
             </div>
 
-            <div class="form-group {{subscriptionForm.batchVolume.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'BATCH'">
+            <div class="form-group {{subscriptionForm.subscriptionBatchVolume.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'BATCH'">
                 <label for="subscriptionBatchVolume" class="col-md-3 control-label">Batch volume</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="1" max="1000000" step="1" required class="form-control" id="subscriptionBatchVolume" name="subscriptionBatchVolume" placeholder="Desired number of bytes in single batch." ng-model="subscription.subscriptionPolicy.batchVolume"/>
+                        <input type="number" min="1" max="1000000" step="1" ng-required="subscription.deliveryType === 'BATCH'" class="form-control" id="subscriptionBatchVolume" name="subscriptionBatchVolume" placeholder="Desired number of bytes in single batch." ng-model="subscription.subscriptionPolicy.batchVolume"/>
                         <span class="input-group-addon">bytes</span>
                     </div>
                 </div>
@@ -108,7 +108,7 @@
                 <label for="subscriptionRequestTimeout" class="col-md-3 control-label">Request timeout</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="0" max="1000000" step="1" required class="form-control" id="subscriptionRequestTimeout" name="subscriptionRequestTimeout" placeholder="Max time for processing message by subscriber." ng-model="subscription.subscriptionPolicy.requestTimeout"/>
+                        <input type="number" min="0" max="1000000" step="1" ng-required="subscription.deliveryType === 'BATCH'" class="form-control" id="subscriptionRequestTimeout" name="subscriptionRequestTimeout" placeholder="Max time for processing message by subscriber." ng-model="subscription.subscriptionPolicy.requestTimeout"/>
                         <span class="input-group-addon">seconds</span>
                     </div>
                 </div>
