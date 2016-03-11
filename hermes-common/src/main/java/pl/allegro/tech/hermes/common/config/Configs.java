@@ -152,6 +152,8 @@ public enum Configs {
     SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE("schema.cache.reload.thread.pool.size", 2),
     SCHEMA_REPOSITORY_TYPE("schema.repository.type", "zookeeper"),
     SCHEMA_REPOSITORY_SERVER_URL("schema.repository.serverUrl", "http://localhost:2876/schema-repo/"),
+    SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS("schema.repository.http.read.timeout.ms", 2000),
+    SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS("schema.repository.http.connect.timeout.ms", 2000),
 
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 

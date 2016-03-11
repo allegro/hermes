@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.infrastructure.schema.repo;
 
 import org.glassfish.hk2.api.Factory;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
@@ -19,7 +21,11 @@ public class SchemaRepoClientFactory implements Factory<SchemaRepoClient> {
 
     @Override
     public SchemaRepoClient provide() {
-        return new JerseySchemaRepoClient(ClientBuilder.newClient(), URI.create(configFactory.getStringProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL)));
+        ClientConfig config = new ClientConfig()
+                .property(ClientProperties.READ_TIMEOUT, configFactory.getIntProperty(Configs.SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS))
+                .property(ClientProperties.CONNECT_TIMEOUT, configFactory.getIntProperty(Configs.SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS));
+
+        return new JerseySchemaRepoClient(ClientBuilder.newClient(config), URI.create(configFactory.getStringProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL)));
     }
 
     @Override
