@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "ubuntu/vivid64"
+  config.vm.box = "ubuntu/trusty64"
   config.vm.network "private_network", ip: "10.10.10.10"
   config.vm.hostname = "hermes"
   config.vm.provider "virtualbox" do |vb|
@@ -44,10 +44,13 @@ Vagrant.configure(2) do |config|
         * Console:       http://10.10.10.10
         * Frontend:      http://10.10.10.10:8080
         * Management:    http://10.10.10.10:8090
+        * Graphite:      http://10.10.10.10:8082
 
    """
 
   config.vm.provision "shell", path: "vagrant_provisioning/init.sh"
+
+  config.vm.provision "puppet", manifests_path: "vagrant_provisioning", manifest_file: "graphite.pp", run: "always"
 
   config.vm.provision "shell", path: "vagrant_provisioning/start.sh", run: "always"
 
