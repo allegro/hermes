@@ -31,7 +31,19 @@ public class MessageReader implements ReadListener {
     private Consumer<IllegalStateException> onValidationError;
     private Consumer<Throwable> onOtherError;
 
-    public MessageReader(
+    static public void startReadingMessage(HttpServletRequest request,
+                                           Integer chunkSize,
+                                           TopicName topicName,
+                                           HermesMetrics hermesMetrics,
+                                           MessageState messageState,
+                                           Consumer<byte[]> onRead,
+                                           Consumer<IllegalStateException> onValidationError,
+                                           Consumer<Throwable> onOtherError) throws IOException {
+        new MessageReader(request, chunkSize, topicName, hermesMetrics, messageState, onRead, onValidationError,
+                onOtherError).startReading();
+    }
+
+    private MessageReader(
             HttpServletRequest request,
             Integer chunkSize,
             TopicName topicName,
@@ -50,10 +62,12 @@ public class MessageReader implements ReadListener {
         this.topicName = topicName;
         this.hermesMetrics = hermesMetrics;
         this.onRead = onRead;
+    }
 
+    private void startReading () {
         messageState.setState(MessageState.State.PARSING);
-        inputStream.setReadListener(this);
         initParsingTimers();
+        inputStream.setReadListener(this);
     }
 
     @Override
