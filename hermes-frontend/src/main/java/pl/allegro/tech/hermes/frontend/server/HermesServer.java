@@ -9,13 +9,10 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.domain.topic.schema.CachedSchemaSourceProvider;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
-import pl.allegro.tech.hermes.frontend.cache.topic.TopicCallback;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
@@ -44,7 +41,6 @@ public class HermesServer {
     private final TopicsCache topicsCache;
     private final PublishingServlet publishingServlet;
     private final HealthCheckService healthCheckService;
-    private final CachedSchemaSourceProvider cachedSchemaSource;
     private final int port;
     private final int sslPort;
     private final String host;
@@ -55,15 +51,13 @@ public class HermesServer {
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
             PublishingServlet publishingServlet,
-            HealthCheckService healthCheckService,
-            CachedSchemaSourceProvider cachedSchemaSource) {
+            HealthCheckService healthCheckService) {
 
         this.topicsCache = topicsCache;
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.publishingServlet = publishingServlet;
         this.healthCheckService = healthCheckService;
-        this.cachedSchemaSource = cachedSchemaSource;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
         this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
@@ -71,22 +65,7 @@ public class HermesServer {
     }
 
     public void start() {
-        topicsCache.start(Collections.singletonList(new TopicCallback() {
-            @Override
-            public void onTopicCreated(Topic topic) {
-                cachedSchemaSource.reload(topic);
-            }
-
-            @Override
-            public void onTopicRemoved(Topic topic) {
-
-            }
-
-            @Override
-            public void onTopicChanged(Topic topic) {
-                cachedSchemaSource.reload(topic);
-            }
-        }));
+        topicsCache.start(Collections.emptyList());
         configureServer().start();
     }
 

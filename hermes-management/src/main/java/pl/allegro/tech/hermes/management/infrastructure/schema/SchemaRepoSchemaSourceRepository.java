@@ -14,11 +14,16 @@ public class SchemaRepoSchemaSourceRepository extends SchemaRepoSchemaSourceProv
 
     @Override
     public void save(SchemaSource schemaSource, Topic topic) {
+        String subjectName = registerSubjectIfNotRegistered(topic);
+        schemaRepoClient.registerSchema(subjectName, schemaSource.value());
+    }
+
+    private String registerSubjectIfNotRegistered(Topic topic) {
         String subjectName = topic.getQualifiedName();
         if (!schemaRepoClient.isSubjectRegistered(subjectName)) {
             schemaRepoClient.registerSubject(subjectName);
         }
-        schemaRepoClient.registerSchema(subjectName, schemaSource.value());
+        return subjectName;
     }
 
     @Override

@@ -29,6 +29,8 @@ public class TopicBuilder {
 
     private boolean migratedFromJsonType = false;
 
+    private boolean schemaVersionAwareSerialization = false;
+
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
     }
@@ -48,7 +50,7 @@ public class TopicBuilder {
     public Topic build() {
         return new Topic(
                 name, description, retentionTime, messageSchema, validationEnabled, validationDryRunEnabled, migratedFromJsonType,
-                ack, trackingEnabled, contentType, jsonToAvroDryRunEnabled
+                ack, trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerialization
         );
     }
 
@@ -104,6 +106,11 @@ public class TopicBuilder {
 
     public TopicBuilder migratedFromJsonType() {
         this.migratedFromJsonType = true;
+        return this;
+    }
+
+    public TopicBuilder withSchemaVersionAwareSerialization() {
+        this.schemaVersionAwareSerialization = true;
         return this;
     }
 }

@@ -4,7 +4,7 @@ module="$1"
 
 echo "Building Hermes module [$module]..."
 
-/vagrant/gradlew -q -p /vagrant/hermes-${module} distZip -Pdistribution
+/vagrant/gradlew -q -p /vagrant/hermes-${module} clean distZip -Pdistribution
 
 echo -n "Stopping module [$module]..."
 supervisorctl stop hermes-${module} || true

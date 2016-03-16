@@ -1,31 +1,22 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
-public class Message {
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
-    private final String id;
-    private final byte[] data;
-    private final long timestamp;
+import java.util.Optional;
 
-    public Message(String id, byte[] data, long timestamp) {
-        this.id = id;
-        this.data = data;
-        this.timestamp = timestamp;
+public interface Message {
+    String getId();
+
+    byte[] getData();
+
+    long getTimestamp();
+
+    ContentType getContentType();
+
+    <T> Optional<CompiledSchema<T>> getCompiledSchema();
+
+    default <T> T getSchema() {
+        return this.<T>getCompiledSchema().get().getSchema();
     }
-
-    public String getId() {
-        return id;
-    }
-
-    public byte[] getData() {
-        return data;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public Message withDataReplaced(byte[] newData) {
-        return new Message(id, newData, timestamp);
-    }
-
 }

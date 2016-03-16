@@ -40,23 +40,19 @@ public class SubscriptionService {
 
     private final ApiPreconditions preconditions;
 
-    private final AdminTool adminTool;
-
     @Autowired
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
                                TopicService topicService,
                                SubscriptionMetricsRepository metricsRepository,
                                UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
-                               ApiPreconditions apiPreconditions,
-                               AdminTool adminTool) {
+                               ApiPreconditions apiPreconditions) {
         this.subscriptionRepository = subscriptionRepository;
         this.topicService = topicService;
         this.metricsRepository = metricsRepository;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
         this.preconditions = apiPreconditions;
-        this.adminTool = adminTool;
     }
 
     public List<String> listSubscriptionNames(TopicName topicName) {
@@ -101,10 +97,6 @@ public class SubscriptionService {
         if (!retrieved.equals(updated)) {
             subscriptionRepository.updateSubscription(updated);
         }
-
-        if (isConsumerRestartNeeded(retrieved, updated)) {
-            adminTool.restartConsumer(new SubscriptionName(updated.getName(), updated.getTopicName()));
-        }
     }
 
     public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state) {
@@ -130,12 +122,6 @@ public class SubscriptionService {
 
     public List<MessageTrace> getMessageStatus(String qualifiedTopicName, String subscriptionName, String messageId) {
         return logRepository.getMessageStatus(qualifiedTopicName, subscriptionName, messageId);
-    }
-
-    private boolean isConsumerRestartNeeded(Subscription retrieved, Subscription subscription) {
-        return !retrieved.getEndpoint().equals(subscription.getEndpoint()) ||
-               !retrieved.getContentType().equals(subscription.getContentType()) ||
-               !retrieved.getDeliveryType().equals(subscription.getDeliveryType());
     }
 
     public List<Subscription> querySubscription(Query<Subscription> query) {

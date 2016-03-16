@@ -43,9 +43,12 @@ public class Topic {
 
     private boolean migratedFromJsonType = false;
 
+    private boolean schemaVersionAwareSerializationEnabled = false;
+
     public Topic(TopicName name, String description, RetentionTime retentionTime, String messageSchema,
                  boolean validationEnabled, boolean validationDryRunEnabled, boolean migratedFromJsonType,
-                 Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled) {
+                 Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
+                 boolean schemaVersionAwareSerializationEnabled) {
         this.name = name;
         this.description = description;
         this.retentionTime = retentionTime;
@@ -57,6 +60,7 @@ public class Topic {
         this.migratedFromJsonType = migratedFromJsonType;
         this.contentType = contentType;
         this.jsonToAvroDryRunEnabled = jsonToAvroDryRunEnabled;
+        this.schemaVersionAwareSerializationEnabled = schemaVersionAwareSerializationEnabled;
     }
 
     @JsonCreator
@@ -71,9 +75,11 @@ public class Topic {
             @JsonProperty("ack") Ack ack,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
+            @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType) {
         this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, messageSchema, validationEnabled,
-                validationDryRunEnabled, migratedFromJsonType, ack, trackingEnabled, contentType, jsonToAvroDryRunEnabled);
+                validationDryRunEnabled, migratedFromJsonType, ack, trackingEnabled, contentType, jsonToAvroDryRunEnabled,
+                schemaVersionAwareSerializationEnabled);
     }
 
     public RetentionTime getRetentionTime() {
@@ -83,7 +89,7 @@ public class Topic {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, retentionTime, messageSchema, validationEnabled, validationDryRunEnabled,
-                migratedFromJsonType, trackingEnabled, ack, contentType, jsonToAvroDryRunEnabled);
+                migratedFromJsonType, trackingEnabled, ack, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled);
     }
 
     @Override
@@ -105,6 +111,7 @@ public class Topic {
                 && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
+                && Objects.equals(this.schemaVersionAwareSerializationEnabled, other.schemaVersionAwareSerializationEnabled)
                 && Objects.equals(this.ack, other.ack)
                 && Objects.equals(this.contentType, other.contentType);
     }
@@ -170,5 +177,9 @@ public class Topic {
     @JsonIgnore
     public boolean isReplicationConfirmRequired() {
         return getAck() == Ack.ALL;
+    }
+
+    public boolean isSchemaVersionAwareSerializationEnabled() {
+        return schemaVersionAwareSerializationEnabled;
     }
 }

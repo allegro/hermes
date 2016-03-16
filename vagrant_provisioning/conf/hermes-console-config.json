@@ -3,7 +3,7 @@
     "title": "hermes vagrant console"
   },
   "dashboard": {
-    "metrics": "",
+    "metrics": "http://PUBLIC_IP:8082",
     "docs": "http://hermes-pubsub.rtfd.org"
   },
   "hermes": {
@@ -17,7 +17,7 @@
   "metrics": {
     "type": "graphite",
     "graphite": {
-      "url": "localhost:8091",
+      "url": "localhost:8082",
       "prefix": "hermes"
     }
   },

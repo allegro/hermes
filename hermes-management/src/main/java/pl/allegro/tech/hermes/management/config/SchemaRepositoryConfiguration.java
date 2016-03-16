@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.management.config;
 
-import org.apache.curator.framework.CuratorFramework;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jsonschema.main.JsonSchema;
 import org.apache.avro.Schema;
+import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,25 +11,19 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.domain.topic.schema.CachedSchemaSourceProvider;
-import pl.allegro.tech.hermes.domain.topic.schema.DefaultCachedSchemaSourceProvider;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.domain.topic.schema.*;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.JerseySchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceRepository;
-import pl.allegro.tech.hermes.management.infrastructure.schema.TopicFieldSchemaSourceRepository;
 import pl.allegro.tech.hermes.management.infrastructure.schema.SchemaRepoSchemaSourceRepository;
+import pl.allegro.tech.hermes.management.infrastructure.schema.TopicFieldSchemaSourceRepository;
 import pl.allegro.tech.hermes.management.infrastructure.schema.ZookeeperSchemaSourceRepository;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.net.URI;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Configuration
 @EnableConfigurationProperties({SchemaRepositoryProperties.class, SchemaCacheProperties.class})
@@ -36,7 +31,7 @@ public class SchemaRepositoryConfiguration {
 
     @Autowired
     SchemaCacheProperties schemaCacheProperties;
-    
+
     @Autowired
     @Lazy
     TopicService topicService;
@@ -75,25 +70,19 @@ public class SchemaRepositoryConfiguration {
     }
 
     @Bean
-    public CachedSchemaSourceProvider cachedSchemaSourceProvider(SchemaSourceRepository schemaSourceRepository) {
-        return new DefaultCachedSchemaSourceProvider(
-                schemaCacheProperties.getRefreshAfterWriteMinutes(),
-                schemaCacheProperties.getExpireAfterWriteMinutes(),
-                createSchemaSourceReloadExecutorService(schemaCacheProperties.getPoolSize()),
-                schemaSourceRepository
-        );
+    public SchemaSourceProvider schemaSourceProvider(SchemaSourceRepository schemaSourceRepository) {
+        return schemaSourceRepository;
     }
 
     @Bean
-    public SchemaRepository<Schema> avroSchemaRepository(CachedSchemaSourceProvider cachedSchemaSourceProvider) {
-        return new SchemaRepository<>(
-                ContentType.AVRO,
-                cachedSchemaSourceProvider,
-                source -> new Schema.Parser().parse(source.value()));
-    }
+    public SchemaRepository aggregateSchemaRepository(SchemaSourceProvider schemaSourceProvider, ObjectMapper objectMapper) {
+        SchemaVersionsRepository versionsRepository = new SimpleSchemaVersionsRepository(schemaSourceProvider);
+        CompiledSchemaRepository<Schema> avroSchemaRepository = new DirectCompiledSchemaRepository<>(
+                schemaSourceProvider, SchemaCompilersFactory.avroSchemaCompiler());
+        CompiledSchemaRepository<JsonSchema> jsonSchemaRepository = new DirectCompiledSchemaRepository<>(
+                schemaSourceProvider, SchemaCompilersFactory.jsonSchemaCompiler(objectMapper));
 
-    private ExecutorService createSchemaSourceReloadExecutorService(int poolSize) {
-        return Executors.newFixedThreadPool(poolSize, new ThreadFactoryBuilder().setNameFormat("schema-source-reloader-%d").build());
+        return new SchemaRepository(versionsRepository, avroSchemaRepository, jsonSchemaRepository);
     }
 
 }
