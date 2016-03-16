@@ -61,7 +61,7 @@ public class ConsumerMessageSenderFactory {
                 clock, trackers, configFactory.getStringProperty(KAFKA_CLUSTER_NAME));
 
         return new ConsumerMessageSender(subscription,
-                messageSenderFactory.create(subscription),
+                messageSenderFactory,
                 successHandler,
                 errorHandler,
                 consumerRateLimiter,

@@ -14,7 +14,6 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.AvroToJsonMessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
-import pl.allegro.tech.hermes.consumers.consumer.converter.schema.AvroSchemaRepositoryMetadataAware;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
@@ -93,7 +92,6 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(NoOperationMessageConverter.class);
         bindSingleton(AvroToJsonMessageConverter.class);
         bindSingleton(MessageConverterResolver.class);
-        bindSingleton(AvroSchemaRepositoryMetadataAware.class);
         bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {});
         bind(DefaultHttpMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Request>>() {});
 

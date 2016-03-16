@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
-import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.message.serialization.SchemaAwarePayload;
+import pl.allegro.tech.hermes.common.message.serialization.SchemaAwareSerDe;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
@@ -12,14 +13,14 @@ import java.nio.charset.Charset;
 
 public class KafkaSingleMessageReader implements SingleMessageReader {
     private final KafkaRawMessageReader kafkaRawMessageReader;
-    private final SchemaRepository<Schema> avroSchemaRepository;
-    private JsonAvroConverter converter;
+    private final SchemaRepository schemaRepository;
+    private final JsonAvroConverter converter;
 
     public KafkaSingleMessageReader(KafkaRawMessageReader kafkaRawMessageReader,
-                                    SchemaRepository<Schema> avroSchemaRepository,
+                                    SchemaRepository schemaRepository,
                                     JsonAvroConverter converter) {
         this.kafkaRawMessageReader = kafkaRawMessageReader;
-        this.avroSchemaRepository = avroSchemaRepository;
+        this.schemaRepository = schemaRepository;
         this.converter = converter;
     }
 
@@ -27,12 +28,18 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
     public String readMessageAsJson(Topic topic, KafkaTopic kafkaTopic, int partition, long offset) {
         byte[] bytes = kafkaRawMessageReader.readMessage(kafkaTopic, partition, offset);
         if (topic.getContentType() == ContentType.AVRO) {
-            bytes = convertAvroToJson(avroSchemaRepository.getSchema(topic), bytes);
+            bytes = convertAvroToJson(topic, bytes);
         }
         return new String(bytes, Charset.forName("UTF-8"));
     }
 
-    private byte[] convertAvroToJson(Schema schema, byte[] bytes) {
-        return converter.convertToJson(bytes, schema);
+    private byte[] convertAvroToJson(Topic topic, byte[] bytes) {
+        if (topic.isSchemaVersionAwareSerializationEnabled()) {
+            SchemaAwarePayload payload = SchemaAwareSerDe.deserialize(bytes);
+            return converter.convertToJson(payload.getPayload(), schemaRepository.getAvroSchema(topic, payload.getSchemaVersion()).getSchema());
+        }
+
+        return converter.convertToJson(bytes, schemaRepository.getAvroSchema(topic).getSchema());
     }
+
 }

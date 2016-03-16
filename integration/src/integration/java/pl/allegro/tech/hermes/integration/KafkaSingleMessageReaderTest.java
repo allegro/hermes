@@ -84,6 +84,30 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldFetchSingleAvroMessageWithSchemaAwareSerialization() throws IOException {
+        // given
+        Topic topic = topic("avro.fetchSchemaAwareSerialization")
+                .withValidation(true)
+                .withMessageSchema(avroUser.getSchemaAsString())
+                .withSchemaVersionAwareSerialization()
+                .withContentType(AVRO).build();
+        operations.buildTopic(topic);
+        wait.untilTopicDetailsAreCreated(topic.getName());
+
+        Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
+        HermesAssertions.assertThat(response).hasStatus(CREATED);
+
+        // when
+        List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
+
+        // then
+        assertThat(previews).hasSize(1);
+        assertThatJson(previews.get(0))
+                .when(Option.IGNORING_EXTRA_FIELDS)
+                .isEqualTo(avroUser.asJson());
+    }
+
+    @Test
     public void shouldReturnNotFoundErrorForNonExistingOffset() {
         // given
         Topic topic = operations.buildTopic("kafkaPreviewTestGroup", "offsetTestTopic");

@@ -4,8 +4,6 @@ import org.I0Itec.zkclient.ZkClient;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepositoryListFactory;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.zookeeper.ZookeeperTopicsCacheFactory;
@@ -16,9 +14,9 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.publishing.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.MessagePublisher;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
-import pl.allegro.tech.hermes.frontend.publishing.metadata.MetadataAddingMessageConverter;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.AvroTopicMessageValidator;
@@ -64,10 +62,8 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageContentTypeEnforcer.class);
         bindSingleton(JsonTopicMessageValidator.class);
         bindSingleton(AvroTopicMessageValidator.class);
-        bindSingleton(MetadataAddingMessageConverter.class);
         bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {});
-        bindFactory(SchemaRepositoryListFactory.class).in(Singleton.class).to(new TypeLiteral<List<SchemaRepository>>() {});
-
+        bindSingleton(MessageFactory.class);
         bindSingleton(BackupMessagesLoader.class);
         bindSingleton(PersistentBufferExtension.class);
     }

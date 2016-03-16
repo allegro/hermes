@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
+import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
@@ -36,7 +38,6 @@ public class MessageBatchReceiver {
     private final Queue<Message> inflight;
     private final Topic topic;
     private boolean receiving = true;
-
 
     public MessageBatchReceiver(MessageReceiver receiver,
                                 MessageBatchFactory batchFactory,
@@ -93,7 +94,14 @@ public class MessageBatchReceiver {
     }
 
     private byte[] wrap(Subscription subscription, Message next) {
-        return messageContentWrapper.wrap(next.getData(), next.getId(), next.getPublishingTimestamp(), topic, subscription.getContentType(), next.getExternalMetadata());
+        switch (subscription.getContentType()) {
+            case AVRO:
+                return messageContentWrapper.wrapAvro(next.getData(), next.getId(), next.getPublishingTimestamp(), topic, next.<Schema>getSchema().get(), next.getExternalMetadata());
+            case JSON:
+                return messageContentWrapper.wrapJson(next.getData(), next.getId(), next.getPublishingTimestamp(), next.getExternalMetadata());
+            default:
+                throw new UnsupportedContentTypeException(subscription);
+        }
     }
 
     private MessageMetadata messageMetadata(Subscription subscription, String batchId, Message next) {

@@ -12,9 +12,18 @@ public interface SchemaEndpoint {
     @Produces(APPLICATION_JSON)
     Response get(@PathParam("topicName") String qualifiedTopicName);
 
+    @GET
+    @Path("{version}")
+    @Produces(APPLICATION_JSON)
+    Response get(@PathParam("topicName") String qualifiedTopicName, @PathParam("version") int version);
+
     @POST
     @Consumes(APPLICATION_JSON)
     Response save(@PathParam("topicName") String qualifiedTopicName, String schema);
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    Response save(@PathParam("topicName") String qualifiedTopicName, @QueryParam(value = "validate") boolean validate, String schema);
 
     @DELETE
     Response delete(@PathParam("topicName") String qualifiedTopicName);

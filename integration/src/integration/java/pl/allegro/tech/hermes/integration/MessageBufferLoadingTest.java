@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
 import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
-import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
@@ -134,14 +134,14 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         File backup = new File(tempDir.getAbsoluteFile(), "messages.dat");
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(backup);
-        MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null, null);
+        MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null);
 
         String messageId = randomUUID().toString();
         long timestamp = now().toEpochMilli();
-        byte[] content = wrapper.wrap("message".getBytes(defaultCharset()),
-                messageId, timestamp, topic, Collections.emptyMap());
+        byte[] content = wrapper.wrapJson("message".getBytes(defaultCharset()),
+                messageId, timestamp, Collections.emptyMap());
 
-        messageRepository.save(new Message(messageId, content, timestamp), topic);
+        messageRepository.save(new JsonMessage(messageId, content, timestamp), topic);
         messageRepository.close();
 
         return backup;

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "2",
+    "schema": "{\n  \"namespace\": \"pl.allegro.tech.hermes\",\n  \"type\": \"record\",\n  \"name\": \"monitor\",\n  \"doc\": \"Monitor entity\",\n  \"fields\": [\n    {\n      \"name\": \"id\",\n      \"type\": \"int\",\n      \"doc\": \"Message id\"\n    },\n    {\n      \"name\": \"created\",\n      \"type\": \"string\",\n      \"doc\": \"Message creation date and time\"\n    },\n    {\n      \"name\": \"__metadata\",\n      \"type\": [\n        \"null\",\n        {\n          \"type\": \"map\",\n          \"values\": \"string\"\n        }\n      ],\n      \"default\": null,\n      \"doc\": \"Used in Hermes internals to propagate metadata like hermes-id\"\n    }\n  ]\n}"
+  },
+  {
+    "id": "1",
+    "schema": "{\n  \"namespace\": \"pl.allegro.tech.hermes\",\n  \"type\": \"record\",\n  \"name\": \"Monitor\",\n  \"fields\": [\n    {\n      \"name\": \"id\",\n      \"type\": \"int\"\n    },\n    {\n      \"name\": \"created\",\n      \"type\": \"string\"\n    },\n    {\n      \"name\": \"__metadata\",\n      \"type\": [\n        \"null\",\n        {\n          \"type\": \"map\",\n          \"values\": \"string\"\n        }\n      ],\n      \"default\": null\n    }\n  ]\n}"
+  },
+  {
+    "id": "0",
+    "schema": "{\n  \"namespace\": \"pl.allegro.tech.hermes\",\n  \"type\": \"record\",\n  \"name\": \"Monitor\",\n  \"fields\": [\n    {\"name\": \"id\",  \"type\": \"int\"},\n    {\"name\": \"created\",  \"type\": \"string\"},\n    {\n      \"name\": \"__metadata\",\n      \"type\": [\"null\", {\"type\": \"map\", \"values\": \"string\"}],\n      \"default\": null\n    }\n  ]\n}"
+  }
+]

@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.BrokerListenersPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
@@ -67,7 +68,7 @@ public class BackupMessagesLoader {
         int sentCounter = 0;
         int discardedCounter = 0;
         for (BackupMessage backupMessage : messages) {
-            Message message = new Message(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
+            Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
             Optional<Topic> topic = loadTopic(fromQualifiedName(backupMessage.getQualifiedTopicName()));
             if (topic.isPresent() && isNotStale(backupMessage)) {
                 sentCounter++;

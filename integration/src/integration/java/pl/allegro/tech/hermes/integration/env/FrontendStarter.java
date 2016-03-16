@@ -18,6 +18,9 @@ import pl.allegro.tech.hermes.tracker.mongo.frontend.MongoLogRepository;
 import static com.jayway.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_TYPE;
+import static pl.allegro.tech.hermes.domain.topic.schema.SchemaRepositoryType.SCHEMA_REPO;
 
 public class FrontendStarter implements Starter<HermesFrontend> {
 
@@ -33,6 +36,8 @@ public class FrontendStarter implements Starter<HermesFrontend> {
         this.port = port;
         configFactory = new MutableConfigFactory();
         configFactory.overrideProperty(FRONTEND_PORT, port);
+        configFactory.overrideProperty(SCHEMA_REPOSITORY_TYPE, SCHEMA_REPO.name());
+        configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, false);
     }
 
     public FrontendStarter(int port, boolean sslEnabled) {
