@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.Query;
@@ -139,6 +140,15 @@ public class SubscriptionsEndpoint {
     public SubscriptionMetrics getMetrics(@PathParam("topicName") String qualifiedTopicName,
                                           @PathParam("subscriptionName") String subscriptionName) {
         return subscriptionService.getSubscriptionMetrics(fromQualifiedName(qualifiedTopicName), subscriptionName);
+    }
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/{subscriptionName}/health")
+    @ApiOperation(value = "Get subscription health", response = SubscriptionHealth.class, httpMethod = HttpMethod.GET)
+    public SubscriptionHealth getHealth(@PathParam("topicName") String qualifiedTopicName,
+                                        @PathParam("subscriptionName") String subscriptionName) {
+        return subscriptionService.getSubscriptionHealth(fromQualifiedName(qualifiedTopicName), subscriptionName);
     }
 
     @PUT

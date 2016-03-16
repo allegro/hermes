@@ -51,6 +51,9 @@ public class Subscription {
     private String contact;
 
     @NotNull
+    private final MonitoringDetails monitoringDetails;
+
+    @NotNull
     private DeliveryType deliveryType = DeliveryType.SERIAL;
 
     public enum State {
@@ -58,15 +61,17 @@ public class Subscription {
     }
 
     private Subscription(TopicName topicName,
-                        String name,
-                        EndpointAddress endpoint,
-                        State state,
-                        String description,
-                        Object subscriptionPolicy,
-                        boolean trackingEnabled,
-                        String supportTeam,
-                        String contact,
-                        ContentType contentType, DeliveryType deliveryType) {
+                         String name,
+                         EndpointAddress endpoint,
+                         State state,
+                         String description,
+                         Object subscriptionPolicy,
+                         boolean trackingEnabled,
+                         String supportTeam,
+                         String contact,
+                         MonitoringDetails monitoringDetails,
+                         ContentType contentType,
+                         DeliveryType deliveryType) {
         this.topicName = topicName;
         this.name = name;
         this.endpoint = endpoint;
@@ -75,6 +80,7 @@ public class Subscription {
         this.trackingEnabled = trackingEnabled;
         this.supportTeam = supportTeam;
         this.contact = contact;
+        this.monitoringDetails = monitoringDetails == null ? MonitoringDetails.EMPTY : monitoringDetails;
         this.contentType = contentType == null ? ContentType.JSON : contentType;
         this.deliveryType = deliveryType;
         this.batchSubscriptionPolicy = this.deliveryType == DeliveryType.BATCH ? (BatchSubscriptionPolicy) subscriptionPolicy : null;
@@ -82,31 +88,33 @@ public class Subscription {
     }
 
     public static Subscription createSerialSubscription(TopicName topicName,
-                        String name,
-                        EndpointAddress endpoint,
-                        State state,
-                        String description,
-                        SubscriptionPolicy subscriptionPolicy,
-                        boolean trackingEnabled,
-                        String supportTeam,
-                        String contact,
-                        ContentType contentType) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, contentType, DeliveryType.SERIAL);
-    }
-
-    public static Subscription createBatchSubscription(TopicName topicName,
                                                         String name,
                                                         EndpointAddress endpoint,
                                                         State state,
                                                         String description,
-                                                        BatchSubscriptionPolicy subscriptionPolicy,
+                                                        SubscriptionPolicy subscriptionPolicy,
                                                         boolean trackingEnabled,
                                                         String supportTeam,
                                                         String contact,
+                                                        MonitoringDetails monitoringDetails,
                                                         ContentType contentType) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, contentType, DeliveryType.BATCH);
+                contact, monitoringDetails, contentType, DeliveryType.SERIAL);
+    }
+
+    public static Subscription createBatchSubscription(TopicName topicName,
+                                                       String name,
+                                                       EndpointAddress endpoint,
+                                                       State state,
+                                                       String description,
+                                                       BatchSubscriptionPolicy subscriptionPolicy,
+                                                       boolean trackingEnabled,
+                                                       String supportTeam,
+                                                       String contact,
+                                                       MonitoringDetails monitoringDetails,
+                                                       ContentType contentType) {
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
+                contact, monitoringDetails, contentType, DeliveryType.BATCH);
     }
 
     @JsonCreator
@@ -119,6 +127,7 @@ public class Subscription {
                                       @JsonProperty("trackingEnabled") boolean trackingEnabled,
                                       @JsonProperty("supportTeam") String supportTeam,
                                       @JsonProperty("contact") String contact,
+                                      @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
                                       @JsonProperty("contentType") ContentType contentType,
                                       @JsonProperty("deliveryType") DeliveryType deliveryType) {
         DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
@@ -135,6 +144,7 @@ public class Subscription {
                 trackingEnabled,
                 supportTeam,
                 contact,
+                monitoringDetails,
                 contentType,
                 validDeliveryType
         );
@@ -142,7 +152,7 @@ public class Subscription {
 
     @Override
     public int hashCode() {
-        return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy, contentType);
+        return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy, trackingEnabled, supportTeam, contact, monitoringDetails, contentType);
     }
 
     @Override
@@ -164,6 +174,7 @@ public class Subscription {
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.supportTeam, other.supportTeam)
                 && Objects.equals(this.contact, other.contact)
+                && Objects.equals(this.monitoringDetails, other.monitoringDetails)
                 && Objects.equals(this.contentType, other.contentType);
     }
 
@@ -231,6 +242,10 @@ public class Subscription {
         return contact;
     }
 
+    public MonitoringDetails getMonitoringDetails() {
+        return monitoringDetails;
+    }
+
     public ContentType getContentType() {
         return contentType;
     }
@@ -271,6 +286,7 @@ public class Subscription {
                     trackingEnabled,
                     supportTeam,
                     contact,
+                    monitoringDetails,
                     contentType,
                     deliveryType
             );

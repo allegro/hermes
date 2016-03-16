@@ -22,6 +22,10 @@ public class GraphiteEndpoint implements EnvironmentAware {
             + "{\"target\": \"sumSeries(stats.tech.hermes.consumer.*.meter.SUBSCRIPTION.m1_rate)\", \"datapoints\": [[RATE, TIMESTAMP]]}"
             + "]";
 
+    private static final String TOPIC_URL_PATTERN = "/.*sumSeries\\(stats.tech.hermes\\.(consumer|producer)\\.\\*\\.meter\\.[^\\.]*\\.[^\\.]*\\.m1_rate\\).*";
+
+    private static final String SUBSCRIPTION_URL_PATTERN = "/.*sumSeries\\(stats.tech.hermes\\.consumer\\.\\*\\.meter\\.[^\\.]*\\.[^\\.]*\\.[^\\.]*\\.m1_rate\\).*";
+
     private final WireMock graphiteListener;
 
     public GraphiteEndpoint(WireMockServer graphiteMock) {
@@ -33,7 +37,7 @@ public class GraphiteEndpoint implements EnvironmentAware {
                 .replaceAll("RATE", Integer.toString(rate))
                 .replaceAll("DELIVERY", Integer.toString(deliveryRate))
                 .replaceAll("TIMESTAMP", TIMESTAMP);
-        graphiteListener.register(get(urlMatching("/.*"))
+        graphiteListener.register(get(urlMatching(TOPIC_URL_PATTERN))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -44,11 +48,20 @@ public class GraphiteEndpoint implements EnvironmentAware {
         String response = SUBSCRIPTION_RESPONSE.replaceAll("SUBSCRIPTION", group + "." + topic + "." + subscription)
                 .replaceAll("RATE", Integer.toString(rate))
                 .replaceAll("TIMESTAMP", TIMESTAMP);
-        graphiteListener.register(get(urlMatching("/.*"))
+        graphiteListener.register(get(urlMatching(SUBSCRIPTION_URL_PATTERN))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody(response)));
+    }
+
+    public void returnServerErrorForAllTopics() {
+        graphiteListener.register(get(urlMatching(TOPIC_URL_PATTERN))
+                .willReturn(aResponse()
+                        .withStatus(500)
+                        .withHeader("Content-Type", "application/json")
+                )
+        );
     }
 
 }

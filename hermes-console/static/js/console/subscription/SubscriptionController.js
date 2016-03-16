@@ -22,13 +22,12 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
             initRetransmissionCalendar(topic.topic.retentionTime.duration);
         });
 
-        $q.all([
-            subscriptionMetrics.metrics(topicName, subscriptionName),
-            topicMetrics.metrics(topicName)
-        ])
-        .then(function(data) {
-            $scope.metrics = data[0];
-            $scope.health = subscriptionHealth.healthStatus($scope.subscription, data[1], data[0]);
+        subscriptionMetrics.metrics(topicName, subscriptionName).then(function(metrics) {
+            $scope.metrics = metrics;
+        });
+
+        subscriptionHealth.health(topicName, subscriptionName).then(function(health) {
+            $scope.health = health;
         });
 
         subscriptionRepository.lastUndelivered(topicName, subscriptionName).$promise
@@ -229,6 +228,10 @@ subscriptions.factory('SubscriptionFactory', [function () {
                         messageTtl: 3600,
                         messageBackoff: 100,
                         rate: 1000
+                    },
+                    monitoringDetails: {
+                        severity: 'NON_IMPORTANT',
+                        reaction: ''
                     }
                 };
             }

@@ -148,6 +148,23 @@
                     </div>
                 </div>
             </div>
+
+            <div class="form-group">
+                <label for="monitoringSeverity" class="col-md-3 control-label">Monitoring severity</label>
+                <div class="col-md-9">
+                    <select required class="form-control" id="monitoringSeverity" name="monitoringSeverity" ng-model="subscription.monitoringDetails.severity">
+                        <option value="NON_IMPORTANT">Non-important</option>
+                        <option value="IMPORTANT">Important</option>
+                        <option value="CRITICAL">Critical</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group {{subscriptionForm.monitoringReaction.$valid ? '' : 'has-error'}}">
+                <label for="monitoringReaction" class="col-md-3 control-label">Monitoring reaction</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="monitoringReaction" name="monitoringReaction" placeholder="information for monitoring how to react when the subscription becomes unhealthy (e.g. team name or Pager Duty ID)" ng-model="subscription.monitoringDetails.reaction"/>
+                </div>
+            </div>
         </form>
     </div>
     <div class="modal-footer">
