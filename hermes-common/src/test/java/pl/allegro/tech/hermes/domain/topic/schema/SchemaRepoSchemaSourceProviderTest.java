@@ -26,7 +26,7 @@ public class SchemaRepoSchemaSourceProviderTest {
     private static final Topic topic = topic("someGroup.someTopic").build();
 
     @Rule
-    public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(2876));
+    public final WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8888));
 
     @Test
     public void shouldReturnEmptyOptionalOnMissingSchema() {

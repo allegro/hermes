@@ -8,10 +8,15 @@ import java.io.UncheckedIOException;
 public class AvroUserSchemaLoader {
 
     public static Schema load() {
+        return load("/schema/user.avsc");
+    }
+
+    public static Schema load(String schemaResourceName) {
         try {
-            return new Schema.Parser().parse(AvroUserSchemaLoader.class.getResourceAsStream("/schema/user.avsc"));
+            return new Schema.Parser().parse(AvroUserSchemaLoader.class.getResourceAsStream(schemaResourceName));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
+
 }

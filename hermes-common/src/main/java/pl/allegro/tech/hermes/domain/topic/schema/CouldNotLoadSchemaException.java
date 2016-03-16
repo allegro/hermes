@@ -5,6 +5,10 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class CouldNotLoadSchemaException extends HermesException {
 
+    public CouldNotLoadSchemaException(Throwable cause) {
+        super(cause);
+    }
+
     public CouldNotLoadSchemaException(String message, Throwable cause) {
         super(message, cause);
     }

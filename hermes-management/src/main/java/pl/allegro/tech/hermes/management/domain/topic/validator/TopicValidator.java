@@ -1,21 +1,20 @@
 package pl.allegro.tech.hermes.management.domain.topic.validator;
 
-import org.apache.avro.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
 
 @Component
 public class TopicValidator {
 
-    private final SchemaRepository<Schema> avroSchemaRepository;
+    private final SchemaRepository schemaRepository;
 
     @Autowired
-    public TopicValidator(SchemaRepository<Schema> avroSchemaRepository) {
-        this.avroSchemaRepository = avroSchemaRepository;
+    public TopicValidator(SchemaRepository schemaRepository) {
+        this.schemaRepository = schemaRepository;
     }
 
     public void ensureCreatedTopicIsValid(Topic created) {
@@ -31,7 +30,7 @@ public class TopicValidator {
             }
 
             try {
-                avroSchemaRepository.getSchema(updated);
+                schemaRepository.getAvroSchema(updated);
             } catch (CouldNotLoadSchemaException e) {
                 throw new TopicValidationException("Avro schema not available, migration not permitted", e);
             }

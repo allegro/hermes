@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Message {
 
@@ -15,6 +17,7 @@ public class Message {
 
     private String topic;
     private ContentType contentType;
+    private Optional<CompiledSchema<Object>> schema;
 
     private long publishingTimestamp;
     private long readingTimestamp;
@@ -30,6 +33,7 @@ public class Message {
                    String topic,
                    byte[] content,
                    ContentType contentType,
+                   Optional<CompiledSchema<Object>> schema,
                    long publishingTimestamp,
                    long readingTimestamp,
                    PartitionOffset partitionOffset,
@@ -38,14 +42,11 @@ public class Message {
         this.data = content;
         this.topic = topic;
         this.contentType = contentType;
+        this.schema = schema;
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
         this.partitionOffset = partitionOffset;
         this.externalMetadata = externalMetadata;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public long getPublishingTimestamp() {
@@ -87,6 +88,15 @@ public class Message {
 
     public int getRetryCounter() {
         return retryCounter;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> Optional<CompiledSchema<T>> getSchema() {
+        return schema.map(schema -> (CompiledSchema<T>)schema);
+    }
+
+    public String getId() {
+        return id;
     }
 
     public Map<String, String> getExternalMetadata() {
@@ -138,12 +148,18 @@ public class Message {
             this.message.readingTimestamp = message.getReadingTimestamp();
             this.message.partitionOffset = message.partitionOffset;
             this.message.externalMetadata = message.getExternalMetadata();
+            this.message.schema = message.getSchema();
 
             return this;
         }
 
         public Builder withData(byte [] data) {
             this.message.data = data;
+            return this;
+        }
+
+        public Builder withSchema(CompiledSchema<Object> schema) {
+            this.message.schema = Optional.of(schema);
             return this;
         }
 
@@ -159,6 +175,11 @@ public class Message {
         public Builder withContentType(ContentType contentType) {
             this.message.contentType = contentType;
 
+            return this;
+        }
+
+        public Builder withNoSchema() {
+            this.message.schema = Optional.empty();
             return this;
         }
     }

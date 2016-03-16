@@ -110,19 +110,23 @@ public class RemoteServiceEndpoint {
     }
 
     public void waitUntilReceived(Consumer<String> requestBodyConsumer) {
-        waitUntilReceived(60, 1, requestBodyConsumer);
+        waitUntilRequestReceived(loggedRequest -> requestBodyConsumer.accept(loggedRequest.getBodyAsString()));
     }
 
-    public void waitUntilReceived(long seconds, int numberOfExpectedMessages, Consumer<String> requestBodyConsumer) {
+    public void waitUntilRequestReceived(Consumer<LoggedRequest> requestConsumer) {
+        waitUntilReceived(60, 1, requestConsumer);
+    }
+
+    public void waitUntilReceived(long seconds, int numberOfExpectedMessages, Consumer<LoggedRequest> requestBodyConsumer) {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
         await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() -> receivedRequests.size() == numberOfExpectedMessages);
-        receivedRequests.stream().map(LoggedRequest::getBodyAsString).forEach(requestBodyConsumer::accept);
+        receivedRequests.stream().forEach(requestBodyConsumer::accept);
     }
 
-    public void waitUntilReceived(Duration duration, int numberOfExpectedMessages, Consumer<String> requestBodyConsumer) {
+    public void waitUntilReceived(Duration duration, int numberOfExpectedMessages, Consumer<LoggedRequest> requestBodyConsumer) {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
         await().atMost(duration).until(() -> receivedRequests.size() == numberOfExpectedMessages);
-        receivedRequests.stream().map(LoggedRequest::getBodyAsString).forEach(requestBodyConsumer::accept);
+        receivedRequests.stream().forEach(requestBodyConsumer::accept);
     }
 
     public void waitUntilReceived() {

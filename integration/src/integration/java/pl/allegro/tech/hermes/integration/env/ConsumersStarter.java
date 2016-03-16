@@ -11,6 +11,10 @@ import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 
+import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_TYPE;
+import static pl.allegro.tech.hermes.domain.topic.schema.SchemaRepositoryType.SCHEMA_REPO;
+
 public class ConsumersStarter implements Starter<HermesConsumers> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumersStarter.class);
@@ -21,6 +25,8 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
     @Override
     public void start() throws Exception {
         LOGGER.info("Starting Hermes Consumers");
+        configFactory.overrideProperty(SCHEMA_REPOSITORY_TYPE, SCHEMA_REPO.name());
+        configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, false);
         consumers = HermesConsumers.consumers()
             .withKafkaTopicsNamesMapper(serviceLocator ->
                     new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())

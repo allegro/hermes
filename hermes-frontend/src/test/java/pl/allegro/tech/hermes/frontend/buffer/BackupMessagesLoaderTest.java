@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -80,10 +81,10 @@ public class BackupMessagesLoaderTest {
         backupMessagesLoader.loadMessages(messageRepository);
 
         //then
-        verify(producer, times(1)).send(any(Message.class), eq(topic), any(PublishingCallback.class));
+        verify(producer, times(1)).send(any(JsonMessage.class), eq(topic), any(PublishingCallback.class));
     }
 
     private Message messageOfAge(int ageHours) {
-        return new Message(UUID.randomUUID().toString(), "{'a':'b'}".getBytes(), now().minusHours(ageHours).toInstant(UTC).toEpochMilli());
+        return new JsonMessage(UUID.randomUUID().toString(), "{'a':'b'}".getBytes(), now().minusHours(ageHours).toInstant(UTC).toEpochMilli());
     }
 }

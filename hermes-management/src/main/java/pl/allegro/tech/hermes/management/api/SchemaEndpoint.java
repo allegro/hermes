@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.SchemaSource;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceService;
@@ -32,6 +33,17 @@ public class SchemaEndpoint {
     @ApiOperation(value = "Get schema", httpMethod = HttpMethod.GET)
     public Response get(@PathParam("topicName") String qualifiedTopicName) {
         Optional<SchemaSource> schemaSource = schemaSourceService.getSchemaSource(qualifiedTopicName);
+        return schemaSource.map(SchemaSource::value)
+                .map(v -> Response.ok(v).build())
+                .orElse(Response.noContent().build());
+    }
+
+    @GET
+    @Path("{version}")
+    @Produces(APPLICATION_JSON)
+    @ApiOperation(value = "Get schema", httpMethod = HttpMethod.GET)
+    public Response get(@PathParam("topicName") String qualifiedTopicName, @PathParam("version") int version) {
+        Optional<SchemaSource> schemaSource = schemaSourceService.getSchemaSource(qualifiedTopicName, SchemaVersion.valueOf(version));
         return schemaSource.map(SchemaSource::value)
                 .map(v -> Response.ok(v).build())
                 .orElse(Response.noContent().build());

@@ -262,10 +262,10 @@ public class PublishingTest extends IntegrationTest {
         //given
         String message = "{\"id\": 6}";
         operations.buildTopic(
-                topic("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
+                topic("schema.topic.validJson").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
 
         //when
-        Response response = publisher.publish("schema.topic", message);
+        Response response = publisher.publish("schema.topic.validJson", message);
 
         //then
         assertThat(response).hasStatus(CREATED);
@@ -276,10 +276,10 @@ public class PublishingTest extends IntegrationTest {
         // given
         String messageInvalidWithSchema = "{\"id\": \"shouldBeNumber\"}";
         operations.buildTopic(
-                topic("schema.topic").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
+                topic("schema.topic.invalidJson").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
 
         //when
-        Response response = publisher.publish("schema.topic", messageInvalidWithSchema);
+        Response response = publisher.publish("schema.topic.invalidJson", messageInvalidWithSchema);
 
         //then
         assertThat(response).hasStatus(BAD_REQUEST);
@@ -335,7 +335,7 @@ public class PublishingTest extends IntegrationTest {
         TraceContext trace = TraceContext.random();
 
         // and
-        Topic topic = operations.buildTopic("traceSendAndReceiveGroup", "topic");
+        Topic topic = operations.buildTopic("traceSendAndReceiveGroup", "topic2");
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         remoteService.expectMessages(message);
         Invocation.Builder request = createRequestWithTraceHeaders(FRONTEND_URL, topic.getQualifiedName(), trace);

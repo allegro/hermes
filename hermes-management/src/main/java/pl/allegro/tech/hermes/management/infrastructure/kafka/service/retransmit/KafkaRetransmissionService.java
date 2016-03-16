@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 
@@ -31,6 +32,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
     private final SubscriptionOffsetChangeIndicator subscriptionOffsetChange;
     private final SimpleConsumerPool simpleConsumerPool;
     private final KafkaNamesMapper kafkaNamesMapper;
+    private final SchemaRepository schemaRepository;
 
     public KafkaRetransmissionService(
             BrokerStorage brokerStorage,
@@ -38,7 +40,8 @@ public class KafkaRetransmissionService implements RetransmissionService {
             MessageContentWrapper messageContentWrapper,
             SubscriptionOffsetChangeIndicator subscriptionOffsetChange,
             SimpleConsumerPool simpleConsumerPool,
-            KafkaNamesMapper kafkaNamesMapper) {
+            KafkaNamesMapper kafkaNamesMapper,
+            SchemaRepository schemaRepository) {
 
         this.brokerStorage = brokerStorage;
         this.kafkaRawMessageReader = kafkaRawMessageReader;
@@ -46,11 +49,12 @@ public class KafkaRetransmissionService implements RetransmissionService {
         this.subscriptionOffsetChange = subscriptionOffsetChange;
         this.simpleConsumerPool = simpleConsumerPool;
         this.kafkaNamesMapper = kafkaNamesMapper;
+        this.schemaRepository = schemaRepository;
     }
 
     @Override
     public List<PartitionOffset> indicateOffsetChange(Topic topic, String subscription, String brokersClusterName,
-                                                            long timestamp, boolean dryRun) {
+                                                      long timestamp, boolean dryRun) {
 
         List<PartitionOffset> partitionOffsetList = new ArrayList<>();
         kafkaNamesMapper.toKafkaTopics(topic).forEach(k -> {
@@ -83,7 +87,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
 
     private long search(Topic topic, KafkaTopic kafkaTopic, int partition, Range<Long> offsetRange, long timestamp) {
         OffsetSearcher searcher = new OffsetSearcher(
-                new KafkaTimestampExtractor(topic, kafkaTopic, partition, kafkaRawMessageReader, messageContentWrapper)
+                new KafkaTimestampExtractor(topic, kafkaTopic, partition, kafkaRawMessageReader, messageContentWrapper, schemaRepository)
         );
         return searcher.search(offsetRange, timestamp);
     }

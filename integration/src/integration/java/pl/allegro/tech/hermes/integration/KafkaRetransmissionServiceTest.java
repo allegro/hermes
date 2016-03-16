@@ -30,6 +30,7 @@ import static java.util.stream.Collectors.summingLong;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.message.TestMessage.simpleMessages;
 
 public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment {
@@ -144,16 +145,16 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         assertThat(offsets.avroPartitionOffsets.stream().collect(summingLong(PartitionOffset::getOffset))).isEqualTo(0);
     }
 
-    private void sendAvroMessageOnTopic(Topic topic, TestMessage afterMigrationMessage) {
-        remoteService.expectMessages(afterMigrationMessage);
-        publisher.publish(topic.getQualifiedName(), afterMigrationMessage.withEmptyAvroMetadata().body());
+    private void sendAvroMessageOnTopic(Topic topic, TestMessage message) {
+        remoteService.expectMessages(message);
+        publisher.publish(topic.getQualifiedName(), message.withEmptyAvroMetadata().body());
         remoteService.waitUntilReceived(120);
         remoteService.reset();
     }
 
     private void sendMessagesOnTopic(Topic topic, int n) {
         remoteService.expectMessages(simpleMessages(n));
-        for (TestMessage message: simpleMessages(n)) {
+        for (TestMessage message : simpleMessages(n)) {
             publisher.publish(topic.getQualifiedName(), message.body());
         }
         remoteService.waitUntilReceived();

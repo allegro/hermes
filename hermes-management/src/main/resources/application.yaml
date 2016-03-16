@@ -22,3 +22,5 @@ server:
 
 management:
   context-path: /
+
+schema.repository.type: schema_repo
