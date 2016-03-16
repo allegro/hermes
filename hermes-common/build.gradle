@@ -20,6 +20,7 @@ dependencies {
 
     compile group: 'org.glassfish.hk2', name: 'hk2-locator', version: '2.3.0-b01'
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
+    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: versions.jersey
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: versions.jersey
 
     compile group: 'tech.allegro.schema.json2avro', name: 'converter', version: '0.2.2'

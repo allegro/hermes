@@ -1,17 +1,25 @@
 package pl.allegro.tech.hermes.infrastructure.schema.repo;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InvalidSchemaException;
 import pl.allegro.tech.hermes.common.exception.SchemaRepoException;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
@@ -67,14 +75,55 @@ public class JerseySchemaRepoClient implements SchemaRepoClient {
     @Override
     public Optional<String> getLatestSchema(String subject) {
         Response response = target.path(subject).path("latest").request().get();
+        return extractSchema(subject, response);
+    }
+
+    @Override
+    public Optional<String> getSchema(String subject, SchemaVersion version) {
+        Response response = target.path(subject).path("id").path(Integer.toString(version.value())).request().get();
+        return extractSchema(subject, response);
+    }
+
+    private Optional<String> extractSchema(String subject, Response response) {
         if (response.getStatus() == Response.Status.OK.getStatusCode()) {
             String schema = parseSchema(response.readEntity(String.class));
             return Optional.of(schema);
+        } else {
+            logger.error("Could not find schema for subject {}, reason: {}", subject, response.getStatus());
+            return Optional.empty();
         }
-        return Optional.empty();
+    }
+
+    public List<SchemaVersion> getSchemaVersions(String subject) {
+        Response response = target.path(subject).path("all").request().accept(MediaType.APPLICATION_JSON_TYPE).get();
+        if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+            List<SchemaWithId> schemasWithIds = Optional.ofNullable(response.readEntity(new GenericType<List<SchemaWithId>>() {})).orElseGet(Collections::emptyList);
+            return schemasWithIds.stream().map(SchemaWithId::getId).sorted(Comparator.reverseOrder()).map(SchemaVersion::valueOf).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
     private String parseSchema(String schemaResponse) {
         return schemaResponse.substring(1 + schemaResponse.indexOf('\t'));
+    }
+
+    private static class SchemaWithId {
+
+        private final int id;
+        private final String schema;
+
+        @JsonCreator
+        SchemaWithId(@JsonProperty("id") int id, @JsonProperty("schema") String schema) {
+            this.id = id;
+            this.schema = schema;
+        }
+
+        int getId() {
+            return id;
+        }
+
+        String getSchema() {
+            return schema;
+        }
     }
 }

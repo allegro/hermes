@@ -1,0 +1,16 @@
+{
+    "namespace": "pl.allegro",
+    "type": "record",
+    "name": "User",
+    "fields": [
+        {"name": "other", "type": "string"},
+        {
+              "name": "__metadata",
+              "type": ["null", {"type": "map", "values": "string"}],
+              "default": null
+        },
+        {"name": "name", "type": "string"},
+        {"name": "age",  "type": "int"},
+        {"name": "favoriteColor", "type": ["null", "string"]}
+    ]
+}

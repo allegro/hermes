@@ -1,9 +1,12 @@
 package pl.allegro.tech.hermes.management.domain.topic.validator
 
+import org.apache.avro.Schema
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
-import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository
+import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException
+import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import spock.lang.Specification
 
@@ -11,8 +14,8 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class TopicValidatorTest extends Specification {
 
-    def avroSchemaRepository = Stub(SchemaRepository)
-    def topicValidator = new TopicValidator(avroSchemaRepository)
+    def schemaRepository = Stub(SchemaRepository)
+    def topicValidator = new TopicValidator(schemaRepository)
 
     def "should not fail when creating valid topic"() {
         when:
@@ -78,7 +81,7 @@ class TopicValidatorTest extends Specification {
         given:
         def jsonTopic = topic('group.topic').withContentType(ContentType.JSON).build()
         def migratedTopic = topic('group.topic').withContentType(ContentType.AVRO).migratedFromJsonType().build()
-        avroSchemaRepository.getSchema(migratedTopic) >> { throw new CouldNotLoadSchemaException("", new RuntimeException()) }
+        schemaRepository.getAvroSchema(migratedTopic) >> { throw new CouldNotLoadSchemaException("", new RuntimeException()) }
 
         when:
         topicValidator.ensureUpdatedTopicIsValid(migratedTopic, jsonTopic)
@@ -91,7 +94,7 @@ class TopicValidatorTest extends Specification {
         given:
         def jsonTopic = topic('group.topic').withContentType(ContentType.JSON).build()
         def migratedTopic = topic('group.topic').withContentType(ContentType.AVRO).migratedFromJsonType().build()
-        avroSchemaRepository.getSchema(migratedTopic) >> new AvroUser().schema
+        schemaRepository.getAvroSchema(migratedTopic) >> new CompiledSchema<Schema>(new AvroUser().schema, SchemaVersion.valueOf(1))
 
         when:
         topicValidator.ensureUpdatedTopicIsValid(migratedTopic, jsonTopic)

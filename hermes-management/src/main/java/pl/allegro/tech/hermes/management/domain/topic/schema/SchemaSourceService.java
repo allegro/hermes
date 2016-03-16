@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidator;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
@@ -51,5 +52,10 @@ public class SchemaSourceService {
 
     private Topic findTopic(String qualifiedTopicName) {
         return topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
+    }
+
+    public Optional<SchemaSource> getSchemaSource(String qualifiedTopicName, SchemaVersion version) {
+        Topic topic = findTopic(qualifiedTopicName);
+        return schemaSourceRepository.get(topic, version);
     }
 }

@@ -40,4 +40,4 @@ spring:
 spring.groovy.template.check-template-location: false
 
 schema.repository:
-  type: topic_field
+  type: schema_repo

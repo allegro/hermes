@@ -10,6 +10,10 @@ public class SchemaSourceNotFoundException extends HermesException {
         super("No schema source for topic " + topic.getQualifiedName());
     }
 
+    public SchemaSourceNotFoundException(Topic topic, SchemaVersion schemaVersion) {
+        super("No schema source for topic " + topic.getQualifiedName() + " of version " + schemaVersion.value());
+    }
+
     @Override
     public ErrorCode getCode() {
         return ErrorCode.OTHER;

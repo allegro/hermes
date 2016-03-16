@@ -40,7 +40,7 @@ public class AvroMessageContentWrapperTest {
     public void shouldWrapAndUnwrapAvroMessageWithMetadata() throws IOException {
         // when
         byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema(), Collections.emptyMap());
-        UnwrappedMessageContent unwrappedMessageContent = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getSchema());
+        UnwrappedMessageContent unwrappedMessageContent = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getCompiledSchema());
 
         // then
         assertThat(unwrappedMessageContent.getMessageMetadata().getId()).isEqualTo(id);
@@ -68,7 +68,7 @@ public class AvroMessageContentWrapperTest {
         byte [] wrappedMessage = wrapContentWithoutMetadata(content, avroUser.getSchema());
 
         //when
-        UnwrappedMessageContent unwrappedMessage = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getSchema());
+        UnwrappedMessageContent unwrappedMessage = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getCompiledSchema());
 
         //then
         assertThat(unwrappedMessage.getMessageMetadata().getId()).isNotEmpty();

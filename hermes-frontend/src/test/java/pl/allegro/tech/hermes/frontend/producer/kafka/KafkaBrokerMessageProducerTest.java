@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class KafkaBrokerMessageProducerTest {
     private static final String MESSAGE_ID = "id";
     private static final Topic TOPIC = topic("group.topic").build();
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);
-    private static final Message MESSAGE = new Message(MESSAGE_ID, CONTENT, TIMESTAMP);
+    private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP);
 
     private MockProducer leaderConfirmsProducer = new MockProducer();
     private MockProducer everyoneConfirmProducer = new MockProducer();

@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import javax.inject.Inject;
 import java.time.Clock;
@@ -25,15 +26,18 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final HermesMetrics hermesMetrics;
     private final Clock clock;
     private final KafkaNamesMapper kafkaNamesMapper;
+    private final SchemaRepository schemaRepository;
 
     @Inject
     public KafkaMessageReceiverFactory(ConfigFactory configFactory, MessageContentWrapper messageContentWrapper,
-                                       HermesMetrics hermesMetrics, Clock clock, KafkaNamesMapper kafkaNamesMapper) {
+                                       HermesMetrics hermesMetrics, Clock clock, KafkaNamesMapper kafkaNamesMapper,
+                                       SchemaRepository schemaRepository) {
         this.configFactory = configFactory;
         this.messageContentWrapper = messageContentWrapper;
         this.hermesMetrics = hermesMetrics;
         this.clock = clock;
         this.kafkaNamesMapper = kafkaNamesMapper;
+        this.schemaRepository = schemaRepository;
     }
 
     @Override
@@ -51,7 +55,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 kafkaNamesMapper,
                 configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT),
                 configFactory.getIntProperty(Configs.KAFKA_CONSUMER_TIMEOUT_MS),
-                subscription.toSubscriptionName());
+                subscription.toSubscriptionName(),
+                schemaRepository);
     }
 
     private ConsumerConfig createConsumerConfig(ConsumerGroupId groupId) {

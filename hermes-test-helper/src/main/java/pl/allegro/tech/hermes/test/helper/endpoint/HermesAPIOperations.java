@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.ws.rs.core.Response;
 
+import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,6 +56,10 @@ public class HermesAPIOperations {
         assertThat(endpoints.topic().create(topic).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilTopicCreated(topic);
+
+        ofNullable(topic.getMessageSchema()).ifPresent(s ->
+                assertThat(endpoints.schema().save(topic.getQualifiedName(), false, s).getStatus()).isEqualTo(CREATED.getStatusCode()));
+
         return topic;
     }
 
@@ -119,8 +124,10 @@ public class HermesAPIOperations {
         Topic beforeUpdate = endpoints.topic().get(topicName.qualifiedName());
         Topic reference = Patch.apply(beforeUpdate, patch);
 
-        assertThat(endpoints.topic().update(topicName.qualifiedName(), patch).getStatus()).isEqualTo(OK.getStatusCode());
+        ofNullable(reference.getMessageSchema()).ifPresent(s ->
+                assertThat(endpoints.schema().save(reference.getQualifiedName(), false, s).getStatus()).isEqualTo(CREATED.getStatusCode()));
 
+        assertThat(endpoints.topic().update(topicName.qualifiedName(), patch).getStatus()).isEqualTo(OK.getStatusCode());
         wait.untilTopicUpdated(reference);
     }
 
