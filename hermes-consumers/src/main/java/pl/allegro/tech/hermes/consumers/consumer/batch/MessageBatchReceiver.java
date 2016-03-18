@@ -116,5 +116,6 @@ public class MessageBatchReceiver {
 
     public void stop() {
         receiving = false;
+        receiver.stop();
     }
 }
