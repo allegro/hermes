@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Ticker;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +14,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
+import pl.allegro.tech.hermes.management.infrastructure.graphite.CachingGraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
+import pl.allegro.tech.hermes.management.infrastructure.graphite.WebTargetGraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.NoOpSubscriptionLagSource;
 import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.time.Clock;
+
+import static com.google.common.base.Ticker.systemTicker;
 
 @Configuration
 @EnableConfigurationProperties({TopicProperties.class, MetricsProperties.class, HttpClientProperties.class})
@@ -56,7 +61,8 @@ public class ManagementConfiguration {
 
     @Bean
     public GraphiteClient graphiteClient() {
-        return new GraphiteClient(jerseyClient().target(metricsProperties.getGraphiteHttpUri()));
+        WebTargetGraphiteClient underlyingGraphiteClient = new WebTargetGraphiteClient(jerseyClient().target(metricsProperties.getGraphiteHttpUri()));
+        return new CachingGraphiteClient(underlyingGraphiteClient, systemTicker(), metricsProperties.getCacheTtlInSeconds(), metricsProperties.getCacheSize());
     }
 
     @Bean
