@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperHolder;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.health.HealthCheckServer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
@@ -31,7 +31,7 @@ public class HermesConsumers {
     private final List<Function<ServiceLocator, LogRepository>> logRepositories;
     private final Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper;
     private final MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
-    private final MessageSenderProviders messageSendersProviders;
+    private final MessageSenderFactory messageSenderFactory;
     private final ServiceLocator serviceLocator;
 
     private final SupervisorController supervisorController;
@@ -55,7 +55,7 @@ public class HermesConsumers {
 
         trackers = serviceLocator.getService(Trackers.class);
         healthCheckServer = serviceLocator.getService(HealthCheckServer.class);
-        messageSendersProviders = serviceLocator.getService(MessageSenderProviders.class);
+        messageSenderFactory = serviceLocator.getService(MessageSenderFactory.class);
 
         supervisorController = serviceLocator.getService(SupervisorController.class);
 
@@ -76,14 +76,12 @@ public class HermesConsumers {
                     trackers.add(serviceLocatorLogRepositoryFunction.apply(serviceLocator)));
 
             messageSenderProvidersSuppliers.entrySet().stream().forEach(entry -> {
-                entry.getValue().stream().forEach( supplier -> {
-                    messageSendersProviders.put(entry.getKey(), supplier.apply(serviceLocator));
-                });
+                entry.getValue().stream().forEach(supplier ->
+                        messageSenderFactory.addSupportedProtocol(entry.getKey(), supplier.apply(serviceLocator))
+                );
             });
 
-            kafkaNamesMapper.ifPresent(it -> {
-                ((KafkaNamesMapperHolder)serviceLocator.getService(KafkaNamesMapper.class)).setKafkaNamespaceMapper(it.apply(serviceLocator));
-            });
+            kafkaNamesMapper.ifPresent(it -> ((KafkaNamesMapperHolder) serviceLocator.getService(KafkaNamesMapper.class)).setKafkaNamespaceMapper(it.apply(serviceLocator)));
 
             supervisorController.start();
             healthCheckServer.start();

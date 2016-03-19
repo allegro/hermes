@@ -71,6 +71,10 @@ public class SubscriptionBuilder {
         return subscription(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, EndpointAddress.of(endpoint));
     }
 
+    public static SubscriptionBuilder subscription(String topicQualifiedName, String subscriptionName, EndpointAddress endpoint) {
+        return subscription(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, endpoint);
+    }
+
     public Subscription build() {
         if (deliveryType == DeliveryType.SERIAL) {
             return Subscription.createSerialSubscription(
