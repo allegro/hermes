@@ -68,7 +68,7 @@
                 <label for="subscriptionRateLimit" class="col-md-3 control-label">Rate limit</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="0" max="5000" step="10" required class="form-control" id="subscriptionRateLimit" name="subscriptionRateLimit" placeholder="limit of messages sent by Hermes" ng-model="subscription.subscriptionPolicy.rate"/>
+                        <input type="number" min="0" max="5000" step="10" ng-required="subscription.deliveryType === 'SERIAL'" class="form-control" id="subscriptionRateLimit" name="subscriptionRateLimit" placeholder="limit of messages sent by Hermes" ng-model="subscription.subscriptionPolicy.rate"/>
                         <span class="input-group-addon">messages/second</span>
                     </div>
                 </div>
