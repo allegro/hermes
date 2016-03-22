@@ -4,6 +4,8 @@ import spock.lang.Specification
 
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
 import static java.net.URI.create
@@ -20,12 +22,14 @@ class HermesClientTest extends Specification {
 
     private static final String CONTENT_TYPE = "application/json"
 
+    private def executor = Executors.newFixedThreadPool(2)
+
     def "should publish message using supplied sender"() {
         given:
         HermesClient client = hermesClient({ URI uri, HermesMessage message ->
             assert uri.toString() == (String) "$HERMES_URI/topics/$TOPIC"
             assert message.body == CONTENT
-            return statusFuture(201)
+            statusFuture(201)
         })
                 .withURI(create(HERMES_URI))
                 .build()
@@ -120,6 +124,48 @@ class HermesClientTest extends Specification {
         latch.count == 2
     }
 
+    def "should wait until all sent after shutdown"() {
+        given:
+        CountDownLatch latch = new CountDownLatch(5)
+        HermesClient client = hermesClient(getCountDownDelayedSender(latch, 408, 20)).withRetries(5).build()
+
+        when:
+        client.publish(TOPIC, CONTENT_TYPE, CONTENT)
+
+        and:
+        client.close(20, 1000)
+
+        then:
+        latch.await(1, TimeUnit.SECONDS)
+    }
+
+    def "should not publish after shutdown"() {
+        given:
+        HermesClient client = hermesClient({ uri, msg -> statusFuture(201) }).build()
+
+        when:
+        client.closeAsync(10).get(1, TimeUnit.SECONDS)
+        def future = client.publish(TOPIC, CONTENT_TYPE, CONTENT)
+
+        then:
+        future.completedExceptionally
+    }
+
+    def "should keep retrying on sender exception after shutdown"() {
+        given:
+        CountDownLatch latch = new CountDownLatch(5)
+        HermesClient client = hermesClient(getExceptionallyFailingCountDownSender(latch, 20)).withRetries(5).build()
+
+        when:
+        client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
+
+        and:
+        client.closeAsync(50).get(1, TimeUnit.SECONDS)
+
+        then:
+        latch.await(1, TimeUnit.SECONDS)
+    }
+
     def "should append default headers to message"() {
         given:
         Map<String, String> headers = [:]
@@ -155,38 +201,66 @@ class HermesClientTest extends Specification {
         headers['Header'] == 'OtherValue'
     }
 
+    private HermesSender getExceptionallyFailingCountDownSender(CountDownLatch latch, long delay) {
+        { uri, msg ->
+            def future = new CompletableFuture()
+
+            executor.submit({
+                Thread.sleep(delay)
+                latch.countDown()
+                future.completeExceptionally(new RuntimeException("Sending failed"))
+            } as Runnable)
+
+            future
+        }
+    }
+
     private HermesSender getExceptionallyFailingCountDownSender(CountDownLatch latch) {
-        return { uri, msg ->
-            latch.countDown();
-            return failingFuture(new RuntimeException("Sending failed"));
-        };
+        { uri, msg ->
+            latch.countDown()
+            failingFuture(new RuntimeException("Sending failed"))
+        }
     }
 
     private CompletableFuture<HermesResponse> statusFuture(int status) {
-        return completedFuture({status} as HermesResponse)
+        completedFuture({status} as HermesResponse)
     }
 
     private CompletableFuture<HermesResponse> failingFuture(Throwable throwable) {
-        CompletableFuture<HermesResponse> future = new CompletableFuture<>();
-        future.completeExceptionally(throwable);
-        return future;
+        CompletableFuture<HermesResponse> future = new CompletableFuture<>()
+        future.completeExceptionally(throwable)
+        future
     }
 
     private HermesSender getCountDownSender(CountDownLatch latch, int status) {
-        return getCountDownSender(latch, { status } as Supplier<Integer>);
+        getCountDownSender(latch, { status } as Supplier<Integer>)
     }
 
     private HermesSender getCountDownSender(CountDownLatch latch, Supplier<Integer> status) {
+        { uri, msg ->
+            latch.countDown()
+            completedFuture({ status.get() } as HermesResponse)
+        }
+    }
+
+    private HermesSender getCountDownDelayedSender(CountDownLatch latch, int status, long delay) {
         return { uri, msg ->
-            latch.countDown();
-            return completedFuture({ status.get() } as HermesResponse);
-        };
+            def future = new CompletableFuture()
+
+            executor.submit({
+                Thread.sleep(delay)
+                latch.countDown()
+                future.complete({status} as HermesResponse)
+            } as Runnable)
+
+            future
+        }
     }
 
     private HermesSender getHeaderScrapingSender(Map<String, String> headers) {
-        return { uri, msg ->
+        { uri, msg ->
             headers.putAll(msg.headers)
-            return completedFuture({ 201 } as HermesResponse);
-        };
+            completedFuture({ 201 } as HermesResponse)
+        }
     }
 }
