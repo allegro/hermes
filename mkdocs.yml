@@ -35,6 +35,7 @@ pages:
   - Deployment:
       - 'Packaging': 'deployment/packaging.md'
       - 'Deployment': 'deployment/deployment.md'
+      - 'Logging': 'deployment/logging.md'
       - 'Metrics': 'deployment/metrics.md'
   - Configuration:
     - 'Kafka and Zookeeper': 'configuration/kafka-and-zookeeper.md'
