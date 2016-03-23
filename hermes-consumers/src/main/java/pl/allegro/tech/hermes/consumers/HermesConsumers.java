@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperHolder;
+import pl.allegro.tech.hermes.consumers.consumer.result.undelivered.LogUndeliveredMessageHandler;
+import pl.allegro.tech.hermes.consumers.consumer.result.undelivered.UndeliveredMessageHandler;
+import pl.allegro.tech.hermes.consumers.consumer.result.undelivered.UndeliveredMessageHandlers;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.health.HealthCheckServer;
@@ -30,6 +33,7 @@ public class HermesConsumers {
     private final Trackers trackers;
     private final List<Function<ServiceLocator, LogRepository>> logRepositories;
     private final Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper;
+    private final List<UndeliveredMessageHandler> undeliveredMessageHandlerList;
     private final MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
     private final MessageSenderProviders messageSendersProviders;
     private final ServiceLocator serviceLocator;
@@ -44,12 +48,14 @@ public class HermesConsumers {
                     List<Binder> binders,
                     MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers,
                     List<Function<ServiceLocator, LogRepository>> logRepositories,
-                    Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper) {
+                    Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper,
+                    List<UndeliveredMessageHandler> undeliveredMessageHandlerList) {
 
         this.hooksHandler = hooksHandler;
         this.messageSenderProvidersSuppliers = messageSenderProvidersSuppliers;
         this.logRepositories = logRepositories;
         this.kafkaNamesMapper = kafkaNamesMapper;
+        this.undeliveredMessageHandlerList = undeliveredMessageHandlerList;
 
         serviceLocator = createDIContainer(binders);
 
@@ -85,12 +91,21 @@ public class HermesConsumers {
                 ((KafkaNamesMapperHolder)serviceLocator.getService(KafkaNamesMapper.class)).setKafkaNamespaceMapper(it.apply(serviceLocator));
             });
 
+            setupUndeliveredMessageHandlers();
+
             supervisorController.start();
             healthCheckServer.start();
             hooksHandler.startup(serviceLocator);
         } catch (Exception e) {
             logger.error("Exception while starting Hermes Consumers", e);
         }
+    }
+
+    private void setupUndeliveredMessageHandlers() {
+        UndeliveredMessageHandlers undeliveredMessageHandlers = serviceLocator.getService(UndeliveredMessageHandlers.class);
+
+        undeliveredMessageHandlers.addHandler(serviceLocator.getService(LogUndeliveredMessageHandler.class));
+        undeliveredMessageHandlers.addHandlers(undeliveredMessageHandlerList);
     }
 
     public void stop() {

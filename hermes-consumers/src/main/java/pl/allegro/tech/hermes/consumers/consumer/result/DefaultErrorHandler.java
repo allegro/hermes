@@ -3,36 +3,29 @@ package pl.allegro.tech.hermes.consumers.consumer.result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
+import pl.allegro.tech.hermes.consumers.consumer.result.undelivered.UndeliveredMessageHandlers;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-import java.time.Clock;
-
-import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultErrorHandler.class);
 
-    private final UndeliveredMessageLog undeliveredMessageLog;
-    private final Clock clock;
     private final Trackers trackers;
-    private final String cluster;
+    private final UndeliveredMessageHandlers undeliveredMessageHandlers;
 
     public DefaultErrorHandler(SubscriptionOffsetCommitQueues offsetHelper, HermesMetrics hermesMetrics,
-                               UndeliveredMessageLog undeliveredMessageLog, Clock clock, Trackers trackers, String cluster) {
+                               Trackers trackers, UndeliveredMessageHandlers undeliveredMessageHandlers) {
         super(offsetHelper, hermesMetrics);
-        this.undeliveredMessageLog = undeliveredMessageLog;
-        this.clock = clock;
         this.trackers = trackers;
-        this.cluster = cluster;
+        this.undeliveredMessageHandlers = undeliveredMessageHandlers;
     }
 
     @Override
@@ -50,8 +43,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
         updateMeters(subscription);
         updateMetrics(Counters.DISCARDED, message, subscription);
 
-        undeliveredMessageLog.add(createUndeliveredMessage(subscription, new String(message.getData()), result.getFailure(), clock.millis(),
-                message.getPartition(), message.getOffset(), cluster));
+        undeliveredMessageHandlers.handleDiscarded(message, subscription, result);
 
         trackers.get(subscription).logDiscarded(toMessageMetadata(message, subscription), result.getRootCause());
     }

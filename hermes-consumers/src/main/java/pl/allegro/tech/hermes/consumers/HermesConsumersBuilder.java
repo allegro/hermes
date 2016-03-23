@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.consumers.consumer.result.undelivered.UndeliveredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
@@ -29,6 +30,8 @@ public final class HermesConsumersBuilder {
     private final MessageSenderProviders messageSendersProviders = new MessageSenderProviders();
     private final MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers = new MultiMap<>();
     private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();
+    private final List<UndeliveredMessageHandler> undeliveredMessageHandlers = new ArrayList<>();
+
 
     private Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper = Optional.empty();
 
@@ -69,6 +72,10 @@ public final class HermesConsumersBuilder {
         logRepositories.add(logRepository);
         return this;
     }
+    public HermesConsumersBuilder withUndeliveredMessageHandler(UndeliveredMessageHandler undeliveredMessageHandler) {
+        undeliveredMessageHandlers.add(undeliveredMessageHandler);
+        return this;
+    }
 
     public HermesConsumersBuilder withKafkaTopicsNamesMapper(Function<ServiceLocator, KafkaNamesMapper> kafkaNamesMapper) {
         this.kafkaNamesMapper = Optional.of(kafkaNamesMapper);
@@ -91,7 +98,7 @@ public final class HermesConsumersBuilder {
 
     public HermesConsumers build() {
         binders.add(new TrackersBinder(new ArrayList<>()));
-        return new HermesConsumers(hooksHandler, binders, messageSenderProvidersSuppliers, logRepositories, kafkaNamesMapper);
+        return new HermesConsumers(hooksHandler, binders, messageSenderProvidersSuppliers, logRepositories, kafkaNamesMapper, undeliveredMessageHandlers);
     }
 
     private final class ProtocolMessageSenderProvidersBinder extends AbstractBinder {
