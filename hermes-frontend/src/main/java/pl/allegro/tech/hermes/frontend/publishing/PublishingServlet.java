@@ -39,6 +39,7 @@ import static org.apache.commons.lang.StringUtils.strip;
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
+import static pl.allegro.tech.hermes.frontend.publishing.MessageReader.startReadingMessage;
 
 public class PublishingServlet extends HttpServlet {
 
@@ -101,7 +102,7 @@ public class PublishingServlet extends HttpServlet {
         asyncContext.addListener(new MetricsAsyncListener(hermesMetrics, topic.getName(), topic.getAck()));
         asyncContext.setTimeout(topic.isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout);
 
-        new MessageReader(request, chunkSize, topic.getName(), hermesMetrics, messageState,
+        startReadingMessage(request, chunkSize, topic.getName(), hermesMetrics, messageState,
                 messageContent -> asyncContext.start(() -> {
                     try {
                         Message message = messageFactory.create(request, topic, messageId, messageContent);
