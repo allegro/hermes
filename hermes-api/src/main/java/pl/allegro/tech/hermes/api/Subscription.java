@@ -19,6 +19,7 @@ import static pl.allegro.tech.hermes.api.helpers.Replacer.replaceInAll;
 public class Subscription {
 
     @Valid
+    @NotNull
     private TopicName topicName;
 
     @NotEmpty
