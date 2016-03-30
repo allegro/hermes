@@ -5,8 +5,8 @@ import pl.allegro.tech.hermes.api.ErrorCode;
 
 public class EndpointProtocolNotSupportedException extends HermesException {
 
-    public EndpointProtocolNotSupportedException(EndpointAddress endpointUri) {
-        super(String.format("Protocol %s not supported in endpoint %s", endpointUri.getProtocol(), endpointUri.toString()));
+    public EndpointProtocolNotSupportedException(EndpointAddress endpoint) {
+        super(String.format("Protocol %s not supported in endpoint %s", endpoint.getProtocol(), endpoint.toString()));
     }
 
     @Override

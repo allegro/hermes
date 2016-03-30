@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
 import pl.allegro.tech.hermes.consumers.di.TrackersBinder;
@@ -23,19 +22,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class HermesConsumersBuilder {
+
     private static final int RANK_HIGHER_THAN_DEFAULT = 10;
 
     private final HooksHandler hooksHandler = new HooksHandler();
-    private final MessageSenderProviders messageSendersProviders = new MessageSenderProviders();
-    private final MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers = new MultiMap<>();
+    private final MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProviders = new MultiMap<>();
     private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();
 
     private Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper = Optional.empty();
 
     private final List<Binder> binders = Lists.newArrayList(
             new CommonBinder(),
-            new ConsumersBinder(),
-            new ProtocolMessageSenderProvidersBinder());
+            new ConsumersBinder());
 
     public HermesConsumersBuilder withStartupHook(ServiceAwareHook hook) {
         hooksHandler.addStartupHook(hook);
@@ -56,12 +54,12 @@ public final class HermesConsumersBuilder {
     }
 
     public HermesConsumersBuilder withMessageSenderProvider(String protocol, Supplier<ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
-        this.messageSenderProvidersSuppliers.add(protocol, (s) -> messageSenderProviderSupplier.get());
+        this.messageSenderProviders.add(protocol, (s) -> messageSenderProviderSupplier.get());
         return this;
     }
 
     public HermesConsumersBuilder withMessageSenderProvider(String protocol, Function<ServiceLocator, ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
-        this.messageSenderProvidersSuppliers.add(protocol, messageSenderProviderSupplier);
+        this.messageSenderProviders.add(protocol, messageSenderProviderSupplier);
         return this;
     }
 
@@ -91,13 +89,17 @@ public final class HermesConsumersBuilder {
 
     public HermesConsumers build() {
         binders.add(new TrackersBinder(new ArrayList<>()));
-        return new HermesConsumers(hooksHandler, binders, messageSenderProvidersSuppliers, logRepositories, kafkaNamesMapper);
-    }
 
-    private final class ProtocolMessageSenderProvidersBinder extends AbstractBinder {
-        @Override
-        protected void configure() {
-            bind(messageSendersProviders).to(MessageSenderProviders.class);
-        }
+        messageSenderProviders.add(
+                "http", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultHttpMessageSenderProvider")
+        );
+        messageSenderProviders.add(
+                "https", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultHttpMessageSenderProvider")
+        );
+        messageSenderProviders.add(
+                "jms", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultJmsMessageSenderProvider")
+        );
+
+        return new HermesConsumers(hooksHandler, binders, messageSenderProviders, logRepositories, kafkaNamesMapper);
     }
 }

@@ -178,7 +178,7 @@ public class ConsumerMessageSender {
             if (result.isLoggable()) {
                 logger.info(
                         format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                                subscription.getEndpoint().getEndpoint(), message.getId(), message.getOffset(), message.getPartition(),
+                                subscription.getEndpoint(), message.getId(), message.getOffset(), message.getPartition(),
                                 subscription.getId(), result.getRootCause()),
                         result.getFailure());
             }

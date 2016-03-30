@@ -5,7 +5,6 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
-import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -13,9 +12,9 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 import static java.lang.String.valueOf;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -29,15 +28,18 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
 
     private final HttpClient client;
     private final ResolvableEndpointAddress endpoint;
+    private final Optional<HttpAuthorizationProvider> authorizationProvider;
     private final long timeout;
     private final MetadataAppender<Request> metadataAppender;
 
-    private final Function<ContentType, String> contentTypeToMediaType = contentType ->
-            AVRO.equals(contentType) ? AVRO_BINARY : APPLICATION_JSON;
-
-    public JettyMessageSender(HttpClient client, ResolvableEndpointAddress endpoint, int timeout, MetadataAppender<Request> metadataAppender) {
+    public JettyMessageSender(HttpClient client,
+                              ResolvableEndpointAddress endpoint,
+                              Optional<HttpAuthorizationProvider> authorizationProvider,
+                              int timeout,
+                              MetadataAppender<Request> metadataAppender) {
         this.client = client;
         this.endpoint = endpoint;
+        this.authorizationProvider = authorizationProvider;
         this.timeout = timeout;
         this.metadataAppender = metadataAppender;
     }
@@ -53,19 +55,23 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
     }
 
     private Request buildRequest(Message message) throws EndpointAddressResolutionException {
-
         Request request = client.newRequest(endpoint.resolveFor(message))
                 .method(HttpMethod.POST)
                 .header(HttpHeader.KEEP_ALIVE.toString(), "true")
                 .header(MESSAGE_ID.getName(), message.getId())
                 .header(RETRY_COUNT.getName(), Integer.toString(message.getRetryCounter()))
-                .header(HttpHeader.CONTENT_TYPE.toString(), contentTypeToMediaType.apply(message.getContentType()))
+                .header(HttpHeader.CONTENT_TYPE.toString(), messageContentType(message))
                 .timeout(timeout, TimeUnit.MILLISECONDS)
                 .content(new BytesContentProvider(message.getData()));
 
+        authorizationProvider.ifPresent(p -> request.header(HttpHeader.AUTHORIZATION.toString(), p.authorizationToken(message)));
         message.getSchema().ifPresent(schema -> request.header(SCHEMA_VERSION.getName(), valueOf(schema.getVersion().value())));
 
         return appendTraceInfo(request, message);
+    }
+
+    private String messageContentType(Message message) {
+        return AVRO.equals(message.getContentType()) ? AVRO_BINARY : APPLICATION_JSON;
     }
 
     private Request appendTraceInfo(Request request, Message message) {
