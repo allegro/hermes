@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.domain.topic.schema
 
-import com.google.common.base.Ticker
 import com.google.common.util.concurrent.MoreExecutors
+import pl.allegro.tech.hermes.test.helper.cache.FakeTicker
 import spock.lang.Specification
 
 import java.time.Duration
@@ -93,21 +93,6 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         expect:
         versionsRepository.schemaVersionExists(topic, v1)
         versionsRepository.latestSchemaVersion(topic).get() == v1
-    }
-
-    private static class FakeTicker extends Ticker {
-
-        private long currentNanos = 0
-
-        @Override
-        public long read() {
-            return currentNanos
-        }
-
-        public void advance(Duration duration) {
-            currentNanos += duration.toNanos()
-        }
-
     }
 
 }
