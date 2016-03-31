@@ -141,6 +141,7 @@ public class SerialConsumer implements Consumer {
     public void updateSubscription(Subscription newSubscription) {
         rateLimiter.updateSubscription(newSubscription);
         sender.updateSubscription(newSubscription);
+        messageReceiver.update(newSubscription);
         this.subscription = newSubscription;
     }
 

@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.FilterChainFactory;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
@@ -46,7 +48,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     }
 
     MessageReceiver create(Topic receivingTopic, ConsumerConfig consumerConfig, Subscription subscription) {
-        return new KafkaMessageReceiver(
+        MessageReceiver receiver = new KafkaMessageReceiver(
                 receivingTopic,
                 Consumer.createJavaConsumerConnector(consumerConfig),
                 messageContentWrapper,
@@ -57,6 +59,11 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 configFactory.getIntProperty(Configs.KAFKA_CONSUMER_TIMEOUT_MS),
                 subscription.toSubscriptionName(),
                 schemaRepository);
+
+        if (configFactory.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
+            receiver = new FilteringMessageReceiver(receiver, new FilteredMessageHandler(), new FilterChainFactory(), subscription);
+        }
+        return receiver;
     }
 
     private ConsumerConfig createConsumerConfig(ConsumerGroupId groupId) {

@@ -70,7 +70,8 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         FileUtils.deleteDirectory(tempDir);
     }
 
-    @Test
+
+    @Test(enabled = false)
     public void shouldBackupMessage() throws Exception {
         // given
         KafkaStarter kafka = new KafkaStarter(kafkaProperties());
