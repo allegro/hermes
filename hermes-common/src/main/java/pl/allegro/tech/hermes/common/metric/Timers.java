@@ -35,5 +35,7 @@ public class Timers {
             CONSUMER_WORKLOAD_REBALANCE_DURATION = "consumers-workload." + KAFKA_CLUSTER + ".selective.rebalance-duration",
 
             EXECUTOR_DURATION = "executors." + EXECUTOR_NAME + ".duration",
-            EXECUTOR_WAITING = "executors." + EXECUTOR_NAME + ".waiting";
+            EXECUTOR_WAITING = "executors." + EXECUTOR_NAME + ".waiting",
+
+            CREATING_CONSUMER_TIME = "creating-time";
 }
