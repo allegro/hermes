@@ -5,4 +5,5 @@ public interface SendingTracker {
     void logFailed(MessageMetadata message, String reason);
     void logDiscarded(MessageMetadata message, String reason);
     void logInflight(MessageMetadata message);
+    void logFiltered(MessageMetadata messageMetadata, String reason);
 }

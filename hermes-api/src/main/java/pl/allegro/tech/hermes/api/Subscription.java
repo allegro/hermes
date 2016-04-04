@@ -59,13 +59,9 @@ public class Subscription {
     @NotNull
     private DeliveryType deliveryType = DeliveryType.SERIAL;
 
-    private List<String> filters = new ArrayList<>();
+    private List<MessageFilterSpecification> filters = new ArrayList<>();
 
-    public boolean hasFilteringEnabled() {
-        return !filters.isEmpty();
-    }
-
-    public List<String> getFilters() {
+    public List<MessageFilterSpecification> getFilters() {
         return filters;
     }
 
@@ -85,7 +81,7 @@ public class Subscription {
                          MonitoringDetails monitoringDetails,
                          ContentType contentType,
                          DeliveryType deliveryType,
-                         List<String> filters) {
+                         List<MessageFilterSpecification> filters) {
         this.topicName = topicName;
         this.name = name;
         this.endpoint = endpoint;
@@ -113,7 +109,7 @@ public class Subscription {
                                                         String contact,
                                                         MonitoringDetails monitoringDetails,
                                                         ContentType contentType,
-                                                        List<String> filters) {
+                                                        List<MessageFilterSpecification> filters) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
                 contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters);
     }
@@ -129,7 +125,7 @@ public class Subscription {
                                                        String contact,
                                                        MonitoringDetails monitoringDetails,
                                                        ContentType contentType,
-                                                       List<String> filters) {
+                                                       List<MessageFilterSpecification> filters) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
                 contact, monitoringDetails, contentType, DeliveryType.BATCH, filters);
     }
@@ -147,7 +143,7 @@ public class Subscription {
                                       @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
                                       @JsonProperty("contentType") ContentType contentType,
                                       @JsonProperty("deliveryType") DeliveryType deliveryType,
-                                      @JsonProperty("filters") List<String> filters) {
+                                      @JsonProperty("filters") List<MessageFilterSpecification> filters) {
         DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
         Map<String, Object> validSubscriptionPolicy = subscriptionPolicy == null ? new HashMap<>() : subscriptionPolicy;
 
@@ -165,7 +161,7 @@ public class Subscription {
                 monitoringDetails,
                 contentType,
                 validDeliveryType,
-                filters
+                filters == null? new ArrayList<>() : filters
         );
     }
 

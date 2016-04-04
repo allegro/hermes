@@ -2,52 +2,47 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.FilterChain;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.FilterChainFactory;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.FilterResult;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChain;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
+
+import java.util.Objects;
 
 public class FilteringMessageReceiver implements MessageReceiver {
     private MessageReceiver receiver;
     private FilteredMessageHandler filteredMessageHandler;
     private FilterChainFactory filterChainFactory;
 
-    private volatile boolean dirty = true;
+    private volatile FilterChain filterChain;
     private Subscription subscription;
-    private FilterChain filterChain;
     private boolean consuming = true;
 
     public FilteringMessageReceiver(MessageReceiver receiver,
                                     FilteredMessageHandler filteredMessageHandler,
-                                    FilterChainFactory filterChainFactory, final Subscription subscription) {
+                                    FilterChainFactory filterChainFactory,
+                                    Subscription subscription) {
         this.receiver = receiver;
         this.filteredMessageHandler = filteredMessageHandler;
         this.filterChainFactory = filterChainFactory;
         this.subscription = subscription;
-    }
-
-    private boolean filter(final Message message) {
-        FilterResult result = filterChain.apply(message);
-        filteredMessageHandler.handle(result, message);
-        return result.filtered;
+        this.filterChain = filterChainFactory.create(subscription);
     }
 
     @Override
     public Message next() {
         Message message;
         do {
-            updateFilter();
             message = receiver.next();
-        } while (consuming && !filter(message));
+        } while (consuming && filter(message));
         return message;
     }
 
-    private void updateFilter() {
-        if (dirty) {
-            filterChain = filterChainFactory.create(subscription);
-            dirty = false;
-        }
+    private boolean filter(Message message) {
+        FilterResult result = filterChain.apply(message);
+        filteredMessageHandler.handle(result, message, subscription);
+        return result.isFiltered();
     }
 
     @Override
@@ -57,8 +52,10 @@ public class FilteringMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public void update(final Subscription newSubscription) {
+    public void update(Subscription newSubscription) {
+        if (!Objects.equals(subscription.getFilters(), newSubscription.getFilters())) {
+            this.filterChain = filterChainFactory.create(newSubscription);
+        }
         this.subscription = newSubscription;
-        this.dirty = true;
     }
 }

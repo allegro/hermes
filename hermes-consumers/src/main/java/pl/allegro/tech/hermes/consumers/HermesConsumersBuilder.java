@@ -10,6 +10,12 @@ import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilter;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilterSource;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilters;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.SubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.avro.AvroPathSubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.json.JsonPathSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
 import pl.allegro.tech.hermes.consumers.di.TrackersBinder;
@@ -28,6 +34,8 @@ public final class HermesConsumersBuilder {
     private final HooksHandler hooksHandler = new HooksHandler();
     private final MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProviders = new MultiMap<>();
     private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();
+    private final List<SubscriptionMessageFilterCompiler> filters = new ArrayList<>();
+    private final List<MessageFilter> globalFilters = new ArrayList<>();
 
     private Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper = Optional.empty();
 
@@ -68,6 +76,16 @@ public final class HermesConsumersBuilder {
         return this;
     }
 
+    public HermesConsumersBuilder withSubscriptionMessageFilter(SubscriptionMessageFilterCompiler filter) {
+        filters.add(filter);
+        return this;
+    }
+
+    public HermesConsumersBuilder withGlobalMessageFilter(MessageFilter filter) {
+        globalFilters.add(filter);
+        return this;
+    }
+
     public HermesConsumersBuilder withKafkaTopicsNamesMapper(Function<ServiceLocator, KafkaNamesMapper> kafkaNamesMapper) {
         this.kafkaNamesMapper = Optional.of(kafkaNamesMapper);
         return this;
@@ -87,10 +105,8 @@ public final class HermesConsumersBuilder {
         return this;
     }
 
-
-
-
     public HermesConsumers build() {
+        withBinding(buildFilters(), MessageFilterSource.class);
         binders.add(new TrackersBinder(new ArrayList<>()));
 
         messageSenderProviders.add(
@@ -102,7 +118,13 @@ public final class HermesConsumersBuilder {
         messageSenderProviders.add(
                 "jms", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultJmsMessageSenderProvider")
         );
-
         return new HermesConsumers(hooksHandler, binders, messageSenderProviders, logRepositories, kafkaNamesMapper);
+    }
+
+    private MessageFilters buildFilters() {
+        List<SubscriptionMessageFilterCompiler> availableFilters = new ArrayList<>(filters);
+        availableFilters.add(new JsonPathSubscriptionMessageFilterCompiler());
+        availableFilters.add(new AvroPathSubscriptionMessageFilterCompiler());
+        return new MessageFilters(globalFilters, availableFilters);
     }
 }

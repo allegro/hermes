@@ -6,5 +6,5 @@ public interface LogRepository {
     void logFailed(MessageMetadata message, long timestamp, String reason);
     void logDiscarded(MessageMetadata message, long timestamp, String reason);
     void logInflight(MessageMetadata message, long timestamp);
-
+    void logFiltered(MessageMetadata message, long timestamp, String reason);
 }

@@ -4,8 +4,22 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.util.function.Predicate;
 
-interface MessageFilter extends Predicate<Message> {
+public class MessageFilter implements Predicate<Message> {
 
-    String type();
+    private String type;
+    private Predicate<Message> predicate;
 
+    public MessageFilter(String type, Predicate<Message> predicate) {
+        this.type = type;
+        this.predicate = predicate;
+    }
+
+    @Override
+    public boolean test(Message message) {
+        return predicate.test(message);
+    }
+
+    public String getType() {
+        return type;
+    }
 }

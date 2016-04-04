@@ -1,139 +1,93 @@
 package pl.allegro.tech.hermes.consumers.consumer.filtering
 
-import com.google.common.collect.ImmutableList
-import org.apache.avro.generic.GenericData
-import pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter
+import pl.allegro.tech.hermes.api.ContentType
+import pl.allegro.tech.hermes.api.MessageFilterSpecification
+import pl.allegro.tech.hermes.consumers.consumer.filtering.avro.AvroPathSubscriptionMessageFilterCompiler
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import spock.lang.Specification
-import wandou.avpath.Parser
-
-import java.util.regex.Pattern
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 
 class AvroPathMessageFilterSpec extends Specification {
 
-    def "avro path message filter should not pass for long"() {
+    def "basic paths"(String path, String matcher, boolean result) {
         given:
-        def schema = AvroUserSchemaLoader.load("/Record.avsc")
-        GenericData.Record record = new GenericData.Record(schema)
-        record.put("id", "foo")
-        record.put("number", 150L)
-        record.put("values", ImmutableList.of("Nexus5a", "Nexus6"))
+        def schema = AvroUserSchemaLoader.load("/cake.avsc")
 
-        def bytes = AvroRecordToBytesConverter.recordToBytes(record, schema)
+        def json = '''
+            {
+                "id": "0001",
+                "type": "donut",
+                "name": "Cake",
+                "ppu": 0.55,
+                "batters":
+                    {
+                        "batter":
+                            [
+                                { "id": "1001", "type": "Regular" },
+                                { "id": "1002", "type": "Chocolate" },
+                                { "id": "1003", "type": "Blueberry" },
+                                { "id": "1004", "type": "Devil's Food" }
+                            ]
+                    },
+                "topping":
+                    [
+                        { "id": "5001", "type": "None" },
+                        { "id": "5002", "type": "Glazed" },
+                        { "id": "5005", "type": "Sugar" },
+                        { "id": "5007", "type": "Powdered Sugar" },
+                        { "id": "5006", "type": "Chocolate with Sprinkles" },
+                        { "id": "5003", "type": "Chocolate" },
+                        { "id": "5004", "type": "Maple" }
+                    ]
+            }
+        '''
 
-        Parser.PathSyntax ast = new Parser().parse(".number")
-
-        def filter = new AvroPathMessageFilter(ast, Pattern.compile("10"))
-
-        def message = MessageBuilder.withTestMessage().withContent(bytes).withSchema(schema, 0).build()
+        def avro = new JsonAvroConverter().convertToAvro(json.bytes, schema)
+        def spec = new MessageFilterSpecification([path: path, matcher: matcher])
 
         expect:
-        !filter.test(message)
+        result == new AvroPathSubscriptionMessageFilterCompiler().compile(spec)
+                .test(MessageBuilder
+                .withTestMessage()
+                .withContent(avro)
+                .withSchema(schema, 0)
+                .withContentType(ContentType.AVRO)
+                .build())
+
+        where:
+        path                      | matcher     | result
+        ".id"                     | "0001"      | true
+        ".does.not.exist"         | ".*"        | false
+        ".id"                     | "000.?"     | true
+        ".id"                     | "0002"      | false
+        '.type'                   | "donut"     | true
+        '.type'                   | "not_donut" | false
+        '.batters.batter[1].type' | "^Choco.*"  | true
+        '.batters.batter[2].type' | "^Choco.*"  | false
+        '.{.ppu > 0.5}.name'      | "Cake"      | true
+        '.{.ppu < 0.5}.name'      | "Cake"      | false
+        '.topping[4:5].type'      | "^Choco.*"  | true
+        '.topping[4:6].type'      | "^Choco.*"  | false
+        //'.topping{.id === "5007"}.type' | "^Powdered.*" | true  BUG in avpath. Master is ok, 0.1.0 from maven central has a bug.
     }
 
-
-    def "avro path message filter should pass for long"() {
+    def "should throw exception for malformed message"() {
         given:
-        def schema = AvroUserSchemaLoader.load("/Record.avsc")
-        GenericData.Record record = new GenericData.Record(schema)
-        record.put("id", "foo")
-        record.put("number", 10L)
-        record.put("values", ImmutableList.of("Nexus5a", "Nexus6"))
+        def schema = AvroUserSchemaLoader.load("/cake.avsc")
+        def invalidContent = new byte[10]
 
-        def bytes = AvroRecordToBytesConverter.recordToBytes(record, schema)
+        when:
+        new AvroPathSubscriptionMessageFilterCompiler().compile(new MessageFilterSpecification([path: ".id", matcher: "0001"]))
+                .test(MessageBuilder
+                .withTestMessage()
+                .withContent(invalidContent)
+                .withSchema(schema, 0)
+                .build())
 
-        Parser.PathSyntax ast = new Parser().parse(".number")
-
-        def filter = new AvroPathMessageFilter(ast, Pattern.compile("10"))
-
-        def message = MessageBuilder.withTestMessage().withContent(bytes).withSchema(schema, 0).build()
-
-        expect:
-        filter.test(message)
+        then:
+        thrown FilteringException
     }
-
-    def "avro path message filter should not pass array"() {
-        given:
-        def schema = AvroUserSchemaLoader.load("/Record.avsc")
-        GenericData.Record record = new GenericData.Record(schema)
-        record.put("id", "foo")
-        record.put("number", 10L)
-        record.put("values", ImmutableList.of("Nexus5a", "Nexus6"))
-
-        def bytes = AvroRecordToBytesConverter.recordToBytes(record, schema)
-
-        Parser.PathSyntax ast = new Parser().parse(".values")
-
-        def filter = new AvroPathMessageFilter(ast, Pattern.compile("Nexus5.*"))
-
-        def message = MessageBuilder.withTestMessage().withContent(bytes).withSchema(schema, 0).build()
-
-        expect:
-        !filter.test(message)
-    }
-
-
-    def "avro path message filter should pass array"() {
-        given:
-        def schema = AvroUserSchemaLoader.load("/Record.avsc")
-        GenericData.Record record = new GenericData.Record(schema)
-        record.put("id", "foo")
-        record.put("number", 10L)
-        record.put("values", ImmutableList.of("iPhone 5s", "iPhone SE"))
-
-        def bytes = AvroRecordToBytesConverter.recordToBytes(record, schema)
-
-        Parser.PathSyntax ast = new Parser().parse(".values")
-
-        def filter = new AvroPathMessageFilter(ast, Pattern.compile("iPhone.*"))
-
-        def message = MessageBuilder.withTestMessage().withContent(bytes).withSchema(schema, 0).build()
-
-        expect:
-        filter.test(message)
-    }
-
-    def "avro path message filter should pass"() {
-        given:
-        def schema = AvroUserSchemaLoader.load("/Record.avsc")
-        GenericData.Record record = new GenericData.Record(schema)
-        record.put("id", "foo")
-        record.put("number", 10L)
-        record.put("values", ImmutableList.of("a", "b"))
-
-        def bytes = AvroRecordToBytesConverter.recordToBytes(record, schema)
-
-        Parser.PathSyntax ast = new Parser().parse(".id");
-
-        def filter = new AvroPathMessageFilter(ast, Pattern.compile("fo.*"))
-
-        def message = MessageBuilder.withTestMessage().withContent(bytes).withSchema(schema, 0).build()
-
-        expect:
-        filter.test(message)
-    }
-
-    def "avro path message filter should not pass"() {
-        given:
-        def schema = AvroUserSchemaLoader.load("/Record.avsc")
-        GenericData.Record record = new GenericData.Record(schema)
-        record.put("id", "boo")
-        record.put("number", 10L)
-        record.put("values", ImmutableList.of("a", "b"))
-
-        def bytes = AvroRecordToBytesConverter.recordToBytes(record, schema)
-
-        Parser.PathSyntax ast = new Parser().parse(".id");
-
-        def filter = new AvroPathMessageFilter(ast, Pattern.compile("fo.*"))
-
-        def message = MessageBuilder.withTestMessage().withContent(bytes).withSchema(schema, 0).build()
-
-        expect:
-        !filter.test(message)
-    }
-
 }
 
 

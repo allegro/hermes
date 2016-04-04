@@ -21,7 +21,7 @@ project.configurations {
  */
 def getAlpnVersion() {
     def matcher = (System.getProperty("java.version") =~ /_(\d+)(-.*)?/)
-    def version = matcher.find() ? Integer.parseInt(matcher.group(1)) : -1
+    def version = matcher.find() ? Integer.parseInt(matcher.group(1)) : 0
     switch(version) {
         case 0..24:
             return '8.1.0.v20141016'

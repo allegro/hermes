@@ -7,7 +7,7 @@ import static java.lang.Integer.parseInt;
 
 public class Retry implements IRetryAnalyzer {
     private int retryCount = 0;
-    private static int maxRetryCount = parseInt(System.getProperty("tests.retry.count", "0"));
+    private static int maxRetryCount = parseInt(System.getProperty("tests.retry.count", "2"));
 
     @Override
     public boolean retry(ITestResult result) {

@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.MonitoringDetails;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -42,7 +43,7 @@ public class SubscriptionBuilder {
 
     private DeliveryType deliveryType = DeliveryType.SERIAL;
 
-    private List<String> filters = new ArrayList<>();
+    private List<MessageFilterSpecification> filters = new ArrayList<>();
 
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
@@ -161,7 +162,7 @@ public class SubscriptionBuilder {
         return this;
     }
 
-    public SubscriptionBuilder withFilter(final String filter) {
+    public SubscriptionBuilder withFilter(MessageFilterSpecification filter) {
         this.filters.add(filter);
         return this;
     }
