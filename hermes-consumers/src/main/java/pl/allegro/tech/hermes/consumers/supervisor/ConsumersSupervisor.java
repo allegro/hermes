@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
+import com.codahale.metrics.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -10,6 +11,7 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
@@ -204,8 +206,10 @@ public class ConsumersSupervisor {
         logger.info("Creating consumer for {}", subscription.getId());
         try {
             Consumer consumer = consumerFactory.createConsumer(subscription);
+            logger.debug("Created consumer for {}", subscription.getId());
             consumerHolder.add(subscription.getTopicName(), subscription.getName(), consumer);
             executor.execute(consumer);
+            logger.debug("Consumer for {} was created and executed ", subscription.getId());
         } catch (Exception ex) {
             logger.info("Failed to create consumer for subscription {} ", subscription.getId(), ex);
         }
