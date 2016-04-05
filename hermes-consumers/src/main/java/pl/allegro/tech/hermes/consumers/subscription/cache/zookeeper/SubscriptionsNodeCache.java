@@ -47,7 +47,7 @@ class SubscriptionsNodeCache extends StartableCache<SubscriptionCallback> implem
         Subscription subscription = readSubscription(event.getData());
         LOGGER.info("Got subscription change event for path {} type {}", path, event.getType());
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Event data {}", new String(event.getData().getData(), Charsets.UTF_8));
+            LOGGER.debug("Event type: {}, event data {}", event.getType().toString(), new String(event.getData().getData(), Charsets.UTF_8));
         }
         switch (event.getType()) {
             case CHILD_ADDED:
