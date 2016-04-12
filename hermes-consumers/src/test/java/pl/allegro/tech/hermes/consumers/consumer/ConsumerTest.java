@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommit
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
@@ -50,6 +51,9 @@ public class ConsumerTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ConfigFactory configFactory;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private ReceiverFactory messageReceiverFactory;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private MessageReceiver messageReceiver;
@@ -91,10 +95,11 @@ public class ConsumerTest {
     public void setUp() throws Exception {
         when(configFactory.getIntProperty(Configs.REPORT_PERIOD)).thenReturn(10);
         when(configFactory.getIntProperty(Configs.CONSUMER_INFLIGHT_SIZE)).thenReturn(50);
+        when(messageReceiverFactory.createMessageReceiver(any(Topic.class),any(Subscription.class))).thenReturn(messageReceiver);
         when(messageConverterResolver.converterFor(any(Message.class), any(Subscription.class)))
                 .thenReturn(new NoOperationMessageConverter());
 
-        consumer = spy(new SerialConsumer(messageReceiver, hermesMetrics, SUBSCRIPTION,
+        consumer = spy(new SerialConsumer(messageReceiverFactory, hermesMetrics, SUBSCRIPTION,
                 consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, messageConverterResolver, TOPIC));
 
         doNothing().when(consumer).setThreadName();

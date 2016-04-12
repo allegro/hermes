@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
+import com.codahale.metrics.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -11,11 +12,13 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommit
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
@@ -23,7 +26,7 @@ public class SerialConsumer implements Consumer {
 
     private static final Logger logger = LoggerFactory.getLogger(SerialConsumer.class);
 
-    private final MessageReceiver messageReceiver;
+    private final ReceiverFactory messageReceiverFactory;
     private final HermesMetrics hermesMetrics;
     private final ConsumerRateLimiter rateLimiter;
     private final SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues;
@@ -38,11 +41,11 @@ public class SerialConsumer implements Consumer {
     private final CountDownLatch stoppedLatch = new CountDownLatch(1);
     private volatile boolean consuming = true;
 
-    public SerialConsumer(MessageReceiver messageReceiver, HermesMetrics hermesMetrics, Subscription subscription,
+    public SerialConsumer(ReceiverFactory messageReceiverFactory, HermesMetrics hermesMetrics, Subscription subscription,
                           ConsumerRateLimiter rateLimiter, SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues,
                           ConsumerMessageSender sender, Semaphore inflightSemaphore, Trackers trackers,
                           MessageConverterResolver messageConverterResolver, Topic topic) {
-        this.messageReceiver = messageReceiver;
+        this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
@@ -61,7 +64,24 @@ public class SerialConsumer implements Consumer {
     @Override
     public void run() {
         setThreadName();
+
+        logger.info("Starting consumer for subscription {} ", subscription.getId());
+
+        Timer.Context timer = new Timer().time();
+        MessageReceiver messageReceiver = initializeMessageReceiver();
         rateLimiter.initialize();
+
+        logger.info("Started consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
+
+        startConsumption(messageReceiver);
+
+        messageReceiver.stop();
+        unsetThreadName();
+        logger.info("Stopped consumer for subscription {}", subscription.getId());
+        stoppedLatch.countDown();
+    }
+
+    private void startConsumption(MessageReceiver messageReceiver) {
         while (isConsuming()) {
             try {
                 inflightSemaphore.acquire();
@@ -78,10 +98,16 @@ public class SerialConsumer implements Consumer {
                 logger.error("Consumer loop failed for " + getId(), e);
             }
         }
-        messageReceiver.stop();
-        unsetThreadName();
-        logger.info("Stopped consumer for subscription {}", subscription.getId());
-        stoppedLatch.countDown();
+    }
+
+    private MessageReceiver initializeMessageReceiver() {
+        try {
+            logger.debug("Consumer: preparing message receiver for subscription {}", subscription.getId());
+            return messageReceiverFactory.createMessageReceiver(topic, subscription);
+        } catch (Exception e) {
+            logger.info("Failed to create consumer for subscription {} ", subscription.getId(), e);
+            throw e;
+        }
     }
 
     private void sendMessage(Message message) {

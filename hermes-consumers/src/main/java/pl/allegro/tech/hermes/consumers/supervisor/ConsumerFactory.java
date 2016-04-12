@@ -78,10 +78,9 @@ public class ConsumerFactory {
                 subscription, hermesMetrics, clock, configFactory);
 
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
-        MessageReceiver messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription);
 
         if (subscription.isBatchSubscription()) {
-            return new BatchConsumer(messageReceiver,
+            return new BatchConsumer(messageReceiverFactory,
                     batchSenderFactory.create(subscription),
                     batchFactory,
                     subscriptionOffsetCommitQueues,
@@ -98,7 +97,7 @@ public class ConsumerFactory {
                     consumerRateLimitSupervisor);
 
             return new SerialConsumer(
-                    messageReceiver,
+                    messageReceiverFactory,
                     hermesMetrics,
                     subscription,
                     consumerRateLimiter,

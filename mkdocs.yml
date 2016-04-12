@@ -15,7 +15,7 @@ markdown_extensions:
         anchorlink: true
 
 extra:
-    version: '0.8.6-hotfix1'
+    version: '0.8.6-hotfix3'
     brand_image: 'img/hermes-mini.png'
 
 pages:
@@ -35,6 +35,7 @@ pages:
   - Deployment:
       - 'Packaging': 'deployment/packaging.md'
       - 'Deployment': 'deployment/deployment.md'
+      - 'Logging': 'deployment/logging.md'
       - 'Metrics': 'deployment/metrics.md'
   - Configuration:
     - 'Kafka and Zookeeper': 'configuration/kafka-and-zookeeper.md'

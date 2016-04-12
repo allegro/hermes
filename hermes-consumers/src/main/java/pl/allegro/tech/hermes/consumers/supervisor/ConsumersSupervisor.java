@@ -204,8 +204,10 @@ public class ConsumersSupervisor {
         logger.info("Creating consumer for {}", subscription.getId());
         try {
             Consumer consumer = consumerFactory.createConsumer(subscription);
+            logger.debug("Created consumer for {}", subscription.getId());
             consumerHolder.add(subscription.getTopicName(), subscription.getName(), consumer);
             executor.execute(consumer);
+            logger.debug("Consumer for {} was created and executed ", subscription.getId());
         } catch (Exception ex) {
             logger.info("Failed to create consumer for subscription {} ", subscription.getId(), ex);
         }
