@@ -12,14 +12,11 @@ import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaMissingException;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
-import pl.allegro.tech.hermes.frontend.publishing.callbacks.AsyncContextExecutionCallback;
-import pl.allegro.tech.hermes.frontend.publishing.callbacks.BrokerListenersPublishingCallback;
-import pl.allegro.tech.hermes.frontend.publishing.callbacks.HttpPublishingCallback;
-import pl.allegro.tech.hermes.frontend.publishing.callbacks.MessageStatePublishingCallback;
-import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.callbacks.*;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
+import pl.allegro.tech.hermes.frontend.publishing.message.preview.PreviewMessageLog;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
@@ -39,6 +36,7 @@ import static org.apache.commons.lang.StringUtils.strip;
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
+import static pl.allegro.tech.hermes.common.config.Configs.PREVIEW_MESSAGE_ENABLED;
 
 public class PublishingServlet extends HttpServlet {
 
@@ -49,10 +47,12 @@ public class PublishingServlet extends HttpServlet {
     private final MessagePublisher messagePublisher;
     private final BrokerListeners listeners;
     private final MessageFactory messageFactory;
+    private final PreviewMessageLog previewMessageLog;
 
     private final Integer defaultAsyncTimeout;
     private final Integer longAsyncTimeout;
     private final Integer chunkSize;
+    private final boolean previewEnabled;
 
     @Inject
     public PublishingServlet(TopicsCache topicsCache,
@@ -62,11 +62,12 @@ public class PublishingServlet extends HttpServlet {
                              Trackers trackers,
                              MessagePublisher messagePublisher,
                              BrokerListeners listeners,
-                             MessageFactory messageFactory) {
+                             MessageFactory messageFactory, PreviewMessageLog previewMessageLog) {
 
         this.topicsCache = topicsCache;
         this.messagePublisher = messagePublisher;
         this.messageFactory = messageFactory;
+        this.previewMessageLog = previewMessageLog;
         this.errorSender = new ErrorSender(objectMapper);
         this.hermesMetrics = hermesMetrics;
         this.trackers = trackers;
@@ -74,6 +75,7 @@ public class PublishingServlet extends HttpServlet {
         this.defaultAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_IDLE_TIMEOUT);
         this.longAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_LONG_IDLE_TIMEOUT);
         this.chunkSize = configFactory.getIntProperty(Configs.FRONTEND_REQUEST_CHUNK_SIZE);
+        this.previewEnabled = configFactory.getBooleanProperty(PREVIEW_MESSAGE_ENABLED);
     }
 
     @Override
@@ -108,8 +110,7 @@ public class PublishingServlet extends HttpServlet {
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
                         messagePublisher.publish(message, topic, messageState,
                                 listeners,
-                                new AsyncContextExecutionCallback(asyncContext,
-                                        new MessageStatePublishingCallback(messageState),
+                                new AsyncContextExecutionCallback(asyncContext, new MessageStatePublishingCallback(messageState),
                                         new HttpPublishingCallback(httpResponder),
                                         new MetricsPublishingCallback(hermesMetrics, topic),
                                         new BrokerListenersPublishingCallback(listeners)));
@@ -118,6 +119,10 @@ public class PublishingServlet extends HttpServlet {
                         httpResponder.badRequest(exception);
                     } catch (CouldNotLoadSchemaException | SchemaMissingException e) {
                         httpResponder.internalError(e, "Could not load schema for published message");
+                    } finally {
+                        if (previewEnabled) {
+                            previewMessageLog.add(messageContent, topic.getName());
+                        }
                     }
                 }),
                 input -> httpResponder.badRequest(input, "Validation error"),

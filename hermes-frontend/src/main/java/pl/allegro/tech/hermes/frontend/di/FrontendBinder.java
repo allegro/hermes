@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.zookeeper.ZookeeperTopicsCacheFactory;
+import pl.allegro.tech.hermes.frontend.di.factories.PreviewMessageLogFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
@@ -15,6 +16,9 @@ import pl.allegro.tech.hermes.frontend.publishing.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.MessagePublisher;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
+import pl.allegro.tech.hermes.frontend.publishing.message.preview.PreviewMessageLog;
+import pl.allegro.tech.hermes.frontend.publishing.message.preview.PreviewMessagePersister;
+import pl.allegro.tech.hermes.frontend.publishing.message.preview.ZookeeperPreviewMessageLog;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
@@ -66,6 +70,8 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageFactory.class);
         bindSingleton(BackupMessagesLoader.class);
         bindSingleton(PersistentBufferExtension.class);
+        bindFactory(PreviewMessageLogFactory.class).in(Singleton.class).to(PreviewMessageLog.class);
+        bindSingleton(PreviewMessagePersister.class);
     }
 
     private <T> void bindSingleton(Class<T> clazz) {

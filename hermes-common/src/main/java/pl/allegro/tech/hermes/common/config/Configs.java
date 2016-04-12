@@ -157,7 +157,9 @@ public enum Configs {
     SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS("schema.repository.http.read.timeout.ms", 2000),
     SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS("schema.repository.http.connect.timeout.ms", 2000),
 
-    UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
+    UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000),
+    PREVIEW_MESSAGE_ENABLED("preview.message.enabled", false),
+    PREVIEW_MESSAGE_LOG_PERSIST_PERIOD_MS("preview.message.log.persist.period.ms", 30000);
 
     private final String name;
 

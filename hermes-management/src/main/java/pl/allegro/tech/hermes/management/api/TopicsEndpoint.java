@@ -4,35 +4,22 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.PatchData;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicMetrics;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
-import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Optional;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.Response.status;
 
 @Component
@@ -54,7 +41,7 @@ public class TopicsEndpoint {
             @DefaultValue("") @QueryParam("groupName") String groupName,
             @DefaultValue("false") @QueryParam("tracked") boolean tracked) {
 
-        return tracked? listTracked(groupName) : listNames(groupName);
+        return tracked ? listTracked(groupName) : listNames(groupName);
     }
 
     @POST
@@ -74,7 +61,7 @@ public class TopicsEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @RolesAllowed({ Roles.GROUP_OWNER, Roles.ADMIN })
+    @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
     public Response create(Topic topic) {
         topicService.createTopic(topic);
@@ -84,7 +71,7 @@ public class TopicsEndpoint {
     @DELETE
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
-    @RolesAllowed({ Roles.GROUP_OWNER, Roles.ADMIN })
+    @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName) {
         topicService.removeTopic(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)));
@@ -95,7 +82,7 @@ public class TopicsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
-    @RolesAllowed({ Roles.GROUP_OWNER, Roles.ADMIN })
+    @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update topic", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch) {
         topicService.updateTopic(TopicName.fromQualifiedName(qualifiedTopicName), patch);
@@ -120,8 +107,33 @@ public class TopicsEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
+    @Path("/{topicName}/preview")
+    @ApiOperation(value = "Topic publisher preview", httpMethod = HttpMethod.GET)
+    public List<String> getPreview(@PathParam("topicName") String qualifiedTopicName) {
+        return topicService.previewText(TopicName.fromQualifiedName(qualifiedTopicName));
+    }
+
+    @GET
+    @Produces(APPLICATION_OCTET_STREAM)
+    @Path("/{topicName}/preview/{idx}")
+    @ApiOperation(value = "Topic publisher preview", httpMethod = HttpMethod.GET)
+    public byte[] getPreviewRaw(@PathParam("topicName") String qualifiedTopicName, @PathParam("idx") Integer idx) {
+        TopicName topicName = TopicName.fromQualifiedName(qualifiedTopicName);
+        Optional<byte[]> preview = topicService.preview(topicName, idx);
+        if (preview.isPresent()) {
+            return preview.get();
+        } else {
+            throw new NotFoundException(format(
+                    "Message preview not found for topic %s and offset %d",
+                    topicName, idx
+            ));
+        }
+    }
+
+    @GET
+    @Produces(APPLICATION_JSON)
     @Path("/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}")
-    @RolesAllowed({ Roles.ADMIN })
+    @RolesAllowed({Roles.ADMIN})
     @ApiOperation(value = "Fetch single message from specified brokers cluster", httpMethod = HttpMethod.GET)
     public String preview(@PathParam("topicName") String qualifiedTopicName,
                           @PathParam("brokersClusterName") String brokersClusterName,
@@ -131,8 +143,8 @@ public class TopicsEndpoint {
             return topicService.fetchSingleMessageFromPrimary(brokersClusterName, TopicName.fromQualifiedName(qualifiedTopicName), partition, offset);
         } catch (BrokerNotFoundForPartitionException | SingleMessageReaderException exception) {
             throw new NotFoundException(format(
-                "Message not found for brokers cluster %s, topic %s, partition %d and offset %d",
-                brokersClusterName, qualifiedTopicName, partition, offset
+                    "Message not found for brokers cluster %s, topic %s, partition %d and offset %d",
+                    brokersClusterName, qualifiedTopicName, partition, offset
             ));
         }
     }
