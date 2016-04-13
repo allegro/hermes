@@ -16,6 +16,7 @@ public class ZookeeperPaths {
     public static final String CONSUMERS_WORKLOAD_PATH = "consumers-workload";
     public static final String METRICS_PATH = "metrics";
     public static final String ADMIN_PATH = "admin";
+    public static final String PREVIEW_PATH = "preview";
 
     private final String basePath;
 
@@ -117,5 +118,9 @@ public class ZookeeperPaths {
                 subscriptionName,
                 METRICS_PATH,
                 metricName);
+    }
+
+    public static String previewElementPath(String previewPath, String index) {
+        return Joiner.on(URL_SEPARATOR).join(previewPath, index);
     }
 }
