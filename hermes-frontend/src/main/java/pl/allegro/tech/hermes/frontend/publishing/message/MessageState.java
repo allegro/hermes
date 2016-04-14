@@ -1,8 +1,5 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
-import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.SENDING_TO_KAFKA;
-import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.SENT_TO_KAFKA;
-
 public class MessageState {
 
     public enum State {
@@ -25,9 +22,5 @@ public class MessageState {
 
     public synchronized State getState() {
         return state;
-    }
-
-    public synchronized boolean wasDelegatedToKafka() {
-        return state == SENDING_TO_KAFKA || state == SENT_TO_KAFKA;
     }
 }

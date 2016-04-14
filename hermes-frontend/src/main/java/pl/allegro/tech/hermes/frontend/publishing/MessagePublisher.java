@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
+import pl.allegro.tech.hermes.frontend.publishing.message.RequestTimeoutLock;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -22,9 +23,11 @@ public class MessagePublisher {
         this.brokerMessageProducer = brokerMessageProducer;
     }
 
-    public void publish(Message message, Topic topic, MessageState messageState, BrokerListeners listeners, PublishingCallback callback) {
-        messageState.setState(SENDING_TO_KAFKA_PRODUCER_QUEUE);
-        brokerMessageProducer.send(message, topic, callback);
-        messageState.setState(SENDING_TO_KAFKA);
+    public void publish(Message message, Topic topic, MessageState messageState, RequestTimeoutLock requestTimeoutLock, BrokerListeners listeners, PublishingCallback callback) {
+        if (requestTimeoutLock.tryLock()) {
+            messageState.setState(SENDING_TO_KAFKA_PRODUCER_QUEUE);
+            brokerMessageProducer.send(message, topic, callback);
+            messageState.setState(SENDING_TO_KAFKA);
+        } //else message rejected - 408 returned
     }
 }

@@ -20,6 +20,7 @@ import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCal
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
+import pl.allegro.tech.hermes.frontend.publishing.message.RequestTimeoutLock;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
@@ -96,8 +97,9 @@ public class PublishingServlet extends HttpServlet {
         final AsyncContext asyncContext = request.startAsync();
         final HttpResponder httpResponder = new HttpResponder(trackers, messageId, response, asyncContext, topic, errorSender, messageState,
                 request.getRemoteHost());
+        final RequestTimeoutLock requestTimeoutLock = new RequestTimeoutLock();
 
-        asyncContext.addListener(new TimeoutAsyncListener(httpResponder, messageState));
+        asyncContext.addListener(new TimeoutAsyncListener(httpResponder, requestTimeoutLock));
         asyncContext.addListener(new MetricsAsyncListener(hermesMetrics, topic.getName(), topic.getAck()));
         asyncContext.setTimeout(topic.isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout);
 
@@ -106,7 +108,7 @@ public class PublishingServlet extends HttpServlet {
                     try {
                         Message message = messageFactory.create(request, topic, messageId, messageContent);
                         asyncContext.addListener(new BrokerTimeoutAsyncListener(httpResponder, message, topic, messageState, listeners));
-                        messagePublisher.publish(message, topic, messageState,
+                        messagePublisher.publish(message, topic, messageState, requestTimeoutLock,
                                 listeners,
                                 new AsyncContextExecutionCallback(asyncContext,
                                         new MessageStatePublishingCallback(messageState),
