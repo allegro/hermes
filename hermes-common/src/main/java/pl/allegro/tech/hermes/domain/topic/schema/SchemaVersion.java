@@ -2,11 +2,12 @@ package pl.allegro.tech.hermes.domain.topic.schema;
 
 import com.google.common.base.Joiner;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public final class SchemaVersion {
+public final class SchemaVersion implements Serializable {
 
     private final int value;
 

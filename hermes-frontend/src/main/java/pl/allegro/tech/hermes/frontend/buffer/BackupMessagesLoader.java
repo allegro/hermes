@@ -13,10 +13,11 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.BrokerListenersPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
-import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.inject.Inject;
@@ -49,8 +50,8 @@ public class BackupMessagesLoader {
     private final int messageMaxAgeHours;
     private final int resendSleep;
     private final int maxResendRetries;
-
     private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, Topic>>> toResend = new AtomicReference<>();
+    private final MessageFactory messageFactory;
 
     @Inject
     public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
@@ -58,12 +59,14 @@ public class BackupMessagesLoader {
                                 BrokerListeners brokerListeners,
                                 TopicsCache topicsCache,
                                 Trackers trackers,
-                                ConfigFactory config) {
+                                ConfigFactory config,
+                                MessageFactory messageFactory) {
         this.brokerMessageProducer = brokerMessageProducer;
         this.hermesMetrics = hermesMetrics;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
         this.trackers = trackers;
+        this.messageFactory = messageFactory;
         this.secondsToWaitForTopicsCache = config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE);
         this.messageMaxAgeHours = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS);
         this.resendSleep = config.getIntProperty(KAFKA_PRODUCER_ACK_TIMEOUT) + secondsToWaitForTopicsCache * 1000;
@@ -100,11 +103,18 @@ public class BackupMessagesLoader {
         int sentCounter = 0;
         int discardedCounter = 0;
         for (BackupMessage backupMessage : messages) {
-            Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
-            Optional<Topic> topic = loadTopic(fromQualifiedName(backupMessage.getQualifiedTopicName()));
-            if (sendMessageIfNeeded(message, topic, "sending")) {
-                sentCounter++;
+            TopicName topicName = fromQualifiedName(backupMessage.getQualifiedTopicName());
+            Optional<Topic> topic = loadTopic(topicName);
+
+            if (topic.isPresent()) {
+                Message message = messageFactory.create(topic.get(), backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), backupMessage.getSchemaVersionOptional());
+                if (sendMessageIfNeeded(message, topic.get(), "sending")) {
+                    sentCounter++;
+                } else {
+                    discardedCounter++;
+                }
             } else {
+                logger.info("Discarded message, no topic for name {}.", topicName );
                 discardedCounter++;
             }
         }
@@ -119,7 +129,7 @@ public class BackupMessagesLoader {
         int discardedCounter = 0;
         for (Pair<Message, Topic> messageAndTopic : messageAndTopicList) {
             Message message = messageAndTopic.getKey();
-            Optional<Topic> topic = Optional.of(messageAndTopic.getValue());
+            Topic topic = messageAndTopic.getValue();
             if (sendMessageIfNeeded(message, topic, "resending")) {
                 sentCounter++;
             } else {
@@ -130,12 +140,12 @@ public class BackupMessagesLoader {
         logger.info("Resent {} messages and discarded {} messages from the backup storage retry {}.", sentCounter, discardedCounter, retry);
     }
 
-    private boolean sendMessageIfNeeded(Message message, Optional<Topic> topic, String contextName) {
-        if (topic.isPresent() && isNotStale(message)) {
-            sendMessage(message, topic.get());
+    private boolean sendMessageIfNeeded(Message message, Topic topic, String contextName) {
+        if (isNotStale(message)) {
+            sendMessage(message, topic);
             return true;
         } else {
-            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topic.get().getQualifiedName(),
+            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topic.getQualifiedName(),
                     new String(message.getData(), Charset.defaultCharset()));
             return false;
         }
