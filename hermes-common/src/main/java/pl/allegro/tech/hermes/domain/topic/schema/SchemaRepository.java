@@ -5,6 +5,7 @@ import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 
 public class SchemaRepository {
@@ -53,4 +54,9 @@ public class SchemaRepository {
         }
         return compiledSchemaRepository.getSchema(topic, version);
     }
+
+    public List<SchemaVersion> versions(Topic topic) {
+        return schemaVersionsRepository.versions(topic);
+    }
+
 }

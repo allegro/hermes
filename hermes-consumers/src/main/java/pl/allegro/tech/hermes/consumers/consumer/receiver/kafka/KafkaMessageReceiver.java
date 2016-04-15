@@ -138,7 +138,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
             throw new MessageReceivingTimeoutException("No messages received", consumerTimeoutException);
         } catch (Exception e) {
             if (message != null) {
-                logger.error("Error while receiving message. Last read message: %s Partition: %d Offset: %d",
+                logger.error("Error while receiving message. Last read message: {} Partition: {} Offset: {}",
                     new String(message.message()), message.partition(), message.offset(), e);
             }
             throw new InternalProcessingException("Message received failed", e);
@@ -147,7 +147,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
 
     private UnwrappedMessageContent getUnwrappedMessageContent(MessageAndMetadata<byte[], byte[]> message) {
         if (topic.getContentType() == ContentType.AVRO) {
-            return messageContentWrapper.unwrapAvro(message.message(), topic, version -> schemaRepository.getAvroSchema(topic, version));
+            return messageContentWrapper.unwrapAvro(message.message(), topic, version -> schemaRepository.getAvroSchema(topic, version), schemaRepository::versions);
         } else if (topic.getContentType() == ContentType.JSON) {
             return messageContentWrapper.unwrapJson(message.message());
         }
