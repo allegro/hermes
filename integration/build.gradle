@@ -20,15 +20,25 @@ project.configurations {
     code refers to: http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-versions
  */
 def getAlpnVersion() {
-    def matcher = (System.getProperty("java.version") =~ /_(\d+)-/)
-    def version = matcher.find() ? matcher.group(1) : null
+    def matcher = (System.getProperty("java.version") =~ /_(\d+)(-.*)?/)
+    def version = matcher.find() ? Integer.parseInt(matcher.group(1)) : -1
     switch(version) {
         case 0..24:
             return '8.1.0.v20141016'
         case 25..30:
             return '8.1.2.v20141202'
-        default:
+        case 31..50:
             return '8.1.3.v20150130'
+        case 51..59:
+            return '8.1.4.v20150727'
+        case 60..64:
+            return '8.1.5.v20150921'
+        case 65..70:
+            return '8.1.6.v20151105'
+        case 71..77:
+            return '8.1.7.v20160121'
+        default:
+            throw new IllegalStateException("ALPN version not defined for Java version: ${System.getProperty("java.version")}; extracted minor version: ${version}")
     }
 }
 
