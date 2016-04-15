@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.publishing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 import pl.allegro.tech.hermes.frontend.publishing.message.RequestTimeoutLock;
 
 import javax.servlet.AsyncEvent;
@@ -13,10 +14,12 @@ class TimeoutAsyncListener implements AsyncListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(TimeoutAsyncListener.class);
 
     private final HttpResponder httpResponder;
+    private final MessageState messageState;
     private final RequestTimeoutLock requestTimeoutLock;
 
-    TimeoutAsyncListener(HttpResponder httpResponder, RequestTimeoutLock requestTimeoutLock) {
+    TimeoutAsyncListener(HttpResponder httpResponder, MessageState messageState, RequestTimeoutLock requestTimeoutLock) {
         this.httpResponder = httpResponder;
+        this.messageState = messageState;
         this.requestTimeoutLock = requestTimeoutLock;
     }
 
@@ -26,11 +29,15 @@ class TimeoutAsyncListener implements AsyncListener {
 
     @Override
     public void onTimeout(AsyncEvent event) throws IOException {
-        if (requestTimeoutLock.tryLock()) {
+        requestTimeoutLock.lock();
+        if (messageState.equals(MessageState.State.WAITING_FOR_FIRST_PORTION_OF_DATA) ||
+                messageState.equals(MessageState.State.PARSING) ||
+                messageState.equals(MessageState.State.PARSED)) {
             httpResponder.timeout(event.getThrowable());
-        } else {
+        } else if (messageState.equals(MessageState.State.SENDING_TO_KAFKA)) {
             httpResponder.accept();
         }
+
     }
 
     @Override

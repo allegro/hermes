@@ -10,4 +10,12 @@ public class RequestTimeoutLock {
     public boolean tryLock() {
         return lock.tryLock();
     }
+
+    public void unlock() {
+        lock.unlock();
+    }
+
+    public void lock() {
+        lock.lock();
+    }
 }

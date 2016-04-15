@@ -28,6 +28,7 @@ public class MessagePublisher {
             messageState.setState(SENDING_TO_KAFKA_PRODUCER_QUEUE);
             brokerMessageProducer.send(message, topic, callback);
             messageState.setState(SENDING_TO_KAFKA);
+            requestTimeoutLock.unlock();
         } //else message rejected - 408 returned
     }
 }

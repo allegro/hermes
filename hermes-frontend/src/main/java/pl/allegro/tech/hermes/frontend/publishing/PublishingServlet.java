@@ -99,7 +99,7 @@ public class PublishingServlet extends HttpServlet {
                 request.getRemoteHost());
         final RequestTimeoutLock requestTimeoutLock = new RequestTimeoutLock();
 
-        asyncContext.addListener(new TimeoutAsyncListener(httpResponder, requestTimeoutLock));
+        asyncContext.addListener(new TimeoutAsyncListener(httpResponder, messageState, requestTimeoutLock));
         asyncContext.addListener(new MetricsAsyncListener(hermesMetrics, topic.getName(), topic.getAck()));
         asyncContext.setTimeout(topic.isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout);
 
@@ -112,7 +112,7 @@ public class PublishingServlet extends HttpServlet {
                                 listeners,
                                 new AsyncContextExecutionCallback(asyncContext,
                                         new MessageStatePublishingCallback(messageState),
-                                        new HttpPublishingCallback(httpResponder),
+                                        new HttpPublishingCallback(httpResponder, requestTimeoutLock),
                                         new MetricsPublishingCallback(hermesMetrics, topic),
                                         new BrokerListenersPublishingCallback(listeners)));
 
