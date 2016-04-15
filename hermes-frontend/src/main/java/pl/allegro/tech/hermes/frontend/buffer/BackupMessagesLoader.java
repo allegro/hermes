@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
 import com.jayway.awaitility.core.ConditionTimeoutException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -22,15 +24,17 @@ import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS;
+import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class BackupMessagesLoader {
 
@@ -43,6 +47,10 @@ public class BackupMessagesLoader {
     private final Trackers trackers;
     private final int secondsToWaitForTopicsCache;
     private final int messageMaxAgeHours;
+    private final int resendSleep;
+    private final int maxResendRetries;
+
+    private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, Topic>>> toResend = new AtomicReference<>();
 
     @Inject
     public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
@@ -58,33 +66,83 @@ public class BackupMessagesLoader {
         this.trackers = trackers;
         this.secondsToWaitForTopicsCache = config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE);
         this.messageMaxAgeHours = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS);
+        this.resendSleep = config.getIntProperty(KAFKA_PRODUCER_ACK_TIMEOUT) + secondsToWaitForTopicsCache * 1000;
+        this.maxResendRetries = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES);
     }
 
     public void loadMessages(MessageRepository messageRepository) {
         List<BackupMessage> messages = messageRepository.findAll();
-
         logger.info("Loading {} messages from backup storage.", messages.size());
+        int retry = 0;
+        toResend.set(new ConcurrentLinkedQueue<>());
+
+        sendMessages(messages);
+
+        do {
+            if (retry > 0) {
+                List<Pair<Message, Topic>> retryMessages = new ArrayList(toResend.getAndSet(new ConcurrentLinkedQueue<>()));
+                resendMessages(retryMessages, retry);
+            }
+            try {
+                Thread.sleep(resendSleep);
+            } catch (InterruptedException e) {
+                logger.warn("Sleep interrupted", e);
+            }
+            retry++;
+        } while (toResend.get().size() > 0 && retry <= maxResendRetries);
+
+        logger.info("Finished resending messages from backup storage after retry #{} with #{} not sent messages.", retry, toResend.get().size());
+    }
+
+    private void sendMessages(List<BackupMessage> messages) {
+        logger.info("Sending {} messages from backup storage.", messages.size());
 
         int sentCounter = 0;
         int discardedCounter = 0;
         for (BackupMessage backupMessage : messages) {
             Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
             Optional<Topic> topic = loadTopic(fromQualifiedName(backupMessage.getQualifiedTopicName()));
-            if (topic.isPresent() && isNotStale(backupMessage)) {
+            if (sendMessageIfNeeded(message, topic, "sending")) {
                 sentCounter++;
-                sendMessage(message, topic.get());
             } else {
                 discardedCounter++;
-                logger.warn("Not sending stale message {} {} {}", backupMessage.getMessageId(), backupMessage.getQualifiedTopicName(),
-                        new String(backupMessage.getData(), Charset.defaultCharset()));
             }
         }
 
-        logger.info("Loaded and sent {} messages and discarded {} messages from the backup storage", sentCounter, discardedCounter);
+        logger.info("Loaded and sent {} messages and discarded {} messages from the backup storage.", sentCounter, discardedCounter);
     }
 
-    private boolean isNotStale(BackupMessage backupMessage) {
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(backupMessage.getTimestamp()), ZoneId.systemDefault())
+    private void resendMessages(List<Pair<Message, Topic>> messageAndTopicList, int retry) {
+        logger.info("Resending {} messages from backup storage retry {}.", messageAndTopicList.size(), retry);
+
+        int sentCounter = 0;
+        int discardedCounter = 0;
+        for (Pair<Message, Topic> messageAndTopic : messageAndTopicList) {
+            Message message = messageAndTopic.getKey();
+            Optional<Topic> topic = Optional.of(messageAndTopic.getValue());
+            if (sendMessageIfNeeded(message, topic, "resending")) {
+                sentCounter++;
+            } else {
+                discardedCounter++;
+            }
+        }
+
+        logger.info("Resent {} messages and discarded {} messages from the backup storage retry {}.", sentCounter, discardedCounter, retry);
+    }
+
+    private boolean sendMessageIfNeeded(Message message, Optional<Topic> topic, String contextName) {
+        if (topic.isPresent() && isNotStale(message)) {
+            sendMessage(message, topic.get());
+            return true;
+        } else {
+            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topic.get().getQualifiedName(),
+                    new String(message.getData(), Charset.defaultCharset()));
+            return false;
+        }
+    }
+
+    private boolean isNotStale(Message message) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(message.getTimestamp()), ZoneId.systemDefault())
                 .isAfter(LocalDateTime.now().minusHours(messageMaxAgeHours));
     }
 
@@ -96,6 +154,7 @@ public class BackupMessagesLoader {
                     @Override
                     public void onUnpublished(Message message, Topic topic, Exception exception) {
                         trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage());
+                        toResend.get().add(ImmutablePair.of(message, topic));
                     }
 
                     @Override
