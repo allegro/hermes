@@ -36,7 +36,7 @@ public class BatchDeliveryTest extends IntegrationTest {
     private static final TestMessage SINGLE_MESSAGE = TestMessage.simple();
 
     @Test
-    public void shouldDeliverMessagesInBatch() throws IOException {
+    public void shouldDeliverMessagesInBatch() throws IOException, InterruptedException {
         // given
         Topic topic = operations.buildTopic("batchSizeTest", "topic");
         operations.createBatchSubscription(topic, HTTP_ENDPOINT_URL, buildBatchPolicy()
@@ -52,6 +52,7 @@ public class BatchDeliveryTest extends IntegrationTest {
 
         // then
         expectSingleBatch(SMALL_BATCH);
+        Thread.sleep(10000);
     }
 
     @Test
