@@ -66,13 +66,14 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         props.put("zookeeper.connect", configFactory.getStringProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING));
         props.put("zookeeper.connection.timeout.ms", configFactory.getIntPropertyAsString(Configs.ZOOKEEPER_CONNECTION_TIMEOUT));
         props.put("zookeeper.session.timeout.ms", configFactory.getIntPropertyAsString(Configs.ZOOKEEPER_SESSION_TIMEOUT));
-        props.put("zookeeper.sync.time.ms", configFactory.getIntPropertyAsString(Configs.ZOOKEEPER_SYNC_TIME));
         props.put("auto.commit.enable", "false");
         props.put("fetch.wait.max.ms", "10000");
         props.put("consumer.timeout.ms", configFactory.getIntPropertyAsString(Configs.KAFKA_CONSUMER_TIMEOUT_MS));
         props.put("auto.offset.reset", configFactory.getStringProperty(Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET));
         props.put("offsets.storage", configFactory.getStringProperty(Configs.KAFKA_CONSUMER_OFFSETS_STORAGE));
         props.put("dual.commit.enabled", Boolean.toString(configFactory.getBooleanProperty(Configs.KAFKA_CONSUMER_DUAL_COMMIT_ENABLED)));
+        props.put("rebalance.max.retries", configFactory.getIntPropertyAsString(Configs.KAFKA_CONSUMER_REBALANCE_MAX_RETRIES));
+        props.put("rebalance.backoff.ms", configFactory.getIntPropertyAsString(Configs.KAFKA_CONSUMER_REBALANCE_BACKOFF));
 
         return new ConsumerConfig(props);
     }
