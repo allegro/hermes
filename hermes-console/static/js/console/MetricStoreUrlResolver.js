@@ -57,7 +57,7 @@ function GraphiteUrlResolver(config) {
             '2xx': url(compile('sumSeries({}.consumer.*.status.{}.2xx.m1_rate)', [prefix, subscriptionPath(group, topic, subscription)])),
             '4xx': url(compile('sumSeries({}.consumer.*.status.{}.4xx.m1_rate)', [prefix, subscriptionPath(group, topic, subscription)])),
             '5xx': url(compile('sumSeries({}.consumer.*.status.{}.5xx.m1_rate)', [prefix, subscriptionPath(group, topic, subscription)])),
-            lag: url(compile('sumSeries({}.consumer-offset.*.{}_{}.{}_{}_{}.*.lag)', [
+            lag: url(compile('sumSeries({}.consumer-offset.*.{}_{}*.{}_{}_{}.*.lag)', [
                     prefix, sanitize(group), sanitize(topic), sanitize(group), sanitize(topic), sanitize(subscription)
                 ]))
         };
