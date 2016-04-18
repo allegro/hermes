@@ -7,23 +7,25 @@ public class MessageMetadata {
     private final long offset;
     private final int partition;
     private final String topic;
+    private final String kafkaTopic;
     private final String subscription;
     private final long publishingTimestamp;
     private final long readingTimestamp;
 
     public MessageMetadata(String messageId, long offset, int partition, String topic, String subscription,
-                           long publishingTimestamp, long readingTimestamp) {
-        this(messageId, "", offset, partition, topic, subscription, publishingTimestamp, readingTimestamp);
+                           String kafkaTopic, long publishingTimestamp, long readingTimestamp) {
+        this(messageId, "", offset, partition, topic, subscription, kafkaTopic, publishingTimestamp, readingTimestamp);
     }
 
     public MessageMetadata(String messageId, String batchId, long offset, int partition, String topic, String subscription,
-                           long publishingTimestamp, long readingTimestamp) {
+                           String kafkaTopic, long publishingTimestamp, long readingTimestamp) {
         this.messageId = messageId;
         this.batchId = batchId;
         this.offset = offset;
         this.partition = partition;
         this.topic = topic;
         this.subscription = subscription;
+        this.kafkaTopic = kafkaTopic;
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
     }
@@ -58,5 +60,9 @@ public class MessageMetadata {
 
     public String getBatchId() {
         return batchId;
+    }
+
+    public String getKafkaTopic() {
+        return kafkaTopic;
     }
 }
