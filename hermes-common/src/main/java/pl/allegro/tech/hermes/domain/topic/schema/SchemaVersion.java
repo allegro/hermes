@@ -1,6 +1,10 @@
 package pl.allegro.tech.hermes.domain.topic.schema;
 
+import com.google.common.base.Joiner;
+
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public final class SchemaVersion {
 
@@ -39,4 +43,9 @@ public final class SchemaVersion {
     public String toString() {
         return "SchemaVersion(" + value + ")";
     }
+
+    public static String toString(List<SchemaVersion> versions) {
+        return "[" + Joiner.on(',').join(versions.stream().map(SchemaVersion::value).collect(Collectors.toList())) + "]";
+    }
+
 }
