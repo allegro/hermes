@@ -4,11 +4,13 @@ import com.google.common.io.Files;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 import java.io.File;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -32,6 +34,7 @@ public class ChronicleMapMessageRepositoryTest {
         String id = "id1";
         Message message = new JsonMessage(id, messageContent, timestamp);
         String qualifiedName = "groupName.topic";
+        Optional<SchemaVersion> schemaVersionOptional = Optional.empty();
 
         Topic topic = topic(qualifiedName).build();
 
@@ -39,7 +42,7 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id, messageContent, timestamp, qualifiedName));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id, messageContent, timestamp, qualifiedName, schemaVersionOptional));
 
         //when
         messageRepository.delete(id);
@@ -58,6 +61,7 @@ public class ChronicleMapMessageRepositoryTest {
         String id2 = "id2";
         Message message2 = new JsonMessage(id2, messageContent, timestamp);
         String qualifiedName = "groupName.topic";
+        Optional<SchemaVersion> schemaVersionOptional = Optional.empty();
 
         Topic topic = topic(qualifiedName).build();
 
@@ -68,14 +72,14 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message2, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id1, messageContent, timestamp, qualifiedName));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id1, messageContent, timestamp, qualifiedName, schemaVersionOptional));
 
         //when
         messageRepository.delete(id1);
 
         //then
         assertThat(messageRepository.findAll()).hasSize(1);
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id2, messageContent, timestamp, qualifiedName));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id2, messageContent, timestamp, qualifiedName, schemaVersionOptional));
     }
 
     @Test
