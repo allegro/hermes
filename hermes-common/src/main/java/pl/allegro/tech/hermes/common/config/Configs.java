@@ -13,7 +13,6 @@ public enum Configs {
     ZOOKEEPER_BASE_SLEEP_TIME("zookeeper.base.sleep.time", 1000),
     ZOOKEEPER_CONNECTION_TIMEOUT("zookeeper.connection.timeout", 10000),
     ZOOKEEPER_SESSION_TIMEOUT("zookeeper.session.timeout", 10000),
-    ZOOKEEPER_SYNC_TIME("zookeeper.sync.time", 20000),
 
     ZOOKEEPER_AUTHORIZATION_ENABLED("zookeeper.authorization.enabled", false),
     ZOOKEEPER_AUTHORIZATION_SCHEME("zookeeper.authorization.scheme", "digest"),
@@ -36,8 +35,10 @@ public enum Configs {
     KAFKA_CONSUMER_AUTO_OFFSET_RESET("kafka.consumer.auto.offset.reset", "largest"),
     KAFKA_CONSUMER_OFFSETS_STORAGE("kafka.consumer.offsets.storage", "kafka"),
     KAFKA_CONSUMER_DUAL_COMMIT_ENABLED("kafka.consumer.dual.commit.enabled", true),
-    KAFKA_CONSUMER_METADATA_READ_TIMEOUT("kafka.consumers.metadata.read.timeout", 5000),
+    KAFKA_CONSUMER_METADATA_READ_TIMEOUT("kafka.consumer.metadata.read.timeout", 5000),
     KAFKA_CONSUMER_OFFSET_COMMITTER_BROKER_CONNECTION_EXPIRATION("kafka.consumer.offset.commiter.broker.connection.expiration", 60),
+    KAFKA_CONSUMER_REBALANCE_MAX_RETRIES("kafka.consumer.rebalance.max.retries", 150),
+    KAFKA_CONSUMER_REBALANCE_BACKOFF("kafka.consumer.rebalance.backoff", 4000),
 
     KAFKA_SIMPLE_CONSUMER_TIMEOUT_MS("kafka.simple.consumer.timeout.ms", 5000),
     KAFKA_SIMPLE_CONSUMER_BUFFER_SIZE("kafka.simple.consumer.buffer.size", 64 * 1024),
