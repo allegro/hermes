@@ -272,7 +272,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     private void assertBodyDeserializesIntoUser(String body, AvroUser user) {
-        AvroUser avroUser = AvroUser.create(user.getSchema(), body.getBytes());
+        AvroUser avroUser = AvroUser.create(user.getCompiledSchema(), body.getBytes());
         assertThat(avroUser.getName()).isEqualTo(user.getName());
         assertThat(avroUser.getAge()).isEqualTo(user.getAge());
         assertThat(avroUser.getFavoriteColor()).isEqualTo(user.getFavoriteColor());

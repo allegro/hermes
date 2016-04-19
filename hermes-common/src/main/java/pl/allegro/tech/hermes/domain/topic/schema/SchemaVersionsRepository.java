@@ -15,6 +15,9 @@ public interface SchemaVersionsRepository {
         return versions(topic).stream().findFirst();
     }
 
-    List<SchemaVersion> versions(Topic topic);
+    default List<SchemaVersion> versions(Topic topic) {
+        return versions(topic, false);
+    }
 
+    List<SchemaVersion> versions(Topic topic, boolean online);
 }

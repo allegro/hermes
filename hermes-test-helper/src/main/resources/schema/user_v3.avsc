@@ -3,6 +3,7 @@
     "type": "record",
     "name": "User",
     "fields": [
+        {"name": "foobar", "type": ["null", "int"]},
         {
               "name": "__metadata",
               "type": ["null", {"type": "map", "values": "string"}],
