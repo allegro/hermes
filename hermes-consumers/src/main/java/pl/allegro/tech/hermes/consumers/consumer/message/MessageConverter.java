@@ -12,6 +12,7 @@ public class MessageConverter {
                 message.getPartition(),
                 message.getTopic(),
                 subscription.getName(),
+                message.getKafkaTopic().asString(),
                 message.getPublishingTimestamp(),
                 message.getReadingTimestamp());
     }

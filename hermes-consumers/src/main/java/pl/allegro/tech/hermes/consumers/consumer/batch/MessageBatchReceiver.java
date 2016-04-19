@@ -104,10 +104,10 @@ public class MessageBatchReceiver {
         }
     }
 
-    private MessageMetadata messageMetadata(Subscription subscription, String batchId, Message next) {
-        return new MessageMetadata(next.getId(), batchId, next.getOffset(), next.getPartition(),
-                subscription.getQualifiedTopicName(), subscription.getName(),
-                next.getPublishingTimestamp(), next.getReadingTimestamp());
+    private MessageMetadata messageMetadata(Subscription subscription, String batchId, Message message) {
+        return new MessageMetadata(message.getId(), batchId, message.getOffset(), message.getPartition(),
+                subscription.getQualifiedTopicName(), subscription.getName(), message.getKafkaTopic().asString(),
+                message.getPublishingTimestamp(), message.getReadingTimestamp());
     }
 
     private boolean isReceiving() {
