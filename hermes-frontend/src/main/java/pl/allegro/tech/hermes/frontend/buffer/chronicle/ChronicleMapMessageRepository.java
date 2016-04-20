@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ChronicleMapMessageRepository implements MessageRepository {
@@ -29,14 +30,14 @@ public class ChronicleMapMessageRepository implements MessageRepository {
             throw new ChronicleMapCreationException(e);
         }
 
-        if(map == null) {
+        if (map == null) {
             logger.error("Backup file could not be read - check if it was not corrupted.");
         }
     }
 
     @Override
     public void save(Message message, Topic topic) {
-        map.put(message.getId(), new ChronicleMapEntryValue(message.getData(), message.getTimestamp(), topic.getQualifiedName()));
+        map.put(message.getId(), new ChronicleMapEntryValue(message.getData(), message.getTimestamp(), topic.getQualifiedName(), message.getCompiledSchema().map(s -> s.getVersion()).orElse(null)));
     }
 
     @Override
@@ -55,6 +56,6 @@ public class ChronicleMapMessageRepository implements MessageRepository {
     }
 
     private BackupMessage toBackupMessage(String id, ChronicleMapEntryValue entryValue) {
-        return new BackupMessage(id, entryValue.getData(), entryValue.getTimestamp(), entryValue.getQualifiedTopicName());
+        return new BackupMessage(id, entryValue.getData(), entryValue.getTimestamp(), entryValue.getQualifiedTopicName(), Optional.ofNullable(entryValue.getSchemaVersion()));
     }
 }

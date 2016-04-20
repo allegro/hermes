@@ -20,6 +20,7 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -49,6 +50,8 @@ public class BackupMessagesLoaderTest {
 
     private ConfigFactory configFactory = mock(ConfigFactory.class);
 
+    private MessageFactory messageFactory = mock(MessageFactory.class);
+
     private File tempDir;
 
     private final TopicName topicName = TopicName.fromQualifiedName("pl.allegro.tech.hermes.test");
@@ -73,9 +76,10 @@ public class BackupMessagesLoaderTest {
         when(configFactory.getIntProperty(Configs.MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE)).thenReturn(5);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(8);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(2);
+        prepareMessageFactoryMock();
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
-        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, metrics, listeners, topicsCache, trackers, configFactory);
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, metrics, listeners, topicsCache, trackers, configFactory, messageFactory);
 
         messageRepository.save(messageOfAge(1), topic);
         messageRepository.save(messageOfAge(10), topic);
@@ -96,6 +100,7 @@ public class BackupMessagesLoaderTest {
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(8);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(noOfSentCalls - 1);
         when(trackers.get(eq(topic))).thenReturn(new NoOperationPublishingTracker());
+        prepareMessageFactoryMock();
 
         doAnswer(new Answer() {
             public Object answer(InvocationOnMock invocation) {
@@ -107,7 +112,7 @@ public class BackupMessagesLoaderTest {
 
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
-        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, metrics, listeners, topicsCache, trackers, configFactory);
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, metrics, listeners, topicsCache, trackers, configFactory, messageFactory);
 
         messageRepository.save(messageOfAge(1), topic);
 
@@ -117,6 +122,15 @@ public class BackupMessagesLoaderTest {
         //then
         verify(producer, times(noOfSentCalls)).send(any(JsonMessage.class), eq(topic), any(PublishingCallback.class));
         verify(listeners, times(noOfSentCalls)).onError(any(JsonMessage.class), eq(topic), any(Exception.class));
+    }
+
+    private void prepareMessageFactoryMock() {
+        doAnswer(new Answer<Message>() {
+            public Message answer(InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                return new JsonMessage((String)args[1],(byte []) args[2],(long) args[3]);
+            }
+        }).when(messageFactory).create(eq(topic),anyString(),anyObject(),anyLong(),any());
     }
 
     private Message messageOfAge(int ageHours) {
