@@ -5,7 +5,7 @@ dependencies {
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-proxy-client', version: versions.jersey
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
-    compile(group: 'org.apache.kafka', name: 'kafka_2.10', version: '0.8.2.1') {
+    compile(group: 'org.apache.kafka', name: 'kafka_2.11', version: '0.8.2.1') {
         exclude group: 'javax.jms'
         exclude group: 'com.sun.jdmk'
         exclude group: 'com.sun.jmx'
@@ -36,4 +36,5 @@ dependencies {
     compile group: 'junit', name: 'junit', version: '4.11'
     compile group: 'org.testng', name: 'testng', version: '6.8.8'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.1'
+    compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
 }

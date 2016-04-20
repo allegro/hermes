@@ -11,9 +11,13 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import javax.inject.Inject;
 import java.time.Clock;
@@ -27,17 +31,26 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final Clock clock;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final SchemaRepository schemaRepository;
+    private final FilterChainFactory filterChainFactory;
+    private final Trackers trackers;
 
     @Inject
-    public KafkaMessageReceiverFactory(ConfigFactory configFactory, MessageContentWrapper messageContentWrapper,
-                                       HermesMetrics hermesMetrics, Clock clock, KafkaNamesMapper kafkaNamesMapper,
-                                       SchemaRepository schemaRepository) {
+    public KafkaMessageReceiverFactory(ConfigFactory configFactory,
+                                       MessageContentWrapper messageContentWrapper,
+                                       HermesMetrics hermesMetrics,
+                                       Clock clock,
+                                       KafkaNamesMapper kafkaNamesMapper,
+                                       SchemaRepository schemaRepository,
+                                       FilterChainFactory filterChainFactory,
+                                       Trackers trackers) {
         this.configFactory = configFactory;
         this.messageContentWrapper = messageContentWrapper;
         this.hermesMetrics = hermesMetrics;
         this.clock = clock;
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.schemaRepository = schemaRepository;
+        this.filterChainFactory = filterChainFactory;
+        this.trackers = trackers;
     }
 
     @Override
@@ -46,7 +59,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     }
 
     MessageReceiver create(Topic receivingTopic, ConsumerConfig consumerConfig, Subscription subscription) {
-        return new KafkaMessageReceiver(
+        MessageReceiver receiver = new KafkaMessageReceiver(
                 receivingTopic,
                 Consumer.createJavaConsumerConnector(consumerConfig),
                 messageContentWrapper,
@@ -57,6 +70,13 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 configFactory.getIntProperty(Configs.KAFKA_CONSUMER_TIMEOUT_MS),
                 subscription.toSubscriptionName(),
                 schemaRepository);
+
+        if (configFactory.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
+            SubscriptionOffsetCommitQueues offsets = new SubscriptionOffsetCommitQueues(subscription, hermesMetrics, clock, configFactory);
+            FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(offsets, trackers, hermesMetrics);
+            receiver = new FilteringMessageReceiver(receiver, filteredMessageHandler, filterChainFactory, subscription);
+        }
+        return receiver;
     }
 
     private ConsumerConfig createConsumerConfig(ConsumerGroupId groupId) {

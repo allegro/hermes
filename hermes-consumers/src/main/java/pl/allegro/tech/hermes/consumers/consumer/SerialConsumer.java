@@ -40,6 +40,7 @@ public class SerialConsumer implements Consumer {
 
     private final CountDownLatch stoppedLatch = new CountDownLatch(1);
     private volatile boolean consuming = true;
+    private MessageReceiver messageReceiver;
 
     public SerialConsumer(ReceiverFactory messageReceiverFactory, HermesMetrics hermesMetrics, Subscription subscription,
                           ConsumerRateLimiter rateLimiter, SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues,
@@ -55,6 +56,9 @@ public class SerialConsumer implements Consumer {
         this.trackers = trackers;
         this.messageConverterResolver = messageConverterResolver;
         this.topic = topic;
+        this.messageReceiver = () -> {
+            throw new IllegalStateException("Consumer not initialized");
+        };
     }
 
     private String getId() {
@@ -68,7 +72,7 @@ public class SerialConsumer implements Consumer {
         logger.info("Starting consumer for subscription {} ", subscription.getId());
 
         Timer.Context timer = new Timer().time();
-        MessageReceiver messageReceiver = initializeMessageReceiver();
+        this.messageReceiver = initializeMessageReceiver();
         rateLimiter.initialize();
 
         logger.info("Started consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
@@ -141,6 +145,7 @@ public class SerialConsumer implements Consumer {
     public void updateSubscription(Subscription newSubscription) {
         rateLimiter.updateSubscription(newSubscription);
         sender.updateSubscription(newSubscription);
+        messageReceiver.update(newSubscription);
         this.subscription = newSubscription;
     }
 

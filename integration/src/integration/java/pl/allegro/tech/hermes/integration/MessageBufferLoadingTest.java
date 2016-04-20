@@ -70,6 +70,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         FileUtils.deleteDirectory(tempDir);
     }
 
+
     @Test
     public void shouldBackupMessage() throws Exception {
         // given

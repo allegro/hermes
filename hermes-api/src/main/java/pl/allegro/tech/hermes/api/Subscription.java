@@ -9,7 +9,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -57,6 +59,12 @@ public class Subscription {
     @NotNull
     private DeliveryType deliveryType = DeliveryType.SERIAL;
 
+    private List<MessageFilterSpecification> filters = new ArrayList<>();
+
+    public List<MessageFilterSpecification> getFilters() {
+        return filters;
+    }
+
     public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
@@ -72,10 +80,12 @@ public class Subscription {
                          String contact,
                          MonitoringDetails monitoringDetails,
                          ContentType contentType,
-                         DeliveryType deliveryType) {
+                         DeliveryType deliveryType,
+                         List<MessageFilterSpecification> filters) {
         this.topicName = topicName;
         this.name = name;
         this.endpoint = endpoint;
+        this.filters = filters;
         this.state = state != null ? state : State.PENDING;
         this.description = description;
         this.trackingEnabled = trackingEnabled;
@@ -98,9 +108,10 @@ public class Subscription {
                                                         String supportTeam,
                                                         String contact,
                                                         MonitoringDetails monitoringDetails,
-                                                        ContentType contentType) {
+                                                        ContentType contentType,
+                                                        List<MessageFilterSpecification> filters) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, monitoringDetails, contentType, DeliveryType.SERIAL);
+                contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters);
     }
 
     public static Subscription createBatchSubscription(TopicName topicName,
@@ -113,9 +124,10 @@ public class Subscription {
                                                        String supportTeam,
                                                        String contact,
                                                        MonitoringDetails monitoringDetails,
-                                                       ContentType contentType) {
+                                                       ContentType contentType,
+                                                       List<MessageFilterSpecification> filters) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, monitoringDetails, contentType, DeliveryType.BATCH);
+                contact, monitoringDetails, contentType, DeliveryType.BATCH, filters);
     }
 
     @JsonCreator
@@ -130,7 +142,8 @@ public class Subscription {
                                       @JsonProperty("contact") String contact,
                                       @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
                                       @JsonProperty("contentType") ContentType contentType,
-                                      @JsonProperty("deliveryType") DeliveryType deliveryType) {
+                                      @JsonProperty("deliveryType") DeliveryType deliveryType,
+                                      @JsonProperty("filters") List<MessageFilterSpecification> filters) {
         DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
         Map<String, Object> validSubscriptionPolicy = subscriptionPolicy == null ? new HashMap<>() : subscriptionPolicy;
 
@@ -147,13 +160,14 @@ public class Subscription {
                 contact,
                 monitoringDetails,
                 contentType,
-                validDeliveryType
+                validDeliveryType,
+                filters == null? new ArrayList<>() : filters
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy, trackingEnabled, supportTeam, contact, monitoringDetails, contentType);
+        return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy, trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters);
     }
 
     @Override
@@ -176,7 +190,8 @@ public class Subscription {
                 && Objects.equals(this.supportTeam, other.supportTeam)
                 && Objects.equals(this.contact, other.contact)
                 && Objects.equals(this.monitoringDetails, other.monitoringDetails)
-                && Objects.equals(this.contentType, other.contentType);
+                && Objects.equals(this.contentType, other.contentType)
+                && Objects.equals(this.filters, other.filters);
     }
 
     public SubscriptionName toSubscriptionName() {
@@ -289,7 +304,8 @@ public class Subscription {
                     contact,
                     monitoringDetails,
                     contentType,
-                    deliveryType
+                    deliveryType,
+                    filters
             );
         }
         return this;
