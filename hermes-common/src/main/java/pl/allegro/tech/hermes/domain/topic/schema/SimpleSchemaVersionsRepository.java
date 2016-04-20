@@ -21,7 +21,7 @@ public class SimpleSchemaVersionsRepository implements SchemaVersionsRepository 
     }
 
     @Override
-    public List<SchemaVersion> versions(Topic topic) {
+    public List<SchemaVersion> versions(Topic topic, boolean online) {
         try {
             return schemaSourceProvider.versions(topic);
         } catch (Exception e) {

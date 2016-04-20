@@ -21,6 +21,7 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
 
     private static final Logger logger = LoggerFactory.getLogger(CachedSchemaVersionsRepository.class);
 
+    private final SchemaSourceProvider schemaSourceProvider;
     private final LoadingCache<Topic, List<SchemaVersion>> versionsCache;
 
     public CachedSchemaVersionsRepository(SchemaSourceProvider schemaSourceProvider, ExecutorService versionsReloader,
@@ -30,6 +31,7 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
 
     CachedSchemaVersionsRepository(SchemaSourceProvider schemaSourceProvider, ExecutorService versionsReloader,
                                    int refreshAfterWriteMinutes, int expireAfterWriteMinutes, Ticker ticker) {
+        this.schemaSourceProvider = schemaSourceProvider;
         this.versionsCache = CacheBuilder
                 .newBuilder()
                 .ticker(ticker)
@@ -39,9 +41,9 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
     }
 
     @Override
-    public List<SchemaVersion> versions(Topic topic) {
+    public List<SchemaVersion> versions(Topic topic, boolean online) {
         try {
-            return versionsCache.get(topic);
+            return online? schemaSourceProvider.versions(topic) : versionsCache.get(topic);
         } catch (ExecutionException e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
             return emptyList();
