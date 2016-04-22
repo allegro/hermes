@@ -7,7 +7,9 @@ import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
+import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.Releasable;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultSuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
@@ -54,7 +56,7 @@ public class ConsumerMessageSenderFactory {
     }
 
     public ConsumerMessageSender create(Subscription subscription, ConsumerRateLimiter consumerRateLimiter,
-                                        SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues, Semaphore inflightSemaphore) {
+                                        SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues, Releasable inflight) {
 
         SuccessHandler successHandler = new DefaultSuccessHandler(subscriptionOffsetCommitQueues, hermesMetrics, trackers);
         ErrorHandler errorHandler = new DefaultErrorHandler(subscriptionOffsetCommitQueues, hermesMetrics, undeliveredMessageLog,
@@ -66,7 +68,7 @@ public class ConsumerMessageSenderFactory {
                 errorHandler,
                 consumerRateLimiter,
                 rateLimiterReportingExecutor,
-                inflightSemaphore,
+                inflight,
                 hermesMetrics,
                 configFactory.getIntProperty(CONSUMER_SENDER_ASYNC_TIMEOUT_MS),
                 futureAsyncTimeout);

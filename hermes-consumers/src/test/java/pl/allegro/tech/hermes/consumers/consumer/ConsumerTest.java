@@ -8,11 +8,9 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
@@ -21,6 +19,7 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResol
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.Releasable;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -28,7 +27,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -83,10 +81,13 @@ public class ConsumerTest {
     private MessageConverterResolver messageConverterResolver;
 
     @Mock
-    Semaphore infligtSemaphore;
+    private Releasable releasable;
 
     @Mock
-    private  ConsumerMessageSender sender;
+    private ConsumerMessageSender sender;
+
+    @Mock
+    private ConsumerMessageSenderFactory consumerMessageSenderFactory;
 
     private SerialConsumer consumer;
 
@@ -95,12 +96,14 @@ public class ConsumerTest {
     public void setUp() throws Exception {
         when(configFactory.getIntProperty(Configs.REPORT_PERIOD)).thenReturn(10);
         when(configFactory.getIntProperty(Configs.CONSUMER_INFLIGHT_SIZE)).thenReturn(50);
-        when(messageReceiverFactory.createMessageReceiver(any(Topic.class),any(Subscription.class))).thenReturn(messageReceiver);
+        when(messageReceiverFactory.createMessageReceiver(any(Topic.class), any(Subscription.class))).thenReturn(messageReceiver);
         when(messageConverterResolver.converterFor(any(Message.class), any(Subscription.class)))
                 .thenReturn(new NoOperationMessageConverter());
+        when(consumerMessageSenderFactory.create(any(Subscription.class), any(ConsumerRateLimiter.class),
+                any(SubscriptionOffsetCommitQueues.class), any(Releasable.class))).thenReturn(sender);
 
         consumer = spy(new SerialConsumer(messageReceiverFactory, hermesMetrics, SUBSCRIPTION,
-                consumerRateLimiter, partitionOffsetHelper, sender, infligtSemaphore, trackers, messageConverterResolver, TOPIC));
+                consumerRateLimiter, partitionOffsetHelper, consumerMessageSenderFactory, trackers, messageConverterResolver, TOPIC, configFactory));
 
         doNothing().when(consumer).setThreadName();
         doNothing().when(consumer).unsetThreadName();

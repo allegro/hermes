@@ -1,10 +1,18 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.Subscription;
 
 public interface ProtocolMessageSenderProvider {
 
-    MessageSender create(EndpointAddress endpoint);
+    @Deprecated
+    default MessageSender create(EndpointAddress endpoint) {
+        throw new UnsupportedOperationException();
+    }
+
+    default MessageSender create(Subscription subscription) {
+        return create(subscription.getEndpoint());
+    }
 
     void start() throws Exception;
 

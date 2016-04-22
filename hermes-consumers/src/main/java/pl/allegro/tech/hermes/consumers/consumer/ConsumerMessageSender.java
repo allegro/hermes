@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.Releasable;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -14,11 +15,11 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -33,9 +34,10 @@ public class ConsumerMessageSender {
     private final ErrorHandler errorHandler;
     private final ConsumerRateLimiter rateLimiter;
     private final MessageSenderFactory messageSenderFactory;
-    private final Semaphore inflightSemaphore;
+    private final Releasable inflight;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
+    private int requestTimeoutMs;
     private ConsumerLatencyTimer consumerLatencyTimer;
     private MessageSender messageSender;
     private Subscription subscription;
@@ -44,7 +46,7 @@ public class ConsumerMessageSender {
 
     public ConsumerMessageSender(Subscription subscription, MessageSenderFactory messageSenderFactory, SuccessHandler successHandler,
                                  ErrorHandler errorHandler, ConsumerRateLimiter rateLimiter, ExecutorService deliveryReportingExecutor,
-                                 Semaphore inflightSemaphore, HermesMetrics hermesMetrics, int asyncTimeoutMs,
+                                 Releasable inflight, HermesMetrics hermesMetrics, int asyncTimeoutMs,
                                  FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout) {
         this.deliveryReportingExecutor = deliveryReportingExecutor;
         this.successHandler = successHandler;
@@ -53,9 +55,10 @@ public class ConsumerMessageSender {
         this.messageSenderFactory = messageSenderFactory;
         this.messageSender = messageSenderFactory.create(subscription);
         this.subscription = subscription;
-        this.inflightSemaphore = inflightSemaphore;
+        this.inflight = inflight;
         this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1);
         this.async = futureAsyncTimeout;
+        this.requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
     }
@@ -85,8 +88,12 @@ public class ConsumerMessageSender {
 
     public synchronized void updateSubscription(Subscription newSubscription) {
         boolean endpointUpdated = !this.subscription.getEndpoint().equals(newSubscription.getEndpoint());
+        boolean subscriptionPolicyUpdated = !Objects.equals(this.subscription.getSerialSubscriptionPolicy(), newSubscription.getSerialSubscriptionPolicy());
+        if (requestTimeoutMs != newSubscription.getSerialSubscriptionPolicy().getRequestTimeout()) {
+            requestTimeoutMs = newSubscription.getSerialSubscriptionPolicy().getRequestTimeout();
+        }
         this.subscription = newSubscription;
-        if (endpointUpdated) {
+        if (endpointUpdated || subscriptionPolicyUpdated) {
             this.messageSender = messageSenderFactory.create(newSubscription);
         }
     }
@@ -94,7 +101,7 @@ public class ConsumerMessageSender {
     private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
         rateLimiter.acquire();
         ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
-        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
+        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs));
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
     }
 
@@ -118,12 +125,12 @@ public class ConsumerMessageSender {
     }
 
     private void handleMessageDiscarding(Message message, MessageSendingResult result) {
-        inflightSemaphore.release();
+        inflight.release();
         errorHandler.handleDiscarded(message, subscription, result);
     }
 
     private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
-        inflightSemaphore.release();
+        inflight.release();
         successHandler.handle(message, subscription, result);
     }
 

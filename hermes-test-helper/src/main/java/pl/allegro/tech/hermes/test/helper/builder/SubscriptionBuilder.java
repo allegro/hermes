@@ -29,7 +29,7 @@ public class SubscriptionBuilder {
 
     private String description = "description";
 
-    private SubscriptionPolicy serialSubscriptionPolicy = new SubscriptionPolicy(100, 10, false, 100);
+    private SubscriptionPolicy serialSubscriptionPolicy = new SubscriptionPolicy(100, 10, 1000, false, 100);
 
     private BatchSubscriptionPolicy batchSubscriptionPolicy;
 
@@ -132,6 +132,14 @@ public class SubscriptionBuilder {
         return this;
     }
 
+    public SubscriptionBuilder withRequestTimeout(int timeout) {
+        SubscriptionPolicy policy = this.serialSubscriptionPolicy;
+        this.serialSubscriptionPolicy = SubscriptionPolicy.Builder.subscriptionPolicy().withRate(policy.getRate())
+                .withMessageTtl(policy.getMessageTtl()).withMessageBackoff(policy.getMessageBackoff())
+                .withRequestTimeout(timeout).build();
+        return this;
+    }
+
     public SubscriptionBuilder withTrackingEnabled(boolean trackingEnabled) {
         this.trackingEnabled = trackingEnabled;
         return this;
@@ -147,7 +155,7 @@ public class SubscriptionBuilder {
         return this;
     }
 
-    public SubscriptionBuilder withMonitoringDetails (MonitoringDetails monitoringDetails) {
+    public SubscriptionBuilder withMonitoringDetails(MonitoringDetails monitoringDetails) {
         this.monitoringDetails = monitoringDetails;
         return this;
     }
