@@ -12,10 +12,12 @@ import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogInfo;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.time.Duration;
 import java.util.Objects;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -133,10 +135,14 @@ public class ConsumerMessageSender {
     }
 
     private boolean shouldReduceSendingRate(MessageSendingResult result) {
-        return !result.isRetryLater() && subscriptionAllowsResending(result);
+        return !result.isRetryLater() && shouldResendMessage(result);
     }
 
-    private boolean subscriptionAllowsResending(MessageSendingResult result) {
+    private boolean messageSentSucceeded(MessageSendingResult result) {
+        return result.succeeded() || (result.isClientError() && !subscription.getSerialSubscriptionPolicy().isRetryClientErrors());
+    }
+
+    private boolean shouldResendMessage(MessageSendingResult result) {
         return !result.succeeded() && (!result.isClientError() || subscription.getSerialSubscriptionPolicy().isRetryClientErrors());
     }
 
@@ -158,7 +164,9 @@ public class ConsumerMessageSender {
                 handleMessageSendingSuccess(message, result);
             } else {
                 handleFailedSending(message, result);
-                message.incrementRetryCounter();
+
+                List<String> succeededUris = result.getSucceededUris(ConsumerMessageSender.this::messageSentSucceeded);
+                message.incrementRetryCounter(succeededUris);
 
                 long retryDelay = extractRetryDelay(result);
                 if (consumerIsConsuming && shouldAttemptResending(result, retryDelay)) {
@@ -170,7 +178,7 @@ public class ConsumerMessageSender {
         }
 
         private boolean shouldAttemptResending(MessageSendingResult result, long retryDelay) {
-            return !willExceedTtl(message, retryDelay) && subscriptionAllowsResending(result);
+            return !willExceedTtl(message, retryDelay) && shouldResendMessage(result);
         }
 
         private long extractRetryDelay(MessageSendingResult result) {
@@ -181,13 +189,18 @@ public class ConsumerMessageSender {
 
         private void retrySending(MessageSendingResult result) {
             if (result.isLoggable()) {
-                logger.info(
-                        format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                                subscription.getEndpoint(), message.getId(), message.getOffset(), message.getPartition(),
-                                subscription.getId(), result.getRootCause()),
-                        result.getFailure());
+                result.getLogInfo().stream().forEach(this::logResultInfo);
             }
+
             sendMessage(message);
+        }
+
+        private void logResultInfo(MessageSendingResultLogInfo logInfo) {
+            logger.info(
+                    format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
+                            logInfo.getUrl(), message.getId(), message.getOffset(), message.getPartition(),
+                            subscription.getId(), logInfo.getRootCause()),
+                    logInfo.getFailure());
         }
     }
 }

@@ -5,6 +5,8 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 public interface EndpointAddressResolver {
 
@@ -14,6 +16,10 @@ public interface EndpointAddressResolver {
 
     default URI resolve(EndpointAddress address, MessageBatch batch) throws EndpointAddressResolutionException {
         return resolve(address);
+    }
+
+    default List<URI> resolveAll(EndpointAddress address, Message message) throws EndpointAddressResolutionException {
+        return Collections.singletonList(resolve(address, message));
     }
 
     static URI resolve(EndpointAddress address) throws EndpointAddressResolutionException {

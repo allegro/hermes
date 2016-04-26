@@ -2,7 +2,9 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
+import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
@@ -22,7 +24,6 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     @Inject
     public JettyHttpMessageSenderProvider(
             HttpClient httpClient,
-            ConfigFactory configFactory,
             EndpointAddressResolver endpointAddressResolver,
             MetadataAppender<Request> metadataAppender,
             HttpAuthorizationProviderFactory authorizationProviderFactory) {
@@ -34,13 +35,23 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
 
     @Override
     public MessageSender create(Subscription subscription) {
-        ResolvableEndpointAddress resolvableEndpoint = new ResolvableEndpointAddress(subscription.getEndpoint(), endpointAddressResolver);
-        return new JettyMessageSender(httpClient,
-                resolvableEndpoint,
-                authorizationProviderFactory.create(subscription.getEndpoint()),
-                subscription.getSerialSubscriptionPolicy().getRequestTimeout(),
-                metadataAppender);
+        EndpointAddress endpoint = subscription.getEndpoint();
+        ResolvableEndpointAddress resolvableEndpoint = new ResolvableEndpointAddress(endpoint, endpointAddressResolver);
+        HttpRequestFactory requestFactory = httpRequestFactory(subscription);
+
+        if (subscription.getMode() == SubscriptionMode.BROADCAST) {
+            return new JettyBroadCastMessageSender(requestFactory, resolvableEndpoint);
+        } else {
+            return new JettyMessageSender(requestFactory, resolvableEndpoint);
+        }
     }
+
+    private HttpRequestFactory httpRequestFactory(Subscription subscription) {
+        EndpointAddress endpoint = subscription.getEndpoint();
+        int requestTimeout = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
+        return new HttpRequestFactory(httpClient, requestTimeout, metadataAppender, authorizationProviderFactory.create(endpoint));
+    }
+
 
     @Override
     public void start() throws Exception {

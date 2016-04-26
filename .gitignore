@@ -29,3 +29,4 @@ hermes-console/static/components
 hermes-console/node_modules
 hermes-console/config.json
 
+.DS_Store

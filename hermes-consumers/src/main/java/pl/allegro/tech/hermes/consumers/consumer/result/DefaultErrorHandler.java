@@ -37,23 +37,33 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
 
     @Override
     public void handleDiscarded(Message message, Subscription subscription, MessageSendingResult result) {
-        if(!result.hasHttpAnswer() && !result.isTimeout()) {
-            LOGGER.warn(
-                    "Abnormal delivery failure: subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
-                    subscription.getId(), result.getRootCause(), subscription.getEndpoint(), message.getId(),
-                    message.getPartition(), message.getOffset(), result.getFailure()
-            );
-        }
+        logResult(message, subscription, result);
 
         offsetHelper.remove(message);
 
         updateMeters(subscription);
         updateMetrics(Counters.DISCARDED, message, subscription);
 
-        undeliveredMessageLog.add(createUndeliveredMessage(subscription, new String(message.getData()), result.getFailure(), clock.millis(),
-                message.getPartition(), message.getOffset(), cluster));
+        addToMessageLog(message, subscription, result);
 
         trackers.get(subscription).logDiscarded(toMessageMetadata(message, subscription), result.getRootCause());
+    }
+
+    private void addToMessageLog(Message message, Subscription subscription, MessageSendingResult result) {
+        result.getLogInfo().forEach(logInfo ->
+                undeliveredMessageLog.add(createUndeliveredMessage(subscription, new String(message.getData()), logInfo.getFailure(), clock.millis(),
+                        message.getPartition(), message.getOffset(), cluster)));
+
+    }
+
+    private void logResult(Message message, Subscription subscription, MessageSendingResult result) {
+        result.getLogInfo().forEach(logInfo ->
+                LOGGER.warn(
+                        "Abnormal delivery failure: subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
+                        subscription.getId(), logInfo.getRootCause(), logInfo.getUrl(), message.getId(),
+                        message.getPartition(), message.getOffset(), logInfo.getFailure()
+                )
+        );
     }
 
     private void updateMeters(Subscription subscription) {

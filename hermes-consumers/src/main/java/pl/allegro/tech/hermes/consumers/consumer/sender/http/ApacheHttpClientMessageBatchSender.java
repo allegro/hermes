@@ -66,9 +66,9 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
     private MessageSendingResult send(HttpPost post) {
         try {
-            return new MessageSendingResult(client.execute(post).getStatusLine().getStatusCode());
+            return MessageSendingResult.ofStatusCode(client.execute(post).getStatusLine().getStatusCode());
         } catch (IOException e) {
-            return new MessageSendingResult(e);
+            return MessageSendingResult.failedResult(e);
         } finally {
             post.releaseConnection();
         }

@@ -37,9 +37,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.retryAfter;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -423,19 +420,19 @@ public class ConsumerMessageSenderTest {
     }
 
     private CompletableFuture<MessageSendingResult> success() {
-        return CompletableFuture.completedFuture(succeededResult());
+        return CompletableFuture.completedFuture(MessageSendingResult.succeededResult());
     }
 
     private CompletableFuture<MessageSendingResult> failure() {
-        return CompletableFuture.completedFuture(failedResult(exception()));
+        return CompletableFuture.completedFuture(MessageSendingResult.failedResult(exception()));
     }
 
     private CompletableFuture<MessageSendingResult> failure(int statusCode) {
-        return CompletableFuture.completedFuture(failedResult(statusCode));
+        return CompletableFuture.completedFuture(MessageSendingResult.failedResult(statusCode));
     }
 
     private CompletableFuture<MessageSendingResult> backoff(int seconds) {
-        return CompletableFuture.completedFuture(retryAfter(seconds));
+        return CompletableFuture.completedFuture(MessageSendingResult.retryAfter(seconds));
     }
 
     private void verifySemaphoreReleased() {
