@@ -14,6 +14,7 @@ public class SubscriptionPolicy {
     private static final int DEFAULT_MESSAGE_TTL = 3600;
     private static final int DEFAULT_MESSAGE_BACKOFF = 100;
     private static final int DEFAULT_REQUEST_TIMEOUT = 1000;
+    private static final int DEFAULT_INFLIGHT_SIZE = 100;
 
     @Min(1)
     private int rate = DEFAULT_RATE;
@@ -29,7 +30,8 @@ public class SubscriptionPolicy {
     @Max(60000)
     private int requestTimeout = DEFAULT_REQUEST_TIMEOUT;
 
-    private Integer inflightSize = null;
+    @Min(1)
+    private int inflightSize = DEFAULT_INFLIGHT_SIZE;
 
     private boolean retryClientErrors = false;
 
@@ -50,14 +52,6 @@ public class SubscriptionPolicy {
         this.inflightSize = inflightSize;
     }
 
-    public SubscriptionPolicy(int rate,
-                              int messageTtl,
-                              int requestTimeout,
-                              boolean retryClientErrors,
-                              int messageBackoff) {
-        this(rate, messageTtl, requestTimeout, retryClientErrors, messageBackoff, null);
-    }
-
     @JsonCreator
     public static SubscriptionPolicy create(Map<String, Object> properties) {
         return new SubscriptionPolicy(
@@ -66,7 +60,7 @@ public class SubscriptionPolicy {
                 (Integer) properties.getOrDefault("requestTimeout", DEFAULT_REQUEST_TIMEOUT),
                 (Boolean) properties.getOrDefault("retryClientErrors", false),
                 (Integer) properties.getOrDefault("messageBackoff", DEFAULT_MESSAGE_BACKOFF),
-                (Integer) properties.getOrDefault("inflightSize", null)
+                (Integer) properties.getOrDefault("inflightSize", DEFAULT_INFLIGHT_SIZE)
         );
     }
 

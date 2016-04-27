@@ -5,14 +5,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 
 public interface ProtocolMessageSenderProvider {
 
-    @Deprecated
-    default MessageSender create(EndpointAddress endpoint) {
-        throw new UnsupportedOperationException();
-    }
-
-    default MessageSender create(Subscription subscription) {
-        return create(subscription.getEndpoint());
-    }
+    MessageSender create(Subscription subscription);
 
     void start() throws Exception;
 

@@ -19,7 +19,9 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static java.lang.String.format;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
@@ -160,5 +162,18 @@ public class JettyMessageSenderTest {
         // then
         remoteServiceEndpoint.waitUntilReceived();
         assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Authorization")).isEqualTo("Basic Hello!");
+    }
+
+    @Test
+    public void shouldUseSuppliedTimeout() throws ExecutionException, InterruptedException, TimeoutException {
+        // given
+        JettyMessageSender messageSender = new JettyMessageSender(client, address, Optional.of(m -> "Basic Hello!"), 1, new DefaultHttpMetadataAppender());
+        Message message = MessageBuilder.withTestMessage().build();
+
+        // when
+        MessageSendingResult messageSendingResult = messageSender.send(message).get(1000, TimeUnit.MILLISECONDS);
+
+        // then
+        assertThat(messageSendingResult.isTimeout()).isTrue();
     }
 }

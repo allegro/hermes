@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
-import pl.allegro.tech.hermes.consumers.consumer.rate.Releasable;
+import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -34,7 +34,7 @@ public class ConsumerMessageSender {
     private final ErrorHandler errorHandler;
     private final ConsumerRateLimiter rateLimiter;
     private final MessageSenderFactory messageSenderFactory;
-    private final Releasable inflight;
+    private final InflightsPool inflight;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
     private int requestTimeoutMs;
@@ -46,7 +46,7 @@ public class ConsumerMessageSender {
 
     public ConsumerMessageSender(Subscription subscription, MessageSenderFactory messageSenderFactory, SuccessHandler successHandler,
                                  ErrorHandler errorHandler, ConsumerRateLimiter rateLimiter, ExecutorService deliveryReportingExecutor,
-                                 Releasable inflight, HermesMetrics hermesMetrics, int asyncTimeoutMs,
+                                 InflightsPool inflight, HermesMetrics hermesMetrics, int asyncTimeoutMs,
                                  FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout) {
         this.deliveryReportingExecutor = deliveryReportingExecutor;
         this.successHandler = successHandler;
@@ -89,9 +89,7 @@ public class ConsumerMessageSender {
     public synchronized void updateSubscription(Subscription newSubscription) {
         boolean endpointUpdated = !this.subscription.getEndpoint().equals(newSubscription.getEndpoint());
         boolean subscriptionPolicyUpdated = !Objects.equals(this.subscription.getSerialSubscriptionPolicy(), newSubscription.getSerialSubscriptionPolicy());
-        if (requestTimeoutMs != newSubscription.getSerialSubscriptionPolicy().getRequestTimeout()) {
-            requestTimeoutMs = newSubscription.getSerialSubscriptionPolicy().getRequestTimeout();
-        }
+        this.requestTimeoutMs = newSubscription.getSerialSubscriptionPolicy().getRequestTimeout();
         this.subscription = newSubscription;
         if (endpointUpdated || subscriptionPolicyUpdated) {
             this.messageSender = messageSenderFactory.create(newSubscription);

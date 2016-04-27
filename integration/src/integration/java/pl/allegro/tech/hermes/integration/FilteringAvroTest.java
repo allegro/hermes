@@ -34,7 +34,7 @@ public class FilteringAvroTest extends IntegrationTest {
     final static AvroUser ALICE = new AvroUser("Alice", 20, "magenta");
     final static AvroUser BOB_GREY = new AvroUser("Bob", 50, "grey");
 
-    private final static SubscriptionPolicy SUBSCRIPTION_POLICY = new SubscriptionPolicy(100, 10, 1000, false, 100);
+    private final static SubscriptionPolicy SUBSCRIPTION_POLICY = new SubscriptionPolicy(100, 10, 1000, false, 100, 100);
 
     @BeforeMethod
     public void initializeAlways() {

@@ -24,7 +24,6 @@ import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -352,7 +351,7 @@ public class ConsumerMessageSenderTest {
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
         when(messageSenderFactory.create(subscription)).thenReturn(messageSender);
         return new ConsumerMessageSender(subscription, messageSenderFactory, successHandler, errorHandler, rateLimiter,
-                Executors.newSingleThreadExecutor(), inflightSemaphore.asReleasable(), hermesMetrics, ASYNC_TIMEOUT_MS,
+                Executors.newSingleThreadExecutor(), () -> inflightSemaphore.release(), hermesMetrics, ASYNC_TIMEOUT_MS,
                 new FutureAsyncTimeout<>(MessageSendingResult::loggedFailResult, Executors.newSingleThreadScheduledExecutor()));
     }
 

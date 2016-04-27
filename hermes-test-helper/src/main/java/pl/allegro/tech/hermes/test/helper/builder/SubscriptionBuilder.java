@@ -29,7 +29,7 @@ public class SubscriptionBuilder {
 
     private String description = "description";
 
-    private SubscriptionPolicy serialSubscriptionPolicy = new SubscriptionPolicy(100, 10, 1000, false, 100);
+    private SubscriptionPolicy serialSubscriptionPolicy = new SubscriptionPolicy(100, 10, 1000, false, 100, 100);
 
     private BatchSubscriptionPolicy batchSubscriptionPolicy;
 

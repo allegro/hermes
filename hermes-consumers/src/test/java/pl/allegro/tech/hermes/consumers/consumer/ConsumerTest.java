@@ -19,7 +19,7 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResol
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
-import pl.allegro.tech.hermes.consumers.consumer.rate.Releasable;
+import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -81,7 +81,7 @@ public class ConsumerTest {
     private MessageConverterResolver messageConverterResolver;
 
     @Mock
-    private Releasable releasable;
+    private InflightsPool releasable;
 
     @Mock
     private ConsumerMessageSender sender;
@@ -100,7 +100,7 @@ public class ConsumerTest {
         when(messageConverterResolver.converterFor(any(Message.class), any(Subscription.class)))
                 .thenReturn(new NoOperationMessageConverter());
         when(consumerMessageSenderFactory.create(any(Subscription.class), any(ConsumerRateLimiter.class),
-                any(SubscriptionOffsetCommitQueues.class), any(Releasable.class))).thenReturn(sender);
+                any(SubscriptionOffsetCommitQueues.class), any(InflightsPool.class))).thenReturn(sender);
 
         consumer = spy(new SerialConsumer(messageReceiverFactory, hermesMetrics, SUBSCRIPTION,
                 consumerRateLimiter, partitionOffsetHelper, consumerMessageSenderFactory, trackers, messageConverterResolver, TOPIC, configFactory));

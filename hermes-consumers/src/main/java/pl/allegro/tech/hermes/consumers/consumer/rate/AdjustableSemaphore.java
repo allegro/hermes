@@ -10,7 +10,6 @@ import java.util.concurrent.Semaphore;
  *   http://blog.teamlazerbeez.com/2009/04/20/javas-semaphore-resizing/
  *
  *  Most notable changes:
- *  - not final class
  *  - set maxPermits in constructor
  *
  *  Implementation was deliberately not refactored for easier comparison with the original.
@@ -21,7 +20,7 @@ import java.util.concurrent.Semaphore;
  * A simple implementation of an adjustable semaphore.
  */
 @ThreadSafe
-public class AdjustableSemaphore {
+public final class AdjustableSemaphore {
 
     /**
      * semaphore starts at 0 capacity; must be set by setMaxPermits before use
@@ -77,10 +76,6 @@ public class AdjustableSemaphore {
         }
 
         this.maxPermits = newMax;
-    }
-
-    public Releasable asReleasable() {
-        return this::release;
     }
 
     /**

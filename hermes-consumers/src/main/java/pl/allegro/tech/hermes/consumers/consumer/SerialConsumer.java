@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResol
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
-import pl.allegro.tech.hermes.consumers.consumer.rate.Releasable;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -20,7 +19,6 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.ofNullable;
@@ -59,7 +57,8 @@ public class SerialConsumer implements Consumer {
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
         this.subscriptionOffsetCommitQueues = subscriptionOffsetCommitQueues;
-        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, subscriptionOffsetCommitQueues, inflightSemaphore.asReleasable());
+        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, subscriptionOffsetCommitQueues,
+                () -> inflightSemaphore.release());
         this.trackers = trackers;
         this.messageConverterResolver = messageConverterResolver;
         this.topic = topic;
@@ -101,7 +100,7 @@ public class SerialConsumer implements Consumer {
     private void startConsumption(MessageReceiver messageReceiver) {
         while (isConsuming()) {
             try {
-                Releasable inflight = inflightSemaphore.acquire();
+                inflightSemaphore.acquire();
 
                 Message message = messageReceiver.next();
 
