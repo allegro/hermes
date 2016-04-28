@@ -36,7 +36,7 @@ class KafkaTimestampExtractor {
     private UnwrappedMessageContent unwrapContent(byte[] message) {
         switch (kafkaTopic.contentType()) {
             case AVRO:
-                return messageContentWrapper.unwrapAvro(message, topic, version -> schemaRepository.getAvroSchema(topic, version), schemaRepository::versions);
+                return messageContentWrapper.unwrapAvro(message, topic, schemaRepository);
             case JSON:
                 return messageContentWrapper.unwrapJson(message);
         }

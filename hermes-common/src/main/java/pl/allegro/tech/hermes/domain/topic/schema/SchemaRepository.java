@@ -3,12 +3,13 @@ package pl.allegro.tech.hermes.domain.topic.schema;
 import com.github.fge.jsonschema.main.JsonSchema;
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.message.AvroSchemaSource;
 
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 
-public class SchemaRepository {
+public class SchemaRepository implements AvroSchemaSource {
 
     private final SchemaVersionsRepository schemaVersionsRepository;
     private final CompiledSchemaRepository<Schema> avroSchemaRepository;
@@ -31,10 +32,6 @@ public class SchemaRepository {
         return getSchema(topic, version, avroSchemaRepository);
     }
 
-    public CompiledSchema<Schema> getAvroSchema(Topic topic, Optional<SchemaVersion> version) {
-        return version.map(v -> getAvroSchema(topic, v)).orElse(getAvroSchema(topic));
-    }
-
     public CompiledSchema<JsonSchema> getJsonSchema(Topic topic) {
         return getSchema(topic, jsonSchemaRepository);
     }
@@ -55,8 +52,8 @@ public class SchemaRepository {
         return compiledSchemaRepository.getSchema(topic, version);
     }
 
-    public List<SchemaVersion> versions(Topic topic) {
-        return schemaVersionsRepository.versions(topic);
+    @Override
+    public List<SchemaVersion> versions(Topic topic, boolean online) {
+        return schemaVersionsRepository.versions(topic, online);
     }
-
 }

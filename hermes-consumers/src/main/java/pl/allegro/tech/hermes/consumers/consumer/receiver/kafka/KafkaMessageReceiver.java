@@ -147,7 +147,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
 
     private UnwrappedMessageContent getUnwrappedMessageContent(MessageAndMetadata<byte[], byte[]> message) {
         if (topic.getContentType() == ContentType.AVRO) {
-            return messageContentWrapper.unwrapAvro(message.message(), topic, version -> schemaRepository.getAvroSchema(topic, version), schemaRepository::versions);
+            return messageContentWrapper.unwrapAvro(message.message(), topic, schemaRepository);
         } else if (topic.getContentType() == ContentType.JSON) {
             return messageContentWrapper.unwrapJson(message.message());
         }

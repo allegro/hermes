@@ -1,26 +1,18 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import org.apache.avro.Schema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.message.AvroSchemaSource;
 import pl.allegro.tech.hermes.common.message.serialization.SchemaAwarePayload;
 import pl.allegro.tech.hermes.common.message.serialization.SchemaAwareSerDe;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaMissingException;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 
 import static java.util.Optional.of;
 
 public class MessageContentWrapper {
-    private static final Logger logger = LoggerFactory.getLogger(MessageContentWrapper.class);
-
     private final JsonMessageContentWrapper jsonMessageContentWrapper;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
 
@@ -37,32 +29,14 @@ public class MessageContentWrapper {
 
     public UnwrappedMessageContent unwrapAvro(byte[] data,
                                               Topic topic,
-                                              Function<Optional<SchemaVersion>, CompiledSchema<Schema>> schemaProvider,
-                                              Function<Topic, List<SchemaVersion>> schemaVersionsProvider) {
+                                              AvroSchemaSource schemaSource) {
         return topic.isSchemaVersionAwareSerializationEnabled() ?
-                deserialize(data, schemaProvider) : unwrapAvroWithFallback(data, topic, schemaProvider, schemaVersionsProvider);
+                deserialize(data, topic, schemaSource) : schemaSource.tryHard(topic, schema -> avroMessageContentWrapper.unwrapContent(data, schema));
     }
 
-    private UnwrappedMessageContent unwrapAvroWithFallback(byte[] data,
-                                                           Topic topic,
-                                                           Function<Optional<SchemaVersion>, CompiledSchema<Schema>> schemaProvider,
-                                                           Function<Topic, List<SchemaVersion>> schemaVersionsProvider) {
-        List<SchemaVersion> availableVersions = schemaVersionsProvider.apply(topic);
-        for (SchemaVersion version : availableVersions) {
-            try {
-                return avroMessageContentWrapper.unwrapContent(data, schemaProvider.apply(Optional.of(version)));
-            } catch (Exception ex) {
-                logger.debug("Could not unwrap message for topic {}, schema version {}, fallback to previous.", topic.getQualifiedName(), version.value());
-            }
-        }
-        logger.error("Could not unwrap message for topic {} with any known schema {}", topic.getQualifiedName(), SchemaVersion.toString(availableVersions));
-        throw new SchemaMissingException(topic);
-    }
-
-
-    private UnwrappedMessageContent deserialize(byte[] data, Function<Optional<SchemaVersion>, CompiledSchema<Schema>> schemaProvider) {
+    private UnwrappedMessageContent deserialize(byte[] data, Topic topic, AvroSchemaSource schemaSource) {
         SchemaAwarePayload payload = SchemaAwareSerDe.deserialize(data);
-        return avroMessageContentWrapper.unwrapContent(payload.getPayload(), schemaProvider.apply(of(payload.getSchemaVersion())));
+        return avroMessageContentWrapper.unwrapContent(payload.getPayload(), schemaSource.getAvroSchema(topic, payload.getSchemaVersion()));
     }
 
     public byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema, Map<String, String> externalMetadata) {
