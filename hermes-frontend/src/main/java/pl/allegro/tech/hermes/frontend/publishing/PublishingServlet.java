@@ -36,7 +36,7 @@ import static org.apache.commons.lang.StringUtils.strip;
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
-import static pl.allegro.tech.hermes.common.config.Configs.PREVIEW_MESSAGE_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MESSAGE_PREVIEW_ENABLED;
 
 public class PublishingServlet extends HttpServlet {
 
@@ -75,7 +75,7 @@ public class PublishingServlet extends HttpServlet {
         this.defaultAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_IDLE_TIMEOUT);
         this.longAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_LONG_IDLE_TIMEOUT);
         this.chunkSize = configFactory.getIntProperty(Configs.FRONTEND_REQUEST_CHUNK_SIZE);
-        this.previewEnabled = configFactory.getBooleanProperty(PREVIEW_MESSAGE_ENABLED);
+        this.previewEnabled = configFactory.getBooleanProperty(FRONTEND_MESSAGE_PREVIEW_ENABLED);
     }
 
     @Override

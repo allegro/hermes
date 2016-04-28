@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static pl.allegro.tech.hermes.common.config.Configs.PREVIEW_MESSAGE_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MESSAGE_PREVIEW_ENABLED;
 
 public class PreviewMessagePersister {
     private final int periodMs;
@@ -19,8 +19,8 @@ public class PreviewMessagePersister {
     @Inject
     public PreviewMessagePersister(PreviewMessageLog previewMessageLog, ConfigFactory configFactory) {
         this.previewMessageLog = previewMessageLog;
-        this.previewEnabled = configFactory.getBooleanProperty(PREVIEW_MESSAGE_ENABLED);
-        this.periodMs = configFactory.getIntProperty(Configs.PREVIEW_MESSAGE_LOG_PERSIST_PERIOD_MS);
+        this.previewEnabled = configFactory.getBooleanProperty(FRONTEND_MESSAGE_PREVIEW_ENABLED);
+        this.periodMs = configFactory.getIntProperty(Configs.FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD_MS);
         if (previewEnabled) {
             this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         } else {
