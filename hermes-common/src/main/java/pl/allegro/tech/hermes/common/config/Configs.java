@@ -124,7 +124,7 @@ public enum Configs {
     CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD("consumer.offset.commit.queue.alert.minimal.idle.period", 3600),
     CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE("consumer.offset.commit.queue.alert.size", 20_000),
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
-    CONSUMER_WORKLOAD_ALGORITHM("consumer.workload.algorithm", "legacy.mirror"),
+    CONSUMER_WORKLOAD_ALGORITHM("consumer.workload.algorithm", "mirror"),
     CONSUMER_WORKLOAD_REBALANCE_INTERVAL("consumer.workload.rebalance.interval.seconds", 30),
     CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION("consumer.workload.consumers.per.subscription", 2),
     CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER("consumer.workload.max.subscriptions.per.consumer", 200),
@@ -136,6 +136,10 @@ public enum Configs {
     CONSUMER_BATCH_CONNECTION_TIMEOUT("consumer.batch.connection.timeout", 500),
     CONSUMER_BATCH_SOCKET_TIMEOUT("consumer.batch.socket.timeout", 500),
     CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
+
+    CONSUMER_SUPERVISOR_TYPE("consumer.supervisor.type", "background"),
+    CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 10),
+    CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER("consumer.supervisor.background.unhealtyAfter", 60_000),
 
     GRAPHITE_HOST("graphite.host", "localhost"),
     GRAPHITE_PORT("graphite.port", 2003),

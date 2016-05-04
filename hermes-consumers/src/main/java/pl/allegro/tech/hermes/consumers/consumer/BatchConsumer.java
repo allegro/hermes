@@ -24,17 +24,27 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.status.MutableStatus;
+import pl.allegro.tech.hermes.consumers.consumer.status.Status;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.io.IOException;
+import java.time.Clock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.rholder.retry.WaitStrategies.fixedWait;
 import static java.util.Optional.of;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static pl.allegro.tech.hermes.consumers.consumer.status.Status.ShutdownCause.BROKEN;
+import static pl.allegro.tech.hermes.consumers.consumer.status.Status.StatusType.CONSUMING;
+import static pl.allegro.tech.hermes.consumers.consumer.status.Status.StatusType.STOPPED;
+import static pl.allegro.tech.hermes.consumers.consumer.status.Status.StatusType.STOPPING;
 
 public class BatchConsumer implements Consumer {
     private static final Logger logger = LoggerFactory.getLogger(BatchConsumer.class);
@@ -44,17 +54,21 @@ public class BatchConsumer implements Consumer {
     private final MessageBatchFactory batchFactory;
     private final SubscriptionOffsetCommitQueues offsets;
     private final CountDownLatch stoppedLatch = new CountDownLatch(1);
+    private MessageBatchReceiver receiver;
     private final HermesMetrics hermesMetrics;
     private final MessageConverterResolver messageConverterResolver;
     private final MessageContentWrapper messageContentWrapper;
     private final Topic topic;
     private final Trackers trackers;
-    private Optional<MessageBatchReceiver> receiver;
 
     private Subscription subscription;
     private volatile boolean consuming = true;
+    private volatile boolean restart = false;
 
     private BatchMonitoring monitoring;
+
+    private final BlockingQueue<Runnable> commands = new ArrayBlockingQueue<>(100);
+    private MutableStatus status;
 
     public BatchConsumer(ReceiverFactory messageReceiverFactory,
                          MessageBatchSender sender,
@@ -65,7 +79,8 @@ public class BatchConsumer implements Consumer {
                          HermesMetrics hermesMetrics,
                          Trackers trackers,
                          Subscription subscription,
-                         Topic topic) {
+                         Topic topic,
+                         Clock clock) {
         this.messageReceiverFactory = messageReceiverFactory;
         this.sender = sender;
         this.batchFactory = batchFactory;
@@ -77,21 +92,26 @@ public class BatchConsumer implements Consumer {
         this.messageContentWrapper = messageContentWrapper;
         this.topic = topic;
         this.trackers = trackers;
+        this.status = new MutableStatus(clock);
     }
 
     @Override
     public void run() {
-        setThreadName();
-        logger.info("Starting batch consumer for subscription {} ", subscription.getId());
-        Timer.Context timer = new Timer().time();
-        receiver = Optional.of(initializeMessageReceiver());
-        logger.info("Started batch consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
         try {
+            setThreadName();
+            restart = false;
+            status.set(Status.StatusType.STARTING);
+            logger.info("Starting batch consumer for subscription {} ", subscription.getId());
+            Timer.Context timer = new Timer().time();
+            receiver = initializeMessageReceiver();
+            logger.info("Started batch consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
+            status.set(Status.StatusType.STARTED);
             consume();
         } finally {
-            logger.info("Stopped consumer for subscription {}", subscription.getId());
             unsetThreadName();
+            logger.info("Stopped consumer for subscription {}", subscription.getId());
             stoppedLatch.countDown();
+            status.advance(STOPPED);
         }
     }
 
@@ -99,9 +119,13 @@ public class BatchConsumer implements Consumer {
         try {
             logger.debug("Consumer: preparing receiver for subscription {}", subscription.getId());
             MessageReceiver receiver = messageReceiverFactory.createMessageReceiver(topic, subscription);
+
             logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getId());
-            return new MessageBatchReceiver(receiver, batchFactory, hermesMetrics, messageConverterResolver, messageContentWrapper, topic, trackers);
+            MessageBatchReceiver batchReceiver = new MessageBatchReceiver(receiver, batchFactory, hermesMetrics, messageConverterResolver, messageContentWrapper, topic, trackers);
+
+            return batchReceiver;
         } catch (Exception e) {
+            status.set(STOPPING, BROKEN);
             logger.info("Failed to create consumer for subscription {} ", subscription.getId(), e);
             throw e;
         }
@@ -110,10 +134,12 @@ public class BatchConsumer implements Consumer {
     private void consume() {
         while (isConsuming()) {
             Optional<MessageBatch> inflight = Optional.empty();
+            status.set(CONSUMING);
             try {
+                processCommands();
                 logger.debug("Trying to create new batch [subscription={}].", subscription.getId());
 
-                MessageBatchingResult result = receiver.get().next(subscription);
+                MessageBatchingResult result = receiver.next(subscription);
                 inflight = of(result.getBatch());
                 inflight.ifPresent(batch -> {
                     logger.debug("Delivering batch [subscription={}].", subscription.getId());
@@ -127,6 +153,12 @@ public class BatchConsumer implements Consumer {
                 inflight.ifPresent(this::clean);
             }
         }
+    }
+
+    private void processCommands() {
+        List<Runnable> commands = new ArrayList<>();
+        this.commands.drainTo(commands);
+        commands.forEach(Runnable::run);
     }
 
     private Retryer<MessageSendingResult> createRetryer(MessageBatch batch, BatchSubscriptionPolicy policy) {
@@ -172,16 +204,24 @@ public class BatchConsumer implements Consumer {
     }
 
     @Override
-    public void updateSubscription(Subscription modifiedSubscription) {
-        this.subscription = modifiedSubscription;
-        this.receiver.ifPresent(r -> r.updateSubscription(modifiedSubscription));
+    public void signalUpdate(Subscription modifiedSubscription) {
+        commands.add(() -> {
+            this.subscription = modifiedSubscription;
+        });
     }
 
     @Override
-    public void stopConsuming() {
-        logger.info("Stopping consumer [subscription={}].", subscription.getId());
-        this.receiver.ifPresent(MessageBatchReceiver::stop);
-        consuming = false;
+    public void signalStop(Status.ShutdownCause cause) {
+        commands.add(() -> {
+            status.set(STOPPING, cause);
+            logger.info("Stopping consumer [subscription={}].", subscription.getId());
+            if (receiver != null) {
+                receiver.stop();
+            } else {
+                logger.info("No consumer to stop [subscription={}].", subscription.getId());
+            }
+            consuming = false;
+        });
     }
 
     @Override
@@ -197,6 +237,11 @@ public class BatchConsumer implements Consumer {
     @Override
     public boolean isConsuming() {
         return consuming;
+    }
+
+    @Override
+    public Status getStatus() {
+        return status.get();
     }
 
     private RetryListener getRetryListener(java.util.function.Consumer<MessageSendingResult> consumer) {

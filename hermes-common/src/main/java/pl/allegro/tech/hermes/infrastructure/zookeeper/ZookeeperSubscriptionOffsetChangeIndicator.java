@@ -45,9 +45,9 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
     }
 
     @Override
-    public PartitionOffsets getSubscriptionOffsets(Topic topic, String subscriptionName, String brokersClusterName) {
-        subscriptionRepository.ensureSubscriptionExists(topic.getName(), subscriptionName);
-        String kafkaTopicsPath = paths.subscribedKafkaTopicsPath(topic.getName(), subscriptionName);
+    public PartitionOffsets getSubscriptionOffsets(TopicName topic, String subscriptionName, String brokersClusterName) {
+        subscriptionRepository.ensureSubscriptionExists(topic, subscriptionName);
+        String kafkaTopicsPath = paths.subscribedKafkaTopicsPath(topic, subscriptionName);
 
         PartitionOffsets allOffsets = new PartitionOffsets();
         getZookeeperChildrenForPath(kafkaTopicsPath).stream().map(KafkaTopicName::valueOf).forEach(kafkaTopic ->
@@ -56,8 +56,8 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
         return allOffsets;
     }
 
-    private PartitionOffsets getOffsetsForKafkaTopic(Topic topic, KafkaTopicName kafkaTopicName, String subscriptionName, String brokersClusterName) {
-        String offsetsPath = paths.offsetsPath(topic.getName(), subscriptionName, kafkaTopicName, brokersClusterName);
+    private PartitionOffsets getOffsetsForKafkaTopic(TopicName topic, KafkaTopicName kafkaTopicName, String subscriptionName, String brokersClusterName) {
+        String offsetsPath = paths.offsetsPath(topic, subscriptionName, kafkaTopicName, brokersClusterName);
 
         PartitionOffsets offsets = new PartitionOffsets();
         for (String partitionAsString : getZookeeperChildrenForPath(offsetsPath)) {
@@ -79,10 +79,10 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
         }
     }
 
-    private Long getOffsetForPartition(Topic topic, KafkaTopicName kafkaTopicName, String subscriptionName, String brokersClusterName, int partitionId) {
+    private Long getOffsetForPartition(TopicName topic, KafkaTopicName kafkaTopicName, String subscriptionName, String brokersClusterName, int partitionId) {
         try {
             return Long.valueOf(new String(
-                    zookeeper.getData().forPath(paths.offsetPath(topic.getName(), subscriptionName, kafkaTopicName, brokersClusterName, partitionId)),
+                    zookeeper.getData().forPath(paths.offsetPath(topic, subscriptionName, kafkaTopicName, brokersClusterName, partitionId)),
                     UTF_8));
         } catch (Exception e) {
             throw new InternalProcessingException(e);

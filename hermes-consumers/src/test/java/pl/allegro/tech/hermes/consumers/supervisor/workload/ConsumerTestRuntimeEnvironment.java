@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.cache.zookeeper.ZookeeperSubscriptionsCacheFactory;
-import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.LegacyConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -52,7 +52,7 @@ public class ConsumerTestRuntimeEnvironment {
     private SubscriptionRepository subscriptionRepository;
     private MutableConfigFactory configFactory;
     private ObjectMapper objectMapper = new ObjectMapper();
-    private ConsumersSupervisor supervisor = mock(ConsumersSupervisor.class);
+    private LegacyConsumersSupervisor supervisor = mock(LegacyConsumersSupervisor.class);
     private static ExecutorService executorService = Executors.newSingleThreadExecutor();
     private HermesMetrics metrics;
     private ConsumerNodesRegistry consumersRegistry;

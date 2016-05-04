@@ -78,7 +78,6 @@ public class ConsumerFactory {
                 subscription, hermesMetrics, clock, configFactory);
 
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
-
         if (subscription.isBatchSubscription()) {
             return new BatchConsumer(messageReceiverFactory,
                     batchSenderFactory.create(subscription),
@@ -89,7 +88,8 @@ public class ConsumerFactory {
                     hermesMetrics,
                     trackers,
                     subscription,
-                    topic);
+                    topic,
+                    clock);
         } else {
             Semaphore inflightSemaphore = new Semaphore(configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE));
 
@@ -106,7 +106,8 @@ public class ConsumerFactory {
                     inflightSemaphore,
                     trackers,
                     messageConverterResolver,
-                    topic);
+                    topic,
+                    clock);
         }
     }
 }

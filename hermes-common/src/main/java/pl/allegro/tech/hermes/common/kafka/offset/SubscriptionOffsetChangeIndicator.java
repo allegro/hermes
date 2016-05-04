@@ -7,6 +7,6 @@ public interface SubscriptionOffsetChangeIndicator {
 
     void setSubscriptionOffset(TopicName topicName, String subscriptionName, String brokersClusterName, PartitionOffset partitionOffset);
 
-    PartitionOffsets getSubscriptionOffsets(Topic topic, String subscriptionName, String brokersClusterName);
+    PartitionOffsets getSubscriptionOffsets(TopicName topic, String subscriptionName, String brokersClusterName);
 
 }

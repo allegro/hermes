@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.LegacyConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 
@@ -60,6 +61,7 @@ public class SelectiveSupervisorController implements SupervisorController {
         assignmentExecutor.execute(() -> {
             logger.info("Assigning consumer for {}", subscription.getId());
             supervisor.assignConsumerForSubscription(subscription);
+            logger.info("Consumer assigned for {}", subscription.getId());
         });
     }
 
@@ -69,6 +71,7 @@ public class SelectiveSupervisorController implements SupervisorController {
         assignmentExecutor.execute(() -> {
             logger.info("Removing assignment from consumer for {}", subscription.getId());
             supervisor.deleteConsumerForSubscriptionName(subscription);
+            logger.info("Consumer removed for {}", subscription.getId());
         });
     }
 

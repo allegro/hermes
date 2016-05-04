@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,23 +12,26 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerHolder;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class OffsetCommitter implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OffsetCommitter.class);
 
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-    private final ConsumerHolder consumerHolder;
+    private final Supplier<Iterable<Consumer>> consumerHolder;
     private final List<MessageCommitter> messageCommitters;
     private final ConfigFactory configFactory;
 
     public OffsetCommitter(
-            ConsumerHolder consumerHolder,
+            Supplier<Iterable<Consumer>> consumerHolder,
             List<MessageCommitter> messageCommitters,
             ConfigFactory configFactory) {
         this.consumerHolder = consumerHolder;
@@ -47,7 +51,7 @@ public class OffsetCommitter implements Runnable {
     @Override
     public void run() {
         Map<Subscription, PartitionOffset> offsetsPerSubscription = Maps.newHashMap();
-        for (Consumer consumer : consumerHolder) {
+        for (Consumer consumer : consumerHolder.get()) {
             Subscription subscription = consumer.getSubscription();
             for (PartitionOffset partitionOffset : consumer.getOffsetsToCommit()) {
                 for (MessageCommitter messageCommitter : messageCommitters) {

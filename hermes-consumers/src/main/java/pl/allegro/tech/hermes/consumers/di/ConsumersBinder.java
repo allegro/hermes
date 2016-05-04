@@ -54,6 +54,8 @@ import pl.allegro.tech.hermes.consumers.subscription.cache.zookeeper.ZookeeperSu
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisorFactory;
+import pl.allegro.tech.hermes.consumers.supervisor.LegacyConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorControllerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
@@ -85,7 +87,7 @@ public class ConsumersBinder extends AbstractBinder {
 
         bind("consumer").named("moduleName").to(String.class);
 
-        bindSingleton(ConsumersSupervisor.class);
+        bindFactory(ConsumersSupervisorFactory.class).in(Singleton.class).to(ConsumersSupervisor.class);
         bindSingleton(MessageSenderFactory.class);
         bindSingleton(HttpAuthorizationProviderFactory.class);
         bindSingleton(ConsumerFactory.class);

@@ -9,19 +9,20 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.LegacyConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
 
 public class LegacyMirroringSupervisorController implements SupervisorController {
-    private final ConsumersSupervisor supervisor;
+    private final LegacyConsumersSupervisor supervisor;
     private final SubscriptionsCache subscriptionsCache;
     private final ZookeeperAdminCache adminCache;
     private ConfigFactory configFactory;
 
     private static final Logger logger = LoggerFactory.getLogger(LegacyMirroringSupervisorController.class);
 
-    public LegacyMirroringSupervisorController(ConsumersSupervisor supervisor,
+    public LegacyMirroringSupervisorController(LegacyConsumersSupervisor supervisor,
                                                SubscriptionsCache subscriptionsCache,
                                                ZookeeperAdminCache adminCache,
                                                ConfigFactory configFactory) {

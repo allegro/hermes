@@ -44,7 +44,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ConsumersSupervisorTest {
+public class LegacyConsumersSupervisorTest {
 
     private static final String SOME_SUBSCRIPTION_NAME = "sub";
     private static final TopicName SOME_TOPIC_NAME = new TopicName("group1", "topic1");
@@ -86,7 +86,7 @@ public class ConsumersSupervisorTest {
 
     private ConfigFactory configFactory = new ConfigFactory();
 
-    private ConsumersSupervisor consumersSupervisor;
+    private LegacyConsumersSupervisor legacyConsumersSupervisor;
 
     private ExecutorService executor = Executors.newFixedThreadPool(50);
 
@@ -95,7 +95,7 @@ public class ConsumersSupervisorTest {
         when(consumerFactory.createConsumer(any(Subscription.class))).thenReturn(consumer);
         when(topicRepository.getTopicDetails(SOME_TOPIC_NAME)).thenReturn(SOME_TOPIC);
 
-        consumersSupervisor = new ConsumersSupervisor(configFactory, subscriptionRepository, topicRepository,
+        legacyConsumersSupervisor = new LegacyConsumersSupervisor(configFactory, subscriptionRepository, topicRepository,
                 subscriptionOffsetChangeIndicator, executorService, consumerFactory,
                 Lists.newArrayList(messageCommitter), Lists.newArrayList(offsetsStorage), hermesMetrics,
                 undeliveredMessageLogPersister);
@@ -103,14 +103,14 @@ public class ConsumersSupervisorTest {
 
     @Test
     public void shouldRunConsumerWhenPendingSubscriptionCreated() {
-        consumersSupervisor.assignConsumerForSubscription(subscription(SOME_TOPIC_NAME, "sub1").build());
+        legacyConsumersSupervisor.assignConsumerForSubscription(subscription(SOME_TOPIC_NAME, "sub1").build());
 
         verify(executorService).execute(any(SerialConsumer.class));
     }
 
     @Test
     public void shouldRunConsumerWhenActiveSubscriptionCreated() {
-        consumersSupervisor.assignConsumerForSubscription(subscription(SOME_TOPIC_NAME, "sub1").withState(ACTIVE).build());
+        legacyConsumersSupervisor.assignConsumerForSubscription(subscription(SOME_TOPIC_NAME, "sub1").withState(ACTIVE).build());
 
         verify(executorService).execute(any(SerialConsumer.class));
     }
@@ -119,7 +119,7 @@ public class ConsumersSupervisorTest {
     public void shouldChangeSubscriptionStateToActiveWhenCreatingConsumer() {
         Subscription subscription = subscription(SOME_TOPIC_NAME, "sub1").build();
 
-        consumersSupervisor.assignConsumerForSubscription(subscription);
+        legacyConsumersSupervisor.assignConsumerForSubscription(subscription);
 
         assertThat(subscription.getState()).isEqualTo(Subscription.State.ACTIVE);
         verify(subscriptionRepository).updateSubscription(subscription);
@@ -127,26 +127,26 @@ public class ConsumersSupervisorTest {
 
     @Test
     public void shouldNotRunConsumerWhenSuspendedSubscriptionCreated() {
-        consumersSupervisor.assignConsumerForSubscription(subscription(SOME_TOPIC_NAME, "sub1").withState(SUSPENDED).build());
+        legacyConsumersSupervisor.assignConsumerForSubscription(subscription(SOME_TOPIC_NAME, "sub1").withState(SUSPENDED).build());
 
         verify(executorService, never()).execute(any(SerialConsumer.class));
     }
 
     @Test
     public void shouldShutdownConsumerWhenSubscriptionRemoved() {
-        consumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
+        legacyConsumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
 
-        consumersSupervisor.deleteConsumerForSubscriptionName(SOME_SUBSCRIPTION.toSubscriptionName());
+        legacyConsumersSupervisor.deleteConsumerForSubscriptionName(SOME_SUBSCRIPTION.toSubscriptionName());
 
-        verify(consumer).stopConsuming();
+        verify(consumer).signalStop();
     }
 
     @Test
     public void shouldRemoveSubscriptionMetricsWhenSubscriptionRemoved() {
-        consumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
+        legacyConsumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
         SubscriptionName name = SOME_SUBSCRIPTION.toSubscriptionName();
 
-        consumersSupervisor.deleteConsumerForSubscriptionName(name);
+        legacyConsumersSupervisor.deleteConsumerForSubscriptionName(name);
 
         verify(hermesMetrics).removeMetrics(name);
     }
@@ -154,20 +154,20 @@ public class ConsumersSupervisorTest {
     @Test
     public void shouldStopConsumerOnSuspend() {
         Subscription subscription = subscription(SOME_TOPIC_NAME, "sub1").build();
-        consumersSupervisor.assignConsumerForSubscription(subscription);
+        legacyConsumersSupervisor.assignConsumerForSubscription(subscription);
         when(consumer.getSubscription()).thenReturn(subscription);
         Subscription modifiedSubscription = subscription(SOME_TOPIC_NAME, "sub1").withState(SUSPENDED).build();
 
-        consumersSupervisor.notifyConsumerOnSubscriptionUpdate(modifiedSubscription);
+        legacyConsumersSupervisor.notifyConsumerOnSubscriptionUpdate(modifiedSubscription);
 
-        verify(consumer).stopConsuming();
+        verify(consumer).signalStop();
     }
 
     @Test
     public void shouldCreateConsumerOnResume() {
         Subscription subscription = subscription(SOME_TOPIC_NAME, "sub1").withState(ACTIVE).build();
 
-        consumersSupervisor.notifyConsumerOnSubscriptionUpdate(subscription);
+        legacyConsumersSupervisor.notifyConsumerOnSubscriptionUpdate(subscription);
 
         verify(consumerFactory).createConsumer(subscription);
     }
@@ -180,8 +180,8 @@ public class ConsumersSupervisorTest {
         PartitionOffset partitionOffset = new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 100L, 0);
         Subscription actualSubscription = subscription(SOME_TOPIC_NAME, subscriptionName).withState(ACTIVE).build();
         SubscriptionName subscription = new SubscriptionName(subscriptionName, SOME_TOPIC_NAME);
-        consumersSupervisor.notifyConsumerOnSubscriptionUpdate(actualSubscription);
-        when(subscriptionOffsetChangeIndicator.getSubscriptionOffsets(SOME_TOPIC, subscriptionName, brokersClusterName))
+        legacyConsumersSupervisor.notifyConsumerOnSubscriptionUpdate(actualSubscription);
+        when(subscriptionOffsetChangeIndicator.getSubscriptionOffsets(SOME_TOPIC.getName(), subscriptionName, brokersClusterName))
                 .thenReturn(new PartitionOffsets().add(partitionOffset));
         when(subscriptionRepository.getSubscriptionDetails(SOME_TOPIC_NAME, subscriptionName))
                 .thenReturn(SOME_SUBSCRIPTION);
@@ -189,11 +189,11 @@ public class ConsumersSupervisorTest {
         when(consumer.getSubscription()).thenReturn(actualSubscription);
 
         //when
-        consumersSupervisor.retransmit(subscription);
+        legacyConsumersSupervisor.retransmit(subscription);
 
         //then
-        verify(consumer).stopConsuming();
-        verify(subscriptionOffsetChangeIndicator).getSubscriptionOffsets(SOME_TOPIC, subscriptionName, brokersClusterName);
+        verify(consumer).signalStop();
+        verify(subscriptionOffsetChangeIndicator).getSubscriptionOffsets(SOME_TOPIC.getName(), subscriptionName, brokersClusterName);
         verify(offsetsStorage).setSubscriptionOffset(subscription, partitionOffset);
     }
 
@@ -206,14 +206,14 @@ public class ConsumersSupervisorTest {
         when(consumerFactory.createConsumer(firstSubscription)).thenReturn(firstConsumer);
         when(consumerFactory.createConsumer(secondSubscription)).thenReturn(secondConsumer);
 
-        consumersSupervisor.start();
-        consumersSupervisor.assignConsumerForSubscription(firstSubscription);
-        consumersSupervisor.assignConsumerForSubscription(secondSubscription);
+        legacyConsumersSupervisor.start();
+        legacyConsumersSupervisor.assignConsumerForSubscription(firstSubscription);
+        legacyConsumersSupervisor.assignConsumerForSubscription(secondSubscription);
 
-        consumersSupervisor.shutdown();
+        legacyConsumersSupervisor.shutdown();
 
-        verify(firstConsumer, times(1)).stopConsuming();
-        verify(secondConsumer, times(1)).stopConsuming();
+        verify(firstConsumer, times(1)).signalStop();
+        verify(secondConsumer, times(1)).signalStop();
     }
 
     @Test
@@ -222,7 +222,7 @@ public class ConsumersSupervisorTest {
                 new EndpointProtocolNotSupportedException(EndpointAddress.of("xyz://localhost:8080/test"))
         );
 
-        consumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
+        legacyConsumersSupervisor.assignConsumerForSubscription(SOME_SUBSCRIPTION);
 
         verify(executorService, never()).execute(any(SerialConsumer.class));
     }
@@ -244,10 +244,10 @@ public class ConsumersSupervisorTest {
 
         when(consumer.getSubscription()).thenReturn(oldSubscription);
 
-        consumersSupervisor.assignConsumerForSubscription(oldSubscription);
+        legacyConsumersSupervisor.assignConsumerForSubscription(oldSubscription);
 
         // when
-        consumersSupervisor.notifyConsumerOnSubscriptionUpdate(newSubscription);
+        legacyConsumersSupervisor.notifyConsumerOnSubscriptionUpdate(newSubscription);
 
         // then
         ArgumentCaptor<Subscription> captor = ArgumentCaptor.forClass(Subscription.class);
@@ -256,7 +256,7 @@ public class ConsumersSupervisorTest {
 
         verifyNoMoreInteractions(consumerFactory);
 
-        verify(consumer).updateSubscription(captor.capture());
+        verify(consumer).signalUpdate(captor.capture());
         assertThat(captor.getValue().getSerialSubscriptionPolicy()).isEqualTo(newSubscription.getSerialSubscriptionPolicy());
     }
 
@@ -269,7 +269,7 @@ public class ConsumersSupervisorTest {
         // when
         for (int i = 0; i < 100; i++) {
             executor.submit(() -> {
-                consumersSupervisor.assignConsumerForSubscription(subscription);
+                legacyConsumersSupervisor.assignConsumerForSubscription(subscription);
                 latch.countDown();
             });
         }
