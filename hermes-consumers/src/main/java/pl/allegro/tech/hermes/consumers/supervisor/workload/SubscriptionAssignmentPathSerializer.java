@@ -16,6 +16,10 @@ public class SubscriptionAssignmentPathSerializer {
         return Joiner.on("/").join(prefix, subscriptionName, supervisorId);
     }
 
+    public String serialize(SubscriptionName subscriptionName) {
+        return Joiner.on("/").join(prefix, subscriptionName);
+    }
+
     public SubscriptionAssignment deserialize(String path) {
         String[] paths = path.split("/");
         checkArgument(paths.length > 1, "Incorrect path format. Expected:'/base/subscription/supervisorId'. Found:'%s'", path);
