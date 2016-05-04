@@ -1,7 +1,3 @@
-plugins {
-    id 'groovy'
-}
-
 project.ext.versions += [spring: '1.2.3.RELEASE']
 
 dependencies {

@@ -67,3 +67,9 @@ auth.oauth.scope         | assigned scope
 auth.headers.enabled     | enable simple authorization support
 auth.headers.groupHeader | name of header to bear group password
 auth.headers.adminHeader | name of header to bear admin password
+
+## Topic configuration
+
+Option                      | Description
+--------------------------- | ------------------------------------------------------------------------------------
+topic.messagePreviewEnabled | show message preview tab on topic view; enable only if message preview is enabled in Frontend
