@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -28,15 +29,15 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
     }
 
     @Override
-    public MessageSender create(String endpoint) {
-        URI endpointURI = URI.create(endpoint);
-        ConnectionFactory connectionFactory = getConnectionFactory(endpointURI);
+    public MessageSender create(EndpointAddress endpoint) {
+        URI uri = endpoint.getUri();
+        ConnectionFactory connectionFactory = getConnectionFactory(uri);
         JMSContext jmsContext = connectionFactory.createContext(
-                UriUtils.extractUserNameFromUri(endpointURI),
-                UriUtils.extractPasswordFromUri(endpointURI)
+                endpoint.getUsername(),
+                endpoint.getPassword()
         );
 
-        return new JmsMessageSender(jmsContext, extractTopicName(endpointURI), metadataAppender);
+        return new JmsMessageSender(jmsContext, extractTopicName(uri), metadataAppender);
     }
 
     @Override

@@ -10,6 +10,6 @@ import java.io.IOException;
 public class EndpointAddressSerializer extends JsonSerializer<EndpointAddress> {
     @Override
     public void serialize(EndpointAddress value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-       jgen.writeString(value.getEndpoint());
+       jgen.writeString(value.getRawEndpoint());
     }
 }

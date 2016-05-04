@@ -18,7 +18,7 @@ public interface EndpointAddressResolver {
 
     static URI resolve(EndpointAddress address) throws EndpointAddressResolutionException {
         try {
-            return URI.create(address.getEndpoint());
+            return address.getUri();
         } catch (Exception ex) {
             throw new EndpointAddressResolutionException(address, ex);
         }

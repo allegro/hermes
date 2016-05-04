@@ -108,6 +108,18 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
     }
 
     @Test
+    public void shouldApplyAssignmentChangesByRemovingInvalidSubscriptionNode() {
+        // given
+        Subscription s1 = dropAssignment(forceAssignment(anySubscription()));
+
+        // when
+        workTracker.apply(new SubscriptionAssignmentView(Collections.emptyMap()));
+
+        // then
+        wait.untilZookeeperPathNotExists(basePath, s1.toSubscriptionName().toString());
+    }
+
+    @Test
     public void shouldApplyAssignmentChangesByAddingNewNodes() {
         // given
         Subscription s1 = forceAssignment(anySubscription());
@@ -143,4 +155,9 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         return sub;
     }
 
+    private Subscription dropAssignment(Subscription sub) {
+        workTracker.dropAssignment(sub);
+        wait.untilZookeeperPathNotExists(basePath, sub.toSubscriptionName().toString(), supervisorId);
+        return sub;
+    }
 }

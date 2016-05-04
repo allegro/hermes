@@ -20,6 +20,7 @@ import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FAILED;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.SUCCESS;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FILTERED;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
 
 public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument> implements LogRepository, LogSchemaAware {
@@ -55,6 +56,11 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
     @Override
     public void logInflight(MessageMetadata message, long timestamp) {
         queue.offer(document(message, timestamp, INFLIGHT));
+    }
+
+    @Override
+    public void logFiltered(MessageMetadata message, long timestamp, String reason) {
+        queue.offer(document(message, timestamp, FILTERED, reason));
     }
 
     private ElasticsearchDocument document(MessageMetadata message, long createdAt, SentMessageTraceStatus status) {

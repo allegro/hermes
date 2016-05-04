@@ -9,6 +9,13 @@ public class GraphiteMetrics {
 
     private final Map<String, String> metrics = new HashMap<>();
 
+    public GraphiteMetrics() {
+    }
+
+    public GraphiteMetrics(Map<String, String> metrics) {
+        this.metrics.putAll(metrics);
+    }
+
     public static GraphiteMetrics unavailable(String... metrics) {
         GraphiteMetrics graphiteMetrics = new GraphiteMetrics();
         for (String metric : metrics) {

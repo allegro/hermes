@@ -44,12 +44,12 @@ public class BatchConsumer implements Consumer {
     private final MessageBatchFactory batchFactory;
     private final SubscriptionOffsetCommitQueues offsets;
     private final CountDownLatch stoppedLatch = new CountDownLatch(1);
-    private MessageBatchReceiver receiver;
     private final HermesMetrics hermesMetrics;
     private final MessageConverterResolver messageConverterResolver;
     private final MessageContentWrapper messageContentWrapper;
     private final Topic topic;
     private final Trackers trackers;
+    private Optional<MessageBatchReceiver> receiver;
 
     private Subscription subscription;
     private volatile boolean consuming = true;
@@ -82,14 +82,10 @@ public class BatchConsumer implements Consumer {
     @Override
     public void run() {
         setThreadName();
-
         logger.info("Starting batch consumer for subscription {} ", subscription.getId());
-
         Timer.Context timer = new Timer().time();
-        receiver = initializeMessageReceiver();
-
+        receiver = Optional.of(initializeMessageReceiver());
         logger.info("Started batch consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
-
         try {
             consume();
         } finally {
@@ -103,11 +99,8 @@ public class BatchConsumer implements Consumer {
         try {
             logger.debug("Consumer: preparing receiver for subscription {}", subscription.getId());
             MessageReceiver receiver = messageReceiverFactory.createMessageReceiver(topic, subscription);
-
             logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getId());
-            MessageBatchReceiver batchReceiver = new MessageBatchReceiver(receiver, batchFactory, hermesMetrics, messageConverterResolver, messageContentWrapper, topic, trackers);
-
-            return batchReceiver;
+            return new MessageBatchReceiver(receiver, batchFactory, hermesMetrics, messageConverterResolver, messageContentWrapper, topic, trackers);
         } catch (Exception e) {
             logger.info("Failed to create consumer for subscription {} ", subscription.getId(), e);
             throw e;
@@ -120,7 +113,7 @@ public class BatchConsumer implements Consumer {
             try {
                 logger.debug("Trying to create new batch [subscription={}].", subscription.getId());
 
-                MessageBatchingResult result = receiver.next(subscription);
+                MessageBatchingResult result = receiver.get().next(subscription);
                 inflight = of(result.getBatch());
                 inflight.ifPresent(batch -> {
                     logger.debug("Delivering batch [subscription={}].", subscription.getId());
@@ -181,16 +174,13 @@ public class BatchConsumer implements Consumer {
     @Override
     public void updateSubscription(Subscription modifiedSubscription) {
         this.subscription = modifiedSubscription;
+        this.receiver.ifPresent(r -> r.updateSubscription(modifiedSubscription));
     }
 
     @Override
     public void stopConsuming() {
         logger.info("Stopping consumer [subscription={}].", subscription.getId());
-        if (receiver != null) {
-            receiver.stop();
-        } else {
-            logger.info("No consumer to stop [subscription={}].", subscription.getId());
-        }
+        this.receiver.ifPresent(MessageBatchReceiver::stop);
         consuming = false;
     }
 

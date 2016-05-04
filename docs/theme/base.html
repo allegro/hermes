@@ -58,6 +58,13 @@
                     {% if nav_item.children %}
                         {% for nav_item in nav_item.children %}
                             <a href="{{ nav_item.url }}" class="list-group-item nav-2nd-level {% if nav_item.active %} nav-active {% endif %}">{{ nav_item.title }}</a>
+                            {% if nav_item.active %}
+                                {% for toc_item in toc %}
+                                    {% for toc_item in toc_item.children %}
+                                        <a href="{{ toc_item.url }}" class="list-group-item nav-3rd-level">{{ toc_item.title }}</a>
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endif %}
                         {% endfor %}
                     {% endif %}
                 {% endfor %}

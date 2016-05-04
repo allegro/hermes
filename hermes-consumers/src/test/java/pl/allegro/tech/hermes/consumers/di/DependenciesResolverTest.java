@@ -13,7 +13,6 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 
 import java.io.IOException;
 
@@ -69,7 +68,6 @@ public class DependenciesResolverTest {
         @Override
         protected void configure() {
             bind(this.configFactory).to(ConfigFactory.class).ranked(10);
-            bind(MessageSenderProviders.class).to(MessageSenderProviders.class);
         }
     }
 }

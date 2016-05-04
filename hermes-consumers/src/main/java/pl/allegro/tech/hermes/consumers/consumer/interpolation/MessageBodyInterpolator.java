@@ -55,7 +55,7 @@ public class MessageBodyInterpolator implements UriInterpolator {
             }
         }
 
-        return URI.create(endpoint.getEndpoint());
+        return endpoint.getUri();
 
     }
 

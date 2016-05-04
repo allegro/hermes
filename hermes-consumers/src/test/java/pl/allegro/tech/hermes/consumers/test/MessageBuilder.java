@@ -1,11 +1,13 @@
 package pl.allegro.tech.hermes.consumers.test;
 
 
+import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -54,6 +56,11 @@ public final class MessageBuilder {
 
     public MessageBuilder withId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public MessageBuilder withSchema(Schema schema, int version) {
+        this.schema = Optional.of(new CompiledSchema<Object>(schema, SchemaVersion.valueOf(version)));
         return this;
     }
 

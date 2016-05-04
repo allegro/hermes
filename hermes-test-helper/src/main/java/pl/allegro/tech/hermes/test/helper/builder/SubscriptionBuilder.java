@@ -4,11 +4,16 @@ import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.MessageFilterSpecification;
+import pl.allegro.tech.hermes.api.MonitoringDetails;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SubscriptionBuilder {
 
@@ -34,7 +39,11 @@ public class SubscriptionBuilder {
 
     private String contact = "contact";
 
+    private MonitoringDetails monitoringDetails = MonitoringDetails.EMPTY;
+
     private DeliveryType deliveryType = DeliveryType.SERIAL;
+
+    private List<MessageFilterSpecification> filters = new ArrayList<>();
 
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
@@ -71,18 +80,22 @@ public class SubscriptionBuilder {
         return subscription(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, EndpointAddress.of(endpoint));
     }
 
+    public static SubscriptionBuilder subscription(String topicQualifiedName, String subscriptionName, EndpointAddress endpoint) {
+        return subscription(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, endpoint);
+    }
+
     public Subscription build() {
         if (deliveryType == DeliveryType.SERIAL) {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, contentType
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, contentType
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters
             );
         }
     }
@@ -134,6 +147,11 @@ public class SubscriptionBuilder {
         return this;
     }
 
+    public SubscriptionBuilder withMonitoringDetails (MonitoringDetails monitoringDetails) {
+        this.monitoringDetails = monitoringDetails;
+        return this;
+    }
+
     public SubscriptionBuilder withDeliveryType(DeliveryType deliveryType) {
         this.deliveryType = deliveryType;
         return this;
@@ -144,4 +162,8 @@ public class SubscriptionBuilder {
         return this;
     }
 
+    public SubscriptionBuilder withFilter(MessageFilterSpecification filter) {
+        this.filters.add(filter);
+        return this;
+    }
 }

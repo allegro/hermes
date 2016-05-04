@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -58,14 +59,26 @@ public WorkTracker(CuratorFramework curatorClient,
     public WorkDistributionChanges apply(SubscriptionAssignmentView targetView) {
         SubscriptionAssignmentView currentView = getAssignments();
 
-        List<SubscriptionAssignment> deletions = currentView.deletions(targetView).getAllAssignments();
-        List<SubscriptionAssignment> additions = currentView.additions(targetView).getAllAssignments();
+        SubscriptionAssignmentView deletionsView = currentView.deletions(targetView);
+        Set<SubscriptionName> subscriptionsWithoutAssignments = deletionsView.getSubscriptionsWithoutAssignments();
+        List<SubscriptionAssignment> assignmentDeletions = deletionsView.getAllAssignments();
 
-        deletions.forEach(this::dropAssignment);
-        additions.forEach(this::addAssignment);
+        SubscriptionAssignmentView additionsView = currentView.additions(targetView);
+        Set<SubscriptionName> subscriptionAdditions = additionsView.getSubscriptions();
+        List<SubscriptionAssignment> assignmentAdditions = additionsView.getAllAssignments();
 
-        return new WorkDistributionChanges(deletions.size(), additions.size());
+        assignmentDeletions.forEach(this::dropAssignment);
+        assignmentAdditions.forEach(this::addAssignment);
+
+        Sets.SetView<SubscriptionName> invalidSubscriptions = Sets.difference(subscriptionsWithoutAssignments, subscriptionAdditions);
+        invalidSubscriptions.forEach(this::removeSubscriptionEntry);
+
+        return new WorkDistributionChanges(assignmentDeletions.size(), assignmentAdditions.size(), invalidSubscriptions.size());
      }
+
+    private void removeSubscriptionEntry(SubscriptionName subscriptionName) {
+        askCuratorPolitely(() -> curatorClient.delete().guaranteed().forPath(pathSerializer.serialize(subscriptionName)));
+    }
 
     private void dropAssignment(SubscriptionAssignment assignment) {
         askCuratorPolitely(() -> curatorClient.delete().guaranteed().forPath(pathSerializer.serialize(assignment.getSubscriptionName(), assignment.getConsumerNodeId())));
@@ -105,24 +118,27 @@ public WorkTracker(CuratorFramework curatorClient,
     }
 
     public static class WorkDistributionChanges {
-        private final int deleted;
-        private final int created;
+        private final int assignmentsDeleted;
+        private final int assignmentsCreated;
+        private final int invalidSubscriptionsDeleted;
 
-        public WorkDistributionChanges(int deleted, int created) {
-            this.deleted = deleted;
-            this.created = created;
+        public WorkDistributionChanges(int assignmentsDeleted, int assignmentsCreated, int invalidSubscriptionsDeleted) {
+            this.assignmentsDeleted = assignmentsDeleted;
+            this.assignmentsCreated = assignmentsCreated;
+            this.invalidSubscriptionsDeleted = invalidSubscriptionsDeleted;
         }
 
         public int getDeletedAssignmentsCount() {
-            return deleted;
+            return assignmentsDeleted;
         }
 
         public int getCreatedAssignmentsCount() {
-            return created;
+            return assignmentsCreated;
         }
 
         public String toString() {
-            return format("assignments_created=%d, assignments_deleted=%d", created, deleted);
+            return format("assignments_created=%d, assignments_deleted=%d, invalid_subscriptions_deleted=%d",
+                    assignmentsCreated, assignmentsDeleted, invalidSubscriptionsDeleted);
         }
     }
 }

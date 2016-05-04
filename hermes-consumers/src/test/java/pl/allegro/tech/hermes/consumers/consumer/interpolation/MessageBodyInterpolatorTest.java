@@ -34,7 +34,7 @@ public class MessageBodyInterpolatorTest {
         URI interpolated = new MessageBodyInterpolator().interpolate(endpoint, SAMPLE_MSG);
 
         // then
-        assertThat(interpolated).isEqualTo(URI.create(endpoint.getEndpoint()));
+        assertThat(interpolated).isEqualTo(endpoint.getUri());
     }
 
     @Test

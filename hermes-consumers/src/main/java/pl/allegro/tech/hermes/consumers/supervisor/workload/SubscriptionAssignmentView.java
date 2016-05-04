@@ -71,6 +71,13 @@ public class SubscriptionAssignmentView {
         return getAssignmentsForConsumerNode(nodeId).stream().map(SubscriptionAssignment::getSubscriptionName).collect(toSet());
     }
 
+    public Set<SubscriptionName> getSubscriptionsWithoutAssignments() {
+        return subscriptionAssignments.entrySet().stream()
+                .filter(e -> subscriptionAssignments.get(e.getKey()).isEmpty())
+                .map(Map.Entry::getKey)
+                .collect(toSet());
+    }
+
     public Set<SubscriptionAssignment> getAssignmentsForConsumerNode(String nodeId) {
         return Collections.unmodifiableSet(consumerNodeAssignments.get(nodeId));
     }

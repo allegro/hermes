@@ -21,11 +21,8 @@ import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMes
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
+import pl.allegro.tech.hermes.domain.topic.preview.PreviewMessageLogReadRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.*;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 
@@ -105,6 +102,11 @@ public class StorageConfiguration {
     @Bean
     SubscriptionRepository subscriptionRepository() {
         return new ZookeeperSubscriptionRepository(storageZookeeper(), objectMapper, zookeeperPaths(), topicRepository());
+    }
+
+    @Bean
+    PreviewMessageLogReadRepository previewMessageLogReadRepository() {
+        return new ZookeeperPreviewMessageLogReadRepository(storageZookeeper(), objectMapper, zookeeperPaths());
     }
 
     @Bean

@@ -21,4 +21,9 @@ public class NoOperationSendingTracker implements SendingTracker {
     public void logInflight(MessageMetadata message) {
 
     }
+
+    @Override
+    public void logFiltered(MessageMetadata messageMetadata, String reason) {
+
+    }
 }

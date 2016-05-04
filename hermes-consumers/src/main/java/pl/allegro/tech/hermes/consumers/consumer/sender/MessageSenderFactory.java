@@ -1,39 +1,57 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
+import org.glassfish.hk2.api.IterableProvider;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
+import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class MessageSenderFactory {
 
-    private final MessageSenderProviders messageSenderProviders;
-
-    @Inject
-    public MessageSenderFactory(
-            MessageSenderProviders messageSenderProviders,
-            @Named("defaultHttpMessageSenderProvider") ProtocolMessageSenderProvider defaultHttpMessageSenderProvider,
-            @Named("defaultJmsMessageSenderProvider") ProtocolMessageSenderProvider defaultJmsMessageSenderProvider) {
-
-        this.messageSenderProviders = messageSenderProviders;
-        this.messageSenderProviders.putIfProtocolAbsent("http", defaultHttpMessageSenderProvider);
-        this.messageSenderProviders.putIfProtocolAbsent("https", defaultHttpMessageSenderProvider);
-        this.messageSenderProviders.putIfProtocolAbsent("jms", defaultJmsMessageSenderProvider);
-
-        this.messageSenderProviders.startAll();
-    }
+    private final Map<String, ProtocolMessageSenderProvider> protocolProviders = new HashMap<>();
 
     public MessageSender create(Subscription subscription) {
         EndpointAddress endpoint = subscription.getEndpoint();
 
-        Optional<ProtocolMessageSenderProvider> protocolMessageSenderProvider = messageSenderProviders.get(endpoint.getProtocol());
-        if (!protocolMessageSenderProvider.isPresent()) {
+        ProtocolMessageSenderProvider provider = protocolProviders.get(endpoint.getProtocol());
+        if (provider == null) {
             throw new EndpointProtocolNotSupportedException(endpoint);
         }
+        return provider.create(endpoint);
+    }
 
-        return protocolMessageSenderProvider.get().create(endpoint.getEndpoint());
+    public void addSupportedProtocol(String protocol, ProtocolMessageSenderProvider provider) {
+        if(!protocolProviders.containsKey(protocol)) {
+            overrideProtocol(protocol, provider);
+        }
+    }
+
+    public void overrideProtocol(String protocol, ProtocolMessageSenderProvider provider) {
+        startProvider(provider);
+        protocolProviders.put(protocol, provider);
+    }
+
+    public void startProvider(ProtocolMessageSenderProvider provider) {
+        try {
+            provider.start();
+        } catch (Exception e) {
+            throw new InternalProcessingException("Something went wrong while starting message sender provider", e);
+        }
+    }
+
+    public void closeProviders() {
+        protocolProviders.values().forEach(provider -> {
+            try {
+                provider.stop();
+            } catch (Exception e) {
+                throw new InternalProcessingException("Something went wrong while stopping message sender provider", e);
+            }
+        });
     }
 }

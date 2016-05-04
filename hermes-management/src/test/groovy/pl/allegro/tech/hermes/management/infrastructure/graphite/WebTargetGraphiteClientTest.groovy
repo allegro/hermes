@@ -11,21 +11,21 @@ import javax.ws.rs.client.ClientBuilder
 import javax.ws.rs.client.WebTarget
 import javax.ws.rs.core.MediaType
 
-class GraphiteClientTest extends Specification {
+class WebTargetGraphiteClientTest extends Specification {
 
     private static final int GRAPHITE_HTTP_PORT = Ports.nextAvailable()
 
     @Rule
     WireMockRule wireMockRule = new WireMockRule(GRAPHITE_HTTP_PORT)
 
-    private GraphiteClient client
+    private WebTargetGraphiteClient client
 
     void setup() {
         WebTarget webTarget = ClientBuilder
                 .newClient()
                 .register(JacksonJsonProvider.class)
                 .target("http://localhost:$GRAPHITE_HTTP_PORT")
-        client = new GraphiteClient(webTarget);
+        client = new WebTargetGraphiteClient(webTarget);
     }
 
     def "should get metrics for path"() {

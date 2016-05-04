@@ -19,6 +19,7 @@ public class AvroUser {
     private static final String FAVORITE_COLOR_FIELD = "favoriteColor";
 
     private final CompiledSchema<Schema> schema;
+
     private final GenericRecord record;
 
     public AvroUser() {

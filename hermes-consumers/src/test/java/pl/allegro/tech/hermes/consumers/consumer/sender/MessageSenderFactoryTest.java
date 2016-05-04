@@ -2,99 +2,66 @@ package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import com.googlecode.catchexception.CatchException;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Answers;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
+
+import java.util.concurrent.CompletableFuture;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
-@RunWith(MockitoJUnitRunner.class)
 public class MessageSenderFactoryTest {
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private ProtocolMessageSenderProvider messageSenderProvider;
+    private MessageSenderFactory factory = new MessageSenderFactory();
 
-    @Mock
-    private ProtocolMessageSenderProvider defaultMessageSenderProvider;
+    private MessageSender referenceMessageSender = Mockito.mock(MessageSender.class);
 
     @Test
     public void shouldCreateCustomProtocolMessageSender() {
         // given
-        final String endpoint = "myProtocol://service";
+        EndpointAddress endpoint = EndpointAddress.of("myProtocol://service");
         Subscription subscription = subscription("group.topic", "subscription", endpoint).build();
 
-        MessageSenderFactory messageSenderFactory = new MessageSenderFactory(
-            providersFrom("myProtocol", messageSenderProvider), defaultMessageSenderProvider, defaultMessageSenderProvider
-        );
+        factory.addSupportedProtocol("myProtocol", protocolMessageSenderProviderReturning(referenceMessageSender));
 
-        // when & then
-        assertThat(messageSenderFactory.create(subscription)).isEqualTo(messageSenderProvider.create(endpoint));
-    }
+        // when
+        MessageSender sender = factory.create(subscription);
 
-    @Test
-    public void shouldCreateHttpMessageSenderWhenPassingHttpUri() {
-        // given
-        final String endpoint = "http://192.168.0.1";
-        MessageSenderFactory messageSenderFactory = new MessageSenderFactory(
-            new MessageSenderProviders(), messageSenderProvider, defaultMessageSenderProvider
-        );
-        Subscription subscription = subscription("group.topic", "subscription", endpoint).build();
-
-        // when & then
-        assertThat(messageSenderFactory.create(subscription)).isEqualTo(messageSenderProvider.create(endpoint));
-    }
-
-    @Test
-    public void shouldCreateJmsMessageSenderWhenPassingHttpUri() {
-        // given
-        final String endpoint = "jms://192.168.0.1/topic";
-        MessageSenderFactory messageSenderFactory = new MessageSenderFactory(
-                new MessageSenderProviders(), defaultMessageSenderProvider, messageSenderProvider
-        );
-        Subscription subscription = subscription("group.topic", "subscription", endpoint).build();
-
-        // when & then
-        assertThat(messageSenderFactory.create(subscription)).isEqualTo(messageSenderProvider.create(endpoint));
+        // then
+        assertThat(sender).isEqualTo(referenceMessageSender);
     }
 
     @Test
     public void shouldGetProtocolNotSupportedExceptionWhenPassingUnknownUri() {
         // given
-        MessageSenderFactory messageSenderFactory = new MessageSenderFactory(
-            new MessageSenderProviders(), defaultMessageSenderProvider, defaultMessageSenderProvider
-        );
         Subscription subscription = subscription("group.topic", "subscription", "unknown://localhost:8080/test").build();
 
         // when
-        catchException(messageSenderFactory).create(subscription);
+        catchException(factory).create(subscription);
 
         // then
         assertThat(CatchException.<EndpointProtocolNotSupportedException>caughtException())
-            .isInstanceOf(EndpointProtocolNotSupportedException.class);
+                .isInstanceOf(EndpointProtocolNotSupportedException.class);
     }
 
-    @Test
-    public void shouldOverrideDefaultProtocolMessageSender() {
-        // given
-        final String endpoint = "http://service";
-        Subscription subscription = subscription("group.topic", "subscription", endpoint).build();
-        MessageSenderFactory messageSenderFactory = new MessageSenderFactory(
-            providersFrom("http", messageSenderProvider), defaultMessageSenderProvider, defaultMessageSenderProvider
-        );
+    private ProtocolMessageSenderProvider protocolMessageSenderProviderReturning(Object createdMessageSender) {
+        return new ProtocolMessageSenderProvider() {
+            @Override
+            public MessageSender create(EndpointAddress endpoint) {
+                return (MessageSender) createdMessageSender;
+            }
 
-        // when & then
-        assertThat(messageSenderFactory.create(subscription)).isEqualTo(messageSenderProvider.create(endpoint));
-    }
+            @Override
+            public void start() throws Exception {
+            }
 
-    private MessageSenderProviders providersFrom(String protocol, ProtocolMessageSenderProvider protocolMessageSenderProvider) {
-        MessageSenderProviders providers = new MessageSenderProviders();
-        providers.put(protocol, protocolMessageSenderProvider);
-
-        return providers;
+            @Override
+            public void stop() throws Exception {
+            }
+        };
     }
 }
