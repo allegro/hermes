@@ -1,3 +1,3 @@
 class { 'graphite':
-  gr_apache_port  => 8082
+  gr_web_server_port => 8082
 }

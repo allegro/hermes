@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
@@ -7,6 +8,7 @@ import org.apache.zookeeper.data.Stat;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +36,17 @@ public abstract class ZookeeperBasedRepository {
         }
     }
 
+    protected void ensurePathExists(String path) {
+        ensureConnected();
+        if (!pathExists(path)) {
+            try {
+                zookeeper.create().creatingParentsIfNeeded().forPath(path);
+            } catch (Exception e) {
+                throw new InternalProcessingException(e);
+            }
+        }
+    }
+
     protected boolean pathExists(String path) {
         ensureConnected();
         try {
@@ -56,9 +69,18 @@ public abstract class ZookeeperBasedRepository {
 
     @SuppressWarnings("unchecked")
     protected <T> T readFrom(String path, Class<T> clazz) {
+        return readFrom(path, b -> (T) mapper.readValue(b, clazz));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> T readFrom(String path, TypeReference<T> type) {
+        return readFrom(path, b -> (T) mapper.readValue(b, type));
+    }
+
+    private <T> T readFrom(String path, ThrowingReader<T> supplier) {
         try {
             byte[] data = zookeeper.getData().forPath(path);
-            return (T) mapper.readValue(data, clazz);
+            return supplier.read(data);
         } catch (JsonMappingException exception) {
             throw new MalformedDataException(path, exception);
         } catch (Exception ex) {
@@ -92,6 +114,10 @@ public abstract class ZookeeperBasedRepository {
     }
 
     interface PostProcessor {
-         Object invoke(byte[] data, Object value);
+        Object invoke(byte[] data, Object value);
+    }
+
+    private interface ThrowingReader<T> {
+        T read(byte[] data) throws IOException;
     }
 }

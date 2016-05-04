@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.frontend.publishing.callbacks.*;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
-import pl.allegro.tech.hermes.frontend.publishing.message.preview.PreviewMessageLog;
+import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
@@ -47,7 +47,7 @@ public class PublishingServlet extends HttpServlet {
     private final MessagePublisher messagePublisher;
     private final BrokerListeners listeners;
     private final MessageFactory messageFactory;
-    private final PreviewMessageLog previewMessageLog;
+    private final MessagePreviewLog messagePreviewLog;
 
     private final Integer defaultAsyncTimeout;
     private final Integer longAsyncTimeout;
@@ -62,12 +62,12 @@ public class PublishingServlet extends HttpServlet {
                              Trackers trackers,
                              MessagePublisher messagePublisher,
                              BrokerListeners listeners,
-                             MessageFactory messageFactory, PreviewMessageLog previewMessageLog) {
+                             MessageFactory messageFactory, MessagePreviewLog messagePreviewLog) {
 
         this.topicsCache = topicsCache;
         this.messagePublisher = messagePublisher;
         this.messageFactory = messageFactory;
-        this.previewMessageLog = previewMessageLog;
+        this.messagePreviewLog = messagePreviewLog;
         this.errorSender = new ErrorSender(objectMapper);
         this.hermesMetrics = hermesMetrics;
         this.trackers = trackers;
@@ -121,7 +121,7 @@ public class PublishingServlet extends HttpServlet {
                         httpResponder.internalError(e, "Could not load schema for published message");
                     } finally {
                         if (previewEnabled) {
-                            previewMessageLog.add(messageContent, topic.getName());
+                            messagePreviewLog.add(topic.getName(), messageContent);
                         }
                     }
                 }),

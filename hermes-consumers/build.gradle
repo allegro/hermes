@@ -1,7 +1,3 @@
-plugins {
-    id 'groovy'
-}
-
 dependencies {
     compile project(':hermes-common')
     compile project(':hermes-tracker')
