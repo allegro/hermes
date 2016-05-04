@@ -36,11 +36,10 @@ deployment.
 
 ### Frontend
 
-Add dependency on Frontend module and [awaitility](https://github.com/jayway/awaitility):
+Add dependency on Frontend module:
 
 ```groovy
 compile group: 'pl.allegro.tech.hermes', name: 'hermes-frontend', version: versions.hermes
-compile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
 ```
 
 Use `HermesFrontend.Builder` to create usable `HermesFrontend` instance and start it:

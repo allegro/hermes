@@ -18,7 +18,6 @@ import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.message.preview.PreviewMessageLog;
 import pl.allegro.tech.hermes.frontend.publishing.message.preview.PreviewMessagePersister;
-import pl.allegro.tech.hermes.frontend.publishing.message.preview.ZookeeperPreviewMessageLog;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
