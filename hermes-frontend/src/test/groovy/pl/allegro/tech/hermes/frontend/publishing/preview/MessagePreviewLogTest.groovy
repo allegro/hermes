@@ -22,7 +22,7 @@ class MessagePreviewLogTest extends Specification {
         def messages = log.snapshotAndClean()
 
         then:
-        messages.topics() as Set == ['group.topic-1', 'group.topic-2'] as Set
+        messages.topics() as Set == [fromQualifiedName('group.topic-1'), fromQualifiedName('group.topic-2')] as Set
     }
 
     def "should persist no more than two messages for topic"() {
