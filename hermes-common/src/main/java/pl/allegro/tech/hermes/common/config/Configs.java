@@ -92,6 +92,10 @@ public enum Configs {
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
 
+    FRONTEND_MESSAGE_PREVIEW_ENABLED("frontend.message.preview.enabled", false),
+    FRONTEND_MESSAGE_PREVIEW_SIZE("frontend.message.preview.size", 3),
+    FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD("frontend.message.preview.log.persist.period.seconds", 30),
+
     MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", false),
     MESSAGES_LOCAL_STORAGE_DIRECTORY("frontend.messages.local.storage.directory", Files.createTempDir().getAbsolutePath()),
     MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS("frontend.messages.local.storage.max.age.hours", 72),
@@ -131,6 +135,7 @@ public enum Configs {
     CONSUMER_BATCH_MAX_POOL_SIZE("consumer.batch.max.pool.size", 64*1024*1024),
     CONSUMER_BATCH_CONNECTION_TIMEOUT("consumer.batch.connection.timeout", 500),
     CONSUMER_BATCH_SOCKET_TIMEOUT("consumer.batch.socket.timeout", 500),
+    CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
 
     GRAPHITE_HOST("graphite.host", "localhost"),
     GRAPHITE_PORT("graphite.port", 2003),

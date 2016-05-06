@@ -118,4 +118,8 @@ public class MessageBatchReceiver {
         receiving = false;
         receiver.stop();
     }
+
+    public void updateSubscription(Subscription modifiedSubscription) {
+        receiver.update(modifiedSubscription);
+    }
 }

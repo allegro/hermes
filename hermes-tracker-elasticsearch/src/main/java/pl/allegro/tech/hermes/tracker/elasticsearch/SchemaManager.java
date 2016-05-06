@@ -54,16 +54,16 @@ public class SchemaManager {
         createTemplate(PUBLISHED_TEMPLATE_NAME, PUBLISHED_TYPE, PUBLISHED_INDICES_REG_EXP, PUBLISHED_ALIAS_NAME);
         createTemplate(SENT_TEMPLATE_NAME, SENT_TYPE, SENT_INDICES_REG_EXP, SENT_ALIAS_NAME);
 
-        createIndexIfNeeded(frontendIndexFactory, PUBLISHED_INDICES_REG_EXP);
-        createIndexIfNeeded(consumersIndexFactory, SENT_INDICES_REG_EXP);
+        createIndexIfNeeded(frontendIndexFactory);
+        createIndexIfNeeded(consumersIndexFactory);
 
         createAlias(frontendIndexFactory, PUBLISHED_ALIAS_NAME);
         createAlias(consumersIndexFactory, SENT_ALIAS_NAME);
     }
 
-    private void createIndexIfNeeded(IndexFactory indexFactory, String indexRegExp) {
+    private void createIndexIfNeeded(IndexFactory indexFactory) {
         IndicesExistsResponse response =
-                client.admin().indices().exists(new IndicesExistsRequest(indexRegExp)).actionGet();
+                client.admin().indices().exists(new IndicesExistsRequest(indexFactory.createIndex())).actionGet();
 
         if (response.isExists()) {
             return;

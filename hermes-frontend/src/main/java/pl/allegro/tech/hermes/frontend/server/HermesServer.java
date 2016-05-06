@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
+import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
@@ -41,6 +42,7 @@ public class HermesServer {
     private final TopicsCache topicsCache;
     private final PublishingServlet publishingServlet;
     private final HealthCheckService healthCheckService;
+    private final MessagePreviewPersister messagePreviewPersister;
     private final int port;
     private final int sslPort;
     private final String host;
@@ -51,13 +53,15 @@ public class HermesServer {
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
             PublishingServlet publishingServlet,
-            HealthCheckService healthCheckService) {
+            HealthCheckService healthCheckService,
+            MessagePreviewPersister messagePreviewPersister) {
 
         this.topicsCache = topicsCache;
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.publishingServlet = publishingServlet;
         this.healthCheckService = healthCheckService;
+        this.messagePreviewPersister = messagePreviewPersister;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
         this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
@@ -67,6 +71,7 @@ public class HermesServer {
     public void start() {
         topicsCache.start(Collections.emptyList());
         configureServer().start();
+        messagePreviewPersister.start();
     }
 
     public void gracefulShutdown() throws InterruptedException {
@@ -79,6 +84,7 @@ public class HermesServer {
 
     public void shutdown() throws InterruptedException {
         undertow.stop();
+        messagePreviewPersister.shutdown();
     }
 
     private Undertow configureServer() {

@@ -2,13 +2,13 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.net.URI;
-
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import pl.allegro.tech.hermes.api.constraints.ValidAddress;
 import pl.allegro.tech.hermes.api.jackson.EndpointAddressDeserializer;
 import pl.allegro.tech.hermes.api.jackson.EndpointAddressSerializer;
 
+import java.net.URI;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,17 +19,73 @@ public class EndpointAddress {
 
     private static final String ANONYMIZED_PASSWORD = "*****";
 
-    private static final Pattern URL_WITH_CREDENTIALS_PATTERN = Pattern.compile("([a-zA-Z0-9_]*://)([a-zA-Z0-9_\\.]*:)(.*)(@.*)");
+    private static final Pattern URL_PATTERN = Pattern.compile("([a-zA-Z0-9]*)://(([a-zA-Z0-9_\\.]*):(.*)@)?(.*)");
+
+    private static final int PROTOCOL_GROUP = 1;
+
+    private static final int ADDRESS_GROUP = 5;
+
+    private static final int USER_INFO_GROUP = 2;
+
+    private static final int USERNAME_GROUP = 3;
+
+    private static final int PASSWORD_GROUP = 4;
+
+    private final boolean containsCredentials;
+
+    private final String protocol;
+
+    private final String username;
+
+    private final String password;
 
     @ValidAddress(message = "Endpoint address is invalid")
     private final String endpoint;
 
+    private final String rawEndpoint;
+
     public EndpointAddress(String endpoint) {
+        this.rawEndpoint = endpoint;
+
+        Matcher matcher = URL_PATTERN.matcher(endpoint);
+        if(matcher.matches()) {
+            this.protocol = matcher.group(PROTOCOL_GROUP);
+            this.containsCredentials = !Strings.isNullOrEmpty(matcher.group(USER_INFO_GROUP));
+
+            this.username = containsCredentials ? matcher.group(USERNAME_GROUP) : null;
+            this.password = containsCredentials ? matcher.group(PASSWORD_GROUP) : null;
+
+            this.endpoint = containsCredentials ? protocol + "://" + matcher.group(ADDRESS_GROUP) : endpoint;
+        }
+        else {
+            this.protocol = null;
+            this.containsCredentials = false;
+            this.username = null;
+            this.password = null;
+            this.endpoint = endpoint;
+        }
+    }
+
+    private EndpointAddress(String protocol, String endpoint, String username) {
+        this.protocol = protocol;
         this.endpoint = endpoint;
+        this.containsCredentials = true;
+        this.username = username;
+        this.password = ANONYMIZED_PASSWORD;
+
+        this.rawEndpoint = protocol + "://" + username + ":" + password + "@" + endpoint.replace(protocol + "://", "");
     }
 
     public String getEndpoint() {
         return endpoint;
+    }
+
+    public String getRawEndpoint() {
+        return rawEndpoint;
+    }
+
+    public URI getUri() {
+        return URI.create(endpoint);
     }
 
     public static EndpointAddress of(String endpoint) {
@@ -41,7 +97,7 @@ public class EndpointAddress {
     }
 
     public String getProtocol() {
-        return extractProtocolFromAddress(endpoint);
+        return protocol;
     }
 
     @Override
@@ -75,13 +131,20 @@ public class EndpointAddress {
     }
 
     public boolean containsCredentials() {
-        return URL_WITH_CREDENTIALS_PATTERN.matcher(endpoint).matches();
+        return containsCredentials;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public EndpointAddress anonymizePassword() {
-        Matcher m = URL_WITH_CREDENTIALS_PATTERN.matcher(endpoint);
-        if (m.matches()) {
-            return new EndpointAddress(m.group(1) + m.group(2) + ANONYMIZED_PASSWORD + m.group(4));
+        if(containsCredentials) {
+            return new EndpointAddress(protocol, endpoint, username);
         }
         return this;
     }

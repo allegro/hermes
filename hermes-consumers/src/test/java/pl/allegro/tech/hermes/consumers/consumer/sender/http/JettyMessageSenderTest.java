@@ -9,6 +9,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
@@ -16,6 +17,7 @@ import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +36,7 @@ public class JettyMessageSenderTest {
     private static HttpClient client;
     private static WireMockServer wireMockServer;
 
+    private ResolvableEndpointAddress address;
     private RemoteServiceEndpoint remoteServiceEndpoint;
     private JettyMessageSender messageSender;
 
@@ -58,8 +61,8 @@ public class JettyMessageSenderTest {
     @Before
     public void setUp() throws Exception {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
-        ResolvableEndpointAddress address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver());
-        messageSender = new JettyMessageSender(client, address, 1000, new DefaultHttpMetadataAppender());
+        address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver());
+        messageSender = new JettyMessageSender(client, address, Optional.empty(), 1000, new DefaultHttpMetadataAppender());
     }
 
     @Test
@@ -142,5 +145,20 @@ public class JettyMessageSenderTest {
         // then
         remoteServiceEndpoint.waitUntilReceived();
         assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Hermes-Retry-Count")).isEqualTo("1");
+    }
+
+    @Test
+    public void shouldSendAuthorizationHeaderIfAuthorizationProviderAttached() {
+        // given
+        JettyMessageSender messageSender = new JettyMessageSender(client, address, Optional.of(m -> "Basic Hello!"), 1000, new DefaultHttpMetadataAppender());
+        Message message = MessageBuilder.withTestMessage().build();
+        remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
+
+        // when
+        messageSender.send(message);
+
+        // then
+        remoteServiceEndpoint.waitUntilReceived();
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Authorization")).isEqualTo("Basic Hello!");
     }
 }

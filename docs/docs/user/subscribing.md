@@ -150,6 +150,20 @@ is growing. First things first, you should check subscription metrics for signs 
 
 If you want to know the exact algorithm, check [rate limiting configuration page](/configuration/rate-limiting/).
 
+## Authorization
+
+### Basic Auth
+
+Subscriber can authorize Hermes using [Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication). To enable
+Basic Auth for a subscription, pass credentials in endpoint definition, for example:
+
+```
+http://user:password@example.com
+```
+
+Password is never displayed in public and is not available via API. When editing subscription endpoint, remember that
+you need to provide full credentials.
+
 ## Metrics
 
 Subscription metrics are available at:

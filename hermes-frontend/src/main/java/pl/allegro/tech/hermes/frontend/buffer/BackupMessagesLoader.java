@@ -80,7 +80,7 @@ public class BackupMessagesLoader {
 
         do {
             if (retry > 0) {
-                List<Pair<Message, Topic>> retryMessages = new ArrayList(toResend.getAndSet(new ConcurrentLinkedQueue<>()));
+                List<Pair<Message, Topic>> retryMessages = new ArrayList<>(toResend.getAndSet(new ConcurrentLinkedQueue<>()));
                 resendMessages(retryMessages, retry);
             }
             try {
@@ -91,7 +91,7 @@ public class BackupMessagesLoader {
             retry++;
         } while (toResend.get().size() > 0 && retry <= maxResendRetries);
 
-        logger.info("Finished resending messages from backup storage after retry #{} with #{} not sent messages.", retry, toResend.get().size());
+        logger.info("Finished resending messages from backup storage after retry #{} with #{} unsent messages.", retry - 1, toResend.get().size());
     }
 
     private void sendMessages(List<BackupMessage> messages) {
@@ -127,7 +127,7 @@ public class BackupMessagesLoader {
             }
         }
 
-        logger.info("Resent {} messages and discarded {} messages from the backup storage retry {}.", sentCounter, discardedCounter, retry);
+        logger.info("Resent {}/{} messages and discarded {} messages from the backup storage retry {}.", sentCounter, messageAndTopicList.size(), discardedCounter, retry);
     }
 
     private boolean sendMessageIfNeeded(Message message, Optional<Topic> topic, String contextName) {

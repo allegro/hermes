@@ -14,6 +14,9 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.AvroToJsonMessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilterSource;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilters;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
@@ -34,6 +37,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSenderProvider;
@@ -57,6 +61,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTrackerFactory;
 
 import javax.inject.Singleton;
 import javax.jms.Message;
+import java.util.Collections;
 import java.util.List;
 
 public class ConsumersBinder extends AbstractBinder {
@@ -82,6 +87,7 @@ public class ConsumersBinder extends AbstractBinder {
 
         bindSingleton(ConsumersSupervisor.class);
         bindSingleton(MessageSenderFactory.class);
+        bindSingleton(HttpAuthorizationProviderFactory.class);
         bindSingleton(ConsumerFactory.class);
         bindSingleton(ConsumerRateLimitSupervisor.class);
         bindSingleton(OutputRateCalculator.class);
@@ -108,6 +114,8 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(UndeliveredMessageLogPersister.class);
         bindFactory(ByteBufferMessageBatchFactoryProvider.class).in(Singleton.class).to(MessageBatchFactory.class);
         bind(HttpMessageBatchSenderFactory.class).to(MessageBatchSenderFactory.class).in(Singleton.class);
+        bindSingleton(FilterChainFactory.class);
+        bind(new MessageFilters(Collections.emptyList(), Collections.emptyList())).to(MessageFilterSource.class);
     }
 
     private <T> void bindSingleton(Class<T> clazz) {

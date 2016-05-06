@@ -37,5 +37,8 @@
             "groupHeader": "Hermes-Group-Password",
             "adminHeader": "Hermes-Admin-Password"
         }
+    },
+    "topic": {
+        "messagePreviewEnabled": false
     }
 }

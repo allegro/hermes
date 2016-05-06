@@ -17,13 +17,11 @@ import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
+import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
+import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.validator.AvroTopicMessageValidator;
-import pl.allegro.tech.hermes.frontend.validator.JsonTopicMessageValidator;
-import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
-import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
-import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidatorListFactory;
+import pl.allegro.tech.hermes.frontend.validator.*;
 import pl.allegro.tech.hermes.frontend.zk.ZkClientFactory;
 import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
 import pl.allegro.tech.hermes.tracker.frontend.PublishingMessageTracker;
@@ -66,6 +64,8 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageFactory.class);
         bindSingleton(BackupMessagesLoader.class);
         bindSingleton(PersistentBufferExtension.class);
+        bindSingleton(MessagePreviewPersister.class);
+        bindSingleton(MessagePreviewLog.class);
     }
 
     private <T> void bindSingleton(Class<T> clazz) {

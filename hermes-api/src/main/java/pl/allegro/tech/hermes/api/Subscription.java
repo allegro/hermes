@@ -9,7 +9,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -19,6 +21,7 @@ import static pl.allegro.tech.hermes.api.helpers.Replacer.replaceInAll;
 public class Subscription {
 
     @Valid
+    @NotNull
     private TopicName topicName;
 
     @NotEmpty
@@ -51,30 +54,44 @@ public class Subscription {
     private String contact;
 
     @NotNull
+    private final MonitoringDetails monitoringDetails;
+
+    @NotNull
     private DeliveryType deliveryType = DeliveryType.SERIAL;
+
+    private List<MessageFilterSpecification> filters = new ArrayList<>();
+
+    public List<MessageFilterSpecification> getFilters() {
+        return filters;
+    }
 
     public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
 
     private Subscription(TopicName topicName,
-                        String name,
-                        EndpointAddress endpoint,
-                        State state,
-                        String description,
-                        Object subscriptionPolicy,
-                        boolean trackingEnabled,
-                        String supportTeam,
-                        String contact,
-                        ContentType contentType, DeliveryType deliveryType) {
+                         String name,
+                         EndpointAddress endpoint,
+                         State state,
+                         String description,
+                         Object subscriptionPolicy,
+                         boolean trackingEnabled,
+                         String supportTeam,
+                         String contact,
+                         MonitoringDetails monitoringDetails,
+                         ContentType contentType,
+                         DeliveryType deliveryType,
+                         List<MessageFilterSpecification> filters) {
         this.topicName = topicName;
         this.name = name;
         this.endpoint = endpoint;
+        this.filters = filters;
         this.state = state != null ? state : State.PENDING;
         this.description = description;
         this.trackingEnabled = trackingEnabled;
         this.supportTeam = supportTeam;
         this.contact = contact;
+        this.monitoringDetails = monitoringDetails == null ? MonitoringDetails.EMPTY : monitoringDetails;
         this.contentType = contentType == null ? ContentType.JSON : contentType;
         this.deliveryType = deliveryType;
         this.batchSubscriptionPolicy = this.deliveryType == DeliveryType.BATCH ? (BatchSubscriptionPolicy) subscriptionPolicy : null;
@@ -82,31 +99,35 @@ public class Subscription {
     }
 
     public static Subscription createSerialSubscription(TopicName topicName,
-                        String name,
-                        EndpointAddress endpoint,
-                        State state,
-                        String description,
-                        SubscriptionPolicy subscriptionPolicy,
-                        boolean trackingEnabled,
-                        String supportTeam,
-                        String contact,
-                        ContentType contentType) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, contentType, DeliveryType.SERIAL);
-    }
-
-    public static Subscription createBatchSubscription(TopicName topicName,
                                                         String name,
                                                         EndpointAddress endpoint,
                                                         State state,
                                                         String description,
-                                                        BatchSubscriptionPolicy subscriptionPolicy,
+                                                        SubscriptionPolicy subscriptionPolicy,
                                                         boolean trackingEnabled,
                                                         String supportTeam,
                                                         String contact,
-                                                        ContentType contentType) {
+                                                        MonitoringDetails monitoringDetails,
+                                                        ContentType contentType,
+                                                        List<MessageFilterSpecification> filters) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, contentType, DeliveryType.BATCH);
+                contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters);
+    }
+
+    public static Subscription createBatchSubscription(TopicName topicName,
+                                                       String name,
+                                                       EndpointAddress endpoint,
+                                                       State state,
+                                                       String description,
+                                                       BatchSubscriptionPolicy subscriptionPolicy,
+                                                       boolean trackingEnabled,
+                                                       String supportTeam,
+                                                       String contact,
+                                                       MonitoringDetails monitoringDetails,
+                                                       ContentType contentType,
+                                                       List<MessageFilterSpecification> filters) {
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
+                contact, monitoringDetails, contentType, DeliveryType.BATCH, filters);
     }
 
     @JsonCreator
@@ -119,8 +140,10 @@ public class Subscription {
                                       @JsonProperty("trackingEnabled") boolean trackingEnabled,
                                       @JsonProperty("supportTeam") String supportTeam,
                                       @JsonProperty("contact") String contact,
+                                      @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
                                       @JsonProperty("contentType") ContentType contentType,
-                                      @JsonProperty("deliveryType") DeliveryType deliveryType) {
+                                      @JsonProperty("deliveryType") DeliveryType deliveryType,
+                                      @JsonProperty("filters") List<MessageFilterSpecification> filters) {
         DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
         Map<String, Object> validSubscriptionPolicy = subscriptionPolicy == null ? new HashMap<>() : subscriptionPolicy;
 
@@ -135,14 +158,16 @@ public class Subscription {
                 trackingEnabled,
                 supportTeam,
                 contact,
+                monitoringDetails,
                 contentType,
-                validDeliveryType
+                validDeliveryType,
+                filters == null? new ArrayList<>() : filters
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy, contentType);
+        return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy, trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters);
     }
 
     @Override
@@ -164,7 +189,9 @@ public class Subscription {
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.supportTeam, other.supportTeam)
                 && Objects.equals(this.contact, other.contact)
-                && Objects.equals(this.contentType, other.contentType);
+                && Objects.equals(this.monitoringDetails, other.monitoringDetails)
+                && Objects.equals(this.contentType, other.contentType)
+                && Objects.equals(this.filters, other.filters);
     }
 
     public SubscriptionName toSubscriptionName() {
@@ -231,6 +258,10 @@ public class Subscription {
         return contact;
     }
 
+    public MonitoringDetails getMonitoringDetails() {
+        return monitoringDetails;
+    }
+
     public ContentType getContentType() {
         return contentType;
     }
@@ -271,8 +302,10 @@ public class Subscription {
                     trackingEnabled,
                     supportTeam,
                     contact,
+                    monitoringDetails,
                     contentType,
-                    deliveryType
+                    deliveryType,
+                    filters
             );
         }
         return this;

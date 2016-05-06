@@ -173,4 +173,8 @@ public class RemoteServiceEndpoint {
     public void reset() {
         receivedRequests.clear();
     }
+
+    public List<LoggedRequest> getReceivedRequests() {
+        return receivedRequests;
+    }
 }

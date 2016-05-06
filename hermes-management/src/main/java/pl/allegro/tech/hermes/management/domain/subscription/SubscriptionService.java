@@ -6,8 +6,10 @@ import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.helpers.Patch;
@@ -16,6 +18,7 @@ import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
@@ -34,6 +37,8 @@ public class SubscriptionService {
 
     private final SubscriptionMetricsRepository metricsRepository;
 
+    private final SubscriptionHealthChecker subscriptionHealthChecker;
+
     private final UndeliveredMessageLog undeliveredMessageLog;
 
     private final LogRepository logRepository;
@@ -44,12 +49,14 @@ public class SubscriptionService {
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
                                TopicService topicService,
                                SubscriptionMetricsRepository metricsRepository,
+                               SubscriptionHealthChecker subscriptionHealthChecker,
                                UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
                                ApiPreconditions apiPreconditions) {
         this.subscriptionRepository = subscriptionRepository;
         this.topicService = topicService;
         this.metricsRepository = metricsRepository;
+        this.subscriptionHealthChecker = subscriptionHealthChecker;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
         this.preconditions = apiPreconditions;
@@ -110,6 +117,13 @@ public class SubscriptionService {
     public SubscriptionMetrics getSubscriptionMetrics(TopicName topicName, String subscriptionName) {
         subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
         return metricsRepository.loadMetrics(topicName, subscriptionName);
+    }
+
+    public SubscriptionHealth getSubscriptionHealth(TopicName topicName, String subscriptionName) {
+        Subscription subscription = getSubscriptionDetails(topicName, subscriptionName);
+        TopicMetrics topicMetrics = topicService.getTopicMetrics(topicName);
+        SubscriptionMetrics subscriptionMetrics = getSubscriptionMetrics(topicName, subscriptionName);
+        return subscriptionHealthChecker.checkHealth(subscription, topicMetrics, subscriptionMetrics);
     }
 
     public Optional<SentMessageTrace> getLatestUndeliveredMessage(TopicName topicName, String subscriptionName) {

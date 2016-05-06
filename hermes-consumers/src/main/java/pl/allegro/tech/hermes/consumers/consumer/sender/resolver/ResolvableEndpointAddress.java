@@ -23,5 +23,4 @@ public class ResolvableEndpointAddress {
     public String toString() {
         return address.toString();
     }
-
 }

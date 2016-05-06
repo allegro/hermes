@@ -16,6 +16,7 @@ public class ZookeeperPaths {
     public static final String CONSUMERS_WORKLOAD_PATH = "consumers-workload";
     public static final String METRICS_PATH = "metrics";
     public static final String ADMIN_PATH = "admin";
+    public static final String PREVIEW_PATH = "preview";
 
     private final String basePath;
 

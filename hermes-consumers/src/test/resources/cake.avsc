@@ -1,0 +1,73 @@
+{
+  "namespace": "hermes",
+  "type": "record",
+  "name": "User",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string"
+    },
+    {
+      "name": "type",
+      "type": "string"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "ppu",
+      "type": "double"
+    },
+    {
+      "name": "topping",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "toppingType",
+          "type": "record",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string"
+            },
+            {
+              "name": "type",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "default": []
+    },
+    {
+      "name": "batters",
+      "type": {
+        "type": "record",
+        "name": "batterType",
+        "fields": [
+          {
+            "name": "batter",
+            "type": {
+              "type": "array",
+              "items": {
+                "name": "batter",
+                "type": "record",
+                "fields": [
+                  {
+                    "name": "id",
+                    "type": "string"
+                  },
+                  {
+                    "name": "type",
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
