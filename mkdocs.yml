@@ -51,4 +51,5 @@ pages:
     - 'Tuning Consumers': 'configuration/consumers-tuning.md'
     - 'Secure transport': 'configuration/secure-transport.md'
     - 'Topic Preview': 'configuration/topic-preview.md'
+    - 'Custom protocol support': 'configuration/custom-protocol.md'
     - 'Console': 'configuration/console.md'
