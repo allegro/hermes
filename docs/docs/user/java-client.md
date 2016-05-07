@@ -18,7 +18,7 @@ At the moment there are three implementations of `HermesSender`:
   uses [AsyncRestTemplate](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/client/AsyncRestTemplate.html)
   for asynchronous transmission
 * **JerseyHermesSender** - recommended for services using  [Jersey](<https://jersey.java.net/>)
-* **OkHttpHermesSender** - supports both HTTP/1.1 and HTTP/2 protocols, uses [OkHttp client](http://square.github.io/okhttp/)
+* **OkHttpHermesSender** - supports both HTTP/1.1 and HTTP/2 protocols, uses [OkHttp3 client](http://square.github.io/okhttp/)
 
 
 ## Creating
@@ -149,7 +149,7 @@ HermesClient client = HermesClientBuilder.hermesClient(new JerseyHermesSender(Cl
 
 ### OkHttp Client
 
-Requirement: `com.squareup.okhttp:okhttp` must be provided at runtime.
+Requirement: `com.squareup.okhttp3:okhttp` must be provided at runtime.
 
 ```java
 HermesClient client = HermesClientBuilder.hermesClient(new OkHttpHermesSender(new OkHttpClient()))
@@ -170,8 +170,10 @@ java -Xbootclasspath/p:<path_to_alpn_boot_jar> ...
 OkHttp Client configured with [SSL support](https://github.com/square/okhttp/wiki/HTTPS):
 
 ```java
-OkHttpClient okHttpClient = new OkHttpClient();
-okHttpClient.setSslSocketFactory(getSslContext().getSocketFactory());
+OkHttpClient client = new OkHttpClient.Builder()
+        .sslSocketFactory(sslContext.getSocketFactory())
+        .build();
+        
 HermesClient client = HermesClientBuilder.hermesClient(new OkHttpHermesSender(okHttpClient))
     .withURI(URI.create("https://localhost:8443"))
     .build();

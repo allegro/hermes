@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
-import com.squareup.okhttp.OkHttpClient;
+import okhttp3.OkHttpClient;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -80,7 +80,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
         HermesResponse response = client.publish(topic.qualifiedName(), message.body()).join();
 
         // then
-        assertThat(response.getHeader("OkHttp-Selected-Protocol")).isEqualTo("h2");
+        assertThat(response.getProtocol()).isEqualTo("h2");
     }
 
     private void runTestSuiteForHermesClient(HermesClient client) {
@@ -109,9 +109,9 @@ public class HermesClientPublishingTest extends IntegrationTest {
     }
 
     private OkHttpClient getOkHttpClientWithSslContextConfigured() {
-        OkHttpClient okHttpClient = new OkHttpClient();
-        okHttpClient.setSslSocketFactory(getSslContext().getSocketFactory());
-        return okHttpClient;
+        return new OkHttpClient.Builder()
+                .sslSocketFactory(getSslContext().getSocketFactory())
+                .build();
     }
 
     private SSLContext getSslContext() {

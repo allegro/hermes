@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.integration.env;
 
 import com.codahale.metrics.MetricRegistry;
 import com.jayway.awaitility.Duration;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;

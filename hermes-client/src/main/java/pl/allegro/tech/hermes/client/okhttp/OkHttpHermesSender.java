@@ -52,11 +52,12 @@ public class OkHttpHermesSender implements HermesSender {
         return future;
     }
 
-    private HermesResponse fromOkHttpResponse(Response response) throws IOException {
+    HermesResponse fromOkHttpResponse(Response response) throws IOException {
         return hermesResponse()
                 .withHeaderSupplier(response::header)
                 .withHttpStatus(response.code())
                 .withBody(response.body().string())
+                .withProtocol(response.protocol().toString())
                 .build();
     }
 }
