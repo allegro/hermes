@@ -69,10 +69,11 @@ public class EndpointAddress {
     private EndpointAddress(String protocol, String endpoint, String username) {
         this.protocol = protocol;
         this.endpoint = endpoint;
-        this.rawEndpoint = endpoint;
         this.containsCredentials = true;
         this.username = username;
         this.password = ANONYMIZED_PASSWORD;
+
+        this.rawEndpoint = protocol + "://" + username + ":" + password + "@" + endpoint.replace(protocol + "://", "");
     }
 
     public String getEndpoint() {

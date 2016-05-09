@@ -69,5 +69,6 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(SubscriptionOffsetChangeIndicatorFactory.class);
         bindSingletonFactory(PathsCompilerFactory.class);
         bindSingletonFactory(KafkaNamesMapperFactory.class);
+        bindSingletonFactory(MessagePreviewRepositoryFactory.class);
     }
 }

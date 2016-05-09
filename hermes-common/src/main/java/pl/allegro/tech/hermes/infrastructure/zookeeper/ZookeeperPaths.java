@@ -119,8 +119,4 @@ public class ZookeeperPaths {
                 METRICS_PATH,
                 metricName);
     }
-
-    public static String previewElementPath(String previewPath, String index) {
-        return Joiner.on(URL_SEPARATOR).join(previewPath, index);
-    }
 }

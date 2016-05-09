@@ -86,7 +86,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
     public void shouldApplyAssignmentChangesCreatingNewNodesInZookeeper() {
         // given
         Subscription s1 = anySubscription();
-        SubscriptionAssignmentView view = new SubscriptionAssignmentView(ImmutableMap.of(s1.toSubscriptionName(), ImmutableSet.of(assignment(supervisorId, s1.toSubscriptionName()))));
+        SubscriptionAssignmentView view = stateWithSingleAssignment(s1);
 
         // when
         workTracker.apply(view);
@@ -101,10 +101,37 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         Subscription s1 = forceAssignment(anySubscription());
 
         // when
-        workTracker.apply(new SubscriptionAssignmentView(Collections.emptyMap()));
+        workTracker.apply(stateWithNoAssignments());
 
         // then
         wait.untilZookeeperPathNotExists(basePath, s1.toSubscriptionName().toString(), supervisorId);
+    }
+
+    @Test
+    public void shouldApplyAssignmentChangesByRemovingInvalidSubscriptionNode() {
+        // given
+        Subscription s1 = dropAssignment(forceAssignment(anySubscription()));
+
+        // when
+        workTracker.apply(stateWithNoAssignments());
+
+        // then
+        wait.untilZookeeperPathNotExists(basePath, s1.toSubscriptionName().toString());
+    }
+
+    @Test
+    public void shouldApplyAssignmentChangesByRemovingSubscriptionNode() {
+        // given
+        Subscription s1 = anySubscription();
+        SubscriptionAssignmentView view = stateWithSingleAssignment(s1);
+        workTracker.apply(view);
+        wait.untilZookeeperPathIsCreated(basePath, s1.toSubscriptionName().toString(), supervisorId);
+
+        // when
+        workTracker.apply(stateWithNoAssignments());
+
+        // then
+        wait.untilZookeeperPathNotExists(basePath, s1.toSubscriptionName().toString());
     }
 
     @Test
@@ -126,6 +153,15 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         wait.untilZookeeperPathIsCreated(basePath, s2.toSubscriptionName().toString(), supervisorId);
     }
 
+    private SubscriptionAssignmentView stateWithSingleAssignment(Subscription subscription) {
+        return new SubscriptionAssignmentView(ImmutableMap.of(subscription.toSubscriptionName(),
+                ImmutableSet.of(assignment(supervisorId, subscription.toSubscriptionName()))));
+    }
+
+    private SubscriptionAssignmentView stateWithNoAssignments() {
+        return new SubscriptionAssignmentView(Collections.emptyMap());
+    }
+
     private SubscriptionAssignment assignment(String supervisorId, SubscriptionName subscriptionName) {
         return new SubscriptionAssignment(supervisorId, subscriptionName);
     }
@@ -143,4 +179,9 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         return sub;
     }
 
+    private Subscription dropAssignment(Subscription sub) {
+        workTracker.dropAssignment(sub);
+        wait.untilZookeeperPathNotExists(basePath, sub.toSubscriptionName().toString(), supervisorId);
+        return sub;
+    }
 }

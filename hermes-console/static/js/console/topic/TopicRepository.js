@@ -4,6 +4,7 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
     function (discovery, $resource, $location, subscriptionRepository, schemaRepository) {
 
         var repository = $resource(discovery.resolve('/topics/:name'), null, {update: {method: 'PUT'}});
+        var previewRepository = $resource(discovery.resolve('/topics/:name/preview'), null);
         var listing = $resource(discovery.resolve('/topics'));
 
         function wrapSchemaSave(topic, schema, promise) {
@@ -56,6 +57,9 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
                         };
                     });
                 });
+            },
+            preview: function (topicName) {
+                return previewRepository.query({name: topicName}).$promise;
             }
         };
     }]);

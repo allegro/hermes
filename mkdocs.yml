@@ -15,7 +15,7 @@ markdown_extensions:
         anchorlink: true
 
 extra:
-    version: '0.8.6-hotfix5'
+    version: '0.8.7'
     brand_image: 'img/hermes-mini.png'
 
 pages:
@@ -30,6 +30,7 @@ pages:
     - 'Publishing JSON': 'user/publishing-json.md'
     - 'Publishing AVRO': 'user/publishing-avro.md'
     - 'Subscribing': 'user/subscribing.md'
+    - 'Topic Preview': 'user/topic-preview.md'
     - 'Ownership and permissions': 'user/permissions.md'
     - 'Java Client': 'user/java-client.md'
   - Deployment:
@@ -49,4 +50,6 @@ pages:
     - 'Tuning Frontend': 'configuration/frontend-tuning.md'
     - 'Tuning Consumers': 'configuration/consumers-tuning.md'
     - 'Secure transport': 'configuration/secure-transport.md'
+    - 'Topic Preview': 'configuration/topic-preview.md'
+    - 'Custom protocol support': 'configuration/custom-protocol.md'
     - 'Console': 'configuration/console.md'

@@ -11,6 +11,8 @@ dependencies {
 
     provided group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 
+    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+
     testCompile project(':hermes-test-helper')
     testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
         exclude group: 'com.jayway.jsonpath', module: 'json-path'
