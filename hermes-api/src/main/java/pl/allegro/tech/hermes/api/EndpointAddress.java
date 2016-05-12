@@ -17,27 +17,13 @@ import java.util.regex.Pattern;
 @JsonSerialize(using = EndpointAddressSerializer.class)
 public class EndpointAddress {
 
-    private static final String ANONYMIZED_PASSWORD = "*****";
-
-    private static final Pattern URL_PATTERN = Pattern.compile("([a-zA-Z0-9]*)://(([a-zA-Z0-9_\\.]*):(.*)@)?(.*)");
+    private static final Pattern URL_PATTERN = Pattern.compile("([a-zA-Z0-9]*)://(.*)");
 
     private static final int PROTOCOL_GROUP = 1;
 
-    private static final int ADDRESS_GROUP = 5;
-
-    private static final int USER_INFO_GROUP = 2;
-
-    private static final int USERNAME_GROUP = 3;
-
-    private static final int PASSWORD_GROUP = 4;
-
-    private final boolean containsCredentials;
+    private static final int ADDRESS_GROUP = 2;
 
     private final String protocol;
-
-    private final String username;
-
-    private final String password;
 
     @ValidAddress(message = "Endpoint address is invalid")
     private final String endpoint;
@@ -50,30 +36,20 @@ public class EndpointAddress {
         Matcher matcher = URL_PATTERN.matcher(endpoint);
         if(matcher.matches()) {
             this.protocol = matcher.group(PROTOCOL_GROUP);
-            this.containsCredentials = !Strings.isNullOrEmpty(matcher.group(USER_INFO_GROUP));
 
-            this.username = containsCredentials ? matcher.group(USERNAME_GROUP) : null;
-            this.password = containsCredentials ? matcher.group(PASSWORD_GROUP) : null;
-
-            this.endpoint = containsCredentials ? protocol + "://" + matcher.group(ADDRESS_GROUP) : endpoint;
+            this.endpoint = endpoint;
         }
         else {
             this.protocol = null;
-            this.containsCredentials = false;
-            this.username = null;
-            this.password = null;
+
             this.endpoint = endpoint;
         }
     }
 
-    private EndpointAddress(String protocol, String endpoint, String username) {
+    private EndpointAddress(String protocol, String endpoint) {
         this.protocol = protocol;
         this.endpoint = endpoint;
-        this.containsCredentials = true;
-        this.username = username;
-        this.password = ANONYMIZED_PASSWORD;
-
-        this.rawEndpoint = protocol + "://" + username + ":" + password + "@" + endpoint.replace(protocol + "://", "");
+        this.rawEndpoint = endpoint;
     }
 
     public String getEndpoint() {
@@ -128,24 +104,5 @@ public class EndpointAddress {
         Preconditions.checkArgument(endpoint.indexOf(':') != -1);
 
         return endpoint.substring(0, endpoint.indexOf(':'));
-    }
-
-    public boolean containsCredentials() {
-        return containsCredentials;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public EndpointAddress anonymizePassword() {
-        if(containsCredentials) {
-            return new EndpointAddress(protocol, endpoint, username);
-        }
-        return this;
     }
 }

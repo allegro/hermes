@@ -219,6 +219,15 @@ subscriptions.factory('SubscriptionFactory', [function () {
                     topicName: topicName,
                     name: '',
                     endpoint: '',
+                    authenticationType: 'NONE',
+                    authentication: {
+                        username: '',
+                        password: '',
+                        consumerKey: '',
+                        consumerSecret: '',
+                        grantType: 'PASSWORD',
+                        accessTokenEndpoint: ''
+                    },
                     description: '',
                     supportTeam: '',
                     contact: '',

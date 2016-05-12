@@ -1,13 +1,21 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import pl.allegro.tech.hermes.api.AuthenticationType;
+import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.MessageFilterSpecification;
+import pl.allegro.tech.hermes.api.MonitoringDetails;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -17,6 +25,9 @@ import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -152,7 +163,14 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldSendAuthorizationHeaderIfAuthorizationProviderAttached() {
         // given
-        JettyMessageSender messageSender = new JettyMessageSender(client, address, Optional.of(m -> "Basic Hello!"), 1000, new DefaultHttpMetadataAppender());
+        HashMap<String,String> authData = new HashMap<String,String>();
+        authData.put("username", "username");
+        authData.put("password", "password");
+        EndpointAddress endpointAddress = new EndpointAddress("http://localhost:8080");
+        Subscription subscription = Subscription.create(null, "name", endpointAddress, AuthenticationType.BASIC, authData, null, null, null, true, 
+                                                      null, null, null, null, DeliveryType.SERIAL, null);
+        BasicAuthProvider provider = new BasicAuthProvider(subscription);
+        JettyMessageSender messageSender = new JettyMessageSender(client, address, Optional.of(provider), 1000, new DefaultHttpMetadataAppender());
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
@@ -161,13 +179,20 @@ public class JettyMessageSenderTest {
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
-        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Authorization")).isEqualTo("Basic Hello!");
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Authorization")).isEqualTo(provider.authorizationToken(message));
     }
 
     @Test
     public void shouldUseSuppliedTimeout() throws ExecutionException, InterruptedException, TimeoutException {
         // given
-        JettyMessageSender messageSender = new JettyMessageSender(client, address, Optional.of(m -> "Basic Hello!"), 1, new DefaultHttpMetadataAppender());
+        HashMap<String,String> authData = new HashMap<String,String>();
+        authData.put("username", "username");
+        authData.put("password", "password");
+        EndpointAddress endpointAddress = new EndpointAddress("http://localhost:8080");
+        Subscription subscription = Subscription.create(null, "name", endpointAddress, AuthenticationType.BASIC, authData, null, null, null, true, 
+                                                      null, null, null, null, DeliveryType.SERIAL, null);
+        BasicAuthProvider provider = new BasicAuthProvider(subscription);
+        JettyMessageSender messageSender = new JettyMessageSender(client, address, Optional.of(provider), 1, new DefaultHttpMetadataAppender());
         Message message = MessageBuilder.withTestMessage().build();
 
         // when

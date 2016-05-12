@@ -157,14 +157,22 @@ public class ConsumerMessageSender {
                 rateLimiter.registerSuccessfulSending();
                 handleMessageSendingSuccess(message, result);
             } else {
-                handleFailedSending(message, result);
-                message.incrementRetryCounter();
+                if (result.isUnauthorized()) {
+                    message.incrementNumberOfUnauthorizedRequests();
+                }
 
-                long retryDelay = extractRetryDelay(result);
-                if (consumerIsConsuming && shouldAttemptResending(result, retryDelay)) {
-                    retrySingleThreadExecutor.schedule(() -> retrySending(result), retryDelay, TimeUnit.MILLISECONDS);
+                if (!(result.isUnauthorized() && message.getRetryCounter() == 0 && message.getNumberOfUnauthorizedRequests() == 1)) {
+                    handleFailedSending(message, result);
+                    message.incrementRetryCounter();
+
+                    long retryDelay = extractRetryDelay(result);
+                    if (consumerIsConsuming && shouldAttemptResending(result, retryDelay)) {
+                        retrySingleThreadExecutor.schedule(() -> retrySending(result), retryDelay, TimeUnit.MILLISECONDS);
+                    } else {
+                        handleMessageDiscarding(message, result);
+                    }
                 } else {
-                    handleMessageDiscarding(message, result);
+                    sendMessage(message);
                 }
             }
         }
