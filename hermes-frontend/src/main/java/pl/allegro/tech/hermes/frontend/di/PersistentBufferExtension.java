@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.frontend.di;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
@@ -12,12 +14,15 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import javax.inject.Inject;
 import java.io.File;
 import java.time.Clock;
-import java.util.Optional;
+import java.util.List;
 
+import static java.util.stream.Collectors.joining;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_ENABLED;
 
 public class PersistentBufferExtension {
+
+    private static final Logger logger = LoggerFactory.getLogger(PersistentBufferExtension.class);
 
     private final ConfigFactory config;
 
@@ -47,10 +52,15 @@ public class PersistentBufferExtension {
                 config.getStringProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY),
                 clock);
 
-        Optional<File> optionalOldBackup = backupFilesManager.rolloverBackupFileIfExists();
-        optionalOldBackup.ifPresent(f ->
-                hooksHandler.addStartupHook((s) -> loadOldMessages(backupFilesManager, f))
-        );
+        backupFilesManager.rolloverBackupFileIfExists();
+        List<File> rolledBackupFiles = backupFilesManager.getRolledBackupFiles();
+        if (!rolledBackupFiles.isEmpty()) {
+            logger.info("Backup files were found. Number of files: {}. Files: {}",
+                    rolledBackupFiles.size(),
+                    rolledBackupFiles.stream().map(f -> f.getName()).collect(joining(", ")));
+
+            hooksHandler.addStartupHook((s) -> rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f)));
+        }
 
         if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {
             MessageRepository repository = new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile());
@@ -63,6 +73,7 @@ public class PersistentBufferExtension {
     }
 
     private void loadOldMessages(BackupFilesManager backupFilesManager, File oldBackup) {
+        logger.info("Loading messages from backup file: {}", oldBackup.getName());
         MessageRepository oldMessageRepository = new ChronicleMapMessageRepository(oldBackup);
         backupMessagesLoader.loadMessages(oldMessageRepository);
         oldMessageRepository.close();
