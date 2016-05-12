@@ -25,6 +25,63 @@
                     <input class="form-control" endpoint="" id="subscriptionEndpoint" name="subscriptionEndpoint" required placeholder="where to send messages" ng-model="subscription.endpoint"/>
                 </div>
             </div>
+
+            <div class="form-group">
+                <label for="authType" class="col-md-3 control-label">Authentication type</label>
+                <div class="col-md-9">
+                    <select required class="form-control" id="authType" name="authType" ng-model="subscription.authenticationType">
+                        <option value="NONE">NONE</option>
+                        <option value="BASIC">BASIC</option>
+                        <option value="OAUTH2">OAUTH2</option>
+                    </select>
+                </div>
+            </div>
+
+            <div ng-hide="subscription.authenticationType === 'NONE'" class="form-group {{subscriptionForm.subscriptionUsername.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionUsername" class="col-md-3 control-label">Username</label>
+                <div class="col-md-9">
+                    <input class="form-control" endpoint="" id="subscriptionUsername" name="subscriptionUsername" ng-required="subscription.authenticationType !== 'NONE'" placeholder="what is your authentication username" ng-model="subscription.authentication.username"/>
+                </div>
+            </div>
+
+            <div ng-hide="subscription.authenticationType === 'NONE'" class="form-group {{subscriptionForm.subscriptionPassword.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionPassword" class="col-md-3 control-label">Password</label>
+                <div class="col-md-9">
+                    <input class="form-control" endpoint="" id="subscriptionPassword" name="subscriptionPassword" ng-required="subscription.authenticationType !== 'NONE'" placeholder="what is your authentication password" ng-model="subscription.authentication.password"/>
+                </div>
+            </div>
+
+            <div ng-hide="subscription.authenticationType !== 'OAUTH2'" class="form-group {{subscriptionForm.subscriptionConsumerKey.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionConsumerKey" class="col-md-3 control-label">Consumer Key</label>
+                <div class="col-md-9">
+                    <input class="form-control" endpoint="" id="subscriptionConsumerKey" name="subscriptionConsumerKey" ng-required="subscription.authenticationType === 'OAUTH2'" placeholder="what is your oauth2 consumer key" ng-model="subscription.authentication.consumerKey"/>
+                </div>
+            </div>
+
+            <div ng-hide="subscription.authenticationType !== 'OAUTH2'" class="form-group {{subscriptionForm.subscriptionConsumerSecret.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionConsumerSecret" class="col-md-3 control-label">Consumer Secret</label>
+                <div class="col-md-9">
+                    <input class="form-control" endpoint="" id="subscriptionConsumerSecret" name="subscriptionConsumerSecret" ng-required="subscription.authenticationType === 'OAUTH2'" placeholder="what is your oauth2 consumer secret" ng-model="subscription.authentication.consumerSecret"/>
+                </div>
+            </div>
+
+            <div class="form-group" ng-hide="subscription.authenticationType !== 'OAUTH2'">
+                <label for="grantType" class="col-md-3 control-label">Grant type</label>
+                <div class="col-md-9">
+                    <select ng-required="subscription.authenticationType === 'OAUTH2'" class="form-control" id="grantType" name="grantType" ng-model="subscription.authentication.grantType">
+                        <option value="PASSWORD">PASSWORD</option>
+                    </select>
+                </div>
+            </div>
+
+            <div ng-hide="subscription.authenticationType !== 'OAUTH2'" class="form-group {{subscriptionForm.subscriptionAccessTokenURL.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionAccessTokenURL" class="col-md-3 control-label">Access Token Endpoint</label>
+                <div class="col-md-9">
+                    <input class="form-control" endpoint="" id="subscriptionAccessTokenURL" name="subscriptionAccessTokenURL" 
+                    ng-required="subscription.authenticationType === 'OAUTH2'" placeholder="what is your oauth2 authorization url" ng-model="subscription.authentication.accessTokenEndpoint"/>
+                </div>
+            </div>
+
             <div class="form-group {{subscriptionForm.subscriptionDescription.$valid ? '' : 'has-error'}}">
                 <label for="subscriptionDescription" class="col-md-3 control-label">Description</label>
                 <div class="col-md-9">

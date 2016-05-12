@@ -35,6 +35,15 @@ public class Subscription {
     private EndpointAddress endpoint;
 
     @NotNull
+    private AuthenticationType authenticationType = AuthenticationType.NONE;
+
+    @Valid
+    private BasicAuthenticationData basicAuthData;
+
+    @Valid
+    private OAuth2AuthenticationData oauthAuthData;
+
+    @NotNull
     private ContentType contentType = ContentType.JSON;
 
     @NotNull
@@ -72,6 +81,8 @@ public class Subscription {
     private Subscription(TopicName topicName,
                          String name,
                          EndpointAddress endpoint,
+                         AuthenticationType authenticationType,
+                         Object authentication,
                          State state,
                          String description,
                          Object subscriptionPolicy,
@@ -85,6 +96,9 @@ public class Subscription {
         this.topicName = topicName;
         this.name = name;
         this.endpoint = endpoint;
+        this.authenticationType = authenticationType != null ? authenticationType : AuthenticationType.NONE;
+        this.basicAuthData = this.authenticationType == AuthenticationType.BASIC ? (BasicAuthenticationData) authentication : null;
+        this.oauthAuthData = this.authenticationType == AuthenticationType.OAUTH2 ? (OAuth2AuthenticationData) authentication : null;
         this.filters = filters;
         this.state = state != null ? state : State.PENDING;
         this.description = description;
@@ -101,6 +115,8 @@ public class Subscription {
     public static Subscription createSerialSubscription(TopicName topicName,
                                                         String name,
                                                         EndpointAddress endpoint,
+                                                        AuthenticationType authenticationType,
+                                                        Object authentication,
                                                         State state,
                                                         String description,
                                                         SubscriptionPolicy subscriptionPolicy,
@@ -110,13 +126,15 @@ public class Subscription {
                                                         MonitoringDetails monitoringDetails,
                                                         ContentType contentType,
                                                         List<MessageFilterSpecification> filters) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters);
+        return new Subscription(topicName, name, endpoint, authenticationType, authentication, state, description, subscriptionPolicy, trackingEnabled, 
+                supportTeam, contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters);
     }
 
     public static Subscription createBatchSubscription(TopicName topicName,
                                                        String name,
                                                        EndpointAddress endpoint,
+                                                       AuthenticationType authenticationType,
+                                                       Object authentication,
                                                        State state,
                                                        String description,
                                                        BatchSubscriptionPolicy subscriptionPolicy,
@@ -126,7 +144,7 @@ public class Subscription {
                                                        MonitoringDetails monitoringDetails,
                                                        ContentType contentType,
                                                        List<MessageFilterSpecification> filters) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
+        return new Subscription(topicName, name, endpoint, authenticationType, authentication, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
                 contact, monitoringDetails, contentType, DeliveryType.BATCH, filters);
     }
 
@@ -134,6 +152,8 @@ public class Subscription {
     public static Subscription create(@JsonProperty("topicName") String topicName,
                                       @JsonProperty("name") String name,
                                       @JsonProperty("endpoint") EndpointAddress endpoint,
+                                      @JsonProperty("authenticationType") AuthenticationType authenticationType,
+                                      @JsonProperty("authentication") Map<String, String> authentication,
                                       @JsonProperty("state") State state,
                                       @JsonProperty("description") String description,
                                       @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
@@ -145,12 +165,16 @@ public class Subscription {
                                       @JsonProperty("deliveryType") DeliveryType deliveryType,
                                       @JsonProperty("filters") List<MessageFilterSpecification> filters) {
         DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
+        Map<String, String> validAuthentication = authentication == null ? new HashMap<>() : authentication;
         Map<String, Object> validSubscriptionPolicy = subscriptionPolicy == null ? new HashMap<>() : subscriptionPolicy;
 
         return new Subscription(
                 TopicName.fromQualifiedName(topicName),
                 name,
                 endpoint,
+                authenticationType,
+                authenticationType == AuthenticationType.BASIC ?
+                        BasicAuthenticationData.create(validAuthentication) : OAuth2AuthenticationData.create(validAuthentication),
                 state,
                 description,
                 validDeliveryType == DeliveryType.SERIAL ?
@@ -167,7 +191,7 @@ public class Subscription {
 
     @Override
     public int hashCode() {
-        return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy, trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters);
+        return Objects.hash(endpoint, authenticationType, basicAuthData, oauthAuthData, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy, trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters);
     }
 
     @Override
@@ -181,6 +205,9 @@ public class Subscription {
         final Subscription other = (Subscription) obj;
 
         return Objects.equals(this.endpoint, other.endpoint)
+                && Objects.equals(this.authenticationType, other.authenticationType)
+                && Objects.equals(this.basicAuthData, other.basicAuthData)
+                && Objects.equals(this.oauthAuthData, other.oauthAuthData)
                 && Objects.equals(this.topicName, other.topicName)
                 && Objects.equals(this.name, other.name)
                 && Objects.equals(this.description, other.description)
@@ -246,6 +273,16 @@ public class Subscription {
         return isBatchSubscription() ? batchSubscriptionPolicy : serialSubscriptionPolicy;
     }
 
+    @JsonProperty("authentication")
+    public AuthenticationData getAuthentication() {
+        if(authenticationType == AuthenticationType.OAUTH2) {
+            return oauthAuthData;
+        } else if(authenticationType == AuthenticationType.BASIC) {
+            return basicAuthData;
+        }
+        return null;
+    }
+
     public boolean isTrackingEnabled() {
         return trackingEnabled;
     }
@@ -264,6 +301,10 @@ public class Subscription {
 
     public ContentType getContentType() {
         return contentType;
+    }
+
+    public AuthenticationType getAuthenticationType() {
+        return authenticationType;
     }
 
     public DeliveryType getDeliveryType() {
@@ -286,16 +327,28 @@ public class Subscription {
     }
 
     @JsonIgnore
+    public BasicAuthenticationData getBasicAuthenticationData() {
+        return basicAuthData;
+    }
+
+    @JsonIgnore
+    public OAuth2AuthenticationData getOAuth2AuthenticationData() {
+        return oauthAuthData;
+    }
+
+    @JsonIgnore
     public boolean isActive() {
         return state == State.ACTIVE || state == State.PENDING;
     }
 
-    public Subscription anonymizePassword() {
-        if (getEndpoint().containsCredentials()) {
+    public Subscription anonymize() {
+        if (basicAuthData != null || oauthAuthData != null) {
             return new Subscription(
                     topicName,
                     name,
-                    endpoint.anonymizePassword(),
+                    endpoint,
+                    authenticationType,
+                    authenticationType == AuthenticationType.BASIC ? basicAuthData.anonymize() : oauthAuthData.anonymize(),
                     state,
                     description,
                     deliveryType == DeliveryType.BATCH ? batchSubscriptionPolicy : serialSubscriptionPolicy,

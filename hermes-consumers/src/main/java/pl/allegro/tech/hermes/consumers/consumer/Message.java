@@ -25,6 +25,8 @@ public class Message {
 
     private int retryCounter = 0;
 
+    private int numberOfUnauthorizedRequests = 0;
+
     private Map<String, String> externalMetadata;
 
     private Message() {}
@@ -75,6 +77,14 @@ public class Message {
 
     public String getTopic() {
         return topic;
+    }
+
+    public void incrementNumberOfUnauthorizedRequests() {
+        this.numberOfUnauthorizedRequests++;
+    }
+
+    public int getNumberOfUnauthorizedRequests() {
+        return numberOfUnauthorizedRequests;
     }
 
     public boolean isTtlExceeded(long ttlMillis) {

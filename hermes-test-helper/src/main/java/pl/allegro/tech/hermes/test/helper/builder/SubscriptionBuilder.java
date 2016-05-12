@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
+import pl.allegro.tech.hermes.api.BasicAuthenticationData;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
+import pl.allegro.tech.hermes.api.AuthenticationType;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.MonitoringDetails;
+import pl.allegro.tech.hermes.api.OAuth2AuthenticationData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
@@ -24,6 +27,10 @@ public class SubscriptionBuilder {
     private Subscription.State state = Subscription.State.PENDING;
 
     private EndpointAddress endpoint = EndpointAddress.of("http://localhost:12345");
+
+    private AuthenticationType authType = AuthenticationType.NONE;
+
+    private Object authentication;
 
     private ContentType contentType = ContentType.JSON;
 
@@ -87,13 +94,13 @@ public class SubscriptionBuilder {
     public Subscription build() {
         if (deliveryType == DeliveryType.SERIAL) {
             return Subscription.createSerialSubscription(
-                    topicName, name, endpoint, state, description,
+                    topicName, name, endpoint, authType, authentication, state, description,
                     serialSubscriptionPolicy,
                     trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters
             );
         } else {
             return Subscription.createBatchSubscription(
-                    topicName, name, endpoint, state, description,
+                    topicName, name, endpoint, authType, authentication, state, description,
                     batchSubscriptionPolicy,
                     trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters
             );
@@ -129,6 +136,18 @@ public class SubscriptionBuilder {
     public SubscriptionBuilder withSubscriptionPolicy(SubscriptionPolicy subscriptionPolicy) {
         this.serialSubscriptionPolicy = subscriptionPolicy;
         this.deliveryType = DeliveryType.SERIAL;
+        return this;
+    }
+
+    public SubscriptionBuilder withAuthentication(BasicAuthenticationData authentication) {
+        this.authentication = authentication;
+        this.authType = AuthenticationType.BASIC;
+        return this;
+    }
+
+    public SubscriptionBuilder withAuthentication(OAuth2AuthenticationData authentication) {
+        this.authentication = authentication;
+        this.authType = AuthenticationType.OAUTH2;
         return this;
     }
 

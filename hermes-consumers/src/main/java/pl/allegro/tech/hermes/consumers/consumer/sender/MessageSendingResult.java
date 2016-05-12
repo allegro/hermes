@@ -17,6 +17,7 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 public class MessageSendingResult {
 
@@ -68,6 +69,10 @@ public class MessageSendingResult {
 
     public boolean isRetryLater() {
         return statusCode == SERVICE_UNAVAILABLE.getStatusCode();
+    }
+
+    public boolean isUnauthorized() {
+        return statusCode == UNAUTHORIZED.getStatusCode();
     }
 
     private void initializeForStatusCode(int statusCode) {

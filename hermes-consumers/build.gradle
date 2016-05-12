@@ -7,6 +7,8 @@ dependencies {
     compile project(':hermes-tracker')
     compile project(':hermes-metrics')
 
+    compile files('./scribejava-core-2.5.4-SNAPSHOT.jar')
+
     compile group: 'org.eclipse.jetty', name: 'jetty-client', version: '9.3.6.v20151106'
 
     compile group: 'javax.jms', name: 'javax.jms-api', version: '2.0'

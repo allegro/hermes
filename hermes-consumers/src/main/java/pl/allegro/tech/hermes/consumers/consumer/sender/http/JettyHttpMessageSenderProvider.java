@@ -37,7 +37,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         ResolvableEndpointAddress resolvableEndpoint = new ResolvableEndpointAddress(subscription.getEndpoint(), endpointAddressResolver);
         return new JettyMessageSender(httpClient,
                 resolvableEndpoint,
-                authorizationProviderFactory.create(subscription.getEndpoint()),
+                authorizationProviderFactory.create(subscription),
                 subscription.getSerialSubscriptionPolicy().getRequestTimeout(),
                 metadataAppender);
     }

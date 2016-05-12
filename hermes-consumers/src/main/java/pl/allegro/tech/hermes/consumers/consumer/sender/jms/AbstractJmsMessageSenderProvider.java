@@ -35,8 +35,8 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
         URI uri = endpoint.getUri();
         ConnectionFactory connectionFactory = getConnectionFactory(uri);
         JMSContext jmsContext = connectionFactory.createContext(
-                endpoint.getUsername(),
-                endpoint.getPassword()
+                subscription.getAuthentication().getUsername(),
+                subscription.getAuthentication().getPassword()
         );
 
         return new JmsMessageSender(jmsContext, extractTopicName(uri), metadataAppender);

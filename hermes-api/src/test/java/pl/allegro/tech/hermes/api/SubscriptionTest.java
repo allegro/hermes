@@ -69,12 +69,29 @@ public class SubscriptionTest {
     }
 
     @Test
-    public void shouldAnonymizePassword() {
+    public void shouldAnonymizeBasicAuthenticationData() {
         // given
-        Subscription subscription = subscription("group.topic", "subscription").withEndpoint("http://user:password@service/path").build();
+        Subscription subscription = subscription("group.topic", "subscription").withEndpoint("http://service/path")
+                                        .withAuthentication(new BasicAuthenticationData("username", "password")).build();
 
         // when & then
-        assertThat(subscription.anonymizePassword().getEndpoint()).isEqualTo(new EndpointAddress("http://user:*****@service/path"));
+        assertThat(subscription.anonymize().getBasicAuthenticationData()).isEqualTo(new BasicAuthenticationData("username", "*****"));
+    }
+
+    @Test
+    public void shouldAnonymizeOAuth2AuthenticationData() {
+        // given
+        Subscription subscription = subscription("group.topic", "subscription").withEndpoint("http://service/path")
+                                        .withAuthentication(
+                                                new OAuth2AuthenticationData("username", "password", "key", "secret", "password", 
+                                                        new EndpointAddress("http://service/authorize"))
+                                        ).build();
+
+        // when & then
+        assertThat(subscription.anonymize().getOAuth2AuthenticationData()).isEqualTo(
+                new OAuth2AuthenticationData("username", "*****", "key", "*****", "password", 
+                        new EndpointAddress("http://service/authorize"))
+        );
     }
 
 }
