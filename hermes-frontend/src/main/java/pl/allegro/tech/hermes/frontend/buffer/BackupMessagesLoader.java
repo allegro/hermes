@@ -25,8 +25,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,7 +36,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_ACK_TIMEOUT;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES;
 
 public class BackupMessagesLoader {
 
@@ -47,9 +53,11 @@ public class BackupMessagesLoader {
     private final Trackers trackers;
     private final int secondsToWaitForTopicsCache;
     private final int messageMaxAgeHours;
-    private final int resendSleep;
     private final int maxResendRetries;
+    private final long resendSleep;
+    private final long readTopicInfoSleep;
 
+    private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
     private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, Topic>>> toResend = new AtomicReference<>();
 
     @Inject
@@ -67,6 +75,7 @@ public class BackupMessagesLoader {
         this.secondsToWaitForTopicsCache = config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE);
         this.messageMaxAgeHours = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS);
         this.resendSleep = config.getIntProperty(KAFKA_PRODUCER_ACK_TIMEOUT) + secondsToWaitForTopicsCache * 1000;
+        this.readTopicInfoSleep = TimeUnit.SECONDS.toMillis(config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO));
         this.maxResendRetries = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES);
     }
 
@@ -77,6 +86,11 @@ public class BackupMessagesLoader {
         toResend.set(new ConcurrentLinkedQueue<>());
 
         sendMessages(messages);
+
+        if (toResend.get().size() == 0) {
+            logger.info("No messages to resend.");
+            return;
+        }
 
         do {
             if (retry > 0) {
@@ -92,6 +106,10 @@ public class BackupMessagesLoader {
         } while (toResend.get().size() > 0 && retry <= maxResendRetries);
 
         logger.info("Finished resending messages from backup storage after retry #{} with #{} unsent messages.", retry - 1, toResend.get().size());
+    }
+
+    public void clearTopicsAvailabilityCache() {
+        topicsAvailabilityCache.clear();
     }
 
     private void sendMessages(List<BackupMessage> messages) {
@@ -132,6 +150,7 @@ public class BackupMessagesLoader {
 
     private boolean sendMessageIfNeeded(Message message, Optional<Topic> topic, String contextName) {
         if (topic.isPresent() && isNotStale(message)) {
+            waitOnBrokerTopicAvailability(topic.get());
             sendMessage(message, topic.get());
             return true;
         } else {
@@ -139,6 +158,33 @@ public class BackupMessagesLoader {
                     new String(message.getData(), Charset.defaultCharset()));
             return false;
         }
+    }
+
+    private void waitOnBrokerTopicAvailability(Topic topic) {
+        int tries = 0;
+        while(!isBrokerTopicAvailable(topic)) {
+            try {
+                tries++;
+                logger.info("Broker topic {} is not available, checked {} times.", topic.getQualifiedName(), tries);
+                Thread.sleep(readTopicInfoSleep);
+            } catch (InterruptedException e) {
+                logger.warn("Waiting for broker topic availability interrupted. Topic: {}", topic.getQualifiedName());
+            }
+        }
+    }
+
+    private boolean isBrokerTopicAvailable(Topic topic) {
+        if (topicsAvailabilityCache.contains(topic)) {
+            return true;
+        }
+
+        if (brokerMessageProducer.isTopicAvailable(topic)) {
+            topicsAvailabilityCache.add(topic);
+            logger.info("Broker topic {} is available.", topic.getQualifiedName());
+            return true;
+        }
+
+        return false;
     }
 
     private boolean isNotStale(Message message) {

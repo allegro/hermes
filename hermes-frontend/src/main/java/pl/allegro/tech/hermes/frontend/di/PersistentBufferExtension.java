@@ -59,7 +59,10 @@ public class PersistentBufferExtension {
                     rolledBackupFiles.size(),
                     rolledBackupFiles.stream().map(f -> f.getName()).collect(joining(", ")));
 
-            hooksHandler.addStartupHook((s) -> rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f)));
+            hooksHandler.addStartupHook((s) -> {
+                rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
+                backupMessagesLoader.clearTopicsAvailabilityCache();
+            });
         }
 
         if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {

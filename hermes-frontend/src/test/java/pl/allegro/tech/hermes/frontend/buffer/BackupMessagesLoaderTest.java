@@ -6,8 +6,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -60,6 +58,7 @@ public class BackupMessagesLoaderTest {
         when(topicsCache.getTopic(topicName)).thenReturn(Optional.of(topic));
         when(metrics.timer(anyString())).thenReturn(new Timer());
         when(metrics.timer(anyString(), eq(topicName))).thenReturn(new Timer());
+        when(producer.isTopicAvailable(topic)).thenReturn(true);
     }
 
     @After
@@ -97,12 +96,10 @@ public class BackupMessagesLoaderTest {
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(noOfSentCalls - 1);
         when(trackers.get(eq(topic))).thenReturn(new NoOperationPublishingTracker());
 
-        doAnswer(new Answer() {
-            public Object answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                ((PublishingCallback) args[2]).onUnpublished((Message) args[0], (Topic) args[1], new Exception("test"));
-                return "";
-            }
+        doAnswer(invocation -> {
+            Object[] args = invocation.getArguments();
+            ((PublishingCallback) args[2]).onUnpublished((Message) args[0], (Topic) args[1], new Exception("test"));
+            return "";
         }).when(producer).send(any(JsonMessage.class), eq(topic), any(PublishingCallback.class));
 
 
@@ -117,6 +114,26 @@ public class BackupMessagesLoaderTest {
         //then
         verify(producer, times(noOfSentCalls)).send(any(JsonMessage.class), eq(topic), any(PublishingCallback.class));
         verify(listeners, times(noOfSentCalls)).onError(any(JsonMessage.class), eq(topic), any(Exception.class));
+    }
+
+    @Test
+    public void shouldSendOnlyWhenBrokerTopicIsAvailable() {
+        // given
+        when(configFactory.getIntProperty(Configs.MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE)).thenReturn(1);
+        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(10);
+
+        when(producer.isTopicAvailable(topic)).thenReturn(false).thenReturn(false).thenReturn(true);
+
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, metrics, listeners, topicsCache, trackers, configFactory);
+        MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
+        messageRepository.save(messageOfAge(1), topic);
+
+        // when
+        backupMessagesLoader.loadMessages(messageRepository);
+
+        // then
+        verify(producer, times(3)).isTopicAvailable(topic);
+        verify(producer, times(1)).send(any(JsonMessage.class), eq(topic), any(PublishingCallback.class));
     }
 
     private Message messageOfAge(int ageHours) {
