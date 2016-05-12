@@ -22,12 +22,4 @@ class EndpointAddressTest extends Specification {
 
         endpoint.protocol == null
     }
-
-    def "should append anonymized password to rawEndpoint"() {
-        when:
-        EndpointAddress anonymizedEndpoint = EndpointAddress.of('http://user:password@endpoint.com').anonymizePassword()
-
-        then:
-        anonymizedEndpoint.rawEndpoint == 'http://user:*****@endpoint.com'
-    }
 }
