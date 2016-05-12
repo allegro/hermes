@@ -93,7 +93,8 @@ public enum Configs {
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
 
     FRONTEND_MESSAGE_PREVIEW_ENABLED("frontend.message.preview.enabled", false),
-    FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD_MS("frontend.message.preview.log.persist.period.ms", 30000),
+    FRONTEND_MESSAGE_PREVIEW_SIZE("frontend.message.preview.size", 3),
+    FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD("frontend.message.preview.log.persist.period.seconds", 30),
 
     MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", false),
     MESSAGES_LOCAL_STORAGE_DIRECTORY("frontend.messages.local.storage.directory", Files.createTempDir().getAbsolutePath()),

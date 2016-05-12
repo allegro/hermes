@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.domain.topic.preview.PreviewMessageLogReadRepository;
+import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
@@ -33,7 +33,7 @@ public class TopicService {
 
     private final ApiPreconditions preconditions;
     private final TopicMetricsRepository metricRepository;
-    private final PreviewMessageLogReadRepository previewMessageLogReadRepository;
+    private final MessagePreviewRepository messagePreviewRepository;
     private final MultiDCAwareService multiDCAwareService;
     private final TopicValidator topicValidator;
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
@@ -47,7 +47,7 @@ public class TopicService {
                         ApiPreconditions preconditions, TopicMetricsRepository metricRepository,
                         TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
-                        PreviewMessageLogReadRepository previewMessageLogReadRepository,
+                        MessagePreviewRepository messagePreviewRepository,
                         Clock clock) {
         this.multiDCAwareService = multiDCAwareService;
         this.preconditions = preconditions;
@@ -57,7 +57,7 @@ public class TopicService {
         this.metricRepository = metricRepository;
         this.topicValidator = topicValidator;
         this.topicContentTypeMigrationService = topicContentTypeMigrationService;
-        this.previewMessageLogReadRepository = previewMessageLogReadRepository;
+        this.messagePreviewRepository = messagePreviewRepository;
         this.clock = clock;
     }
 
@@ -197,14 +197,14 @@ public class TopicService {
     }
 
     public Optional<byte[]> preview(TopicName topicName, int idx) {
-        List<byte[]> result = previewMessageLogReadRepository.last(topicName);
+        List<byte[]> result = messagePreviewRepository.loadPreview(topicName);
         if (idx >= 0 && idx < result.size()) {
             return Optional.of(result.get(idx));
         } else return Optional.empty();
     }
 
     public List<String> previewText(TopicName topicName) {
-        List<byte[]> result = previewMessageLogReadRepository.last(topicName);
+        List<byte[]> result = messagePreviewRepository.loadPreview(topicName);
         List<String> response = new ArrayList<>(result.size());
         for (byte[] r : result) {
             response.add(new String(r, StandardCharsets.UTF_8));

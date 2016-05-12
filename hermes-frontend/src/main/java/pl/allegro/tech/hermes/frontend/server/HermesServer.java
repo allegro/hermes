@@ -15,7 +15,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
-import pl.allegro.tech.hermes.frontend.publishing.message.preview.PreviewMessagePersister;
+import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
@@ -42,7 +42,7 @@ public class HermesServer {
     private final TopicsCache topicsCache;
     private final PublishingServlet publishingServlet;
     private final HealthCheckService healthCheckService;
-    private final PreviewMessagePersister previewMessagePersister;
+    private final MessagePreviewPersister messagePreviewPersister;
     private final int port;
     private final int sslPort;
     private final String host;
@@ -54,14 +54,14 @@ public class HermesServer {
             HermesMetrics hermesMetrics,
             PublishingServlet publishingServlet,
             HealthCheckService healthCheckService,
-            PreviewMessagePersister previewMessagePersister) {
+            MessagePreviewPersister messagePreviewPersister) {
 
         this.topicsCache = topicsCache;
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.publishingServlet = publishingServlet;
         this.healthCheckService = healthCheckService;
-        this.previewMessagePersister = previewMessagePersister;
+        this.messagePreviewPersister = messagePreviewPersister;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
         this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
@@ -71,7 +71,7 @@ public class HermesServer {
     public void start() {
         topicsCache.start(Collections.emptyList());
         configureServer().start();
-        previewMessagePersister.start();
+        messagePreviewPersister.start();
     }
 
     public void gracefulShutdown() throws InterruptedException {
@@ -84,7 +84,7 @@ public class HermesServer {
 
     public void shutdown() throws InterruptedException {
         undertow.stop();
-        previewMessagePersister.shutdown();
+        messagePreviewPersister.shutdown();
     }
 
     private Undertow configureServer() {

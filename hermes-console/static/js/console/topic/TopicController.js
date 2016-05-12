@@ -7,13 +7,14 @@ var topics = angular.module('hermes.topic', [
     'hermes.services'
 ]);
 
-topics.controller('TopicController', ['TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', 'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory',
-    function (topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, confirmationModal, toaster, passwordService, subscriptionFactory) {
+topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', 'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory',
+    function (topicConfig, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, confirmationModal, toaster, passwordService, subscriptionFactory) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
 
         $scope.fetching = true;
         $scope.showMessageSchema = false;
+        $scope.previewEnabled = topicConfig.messagePreviewEnabled;
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema.topic;
@@ -31,6 +32,10 @@ topics.controller('TopicController', ['TopicRepository', 'TopicMetrics', '$scope
         }
 
         loadSubscriptions();
+
+        topicRepository.preview(topicName).then(function(preview) {
+            $scope.preview = preview;
+        });
 
         $scope.edit = function () {
             $modal.open({

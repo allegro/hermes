@@ -9,6 +9,7 @@ import static java.net.HttpURLConnection.HTTP_CREATED;
 public interface HermesResponse {
 
     String MESSAGE_ID = "Hermes-Message-Id";
+    String HTTP_1_1 = "http/1.1";
 
     int getHttpStatus();
 
@@ -45,4 +46,6 @@ public interface HermesResponse {
     default String getMessageId() {
         return getHeader(MESSAGE_ID);
     }
+
+    default String getProtocol() { return HTTP_1_1; }
 }
