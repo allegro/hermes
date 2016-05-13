@@ -9,7 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
@@ -17,6 +16,7 @@ import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -64,7 +64,8 @@ public class JettyMessageSenderTest {
     public void setUp() throws Exception {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
         address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver());
-        messageSender = new JettyMessageSender(client, address, Optional.empty(), 1000, new DefaultHttpMetadataAppender());
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, new DefaultHttpMetadataAppender(), Optional.empty());
+        messageSender = new JettyMessageSender(httpRequestFactory, address);
     }
 
     @Test
@@ -138,7 +139,7 @@ public class JettyMessageSenderTest {
     public void shouldSendRetryCounterInHeader() {
         // given
         Message message = MessageBuilder.withTestMessage().build();
-        message.incrementRetryCounter();
+        message.incrementRetryCounter(Collections.emptySet());
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
@@ -152,7 +153,9 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldSendAuthorizationHeaderIfAuthorizationProviderAttached() {
         // given
-        JettyMessageSender messageSender = new JettyMessageSender(client, address, Optional.of(m -> "Basic Hello!"), 1000, new DefaultHttpMetadataAppender());
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, new DefaultHttpMetadataAppender(), Optional.of(m -> "Basic Hello!"));
+
+        JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
@@ -167,7 +170,9 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldUseSuppliedTimeout() throws ExecutionException, InterruptedException, TimeoutException {
         // given
-        JettyMessageSender messageSender = new JettyMessageSender(client, address, Optional.of(m -> "Basic Hello!"), 1, new DefaultHttpMetadataAppender());
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1, new DefaultHttpMetadataAppender(), Optional.of(m -> "Basic Hello!"));
+
+        JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
         Message message = MessageBuilder.withTestMessage().build();
 
         // when

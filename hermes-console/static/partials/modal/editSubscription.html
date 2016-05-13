@@ -63,6 +63,15 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group">
+                <label for="mode" class="col-md-3 control-label">Mode</label>
+                <div class="col-md-9">
+                    <select required class="form-control" id="mode" name="mode" ng-model="subscription.mode">
+                        <option value="ANYCAST">ANYCAST</option>
+                        <option value="BROADCAST">BROADCAST (incubating feature)</option>
+                    </select>
+                </div>
+            </div>
 
             <div class="form-group {{subscriptionForm.subscriptionRateLimit.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'SERIAL'">
                 <label for="subscriptionRateLimit" class="col-md-3 control-label">Rate limit</label>

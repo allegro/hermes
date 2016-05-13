@@ -35,13 +35,16 @@ public class RemoteServiceEndpoint {
 
     private final List<LoggedRequest> receivedRequests = Collections.synchronizedList(new ArrayList<>());
     private final String path;
+    private final String url;
 
     private final WireMock listener;
+    private final WireMockServer service;
 
     private List<String> expectedMessages = new ArrayList<>();
 
     private int returnedStatusCode = 200;
     private int retryStatusCode = 503;
+    private int delay = 0;
 
     public RemoteServiceEndpoint(WireMockServer service) {
         this(service, "/");
@@ -50,6 +53,8 @@ public class RemoteServiceEndpoint {
     public RemoteServiceEndpoint(WireMockServer service, final String path) {
         this.listener = new WireMock("localhost", service.port());
         this.path = path;
+        this.url = String.format("http://localhost:%d%s", service.port(), path);
+        this.service = service;
         service.addMockServiceRequestListener(new RequestListener() {
             @Override
             public void requestReceived(Request request, Response response) {
@@ -74,7 +79,7 @@ public class RemoteServiceEndpoint {
         messages.forEach(m -> listener
             .register(
                 post(urlEqualTo(path))
-                .willReturn(aResponse().withStatus(returnedStatusCode))));
+                .willReturn(aResponse().withStatus(returnedStatusCode).withFixedDelay(delay))));
     }
 
     public void retryMessage(String message, int delay) {
@@ -87,12 +92,13 @@ public class RemoteServiceEndpoint {
                         .willSetStateTo("retried")
                         .willReturn(aResponse()
                                 .withStatus(retryStatusCode)
-                                .withHeader("Retry-After", Integer.toString(delay))));
+                                .withHeader("Retry-After", Integer.toString(delay))
+                                .withFixedDelay(delay)));
         listener.register(
                 post(urlEqualTo(path))
                         .inScenario("retrying")
                         .whenScenarioStateIs("retried")
-                        .willReturn(aResponse().withStatus(returnedStatusCode)));
+                        .willReturn(aResponse().withStatus(returnedStatusCode).withFixedDelay(delay)));
     }
 
     public void setReturnedStatusCode(int statusCode) {
@@ -171,10 +177,28 @@ public class RemoteServiceEndpoint {
     }
 
     public void reset() {
+        delay = 0;
+        returnedStatusCode = 200;
         receivedRequests.clear();
+        listener.resetMappings();
+        service.resetMappings();
     }
 
     public List<LoggedRequest> getReceivedRequests() {
         return receivedRequests;
+    }
+
+    public RemoteServiceEndpoint setDelay(int delay) {
+        this.delay = delay;
+        return this;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void stop() {
+        listener.shutdown();
+        service.shutdown();
     }
 }

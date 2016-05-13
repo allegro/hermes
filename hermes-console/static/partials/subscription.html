@@ -111,6 +111,10 @@
                         <strong>Delivery type:</strong> {{subscription.deliveryType}}
                         <span uib-popover='Hermes can deliver messages in SERIAL (one message at a time) or in BATCH (group of messages at a time).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
+                    <p>
+                        <strong>Mode:</strong> {{subscription.mode}}
+                        <span uib-popover='Hermes can deliver messages in ANYCAST (to one of subscribed hosts) or in BROADCAST (to all subscribed hosts) mode.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
                     <p ng-show="subscription.deliveryType === 'SERIAL'">
                         <strong>Rate limit:</strong> {{subscription.subscriptionPolicy.rate}}
                         <span uib-popover='Maximum rate defined by user. Maximum rate calculated by algorithm can be observed in "Output rate" metric.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
