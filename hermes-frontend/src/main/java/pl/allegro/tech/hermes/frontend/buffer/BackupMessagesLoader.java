@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
-import pl.allegro.tech.hermes.frontend.publishing.callbacks.BrokerListenersPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
@@ -149,16 +148,17 @@ public class BackupMessagesLoader {
     private void sendMessage(Message message, Topic topic) {
         brokerMessageProducer.send(message, topic, new SimpleExecutionCallback(
                 new MetricsPublishingCallback(hermesMetrics, topic),
-                new BrokerListenersPublishingCallback(brokerListeners),
                 new PublishingCallback() {
                     @Override
                     public void onUnpublished(Message message, Topic topic, Exception exception) {
+                        brokerListeners.onError(message, topic, exception);
                         trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage());
                         toResend.get().add(ImmutablePair.of(message, topic));
                     }
 
                     @Override
                     public void onPublished(Message message, Topic topic) {
+                        brokerListeners.onAcknowledge(message, topic);
                         trackers.get(topic).logPublished(message.getId(), topic.getName());
                     }
                 }));
