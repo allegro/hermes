@@ -156,9 +156,13 @@ public class BatchConsumer implements Consumer {
     }
 
     private void processCommands() {
-        List<Runnable> commands = new ArrayList<>();
-        this.commands.drainTo(commands);
-        commands.forEach(Runnable::run);
+        if (commands.size() > 0) {
+            logger.info("Processing {} commands for subscription {} ", commands.size(), subscription.getId());
+            List<Runnable> commands = new ArrayList<>();
+            this.commands.drainTo(commands);
+            commands.forEach(Runnable::run);
+            logger.info("Processed commands for subscription {} ", subscription.getId());
+        }
     }
 
     private Retryer<MessageSendingResult> createRetryer(MessageBatch batch, BatchSubscriptionPolicy policy) {

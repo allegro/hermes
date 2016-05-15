@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLo
 import pl.allegro.tech.hermes.consumers.supervisor.background.AssignedConsumers;
 import pl.allegro.tech.hermes.consumers.supervisor.background.ConsumerSupervisorProcess;
 import pl.allegro.tech.hermes.consumers.supervisor.background.Retransmitter;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
 import java.time.Clock;
 import java.util.List;
@@ -24,6 +25,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
+import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
+import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
 
 public class BackgroundConsumersSupervisor implements ConsumersSupervisor {
     private static final Logger logger = LoggerFactory.getLogger(BackgroundConsumersSupervisor.class);
@@ -34,6 +38,7 @@ public class BackgroundConsumersSupervisor implements ConsumersSupervisor {
     private UndeliveredMessageLogPersister undeliveredMessageLogPersister;
     private ConfigFactory configs;
     private OffsetCommitter offsetCommitter;
+    private SubscriptionRepository subscriptionRepository;
 
     private final ScheduledExecutorService scheduledExecutor;
 
@@ -47,11 +52,14 @@ public class BackgroundConsumersSupervisor implements ConsumersSupervisor {
                                          List<OffsetsStorage> offsetsStorages,
                                          HermesMetrics hermesMetrics,
                                          UndeliveredMessageLogPersister undeliveredMessageLogPersister,
+                                         SubscriptionRepository subscriptionRepository,
                                          Clock clock) {
         this.consumerFactory = consumerFactory;
         this.hermesMetrics = hermesMetrics;
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
+        this.subscriptionRepository = subscriptionRepository;
         this.assignedConsumers = new AssignedConsumers();
+        this.configs = configFactory;
         this.offsetCommitter = new OffsetCommitter(() -> assignedConsumers, messageCommitters, configFactory);
         Retransmitter retransmitter = new Retransmitter(subscriptionOffsetChangeIndicator, offsetsStorages, configFactory);
         this.backgroundProcess = new ConsumerSupervisorProcess(assignedConsumers, executor, retransmitter, clock, configFactory);
@@ -72,6 +80,9 @@ public class BackgroundConsumersSupervisor implements ConsumersSupervisor {
             Consumer consumer = consumerFactory.createConsumer(subscription);
             logger.info("Created consumer for {}", subscription.getId());
             assignedConsumers.add(consumer);
+            if (subscription.getState() == PENDING) {
+                subscriptionRepository.updateSubscriptionState(subscription.getTopicName(), subscription.getName(), ACTIVE);
+            }
             logger.info("Consumer for {} was added for execution", subscription.getId());
         } catch (Exception ex) {
             logger.info("Failed to create consumer for subscription {} ", subscription.getId(), ex);

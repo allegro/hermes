@@ -47,7 +47,7 @@ public class ConsumersSupervisorFactory implements Factory<ConsumersSupervisor> 
                         executor, consumerFactory, messageCommitters, offsetsStorages, hermesMetrics, undeliveredMessageLogPersister),
                 BACKGROUND_SUPERVISOR, () -> new BackgroundConsumersSupervisor(configs,
                         subscriptionOffsetChangeIndicator, executor,
-                        consumerFactory, messageCommitters, offsetsStorages, hermesMetrics, undeliveredMessageLogPersister, clock));
+                        consumerFactory, messageCommitters, offsetsStorages, hermesMetrics, undeliveredMessageLogPersister, subscriptionRepository, clock));
     }
 
     @Override

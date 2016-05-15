@@ -8,12 +8,14 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.status.Status;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
 import java.time.Clock;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Future;
 
 import static java.util.Optional.ofNullable;
 
@@ -21,10 +23,12 @@ public class ConsumerSupervisorProcess implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ConsumerSupervisorProcess.class);
 
     private final Map<SubscriptionName, Long> timestamps = new HashMap<>();
+    private final Map<SubscriptionName, Future> runningTasks = new HashMap<>();
 
     private final AssignedConsumers consumers;
 
     private final ConsumersExecutorService executor;
+
     private final Clock clock;
 
     private long unhealthyAfter;
@@ -77,7 +81,23 @@ public class ConsumerSupervisorProcess implements Runnable {
                 }
             } else {
                 logger.info("Detected unhealthy consumer for {}", subscription.getId());
+                kill(subscription);
+                start(subscription, consumer);
             };
+        }
+    }
+
+    private void kill(SubscriptionName subscription) {
+        logger.info("Interrupting consumer for {}", subscription.getId());
+        Future task = runningTasks.get(subscription);
+        if (!task.isDone()) {
+            if (task.cancel(true)) {
+                logger.info("Interrupted consumer for {}", subscription.getId());
+            } else {
+                logger.error("Failed to interrupt consumer for {}, possible stale consumer", subscription.getId());
+            }
+        } else {
+            logger.info("Consumer was already dead for {}", subscription.getId());
         }
     }
 
@@ -98,6 +118,8 @@ public class ConsumerSupervisorProcess implements Runnable {
     private void remove(SubscriptionName subscriptionName, Iterator<Consumer> iterator) {
         logger.info("Deleting consumer for {}", subscriptionName.getId());
         iterator.remove();
+        timestamps.remove(subscriptionName);
+        runningTasks.remove(subscriptionName);
         logger.info("Deleted consumer for {}", subscriptionName.getId());
     }
 
@@ -113,6 +135,7 @@ public class ConsumerSupervisorProcess implements Runnable {
     }
 
     public void shutdown() {
+//        consumers.shutdown();
         executor.shutdown();
     }
 }

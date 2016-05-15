@@ -28,7 +28,7 @@ public class AssignedConsumers implements Iterable<Consumer> {
     }
 
     public void update(Subscription subscription) {
-        ofNullable(consumers.get(subscription)).ifPresent(c -> c.signalUpdate(subscription));
+        ofNullable(consumers.get(subscription.toSubscriptionName())).ifPresent(c -> c.signalUpdate(subscription));
     }
 
     public void restart(SubscriptionName subscription) {
@@ -37,9 +37,5 @@ public class AssignedConsumers implements Iterable<Consumer> {
 
     public void retransmit(SubscriptionName subscription) {
         ofNullable(consumers.get(subscription)).ifPresent(Consumer::signalRetransmit);
-    }
-
-    public void shutdown() {
-        forEach(Consumer::signalShutdown);
     }
 }

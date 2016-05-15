@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
 import javax.inject.Inject;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -31,8 +32,8 @@ public class ConsumersExecutorService {
         hermesMetrics.registerConsumersThreadGauge(() -> executor.getActiveCount());
     }
 
-    public void execute(Consumer consumer) {
-        executor.execute(consumer);
+    public Future execute(Consumer consumer) {
+        return executor.submit(consumer);
     }
 
     public void shutdown() {
