@@ -63,7 +63,7 @@ dependencies {
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
     testCompile group: 'org.springframework', name: 'spring-web', version: '4.1.4.RELEASE'
-    testCompile group: 'com.squareup.okhttp', name: 'okhttp', version: '2.4.0'
+    testCompile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.2.0'
 
     testCompile files('./lib/schema-repo-server-0.1.3-jersey2.jar');
     testCompile 'org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.15'

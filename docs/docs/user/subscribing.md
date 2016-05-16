@@ -34,6 +34,7 @@ trackingEnabled                      | track incoming messages?         | false
 subscriptionPolicy.rate              | maximum sending speed in rps     | 100
 subscriptionPolicy.messageTtl        | inflight Time To Live in seconds | 3600
 subscriptionPolicy.retryClientErrors | retry on receiving 4xx status    | false
+subscriptionPolicy.requestTimeout    | request timeout in millis        | 1000
 
 Request that specifies all available options:
 
@@ -48,7 +49,8 @@ Request that specifies all available options:
     "subscriptionPolicy": {
         "rate": 100,
         "messageTtl": 3600,
-        "retryClientErrors": false
+        "retryClientErrors": false,
+        "requestTimeout": 1000
     }
 }
 ```

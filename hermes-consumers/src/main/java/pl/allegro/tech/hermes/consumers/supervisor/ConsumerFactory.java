@@ -7,15 +7,14 @@ import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.BatchConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
-import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -23,9 +22,6 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import javax.inject.Inject;
 import java.time.Clock;
-import java.util.concurrent.Semaphore;
-
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
 
 public class ConsumerFactory {
 
@@ -91,8 +87,6 @@ public class ConsumerFactory {
                     topic,
                     clock);
         } else {
-            Semaphore inflightSemaphore = new Semaphore(configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE));
-
             ConsumerRateLimiter consumerRateLimiter = new ConsumerRateLimiter(subscription, outputRateCalculator, hermesMetrics,
                     consumerRateLimitSupervisor);
 
@@ -102,12 +96,12 @@ public class ConsumerFactory {
                     subscription,
                     consumerRateLimiter,
                     subscriptionOffsetCommitQueues,
-                    consumerMessageSenderFactory.create(subscription, consumerRateLimiter, subscriptionOffsetCommitQueues, inflightSemaphore),
-                    inflightSemaphore,
+                    consumerMessageSenderFactory,
                     trackers,
                     messageConverterResolver,
                     topic,
-                    clock);
+                    clock,
+                    configFactory);
         }
     }
 }

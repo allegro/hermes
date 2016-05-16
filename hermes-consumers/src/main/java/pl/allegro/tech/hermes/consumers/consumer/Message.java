@@ -1,14 +1,17 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class Message {
 
@@ -26,6 +29,8 @@ public class Message {
     private int retryCounter = 0;
 
     private Map<String, String> externalMetadata;
+
+    private Set<String> succeededUris = Sets.newHashSet();
 
     private Message() {}
 
@@ -82,8 +87,9 @@ public class Message {
         return currentTimestamp > readingTimestamp + ttlMillis;
     }
 
-    public void incrementRetryCounter() {
+    public void incrementRetryCounter(Collection<String> succeededUris) {
         this.retryCounter++;
+        this.succeededUris.addAll(succeededUris);
     }
 
     public int getRetryCounter() {
@@ -130,6 +136,10 @@ public class Message {
 
     public PartitionOffset getPartitionOffset() {
         return partitionOffset;
+    }
+
+    public boolean hasNotBeenSentTo(String uri) {
+        return !succeededUris.contains(uri);
     }
 
     public static class Builder {

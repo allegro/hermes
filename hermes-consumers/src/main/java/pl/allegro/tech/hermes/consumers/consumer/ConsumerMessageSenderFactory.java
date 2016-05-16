@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultSuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
@@ -20,7 +21,6 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import javax.inject.Inject;
 import java.time.Clock;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Semaphore;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SENDER_ASYNC_TIMEOUT_MS;
@@ -52,10 +52,10 @@ public class ConsumerMessageSenderFactory {
         this.rateLimiterReportingExecutor = instrumentedExecutorServiceFactory.getExecutorService("rate-limiter-reporter", configFactory.getIntProperty(CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE),
                 configFactory.getBooleanProperty(Configs.CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_MONITORING));
     }
-
+    
     public ConsumerMessageSender create(Subscription subscription, ConsumerRateLimiter consumerRateLimiter,
-                                        SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues, Semaphore inflightSemaphore) {
-
+                                        SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues, InflightsPool inflight) {
+        
         SuccessHandler successHandler = new DefaultSuccessHandler(subscriptionOffsetCommitQueues, hermesMetrics, trackers);
         ErrorHandler errorHandler = new DefaultErrorHandler(subscriptionOffsetCommitQueues, hermesMetrics, undeliveredMessageLog,
                 clock, trackers, configFactory.getStringProperty(KAFKA_CLUSTER_NAME));
@@ -66,7 +66,7 @@ public class ConsumerMessageSenderFactory {
                 errorHandler,
                 consumerRateLimiter,
                 rateLimiterReportingExecutor,
-                inflightSemaphore,
+                inflight,
                 hermesMetrics,
                 configFactory.getIntProperty(CONSUMER_SENDER_ASYNC_TIMEOUT_MS),
                 futureAsyncTimeout);

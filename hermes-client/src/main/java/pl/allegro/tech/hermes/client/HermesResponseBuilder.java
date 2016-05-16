@@ -7,6 +7,7 @@ public class HermesResponseBuilder {
 
     private int statusCode = -1;
     private String body = "";
+    private String protocol = "http/1.1";
     private Throwable failureCause;
     private Function<String, String> headerSupplier = (header) -> null;
 
@@ -38,6 +39,11 @@ public class HermesResponseBuilder {
         return this;
     }
 
+    public HermesResponseBuilder withProtocol(String protocol) {
+        this.protocol = protocol;
+        return this;
+    }
+
     public HermesResponse build() {
         return new HermesResponse() {
 
@@ -59,6 +65,11 @@ public class HermesResponseBuilder {
             @Override
             public String getHeader(String header) {
                 return headerSupplier.apply(header);
+            }
+
+            @Override
+            public String getProtocol() {
+                return protocol;
             }
         };
     }

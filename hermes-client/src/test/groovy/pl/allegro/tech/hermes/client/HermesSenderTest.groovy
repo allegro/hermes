@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.client
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule
-import com.squareup.okhttp.OkHttpClient
+import okhttp3.OkHttpClient
 import org.junit.ClassRule
 import org.springframework.web.client.AsyncRestTemplate
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender

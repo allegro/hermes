@@ -1,16 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
-import org.glassfish.hk2.api.IterableProvider;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class MessageSenderFactory {
 
@@ -23,11 +19,11 @@ public class MessageSenderFactory {
         if (provider == null) {
             throw new EndpointProtocolNotSupportedException(endpoint);
         }
-        return provider.create(endpoint);
+        return provider.create(subscription);
     }
 
     public void addSupportedProtocol(String protocol, ProtocolMessageSenderProvider provider) {
-        if(!protocolProviders.containsKey(protocol)) {
+        if (!protocolProviders.containsKey(protocol)) {
             overrideProtocol(protocol, provider);
         }
     }

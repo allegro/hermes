@@ -6,19 +6,22 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogInfo;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.time.Duration;
+import java.util.Objects;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -33,9 +36,10 @@ public class ConsumerMessageSender {
     private final ErrorHandler errorHandler;
     private final ConsumerRateLimiter rateLimiter;
     private final MessageSenderFactory messageSenderFactory;
-    private final Semaphore inflightSemaphore;
+    private final InflightsPool inflight;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
+    private int requestTimeoutMs;
     private ConsumerLatencyTimer consumerLatencyTimer;
     private MessageSender messageSender;
     private Subscription subscription;
@@ -44,7 +48,7 @@ public class ConsumerMessageSender {
 
     public ConsumerMessageSender(Subscription subscription, MessageSenderFactory messageSenderFactory, SuccessHandler successHandler,
                                  ErrorHandler errorHandler, ConsumerRateLimiter rateLimiter, ExecutorService deliveryReportingExecutor,
-                                 Semaphore inflightSemaphore, HermesMetrics hermesMetrics, int asyncTimeoutMs,
+                                 InflightsPool inflight, HermesMetrics hermesMetrics, int asyncTimeoutMs,
                                  FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout) {
         this.deliveryReportingExecutor = deliveryReportingExecutor;
         this.successHandler = successHandler;
@@ -53,9 +57,10 @@ public class ConsumerMessageSender {
         this.messageSenderFactory = messageSenderFactory;
         this.messageSender = messageSenderFactory.create(subscription);
         this.subscription = subscription;
-        this.inflightSemaphore = inflightSemaphore;
+        this.inflight = inflight;
         this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1);
         this.async = futureAsyncTimeout;
+        this.requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
     }
@@ -85,8 +90,10 @@ public class ConsumerMessageSender {
 
     public synchronized void updateSubscription(Subscription newSubscription) {
         boolean endpointUpdated = !this.subscription.getEndpoint().equals(newSubscription.getEndpoint());
+        boolean subscriptionPolicyUpdated = !Objects.equals(this.subscription.getSerialSubscriptionPolicy(), newSubscription.getSerialSubscriptionPolicy());
+        this.requestTimeoutMs = newSubscription.getSerialSubscriptionPolicy().getRequestTimeout();
         this.subscription = newSubscription;
-        if (endpointUpdated) {
+        if (endpointUpdated || subscriptionPolicyUpdated) {
             this.messageSender = messageSenderFactory.create(newSubscription);
         }
     }
@@ -94,7 +101,7 @@ public class ConsumerMessageSender {
     private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
         rateLimiter.acquire();
         ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
-        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs));
+        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs));
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
     }
 
@@ -118,20 +125,24 @@ public class ConsumerMessageSender {
     }
 
     private void handleMessageDiscarding(Message message, MessageSendingResult result) {
-        inflightSemaphore.release();
+        inflight.release();
         errorHandler.handleDiscarded(message, subscription, result);
     }
 
     private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
-        inflightSemaphore.release();
+        inflight.release();
         successHandler.handle(message, subscription, result);
     }
 
     private boolean shouldReduceSendingRate(MessageSendingResult result) {
-        return !result.isRetryLater() && subscriptionAllowsResending(result);
+        return !result.isRetryLater() && shouldResendMessage(result);
     }
 
-    private boolean subscriptionAllowsResending(MessageSendingResult result) {
+    private boolean messageSentSucceeded(MessageSendingResult result) {
+        return result.succeeded() || (result.isClientError() && !subscription.getSerialSubscriptionPolicy().isRetryClientErrors());
+    }
+
+    private boolean shouldResendMessage(MessageSendingResult result) {
         return !result.succeeded() && (!result.isClientError() || subscription.getSerialSubscriptionPolicy().isRetryClientErrors());
     }
 
@@ -153,7 +164,9 @@ public class ConsumerMessageSender {
                 handleMessageSendingSuccess(message, result);
             } else {
                 handleFailedSending(message, result);
-                message.incrementRetryCounter();
+
+                List<String> succeededUris = result.getSucceededUris(ConsumerMessageSender.this::messageSentSucceeded);
+                message.incrementRetryCounter(succeededUris);
 
                 long retryDelay = extractRetryDelay(result);
                 if (consumerIsConsuming && shouldAttemptResending(result, retryDelay)) {
@@ -165,7 +178,7 @@ public class ConsumerMessageSender {
         }
 
         private boolean shouldAttemptResending(MessageSendingResult result, long retryDelay) {
-            return !willExceedTtl(message, retryDelay) && subscriptionAllowsResending(result);
+            return !willExceedTtl(message, retryDelay) && shouldResendMessage(result);
         }
 
         private long extractRetryDelay(MessageSendingResult result) {
@@ -176,13 +189,18 @@ public class ConsumerMessageSender {
 
         private void retrySending(MessageSendingResult result) {
             if (result.isLoggable()) {
-                logger.info(
-                        format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                                subscription.getEndpoint(), message.getId(), message.getOffset(), message.getPartition(),
-                                subscription.getId(), result.getRootCause()),
-                        result.getFailure());
+                result.getLogInfo().stream().forEach(this::logResultInfo);
             }
+
             sendMessage(message);
+        }
+
+        private void logResultInfo(MessageSendingResultLogInfo logInfo) {
+            logger.info(
+                    format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
+                            logInfo.getUrl(), message.getId(), message.getOffset(), message.getPartition(),
+                            subscription.getId(), logInfo.getRootCause()),
+                    logInfo.getFailure());
         }
     }
 }

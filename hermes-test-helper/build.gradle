@@ -1,6 +1,7 @@
 dependencies {
     compile project(':hermes-api')
     compile project(':hermes-common')
+    compile project(':hermes-consumers')
 
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-proxy-client', version: versions.jersey

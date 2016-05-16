@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -17,6 +18,7 @@ import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.test.TestTrackers;
 
 import java.nio.charset.StandardCharsets;
@@ -27,7 +29,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -76,6 +77,7 @@ public class DefaultErrorHandlerTest {
     @Before
     public void setUp() {
         when(subscription.getName()).thenReturn(SUBSCRIPTION_NAME);
+        when(subscription.getEndpoint()).thenReturn(EndpointAddress.of("endpoint"));
         when(subscription.getTopicName()).thenReturn(QUALIFIED_TOPIC_NAME);
         when(clock.millis()).thenReturn(CURRENT_TIME);
         defaultErrorHandler = new DefaultErrorHandler(offsetHelper, hermesMetrics, undeliveredMessageLog, clock, trackers, CLUSTER);
@@ -84,7 +86,7 @@ public class DefaultErrorHandlerTest {
 
     @Test
     public void shouldDecrementOffsetWhenExhaustedRetries() {
-        defaultErrorHandler.handleDiscarded(message, subscription, failedResult(new InternalProcessingException("oops")));
+        defaultErrorHandler.handleDiscarded(message, subscription, MessageSendingResult.failedResult(new InternalProcessingException("oops")));
 
         verify(offsetHelper).remove(message);
     }
@@ -92,7 +94,7 @@ public class DefaultErrorHandlerTest {
     @Test
     public void shouldDecrementInflightMessagesWhenPolicyExhausted() {
         //when
-        defaultErrorHandler.handleDiscarded(message, subscription, failedResult(new InternalProcessingException("cause")));
+        defaultErrorHandler.handleDiscarded(message, subscription, MessageSendingResult.failedResult(new InternalProcessingException("cause")));
 
         //then
         verify(hermesMetrics, times(1)).decrementInflightCounter(subscription);
@@ -105,7 +107,7 @@ public class DefaultErrorHandlerTest {
         InternalProcessingException cause = new InternalProcessingException("Test cause.");
 
         //when
-        defaultErrorHandler.handleDiscarded(message, subscription, failedResult(cause));
+        defaultErrorHandler.handleDiscarded(message, subscription, MessageSendingResult.failedResult(cause));
 
         //then
         verify(undeliveredMessageLog)

@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
-import com.jayway.awaitility.core.ConditionTimeoutException;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -24,21 +25,29 @@ import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_ACK_TIMEOUT;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES;
 
 public class BackupMessagesLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(BackupMessagesLoader.class);
+    private static final int THREAD_POOL_SIZE = 16;
 
     private final BrokerMessageProducer brokerMessageProducer;
     private final HermesMetrics hermesMetrics;
@@ -80,7 +89,7 @@ public class BackupMessagesLoader {
 
         do {
             if (retry > 0) {
-                List<Pair<Message, Topic>> retryMessages = new ArrayList<>(toResend.getAndSet(new ConcurrentLinkedQueue<>()));
+                List<Pair<Message, Topic>> retryMessages = Lists.newArrayList(toResend.getAndSet(new ConcurrentLinkedQueue<>()));
                 resendMessages(retryMessages, retry);
             }
             try {
@@ -96,20 +105,38 @@ public class BackupMessagesLoader {
 
     private void sendMessages(List<BackupMessage> messages) {
         logger.info("Sending {} messages from backup storage.", messages.size());
+        ExecutorService executor = createExecutor();
+        try {
+            int sentCounter = 0;
+            int discardedCounter = 0;
+            for (BackupMessage backupMessage : messages) {
+                Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
+                Optional<Topic> topic = loadTopic(fromQualifiedName(backupMessage.getQualifiedTopicName()), executor);
+                if (sendMessageIfNeeded(message, topic, "sending")) {
+                    sentCounter++;
+                } else {
+                    discardedCounter++;
+                }
+            }
+            logger.info("Loaded and sent {} messages and discarded {} messages from the backup storage.", sentCounter, discardedCounter);
+        } finally {
+            shutdownExecutor(executor);
+        }
+    }
 
-        int sentCounter = 0;
-        int discardedCounter = 0;
-        for (BackupMessage backupMessage : messages) {
-            Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
-            Optional<Topic> topic = loadTopic(fromQualifiedName(backupMessage.getQualifiedTopicName()));
-            if (sendMessageIfNeeded(message, topic, "sending")) {
-                sentCounter++;
-            } else {
-                discardedCounter++;
+    private ExecutorService createExecutor() {
+        return Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+    }
+
+    private void shutdownExecutor(ExecutorService executor) {
+        if (executor != null) {
+            executor.shutdownNow();
+            try {
+                executor.awaitTermination(1, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+                logger.error("Termination of load topics executor service interrupted.", e);
             }
         }
-
-        logger.info("Loaded and sent {} messages and discarded {} messages from the backup storage.", sentCounter, discardedCounter);
     }
 
     private void resendMessages(List<Pair<Message, Topic>> messageAndTopicList, int retry) {
@@ -164,11 +191,11 @@ public class BackupMessagesLoader {
                 }));
     }
 
-    private Optional<Topic> loadTopic(TopicName topicName) {
+    private Optional<Topic> loadTopic(TopicName topicName, Executor executor) {
         try {
-            await().pollDelay(1, TimeUnit.NANOSECONDS).atMost(secondsToWaitForTopicsCache, SECONDS).until(() -> topicsCache.getTopic(topicName).isPresent());
-            return topicsCache.getTopic(topicName);
-        } catch (ConditionTimeoutException timeout) {
+            return CompletableFuture.supplyAsync(() -> topicsCache.getTopic(topicName), executor)
+                    .get(secondsToWaitForTopicsCache, SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             logger.error("Could not read topic {} from topics cache after {} seconds", topicName, secondsToWaitForTopicsCache);
             return Optional.empty();
         }

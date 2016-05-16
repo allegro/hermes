@@ -8,7 +8,6 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
     compile group: 'net.openhft', name: 'chronicle-map', version: '2.4.13'
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
-    compile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
 
     provided group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 

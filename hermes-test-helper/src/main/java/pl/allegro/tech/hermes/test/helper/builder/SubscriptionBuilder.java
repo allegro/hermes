@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.MonitoringDetails;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
@@ -29,7 +30,7 @@ public class SubscriptionBuilder {
 
     private String description = "description";
 
-    private SubscriptionPolicy serialSubscriptionPolicy = new SubscriptionPolicy(100, 10, false, 100);
+    private SubscriptionPolicy serialSubscriptionPolicy = new SubscriptionPolicy(100, 10, 1000, false, 100, 100);
 
     private BatchSubscriptionPolicy batchSubscriptionPolicy;
 
@@ -44,6 +45,8 @@ public class SubscriptionBuilder {
     private DeliveryType deliveryType = DeliveryType.SERIAL;
 
     private List<MessageFilterSpecification> filters = new ArrayList<>();
+
+    private SubscriptionMode mode = SubscriptionMode.ANYCAST;
 
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
@@ -89,7 +92,7 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, mode
             );
         } else {
             return Subscription.createBatchSubscription(
@@ -132,6 +135,14 @@ public class SubscriptionBuilder {
         return this;
     }
 
+    public SubscriptionBuilder withRequestTimeout(int timeout) {
+        SubscriptionPolicy policy = this.serialSubscriptionPolicy;
+        this.serialSubscriptionPolicy = SubscriptionPolicy.Builder.subscriptionPolicy().withRate(policy.getRate())
+                .withMessageTtl(policy.getMessageTtl()).withMessageBackoff(policy.getMessageBackoff())
+                .withRequestTimeout(timeout).build();
+        return this;
+    }
+
     public SubscriptionBuilder withTrackingEnabled(boolean trackingEnabled) {
         this.trackingEnabled = trackingEnabled;
         return this;
@@ -147,7 +158,7 @@ public class SubscriptionBuilder {
         return this;
     }
 
-    public SubscriptionBuilder withMonitoringDetails (MonitoringDetails monitoringDetails) {
+    public SubscriptionBuilder withMonitoringDetails(MonitoringDetails monitoringDetails) {
         this.monitoringDetails = monitoringDetails;
         return this;
     }
@@ -164,6 +175,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withFilter(MessageFilterSpecification filter) {
         this.filters.add(filter);
+        return this;
+    }
+
+    public SubscriptionBuilder withMode(SubscriptionMode mode) {
+        this.mode = mode;
         return this;
     }
 }
