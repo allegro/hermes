@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -15,6 +17,7 @@ import javax.inject.Singleton;
 @Singleton
 public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
+    private static final Logger logger = LoggerFactory.getLogger(KafkaBrokerMessageProducer.class);
     private final Producers producers;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final HermesMetrics metrics;
@@ -32,6 +35,23 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
             String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
             ProducerRecord<byte[], byte[]> producerRecord = new ProducerRecord<>(kafkaTopicName, message.getData());
             producers.get(topic).send(producerRecord, new SendCallback(message, topic, callback));
+    }
+
+    @Override
+    public boolean isTopicAvailable(Topic topic) {
+        String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
+
+        try {
+            if (producers.get(topic).partitionsFor(kafkaTopicName).size() > 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            logger.warn("Could not read information about partitions for topic {}. {}", kafkaTopicName, e.getMessage());
+            return false;
+        }
+
+        logger.warn("No information about partitions for topic {}", kafkaTopicName);
+        return false;
     }
 
     private class SendCallback implements org.apache.kafka.clients.producer.Callback {

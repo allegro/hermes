@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
 import com.google.common.io.Files;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,6 +11,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,6 +27,11 @@ public class BackupFilesManagerTest {
         tempDir = Files.createTempDir();
     }
 
+    @After
+    public void cleanup() throws IOException {
+        FileUtils.deleteDirectory(tempDir);
+    }
+
     @Test
     public void shouldRolloverExistingBackupFile() throws IOException {
         // given
@@ -35,6 +43,38 @@ public class BackupFilesManagerTest {
 
         // then
         assertThat(backupFile.get().getName()).isEqualTo("hermes-buffer-12345.dat");
+    }
+
+    @Test
+    public void shouldReadBackupFilesList() throws IOException {
+        // given
+        BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
+        File timestampedBackup1 = new File(tempDir, "hermes-buffer-001.dat");
+        File timestampedBackup2 = new File(tempDir, "hermes-buffer-002.dat");
+        File customBackup = new File(tempDir, "hermes-buffer-old.dat");
+
+        // and
+        timestampedBackup1.createNewFile();
+        timestampedBackup2.createNewFile();
+        customBackup.createNewFile();
+
+        // when
+        List<File> backups = backupFilesManager.getRolledBackupFiles();
+
+        // then
+        assertThat(backups).containsOnly(timestampedBackup1, timestampedBackup2);
+    }
+
+    @Test
+    public void shouldReadEmptyBackupFileList() throws IOException {
+        // given
+        BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
+
+        // when
+        List<File> backups = backupFilesManager.getRolledBackupFiles();
+
+        // then
+        assertThat(backups).isEmpty();
     }
 
     @Test
