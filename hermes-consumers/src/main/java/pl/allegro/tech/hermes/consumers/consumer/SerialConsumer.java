@@ -16,10 +16,12 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Optional.ofNullable;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class SerialConsumer implements Consumer {
@@ -67,22 +69,24 @@ public class SerialConsumer implements Consumer {
 
     @Override
     public void run() {
-        setThreadName();
+        try {
+            setThreadName();
 
-        logger.info("Starting consumer for subscription {} ", subscription.getId());
+            logger.info("Starting consumer for subscription {} ", subscription.getId());
 
-        Timer.Context timer = new Timer().time();
-        this.messageReceiver = initializeMessageReceiver();
-        rateLimiter.initialize();
+            Timer.Context timer = new Timer().time();
+            this.messageReceiver = initializeMessageReceiver();
+            rateLimiter.initialize();
 
-        logger.info("Started consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
+            logger.info("Started consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
 
-        startConsumption(messageReceiver);
-
-        messageReceiver.stop();
-        unsetThreadName();
-        logger.info("Stopped consumer for subscription {}", subscription.getId());
-        stoppedLatch.countDown();
+            startConsumption(messageReceiver);
+        } finally {
+            unsetThreadName();
+            ofNullable(messageReceiver).ifPresent(MessageReceiver::stop);
+            logger.info("Stopped consumer for subscription {}", subscription.getId());
+            stoppedLatch.countDown();
+        }
     }
 
     private void startConsumption(MessageReceiver messageReceiver) {
