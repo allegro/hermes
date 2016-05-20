@@ -49,7 +49,7 @@ public class BatchConsumer implements Consumer {
     private final MessageContentWrapper messageContentWrapper;
     private final Topic topic;
     private final Trackers trackers;
-    private Optional<MessageBatchReceiver> receiver;
+    private Optional<MessageBatchReceiver> receiver = Optional.empty();
 
     private Subscription subscription;
     private volatile boolean consuming = true;
