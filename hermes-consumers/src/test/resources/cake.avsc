@@ -21,53 +21,46 @@
     },
     {
       "name": "topping",
-      "type": {
-        "type": "array",
-        "items": {
-          "name": "toppingType",
-          "type": "record",
-          "fields": [
-            {
-              "name": "id",
-              "type": "string"
-            },
-            {
-              "name": "type",
-              "type": "string"
-            }
-          ]
-        }
-      },
-      "default": []
+      "type": [ "null", {
+             "name": "toppingType",
+             "type": "record",
+             "fields": [
+               {
+                 "name": "id",
+                 "type": "string"
+               },
+               {
+                 "name": "type",
+                 "type": "string"
+               },
+               {
+                 "name": "description",
+                 "default": null,
+                 "type": [ "null", "string" ]
+               }
+             ]
+           }
+         ],
+      "default": null
     },
     {
-      "name": "batters",
-      "type": {
+      "name": "batter",
+      "type": [ "null", {
         "type": "record",
         "name": "batterType",
         "fields": [
           {
-            "name": "batter",
-            "type": {
-              "type": "array",
-              "items": {
-                "name": "batter",
-                "type": "record",
-                "fields": [
-                  {
-                    "name": "id",
-                    "type": "string"
-                  },
-                  {
-                    "name": "type",
-                    "type": "string"
-                  }
-                ]
-              }
-            }
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "type": "string"
           }
         ]
       }
+    ],
+    "default": null
     }
   ]
 }
