@@ -31,5 +31,4 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
     @Override
     public void stop() {
     }
-
 }

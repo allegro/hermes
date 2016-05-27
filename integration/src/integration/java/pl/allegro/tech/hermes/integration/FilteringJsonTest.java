@@ -86,4 +86,29 @@ public class FilteringJsonTest extends IntegrationTest {
         // then
         remoteService.waitUntilReceived();
     }
+
+    @Test
+    public void shouldPassSubscriptionHeadersWhenFilteringIsEnabledForIncomingEvents() {
+        // given
+        Topic topic = operations.buildTopic("filteredJsonTopicHavingSubscriptionWithHeaders", "topic");
+        final Subscription subscription = subscription(topic.getName(), "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withContentType(ContentType.JSON)
+                .withSupportTeam("team")
+                .withSubscriptionPolicy(SUBSCRIPTION_POLICY)
+                .withFilter(MESSAGE_NAME_FILTER)
+                .withHeader("MY-HEADER", "myHeaderValue")
+                .build();
+
+        operations.createSubscription(topic, subscription);
+        remoteService.expectMessages(BOB.asJson());
+
+        // when
+        assertThat(publisher.publish(topic.getQualifiedName(), ALICE.asJson())).hasStatus(CREATED);
+        assertThat(publisher.publish(topic.getQualifiedName(), BOB.asJson())).hasStatus(CREATED);
+
+        // then
+        remoteService.waitUntilReceived();
+        remoteService.waitUntilRequestReceived(request -> assertThat(request.getHeader("MY-HEADER")).isEqualTo("myHeaderValue"));
+    }
 }

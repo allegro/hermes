@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 public interface MessageBatch {
 
@@ -33,6 +34,8 @@ public interface MessageBatch {
     List<PartitionOffset> getPartitionOffsets();
 
     List<MessageMetadata> getMessagesMetadata();
+
+    Map<String, String> getAdditionalHeaders();
 
     long getLifetime();
 

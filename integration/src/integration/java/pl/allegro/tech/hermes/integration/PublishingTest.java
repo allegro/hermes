@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.Assertions;
 import pl.allegro.tech.hermes.integration.metadata.TraceContext;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
+import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -368,5 +369,54 @@ public class PublishingTest extends IntegrationTest {
         assertThat(remoteService.durationBetweenFirstAndLastRequest().minusSeconds(retryAfterSeconds).isNegative()).isFalse();
         assertThat(remoteService.receivedMessageWithHeader("Hermes-Retry-Count", "0")).isTrue();
         assertThat(remoteService.receivedMessageWithHeader("Hermes-Retry-Count", "1")).isTrue();
+    }
+
+    @Test
+    public void shouldPassSubscriptionHeaders() {
+        // given
+        String message = "abcd";
+        Topic topic = operations.buildTopic("headersTestGroup", "topic");
+
+        Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withHeader("MY-HEADER", "myHeader123")
+                .build();
+        operations.createSubscription(topic, subscription);
+        remoteService.expectMessages(message);
+        WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
+
+        // when
+        Response response = client
+                .request()
+                .post(Entity.entity(message, MediaType.TEXT_PLAIN));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("MY-HEADER", "myHeader123");
+    }
+
+    @Test
+    public void shouldNotOverrideHeadersAddedByMetadataAppendersWithSubscriptionHeaders() {
+        // given
+        String message = "abcd";
+        Topic topic = operations.buildTopic("headersAndTracesTestGroup", "topic");
+
+        Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withHeader("Trace-Id", "defaultValue")
+                .build();
+        operations.createSubscription(topic, subscription);
+        remoteService.expectMessages(message);
+        WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
+
+        // when
+        Response response = client
+                .request()
+                .header("Trace-Id", "valueFromRequest")
+                .post(Entity.entity(message, MediaType.TEXT_PLAIN));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("Trace-Id", "valueFromRequest");
     }
 }

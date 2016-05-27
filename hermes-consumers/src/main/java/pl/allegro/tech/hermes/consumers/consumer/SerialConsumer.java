@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.ofNullable;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
+import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class SerialConsumer implements Consumer {
