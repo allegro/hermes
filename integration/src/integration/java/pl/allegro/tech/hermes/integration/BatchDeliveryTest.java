@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
@@ -19,6 +21,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class BatchDeliveryTest extends IntegrationTest {
@@ -119,6 +122,36 @@ public class BatchDeliveryTest extends IntegrationTest {
 
         // then
         expectSingleBatch(avroBatch);
+    }
+
+    @Test
+    public void shouldPassSubscriptionHeaders() {
+        // given
+        Topic topic = operations.buildTopic("deliverBatchWithSubscriptionHeaders", "topic");
+        BatchSubscriptionPolicy policy = buildBatchPolicy()
+                .withBatchSize(100)
+                .withBatchTime(1)
+                .withBatchVolume(1024)
+                .build();
+        Subscription subscription = subscription(topic, "batchSubscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withContentType(ContentType.JSON)
+                .withSubscriptionPolicy(policy)
+                .withHeader("MY-HEADER", "myHeaderValue")
+                .withHeader("MY-OTHER-HEADER", "myOtherHeaderValue")
+                .build();
+        operations.createSubscription(topic, subscription);
+
+        remoteService.expectMessages(SINGLE_MESSAGE);
+
+        // when
+        publish(topic, SINGLE_MESSAGE);
+
+        // then
+        remoteService.waitUntilRequestReceived(request -> {
+            assertThat(request.getHeader("MY-HEADER")).isEqualTo("myHeaderValue");
+            assertThat(request.getHeader("MY-OTHER-HEADER")).isEqualTo("myOtherHeaderValue");
+        });
     }
 
     private void publish(Topic topic, TestMessage m) {

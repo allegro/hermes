@@ -27,6 +27,7 @@ import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 
 import java.time.Clock;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -131,7 +132,8 @@ public class KafkaMessageReceiver implements MessageReceiver {
                     unwrappedContent.getMessageMetadata().getTimestamp(),
                     clock.millis(),
                     new PartitionOffset(kafkaTopic.name(), message.offset(), message.partition()),
-                    unwrappedContent.getMessageMetadata().getExternalMetadata()
+                    unwrappedContent.getMessageMetadata().getExternalMetadata(),
+                    Collections.emptyMap()
             );
 
         } catch (ConsumerTimeoutException consumerTimeoutException) {
