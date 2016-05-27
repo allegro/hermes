@@ -67,15 +67,15 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
         authorizationProvider.ifPresent(p -> request.header(HttpHeader.AUTHORIZATION.toString(), p.authorizationToken(message)));
         message.getSchema().ifPresent(schema -> request.header(SCHEMA_VERSION.getName(), valueOf(schema.getVersion().value())));
 
-        return appendTraceInfo(request, message);
+        metadataAppender.append(request, message);
+        message.getAdditionalHeaders().entrySet()
+                .forEach(header -> request.header(header.getKey(), header.getValue()));
+
+        return request;
     }
 
     private String messageContentType(Message message) {
         return AVRO.equals(message.getContentType()) ? AVRO_BINARY : APPLICATION_JSON;
-    }
-
-    private Request appendTraceInfo(Request request, Message message) {
-        return metadataAppender.append(request, message);
     }
 
     @Override

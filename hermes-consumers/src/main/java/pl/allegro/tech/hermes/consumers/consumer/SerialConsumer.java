@@ -16,12 +16,12 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.ofNullable;
+import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class SerialConsumer implements Consumer {
@@ -98,7 +98,7 @@ public class SerialConsumer implements Consumer {
 
                 Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
 
-                sendMessage(convertedMessage);
+                sendMessage(withSubscriptionHeaders(convertedMessage));
             } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {
                 inflightSemaphore.release();
                 logger.debug("Timeout while reading message from topic. Trying to read message again", messageReceivingTimeoutException);
@@ -116,6 +116,15 @@ public class SerialConsumer implements Consumer {
             logger.info("Failed to create consumer for subscription {} ", subscription.getId(), e);
             throw e;
         }
+    }
+
+    private Message withSubscriptionHeaders(Message message) {
+        if (subscription.getHeaders().isEmpty()) {
+            return message;
+        }
+        return message().fromMessage(message)
+                .withAdditionalHeaders(subscription.getHeaders())
+                .build();
     }
 
     private void sendMessage(Message message) {
