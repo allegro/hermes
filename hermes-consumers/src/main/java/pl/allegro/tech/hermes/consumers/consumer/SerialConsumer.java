@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Optional.ofNullable;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
-import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class SerialConsumer implements Consumer {
@@ -58,8 +57,7 @@ public class SerialConsumer implements Consumer {
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
         this.subscriptionOffsetCommitQueues = subscriptionOffsetCommitQueues;
-        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, subscriptionOffsetCommitQueues,
-                () -> inflightSemaphore.release());
+        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, subscriptionOffsetCommitQueues, inflightSemaphore::release);
         this.trackers = trackers;
         this.messageConverterResolver = messageConverterResolver;
         this.topic = topic;
@@ -80,22 +78,24 @@ public class SerialConsumer implements Consumer {
 
     @Override
     public void run() {
-        setThreadName();
+        try {
+            setThreadName();
 
-        logger.info("Starting consumer for subscription {} ", subscription.getId());
+            logger.info("Starting consumer for subscription {} ", subscription.getId());
 
-        Timer.Context timer = new Timer().time();
-        this.messageReceiver = initializeMessageReceiver();
-        rateLimiter.initialize();
+            Timer.Context timer = new Timer().time();
+            this.messageReceiver = initializeMessageReceiver();
+            rateLimiter.initialize();
 
-        logger.info("Started consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
+            logger.info("Started consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
 
-        startConsumption(messageReceiver);
-
-        messageReceiver.stop();
-        unsetThreadName();
-        logger.info("Stopped consumer for subscription {}", subscription.getId());
-        stoppedLatch.countDown();
+            startConsumption(messageReceiver);
+        } finally {
+            unsetThreadName();
+            ofNullable(messageReceiver).ifPresent(MessageReceiver::stop);
+            logger.info("Stopped consumer for subscription {}", subscription.getId());
+            stoppedLatch.countDown();
+        }
     }
 
     private void startConsumption(MessageReceiver messageReceiver) {
