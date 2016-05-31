@@ -55,8 +55,7 @@ class HttpRequestFactory {
 
         metadataAppender.append(request, message);
 
-        message.getAdditionalHeaders().entrySet()
-                .forEach(header -> request.header(header.getKey(), header.getValue()));
+        message.getAdditionalHeaders().forEach(header -> request.header(header.getName(), header.getValue()));
 
         return request;
     }
