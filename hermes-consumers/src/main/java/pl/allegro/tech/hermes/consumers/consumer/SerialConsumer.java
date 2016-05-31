@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
-import com.codahale.metrics.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -15,25 +14,13 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
-import pl.allegro.tech.hermes.consumers.consumer.status.MutableStatus;
-import pl.allegro.tech.hermes.consumers.consumer.status.Status;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.Optional.ofNullable;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
-import static pl.allegro.tech.hermes.consumers.consumer.status.Status.ShutdownCause.BROKEN;
-import static pl.allegro.tech.hermes.consumers.consumer.status.Status.ShutdownCause.MODULE_SHUTDOWN;
-import static pl.allegro.tech.hermes.consumers.consumer.status.Status.StatusType.*;
 
 public class SerialConsumer implements Consumer {
 
@@ -47,20 +34,12 @@ public class SerialConsumer implements Consumer {
     private final Trackers trackers;
     private final MessageConverterResolver messageConverterResolver;
     private final Topic topic;
-    private final Clock clock;
     private final ConsumerMessageSender sender;
     private final int defaultInflight;
 
     private Subscription subscription;
 
-    private final CountDownLatch stoppedLatch = new CountDownLatch(1);
-    private volatile boolean consuming = true;
     private MessageReceiver messageReceiver;
-    private volatile boolean restart = false;
-
-    private final BlockingQueue<Runnable> commands = new ArrayBlockingQueue<>(100);
-
-    private final MutableStatus status;
 
     public SerialConsumer(ReceiverFactory messageReceiverFactory,
                           HermesMetrics hermesMetrics,
@@ -71,10 +50,9 @@ public class SerialConsumer implements Consumer {
                           Trackers trackers,
                           MessageConverterResolver messageConverterResolver,
                           Topic topic,
-                          Clock clock,
                           ConfigFactory configFactory) {
         this.defaultInflight = configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE);
-        this.inflightSemaphore = new AdjustableSemaphore(getMaxPermits(subscription));
+        this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
         this.subscription = subscription;
@@ -88,83 +66,33 @@ public class SerialConsumer implements Consumer {
         this.messageReceiver = () -> {
             throw new IllegalStateException("Consumer not initialized");
         };
-        this.clock = clock;
-        this.status = new MutableStatus(clock);
     }
 
-    private int getMaxPermits(Subscription subscription) {
-        return ofNullable(subscription.getSerialSubscriptionPolicy().getInflightSize())
-                .map(value -> Math.min(value, defaultInflight))
-                .orElse(defaultInflight);
+    private int calculateInflightSize(Subscription subscription) {
+        return Math.min(
+                subscription.getSerialSubscriptionPolicy().getInflightSize(),
+                defaultInflight
+        );
     }
 
     private String getId() {
         return subscription.getId();
     }
 
-    @Override
-    public void run() {
+    public void consume(Runnable processSignals) {
         try {
-            setThreadName();
-            restart = false;
-            status.set(STARTING);
-            logger.info("Starting consumer for subscription {} ", subscription.getId());
-            Timer.Context timer = new Timer().time();
-            this.messageReceiver = initializeMessageReceiver();
-            rateLimiter.initialize();
-            logger.info("Started consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
-            status.set(STARTED);
-            startConsumption(messageReceiver);
-            messageReceiver.stop();
-        } finally {
-            unsetThreadName();
-            logger.info("Stopped consumer for subscription {}", subscription.getId());
-            stoppedLatch.countDown();
-            status.advance(STOPPED);
-        }
-    }
+            do {
+                processSignals.run();
+            } while (!inflightSemaphore.tryAcquire(500, TimeUnit.MILLISECONDS));
 
-    private void startConsumption(MessageReceiver messageReceiver) {
-        while (isConsuming()) {
-            try {
-                do {
-                    processCommands();
-                    status.set(CONSUMING);
-                } while (!inflightSemaphore.tryAcquire(500, MILLISECONDS));
-
-                Message message = messageReceiver.next();
-                Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
-                sendMessage(convertedMessage);
-            } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {
-                inflightSemaphore.release();
-                logger.debug("Timeout while reading message from topic. Trying to read message again", messageReceivingTimeoutException);
-            } catch (InterruptedException ex) {
-                status.set(STOPPING, MODULE_SHUTDOWN);
-                break;
-            } catch (Exception e) {
-                logger.error("Consumer loop failed for " + getId(), e);
-            }
-        }
-    }
-
-    private void processCommands() {
-        if (commands.size() > 0) {
-            logger.info("Processing {} commands for subscription {} ", commands.size(), subscription.getId());
-            List<Runnable> commands = new ArrayList<>();
-            this.commands.drainTo(commands);
-            commands.forEach(Runnable::run);
-            logger.info("Processed commands for subscription {} ", subscription.getId());
-        }
-    }
-
-    private MessageReceiver initializeMessageReceiver() {
-        try {
-            logger.debug("Consumer: preparing message receiver for subscription {}", subscription.getId());
-            return messageReceiverFactory.createMessageReceiver(topic, subscription);
+            Message message = messageReceiver.next();
+            Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
+            sendMessage(convertedMessage);
+        } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {
+            inflightSemaphore.release();
+            logger.debug("Timeout while reading message from topic. Trying to read message again", messageReceivingTimeoutException);
         } catch (Exception e) {
-            status.set(STOPPED, BROKEN);
-            logger.info("Failed to create consumer for subscription {} ", subscription.getId(), e);
-            throw e;
+            logger.error("Consumer loop failed for " + getId(), e);
         }
     }
 
@@ -174,22 +102,19 @@ public class SerialConsumer implements Consumer {
         hermesMetrics.incrementInflightCounter(subscription);
         trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));
 
-        sender.sendMessage(message);
+        sender.sendAsync(message);
     }
 
-    @Override
-    public void signalStop(Status.ShutdownCause cause) {
-        commands.add(() -> {
-            status.set(STOPPING, cause);
-            logger.info("Stopping consumer for subscription {}", subscription.getId());
-            rateLimiter.shutdown();
-            sender.shutdown();
-            consuming = false;
-        });
+    public void initialize() {
+        logger.info("Consumer: preparing message receiver for subscription {}", subscription.getId());
+        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription);
+        rateLimiter.initialize();
     }
 
-    public void waitUntilStopped() throws InterruptedException {
-        stoppedLatch.await();
+    public void tearDown() {
+        messageReceiver.stop();
+        rateLimiter.shutdown();
+        sender.shutdown();
     }
 
     public List<PartitionOffset> getOffsetsToCommit() {
@@ -200,23 +125,12 @@ public class SerialConsumer implements Consumer {
         return subscription;
     }
 
-    public void signalUpdate(Subscription newSubscription) {
-        commands.add(() -> {
-            logger.info("Updating consumer for subscription {}", subscription.getId());
-            inflightSemaphore.setMaxPermits(getMaxPermits(newSubscription));
-            rateLimiter.updateSubscription(newSubscription);
-            sender.updateSubscription(newSubscription);
-            messageReceiver.update(newSubscription);
-            this.subscription = newSubscription;
-        });
-    }
-
-    public boolean isConsuming() {
-        return consuming;
-    }
-
-    @Override
-    public Status getStatus() {
-        return status.get();
+    public void updateSubscription(Subscription newSubscription) {
+        logger.info("Updating consumer for subscription {}", subscription.getId());
+        inflightSemaphore.setMaxPermits(calculateInflightSize(newSubscription));
+        rateLimiter.updateSubscription(newSubscription);
+        sender.updateSubscription(newSubscription);
+        messageReceiver.update(newSubscription);
+        this.subscription = newSubscription;
     }
 }

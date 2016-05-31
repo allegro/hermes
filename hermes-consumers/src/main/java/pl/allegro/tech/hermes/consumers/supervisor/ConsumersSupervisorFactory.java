@@ -29,15 +29,15 @@ public class ConsumersSupervisorFactory implements Factory<ConsumersSupervisor> 
 
     @Inject
     public ConsumersSupervisorFactory(ConfigFactory configs,
-                                     SubscriptionRepository subscriptionRepository,
-                                     TopicRepository topicRepository,
-                                     SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
-                                     ConsumersExecutorService executor,
-                                     ConsumerFactory consumerFactory,
-                                     List<MessageCommitter> messageCommitters,
-                                     List<OffsetsStorage> offsetsStorages,
-                                     HermesMetrics hermesMetrics,
-                                     UndeliveredMessageLogPersister undeliveredMessageLogPersister,
+                                      SubscriptionRepository subscriptionRepository,
+                                      TopicRepository topicRepository,
+                                      SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
+                                      ConsumersExecutorService executor,
+                                      ConsumerFactory consumerFactory,
+                                      List<MessageCommitter> messageCommitters,
+                                      List<OffsetsStorage> offsetsStorages,
+                                      HermesMetrics hermesMetrics,
+                                      UndeliveredMessageLogPersister undeliveredMessageLogPersister,
                                       Clock clock) {
 
         this.configs = configs;

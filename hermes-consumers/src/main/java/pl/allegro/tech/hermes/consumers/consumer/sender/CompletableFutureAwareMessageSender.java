@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.util.concurrent.CompletableFuture;
@@ -14,7 +13,7 @@ public abstract class CompletableFutureAwareMessageSender implements MessageSend
             sendMessage(message, resultFuture);
             return resultFuture;
         } catch (Exception e) {
-            throw new InternalProcessingException("Failed to send message", e);
+            return CompletableFuture.completedFuture(MessageSendingResult.failedResult(e));
         }
     }
 

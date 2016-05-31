@@ -16,11 +16,12 @@ import java.util.List;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class Retransmitter {
+
+    private static final Logger logger = LoggerFactory.getLogger(Retransmitter.class);
+
     private SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
     private List<OffsetsStorage> offsetsStorages;
     private String brokersClusterName;
-
-    private static final Logger logger = LoggerFactory.getLogger(Retransmitter.class);
 
     public Retransmitter(SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
                          List<OffsetsStorage> offsetsStorages,

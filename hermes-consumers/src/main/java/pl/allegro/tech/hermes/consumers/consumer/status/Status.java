@@ -5,19 +5,20 @@ import java.util.Optional;
 import static java.util.Optional.empty;
 
 public class Status {
+
     private final StatusType statusType;
-    private final long timestamp;
+    private final long activeFromTimestamp;
     private final Optional<ShutdownCause> shutdownCause;
 
-    public Status(StatusType statusType, long timestamp) {
+    public Status(StatusType statusType, long activeFromTimestamp) {
         this.statusType = statusType;
-        this.timestamp = timestamp;
+        this.activeFromTimestamp = activeFromTimestamp;
         this.shutdownCause = empty();
     }
 
-    public Status(StatusType statusType, ShutdownCause cause, long timestamp) {
+    public Status(StatusType statusType, ShutdownCause cause, long activeFromTimestamp) {
         this.statusType = statusType;
-        this.timestamp = timestamp;
+        this.activeFromTimestamp = activeFromTimestamp;
         this.shutdownCause = Optional.of(cause);
     }
 
@@ -25,19 +26,19 @@ public class Status {
         return statusType;
     }
 
-    public long getTimestamp() {
-        return timestamp;
+    public long getActiveFromTimestamp() {
+        return activeFromTimestamp;
     }
 
     public Optional<ShutdownCause> getShutdownCause() {
         return shutdownCause;
     }
 
-    public static enum StatusType {
+    public enum StatusType {
         NEW, STARTING, STARTED, CONSUMING, STOPPING, STOPPED
     }
 
-    public static enum ShutdownCause {
+    public enum ShutdownCause {
         BROKEN, RESTART, RETRANSMISSION, CONTROLLED, MODULE_SHUTDOWN
     }
 
@@ -46,7 +47,7 @@ public class Status {
         return "[" +
                 "statusType=" + statusType +
                 (shutdownCause.isPresent()? "shutdownCause=" + shutdownCause.get() : "") +
-                ", timestamp=" + timestamp +
+                ", timestamp=" + activeFromTimestamp +
                 ']';
     }
 }

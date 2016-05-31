@@ -8,21 +8,22 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.status.Status;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
-import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
 import java.time.Clock;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 import static java.util.Optional.ofNullable;
 
 public class ConsumerSupervisorProcess implements Runnable {
+
     private static final Logger logger = LoggerFactory.getLogger(ConsumerSupervisorProcess.class);
 
-    private final Map<SubscriptionName, Long> timestamps = new HashMap<>();
     private final Map<SubscriptionName, Future> runningTasks = new HashMap<>();
 
     private final AssignedConsumers consumers;
@@ -37,12 +38,10 @@ public class ConsumerSupervisorProcess implements Runnable {
 
     public ConsumerSupervisorProcess(AssignedConsumers consumers,
                                      ConsumersExecutorService executor,
-                                     Retransmitter retransmitter,
                                      Clock clock,
                                      ConfigFactory configs) {
         this.consumers = consumers;
         this.executor = executor;
-        this.retransmitter = retransmitter;
         this.clock = clock;
         this.unhealthyAfter = configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER);
     }
@@ -50,19 +49,45 @@ public class ConsumerSupervisorProcess implements Runnable {
     @Override
     public void run() {
         long currentTime = clock.millis();
-        Iterator<Consumer> iterator = consumers.iterator();
+        Set<SubscriptionName> subscriptionsToRemove = new HashSet<>();
+
+        consumers.stream().forEach(e -> {
+            SubscriptionName subscriptionName = e.getKey();
+            ConsumerProcess consumerProcess = e.getValue();
+
+            if(!isHealthy(consumerProcess)) {
+                kill(subscriptionName);
+            }
+        });
+
+
+        Iterator<ConsumerProcess> iterator = consumers.iterator();
         while (iterator.hasNext()) {
-            Consumer consumer = iterator.next();
+            ConsumerProcess consumer = iterator.next();
+
+
             SubscriptionName subscription = consumer.getSubscription().toSubscriptionName();
             Status status = consumer.getStatus();
-            if (isHealthy(currentTime, status, subscription)) {
+
+            !isHealthy -> thread.interrupt();->STOPPED BROKEN
+            STOPPED, BROKEN -> normalny restart
+
+
+            if (isHealthy(subscription, status, currentTime)) {
                 try {
                     switch (status.getType()) {
-                        case NEW: start(subscription, consumer); break;
+                        case NEW:
+                            start(subscription, consumer);
+                            break;
                         case STOPPED: {
                             switch (status.getShutdownCause().get()) {
-                                case RETRANSMISSION: reloadOffsets(subscription);
+                                case RETRANSMISSION:
+                                    reloadOffsets(subscription);
+                                    start(subscription, consumer);
+                                    break;
                                 case RESTART:
+                                    start(subscription, consumer);
+                                    break;
                                 case BROKEN:
                                     start(subscription, consumer);
                                     break;
@@ -83,8 +108,11 @@ public class ConsumerSupervisorProcess implements Runnable {
                 logger.info("Detected unhealthy consumer for {}", subscription.getId());
                 kill(subscription);
                 start(subscription, consumer);
-            };
+            }
+            ;
         }
+
+        logger.info("Supervisor process loop took {} ms to check all consumers", clock.millis() - currentTime);
     }
 
     private void kill(SubscriptionName subscription) {
@@ -101,24 +129,19 @@ public class ConsumerSupervisorProcess implements Runnable {
         }
     }
 
-    private boolean isHealthy(long currentTime, Status status, SubscriptionName subscription) {
-        Optional<Long> lastSeen = ofNullable(timestamps.get(subscription));
-        if (lastSeen.isPresent()) {
-            long delta = status.getTimestamp() - lastSeen.get();
-            if (delta <= 0) {
-                logger.info("Lost contact with consumer {}, status {}, delta {}", subscription.getId(), status.getTimestamp(), delta);
-                if (currentTime - status.getTimestamp() > unhealthyAfter) {
-                    return false;
-                }
-            }
+    private boolean isHealthy(ConsumerProcess consumerProcess) {
+        long delta = clock.millis() - consumerProcess.healtcheckRefreshTime();
+        if (delta > unhealthyAfter) {
+            logger.info("Lost contact with consumer {}, last seen {}ms ago", consumerProcess, delta);
+            return false;
         }
         return true;
     }
 
-    private void remove(SubscriptionName subscriptionName, Iterator<Consumer> iterator) {
-        logger.info("Deleting consumer for {}", subscriptionName.getId());
+    private void remove(ConsumerProcess consumerProcess, Iterator<Consumer> iterator) {
+        logger.info("Deleting consumer for {}", consumerProcess);
         iterator.remove();
-        timestamps.remove(subscriptionName);
+        lastSeenTimestamps.remove(subscriptionName);
         runningTasks.remove(subscriptionName);
         logger.info("Deleted consumer for {}", subscriptionName.getId());
     }

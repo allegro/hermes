@@ -2,40 +2,41 @@ package pl.allegro.tech.hermes.consumers.supervisor.background;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
-import static java.util.Optional.ofNullable;
-import static pl.allegro.tech.hermes.consumers.consumer.status.Status.ShutdownCause.MODULE_SHUTDOWN;
+public class AssignedConsumers {
 
-public class AssignedConsumers implements Iterable<Consumer> {
-    private final ConcurrentHashMap<SubscriptionName, Consumer> consumers = new ConcurrentHashMap<>();
+    private final ConcurrentMap<SubscriptionName, ConsumerProcess> consumers = new ConcurrentHashMap<>();
 
-    @Override
-    public Iterator<Consumer> iterator() {
-        return consumers.values().iterator();
+    public Stream<Map.Entry<SubscriptionName, ConsumerProcess>> stream() {
+        return consumers.entrySet().stream();
     }
 
-    public void add(Consumer consumer) {
-        consumers.putIfAbsent(consumer.getSubscription().toSubscriptionName(), consumer);
+    public void add(SubscriptionName subscriptionName, ConsumerProcess process) {
+        consumers.putIfAbsent(subscriptionName, process);
     }
 
     public void stop(SubscriptionName subscription) {
-        ofNullable(consumers.get(subscription)).ifPresent(Consumer::signalStop);
+        sendSignal(subscription, Signal.of(Signal.SignalType.STOP));
     }
 
     public void update(Subscription subscription) {
-        ofNullable(consumers.get(subscription.toSubscriptionName())).ifPresent(c -> c.signalUpdate(subscription));
+        sendSignal(subscription.toSubscriptionName(), Signal.of(Signal.SignalType.UPDATE, subscription));
     }
 
     public void restart(SubscriptionName subscription) {
-        ofNullable(consumers.get(subscription)).ifPresent(Consumer::signalRestart);
+        sendSignal(subscription, Signal.of(Signal.SignalType.RESTART));
     }
 
     public void retransmit(SubscriptionName subscription) {
-        ofNullable(consumers.get(subscription)).ifPresent(Consumer::signalRetransmit);
+        sendSignal(subscription, Signal.of(Signal.SignalType.RETRANSMIT));
+    }
+
+    private void sendSignal(SubscriptionName subscriptionName, Signal signal) {
+        consumers.computeIfPresent(subscriptionName, (k, p) -> p.accept(signal));
     }
 }

@@ -44,7 +44,7 @@ public class ConsumerMessageSender {
     private MessageSender messageSender;
     private Subscription subscription;
 
-    private volatile boolean consumerIsConsuming = true;
+    private volatile boolean running = true;
 
     public ConsumerMessageSender(Subscription subscription, MessageSenderFactory messageSenderFactory, SuccessHandler successHandler,
                                  ErrorHandler errorHandler, ConsumerRateLimiter rateLimiter, ExecutorService deliveryReportingExecutor,
@@ -66,7 +66,16 @@ public class ConsumerMessageSender {
     }
 
     public void shutdown() {
-        consumerIsConsuming = false;
+        running = false;
+    }
+
+
+    public void sendAsync(Message message) {
+        sendAsync(message, 0);
+    }
+
+    private void sendAsync(Message message, int delayMillis) {
+        retrySingleThreadExecutor.schedule(() -> sendMessage(message), delayMillis, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -74,18 +83,10 @@ public class ConsumerMessageSender {
      * Main responsibility of this method is that no message will be fully processed or rejected without release on semaphore.
      */
     public void sendMessage(final Message message) {
-        while (consumerIsConsuming) {
-            try {
-                submitAsyncSendMessageRequest(message, consumerLatencyTimer);
-                return;
-            } catch (RuntimeException e) {
-                handleFailedSending(message, failedResult(e));
-                if (!consumerIsConsuming || isTtlExceeded(message)) {
-                    handleMessageDiscarding(message, failedResult(e));
-                    return;
-                }
-            }
-        }
+        rateLimiter.acquire();
+        ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
+        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs));
+        response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
     }
 
     public synchronized void updateSubscription(Subscription newSubscription) {
@@ -96,17 +97,6 @@ public class ConsumerMessageSender {
         if (endpointUpdated || subscriptionPolicyUpdated) {
             this.messageSender = messageSenderFactory.create(newSubscription);
         }
-    }
-
-    private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
-        rateLimiter.acquire();
-        ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
-        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs));
-        response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
-    }
-
-    private boolean isTtlExceeded(Message message) {
-        return willExceedTtl(message, 0);
     }
 
     private boolean willExceedTtl(Message message, long delay) {
@@ -169,7 +159,7 @@ public class ConsumerMessageSender {
                 message.incrementRetryCounter(succeededUris);
 
                 long retryDelay = extractRetryDelay(result);
-                if (consumerIsConsuming && shouldAttemptResending(result, retryDelay)) {
+                if (running && shouldAttemptResending(result, retryDelay)) {
                     retrySingleThreadExecutor.schedule(() -> retrySending(result), retryDelay, TimeUnit.MILLISECONDS);
                 } else {
                     handleMessageDiscarding(message, result);
