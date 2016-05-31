@@ -53,11 +53,11 @@ class HttpRequestFactory {
         message.getSchema().ifPresent(schema -> request.header(SCHEMA_VERSION.getName(), valueOf(schema.getVersion().value())));
         authorizationProvider.ifPresent(p -> request.header(HttpHeader.AUTHORIZATION.toString(), p.authorizationToken(message)));
 
+        metadataAppender.append(request, message);
 
-        return appendTraceInfo(request, message);
-    }
+        message.getAdditionalHeaders().entrySet()
+                .forEach(header -> request.header(header.getKey(), header.getValue()));
 
-    private Request appendTraceInfo(Request request, Message message) {
-        return metadataAppender.append(request, message);
+        return request;
     }
 }

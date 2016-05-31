@@ -68,7 +68,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 kafkaNamesMapper,
                 configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT),
                 configFactory.getIntProperty(Configs.KAFKA_CONSUMER_TIMEOUT_MS),
-                subscription.toSubscriptionName(),
+                subscription,
                 schemaRepository);
 
         if (configFactory.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {

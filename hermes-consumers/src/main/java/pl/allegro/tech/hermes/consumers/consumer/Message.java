@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
+import java.util.Collections;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -28,7 +29,9 @@ public class Message {
 
     private int retryCounter = 0;
 
-    private Map<String, String> externalMetadata;
+    private Map<String, String> externalMetadata = Collections.emptyMap();
+
+    private Map<String, String> additionalHeaders = Collections.emptyMap();
 
     private Set<String> succeededUris = Sets.newHashSet();
 
@@ -42,7 +45,8 @@ public class Message {
                    long publishingTimestamp,
                    long readingTimestamp,
                    PartitionOffset partitionOffset,
-                   Map<String, String> externalMetadata) {
+                   Map<String, String> externalMetadata,
+                   Map<String, String> additionalHeaders) {
         this.id = id;
         this.data = content;
         this.topic = topic;
@@ -51,7 +55,8 @@ public class Message {
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
         this.partitionOffset = partitionOffset;
-        this.externalMetadata = externalMetadata;
+        this.externalMetadata = ImmutableMap.copyOf(externalMetadata);
+        this.additionalHeaders = ImmutableMap.copyOf(additionalHeaders);
     }
 
     public long getPublishingTimestamp() {
@@ -106,7 +111,11 @@ public class Message {
     }
 
     public Map<String, String> getExternalMetadata() {
-        return ImmutableMap.copyOf(externalMetadata);
+        return Collections.unmodifiableMap(externalMetadata);
+    }
+
+    public Map<String, String> getAdditionalHeaders() {
+        return Collections.unmodifiableMap(additionalHeaders);
     }
 
     @Override
@@ -143,6 +152,7 @@ public class Message {
     }
 
     public static class Builder {
+
         private final Message message;
 
         public Builder() {
@@ -158,6 +168,7 @@ public class Message {
             this.message.readingTimestamp = message.getReadingTimestamp();
             this.message.partitionOffset = message.partitionOffset;
             this.message.externalMetadata = message.getExternalMetadata();
+            this.message.additionalHeaders = message.getAdditionalHeaders();
             this.message.schema = message.getSchema();
 
             return this;
@@ -174,12 +185,13 @@ public class Message {
         }
 
         public Builder withExternalMetadata(Map<String, String> externalMetadata) {
-            this.message.externalMetadata = externalMetadata;
+            this.message.externalMetadata = ImmutableMap.copyOf(externalMetadata);
             return this;
         }
 
-        public Message build() {
-            return message;
+        public Builder withAdditionalHeaders(Map<String, String> additionalHeaders) {
+            this.message.additionalHeaders = ImmutableMap.copyOf(additionalHeaders);
+            return this;
         }
 
         public Builder withContentType(ContentType contentType) {
@@ -192,6 +204,9 @@ public class Message {
             this.message.schema = Optional.empty();
             return this;
         }
-    }
 
+        public Message build() {
+            return message;
+        }
+    }
 }
