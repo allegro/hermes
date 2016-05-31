@@ -10,7 +10,7 @@ import java.time.Clock
 
 import static java.nio.ByteBuffer.allocateDirect
 import static java.time.Clock.systemDefaultZone
-import static java.util.Collections.emptyMap
+import static java.util.Collections.emptyList
 
 class JsonMessageBatchTest extends Specification {
 
@@ -23,7 +23,7 @@ class JsonMessageBatchTest extends Specification {
     @Unroll
     def "should append data into buffer"() {
         given:
-        JsonMessageBatch batch = new JsonMessageBatch(BATCH_ID, ByteBuffer.allocate(capacity), LARGE_BATCH_SIZE, LARGE_BATCH_TIME, systemDefaultZone(), emptyMap())
+        JsonMessageBatch batch = new JsonMessageBatch(BATCH_ID, ByteBuffer.allocate(capacity), LARGE_BATCH_SIZE, LARGE_BATCH_TIME, systemDefaultZone(), emptyList())
 
         when:
         data.each { it -> batch.append(it.bytes, Stub(MessageMetadata)) }
@@ -42,7 +42,7 @@ class JsonMessageBatchTest extends Specification {
     @Unroll
     def "should throw exception when there is no remaining space for given element"() {
         given:
-        JsonMessageBatch batch = new JsonMessageBatch(BATCH_ID, allocateDirect(capacity), LARGE_BATCH_SIZE, LARGE_BATCH_TIME, systemDefaultZone(), emptyMap())
+        JsonMessageBatch batch = new JsonMessageBatch(BATCH_ID, allocateDirect(capacity), LARGE_BATCH_SIZE, LARGE_BATCH_TIME, systemDefaultZone(), emptyList())
 
         when:
         data.each { it -> batch.append(it.bytes, Stub(MessageMetadata)) }
@@ -66,7 +66,7 @@ class JsonMessageBatchTest extends Specification {
         def data = "xxx".bytes
 
         Clock clock = Stub() { millis() >>> [10, 20] }
-        JsonMessageBatch jsonMessageBatch = new JsonMessageBatch(BATCH_ID, allocateDirect(LARGE_BATCH_VOLUME), LARGE_BATCH_SIZE, batchTtl, clock, emptyMap())
+        JsonMessageBatch jsonMessageBatch = new JsonMessageBatch(BATCH_ID, allocateDirect(LARGE_BATCH_VOLUME), LARGE_BATCH_SIZE, batchTtl, clock, emptyList())
 
         when:
         jsonMessageBatch.append(data, Stub(MessageMetadata))
@@ -82,7 +82,7 @@ class JsonMessageBatchTest extends Specification {
         Clock clock = Stub() { millis() >> { currentTime } }
 
         def batchTtl = 10
-        JsonMessageBatch jsonMessageBatch = new JsonMessageBatch(BATCH_ID, allocateDirect(LARGE_BATCH_VOLUME), LARGE_BATCH_SIZE, batchTtl, clock, emptyMap())
+        JsonMessageBatch jsonMessageBatch = new JsonMessageBatch(BATCH_ID, allocateDirect(LARGE_BATCH_VOLUME), LARGE_BATCH_SIZE, batchTtl, clock, emptyList())
         currentTime = batchTtl + 1
 
         when:

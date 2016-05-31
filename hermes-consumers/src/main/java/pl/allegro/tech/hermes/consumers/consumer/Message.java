@@ -1,18 +1,15 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
-import java.util.Collections;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class Message {
 
@@ -31,7 +28,7 @@ public class Message {
 
     private Map<String, String> externalMetadata = Collections.emptyMap();
 
-    private Map<String, String> additionalHeaders = Collections.emptyMap();
+    private List<Header> additionalHeaders = Collections.emptyList();
 
     private Set<String> succeededUris = Sets.newHashSet();
 
@@ -46,7 +43,7 @@ public class Message {
                    long readingTimestamp,
                    PartitionOffset partitionOffset,
                    Map<String, String> externalMetadata,
-                   Map<String, String> additionalHeaders) {
+                   List<Header> additionalHeaders) {
         this.id = id;
         this.data = content;
         this.topic = topic;
@@ -56,7 +53,7 @@ public class Message {
         this.readingTimestamp = readingTimestamp;
         this.partitionOffset = partitionOffset;
         this.externalMetadata = ImmutableMap.copyOf(externalMetadata);
-        this.additionalHeaders = ImmutableMap.copyOf(additionalHeaders);
+        this.additionalHeaders = ImmutableList.copyOf(additionalHeaders);
     }
 
     public long getPublishingTimestamp() {
@@ -114,8 +111,8 @@ public class Message {
         return Collections.unmodifiableMap(externalMetadata);
     }
 
-    public Map<String, String> getAdditionalHeaders() {
-        return Collections.unmodifiableMap(additionalHeaders);
+    public List<Header> getAdditionalHeaders() {
+        return Collections.unmodifiableList(additionalHeaders);
     }
 
     @Override
@@ -189,8 +186,8 @@ public class Message {
             return this;
         }
 
-        public Builder withAdditionalHeaders(Map<String, String> additionalHeaders) {
-            this.message.additionalHeaders = ImmutableMap.copyOf(additionalHeaders);
+        public Builder withAdditionalHeaders(List<Header> additionalHeaders) {
+            this.message.additionalHeaders = ImmutableList.copyOf(additionalHeaders);
             return this;
         }
 
