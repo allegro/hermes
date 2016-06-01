@@ -51,7 +51,7 @@ public class MessageSenderFactoryTest {
     private ProtocolMessageSenderProvider protocolMessageSenderProviderReturning(Object createdMessageSender) {
         return new ProtocolMessageSenderProvider() {
             @Override
-            public MessageSender create(EndpointAddress endpoint) {
+            public MessageSender create(Subscription endpoint) {
                 return (MessageSender) createdMessageSender;
             }
 

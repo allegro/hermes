@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
+import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
@@ -23,7 +24,6 @@ import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -37,9 +37,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.retryAfter;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -80,7 +77,7 @@ public class ConsumerMessageSenderTest {
     @Mock
     private Meter errors;
 
-    private Semaphore inflightSemaphore;
+    private AdjustableSemaphore inflightSemaphore;
 
     private ConsumerMessageSender sender;
 
@@ -88,7 +85,7 @@ public class ConsumerMessageSenderTest {
     public void setUp() {
         setUpMetrics(subscription);
         setUpMetrics(subscriptionWith4xxRetry);
-        inflightSemaphore = new Semaphore(0);
+        inflightSemaphore = new AdjustableSemaphore(0);
         sender = consumerMessageSender(subscription);
     }
 
@@ -330,10 +327,28 @@ public class ConsumerMessageSenderTest {
         verify(otherMessageSender).send(message);
     }
 
+    @Test
+    public void shouldDeliverToNewSenderAfterModifiedTimeout() {
+        // given
+        Message message = message();
+        Subscription subscriptionWithModfiedTimeout = subscriptionWithRequestTimeout(2000);
+        MessageSender otherMessageSender = mock(MessageSender.class);
+
+        when(messageSenderFactory.create(subscriptionWithModfiedTimeout)).thenReturn(otherMessageSender);
+        when(otherMessageSender.send(message)).thenReturn(success());
+
+        // when
+        sender.updateSubscription(subscriptionWithModfiedTimeout);
+        sender.sendMessage(message);
+
+        // then
+        verify(otherMessageSender).send(message);
+    }
+
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
         when(messageSenderFactory.create(subscription)).thenReturn(messageSender);
         return new ConsumerMessageSender(subscription, messageSenderFactory, successHandler, errorHandler, rateLimiter,
-                Executors.newSingleThreadExecutor(), inflightSemaphore, hermesMetrics, ASYNC_TIMEOUT_MS,
+                Executors.newSingleThreadExecutor(), () -> inflightSemaphore.release(), hermesMetrics, ASYNC_TIMEOUT_MS,
                 new FutureAsyncTimeout<>(MessageSendingResult::loggedFailResult, Executors.newSingleThreadScheduledExecutor()));
     }
 
@@ -392,6 +407,10 @@ public class ConsumerMessageSenderTest {
         return subscriptionBuilderWithTestValues().withEndpoint(endpoint).build();
     }
 
+    private Subscription subscriptionWithRequestTimeout(int timeout) {
+        return subscriptionBuilderWithTestValues().withRequestTimeout(timeout).build();
+    }
+
     private SubscriptionBuilder subscriptionBuilderWithTestValues() {
         return subscription("group.topic","subscription");
     }
@@ -401,19 +420,19 @@ public class ConsumerMessageSenderTest {
     }
 
     private CompletableFuture<MessageSendingResult> success() {
-        return CompletableFuture.completedFuture(succeededResult());
+        return CompletableFuture.completedFuture(MessageSendingResult.succeededResult());
     }
 
     private CompletableFuture<MessageSendingResult> failure() {
-        return CompletableFuture.completedFuture(failedResult(exception()));
+        return CompletableFuture.completedFuture(MessageSendingResult.failedResult(exception()));
     }
 
     private CompletableFuture<MessageSendingResult> failure(int statusCode) {
-        return CompletableFuture.completedFuture(failedResult(statusCode));
+        return CompletableFuture.completedFuture(MessageSendingResult.failedResult(statusCode));
     }
 
     private CompletableFuture<MessageSendingResult> backoff(int seconds) {
-        return CompletableFuture.completedFuture(retryAfter(seconds));
+        return CompletableFuture.completedFuture(MessageSendingResult.retryAfter(seconds));
     }
 
     private void verifySemaphoreReleased() {

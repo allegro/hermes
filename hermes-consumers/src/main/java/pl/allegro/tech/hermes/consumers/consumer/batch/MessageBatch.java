@@ -1,12 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 public interface MessageBatch {
 
@@ -33,6 +35,8 @@ public interface MessageBatch {
     List<PartitionOffset> getPartitionOffsets();
 
     List<MessageMetadata> getMessagesMetadata();
+
+    List<Header> getAdditionalHeaders();
 
     long getLifetime();
 

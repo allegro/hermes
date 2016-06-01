@@ -61,14 +61,17 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
         httpPost.addHeader(BATCH_ID.getName(), batch.getId());
         httpPost.addHeader(HTTP.CONTENT_TYPE, contentType.getMimeType());
         httpPost.addHeader(RETRY_COUNT.getName(), Integer.toString(batch.getRetryCounter()));
+
+        batch.getAdditionalHeaders().forEach(header -> httpPost.addHeader(header.getName(), header.getValue()));
+
         return send(httpPost);
     }
 
     private MessageSendingResult send(HttpPost post) {
         try {
-            return new MessageSendingResult(client.execute(post).getStatusLine().getStatusCode());
+            return MessageSendingResult.ofStatusCode(client.execute(post).getStatusLine().getStatusCode());
         } catch (IOException e) {
-            return new MessageSendingResult(e);
+            return MessageSendingResult.failedResult(e);
         } finally {
             post.releaseConnection();
         }

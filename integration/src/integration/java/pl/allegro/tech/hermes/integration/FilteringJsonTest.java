@@ -31,6 +31,8 @@ public class FilteringJsonTest extends IntegrationTest {
     final static AvroUser ALICE_GREY = new AvroUser("Alice", 20, "grey");
     final static AvroUser BOB_GREY = new AvroUser("Bob", 50, "grey");
 
+    private final static SubscriptionPolicy SUBSCRIPTION_POLICY = new SubscriptionPolicy(100, 2000, 1000, true, 100, 100);
+
     @BeforeMethod
     public void initializeAlways() {
         this.remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
@@ -44,7 +46,7 @@ public class FilteringJsonTest extends IntegrationTest {
                 .withEndpoint(HTTP_ENDPOINT_URL)
                 .withContentType(ContentType.JSON)
                 .withSupportTeam("team")
-                .withSubscriptionPolicy(new SubscriptionPolicy(100, 2000, true, 100))
+                .withSubscriptionPolicy(SUBSCRIPTION_POLICY)
                 .withFilter(MESSAGE_NAME_FILTER)
                 .build();
 
@@ -67,7 +69,7 @@ public class FilteringJsonTest extends IntegrationTest {
                 .withEndpoint(HTTP_ENDPOINT_URL)
                 .withContentType(ContentType.JSON)
                 .withSupportTeam("team")
-                .withSubscriptionPolicy(new SubscriptionPolicy(100, 2000, true, 100))
+                .withSubscriptionPolicy(SUBSCRIPTION_POLICY)
                 .withFilter(MESSAGE_NAME_FILTER)
                 .withFilter(MESSAGE_COLOR_FILTER)
                 .build();
@@ -83,5 +85,30 @@ public class FilteringJsonTest extends IntegrationTest {
 
         // then
         remoteService.waitUntilReceived();
+    }
+
+    @Test
+    public void shouldPassSubscriptionHeadersWhenFilteringIsEnabledForIncomingEvents() {
+        // given
+        Topic topic = operations.buildTopic("filteredJsonTopicHavingSubscriptionWithHeaders", "topic");
+        final Subscription subscription = subscription(topic.getName(), "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withContentType(ContentType.JSON)
+                .withSupportTeam("team")
+                .withSubscriptionPolicy(SUBSCRIPTION_POLICY)
+                .withFilter(MESSAGE_NAME_FILTER)
+                .withHeader("MY-HEADER", "myHeaderValue")
+                .build();
+
+        operations.createSubscription(topic, subscription);
+        remoteService.expectMessages(BOB.asJson());
+
+        // when
+        assertThat(publisher.publish(topic.getQualifiedName(), ALICE.asJson())).hasStatus(CREATED);
+        assertThat(publisher.publish(topic.getQualifiedName(), BOB.asJson())).hasStatus(CREATED);
+
+        // then
+        remoteService.waitUntilReceived();
+        remoteService.waitUntilRequestReceived(request -> assertThat(request.getHeader("MY-HEADER")).isEqualTo("myHeaderValue"));
     }
 }

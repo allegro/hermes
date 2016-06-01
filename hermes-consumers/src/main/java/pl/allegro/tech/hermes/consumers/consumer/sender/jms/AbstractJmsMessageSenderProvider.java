@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -29,7 +30,8 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
     }
 
     @Override
-    public MessageSender create(EndpointAddress endpoint) {
+    public MessageSender create(Subscription subscription) {
+        EndpointAddress endpoint = subscription.getEndpoint();
         URI uri = endpoint.getUri();
         ConnectionFactory connectionFactory = getConnectionFactory(uri);
         JMSContext jmsContext = connectionFactory.createContext(

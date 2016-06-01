@@ -1,6 +1,12 @@
 package pl.allegro.tech.hermes.client.okhttp;
 
-import com.squareup.okhttp.*;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.HermesSender;
@@ -33,12 +39,12 @@ public class OkHttpHermesSender implements HermesSender {
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(Request request, IOException e) {
+            public void onFailure(Call call, IOException e) {
                 future.completeExceptionally(e);
             }
 
             @Override
-            public void onResponse(Response response) throws IOException {
+            public void onResponse(Call call, Response response) throws IOException {
                 future.complete(fromOkHttpResponse(response));
             }
         });
@@ -46,11 +52,12 @@ public class OkHttpHermesSender implements HermesSender {
         return future;
     }
 
-    private HermesResponse fromOkHttpResponse(Response response) throws IOException {
+    HermesResponse fromOkHttpResponse(Response response) throws IOException {
         return hermesResponse()
                 .withHeaderSupplier(response::header)
                 .withHttpStatus(response.code())
                 .withBody(response.body().string())
+                .withProtocol(response.protocol().toString())
                 .build();
     }
 }

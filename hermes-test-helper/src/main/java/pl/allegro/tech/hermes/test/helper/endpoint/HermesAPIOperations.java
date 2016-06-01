@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
@@ -68,10 +69,19 @@ public class HermesAPIOperations {
     }
 
     public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint, ContentType contentType) {
+        return createSubscription(topic, subscriptionName, endpoint, contentType, SubscriptionMode.ANYCAST);
+    }
+
+    public Subscription createBroadcastSubscription(Topic topic, String subscriptionName, String endpoint) {
+        return createSubscription(topic, subscriptionName, endpoint, ContentType.JSON, SubscriptionMode.BROADCAST);
+    }
+
+    public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint, ContentType contentType, SubscriptionMode mode) {
         Subscription subscription = subscription(topic, subscriptionName)
                 .withEndpoint(endpoint)
                 .withContentType(contentType)
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
+                .withMode(mode)
                 .build();
 
         return createSubscription(topic, subscription);

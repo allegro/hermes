@@ -1,14 +1,15 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class Message {
 
@@ -25,7 +26,11 @@ public class Message {
 
     private int retryCounter = 0;
 
-    private Map<String, String> externalMetadata;
+    private Map<String, String> externalMetadata = Collections.emptyMap();
+
+    private List<Header> additionalHeaders = Collections.emptyList();
+
+    private Set<String> succeededUris = Sets.newHashSet();
 
     private Message() {}
 
@@ -37,7 +42,8 @@ public class Message {
                    long publishingTimestamp,
                    long readingTimestamp,
                    PartitionOffset partitionOffset,
-                   Map<String, String> externalMetadata) {
+                   Map<String, String> externalMetadata,
+                   List<Header> additionalHeaders) {
         this.id = id;
         this.data = content;
         this.topic = topic;
@@ -46,7 +52,8 @@ public class Message {
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
         this.partitionOffset = partitionOffset;
-        this.externalMetadata = externalMetadata;
+        this.externalMetadata = ImmutableMap.copyOf(externalMetadata);
+        this.additionalHeaders = ImmutableList.copyOf(additionalHeaders);
     }
 
     public long getPublishingTimestamp() {
@@ -82,8 +89,9 @@ public class Message {
         return currentTimestamp > readingTimestamp + ttlMillis;
     }
 
-    public void incrementRetryCounter() {
+    public void incrementRetryCounter(Collection<String> succeededUris) {
         this.retryCounter++;
+        this.succeededUris.addAll(succeededUris);
     }
 
     public int getRetryCounter() {
@@ -100,7 +108,11 @@ public class Message {
     }
 
     public Map<String, String> getExternalMetadata() {
-        return ImmutableMap.copyOf(externalMetadata);
+        return Collections.unmodifiableMap(externalMetadata);
+    }
+
+    public List<Header> getAdditionalHeaders() {
+        return Collections.unmodifiableList(additionalHeaders);
     }
 
     @Override
@@ -132,7 +144,12 @@ public class Message {
         return partitionOffset;
     }
 
+    public boolean hasNotBeenSentTo(String uri) {
+        return !succeededUris.contains(uri);
+    }
+
     public static class Builder {
+
         private final Message message;
 
         public Builder() {
@@ -148,6 +165,7 @@ public class Message {
             this.message.readingTimestamp = message.getReadingTimestamp();
             this.message.partitionOffset = message.partitionOffset;
             this.message.externalMetadata = message.getExternalMetadata();
+            this.message.additionalHeaders = message.getAdditionalHeaders();
             this.message.schema = message.getSchema();
 
             return this;
@@ -164,12 +182,13 @@ public class Message {
         }
 
         public Builder withExternalMetadata(Map<String, String> externalMetadata) {
-            this.message.externalMetadata = externalMetadata;
+            this.message.externalMetadata = ImmutableMap.copyOf(externalMetadata);
             return this;
         }
 
-        public Message build() {
-            return message;
+        public Builder withAdditionalHeaders(List<Header> additionalHeaders) {
+            this.message.additionalHeaders = ImmutableList.copyOf(additionalHeaders);
+            return this;
         }
 
         public Builder withContentType(ContentType contentType) {
@@ -182,6 +201,9 @@ public class Message {
             this.message.schema = Optional.empty();
             return this;
         }
-    }
 
+        public Message build() {
+            return message;
+        }
+    }
 }

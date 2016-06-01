@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
@@ -28,25 +29,28 @@ public class JsonMessageBatch implements MessageBatch {
     private final String id;
     private final ByteBuffer byteBuffer;
     private final List<MessageMetadata> metadata = new ArrayList<>();
+    private final List<Header> additionalHeaders;
 
     private int elements = 0;
     private long batchStart;
     private boolean closed = false;
     private int retryCounter = 0;
 
-    public JsonMessageBatch(String id, ByteBuffer buffer, int size, int batchTime, Clock clock) {
+    public JsonMessageBatch(String id, ByteBuffer buffer, int size, int batchTime, Clock clock, List<Header> additionalHeaders) {
         this.id = id;
         this.clock = clock;
         this.maxBatchTime = batchTime;
         this.batchSize = size;
         this.byteBuffer = buffer;
+        this.additionalHeaders = additionalHeaders;
     }
 
     public JsonMessageBatch(String id, ByteBuffer buffer, Subscription subscription, Clock clock) {
         this(id, buffer,
                 subscription.getBatchSubscriptionPolicy().getBatchSize(),
                 subscription.getBatchSubscriptionPolicy().getBatchTime(),
-                clock);
+                clock,
+                subscription.getHeaders());
     }
 
     @Override
@@ -115,6 +119,11 @@ public class JsonMessageBatch implements MessageBatch {
     @Override
     public List<MessageMetadata> getMessagesMetadata() {
         return Collections.unmodifiableList(metadata);
+    }
+
+    @Override
+    public List<Header> getAdditionalHeaders() {
+        return Collections.unmodifiableList(additionalHeaders);
     }
 
     @Override

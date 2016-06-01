@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.net.URI;
+import java.util.List;
 
 public class ResolvableEndpointAddress {
 
@@ -18,6 +19,10 @@ public class ResolvableEndpointAddress {
 
     public URI resolveFor(Message message) throws EndpointAddressResolutionException {
         return resolver.resolve(address, message);
+    }
+
+    public List<URI> resolveAllFor(Message message) throws EndpointAddressResolutionException {
+        return resolver.resolveAll(address, message);
     }
 
     public String toString() {

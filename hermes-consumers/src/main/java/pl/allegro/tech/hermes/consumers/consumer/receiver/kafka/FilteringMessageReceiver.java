@@ -57,5 +57,6 @@ public class FilteringMessageReceiver implements MessageReceiver {
             this.filterChain = filterChainFactory.create(newSubscription);
         }
         this.subscription = newSubscription;
+        this.receiver.update(newSubscription);
     }
 }
