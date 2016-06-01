@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
@@ -35,7 +36,7 @@ public interface MessageBatch {
 
     List<MessageMetadata> getMessagesMetadata();
 
-    Map<String, String> getAdditionalHeaders();
+    List<Header> getAdditionalHeaders();
 
     long getLifetime();
 

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
@@ -12,9 +13,7 @@ import java.nio.ByteBuffer;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -30,14 +29,14 @@ public class JsonMessageBatch implements MessageBatch {
     private final String id;
     private final ByteBuffer byteBuffer;
     private final List<MessageMetadata> metadata = new ArrayList<>();
-    private final Map<String, String> additionalHeaders;
+    private final List<Header> additionalHeaders;
 
     private int elements = 0;
     private long batchStart;
     private boolean closed = false;
     private int retryCounter = 0;
 
-    public JsonMessageBatch(String id, ByteBuffer buffer, int size, int batchTime, Clock clock, Map<String, String> additionalHeaders) {
+    public JsonMessageBatch(String id, ByteBuffer buffer, int size, int batchTime, Clock clock, List<Header> additionalHeaders) {
         this.id = id;
         this.clock = clock;
         this.maxBatchTime = batchTime;
@@ -123,8 +122,8 @@ public class JsonMessageBatch implements MessageBatch {
     }
 
     @Override
-    public Map<String, String> getAdditionalHeaders() {
-        return Collections.unmodifiableMap(additionalHeaders);
+    public List<Header> getAdditionalHeaders() {
+        return Collections.unmodifiableList(additionalHeaders);
     }
 
     @Override
