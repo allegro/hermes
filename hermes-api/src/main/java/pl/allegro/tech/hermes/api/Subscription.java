@@ -62,6 +62,8 @@ public class Subscription {
     @NotNull
     private SubscriptionMode mode = SubscriptionMode.ANYCAST;
 
+    private final SubscriptionName subscriptionName;
+
     private List<MessageFilterSpecification> filters = new ArrayList<>();
 
     public List<MessageFilterSpecification> getFilters() {
@@ -101,6 +103,8 @@ public class Subscription {
         this.batchSubscriptionPolicy = this.deliveryType == DeliveryType.BATCH ? (BatchSubscriptionPolicy) subscriptionPolicy : null;
         this.serialSubscriptionPolicy = this.deliveryType == DeliveryType.SERIAL ? (SubscriptionPolicy) subscriptionPolicy : null;
         this.mode = mode;
+
+        this.subscriptionName = new SubscriptionName(name, topicName);
     }
 
     public static Subscription createSerialSubscription(TopicName topicName,
@@ -206,7 +210,7 @@ public class Subscription {
     }
 
     public SubscriptionName toSubscriptionName() {
-        return new SubscriptionName(name, topicName);
+        return subscriptionName;
     }
 
     @JsonIgnore

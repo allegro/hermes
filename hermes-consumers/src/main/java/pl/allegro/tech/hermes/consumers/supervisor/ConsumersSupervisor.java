@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 public interface ConsumersSupervisor {
+
     void assignConsumerForSubscription(Subscription subscription);
 
     void deleteConsumerForSubscriptionName(SubscriptionName subscription);

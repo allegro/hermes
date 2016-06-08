@@ -33,10 +33,6 @@ public class PartitionOffset {
         return offset;
     }
 
-    public PartitionOffset withIncrementedOffset() {
-        return new PartitionOffset(topic, offset + 1, partition);
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

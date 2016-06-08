@@ -70,7 +70,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumerConnector.createMessageStreams(topicCountMap);
 
         Map<KafkaTopic, ConsumerIterator<byte[],byte[]>> iterators = topics.stream()
-                .collect(Collectors.toMap(Function.<KafkaTopic>identity(), (kafkaTopic) -> iterator(consumerMap.get(kafkaTopic.name().asString()))));
+                .collect(Collectors.toMap(Function.identity(), (kafkaTopic) -> iterator(consumerMap.get(kafkaTopic.name().asString()))));
 
         readQueue = new ArrayBlockingQueue<>(iterators.size());
         pool = Executors.newFixedThreadPool(iterators.size());
@@ -91,6 +91,8 @@ public class KafkaMessageReceiver implements MessageReceiver {
 
     private Collection<KafkaTopic> getKafkaTopics(Topic topic, KafkaNamesMapper kafkaNamesMapper) {
         KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
+
+        System.err.println("AAAAAAAA Reading from " + kafkaTopics.getPrimary() + " and " + kafkaTopics.getSecondary() + " topics; migratedFromJson: " + topic.wasMigratedFromJsonType());
 
         ImmutableList.Builder<KafkaTopic> topicsBuilder = new ImmutableList.Builder<KafkaTopic>().add(kafkaTopics.getPrimary());
         kafkaTopics.getSecondary().ifPresent(topicsBuilder::add);

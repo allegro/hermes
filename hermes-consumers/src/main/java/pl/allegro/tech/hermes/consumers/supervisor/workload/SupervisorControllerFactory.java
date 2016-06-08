@@ -13,9 +13,7 @@ import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.LegacyConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.UnsupportedConsumerWorkloadAlgorithm;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.mirror.LegacyMirroringSupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.mirror.MirroringSupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
@@ -33,7 +31,6 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE;
-import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.LEGACY_MIRROR;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.MIRROR;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.SELECTIVE;
 
@@ -51,12 +48,11 @@ public class SupervisorControllerFactory implements Factory<SupervisorController
                                        ConfigFactory configs) {
         this.configs = configs;
         this.availableImplementations = ImmutableMap.of(
-                LEGACY_MIRROR, () -> new LegacyMirroringSupervisorController((LegacyConsumersSupervisor) supervisor, subscriptionsCache, adminCache, configs),
                 MIRROR, () -> new MirroringSupervisorController(supervisor, subscriptionsCache, workTracker, adminCache, configs),
                 SELECTIVE, () -> new SelectiveSupervisorController(supervisor, subscriptionsCache, workTracker,
-                                                                  createConsumersRegistry(configs, curator), adminCache,
-                                                                  getAssignmentExecutor(configs),
-                                                                  configs, metrics));
+                        createConsumersRegistry(configs, curator), adminCache,
+                        getAssignmentExecutor(configs),
+                        configs, metrics));
     }
 
     private ExecutorService getAssignmentExecutor(ConfigFactory configs) {

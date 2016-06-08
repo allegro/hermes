@@ -1,5 +1,6 @@
-package pl.allegro.tech.hermes.consumers.supervisor.background;
+package pl.allegro.tech.hermes.consumers.supervisor.process;
 
+import org.jctools.queues.SpscArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -7,15 +8,14 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
 import java.time.Clock;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.Objects;
 
 public class ConsumerProcess implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerProcess.class);
 
-    private final ArrayBlockingQueue<Signal> signals = new ArrayBlockingQueue<>(100);
+    // TODO: should this be unbounded linked queue for memory efficiency?
+    private final SpscArrayQueue<Signal> signals = new SpscArrayQueue<>(100);
 
     private final Clock clock;
 
@@ -39,6 +39,7 @@ public class ConsumerProcess implements Runnable {
         this.consumer = consumer;
         this.retransmitter = retransmitter;
         this.clock = clock;
+        this.healtcheckRefreshTime = clock.millis();
     }
 
     @Override
@@ -68,16 +69,7 @@ public class ConsumerProcess implements Runnable {
 
     private void processSignals() {
         this.healtcheckRefreshTime = clock.millis();
-        int signalsCount = signals.size();
-
-        if (signalsCount > 0) {
-            List<Signal> signalsSnapshot = new ArrayList<>(signalsCount);
-            signals.drainTo(signalsSnapshot);
-
-            for (Signal signal : signalsSnapshot) {
-                process(signal);
-            }
-        }
+        signals.drain(this::process);
     }
 
     private void process(Signal signal) {
@@ -101,7 +93,6 @@ public class ConsumerProcess implements Runnable {
         long startTime = clock.millis();
         logger.info("Starting consumer for subscription {}", subscriptionName);
 
-        this.running = true;
         consumer.initialize();
 
         logger.info("Started consumer for subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
@@ -111,7 +102,6 @@ public class ConsumerProcess implements Runnable {
         long startTime = clock.millis();
         logger.info("Stopping consumer for subscription {}", subscriptionName);
 
-        running = false;
         consumer.tearDown();
 
         logger.info("Stopped consumer for subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
@@ -136,6 +126,25 @@ public class ConsumerProcess implements Runnable {
 
     @Override
     public String toString() {
-        return subscriptionName.toString();
+        return "ConsumerProcess{" +
+                "subscriptionName=" + subscriptionName +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ConsumerProcess that = (ConsumerProcess) o;
+        return Objects.equals(subscriptionName, that.subscriptionName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(subscriptionName);
+    }
+
+    public SubscriptionName getSubscriptionName() {
+        return subscriptionName;
     }
 }

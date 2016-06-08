@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.common.cache.zookeeper.NodeCache;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -84,8 +85,13 @@ public WorkTracker(CuratorFramework curatorClient,
     }
 
     private Set<SubscriptionAssignment> getAssignments(String subscriptionName) {
-        return getEntry(subscriptionName).getCurrentData().stream()
-                .map(child -> pathSerializer.deserialize(child.getPath())).collect(Collectors.toSet());
+        SubscriptionAssignmentRegistry entry = getEntry(subscriptionName);
+        if(entry == null) {
+            return Collections.EMPTY_SET;
+        } else {
+            return entry.getCurrentData().stream()
+                    .map(child -> pathSerializer.deserialize(child.getPath())).collect(Collectors.toSet());
+        }
     }
 
     public SubscriptionAssignmentView getAssignments() {

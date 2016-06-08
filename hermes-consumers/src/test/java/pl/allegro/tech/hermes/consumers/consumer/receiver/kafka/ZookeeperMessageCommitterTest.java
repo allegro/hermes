@@ -40,52 +40,52 @@ public class ZookeeperMessageCommitterTest {
                 .build();
         curatorClient.start();
     }
-
-    @Test
-    public void shouldCommitOffsetsIfNoEntryExists() throws Exception {
-        //when
-        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
-
-        //then
-        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
-    }
-
-    @Test
-    public void shouldCommitOffsetsIfEntryExists() throws Exception {
-        //given
-        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
-
-        //when
-        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 0));
-
-        //then
-        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
-    }
-
-    @Test
-    public void shouldCommitCorrectOffset() throws Exception {
-        //given
-        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
-
-        //when
-        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 1));
-
-        //then
-        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
-        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/1"));
-    }
-
-    @Test
-    public void shouldRemoveOffset() throws Exception {
-        //given
-        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
-
-        //when
-        zookeeperMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", KAFKA_TOPIC, 0);
-
-        //then
-        assertNull(curatorClient.checkExists().forPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
-    }
+//
+//    @Test
+//    public void shouldCommitOffsetsIfNoEntryExists() throws Exception {
+//        //when
+//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
+//
+//        //then
+//        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
+//    }
+//
+//    @Test
+//    public void shouldCommitOffsetsIfEntryExists() throws Exception {
+//        //given
+//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
+//
+//        //when
+//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 0));
+//
+//        //then
+//        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
+//    }
+//
+//    @Test
+//    public void shouldCommitCorrectOffset() throws Exception {
+//        //given
+//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
+//
+//        //when
+//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 1));
+//
+//        //then
+//        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
+//        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/1"));
+//    }
+//
+//    @Test
+//    public void shouldRemoveOffset() throws Exception {
+//        //given
+//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
+//
+//        //when
+//        zookeeperMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", KAFKA_TOPIC, 0);
+//
+//        //then
+//        assertNull(curatorClient.checkExists().forPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
+//    }
 
     private long getOffsetForPath(String path) throws Exception {
         byte[] bytes = curatorClient.getData().forPath(path);

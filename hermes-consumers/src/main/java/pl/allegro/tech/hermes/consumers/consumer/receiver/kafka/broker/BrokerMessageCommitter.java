@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 
@@ -19,8 +20,8 @@ public class BrokerMessageCommitter implements MessageCommitter {
     }
 
     @Override
-    public void commitOffset(SubscriptionName subscription, PartitionOffset partitionOffset) throws Exception {
-        offsetsRepository.save(subscription, partitionOffset.withIncrementedOffset());
+    public void commitOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) throws Exception {
+        offsetsRepository.commit(subscriptionPartitionOffset);
     }
 
     @Override

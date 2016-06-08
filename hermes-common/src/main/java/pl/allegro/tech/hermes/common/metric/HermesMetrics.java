@@ -39,58 +39,15 @@ public class HermesMetrics {
 
     public static final String REPLACEMENT_CHAR = "_";
 
-    private final ConfigFactory configFactory;
     private final MetricRegistry metricRegistry;
-    private final CounterStorage counterStorage;
     private final PathsCompiler pathCompiler;
-    private final HostnameResolver hostnameResolver;
 
     @Inject
     public HermesMetrics(
-            ConfigFactory configFactory,
             MetricRegistry metricRegistry,
-            CounterStorage counterStorage,
-            PathsCompiler pathCompiler,
-            HostnameResolver hostnameResolver,
-            @Named("moduleName") String moduleName) throws Exception {
-
-        this.configFactory = configFactory;
+            PathsCompiler pathCompiler) {
         this.metricRegistry = metricRegistry;
-        this.counterStorage = counterStorage;
         this.pathCompiler = pathCompiler;
-        this.hostnameResolver = hostnameResolver;
-
-        prepareReporters(moduleName);
-    }
-
-    private void prepareReporters(String moduleName) throws Exception {
-        if (configFactory.getBooleanProperty(Configs.METRICS_GRAPHITE_REPORTER)) {
-            String prefix = Joiner.on(".").join(
-                    configFactory.getStringProperty(Configs.GRAPHITE_PREFIX),
-                    moduleName,
-                    hostnameResolver.resolve().replaceAll("\\.", REPLACEMENT_CHAR));
-
-            GraphiteReporter
-                    .forRegistry(metricRegistry)
-                    .prefixedWith(prefix)
-                    .build(new Graphite(new InetSocketAddress(
-                            configFactory.getStringProperty(Configs.GRAPHITE_HOST),
-                            configFactory.getIntProperty(Configs.GRAPHITE_PORT)
-                    )))
-                    .start(configFactory.getIntProperty(Configs.REPORT_PERIOD), TimeUnit.SECONDS);
-        }
-        if (configFactory.getBooleanProperty(Configs.METRICS_CONSOLE_REPORTER)) {
-            ConsoleReporter.forRegistry(metricRegistry).build().start(
-                    configFactory.getIntProperty(Configs.REPORT_PERIOD), TimeUnit.SECONDS
-            );
-        }
-
-        if (configFactory.getBooleanProperty(Configs.METRICS_ZOOKEEPER_REPORTER)) {
-            new ZookeeperCounterReporter(metricRegistry, counterStorage, configFactory).start(
-                    configFactory.getIntProperty(Configs.REPORT_PERIOD),
-                    TimeUnit.SECONDS
-            );
-        }
     }
 
     public static String escapeDots(String value) {
@@ -213,11 +170,6 @@ public class HermesMetrics {
 
     private Counter getInflightCounter(Subscription subscription) {
         return counter(Counters.INFLIGHT, subscription.getTopicName(), subscription.getName());
-    }
-
-    public int countActiveConsumers(Subscription subscription) {
-        // This is an ad-hoc implementation, utilizing exising inflight nodes.
-        return counterStorage.countInflightNodes(subscription.getTopicName(), subscription.getName());
     }
 
     public void removeMetrics(final SubscriptionName subscription) {

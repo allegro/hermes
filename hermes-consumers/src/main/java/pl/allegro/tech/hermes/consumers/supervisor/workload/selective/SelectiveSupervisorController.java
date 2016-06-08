@@ -10,19 +10,13 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.LegacyConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
+import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class SelectiveSupervisorController implements SupervisorController {
     private ConsumersSupervisor supervisor;
@@ -77,8 +71,10 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void onSubscriptionChanged(Subscription subscription) {
-        logger.info("Updating subscription {}", subscription.getId());
-        supervisor.updateSubscription(subscription);
+        if (workTracker.isAssignedTo(subscription.toSubscriptionName(), getId())) {
+            logger.info("Updating subscription {}", subscription.getId());
+            supervisor.updateSubscription(subscription);
+        }
     }
 
     @Override

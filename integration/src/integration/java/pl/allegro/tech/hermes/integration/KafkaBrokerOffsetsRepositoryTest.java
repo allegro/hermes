@@ -13,6 +13,8 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BlockingChannelFactory;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
@@ -23,6 +25,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition.subscriptionPartition;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
@@ -63,40 +67,52 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldCommitOffset() throws Exception {
+    public void shouldSaveExactOffset() throws Exception {
         //given
         PartitionOffset partitionOffset = new PartitionOffset(kafkaTopicName, 10, 0);
 
         //when
-        offsetStorage.save(subscriptionName, partitionOffset);
+        offsetStorage.save(subscriptionPartitionOffset(partitionOffset, subscriptionName));
 
         //then
-        assertThat(offsetStorage.find(subscriptionName, kafkaTopicName, partitionOffset.getPartition())).isEqualTo(partitionOffset.getOffset());
+        assertThat(offsetStorage.find(subscriptionPartition(kafkaTopicName.asString(), subscriptionName.toString(), 0))).isEqualTo(10);
     }
 
     @Test
-    public void shouldNotCommitOffsetInTheFutureWhenSavingOffsetInThePast() throws Exception {
+    public void shouldIncrementOffsetByOneWhenCommittingOffset() throws Exception {
         //given
-        PartitionOffset oldOffset = new PartitionOffset(kafkaTopicName, 10, 0);
-        offsetStorage.save(subscriptionName, oldOffset);
+        PartitionOffset partitionOffset = new PartitionOffset(kafkaTopicName, 10, 0);
 
         //when
-        offsetStorage.saveIfOffsetInThePast(subscriptionName, new PartitionOffset(kafkaTopicName, 15, oldOffset.getPartition()));
+        offsetStorage.commit(subscriptionPartitionOffset(partitionOffset, subscriptionName));
 
         //then
-        assertThat(offsetStorage.find(subscriptionName, kafkaTopicName, oldOffset.getPartition())).isEqualTo(oldOffset.getOffset());
+        assertThat(offsetStorage.find(subscriptionPartition(kafkaTopicName.asString(), subscriptionName.toString(), 0))).isEqualTo(11);
+    }
+
+    @Test
+    public void shouldNotSaveOffsetInTheFutureWhenSavingOffsetInThePast() throws Exception {
+        //given
+        PartitionOffset oldOffset = new PartitionOffset(kafkaTopicName, 10, 0);
+        offsetStorage.save(subscriptionPartitionOffset(oldOffset, subscriptionName));
+
+        //when
+        offsetStorage.saveIfOffsetInThePast(subscriptionPartitionOffset(kafkaTopicName.asString(), subscriptionName.toString(), 0, 15));
+
+        //then
+        assertThat(offsetStorage.find(subscriptionPartition(kafkaTopicName.asString(), subscriptionName.toString(), 0))).isEqualTo(10);
     }
 
     @Test
     public void shouldSetOffsetEvenIfPartitionWasNotCommittedPreviously() throws Exception {
         //when
-        offsetStorage.save(subscriptionName, new PartitionOffset(kafkaTopicName, -1, 0));
+        offsetStorage.save(subscriptionPartitionOffset(kafkaTopicName.asString(), subscriptionName.toString(), 0, -1));
 
         //when
-        offsetStorage.saveIfOffsetInThePast(subscriptionName, new PartitionOffset(kafkaTopicName, 0, 0));
+        offsetStorage.saveIfOffsetInThePast(subscriptionPartitionOffset(kafkaTopicName.asString(), subscriptionName.toString(), 0, 0));
 
         //then
-        assertThat(offsetStorage.find(subscriptionName, kafkaTopicName, 0)).isEqualTo(0);
+        assertThat(offsetStorage.find(subscriptionPartition(kafkaTopicName.asString(), subscriptionName.toString(), 0))).isEqualTo(0);
     }
 
     @Test
@@ -108,14 +124,14 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
 
         // when
         try {
-            offsetStorage.save(subscriptionName, partitionOffset);
+            offsetStorage.save(subscriptionPartitionOffset(partitionOffset, subscriptionName));
         } catch (Exception e) {}
 
         // and
-        offsetStorage.save(subscriptionName, partitionOffset);
+        offsetStorage.save(subscriptionPartitionOffset(partitionOffset, subscriptionName));
 
         // then
-        assertThat(offsetStorage.find(subscriptionName, kafkaTopicName, partitionOffset.getPartition())).isEqualTo(partitionOffset.getOffset());
+        assertThat(offsetStorage.find(subscriptionPartition(kafkaTopicName.asString(), subscriptionName.toString(), 0))).isEqualTo(partitionOffset.getOffset());
     }
 
     private static class UnreliableBlockingChannelFactory extends BlockingChannelFactory {

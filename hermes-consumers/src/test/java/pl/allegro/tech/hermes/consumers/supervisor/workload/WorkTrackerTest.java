@@ -23,12 +23,13 @@ import static org.mockito.Mockito.mock;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class WorkTrackerTest extends ZookeeperBaseTest {
-    static String basePath = "/hermes/consumers/runtime";
-    static String supervisorId = "c1";
-    static ExecutorService executorService = Executors.newSingleThreadExecutor();
-    static SubscriptionRepository subscriptionRepository = mock(SubscriptionRepository.class);
 
-    WorkTracker workTracker = new WorkTracker(zookeeperClient, new ObjectMapper(), basePath, supervisorId,
+    private final String basePath = "/hermes/consumers/runtime";
+    private final String supervisorId = "c1";
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final SubscriptionRepository subscriptionRepository = mock(SubscriptionRepository.class);
+
+    private final  WorkTracker workTracker = new WorkTracker(zookeeperClient, new ObjectMapper(), basePath, supervisorId,
             executorService, subscriptionRepository);
 
     @Before

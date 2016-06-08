@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
+import pl.allegro.tech.hermes.consumers.consumer.ActiveConsumerCounter;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.batch.ByteBufferMessageBatchFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
@@ -19,6 +20,7 @@ import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilters;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
+import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BlockingChannelFactory;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
@@ -54,8 +56,8 @@ import pl.allegro.tech.hermes.consumers.subscription.cache.zookeeper.ZookeeperSu
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisorFactory;
-import pl.allegro.tech.hermes.consumers.supervisor.LegacyConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.ProcessConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorControllerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
@@ -87,7 +89,7 @@ public class ConsumersBinder extends AbstractBinder {
 
         bind("consumer").named("moduleName").to(String.class);
 
-        bindFactory(ConsumersSupervisorFactory.class).in(Singleton.class).to(ConsumersSupervisor.class);
+        bind(ProcessConsumersSupervisor.class).in(Singleton.class).to(ConsumersSupervisor.class);
         bindSingleton(MessageSenderFactory.class);
         bindSingleton(HttpAuthorizationProviderFactory.class);
         bindSingleton(ConsumerFactory.class);
@@ -100,6 +102,9 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(NoOperationMessageConverter.class);
         bindSingleton(AvroToJsonMessageConverter.class);
         bindSingleton(MessageConverterResolver.class);
+        bindSingleton(BetterOffsetQueue.class);
+        bindSingleton(ActiveConsumerCounter.class);
+        bindSingleton(Retransmitter.class);
         bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {});
         bind(DefaultHttpMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Request>>() {});
 

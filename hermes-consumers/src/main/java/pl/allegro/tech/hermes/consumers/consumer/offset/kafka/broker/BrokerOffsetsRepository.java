@@ -14,14 +14,16 @@ import kafka.javaapi.OffsetCommitResponse;
 import kafka.javaapi.OffsetFetchRequest;
 import kafka.javaapi.OffsetFetchResponse;
 import kafka.network.BlockingChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.CannotCommitOffsetToBrokerException;
 
 import javax.inject.Inject;
@@ -35,6 +37,13 @@ import java.util.concurrent.TimeUnit;
 
 public class BrokerOffsetsRepository {
 
+    private static final Logger logger = LoggerFactory.getLogger(BrokerOffsetsRepository.class);
+
+    /**
+     * We need to increment offset by 1, because offset is inclusive for reading, meaning Kafka Consumer will pick up
+     * reading from offset next time it starts. Without this increment, we would send committed message twice.
+     */
+    private static final int OFFSET_INCREMENT = 1;
     private static final String EMPTY_METADATA = "";
     private static final int CORRELATION_ID = 0;
     private static final short VERSION_ID = 1; // version 1 and above commit to Kafka, version 0 commits to ZooKeeper
@@ -48,7 +57,7 @@ public class BrokerOffsetsRepository {
 
     @Inject
     public BrokerOffsetsRepository(BlockingChannelFactory blockingChannelFactory, Clock clock, HostnameResolver hostnameResolver,
-                               ConfigFactory configFactory, KafkaNamesMapper kafkaNamesMapper) {
+                                   ConfigFactory configFactory, KafkaNamesMapper kafkaNamesMapper) {
         this(blockingChannelFactory, clock, hostnameResolver, kafkaNamesMapper,
                 configFactory.getIntProperty(Configs.KAFKA_CONSUMER_OFFSET_COMMITTER_BROKER_CONNECTION_EXPIRATION)
         );
@@ -73,13 +82,34 @@ public class BrokerOffsetsRepository {
                 });
     }
 
-    public void save(SubscriptionName subscription, PartitionOffset partitionOffset) throws ExecutionException {
-        OffsetCommitRequest commitRequest = createCommitRequest(subscription, partitionOffset);
+    /**
+     * Commit makes sure to save a proper commit "as a user would have wanted", taking into account
+     * Kafka protocol. This means that saved offset needs to be incremented by one.
+     *
+     * @param subscriptionPartitionOffset information about subscription, partition & offset
+     * @throws ExecutionException in case Kafka goes bad
+     */
+    public void commit(SubscriptionPartitionOffset subscriptionPartitionOffset) throws ExecutionException {
+        save(new SubscriptionPartitionOffset(
+                subscriptionPartitionOffset.getSubscriptionPartition(),
+                subscriptionPartitionOffset.getOffset() + OFFSET_INCREMENT
+        ));
+    }
+
+    /**
+     * Saves exact passed offset, read commit method comments first.
+     *
+     * @param subscriptionPartitionOffset information about subscription, partition & offset
+     * @throws ExecutionException in case Kafka goes bad
+     */
+    public void save(SubscriptionPartitionOffset subscriptionPartitionOffset) throws ExecutionException {
+        SubscriptionName subscriptionName = subscriptionPartitionOffset.getSubscriptionName();
+        OffsetCommitRequest commitRequest = createCommitRequest(subscriptionPartitionOffset);
         OffsetCommitResponse commitResponse;
         try {
-            commitResponse = commitOffset(subscription, commitRequest);
+            commitResponse = commitOffset(subscriptionName, commitRequest);
         } catch (Exception e) {
-            channels.invalidate(subscription);
+            channels.invalidate(subscriptionName);
             throw e;
         }
         if (commitResponse.hasError()) {
@@ -88,18 +118,32 @@ public class BrokerOffsetsRepository {
                     .map(error -> (Short) error)
                     .filter(error -> error == ErrorMapping.NotCoordinatorForConsumerCode() || error == ErrorMapping.ConsumerCoordinatorNotAvailableCode())
                     .findAny()
-                    .ifPresent(error -> channels.invalidate(subscription));
+                    .ifPresent(error -> channels.invalidate(subscriptionName));
 
             throw new CannotCommitOffsetToBrokerException(new BrokerOffsetCommitErrors(commitResponse.errors()));
         }
     }
 
-    public void saveIfOffsetInThePast(SubscriptionName subscription, PartitionOffset partitionOffset) throws ExecutionException {
-        long currentOffset = find(subscription, partitionOffset.getTopic(), partitionOffset.getPartition());
+    private OffsetCommitRequest createCommitRequest(SubscriptionPartitionOffset subscriptionPartitionOffset) {
+        Map<TopicAndPartition, OffsetAndMetadata> offset = createOffset(subscriptionPartitionOffset);
 
-        if (currentOffset == -1 || currentOffset > partitionOffset.getOffset()) {
-            save(subscription, partitionOffset);
-        }
+        return new OffsetCommitRequest(
+                kafkaNamesMapper.toConsumerGroupId(subscriptionPartitionOffset.getSubscriptionName()).asString(),
+                offset,
+                CORRELATION_ID,
+                clientId,
+                VERSION_ID);
+    }
+
+    private Map<TopicAndPartition, OffsetAndMetadata> createOffset(SubscriptionPartitionOffset partitionOffset) {
+        Map<TopicAndPartition, OffsetAndMetadata> offset = new LinkedHashMap<>();
+        TopicAndPartition topicAndPartition = new TopicAndPartition(partitionOffset.getKafkaTopicName().asString(), partitionOffset.getPartition());
+        offset.put(topicAndPartition, new OffsetAndMetadata(
+                partitionOffset.getOffset(),
+                EMPTY_METADATA,
+                clock.millis())
+        );
+        return offset;
     }
 
     private OffsetCommitResponse commitOffset(SubscriptionName subscription, OffsetCommitRequest commitRequest) throws ExecutionException {
@@ -108,31 +152,28 @@ public class BrokerOffsetsRepository {
         return OffsetCommitResponse.readFrom(channel.receive().buffer());
     }
 
-    private OffsetCommitRequest createCommitRequest(SubscriptionName subscription, PartitionOffset partitionOffset) {
-        Map<TopicAndPartition, OffsetAndMetadata> offset = createOffset(partitionOffset);
+    public void saveIfOffsetInThePast(SubscriptionPartitionOffset subscriptionPartitionOffset) throws ExecutionException {
+        long currentOffset = find(subscriptionPartitionOffset.getSubscriptionPartition());
 
-        return new OffsetCommitRequest(
-                kafkaNamesMapper.toConsumerGroupId(subscription).asString(),
-                offset,
-                CORRELATION_ID,
-                clientId,
-                VERSION_ID);
+        if (currentOffset == -1 || currentOffset > subscriptionPartitionOffset.getOffset()) {
+            save(subscriptionPartitionOffset);
+        } else {
+            logger.warn("Tried to move offset for subscription {} and partition {} to {} which is in the future. Current offset: {}",
+                    subscriptionPartitionOffset.getSubscriptionName(),
+                    subscriptionPartitionOffset.getPartition(),
+                    subscriptionPartitionOffset.getOffset(),
+                    currentOffset);
+        }
     }
 
-    private Map<TopicAndPartition, OffsetAndMetadata> createOffset(PartitionOffset partitionOffset) {
-        Map<TopicAndPartition, OffsetAndMetadata> offset = new LinkedHashMap<>();
-        TopicAndPartition topicAndPartition = new TopicAndPartition(partitionOffset.getTopic().asString(), partitionOffset.getPartition());
-        offset.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset(), EMPTY_METADATA, clock.millis()));
-        return offset;
-    }
-
-
-    public long find(SubscriptionName subscription, KafkaTopicName kafkaTopicName, int partitionId) {
-        ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription);
+    public long find(SubscriptionPartition subscriptionPartition) {
+        ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscriptionPartition.getSubscriptionName());
         BlockingChannel channel = blockingChannelFactory.create(groupId);
         channel.connect();
 
-        TopicAndPartition topicAndPartition = new TopicAndPartition(kafkaTopicName.asString(), partitionId);
+        TopicAndPartition topicAndPartition = new TopicAndPartition(
+                subscriptionPartition.getKafkaTopicName().asString(), subscriptionPartition.getPartition()
+        );
         List<TopicAndPartition> partitions = Lists.newArrayList(topicAndPartition);
 
         OffsetFetchRequest fetchRequest = new OffsetFetchRequest(

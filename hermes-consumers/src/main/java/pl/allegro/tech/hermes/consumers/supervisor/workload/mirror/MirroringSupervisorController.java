@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.LegacyConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 
@@ -17,6 +16,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALG
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 
 public class MirroringSupervisorController implements SupervisorController {
+
     private ConsumersSupervisor supervisor;
     private SubscriptionsCache subscriptionsCache;
     private WorkTracker workTracker;

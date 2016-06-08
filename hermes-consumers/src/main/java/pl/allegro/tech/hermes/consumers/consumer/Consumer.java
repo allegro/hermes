@@ -7,15 +7,11 @@ import java.util.List;
 
 public interface Consumer {
 
-    void consume(Runnable processSignals);
+    void consume(Runnable signalsInterrupt);
 
     void initialize();
 
     void tearDown();
 
-    Subscription getSubscription();
-
     void updateSubscription(Subscription subscription);
-
-    List<PartitionOffset> getOffsetsToCommit();
 }

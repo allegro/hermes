@@ -5,6 +5,8 @@ dependencies {
 
     compile group: 'org.eclipse.jetty', name: 'jetty-client', version: '9.3.6.v20151106'
 
+    compile group: 'org.jctools', name: 'jctools-core', version: '1.2'
+
     compile group: 'javax.jms', name: 'javax.jms-api', version: '2.0'
     compile group: 'joda-time', name: 'joda-time', version: '2.5'
 

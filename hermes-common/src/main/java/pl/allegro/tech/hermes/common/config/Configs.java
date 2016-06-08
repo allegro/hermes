@@ -137,7 +137,7 @@ public enum Configs {
     CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
 
     CONSUMER_SUPERVISOR_TYPE("consumer.supervisor.type", "background"),
-    CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 10),
+    CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 10_000),
     CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER("consumer.supervisor.background.unhealtyAfter", 60_000),
 
     GRAPHITE_HOST("graphite.host", "localhost"),

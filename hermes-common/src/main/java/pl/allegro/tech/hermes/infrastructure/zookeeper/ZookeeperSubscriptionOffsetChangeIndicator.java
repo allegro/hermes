@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.utils.EnsurePath;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;

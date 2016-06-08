@@ -56,56 +56,56 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         remoteService = new RemoteServiceEndpoint(services().serviceMock());
     }
 
-    @Test(enabled = false)
-    @Unreliable
-    public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
-        // given
-        String subscription = "subscription";
-
-        Topic topic = operations.buildTopic("resetOffsetGroup", "topic");
-        operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
-
-        sendMessagesOnTopic(topic, 4);
-        Thread.sleep(1000); //wait 1s because our date time format has seconds precision
-        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        Thread.sleep(1000);
-        sendMessagesOnTopic(topic, 2);
-        wait.untilConsumerCommitsOffset();
-
-        // when
-        remoteService.expectMessages(simpleMessages(2));
-        Response response = endpoints.subscription().retransmit(topic.getQualifiedName(), subscription, false, dateTime);
-        wait.untilSubscriptionEndsReiteration(topic, subscription);
-
-        // then
-        assertThat(response).hasStatus(Response.Status.OK);
-        remoteService.waitUntilReceived();
-    }
-
-    @Test
-    public void shouldMoveOffsetInDryRunMode() throws InterruptedException {
-        // given
-        String subscription = "subscription";
-
-        Topic topic = operations.buildTopic("resetOffsetGroup", "topicDryRun");
-        operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
-
-        sendMessagesOnTopic(topic, 4);
-        Thread.sleep(1000); //wait 1s because our date time format has seconds precision
-        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        sendMessagesOnTopic(topic, 2);
-        wait.untilConsumerCommitsOffset();
-
-        // when
-        Response response = endpoints.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
-
-        // then
-        assertThat(response).hasStatus(Response.Status.OK);
-        MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
-
-        assertThat(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME).get(0).getOffset()).isEqualTo(2);
-        remoteService.makeSureNoneReceived();
-    }
+//    @Test(enabled = false)
+//    @Unreliable
+//    public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
+//        // given
+//        String subscription = "subscription";
+//
+//        Topic topic = operations.buildTopic("resetOffsetGroup", "topic");
+//        operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
+//
+//        sendMessagesOnTopic(topic, 4);
+//        Thread.sleep(1000); //wait 1s because our date time format has seconds precision
+//        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+//        Thread.sleep(1000);
+//        sendMessagesOnTopic(topic, 2);
+//        wait.untilConsumerCommitsOffset();
+//
+//        // when
+//        remoteService.expectMessages(simpleMessages(2));
+//        Response response = endpoints.subscription().retransmit(topic.getQualifiedName(), subscription, false, dateTime);
+//        wait.untilSubscriptionEndsReiteration(topic, subscription);
+//
+//        // then
+//        assertThat(response).hasStatus(Response.Status.OK);
+//        remoteService.waitUntilReceived();
+//    }
+//
+//    @Test
+//    public void shouldMoveOffsetInDryRunMode() throws InterruptedException {
+//        // given
+//        String subscription = "subscription";
+//
+//        Topic topic = operations.buildTopic("resetOffsetGroup", "topicDryRun");
+//        operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
+//
+//        sendMessagesOnTopic(topic, 4);
+//        Thread.sleep(1000); //wait 1s because our date time format has seconds precision
+//        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+//        sendMessagesOnTopic(topic, 2);
+//        wait.untilConsumerCommitsOffset();
+//
+//        // when
+//        Response response = endpoints.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
+//
+//        // then
+//        assertThat(response).hasStatus(Response.Status.OK);
+//        MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
+//
+//        assertThat(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME).get(0).getOffset()).isEqualTo(2);
+//        remoteService.makeSureNoneReceived();
+//    }
 
     @Test
     public void shouldMoveOffsetInDryRunModeForTopicsMigratedToAvro() throws InterruptedException, IOException {
@@ -129,11 +129,16 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
                 .build();
         operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", patch);
 
+        Thread.sleep(10000);
+
+        System.err.println("WWWWWWW SEND MOAR DATA");
         sendAvroMessageOnTopic(topic, user.asTestMessage());
 
+        System.err.println("WWWWWWW DID WE COMMIT YET?");
         wait.untilConsumerCommitsOffset();
 
         // when
+        System.err.println("WWWWWWW FIRE RETRANSMIT");
         Response response = endpoints.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
 
         // then
@@ -141,14 +146,17 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
         PartitionOffsetsPerKafkaTopic offsets = PartitionOffsetsPerKafkaTopic.from(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME));
 
+        System.err.println("WWWWWWWW JUST ASSERT ME!");
         assertThat(offsets.jsonPartitionOffsets.stream().collect(summingLong(PartitionOffset::getOffset))).isEqualTo(1);
         assertThat(offsets.avroPartitionOffsets.stream().collect(summingLong(PartitionOffset::getOffset))).isEqualTo(0);
+        System.err.println("WWWWWWWW JUST ASSERT DONE!");
     }
 
     private void sendAvroMessageOnTopic(Topic topic, TestMessage message) {
         remoteService.expectMessages(message);
-        publisher.publish(topic.getQualifiedName(), message.withEmptyAvroMetadata().body());
-        remoteService.waitUntilReceived(120);
+        Response response = publisher.publish(topic.getQualifiedName(), message.withEmptyAvroMetadata().body());
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        remoteService.waitUntilReceived(60);
         remoteService.reset();
     }
 

@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
+import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
@@ -21,7 +21,6 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import javax.inject.Inject;
-import java.time.Clock;
 
 public class ConsumerFactory {
 
@@ -32,12 +31,12 @@ public class ConsumerFactory {
     private final ConfigFactory configFactory;
     private final Trackers trackers;
     private final ConsumerMessageSenderFactory consumerMessageSenderFactory;
-    private final Clock clock;
     private final TopicRepository topicRepository;
     private final MessageConverterResolver messageConverterResolver;
     private final MessageBatchFactory batchFactory;
     private final MessageContentWrapper messageContentWrapper;
     private final MessageBatchSenderFactory batchSenderFactory;
+    private final BetterOffsetQueue offsetQueue;
 
     @Inject
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
@@ -47,12 +46,12 @@ public class ConsumerFactory {
                            OutputRateCalculator outputRateCalculator,
                            Trackers trackers,
                            ConsumerMessageSenderFactory consumerMessageSenderFactory,
-                           Clock clock,
                            TopicRepository topicRepository,
                            MessageConverterResolver messageConverterResolver,
                            MessageBatchFactory byteBufferMessageBatchFactory,
                            MessageContentWrapper messageContentWrapper,
-                           MessageBatchSenderFactory batchSenderFactory) {
+                           MessageBatchSenderFactory batchSenderFactory,
+                           BetterOffsetQueue offsetQueue) {
 
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
@@ -61,31 +60,27 @@ public class ConsumerFactory {
         this.outputRateCalculator = outputRateCalculator;
         this.trackers = trackers;
         this.consumerMessageSenderFactory = consumerMessageSenderFactory;
-        this.clock = clock;
         this.topicRepository = topicRepository;
         this.messageConverterResolver = messageConverterResolver;
         this.batchFactory = byteBufferMessageBatchFactory;
         this.messageContentWrapper = messageContentWrapper;
         this.batchSenderFactory = batchSenderFactory;
+        this.offsetQueue = offsetQueue;
     }
 
     Consumer createConsumer(Subscription subscription) {
-        SubscriptionOffsetCommitQueues subscriptionOffsetCommitQueues = new SubscriptionOffsetCommitQueues(
-                subscription, hermesMetrics, clock, configFactory);
-
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
         if (subscription.isBatchSubscription()) {
             return new BatchConsumer(messageReceiverFactory,
                     batchSenderFactory.create(subscription),
                     batchFactory,
-                    subscriptionOffsetCommitQueues,
+                    offsetQueue,
                     messageConverterResolver,
                     messageContentWrapper,
                     hermesMetrics,
                     trackers,
                     subscription,
-                    topic,
-                    clock);
+                    topic);
         } else {
             ConsumerRateLimiter consumerRateLimiter = new ConsumerRateLimiter(subscription, outputRateCalculator, hermesMetrics,
                     consumerRateLimitSupervisor);
@@ -95,13 +90,11 @@ public class ConsumerFactory {
                     hermesMetrics,
                     subscription,
                     consumerRateLimiter,
-                    subscriptionOffsetCommitQueues,
                     consumerMessageSenderFactory,
                     trackers,
                     messageConverterResolver,
                     topic,
-                    clock,
-                    configFactory);
+                    configFactory, offsetQueue);
         }
     }
 }

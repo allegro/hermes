@@ -154,14 +154,14 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldDiscardMessageWhenTTLIsExceeded() {
         // given
-        RuntimeException exception = exception();
         Message message = messageWithTimestamp(System.currentTimeMillis() - 11000);
-        doThrow(exception).when(messageSender).send(message);
+        doReturn(failure()).when(messageSender).send(message);
 
         // when
         sender.sendMessage(message);
 
         // then
+        verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
         verifySemaphoreReleased();
         verifyZeroInteractions(successHandler);
         verifyLatencyTimersCountedTimes(1, 0);
