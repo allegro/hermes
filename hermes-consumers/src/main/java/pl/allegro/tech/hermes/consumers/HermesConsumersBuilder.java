@@ -61,6 +61,11 @@ public final class HermesConsumersBuilder {
         return withShutdownHook(s -> hook.apply());
     }
 
+    public HermesConsumersBuilder withDisabledGlobalShutdownHook() {
+        hooksHandler.disableGlobalShutdownHook();
+        return this;
+    }
+
     public HermesConsumersBuilder withMessageSenderProvider(String protocol, Supplier<ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
         this.messageSenderProviders.add(protocol, (s) -> messageSenderProviderSupplier.get());
         return this;

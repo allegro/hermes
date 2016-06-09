@@ -11,6 +11,7 @@ public class HooksHandler {
 
     private final List<ServiceAwareHook> startupHooks = new ArrayList<>();
     private final List<ServiceAwareHook> shutdownHooks = new ArrayList<>();
+    private boolean disabledGlobalShutdownHook = false;
 
     public void addStartupHook(ServiceAwareHook hook) {
         startupHooks.add(hook);
@@ -21,6 +22,21 @@ public class HooksHandler {
     }
 
     public void shutdown(ServiceLocator serviceLocator) {
+        runShutdownHooks(serviceLocator);
+    }
+
+    public void startup(ServiceLocator serviceLocator) {
+        if (!disabledGlobalShutdownHook) {
+            registerGlobalShutdownHook(serviceLocator);
+        }
+        startupHooks.forEach(c -> c.accept(serviceLocator));
+    }
+
+    public void disableGlobalShutdownHook() {
+        disabledGlobalShutdownHook = true;
+    }
+
+    private void runShutdownHooks(ServiceLocator serviceLocator) {
         try {
             shutdownHooks.forEach(c -> c.accept(serviceLocator));
         } finally {
@@ -28,17 +44,12 @@ public class HooksHandler {
         }
     }
 
-    public void startup(ServiceLocator serviceLocator) {
-        // TODO fix for tests
-        // registerGlobalShutdownHook(serviceLocator);
-        startupHooks.forEach(c -> c.accept(serviceLocator));
-    }
-
     private void registerGlobalShutdownHook(ServiceLocator serviceLocator) {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                shutdown(serviceLocator);
+                setName("GlobalShutdownHook");
+                runShutdownHooks(serviceLocator);
             }
         });
     }

@@ -59,6 +59,7 @@ public class FrontendStarter implements Starter<HermesFrontend> {
                     serviceLocator.getService(PathsCompiler.class)))
             .withKafkaTopicsNamesMapper(serviceLocator ->
                     new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())
+            .withDisabledGlobalShutdownHook()
             .build();
 
         client = new OkHttpClient();

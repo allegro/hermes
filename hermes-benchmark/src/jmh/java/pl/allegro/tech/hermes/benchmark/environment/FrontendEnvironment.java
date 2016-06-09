@@ -46,7 +46,7 @@ public class FrontendEnvironment {
         kafkaStarter = new KafkaStarter("/kafka.properties");
         kafkaStarter.start();
 
-        hermesFrontend = HermesFrontend.frontend().build();
+        hermesFrontend = HermesFrontend.frontend().withDisabledGlobalShutdownHook().build();
         hermesFrontend.start();
 
         GroupRepository groupRepository = hermesFrontend.getService(GroupRepository.class);

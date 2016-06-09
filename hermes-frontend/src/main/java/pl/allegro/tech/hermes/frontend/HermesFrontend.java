@@ -160,6 +160,11 @@ public final class HermesFrontend {
             return withShutdownHook(s -> hook.apply());
         }
 
+        public Builder withDisabledGlobalShutdownHook() {
+            hooksHandler.disableGlobalShutdownHook();
+            return this;
+        }
+
         public Builder withBrokerTimeoutListener(BrokerTimeoutListener brokerTimeoutListener) {
             listeners.addTimeoutListener(brokerTimeoutListener);
             return this;

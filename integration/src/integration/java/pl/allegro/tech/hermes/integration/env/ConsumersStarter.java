@@ -34,12 +34,13 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
                     new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())
             .withBinding(configFactory, ConfigFactory.class)
             .withBinding(new MultiUrlEndpointAddressResolver(), EndpointAddressResolver.class)
-                .withLogRepository(serviceLocator -> new MongoLogRepository(FongoFactory.hermesDB(),
-                        10,
-                        1000,
-                        configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
-                        serviceLocator.getService(MetricRegistry.class),
-                        serviceLocator.getService(PathsCompiler.class)))
+            .withLogRepository(serviceLocator -> new MongoLogRepository(FongoFactory.hermesDB(),
+                    10,
+                    1000,
+                    configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
+                    serviceLocator.getService(MetricRegistry.class),
+                    serviceLocator.getService(PathsCompiler.class)))
+            .withDisabledGlobalShutdownHook()
             .build();
 
         consumers.start();
