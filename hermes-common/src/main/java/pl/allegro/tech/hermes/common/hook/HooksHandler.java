@@ -29,7 +29,8 @@ public class HooksHandler {
     }
 
     public void startup(ServiceLocator serviceLocator) {
-        registerGlobalShutdownHook(serviceLocator);
+        // TODO fix for tests
+        // registerGlobalShutdownHook(serviceLocator);
         startupHooks.forEach(c -> c.accept(serviceLocator));
     }
 

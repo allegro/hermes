@@ -1,0 +1,10 @@
+{
+  "name": "Bob",
+  "favorite_number": 6,
+  "favorite_color": "Blue",
+  "address": {
+    "city": "Warsaw",
+    "street": "Mokotowska",
+    "number": 1
+  }
+}
