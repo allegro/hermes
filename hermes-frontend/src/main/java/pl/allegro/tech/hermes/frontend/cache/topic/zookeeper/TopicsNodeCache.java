@@ -8,6 +8,7 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.cache.zookeeper.NodeCache;
 import pl.allegro.tech.hermes.common.cache.zookeeper.StartableCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicCallback;
 
@@ -16,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
-class TopicsNodeCache extends StartableCache<TopicCallback> implements PathChildrenCacheListener {
+class TopicsNodeCache extends NodeCache<TopicCallback, SubscriptionsNodeCache> implements PathChildrenCacheListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TopicsNodeCache.class);
 
@@ -28,6 +29,12 @@ class TopicsNodeCache extends StartableCache<TopicCallback> implements PathChild
         super(client, path, executorService);
         this.objectMapper = objectMapper;
         getListenable().addListener(this);
+    }
+
+
+    @Override
+    protected StartableCache<SubscriptionsNodeCache> createSubcache(String path) {
+        return null;
     }
 
     @Override

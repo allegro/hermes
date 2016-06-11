@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
+import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchemaRepository;
 import pl.allegro.tech.hermes.infrastructure.schema.AvroCompiledSchemaRepositoryFactory;
@@ -25,6 +26,8 @@ import pl.allegro.tech.hermes.infrastructure.schema.JsonCompiledSchemaRepository
 import pl.allegro.tech.hermes.infrastructure.schema.SchemaSourceProviderFactory;
 import pl.allegro.tech.hermes.infrastructure.schema.SchemaVersionsRepositoryFactory;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClientFactory;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
 
 import javax.inject.Singleton;
 import java.time.Clock;
@@ -70,5 +73,8 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(PathsCompilerFactory.class);
         bindSingletonFactory(KafkaNamesMapperFactory.class);
         bindSingletonFactory(MessagePreviewRepositoryFactory.class);
+
+        bind(ZookeeperInternalNotificationBus.class).to(InternalNotificationsBus.class);
+        bindSingletonFactory(ModelAwareZookeeperNotifyingCacheFactory.class);
     }
 }

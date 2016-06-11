@@ -1,43 +1,48 @@
-package pl.allegro.tech.hermes.common.cache.zookeeper;
+package pl.allegro.tech.hermes.infrastructure.zookeeper.cache;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections4.map.HashedMap;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.di.CuratorType;
-import scala.xml.dtd.impl.Base;
+import pl.allegro.tech.hermes.common.cache.zookeeper.NodeCache;
 
-import javax.inject.Named;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiFunction;
 
-public abstract class NodeCache<O, C extends StartableCache<O>> extends StartableCache<O> implements PathChildrenCacheListener {
+class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCacheListener {
 
-    private static Logger logger = LoggerFactory.getLogger(NodeCache.class);
-
-    protected final CuratorFramework curatorClient;
-    protected final ObjectMapper objectMapper;
-    protected final ExecutorService executorService;
+    private static Logger logger = LoggerFactory.getLogger(HierarchicalCacheLevel.class);
 
     private final ReadWriteLock subcacheLock = new ReentrantReadWriteLock(true);
 
-    private Map<String, C> subcacheMap = new HashedMap<>();
+    private final CacheListeners consumer;
 
-    public NodeCache(@Named(CuratorType.HERMES) CuratorFramework curatorClient, ObjectMapper objectMapper,
-                     String path, ExecutorService executorService) {
-        super(curatorClient, path, executorService);
-        this.curatorClient = curatorClient;
-        this.objectMapper = objectMapper;
-        this.executorService = executorService;
+    private final int currentDepth;
+
+    private final Optional<BiFunction<Integer, String, HierarchicalCacheLevel>> nextLevelFactory;
+
+    private final Map<String, HierarchicalCacheLevel> subcacheMap = new HashMap<>();
+
+    HierarchicalCacheLevel(CuratorFramework curatorClient,
+                           ExecutorService executorService,
+                           String path,
+                           int depth,
+                           CacheListeners eventConsumer,
+                           Optional<BiFunction<Integer, String, HierarchicalCacheLevel>> nextLevelFactory) {
+        super(curatorClient, path, true, false, executorService);
+        this.currentDepth = depth;
+        this.consumer = eventConsumer;
+        this.nextLevelFactory = nextLevelFactory;
         getListenable().addListener(this);
     }
 
@@ -46,9 +51,11 @@ public abstract class NodeCache<O, C extends StartableCache<O>> extends Startabl
         if (event.getData() == null) {
             return;
         }
+
         String path = event.getData().getPath();
         String cacheName = cacheNameFromPath(path);
-        logger.info("Got entry change event for path {}", path);
+        logger.info("Got {} event for path {}", event.getType(), path);
+
         switch (event.getType()) {
             case CHILD_ADDED:
                 addSubcache(path, cacheName);
@@ -59,9 +66,11 @@ public abstract class NodeCache<O, C extends StartableCache<O>> extends Startabl
             default:
                 break;
         }
+
+        consumer.call(event);
     }
 
-    protected C getEntry(String name) {
+    HierarchicalCacheLevel getEntry(String name) {
         Lock readLock = subcacheLock.readLock();
         readLock.lock();
         try {
@@ -71,13 +80,12 @@ public abstract class NodeCache<O, C extends StartableCache<O>> extends Startabl
         }
     }
 
-    public void stop() throws IOException {
-        this.callbacks = null;
+    void stop() throws IOException {
         Lock writeLock = subcacheLock.writeLock();
         writeLock.lock();
         try {
-            for (C subcache : subcacheMap.values()) {
-                subcache.close();
+            for (HierarchicalCacheLevel subcache : subcacheMap.values()) {
+                subcache.stop();
             }
             subcacheMap.clear();
             this.close();
@@ -94,9 +102,7 @@ public abstract class NodeCache<O, C extends StartableCache<O>> extends Startabl
                 logger.info("Possible duplicate of new entry for {}, ignoring", cacheName);
                 return;
             }
-            C subcache = createSubcache(path);
-            subcache.start(callbacks);
-            subcacheMap.put(cacheName, subcache);
+            nextLevelFactory.ifPresent(f -> subcacheMap.put(cacheName, f.apply(currentDepth + 1, path)));
         } finally {
             writeLock.unlock();
         }
@@ -107,7 +113,7 @@ public abstract class NodeCache<O, C extends StartableCache<O>> extends Startabl
         Lock writeLock = subcacheLock.writeLock();
         writeLock.lock();
         try {
-            C subcache = subcacheMap.remove(cacheName);
+            HierarchicalCacheLevel subcache = subcacheMap.remove(cacheName);
             if (subcache == null) {
                 logger.info("Possible duplicate of removed entry for {}, ignoring", cacheName);
                 return;
@@ -118,17 +124,16 @@ public abstract class NodeCache<O, C extends StartableCache<O>> extends Startabl
         }
     }
 
-    protected abstract C createSubcache(String path);
-
     private String cacheNameFromPath(String path) {
         return path.substring(path.lastIndexOf('/') + 1);
     }
 
-    protected Set<String> getSubcacheKeySet() {
+    Set<String> getSubcachePaths() {
         return subcacheMap.keySet();
     }
 
-    protected Set<Map.Entry<String, C>> getSubcacheEntrySet() {
-        return new HashedMap<>(subcacheMap).entrySet();
+    Map<String, HierarchicalCacheLevel> getSubcacheEntrySet() {
+        return new HashMap<>(subcacheMap);
     }
+
 }

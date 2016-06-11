@@ -55,4 +55,5 @@ dependencies {
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testCompile group: 'com.jayway.awaitility', name: 'awaitility-groovy', version: '1.7.0'
 }
