@@ -31,12 +31,12 @@ public class SerialConsumer implements Consumer {
     private final Trackers trackers;
     private final MessageConverterResolver messageConverterResolver;
     private final ConsumerMessageSender sender;
-    private final Topic topic;
     private final BetterOffsetQueue offsetQueue;
-
     private final AdjustableSemaphore inflightSemaphore;
+
     private final int defaultInflight;
 
+    private Topic topic;
     private Subscription subscription;
 
     private MessageReceiver messageReceiver;
@@ -109,8 +109,12 @@ public class SerialConsumer implements Consumer {
     @Override
     public void initialize() {
         logger.info("Consumer: preparing message receiver for subscription {}", subscription.getId());
-        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription);
+        initializeMessageReceiver();
         rateLimiter.initialize();
+    }
+
+    private void initializeMessageReceiver() {
+        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription);
     }
 
     @Override
@@ -128,5 +132,16 @@ public class SerialConsumer implements Consumer {
         sender.updateSubscription(newSubscription);
         messageReceiver.update(newSubscription);
         this.subscription = newSubscription;
+    }
+
+    @Override
+    public void updateTopic(Topic newTopic) {
+        if(this.topic.getContentType() != newTopic.getContentType()) {
+            logger.info("Topic content type changed from {} to {}, reinitializing message recevier", this.topic.getContentType(), newTopic.getContentType());
+            this.topic = newTopic;
+
+            messageReceiver.stop();
+            initializeMessageReceiver();
+        }
     }
 }

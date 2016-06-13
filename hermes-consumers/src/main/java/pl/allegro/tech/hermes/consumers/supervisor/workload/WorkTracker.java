@@ -1,60 +1,38 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.zookeeper.KeeperException;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.cache.zookeeper.NodeCache;
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
-import static org.apache.zookeeper.CreateMode.EPHEMERAL;
-import static org.apache.zookeeper.CreateMode.PERSISTENT;
 
-public class WorkTracker extends NodeCache<SubscriptionAssignmentAware, SubscriptionAssignmentRegistry> {
-    private final SubscriptionRepository subscriptionRepository;
+public class WorkTracker {
+
     private final String consumerNodeId;
-    private final SubscriptionAssignmentPathSerializer pathSerializer;
 
-public WorkTracker(CuratorFramework curatorClient,
-                       ObjectMapper objectMapper,
-                       String path,
-                       String consumerNodeId,
-                       ExecutorService executorService,
-                       SubscriptionRepository subscriptionRepository) {
-        super(curatorClient, objectMapper, path, executorService);
-        this.subscriptionRepository = subscriptionRepository;
+    private final SubscriptionAssignmentRegistry registry;
+
+    public WorkTracker(String consumerNodeId,
+                       SubscriptionAssignmentRegistry registry) {
         this.consumerNodeId = consumerNodeId;
-        this.pathSerializer = new SubscriptionAssignmentPathSerializer(path);
+        this.registry = registry;
     }
 
     public void forceAssignment(Subscription subscription) {
-        askCuratorPolitely(() -> curatorClient.create().creatingParentsIfNeeded().withMode(EPHEMERAL).forPath(pathSerializer.serialize(subscription.toSubscriptionName(), consumerNodeId)));
+        registry.addEphemeralAssignment(new SubscriptionAssignment(
+                consumerNodeId,
+                subscription.toSubscriptionName()
+        ));
     }
 
     public void dropAssignment(Subscription subscription) {
-        askCuratorPolitely(() -> curatorClient.delete().guaranteed().forPath(pathSerializer.serialize(subscription.toSubscriptionName(), consumerNodeId)));
-    }
-
-    private void askCuratorPolitely(CuratorTask task) {
-        try {
-            task.run();
-        } catch (KeeperException.NodeExistsException | KeeperException.NoNodeException ex) {
-            // ignore
-        } catch (Exception ex) {
-            throw new InternalProcessingException(ex);
-        }
+        registry.dropAssignment(new SubscriptionAssignment(
+                consumerNodeId,
+                subscription.toSubscriptionName()
+        ));
     }
 
     public WorkDistributionChanges apply(SubscriptionAssignmentView targetView) {
@@ -63,59 +41,21 @@ public WorkTracker(CuratorFramework curatorClient,
         List<SubscriptionAssignment> assignmentDeletions = currentView.deletions(targetView).getAllAssignments();
         List<SubscriptionAssignment> assignmentAdditions = currentView.additions(targetView).getAllAssignments();
 
-        assignmentDeletions.forEach(this::dropAssignment);
-        assignmentAdditions.forEach(this::addAssignment);
+        assignmentDeletions.forEach(registry::dropAssignment);
+        assignmentAdditions.forEach(registry::addPersistentAssignment);
 
         Sets.SetView<SubscriptionName> removedSubscriptions = Sets.difference(currentView.getSubscriptions(), targetView.getSubscriptions());
-        removedSubscriptions.forEach(this::removeSubscriptionEntry);
+        removedSubscriptions.forEach(registry::removeSubscriptionEntry);
 
         return new WorkDistributionChanges(assignmentDeletions.size(), assignmentAdditions.size(), removedSubscriptions.size());
-     }
-
-    private void removeSubscriptionEntry(SubscriptionName subscriptionName) {
-        askCuratorPolitely(() -> curatorClient.delete().guaranteed().forPath(pathSerializer.serialize(subscriptionName)));
-    }
-
-    private void dropAssignment(SubscriptionAssignment assignment) {
-        askCuratorPolitely(() -> curatorClient.delete().guaranteed().forPath(pathSerializer.serialize(assignment.getSubscriptionName(), assignment.getConsumerNodeId())));
-    }
-
-    private void addAssignment(SubscriptionAssignment assignment) {
-        askCuratorPolitely(() -> curatorClient.create().creatingParentsIfNeeded().withMode(PERSISTENT).forPath(pathSerializer.serialize(assignment.getSubscriptionName(), assignment.getConsumerNodeId())));
-    }
-
-    private Set<SubscriptionAssignment> getAssignments(String subscriptionName) {
-        SubscriptionAssignmentRegistry entry = getEntry(subscriptionName);
-        if(entry == null) {
-            return Collections.EMPTY_SET;
-        } else {
-            return entry.getCurrentData().stream()
-                    .map(child -> pathSerializer.deserialize(child.getPath())).collect(Collectors.toSet());
-        }
     }
 
     public SubscriptionAssignmentView getAssignments() {
-        return new SubscriptionAssignmentView(getSubcacheKeySet().stream().collect(toMap(SubscriptionName::fromString, this::getAssignments)));
+        return registry.createSnapshot();
     }
 
     public boolean isAssignedTo(SubscriptionName subscription, String consumerNodeId) {
-        return getAssignments(subscription.toString()).stream().filter(assignment ->
-                Objects.equals(assignment.getConsumerNodeId(), consumerNodeId)).findAny().isPresent();
-    }
-
-    interface CuratorTask {
-        void run() throws Exception;
-    }
-
-    @Override
-    protected SubscriptionAssignmentRegistry createSubcache(String path) {
-        return new SubscriptionAssignmentRegistry(
-                curatorClient,
-                path,
-                executorService,
-                subscriptionRepository,
-                consumerNodeId,
-                pathSerializer);
+        return registry.isAssignedTo(consumerNodeId, subscription);
     }
 
     public static class WorkDistributionChanges {

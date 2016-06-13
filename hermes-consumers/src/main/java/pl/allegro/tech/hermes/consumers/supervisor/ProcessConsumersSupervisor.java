@@ -5,17 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetCommiter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
-import pl.allegro.tech.hermes.consumers.supervisor.process.ConsumerProcess;
+import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.process.ConsumerProcessSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Signal;
@@ -24,8 +22,6 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import javax.inject.Inject;
 import java.time.Clock;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -41,7 +37,7 @@ import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
  * * work from the queue is executed
  * * ConsumerProcessSupervisor also checks liveliness of a ConsumerProcess
  * * in case Consumer is unhealthy, the RESTART_KILL signal is sent to queue and executed next time
- *
+ * <p>
  * OffsetCommiting -> Consumers push offsets to commit (in any order) to shared MPSC queue, it is drained periodically
  * and whole magic happens in single thread. No locks!
  */
@@ -67,6 +63,7 @@ public class ProcessConsumersSupervisor implements ConsumersSupervisor {
                                       Retransmitter retransmitter,
                                       UndeliveredMessageLogPersister undeliveredMessageLogPersister,
                                       SubscriptionRepository subscriptionRepository,
+                                      SubscriptionsCache subscriptionsCache,
                                       Clock clock) {
         this.consumerFactory = consumerFactory;
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
@@ -108,8 +105,13 @@ public class ProcessConsumersSupervisor implements ConsumersSupervisor {
     }
 
     @Override
+    public void updateTopic(Subscription subscription, Topic topic) {
+        backgroundProcess.accept(Signal.of(Signal.SignalType.UPDATE_TOPIC, subscription.toSubscriptionName(), topic));
+    }
+
+    @Override
     public void updateSubscription(Subscription subscription) {
-        backgroundProcess.accept(Signal.of(Signal.SignalType.UPDATE, subscription.toSubscriptionName(), subscription));
+        backgroundProcess.accept(Signal.of(Signal.SignalType.UPDATE_SUBSCRIPTION, subscription.toSubscriptionName(), subscription));
     }
 
     @Override

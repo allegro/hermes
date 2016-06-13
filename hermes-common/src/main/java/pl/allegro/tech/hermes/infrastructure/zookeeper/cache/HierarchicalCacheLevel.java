@@ -6,13 +6,11 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.cache.zookeeper.NodeCache;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -70,16 +68,6 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
         consumer.call(event);
     }
 
-    HierarchicalCacheLevel getEntry(String name) {
-        Lock readLock = subcacheLock.readLock();
-        readLock.lock();
-        try {
-            return subcacheMap.get(name);
-        } finally {
-            readLock.unlock();
-        }
-    }
-
     void stop() throws IOException {
         Lock writeLock = subcacheLock.writeLock();
         writeLock.lock();
@@ -127,13 +115,4 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
     private String cacheNameFromPath(String path) {
         return path.substring(path.lastIndexOf('/') + 1);
     }
-
-    Set<String> getSubcachePaths() {
-        return subcacheMap.keySet();
-    }
-
-    Map<String, HierarchicalCacheLevel> getSubcacheEntrySet() {
-        return new HashMap<>(subcacheMap);
-    }
-
 }

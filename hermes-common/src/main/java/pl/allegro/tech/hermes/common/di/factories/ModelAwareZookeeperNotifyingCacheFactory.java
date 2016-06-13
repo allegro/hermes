@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE;
@@ -21,6 +22,7 @@ public class ModelAwareZookeeperNotifyingCacheFactory implements Factory<ModelAw
 
     private final ConfigFactory config;
 
+    @Inject
     public ModelAwareZookeeperNotifyingCacheFactory(@Named(CuratorType.HERMES) CuratorFramework curator, ConfigFactory config) {
         this.curator = curator;
         this.config = config;

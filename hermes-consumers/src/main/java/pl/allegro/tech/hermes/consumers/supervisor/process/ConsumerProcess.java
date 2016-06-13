@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
 import java.time.Clock;
@@ -83,8 +84,11 @@ public class ConsumerProcess implements Runnable {
             case RETRANSMIT:
                 retransmit();
                 break;
-            case UPDATE:
+            case UPDATE_SUBSCRIPTION:
                 consumer.updateSubscription((Subscription) signal.getPayload().get());
+                break;
+            case UPDATE_TOPIC:
+                consumer.updateTopic((Topic) signal.getPayload().get());
                 break;
         }
     }

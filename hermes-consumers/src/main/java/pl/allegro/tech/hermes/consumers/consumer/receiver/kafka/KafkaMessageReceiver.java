@@ -91,9 +91,6 @@ public class KafkaMessageReceiver implements MessageReceiver {
 
     private Collection<KafkaTopic> getKafkaTopics(Topic topic, KafkaNamesMapper kafkaNamesMapper) {
         KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
-
-        System.err.println("AAAAAAAA Reading from " + kafkaTopics.getPrimary() + " and " + kafkaTopics.getSecondary() + " topics; migratedFromJson: " + topic.wasMigratedFromJsonType());
-
         ImmutableList.Builder<KafkaTopic> topicsBuilder = new ImmutableList.Builder<KafkaTopic>().add(kafkaTopics.getPrimary());
         kafkaTopics.getSecondary().ifPresent(topicsBuilder::add);
         return topicsBuilder.build();

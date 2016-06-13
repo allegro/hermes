@@ -14,6 +14,7 @@ class CacheListeners {
     private static final Logger logger = LoggerFactory.getLogger(CacheListeners.class);
 
     // NOTE: we probably don't need to be bothered by this synchronization, as adding occurs only on startup
+    // and this is called relatively rare
     private final List<Consumer<PathChildrenCacheEvent>> callbacks = Collections.synchronizedList(new ArrayList<>());
 
     void addListener(Consumer<PathChildrenCacheEvent> callback) {

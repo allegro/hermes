@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.selective;
 
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.cache.zookeeper.StartableCache;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import java.util.Arrays;
@@ -18,7 +18,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static org.apache.zookeeper.CreateMode.EPHEMERAL;
 
-public class ConsumerNodesRegistry extends StartableCache implements PathChildrenCacheListener {
+public class ConsumerNodesRegistry extends PathChildrenCache implements PathChildrenCacheListener {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerNodesRegistry.class);
 
@@ -28,7 +28,8 @@ public class ConsumerNodesRegistry extends StartableCache implements PathChildre
     private final LeaderLatch leaderLatch;
 
     public ConsumerNodesRegistry(CuratorFramework curatorClient, ExecutorService executorService, String prefix, String consumerNodeId) {
-        super(curatorClient, getNodesPath(prefix), executorService);
+        super(curatorClient, getNodesPath(prefix), true, false, executorService);
+
         this.curatorClient = curatorClient;
         this.consumerNodeId = consumerNodeId;
         this.prefix = prefix;

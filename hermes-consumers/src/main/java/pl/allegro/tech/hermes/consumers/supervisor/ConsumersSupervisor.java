@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.supervisor;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.Topic;
 
 public interface ConsumersSupervisor {
 
@@ -10,6 +11,8 @@ public interface ConsumersSupervisor {
     void deleteConsumerForSubscriptionName(SubscriptionName subscription);
 
     void updateSubscription(Subscription subscription);
+
+    void updateTopic(Subscription subscription, Topic topic);
 
     void shutdown() throws InterruptedException;
 

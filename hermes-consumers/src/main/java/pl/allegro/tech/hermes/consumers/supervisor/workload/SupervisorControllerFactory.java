@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgo
 import pl.allegro.tech.hermes.consumers.supervisor.workload.mirror.MirroringSupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
+import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import javax.inject.Inject;
@@ -35,11 +36,15 @@ import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkl
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.SELECTIVE;
 
 public class SupervisorControllerFactory implements Factory<SupervisorController> {
+
     private final ConfigFactory configs;
+
     private final Map<String, Provider<SupervisorController>> availableImplementations;
 
     @Inject
     public SupervisorControllerFactory(@Named(CuratorType.HERMES) CuratorFramework curator,
+                                       InternalNotificationsBus notificationsBus,
+                                       SubscriptionAssignmentRegistry assignmentRegistry,
                                        SubscriptionsCache subscriptionsCache,
                                        WorkTracker workTracker,
                                        ConsumersSupervisor supervisor,
@@ -48,8 +53,8 @@ public class SupervisorControllerFactory implements Factory<SupervisorController
                                        ConfigFactory configs) {
         this.configs = configs;
         this.availableImplementations = ImmutableMap.of(
-                MIRROR, () -> new MirroringSupervisorController(supervisor, subscriptionsCache, workTracker, adminCache, configs),
-                SELECTIVE, () -> new SelectiveSupervisorController(supervisor, subscriptionsCache, workTracker,
+                MIRROR, () -> new MirroringSupervisorController(supervisor, notificationsBus, assignmentRegistry, subscriptionsCache, workTracker, adminCache, configs),
+                SELECTIVE, () -> new SelectiveSupervisorController(supervisor, notificationsBus, subscriptionsCache, assignmentRegistry, workTracker,
                         createConsumersRegistry(configs, curator), adminCache,
                         getAssignmentExecutor(configs),
                         configs, metrics));

@@ -69,7 +69,6 @@ public class HermesServer {
     }
 
     public void start() {
-        topicsCache.start(Collections.emptyList());
         configureServer().start();
         messagePreviewPersister.start();
     }

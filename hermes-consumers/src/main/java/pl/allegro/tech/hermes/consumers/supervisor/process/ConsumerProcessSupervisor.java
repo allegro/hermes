@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 
-import javax.inject.Inject;
 import java.time.Clock;
 import java.util.concurrent.Future;
 
@@ -75,7 +74,8 @@ public class ConsumerProcessSupervisor implements Runnable {
             case RETRANSMIT:
                 process(signal).accept(signal);
                 break;
-            case UPDATE:
+            case UPDATE_SUBSCRIPTION:
+            case UPDATE_TOPIC:
                 process(signal).accept(signal);
                 break;
             case RESTART:

@@ -8,9 +8,6 @@ import java.util.Optional;
 
 public interface TopicsCache {
 
-    void start(Collection<? extends TopicCallback> callbacks);
+    Optional<Topic> getTopic(String topicName);
 
-    void stop();
-
-    Optional<Topic> getTopic(TopicName topicName);
 }

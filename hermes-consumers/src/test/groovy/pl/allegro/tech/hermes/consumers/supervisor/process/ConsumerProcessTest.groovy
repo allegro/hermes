@@ -97,7 +97,7 @@ class ConsumerProcessTest extends Specification {
         executor.submit(process)
 
         when:
-        process.accept(Signal.of(Signal.SignalType.UPDATE, subscription, modifiedSubscription))
+        process.accept(Signal.of(Signal.SignalType.UPDATE_SUBSCRIPTION, subscription, modifiedSubscription))
         waiter.waitForSignalProcessing()
 
         then:

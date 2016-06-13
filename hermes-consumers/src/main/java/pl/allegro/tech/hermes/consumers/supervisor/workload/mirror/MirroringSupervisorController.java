@@ -1,66 +1,94 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.mirror;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
+import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 
 public class MirroringSupervisorController implements SupervisorController {
 
-    private ConsumersSupervisor supervisor;
-    private SubscriptionsCache subscriptionsCache;
-    private WorkTracker workTracker;
-    private ZookeeperAdminCache adminCache;
-    private ConfigFactory configFactory;
-
     private static final Logger logger = LoggerFactory.getLogger(MirroringSupervisorController.class);
 
+    private final ConsumersSupervisor supervisor;
+    private final InternalNotificationsBus notificationsBus;
+    private final SubscriptionAssignmentRegistry assignementRegistry;
+    private final SubscriptionsCache subscriptionsCache;
+    private final WorkTracker workTracker;
+    private final ZookeeperAdminCache adminCache;
+    private final ConfigFactory configFactory;
+
+    private final ExecutorService executorService;
+
     public MirroringSupervisorController(ConsumersSupervisor supervisor,
+                                         InternalNotificationsBus notificationsBus,
+                                         SubscriptionAssignmentRegistry assignementRegistry,
                                          SubscriptionsCache subscriptionsCache,
                                          WorkTracker workTracker,
                                          ZookeeperAdminCache adminCache,
                                          ConfigFactory configFactory) {
         this.supervisor = supervisor;
+        this.notificationsBus = notificationsBus;
+        this.assignementRegistry = assignementRegistry;
         this.subscriptionsCache = subscriptionsCache;
         this.workTracker = workTracker;
         this.adminCache = adminCache;
         this.configFactory = configFactory;
+        this.executorService = Executors.newFixedThreadPool(
+                configFactory.getIntProperty(Configs.ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE),
+                new ThreadFactoryBuilder().setNameFormat("mirroring-supervisor-%d").build()
+        );
     }
 
     @Override
     public void onSubscriptionCreated(Subscription subscription) {
-        workTracker.forceAssignment(subscription);
+        executorService.submit(() -> workTracker.forceAssignment(subscription));
     }
 
     @Override
     public void onSubscriptionRemoved(Subscription subscription) {
-        workTracker.dropAssignment(subscription);
+        executorService.submit(() -> workTracker.dropAssignment(subscription));
     }
 
     @Override
     public void onSubscriptionChanged(Subscription subscription) {
-        switch (subscription.getState()) {
-            case PENDING:
-            case ACTIVE:
-                workTracker.forceAssignment(subscription);
-                break;
-            case SUSPENDED:
-                workTracker.dropAssignment(subscription);
-                break;
-            default:
-                break;
+        executorService.submit(() -> {
+            switch (subscription.getState()) {
+                case PENDING:
+                case ACTIVE:
+                    workTracker.forceAssignment(subscription);
+                    break;
+                case SUSPENDED:
+                    workTracker.dropAssignment(subscription);
+                    break;
+                default:
+                    break;
+            }
+            supervisor.updateSubscription(subscription);
+        });
+    }
+
+    @Override
+    public void onTopicChanged(Topic topic) {
+        for (Subscription subscription : subscriptionsCache.subscriptionsOfTopic(topic.getName())) {
+            executorService.submit(() -> supervisor.updateTopic(subscription, topic));
         }
-        supervisor.updateSubscription(subscription);
     }
 
     @Override
@@ -79,8 +107,11 @@ public class MirroringSupervisorController implements SupervisorController {
     public void start() throws Exception {
         adminCache.start();
         adminCache.addCallback(this);
-        subscriptionsCache.start(ImmutableList.of(this));
-        workTracker.start(ImmutableList.of(this));
+
+        notificationsBus.registerSubscriptionCallback(this);
+        notificationsBus.registerTopicCallback(this);
+        assignementRegistry.registerAssignementCallback(this);
+
         supervisor.start();
         logger.info("Consumer boot complete. Workload config: [{}]", configFactory.print(CONSUMER_WORKLOAD_NODE_ID, CONSUMER_WORKLOAD_ALGORITHM));
     }

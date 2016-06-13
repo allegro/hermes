@@ -45,8 +45,9 @@ public class BatchConsumer implements Consumer {
     private final HermesMetrics hermesMetrics;
     private final MessageConverterResolver messageConverterResolver;
     private final MessageContentWrapper messageContentWrapper;
-    private final Topic topic;
     private final Trackers trackers;
+
+    private Topic topic;
     private Subscription subscription;
 
     private volatile boolean consuming = true;
@@ -138,6 +139,16 @@ public class BatchConsumer implements Consumer {
     @Override
     public void updateSubscription(Subscription subscription) {
         this.subscription = subscription;
+    }
+
+    @Override
+    public void updateTopic(Topic newTopic) {
+        if(this.topic.getContentType() != newTopic.getContentType()) {
+            logger.info("Topic content type changed from {} to {}, reinitializing", this.topic.getContentType(), newTopic.getContentType());
+            this.topic = newTopic;
+            tearDown();
+            initialize();
+        }
     }
 
     private Retryer<MessageSendingResult> createRetryer(MessageBatch batch, BatchSubscriptionPolicy policy) {

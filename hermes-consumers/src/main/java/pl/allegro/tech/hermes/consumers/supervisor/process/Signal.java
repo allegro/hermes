@@ -13,7 +13,7 @@ public class Signal {
     private final Optional<Object> payload;
 
     public enum SignalType {
-        START, RESTART, STOP, RETRANSMIT, UPDATE, KILL_RESTART, CLEANUP
+        START, RESTART, STOP, RETRANSMIT, UPDATE_SUBSCRIPTION, UPDATE_TOPIC, KILL_RESTART, CLEANUP
     }
 
     private Signal(SignalType type, SubscriptionName target, Optional<Object> payload) {

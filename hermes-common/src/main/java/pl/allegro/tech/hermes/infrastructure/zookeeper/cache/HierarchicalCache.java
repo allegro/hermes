@@ -24,7 +24,7 @@ public class HierarchicalCache {
 
     private final String basePath;
 
-    private final List<String> levelPrefixes;
+    private final List<String> levelPrefixes = new ArrayList<>();
 
     private final int maxDepth;
 
@@ -40,7 +40,7 @@ public class HierarchicalCache {
         this.curatorFramework = curatorFramework;
         this.executorService = executorService;
         this.basePath = basePath;
-        this.levelPrefixes = levelPrefixes;
+        this.levelPrefixes.addAll(levelPrefixes);
         this.maxDepth = maxDepth;
 
         for(int i = 0; i < maxDepth; ++i) {
@@ -78,7 +78,7 @@ public class HierarchicalCache {
     }
 
     private String path(int depth, String basePath) {
-        return basePath + "/" + levelPrefixes.get(depth);
+        return basePath + (levelPrefixes.size() > depth ? "/" + levelPrefixes.get(depth) : "");
     }
 
     private void ensureBasePath() {

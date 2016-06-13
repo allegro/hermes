@@ -1,9 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-
-import java.util.List;
+import pl.allegro.tech.hermes.api.Topic;
 
 public interface Consumer {
 
@@ -14,4 +12,6 @@ public interface Consumer {
     void tearDown();
 
     void updateSubscription(Subscription subscription);
+
+    void updateTopic(Topic topic);
 }
