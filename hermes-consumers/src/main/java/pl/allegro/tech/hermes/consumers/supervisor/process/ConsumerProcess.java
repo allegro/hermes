@@ -15,7 +15,6 @@ public class ConsumerProcess implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerProcess.class);
 
-    // TODO: should this be unbounded linked queue for memory efficiency?
     private final SpscArrayQueue<Signal> signals = new SpscArrayQueue<>(100);
 
     private final Clock clock;
@@ -85,10 +84,10 @@ public class ConsumerProcess implements Runnable {
                 retransmit();
                 break;
             case UPDATE_SUBSCRIPTION:
-                consumer.updateSubscription((Subscription) signal.getPayload().get());
+                consumer.updateSubscription(signal.getExtractedPayload());
                 break;
             case UPDATE_TOPIC:
-                consumer.updateTopic((Topic) signal.getPayload().get());
+                consumer.updateTopic(signal.getExtractedPayload());
                 break;
         }
     }

@@ -64,7 +64,7 @@ public class HermesConsumers {
                 healthCheckServer.stop();
                 supervisorController.shutdown();
                 s.shutdown();
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 logger.error("Exception while shutdown Hermes Consumers", e);
             }
         });

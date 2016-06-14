@@ -95,7 +95,7 @@ public class ProcessConsumersSupervisor implements ConsumersSupervisor {
             }
             logger.info("Consumer for {} was added for execution", subscription.getId());
         } catch (Exception ex) {
-            logger.info("Failed to create consumer for subscription {}", subscription.getId(), ex);
+            logger.warn("Failed to create consumer for subscription {}", subscription.getId(), ex);
         }
     }
 

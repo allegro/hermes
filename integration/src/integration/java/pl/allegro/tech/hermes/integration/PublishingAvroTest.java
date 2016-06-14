@@ -105,6 +105,7 @@ public class PublishingAvroTest extends IntegrationTest {
 
         wait.untilSubscriptionContentTypeChanged(topic, "subscription", ContentType.AVRO);
         wait.untilSubscriptionIsActivated(topic, "subscription");
+        wait.untilConsumersUpdateSubscription();
 
         publisher.publish("publishAvroAfterTopicEditing.topic", user.asBytes());
 

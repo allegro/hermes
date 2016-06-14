@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.HashMap;
@@ -25,6 +26,10 @@ class RunningConsumerProcesses {
 
     ConsumerProcess getProcess(SubscriptionName subscriptionName) {
         return processes.get(subscriptionName).process;
+    }
+
+    boolean hasProcess(SubscriptionName subscriptionName) {
+        return processes.containsKey(subscriptionName);
     }
 
     Stream<ConsumerProcess> stream() {

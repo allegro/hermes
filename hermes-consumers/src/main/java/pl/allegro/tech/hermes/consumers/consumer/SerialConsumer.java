@@ -86,7 +86,7 @@ public class SerialConsumer implements Consumer {
             } while (!inflightSemaphore.tryAcquire(500, TimeUnit.MILLISECONDS));
 
             Message message = messageReceiver.next();
-            logger.info("Read message {} partition {} offset {}", message.getContentType(), message.getPartition(), message.getOffset());
+            logger.debug("Read message {} partition {} offset {}", message.getContentType(), message.getPartition(), message.getOffset());
             Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
             sendMessage(convertedMessage);
         } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {

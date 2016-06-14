@@ -159,6 +159,10 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         sleep(3);
     }
 
+    public void untilConsumersUpdateSubscription() {
+        sleep(1);
+    }
+
     public void untilConsumerCommitsOffset() {
         sleep(4);
     }

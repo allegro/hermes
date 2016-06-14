@@ -213,10 +213,12 @@ public class MongoMessageTrackingTest extends IntegrationTest {
         // when
         operations.updateSubscription("toggleTrackingOnSubscription", "topic", "subscription", patchData().set("trackingEnabled", false).build());
 
+        wait.untilConsumersUpdateSubscription();
         publishMessage("toggleTrackingOnSubscription.topic", MESSAGE.body());
         remoteService.waitUntilReceived();
 
         operations.updateSubscription("toggleTrackingOnSubscription", "topic", "subscription", patchData().set("trackingEnabled", true).build());
+        wait.untilConsumersUpdateSubscription();
 
         remoteService.expectMessages(MESSAGE.body());
         String secondTracked = publishMessage("toggleTrackingOnSubscription.topic", MESSAGE.body());

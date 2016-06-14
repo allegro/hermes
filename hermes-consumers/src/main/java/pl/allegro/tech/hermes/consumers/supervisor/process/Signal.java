@@ -38,8 +38,12 @@ public class Signal {
         return target;
     }
 
-    public Optional<Object> getPayload() {
-        return payload;
+    public <T> Optional<T> getPayload() {
+        return (Optional<T>) payload;
+    }
+
+    public <T> T getExtractedPayload() {
+        return (T) payload.get();
     }
 
     @Override

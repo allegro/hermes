@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
 
+import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -23,7 +24,6 @@ public class UndeliveredLogTest extends IntegrationTest {
         Topic topic = operations.buildTopic("logUndelivered", "topic");
         Subscription subscription = subscription(topic, "subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
-                .withTrackingEnabled(true)
                 .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(0).build())
                 .build();
 
@@ -35,7 +35,7 @@ public class UndeliveredLogTest extends IntegrationTest {
         Response response = management.subscription().getLatestUndeliveredMessage("logUndelivered.topic", "subscription");
 
         // then
-        wait.until(() -> assertThat(response.getStatusInfo().getFamily()).isEqualTo(SUCCESSFUL));
+        wait.until(() -> assertThat(response.getStatusInfo().getFamily()).isEqualTo(CLIENT_ERROR));
     }
 
 }

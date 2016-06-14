@@ -44,10 +44,7 @@ public class WorkTracker {
         assignmentDeletions.forEach(registry::dropAssignment);
         assignmentAdditions.forEach(registry::addPersistentAssignment);
 
-        Sets.SetView<SubscriptionName> removedSubscriptions = Sets.difference(currentView.getSubscriptions(), targetView.getSubscriptions());
-        removedSubscriptions.forEach(registry::removeSubscriptionEntry);
-
-        return new WorkDistributionChanges(assignmentDeletions.size(), assignmentAdditions.size(), removedSubscriptions.size());
+        return new WorkDistributionChanges(assignmentDeletions.size(), assignmentAdditions.size());
     }
 
     public SubscriptionAssignmentView getAssignments() {
@@ -61,12 +58,10 @@ public class WorkTracker {
     public static class WorkDistributionChanges {
         private final int assignmentsDeleted;
         private final int assignmentsCreated;
-        private final int subscriptionsDeleted;
 
-        public WorkDistributionChanges(int assignmentsDeleted, int assignmentsCreated, int subscriptionsDeleted) {
+        public WorkDistributionChanges(int assignmentsDeleted, int assignmentsCreated) {
             this.assignmentsDeleted = assignmentsDeleted;
             this.assignmentsCreated = assignmentsCreated;
-            this.subscriptionsDeleted = subscriptionsDeleted;
         }
 
         public int getDeletedAssignmentsCount() {
@@ -79,7 +74,7 @@ public class WorkTracker {
 
         public String toString() {
             return format("assignments_created=%d, assignments_deleted=%d, subscriptions_deleted=%d",
-                    assignmentsCreated, assignmentsDeleted, subscriptionsDeleted);
+                    assignmentsCreated, assignmentsDeleted);
         }
     }
 }

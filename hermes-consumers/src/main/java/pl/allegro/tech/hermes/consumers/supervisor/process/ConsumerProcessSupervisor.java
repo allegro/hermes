@@ -10,13 +10,15 @@ import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Future;
 
 public class ConsumerProcessSupervisor implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerProcessSupervisor.class);
 
-    // TODO adjust size
     private final MpscArrayQueue<Signal> taskQueue = new MpscArrayQueue<>(1000);
 
     private final RunningConsumerProcesses runningProcesses = new RunningConsumerProcesses();
@@ -69,7 +71,7 @@ public class ConsumerProcessSupervisor implements Runnable {
         logger.debug("Processing signal: {}", signal);
         switch (signal.getType()) {
             case START:
-                start(signal.getTarget(), (Consumer) signal.getPayload().get());
+                start(signal.getTarget(), signal.getPayload());
                 break;
             case RETRANSMIT:
                 process(signal).accept(signal);
@@ -122,10 +124,20 @@ public class ConsumerProcessSupervisor implements Runnable {
         return true;
     }
 
-    private void start(SubscriptionName subscriptionName, Consumer consumer) {
+    private void start(SubscriptionName subscriptionName, Optional<Consumer> consumer) {
         logger.info("Starting consumer process {}", subscriptionName);
 
-        ConsumerProcess process = new ConsumerProcess(subscriptionName, consumer, retransmitter, clock);
+        ConsumerProcess process;
+        if (consumer.isPresent()) {
+            process = new ConsumerProcess(subscriptionName, consumer.get(), retransmitter, clock);
+        } else if (runningProcesses.hasProcess(subscriptionName)) {
+            process = runningProcesses.getProcess(subscriptionName);
+        }
+        else {
+            logger.error("Tryng to start process for {} without known Consumer, aborting", subscriptionName);
+            return;
+        }
+
         Future future = executor.execute(process);
         runningProcesses.add(process, future);
 

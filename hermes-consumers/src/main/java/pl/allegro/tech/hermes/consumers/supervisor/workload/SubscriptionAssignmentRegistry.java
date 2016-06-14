@@ -33,7 +33,7 @@ public class SubscriptionAssignmentRegistry {
     private final SubscriptionAssignmentPathSerializer pathSerializer;
 
     public SubscriptionAssignmentRegistry(CuratorFramework curator, String path,
-                                          SubscriptionsCache subscriptionsCache, SubscriptionAssignmentPathSerializer pathSerializer) {
+                                          SubscriptionsCache subscriptionsCache,SubscriptionAssignmentPathSerializer pathSerializer) {
         this.curator = curator;
         this.subscriptionsCache = subscriptionsCache;
         this.pathSerializer = pathSerializer;
@@ -49,6 +49,7 @@ public class SubscriptionAssignmentRegistry {
                     break;
                 case CHILD_REMOVED:
                     assignments.remove(assignment);
+                    removeSubscriptionEntryIfEmpty(assignment.getSubscriptionName());
                     break;
             }
         });
@@ -92,8 +93,12 @@ public class SubscriptionAssignmentRegistry {
         return new SubscriptionAssignmentView(snapshot);
     }
 
-    public void removeSubscriptionEntry(SubscriptionName subscriptionName) {
-        askCuratorPolitely(() -> curator.delete().guaranteed().forPath(pathSerializer.serialize(subscriptionName)));
+    private void removeSubscriptionEntryIfEmpty(SubscriptionName subscriptionName) {
+        askCuratorPolitely(() -> {
+            if(curator.getChildren().forPath(pathSerializer.serialize(subscriptionName)).isEmpty()) {
+                curator.delete().guaranteed().forPath(pathSerializer.serialize(subscriptionName));
+            }
+        });
     }
 
     public void dropAssignment(SubscriptionAssignment assignment) {
