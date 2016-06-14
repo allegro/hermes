@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
-import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultErrorHandler;
@@ -54,7 +54,7 @@ public class ConsumerMessageSenderFactory {
     }
     
     public ConsumerMessageSender create(Subscription subscription, ConsumerRateLimiter consumerRateLimiter,
-                                        BetterOffsetQueue offsetQueue, InflightsPool inflight) {
+                                        OffsetQueue offsetQueue, InflightsPool inflight) {
         
         SuccessHandler successHandler = new DefaultSuccessHandler(offsetQueue, hermesMetrics, trackers);
         ErrorHandler errorHandler = new DefaultErrorHandler(offsetQueue, hermesMetrics, undeliveredMessageLog,

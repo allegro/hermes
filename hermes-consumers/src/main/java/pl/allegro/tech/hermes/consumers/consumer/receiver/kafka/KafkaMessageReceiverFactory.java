@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
-import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
@@ -28,7 +28,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final ConfigFactory configFactory;
     private final MessageContentWrapper messageContentWrapper;
     private final HermesMetrics hermesMetrics;
-    private final BetterOffsetQueue offsetQueue;
+    private final OffsetQueue offsetQueue;
     private final Clock clock;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final SchemaRepository schemaRepository;
@@ -39,7 +39,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     public KafkaMessageReceiverFactory(ConfigFactory configFactory,
                                        MessageContentWrapper messageContentWrapper,
                                        HermesMetrics hermesMetrics,
-                                       BetterOffsetQueue offsetQueue,
+                                       OffsetQueue offsetQueue,
                                        Clock clock,
                                        KafkaNamesMapper kafkaNamesMapper,
                                        SchemaRepository schemaRepository,

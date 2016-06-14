@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -27,7 +27,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     private final Trackers trackers;
     private final String cluster;
 
-    public DefaultErrorHandler(BetterOffsetQueue offsetQueue,
+    public DefaultErrorHandler(OffsetQueue offsetQueue,
                                HermesMetrics hermesMetrics,
                                UndeliveredMessageLog undeliveredMessageLog, Clock clock, Trackers trackers, String cluster) {
         super(offsetQueue, hermesMetrics);

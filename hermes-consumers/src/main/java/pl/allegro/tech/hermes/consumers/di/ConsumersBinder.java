@@ -20,7 +20,7 @@ import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilters;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
-import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BlockingChannelFactory;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
@@ -56,7 +56,7 @@ import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.ProcessConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.NonblockingConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistryFactory;
@@ -91,7 +91,7 @@ public class ConsumersBinder extends AbstractBinder {
 
         bind("consumer").named("moduleName").to(String.class);
 
-        bind(ProcessConsumersSupervisor.class).in(Singleton.class).to(ConsumersSupervisor.class);
+        bind(NonblockingConsumersSupervisor.class).in(Singleton.class).to(ConsumersSupervisor.class);
         bindSingleton(MessageSenderFactory.class);
         bindSingleton(HttpAuthorizationProviderFactory.class);
         bindSingleton(ConsumerFactory.class);
@@ -104,7 +104,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(NoOperationMessageConverter.class);
         bindSingleton(AvroToJsonMessageConverter.class);
         bindSingleton(MessageConverterResolver.class);
-        bindSingleton(BetterOffsetQueue.class);
+        bindSingleton(OffsetQueue.class);
         bindSingleton(ActiveConsumerCounter.class);
         bindSingleton(Retransmitter.class);
         bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {});

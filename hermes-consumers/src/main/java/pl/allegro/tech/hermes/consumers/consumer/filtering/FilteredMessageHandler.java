@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
-import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
@@ -16,13 +16,13 @@ import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter
 
 public class FilteredMessageHandler {
 
-    private final BetterOffsetQueue offsetQueue;
+    private final OffsetQueue offsetQueue;
     private final Trackers trackers;
     private final HermesMetrics metrics;
 
     private static final Logger logger = LoggerFactory.getLogger(FilteredMessageHandler.class);
 
-    public FilteredMessageHandler(BetterOffsetQueue offsetQueue, Trackers trackers, HermesMetrics metrics) {
+    public FilteredMessageHandler(OffsetQueue offsetQueue, Trackers trackers, HermesMetrics metrics) {
         this.offsetQueue = offsetQueue;
         this.trackers = trackers;
         this.metrics = metrics;

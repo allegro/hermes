@@ -7,13 +7,13 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Specification
 
-class BetterOffsetCommiterTest extends Specification {
+class OffsetCommiterTest extends Specification {
 
-    private BetterOffsetQueue queue = new BetterOffsetQueue(new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
+    private OffsetQueue queue = new OffsetQueue(new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
 
     private MessageCommitter messageCommitter = Mock(MessageCommitter)
 
-    private BetterOffsetCommiter committer = new BetterOffsetCommiter(queue, [messageCommitter], 10)
+    private OffsetCommiter committer = new OffsetCommiter(queue, [messageCommitter], 10)
 
     def "should commit smallest offset of uncommitted message - 1"() {
         given:

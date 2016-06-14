@@ -9,11 +9,10 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
-import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetCommiter;
-import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommiter;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
-import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.process.ConsumerProcessSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Signal;
@@ -30,53 +29,41 @@ import java.util.concurrent.TimeUnit;
 import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
 import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
 
-/**
- * Design doc:
- * * background consumers supervisor runs ConsumerProcessSupervisor periodically
- * * all work that needs to be done for a Consumer is pushed to ConsumerProcessSupervisor queue (MPSC)
- * * work from the queue is executed
- * * ConsumerProcessSupervisor also checks liveliness of a ConsumerProcess
- * * in case Consumer is unhealthy, the RESTART_KILL signal is sent to queue and executed next time
- * <p>
- * OffsetCommiting -> Consumers push offsets to commit (in any order) to shared MPSC queue, it is drained periodically
- * and whole magic happens in single thread. No locks!
- */
-public class ProcessConsumersSupervisor implements ConsumersSupervisor {
+public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProcessConsumersSupervisor.class);
+    private static final Logger logger = LoggerFactory.getLogger(NonblockingConsumersSupervisor.class);
 
     private ConsumerProcessSupervisor backgroundProcess;
     private ConsumerFactory consumerFactory;
     private UndeliveredMessageLogPersister undeliveredMessageLogPersister;
     private ConfigFactory configs;
-    private BetterOffsetCommiter offsetCommitter;
+    private OffsetCommiter offsetCommitter;
     private SubscriptionRepository subscriptionRepository;
 
     private final ScheduledExecutorService scheduledExecutor;
 
     @Inject
-    public ProcessConsumersSupervisor(ConfigFactory configFactory,
-                                      ConsumersExecutorService executor,
-                                      ConsumerFactory consumerFactory,
-                                      List<MessageCommitter> messageCommitters,
-                                      BetterOffsetQueue offsetQueue,
-                                      Retransmitter retransmitter,
-                                      UndeliveredMessageLogPersister undeliveredMessageLogPersister,
-                                      SubscriptionRepository subscriptionRepository,
-                                      SubscriptionsCache subscriptionsCache,
-                                      Clock clock) {
+    public NonblockingConsumersSupervisor(ConfigFactory configFactory,
+                                          ConsumersExecutorService executor,
+                                          ConsumerFactory consumerFactory,
+                                          List<MessageCommitter> messageCommitters,
+                                          OffsetQueue offsetQueue,
+                                          Retransmitter retransmitter,
+                                          UndeliveredMessageLogPersister undeliveredMessageLogPersister,
+                                          SubscriptionRepository subscriptionRepository,
+                                          Clock clock) {
         this.consumerFactory = consumerFactory;
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
         this.configs = configFactory;
-        this.offsetCommitter = new BetterOffsetCommiter(offsetQueue, messageCommitters, configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_PERIOD));
+        this.offsetCommitter = new OffsetCommiter(offsetQueue, messageCommitters, configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_PERIOD));
         this.backgroundProcess = new ConsumerProcessSupervisor(executor, retransmitter, clock, configFactory);
         this.scheduledExecutor = createExecutorForSupervision();
     }
 
     private ScheduledExecutorService createExecutorForSupervision() {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("ProcessConsumersSupervisor-%d")
+                .setNameFormat("NonblockingConsumersSupervisor-%d")
                 .setUncaughtExceptionHandler((t, e) -> logger.error("Exception from supervisor with name {}", t.getName(), e)).build();
         return Executors.newSingleThreadScheduledExecutor(threadFactory);
     }

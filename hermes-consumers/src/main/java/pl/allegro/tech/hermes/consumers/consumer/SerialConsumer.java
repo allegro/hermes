@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
-import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
@@ -31,7 +31,7 @@ public class SerialConsumer implements Consumer {
     private final Trackers trackers;
     private final MessageConverterResolver messageConverterResolver;
     private final ConsumerMessageSender sender;
-    private final BetterOffsetQueue offsetQueue;
+    private final OffsetQueue offsetQueue;
     private final AdjustableSemaphore inflightSemaphore;
 
     private final int defaultInflight;
@@ -50,7 +50,7 @@ public class SerialConsumer implements Consumer {
                           MessageConverterResolver messageConverterResolver,
                           Topic topic,
                           ConfigFactory configFactory,
-                          BetterOffsetQueue offsetQueue) {
+                          OffsetQueue offsetQueue) {
         this.defaultInflight = configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE);
         this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
         this.messageReceiverFactory = messageReceiverFactory;

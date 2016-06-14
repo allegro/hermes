@@ -4,7 +4,7 @@ import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.Message
-import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import pl.allegro.tech.hermes.metrics.PathsCompiler
@@ -15,7 +15,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 
 class DefaultSuccessHandlerTest extends Specification {
 
-    private BetterOffsetQueue offsetQueue = new BetterOffsetQueue(new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
+    private OffsetQueue offsetQueue = new OffsetQueue(new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
 
     private InMemoryLogRepository sendingTracker = new InMemoryLogRepository()
 

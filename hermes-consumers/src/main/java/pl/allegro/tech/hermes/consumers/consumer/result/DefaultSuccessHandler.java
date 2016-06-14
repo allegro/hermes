@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.offset.BetterOffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -16,7 +16,7 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
 
     private final Trackers trackers;
 
-    public DefaultSuccessHandler(BetterOffsetQueue offsetQueue, HermesMetrics hermesMetrics, Trackers trackers) {
+    public DefaultSuccessHandler(OffsetQueue offsetQueue, HermesMetrics hermesMetrics, Trackers trackers) {
         super(offsetQueue, hermesMetrics);
         this.trackers = trackers;
     }

@@ -39,15 +39,15 @@ import java.util.function.BiFunction;
  * <p>
  * This algorithm is very simple, memory efficient, can be performed in single thread and introduces no locks.
  */
-public class BetterOffsetCommiter implements Runnable {
+public class OffsetCommiter implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(BetterOffsetCommiter.class);
+    private static final Logger logger = LoggerFactory.getLogger(OffsetCommiter.class);
 
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     private final int offsetCommitPeriodSeconds;
 
-    private final BetterOffsetQueue offsetQueue;
+    private final OffsetQueue offsetQueue;
 
     private final List<MessageCommitter> messageCommitters;
 
@@ -55,8 +55,8 @@ public class BetterOffsetCommiter implements Runnable {
 
     private final MpscArrayQueue<SubscriptionName> subscriptionsToCleanup = new MpscArrayQueue<>(1000);
 
-    public BetterOffsetCommiter(
-            BetterOffsetQueue offsetQueue,
+    public OffsetCommiter(
+            OffsetQueue offsetQueue,
             List<MessageCommitter> messageCommitters,
             int offsetCommitPeriodSeconds
     ) {

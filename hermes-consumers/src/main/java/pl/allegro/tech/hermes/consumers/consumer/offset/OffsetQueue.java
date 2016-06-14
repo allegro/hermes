@@ -6,14 +6,14 @@ import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
 
 import javax.inject.Inject;
 
-public class BetterOffsetQueue {
+public class OffsetQueue {
 
     private final MonitoredMpscQueue<SubscriptionPartitionOffset> inflightOffsetsQueue;
 
     private final MonitoredMpscQueue<SubscriptionPartitionOffset> commitOffsetsQueue;
 
     @Inject
-    public BetterOffsetQueue(HermesMetrics metrics) {
+    public OffsetQueue(HermesMetrics metrics) {
         this.inflightOffsetsQueue = new MonitoredMpscQueue<>(metrics, "inflightOffsets", 100_000);
         this.commitOffsetsQueue = new MonitoredMpscQueue<>(metrics, "committedOffsets", 100_000);
     }
