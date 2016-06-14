@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -25,6 +26,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.time.Clock;
 import java.util.List;
@@ -81,8 +83,9 @@ public class KafkaMessageReceiverTest {
         when(consumerConnector.createMessageStreams(expectedTopicCountMap)).thenReturn(consumerMap);
         when(messageAndMetadata.message()).thenReturn(WRAPPED_MESSAGE_CONTENT.getBytes());
         when(messageContentWrapper.unwrapJson(WRAPPED_MESSAGE_CONTENT.getBytes())).thenReturn(new UnwrappedMessageContent(METADATA, CONTENT.getBytes()));
+        Subscription subscription = SubscriptionBuilder.subscription(SubscriptionName.fromString("ns_group.topic$sub")).build();
         kafkaMsgReceiver = new KafkaMessageReceiver(TOPIC, consumerConnector, messageContentWrapper,
-                timer, Clock.systemDefaultZone(), kafkaNamesMapper, KAFKA_STREAM_COUNT, 100, SubscriptionName.fromString("ns_group.topic$sub"), schemaRepository);
+                timer, Clock.systemDefaultZone(), kafkaNamesMapper, KAFKA_STREAM_COUNT, 100, subscription, schemaRepository);
     }
 
     @After

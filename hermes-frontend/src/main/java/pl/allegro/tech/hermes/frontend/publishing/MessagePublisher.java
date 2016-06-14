@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing;
 
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
@@ -22,9 +21,14 @@ public class MessagePublisher {
         this.brokerMessageProducer = brokerMessageProducer;
     }
 
-    public void publish(Message message, Topic topic, MessageState messageState, BrokerListeners listeners, PublishingCallback callback) {
+    public void publish(Message message, Topic topic, MessageState messageState, PublishingCallback callback) {
         messageState.setState(SENDING_TO_KAFKA_PRODUCER_QUEUE);
-        brokerMessageProducer.send(message, topic, callback);
-        messageState.setState(SENDING_TO_KAFKA);
+        try {
+            brokerMessageProducer.send(message, topic, callback);
+            messageState.setState(SENDING_TO_KAFKA);
+        } catch (Exception e) {
+            // message didn't get to internal producer buffer and it will not be send to a broker
+            callback.onUnpublished(message, topic, e);
+        }
     }
 }

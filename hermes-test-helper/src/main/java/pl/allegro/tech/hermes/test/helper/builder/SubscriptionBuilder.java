@@ -14,7 +14,9 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SubscriptionBuilder {
 
@@ -47,6 +49,8 @@ public class SubscriptionBuilder {
     private List<MessageFilterSpecification> filters = new ArrayList<>();
 
     private SubscriptionMode mode = SubscriptionMode.ANYCAST;
+
+    private Map<String, String> headers = new HashMap<>();
 
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
@@ -92,13 +96,13 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, mode
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, mode, headers
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, headers
             );
         }
     }
@@ -180,6 +184,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withMode(SubscriptionMode mode) {
         this.mode = mode;
+        return this;
+    }
+
+    public SubscriptionBuilder withHeader(String name, String value) {
+        this.headers.put(name, value);
         return this;
     }
 }

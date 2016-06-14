@@ -10,7 +10,7 @@ import kafka.message.MessageAndMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -51,11 +51,13 @@ public class KafkaMessageReceiver implements MessageReceiver {
     private final Integer readTimeout;
     private final Topic topic;
     private volatile boolean consuming = true;
+    private volatile Subscription subscription;
 
     public KafkaMessageReceiver(Topic topic, ConsumerConnector consumerConnector, MessageContentWrapper messageContentWrapper,
                                 Timer readingTimer, Clock clock, KafkaNamesMapper kafkaNamesMapper,
-                                Integer kafkaStreamCount, Integer readTimeout, SubscriptionName subscriptionName, SchemaRepository schemaRepository) {
+                                Integer kafkaStreamCount, Integer readTimeout, Subscription subscription, SchemaRepository schemaRepository) {
         this.topic = topic;
+        this.subscription = subscription;
         this.consumerConnector = consumerConnector;
         this.messageContentWrapper = messageContentWrapper;
         this.readingTimer = readingTimer;
@@ -76,7 +78,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
         pool = Executors.newFixedThreadPool(iterators.size());
 
         iterators.forEach((kafkaTopic, iterator) -> pool.submit(() -> {
-                Thread.currentThread().setName("Kafka-message-receiver-" + kafkaTopic.contentType() + "-" + subscriptionName);
+                Thread.currentThread().setName("Kafka-message-receiver-" + kafkaTopic.contentType() + "-" + subscription.toSubscriptionName());
                 while (consuming) {
                     try {
                         readQueue.put(readMessage(kafkaTopic, iterator));
@@ -130,7 +132,8 @@ public class KafkaMessageReceiver implements MessageReceiver {
                     unwrappedContent.getMessageMetadata().getTimestamp(),
                     clock.millis(),
                     new PartitionOffset(kafkaTopic.name(), message.offset(), message.partition()),
-                    unwrappedContent.getMessageMetadata().getExternalMetadata()
+                    unwrappedContent.getMessageMetadata().getExternalMetadata(),
+                    subscription.getHeaders()
             );
 
         } catch (ConsumerTimeoutException consumerTimeoutException) {
@@ -151,6 +154,11 @@ public class KafkaMessageReceiver implements MessageReceiver {
             return messageContentWrapper.unwrapJson(message.message());
         }
         throw new UnsupportedContentTypeException(topic);
+    }
+
+    @Override
+    public void update(Subscription newSubscription) {
+        this.subscription = newSubscription;
     }
 
     @Override

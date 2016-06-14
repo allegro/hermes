@@ -13,7 +13,6 @@ dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.1'
     compile group: 'com.github.rholder', name: 'guava-retrying', version: '2.0.0'
 
-    compile group: 'com.wandoulabs.avro', name: 'wandou-avpath_2.11', version: '0.1.0'
     compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
 
     compile(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
+import com.google.common.io.PatternFilenameFilter;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,8 +8,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 
 public class BackupFilesManager {
@@ -16,6 +19,7 @@ public class BackupFilesManager {
     private static final Logger logger = LoggerFactory.getLogger(BackupFilesManager.class);
 
     private static final String FILE_NAME = "hermes-buffer";
+    private static final String TIMESTAMPED_BACKUP_FILE_PATTERN = FILE_NAME + "-\\d+\\.dat";
 
     private final String baseDir;
     private final Clock clock;
@@ -60,5 +64,9 @@ public class BackupFilesManager {
     
     private File getBackupFile() {
         return new File(format("%s/%s.dat", baseDir, FILE_NAME));
+    }
+
+    public List<File> getRolledBackupFiles() {
+        return newArrayList(new File(baseDir).listFiles(new PatternFilenameFilter(TIMESTAMPED_BACKUP_FILE_PATTERN)));
     }
 }
