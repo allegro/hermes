@@ -24,23 +24,25 @@ import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 public class SingleMessageSendingResult implements MessageSendingResult {
 
     private Throwable failure;
-    private boolean loggable = false;
+    private boolean loggable;
+
     private Optional<Long> retryAfterMillis = Optional.empty();
     private String requestUri = "";
     private int statusCode;
     private Response.Status.Family responseFamily;
 
-    SingleMessageSendingResult(Throwable failure) {
-        this.failure = failure;
-    }
-
     SingleMessageSendingResult(Throwable failure, boolean loggable) {
-        this(failure);
+        this.failure = failure;
         this.loggable = loggable;
     }
 
+    SingleMessageSendingResult(Throwable failure) {
+        this(failure, false);
+    }
+
     SingleMessageSendingResult(Result result) {
-        this(result.getFailure());
+        this.failure = result.getFailure();
+
         if (result.getResponse() != null) {
             initializeForStatusCode(result.getResponse().getStatus());
             if (isRetryLater()) {
@@ -48,7 +50,8 @@ public class SingleMessageSendingResult implements MessageSendingResult {
             }
         }
 
-        requestUri = result.getRequest().getURI().toString();
+        this.loggable = !isTimeout() && !hasHttpAnswer();
+        this.requestUri = result.getRequest().getURI().toString();
     }
 
     SingleMessageSendingResult(int statusCode) {
@@ -66,7 +69,7 @@ public class SingleMessageSendingResult implements MessageSendingResult {
         this.statusCode = statusCode;
         responseFamily = familyOf(statusCode);
         if (this.failure == null && !isInFamily(SUCCESSFUL)) {
-            this.failure = new InternalProcessingException("Message sending failed with status code:" + statusCode);
+            this.failure = new InternalProcessingException("Message sending failed with status code: " + statusCode);
         }
     }
 
@@ -103,7 +106,7 @@ public class SingleMessageSendingResult implements MessageSendingResult {
 
     @Override
     public String getRootCause() {
-        return getFailure() != null ? Throwables.getRootCause(getFailure()).getMessage() : CAUSE_UNKNOWN;
+        return failure != null ? Throwables.getRootCause(failure).getMessage() : CAUSE_UNKNOWN;
     }
 
     @Override
@@ -131,7 +134,7 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     }
 
     public boolean isTimeout() {
-        return getFailure() instanceof TimeoutException;
+        return failure instanceof TimeoutException;
     }
 
     public List<MessageSendingResultLogInfo> getLogInfo() {

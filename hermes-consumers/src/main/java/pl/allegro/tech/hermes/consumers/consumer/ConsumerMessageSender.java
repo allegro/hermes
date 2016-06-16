@@ -196,7 +196,7 @@ public class ConsumerMessageSender {
         }
 
         private void logResultInfo(MessageSendingResultLogInfo logInfo) {
-            logger.info(
+            logger.debug(
                     format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
                             logInfo.getUrl(), message.getId(), message.getOffset(), message.getPartition(),
                             subscription.getId(), logInfo.getRootCause()),

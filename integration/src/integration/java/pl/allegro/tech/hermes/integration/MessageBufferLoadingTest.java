@@ -71,7 +71,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     }
 
 
-    @Test
+    @Test(enabled = false)
     public void shouldBackupMessage() throws Exception {
         // given
         KafkaStarter kafka = new KafkaStarter(kafkaProperties());
