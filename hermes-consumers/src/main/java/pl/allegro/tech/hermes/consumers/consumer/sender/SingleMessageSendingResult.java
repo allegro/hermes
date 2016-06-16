@@ -18,7 +18,6 @@ import java.util.function.Predicate;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
-import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
 public class SingleMessageSendingResult implements MessageSendingResult {
@@ -37,7 +36,8 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     }
 
     SingleMessageSendingResult(Throwable failure) {
-        this(failure, false);
+        this.failure = failure;
+        this.loggable = !isTimeout(); // Throwable - no status code
     }
 
     SingleMessageSendingResult(Result result) {
