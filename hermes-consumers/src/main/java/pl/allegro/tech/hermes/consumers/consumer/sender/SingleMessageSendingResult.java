@@ -24,20 +24,21 @@ public class SingleMessageSendingResult implements MessageSendingResult {
 
     private Throwable failure;
     private boolean loggable;
+    private boolean ignoreInRateCalculation = false;
 
     private Optional<Long> retryAfterMillis = Optional.empty();
     private String requestUri = "";
     private int statusCode;
     private Response.Status.Family responseFamily;
 
-    SingleMessageSendingResult(Throwable failure, boolean loggable) {
+    SingleMessageSendingResult(Throwable failure, boolean ignoreInRateCalculation) {
         this.failure = failure;
-        this.loggable = loggable;
+        this.loggable = !isTimeout();
+        this.ignoreInRateCalculation = ignoreInRateCalculation;
     }
 
     SingleMessageSendingResult(Throwable failure) {
-        this.failure = failure;
-        this.loggable = !isTimeout(); // Throwable - no status code
+        this(failure, false);
     }
 
     SingleMessageSendingResult(Result result) {
@@ -131,6 +132,11 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     @Override
     public boolean isClientError() {
         return isInFamily(CLIENT_ERROR);
+    }
+
+    @Override
+    public boolean ignoreInRateCalculation(boolean retryClientErrors) {
+        return isRetryLater() || this.ignoreInRateCalculation || (isClientError() && !retryClientErrors);
     }
 
     public boolean isTimeout() {

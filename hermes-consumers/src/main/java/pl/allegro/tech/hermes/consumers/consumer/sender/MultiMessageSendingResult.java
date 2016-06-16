@@ -35,6 +35,11 @@ public class MultiMessageSendingResult implements MessageSendingResult {
     }
 
     @Override
+    public boolean ignoreInRateCalculation(boolean retryClientErrors) {
+        return children.stream().allMatch(r -> r.ignoreInRateCalculation(retryClientErrors));
+    }
+
+    @Override
     public Optional<Long> getRetryAfterMillis() {
         return children.stream()
                 .map(MessageSendingResult::getRetryAfterMillis)

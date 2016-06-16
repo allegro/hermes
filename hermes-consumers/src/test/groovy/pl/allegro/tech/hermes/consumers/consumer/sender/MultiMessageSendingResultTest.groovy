@@ -52,15 +52,15 @@ class MultiMessageSendingResultTest extends Specification {
 
     def "should be loggable if one of children is loggable"() {
         given:
-        def children = [loggedFailResult(new Exception()), failedResult(new Exception())]
+        def children = [failedResult(new TimeoutException()), failedResult(new Exception())]
 
         expect:
         new MultiMessageSendingResult(children).isLoggable()
     }
 
-    def "should not be loggable if any of children is loggable"() {
+    def "should not be loggable if none of children is loggable"() {
         given:
-        def children = [failedResult(new Exception()), failedResult(new Exception())]
+        def children = [failedResult(new TimeoutException()), failedResult(new TimeoutException())]
 
         expect:
         !new MultiMessageSendingResult(children).isLoggable()
