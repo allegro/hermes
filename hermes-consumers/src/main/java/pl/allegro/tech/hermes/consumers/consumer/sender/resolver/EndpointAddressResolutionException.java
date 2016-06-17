@@ -13,13 +13,16 @@ public class EndpointAddressResolutionException extends Exception {
     }
 
     public EndpointAddressResolutionException(EndpointAddress endpointAddress, Throwable cause) {
-        super("Failed to resolve " + endpointAddress, cause);
-        this.ignoreInRateCalculation = true;
+        this(endpointAddress, cause, false);
+    }
+
+    public EndpointAddressResolutionException(String message, Throwable cause, boolean ignoreInRateCalculation) {
+        super(message, cause);
+        this.ignoreInRateCalculation = ignoreInRateCalculation;
     }
 
     public EndpointAddressResolutionException(String message, Throwable cause) {
-        super(message, cause);
-        this.ignoreInRateCalculation = true;
+        this(message, cause, false);
     }
 
     public boolean isIgnoreInRateCalculation() {
