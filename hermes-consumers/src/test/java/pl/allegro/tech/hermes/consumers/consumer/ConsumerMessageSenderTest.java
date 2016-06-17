@@ -349,7 +349,7 @@ public class ConsumerMessageSenderTest {
         when(messageSenderFactory.create(subscription)).thenReturn(messageSender);
         return new ConsumerMessageSender(subscription, messageSenderFactory, successHandler, errorHandler, rateLimiter,
                 Executors.newSingleThreadExecutor(), () -> inflightSemaphore.release(), hermesMetrics, ASYNC_TIMEOUT_MS,
-                new FutureAsyncTimeout<>(MessageSendingResult::loggedFailResult, Executors.newSingleThreadScheduledExecutor()));
+                new FutureAsyncTimeout<>(MessageSendingResult::failedResult, Executors.newSingleThreadScheduledExecutor()));
     }
 
     private void verifyRateLimiterSuccessfulSendingCountedTimes(int count) {
