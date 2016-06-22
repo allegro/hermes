@@ -39,6 +39,8 @@ public class SubscriptionBuilder {
 
     private List<Header> headers = new ArrayList<>();
 
+    private EndpointAddressResolverMetadata metadata = EndpointAddressResolverMetadata.empty();
+
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
         this.name = subscriptionName;
@@ -83,13 +85,13 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, mode, headers
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, mode, headers, metadata
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, headers
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, headers, metadata
             );
         }
     }
@@ -176,6 +178,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withHeader(String name, String value) {
         this.headers.add(new Header(name, value));
+        return this;
+    }
+
+    public SubscriptionBuilder withEndpointAddressResolverMetadata(EndpointAddressResolverMetadata metadata) {
+        this.metadata = metadata;
         return this;
     }
 }

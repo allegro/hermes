@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.resolver;
 
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.InterpolationException;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -18,7 +19,8 @@ public class InterpolatingEndpointAddressResolver implements EndpointAddressReso
     }
 
     @Override
-    public URI resolve(EndpointAddress address, Message message) throws EndpointAddressResolutionException {
+    public URI resolve(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
+            throws EndpointAddressResolutionException {
         try {
             return interpolator.interpolate(address, message);
         } catch (InterpolationException ex) {
