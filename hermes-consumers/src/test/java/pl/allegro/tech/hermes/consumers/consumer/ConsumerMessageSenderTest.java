@@ -133,25 +133,6 @@ public class ConsumerMessageSenderTest {
     }
 
     @Test
-    public void shouldKeepTryingToSendMessageOnRuntimeExceptionFromSender() throws InterruptedException {
-        // given
-        RuntimeException exception = exception();
-        Message message = message();
-        doThrow(exception).doThrow(exception).doReturn(success()).when(messageSender).send(message);
-
-        // when
-        sender.sendMessage(message);
-        verify(successHandler, timeout(1000)).handle(eq(message), eq(subscription), any(MessageSendingResult.class));
-
-        // then
-        verifySemaphoreReleased();
-        verifyLatencyTimersCountedTimes(3, 1);
-        verifyRateLimiterFailedSendingCountedTimes(2);
-        verifyRateLimiterSuccessfulSendingCountedTimes(1);
-        verifyErrorHandlerHandleFailed(message, subscription, 2);
-    }
-
-    @Test
     public void shouldDiscardMessageWhenTTLIsExceeded() {
         // given
         Message message = messageWithTimestamp(System.currentTimeMillis() - 11000);
@@ -164,7 +145,7 @@ public class ConsumerMessageSenderTest {
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
         verifySemaphoreReleased();
         verifyZeroInteractions(successHandler);
-        verifyLatencyTimersCountedTimes(1, 0);
+        verifyLatencyTimersCountedTimes(1, 1);
         verifyRateLimiterFailedSendingCountedTimes(1);
     }
 

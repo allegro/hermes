@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.concurrent.TimeUnit;
 
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_INTERVAL;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
@@ -35,6 +36,7 @@ public class SerialConsumer implements Consumer {
     private final AdjustableSemaphore inflightSemaphore;
 
     private final int defaultInflight;
+    private final int signalProcessingInterval;
 
     private Topic topic;
     private Subscription subscription;
@@ -52,6 +54,7 @@ public class SerialConsumer implements Consumer {
                           ConfigFactory configFactory,
                           OffsetQueue offsetQueue) {
         this.defaultInflight = configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE);
+        this.signalProcessingInterval = configFactory.getIntProperty(CONSUMER_SIGNAL_PROCESSING_INTERVAL);
         this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
@@ -83,7 +86,7 @@ public class SerialConsumer implements Consumer {
         try {
             do {
                 signalsInterrupt.run();
-            } while (!inflightSemaphore.tryAcquire(500, TimeUnit.MILLISECONDS));
+            } while (!inflightSemaphore.tryAcquire(signalProcessingInterval, TimeUnit.MILLISECONDS));
 
             Message message = messageReceiver.next();
             logger.debug("Read message {} partition {} offset {}", message.getContentType(), message.getPartition(), message.getOffset());

@@ -6,8 +6,6 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
@@ -15,12 +13,11 @@ import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.zookeeper.ZookeeperMessageCommitter;
 
-import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class ZookeeperMessageCommitterTest {
 
@@ -40,52 +37,52 @@ public class ZookeeperMessageCommitterTest {
                 .build();
         curatorClient.start();
     }
-//
-//    @Test
-//    public void shouldCommitOffsetsIfNoEntryExists() throws Exception {
-//        //when
-//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
-//
-//        //then
-//        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
-//    }
-//
-//    @Test
-//    public void shouldCommitOffsetsIfEntryExists() throws Exception {
-//        //given
-//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
-//
-//        //when
-//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 0));
-//
-//        //then
-//        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
-//    }
-//
-//    @Test
-//    public void shouldCommitCorrectOffset() throws Exception {
-//        //given
-//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
-//
-//        //when
-//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 17, 1));
-//
-//        //then
-//        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
-//        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/1"));
-//    }
-//
-//    @Test
-//    public void shouldRemoveOffset() throws Exception {
-//        //given
-//        zookeeperMessageCommitter.commitOffset(new SubscriptionName("sub1", SOME_TOPIC_NAME), new PartitionOffset(KAFKA_TOPIC, 15, 0));
-//
-//        //when
-//        zookeeperMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", KAFKA_TOPIC, 0);
-//
-//        //then
-//        assertNull(curatorClient.checkExists().forPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
-//    }
+
+    @Test
+    public void shouldCommitOffsetsIfNoEntryExists() throws Exception {
+        //when
+        zookeeperMessageCommitter.commitOffset(subscriptionPartitionOffset(new PartitionOffset(KAFKA_TOPIC, 15, 0), new SubscriptionName("sub1", SOME_TOPIC_NAME)));
+
+        //then
+        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
+    }
+
+    @Test
+    public void shouldCommitOffsetsIfEntryExists() throws Exception {
+        //given
+        zookeeperMessageCommitter.commitOffset(subscriptionPartitionOffset(new PartitionOffset(KAFKA_TOPIC, 15, 0), new SubscriptionName("sub1", SOME_TOPIC_NAME)));
+
+        //when
+        zookeeperMessageCommitter.commitOffset(subscriptionPartitionOffset(new PartitionOffset(KAFKA_TOPIC, 17, 0), new SubscriptionName("sub1", SOME_TOPIC_NAME)));
+
+        //then
+        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
+    }
+
+    @Test
+    public void shouldCommitCorrectOffset() throws Exception {
+        //given
+        zookeeperMessageCommitter.commitOffset(subscriptionPartitionOffset(new PartitionOffset(KAFKA_TOPIC, 15, 0), new SubscriptionName("sub1", SOME_TOPIC_NAME)));
+
+        //when
+        zookeeperMessageCommitter.commitOffset(subscriptionPartitionOffset(new PartitionOffset(KAFKA_TOPIC, 17, 1), new SubscriptionName("sub1", SOME_TOPIC_NAME)));
+
+        //then
+        assertEquals(16, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
+        assertEquals(18, getOffsetForPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/1"));
+    }
+
+    @Test
+    public void shouldRemoveOffset() throws Exception {
+        //given
+        zookeeperMessageCommitter.commitOffset(subscriptionPartitionOffset(new PartitionOffset(KAFKA_TOPIC, 15, 0), new SubscriptionName("sub1", SOME_TOPIC_NAME)));
+
+        //when
+        zookeeperMessageCommitter.removeOffset(SOME_TOPIC_NAME, "sub1", KAFKA_TOPIC, 0);
+
+        //then
+        assertNull(curatorClient.checkExists().forPath("/consumers/ns_g_b_sub1/offsets/kafka_topic/0"));
+    }
 
     private long getOffsetForPath(String path) throws Exception {
         byte[] bytes = curatorClient.getData().forPath(path);

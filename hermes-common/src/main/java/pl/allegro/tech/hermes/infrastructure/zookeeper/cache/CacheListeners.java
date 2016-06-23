@@ -7,17 +7,17 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 class CacheListeners {
 
     private static final Logger logger = LoggerFactory.getLogger(CacheListeners.class);
 
-    private final List<Consumer<PathChildrenCacheEvent>> callbacks = new ArrayList<>();
+    private final Queue<Consumer<PathChildrenCacheEvent>> callbacks = new ConcurrentLinkedQueue<>();
 
-    // NOTE: we probably don't need to be bothered by this synchronization, as adding occurs only on startup
-    // and this is called relatively rare
-    synchronized void addListener(Consumer<PathChildrenCacheEvent> callback) {
+    void addListener(Consumer<PathChildrenCacheEvent> callback) {
         callbacks.add(callback);
     }
 

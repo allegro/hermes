@@ -68,7 +68,7 @@ public class ZookeeperInternalNotificationBus implements InternalNotificationsBu
 
     @Override
     public void registerAdminCallback(AdminCallback callback) {
-        // TODO noop
+        // TODO we should move admin callbacks here in favor of AdminTool
     }
 
     private <T> T readSilently(String path, byte[] data, Class<T> clazz) {

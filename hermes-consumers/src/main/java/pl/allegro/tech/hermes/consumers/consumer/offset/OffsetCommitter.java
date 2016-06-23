@@ -24,11 +24,13 @@ import java.util.function.BiFunction;
  * * inflightOffsets: message offsets that are currently being sent (inflight)
  * * committedOffsets: message offsets that are ready to get committed
  * <p>
- * This committer class holds internal state in form of inflightOffsets set. These are all offsets that are currently
- * in inflight state.
+ * This committer class holds internal state in form of inflightOffsets and failedToCommitOffsets set.
+ * inlfightOffsets are all offsets that are currently in inflight state.
+ * failedToCommitOffsets are offsets that could not be committed in previous algorithm iteration
  * <p>
  * In scheduled periods, commit algorithm is run:
  * * drain inflightOffsets queue to inlfightOffsets set
+ * * add all failedToCommitOffsets to inlightOffsets set and clear the failed set
  * * calculate max offset for each topic & partition from inflightOffsets set
  * * drain committedOffsets by removing all elements from inflightOffsets set
  * * calculate min offset for each topic & partition from inflightOffsets set
@@ -39,9 +41,9 @@ import java.util.function.BiFunction;
  * <p>
  * This algorithm is very simple, memory efficient, can be performed in single thread and introduces no locks.
  */
-public class OffsetCommiter implements Runnable {
+public class OffsetCommitter implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(OffsetCommiter.class);
+    private static final Logger logger = LoggerFactory.getLogger(OffsetCommitter.class);
 
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
@@ -53,9 +55,11 @@ public class OffsetCommiter implements Runnable {
 
     private final Set<SubscriptionPartitionOffset> inflightOffsets = new HashSet<>();
 
+    private final Set<SubscriptionPartitionOffset> failedToCommitOffsets = new HashSet<>();
+
     private final MpscArrayQueue<SubscriptionName> subscriptionsToCleanup = new MpscArrayQueue<>(1000);
 
-    public OffsetCommiter(
+    public OffsetCommitter(
             OffsetQueue offsetQueue,
             List<MessageCommitter> messageCommitters,
             int offsetCommitPeriodSeconds
@@ -68,12 +72,14 @@ public class OffsetCommiter implements Runnable {
     @Override
     public void run() {
         offsetQueue.drainInflightOffsets(inflightOffsets::add);
+        inflightOffsets.addAll(failedToCommitOffsets);
+        failedToCommitOffsets.clear();
 
-        Map<SubscriptionPartition, Long> maxInflightOffsets = calculateInflightOfsets(Math::max);
+        Map<SubscriptionPartition, Long> maxInflightOffsets = calculateInflightOffsets(Math::max);
 
         offsetQueue.drainCommittedOffsets(inflightOffsets::remove);
 
-        Map<SubscriptionPartition, Long> minInflightOffsets = calculateInflightOfsets(Math::min);
+        Map<SubscriptionPartition, Long> minInflightOffsets = calculateInflightOffsets(Math::min);
 
         Set<SubscriptionPartitionOffset> offsetsToCommit = new HashSet<>();
         maxInflightOffsets.forEach((k, v) -> {
@@ -91,7 +97,7 @@ public class OffsetCommiter implements Runnable {
         cleanupUnusedSubscriptions();
     }
 
-    private Map<SubscriptionPartition, Long> calculateInflightOfsets(BiFunction<Long, Long, Long> comparer) {
+    private Map<SubscriptionPartition, Long> calculateInflightOffsets(BiFunction<Long, Long, Long> comparer) {
         Map<SubscriptionPartition, Long> calculatedOnflightOffsets = new HashMap<>();
         inflightOffsets.forEach(p -> calculatedOnflightOffsets.compute(
                 p.getSubscriptionPartition(),
@@ -105,6 +111,8 @@ public class OffsetCommiter implements Runnable {
             try {
                 committer.commitOffset(offset);
             } catch (Exception e) {
+                // it will be treated as min in next iteration, so it needs the + 1
+                failedToCommitOffsets.add(new SubscriptionPartitionOffset(offset.getSubscriptionPartition(), offset.getOffset() + 1));
                 logger.error("Failed to commit offset {} using {} committer", offset, committer.getClass().getSimpleName(), e);
             }
         }

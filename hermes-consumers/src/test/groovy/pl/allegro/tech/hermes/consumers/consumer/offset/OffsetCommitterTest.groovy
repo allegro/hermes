@@ -2,18 +2,20 @@ package pl.allegro.tech.hermes.consumers.consumer.offset
 
 import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
+import pl.allegro.tech.hermes.api.TopicName
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Specification
 
-class OffsetCommiterTest extends Specification {
+class OffsetCommitterTest extends Specification {
 
     private OffsetQueue queue = new OffsetQueue(new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
 
     private MessageCommitter messageCommitter = Mock(MessageCommitter)
 
-    private OffsetCommiter committer = new OffsetCommiter(queue, [messageCommitter], 10)
+    private OffsetCommitter committer = new OffsetCommitter(queue, [messageCommitter], 10)
 
     def "should commit smallest offset of uncommitted message - 1"() {
         given:
@@ -87,7 +89,7 @@ class OffsetCommiterTest extends Specification {
         1 * messageCommitter.commitOffset(offset(2, 9))
     }
 
-    def "should get rid of leftover inflight offset commits when removing subscription on the secund iteration"() {
+    def "should get rid of leftover inflight offset commits when removing subscription on the second iteration"() {
         given:
         queue.offerInflightOffset(offset(1, 3))
 
@@ -103,6 +105,19 @@ class OffsetCommiterTest extends Specification {
 
         then:
         0 * messageCommitter.commitOffset(_)
+    }
+
+    def "should retry committing offsets that failed to commit on first try in next iteration"() {
+        given:
+        queue.offerInflightOffset(offset(1, 1))
+        queue.offerCommittedOffset(offset(1, 1))
+
+        when:
+        committer.run()
+        committer.run()
+
+        then:
+        2 * messageCommitter.commitOffset(offset(1, 1)) >> { throw new IllegalStateException() } >> {}
     }
 
     private SubscriptionPartitionOffset offset(int partition, long offset) {

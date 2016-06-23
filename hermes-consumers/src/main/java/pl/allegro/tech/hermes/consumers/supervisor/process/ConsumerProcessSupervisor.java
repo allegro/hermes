@@ -10,8 +10,6 @@ import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 
 import java.time.Clock;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
@@ -51,17 +49,16 @@ public class ConsumerProcessSupervisor implements Runnable {
         long currentTime = clock.millis();
 
         try {
-            checkHealth();
+            restartUnhealthy();
             taskQueue.drain(this::processSignal);
-        }
-        catch(Exception exception) {
+        } catch (Exception exception) {
             logger.error("Process supervisor loop failed", exception);
         }
 
         logger.info("Process supervisor loop took {} ms to check all consumers", clock.millis() - currentTime);
     }
 
-    private void checkHealth() {
+    private void restartUnhealthy() {
         runningProcesses.stream()
                 .filter(consumerProcess -> !isHealthy(consumerProcess))
                 .forEach(consumerProcess -> taskQueue.offer(Signal.of(Signal.SignalType.KILL_RESTART, consumerProcess.getSubscriptionName())));
@@ -103,6 +100,7 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private void kill(ConsumerProcess consumerProcess) {
         logger.info("Interrupting consumer process {}", consumerProcess);
+        consumerProcess.markAsPreparedToStop();
         Future task = runningProcesses.getExecutionHandle(consumerProcess);
         if (!task.isDone()) {
             if (task.cancel(true)) {
@@ -132,9 +130,8 @@ public class ConsumerProcessSupervisor implements Runnable {
             process = new ConsumerProcess(subscriptionName, consumer.get(), retransmitter, clock);
         } else if (runningProcesses.hasProcess(subscriptionName)) {
             process = runningProcesses.getProcess(subscriptionName);
-        }
-        else {
-            logger.error("Tryng to start process for {} without known Consumer, aborting", subscriptionName);
+        } else {
+            logger.error("Trying to start process for {} without known Consumer, aborting", subscriptionName);
             return;
         }
 

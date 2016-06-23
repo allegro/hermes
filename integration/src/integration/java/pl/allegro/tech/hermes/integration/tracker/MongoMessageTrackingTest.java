@@ -38,10 +38,10 @@ import static javax.ws.rs.client.ClientBuilder.newClient;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class MongoMessageTrackingTest extends IntegrationTest {
@@ -77,7 +77,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     public void shouldLogMessagePublishing() {
         // given
         operations.buildTopic(topic("logMessagePublishing", "topic").withContentType(JSON).withTrackingEnabled(true).build());
-        
+
         // when
         publisher.publish("logMessagePublishing.topic", MESSAGE.body());
 
@@ -248,7 +248,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     public void shouldLogBatchIdInMessageTrace() {
         // given
         TestMessage message = TestMessage.simple();
-        TestMessage[] batch = { message };
+        TestMessage[] batch = {message};
         Topic topic = operations.buildTopic(topic("logBatchIdInMessageTrace", "topic").withContentType(JSON).build());
 
         BatchSubscriptionPolicy subscriptionPolicy = batchSubscriptionPolicy()
@@ -285,7 +285,7 @@ public class MongoMessageTrackingTest extends IntegrationTest {
     public void shouldLogBatchInflightAndSending() {
         // given
         TestMessage message = TestMessage.simple();
-        TestMessage[] batch = { message };
+        TestMessage[] batch = {message};
         Topic topic = operations.buildTopic(topic("logBatchInflightAndSending", "topic").withContentType(JSON).build());
 
         BatchSubscriptionPolicy subscriptionPolicy = singleMessageBatchPolicy();

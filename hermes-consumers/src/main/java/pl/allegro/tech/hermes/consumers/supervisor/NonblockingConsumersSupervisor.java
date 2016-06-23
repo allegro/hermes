@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommiter;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
@@ -33,12 +33,12 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
     private static final Logger logger = LoggerFactory.getLogger(NonblockingConsumersSupervisor.class);
 
-    private ConsumerProcessSupervisor backgroundProcess;
-    private ConsumerFactory consumerFactory;
-    private UndeliveredMessageLogPersister undeliveredMessageLogPersister;
-    private ConfigFactory configs;
-    private OffsetCommiter offsetCommitter;
-    private SubscriptionRepository subscriptionRepository;
+    private final ConsumerProcessSupervisor backgroundProcess;
+    private final ConsumerFactory consumerFactory;
+    private final UndeliveredMessageLogPersister undeliveredMessageLogPersister;
+    private final ConfigFactory configs;
+    private final OffsetCommitter offsetCommitter;
+    private final SubscriptionRepository subscriptionRepository;
 
     private final ScheduledExecutorService scheduledExecutor;
 
@@ -56,7 +56,7 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
         this.configs = configFactory;
-        this.offsetCommitter = new OffsetCommiter(offsetQueue, messageCommitters, configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_PERIOD));
+        this.offsetCommitter = new OffsetCommitter(offsetQueue, messageCommitters, configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_PERIOD));
         this.backgroundProcess = new ConsumerProcessSupervisor(executor, retransmitter, clock, configFactory);
         this.scheduledExecutor = createExecutorForSupervision();
     }
@@ -82,7 +82,7 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
             }
             logger.info("Consumer for {} was added for execution", subscription.getId());
         } catch (Exception ex) {
-            logger.warn("Failed to create consumer for subscription {}", subscription.getId(), ex);
+            logger.error("Failed to create consumer for subscription {}", subscription.getId(), ex);
         }
     }
 

@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.ActiveConsumerCounter;
 
 class MaximumOutputRateCalculator {

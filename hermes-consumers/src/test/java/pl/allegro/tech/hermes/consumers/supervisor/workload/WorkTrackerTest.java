@@ -63,13 +63,13 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
     }
 
     @Test
-    public void shouldDropAssignment() {
+    public void shouldDropAssignmentAndEmptySubscriptionNode() {
         // given
         Subscription sub = forceAssignment(anySubscription());
 
         // when
         workTracker.dropAssignment(sub);
-        wait.untilZookeeperPathIsEmpty(basePath, sub.toSubscriptionName().toString());
+        wait.untilZookeeperPathNotExists(basePath, sub.toSubscriptionName().toString());
 
         // then
         assertThat(workTracker.isAssignedTo(sub.toSubscriptionName(), supervisorId)).isFalse();

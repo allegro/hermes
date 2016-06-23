@@ -58,6 +58,10 @@ public class ConsumerProcess implements Runnable {
         }
     }
 
+    public void markAsPreparedToStop() {
+        Thread.currentThread().setName("consumer-" + subscriptionName + "-stale-" + clock.millis());
+    }
+
     public ConsumerProcess accept(Signal signal) {
         this.signals.add(signal);
         return this;

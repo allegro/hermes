@@ -1,13 +1,11 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
-import com.google.common.collect.Sets;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.List;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toMap;
 
 public class WorkTracker {
 
@@ -73,7 +71,7 @@ public class WorkTracker {
         }
 
         public String toString() {
-            return format("assignments_created=%d, assignments_deleted=%d, subscriptions_deleted=%d",
+            return format("assignments_created=%d, assignments_deleted=%d",
                     assignmentsCreated, assignmentsDeleted);
         }
     }
