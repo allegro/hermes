@@ -62,7 +62,7 @@ public class Subscription {
 
     private List<MessageFilterSpecification> filters = new ArrayList<>();
 
-    private Map<String, String> headers;
+    private List<Header> headers;
 
     public enum State {
         PENDING, ACTIVE, SUSPENDED
@@ -82,7 +82,7 @@ public class Subscription {
                          DeliveryType deliveryType,
                          List<MessageFilterSpecification> filters,
                          SubscriptionMode mode,
-                         Map<String, String> headers) {
+                         List<Header> headers) {
         this.topicName = topicName;
         this.name = name;
         this.endpoint = endpoint;
@@ -115,7 +115,7 @@ public class Subscription {
                                                         ContentType contentType,
                                                         List<MessageFilterSpecification> filters,
                                                         SubscriptionMode mode,
-                                                        Map<String, String> headers) {
+                                                        List<Header> headers) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
                 contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers);
     }
@@ -132,7 +132,7 @@ public class Subscription {
                                                        MonitoringDetails monitoringDetails,
                                                        ContentType contentType,
                                                        List<MessageFilterSpecification> filters,
-                                                       Map<String, String> headers) {
+                                                       List<Header> headers) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
                 contact, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers);
     }
@@ -152,7 +152,7 @@ public class Subscription {
                                       @JsonProperty("deliveryType") DeliveryType deliveryType,
                                       @JsonProperty("filters") List<MessageFilterSpecification> filters,
                                       @JsonProperty("mode") SubscriptionMode mode,
-                                      @JsonProperty("headers") Map<String, String> headers) {
+                                      @JsonProperty("headers") List<Header> headers) {
 
         DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
         SubscriptionMode subscriptionMode = mode == null ? SubscriptionMode.ANYCAST : mode;
@@ -174,7 +174,7 @@ public class Subscription {
                 validDeliveryType,
                 filters == null ? Collections.emptyList() : filters,
                 subscriptionMode,
-                headers == null ? Collections.emptyMap() : headers
+                headers == null ? Collections.emptyList() : headers
         );
     }
 
@@ -290,8 +290,8 @@ public class Subscription {
         return Collections.unmodifiableList(filters);
     }
 
-    public Map<String, String> getHeaders() {
-        return Collections.unmodifiableMap(headers);
+    public List<Header> getHeaders() {
+        return Collections.unmodifiableList(headers);
     }
 
     @JsonIgnore

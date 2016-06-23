@@ -19,20 +19,16 @@ Body of request must contain:
 
 * name: group name
 * supportTeam: team that should have administrative access to this group
+* technicalOwner: name of the person responsible for this group
+* contact: team contact, e.g. e-mail
 
-Minimal request:
-
-```json
-{"groupName": "my-group", "supportTeam": "My Team"}
-```
-
-All fields:
+Sample request:
 
 ```json
 {
     "groupName": "my-group",
     "supportTeam": "My Team",
-    "owner": "Person Responsible",
+    "technicalOwner": "Person Responsible",
     "contact": "my-team-alias@mycompany.com"
 }
 ```
@@ -50,21 +46,29 @@ on topics resource:
 Body of request must contain at least:
 
 * name: fully qualified name of topic including group name, separated with a dot (see: [naming convention](/overview/data-model#naming-convention))
+* description: topic description
+* contentType: format of data sent to Kafka, either ``JSON`` or ``AVRO``
+* retentionTime: time to keep data in Kafka in days
 
 Minimal request:
 
 ```json
-{"name": "my-group.my-topic"}
+{
+    "name": "my-group.my-topic",
+    "description": "This is my topic",
+    "contentType": "JSON",
+    "retentionTime": {
+        "duration": 1
+    }
+}
 ```
 
-All options:
+Other options:
 
 Option            | Description                             | Options     | Default value
 ---------------   | --------------------------------------- | ----------- | -------------
 ack               | acknowledgement level                   | ALL, LEADER | LEADER
-retentionTime     | time to keep data in Kafka in days      | -           | 1
 trackingEnabled   | track incoming messages?                | -           | false
-contentType       | format of data sent to Kafka            | AVRO, JSON  | JSON
 validationEnabled | use message schema to validate messages | -           | false for JSON, true for Avro
 
 Request that specifies all available options:
@@ -74,7 +78,9 @@ Request that specifies all available options:
     "name": "myTopic",
     "description": "This is my topic",
     "ack": "LEADER",
-    "retentionTime": 1,
+    "retentionTime": {
+        "duration": 1
+    }
     "trackingEnabled": false,
     "contentType": "JSON",
     "validationEnabled": false

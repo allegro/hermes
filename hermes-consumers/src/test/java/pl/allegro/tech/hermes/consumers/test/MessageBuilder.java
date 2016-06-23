@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.consumers.test;
 
-
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,7 +30,7 @@ public final class MessageBuilder {
     private PartitionOffset partitionOffset;
     private byte[] content;
     private Map<String, String> externalMetadata;
-    private Map<String, String> additionalHeaders;
+    private List<Header> additionalHeaders;
     private Optional<CompiledSchema<Object>> schema = Optional.empty();
 
     private MessageBuilder() {
@@ -49,7 +50,7 @@ public final class MessageBuilder {
                 .withReadingTimestamp(123L)
                 .withPartitionOffset(new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 123, 1))
                 .withExternalMetadata(of("Trace-Id", "traceId"))
-                .withAdditionalHeaders(Collections.emptyMap());
+                .withAdditionalHeaders(Collections.emptyList());
     }
 
     public Message build() {
@@ -112,7 +113,7 @@ public final class MessageBuilder {
         return this;
     }
 
-    public MessageBuilder withAdditionalHeaders(Map<String, String> additionalHeaders) {
+    public MessageBuilder withAdditionalHeaders(List<Header> additionalHeaders) {
         this.additionalHeaders = additionalHeaders;
         return this;
     }

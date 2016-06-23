@@ -1,22 +1,9 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
-import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
-import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.DeliveryType;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.MessageFilterSpecification;
-import pl.allegro.tech.hermes.api.MonitoringDetails;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionMode;
-import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SubscriptionBuilder {
 
@@ -50,7 +37,7 @@ public class SubscriptionBuilder {
 
     private SubscriptionMode mode = SubscriptionMode.ANYCAST;
 
-    private Map<String, String> headers = new HashMap<>();
+    private List<Header> headers = new ArrayList<>();
 
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
@@ -188,7 +175,7 @@ public class SubscriptionBuilder {
     }
 
     public SubscriptionBuilder withHeader(String name, String value) {
-        this.headers.put(name, value);
+        this.headers.add(new Header(name, value));
         return this;
     }
 }

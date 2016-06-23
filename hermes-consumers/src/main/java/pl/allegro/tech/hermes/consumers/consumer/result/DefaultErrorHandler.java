@@ -59,13 +59,15 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     }
 
     private void logResult(Message message, Subscription subscription, MessageSendingResult result) {
-        result.getLogInfo().forEach(logInfo ->
-                logger.warn(
-                        "Abnormal delivery failure: subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
-                        subscription.getId(), logInfo.getRootCause(), logInfo.getUrl(), message.getId(),
-                        message.getPartition(), message.getOffset(), logInfo.getFailure()
-                )
-        );
+        if(result.isLoggable()) {
+            result.getLogInfo().stream().forEach(logInfo ->
+                    logger.warn(
+                            "Abnormal delivery failure: subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
+                            subscription.getId(), logInfo.getRootCause(), logInfo.getUrl(), message.getId(),
+                            message.getPartition(), message.getOffset(), logInfo.getFailure()
+                    )
+            );
+        }
     }
 
     private void updateMeters(Subscription subscription) {
