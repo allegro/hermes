@@ -23,7 +23,7 @@ public class FutureAsyncTimeoutFactory implements Factory<FutureAsyncTimeout<Mes
 
     @Override
     public FutureAsyncTimeout<MessageSendingResult> provide() {
-        return new FutureAsyncTimeout<>(MessageSendingResult::loggedFailResult, timeoutExecutorService);
+        return new FutureAsyncTimeout<>(MessageSendingResult::failedResult, timeoutExecutorService);
     }
 
     @Override

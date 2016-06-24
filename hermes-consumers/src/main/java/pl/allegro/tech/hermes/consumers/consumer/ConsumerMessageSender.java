@@ -116,10 +116,10 @@ public class ConsumerMessageSender {
     }
 
     private void handleFailedSending(Message message, MessageSendingResult result) {
-        if (shouldReduceSendingRate(result)) {
-            rateLimiter.registerFailedSending();
-        } else {
+        if (result.ignoreInRateCalculation(subscription.getSerialSubscriptionPolicy().isRetryClientErrors())) {
             rateLimiter.registerSuccessfulSending();
+        } else {
+            rateLimiter.registerFailedSending();
         }
         errorHandler.handleFailed(message, subscription, result);
     }
@@ -132,10 +132,6 @@ public class ConsumerMessageSender {
     private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
         inflight.release();
         successHandler.handle(message, subscription, result);
-    }
-
-    private boolean shouldReduceSendingRate(MessageSendingResult result) {
-        return !result.isRetryLater() && shouldResendMessage(result);
     }
 
     private boolean messageSentSucceeded(MessageSendingResult result) {
