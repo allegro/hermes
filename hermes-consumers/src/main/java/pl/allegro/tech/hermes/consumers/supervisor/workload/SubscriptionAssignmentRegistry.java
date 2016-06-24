@@ -24,6 +24,8 @@ public class SubscriptionAssignmentRegistry {
 
     private final Set<SubscriptionAssignment> assignments = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
+    private final String consumerNodeId;
+
     private final CuratorFramework curator;
 
     private final HierarchicalCache cache;
@@ -32,8 +34,12 @@ public class SubscriptionAssignmentRegistry {
 
     private final SubscriptionAssignmentPathSerializer pathSerializer;
 
-    public SubscriptionAssignmentRegistry(CuratorFramework curator, String path,
-                                          SubscriptionsCache subscriptionsCache,SubscriptionAssignmentPathSerializer pathSerializer) {
+    public SubscriptionAssignmentRegistry(String consumerNodeId,
+                                          CuratorFramework curator,
+                                          String path,
+                                          SubscriptionsCache subscriptionsCache,
+                                          SubscriptionAssignmentPathSerializer pathSerializer) {
+        this.consumerNodeId = consumerNodeId;
         this.curator = curator;
         this.subscriptionsCache = subscriptionsCache;
         this.pathSerializer = pathSerializer;
@@ -65,14 +71,16 @@ public class SubscriptionAssignmentRegistry {
 
     public void registerAssignementCallback(SubscriptionAssignmentAware callback) {
         cache.registerCallback(ASSIGNMENT_LEVEL, (e) -> {
-            SubscriptionName subscriptionName = pathSerializer.deserialize(e.getData().getPath()).getSubscriptionName();
-            switch (e.getType()) {
-                case CHILD_ADDED:
-                    callback.onSubscriptionAssigned(subscriptionsCache.getSubscription(subscriptionName));
-                    break;
-                case CHILD_REMOVED:
-                    callback.onAssignmentRemoved(subscriptionName);
-                    break;
+            SubscriptionAssignment assignment = pathSerializer.deserialize(e.getData().getPath());
+            if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
+                switch (e.getType()) {
+                    case CHILD_ADDED:
+                        callback.onSubscriptionAssigned(subscriptionsCache.getSubscription(assignment.getSubscriptionName()));
+                        break;
+                    case CHILD_REMOVED:
+                        callback.onAssignmentRemoved(assignment.getSubscriptionName());
+                        break;
+                }
             }
         });
     }
@@ -95,7 +103,7 @@ public class SubscriptionAssignmentRegistry {
 
     private void removeSubscriptionEntryIfEmpty(SubscriptionName subscriptionName) {
         askCuratorPolitely(() -> {
-            if(curator.getChildren().forPath(pathSerializer.serialize(subscriptionName)).isEmpty()) {
+            if (curator.getChildren().forPath(pathSerializer.serialize(subscriptionName)).isEmpty()) {
                 curator.delete().guaranteed().forPath(pathSerializer.serialize(subscriptionName));
             }
         });

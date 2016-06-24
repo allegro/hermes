@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import javax.inject.Inject;
 
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class SubscriptionAssignmentRegistryFactory implements Factory<SubscriptionAssignmentRegistry> {
@@ -38,6 +39,7 @@ public class SubscriptionAssignmentRegistryFactory implements Factory<Subscripti
         String cluster = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
 
         SubscriptionAssignmentRegistry registry = new SubscriptionAssignmentRegistry(
+                configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID),
                 curatorClient,
                 paths.consumersRuntimePath(cluster),
                 cache,
