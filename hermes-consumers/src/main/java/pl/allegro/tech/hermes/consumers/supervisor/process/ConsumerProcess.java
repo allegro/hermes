@@ -54,6 +54,7 @@ public class ConsumerProcess implements Runnable {
             stop();
 
         } finally {
+            refreshHealthcheck();
             Thread.currentThread().setName("consumer-released-thread");
         }
     }
@@ -68,8 +69,13 @@ public class ConsumerProcess implements Runnable {
     }
 
     private void processSignals() {
-        this.healtcheckRefreshTime = clock.millis();
+        refreshHealthcheck();
         signals.drain(this::process);
+        refreshHealthcheck();
+    }
+
+    private void refreshHealthcheck() {
+        this.healtcheckRefreshTime = clock.millis();
     }
 
     private void process(Signal signal) {
