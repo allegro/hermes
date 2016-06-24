@@ -7,7 +7,7 @@ import java.time.Clock;
 public class ClockFactory implements Factory<Clock> {
     @Override
     public Clock provide() {
-        return Clock.systemDefaultZone();
+        return Clock.systemUTC();
     }
 
     @Override

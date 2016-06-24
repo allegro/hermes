@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 
@@ -27,15 +28,19 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private final Clock clock;
 
+    private final HermesMetrics metrics;
+
     private long unhealthyAfter;
 
     public ConsumerProcessSupervisor(ConsumersExecutorService executor,
                                      Retransmitter retransmitter,
                                      Clock clock,
+                                     HermesMetrics metrics,
                                      ConfigFactory configs) {
         this.executor = executor;
         this.retransmitter = retransmitter;
         this.clock = clock;
+        this.metrics = metrics;
         this.unhealthyAfter = configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER);
     }
 
@@ -48,12 +53,8 @@ public class ConsumerProcessSupervisor implements Runnable {
         logger.info("Starting process supervisor loop");
         long currentTime = clock.millis();
 
-        try {
-            restartUnhealthy();
-            taskQueue.drain(this::processSignal);
-        } catch (Exception exception) {
-            logger.error("Process supervisor loop failed", exception);
-        }
+        restartUnhealthy();
+        taskQueue.drain(this::processSignal);
 
         logger.info("Process supervisor loop took {} ms to check all consumers", clock.millis() - currentTime);
     }
@@ -65,32 +66,38 @@ public class ConsumerProcessSupervisor implements Runnable {
     }
 
     private void processSignal(Signal signal) {
-        logger.debug("Processing signal: {}", signal);
-        switch (signal.getType()) {
-            case START:
-                start(signal.getTarget(), signal.getPayload());
-                break;
-            case RETRANSMIT:
-                process(signal).accept(signal);
-                break;
-            case UPDATE_SUBSCRIPTION:
-            case UPDATE_TOPIC:
-                process(signal).accept(signal);
-                break;
-            case RESTART:
-            case KILL_RESTART:
-                kill(process(signal));
-                taskQueue.offer(Signal.of(Signal.SignalType.START, signal.getTarget()));
-                break;
-            case STOP:
-                process(signal).accept(signal);
-                taskQueue.offer(Signal.of(Signal.SignalType.CLEANUP, signal.getTarget()));
-                break;
-            case CLEANUP:
-                cleanup(process(signal));
-                break;
-            default:
-                break;
+        try {
+            logger.debug("Processing signal: {}", signal);
+            metrics.counter("supervisor.signal." + signal.getType().name()).inc();
+
+            switch (signal.getType()) {
+                case START:
+                    start(signal.getTarget(), signal.getPayload());
+                    break;
+                case RETRANSMIT:
+                    process(signal).accept(signal);
+                    break;
+                case UPDATE_SUBSCRIPTION:
+                case UPDATE_TOPIC:
+                    process(signal).accept(signal);
+                    break;
+                case RESTART:
+                case KILL_RESTART:
+                    kill(process(signal));
+                    taskQueue.offer(Signal.of(Signal.SignalType.START, signal.getTarget()));
+                    break;
+                case STOP:
+                    process(signal).accept(signal);
+                    taskQueue.offer(Signal.of(Signal.SignalType.CLEANUP, signal.getTarget()));
+                    break;
+                case CLEANUP:
+                    cleanup(process(signal));
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception exception) {
+            logger.error("Supervisor failed to process signal {}", signal, exception);
         }
     }
 

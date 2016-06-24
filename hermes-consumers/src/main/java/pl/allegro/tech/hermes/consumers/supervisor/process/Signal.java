@@ -38,10 +38,12 @@ public class Signal {
         return target;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> Optional<T> getPayload() {
         return (Optional<T>) payload;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getExtractedPayload() {
         return (T) payload.get();
     }

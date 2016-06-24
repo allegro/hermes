@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
@@ -51,13 +52,14 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                                           Retransmitter retransmitter,
                                           UndeliveredMessageLogPersister undeliveredMessageLogPersister,
                                           SubscriptionRepository subscriptionRepository,
+                                          HermesMetrics metrics,
                                           Clock clock) {
         this.consumerFactory = consumerFactory;
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
         this.configs = configFactory;
         this.offsetCommitter = new OffsetCommitter(offsetQueue, messageCommitters, configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_PERIOD));
-        this.backgroundProcess = new ConsumerProcessSupervisor(executor, retransmitter, clock, configFactory);
+        this.backgroundProcess = new ConsumerProcessSupervisor(executor, retransmitter, clock, metrics, configFactory);
         this.scheduledExecutor = createExecutorForSupervision();
     }
 

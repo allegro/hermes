@@ -87,34 +87,16 @@ public class HermesMetrics {
                 pathContext().withHttpCode(statusCode).withGroup(topicName.getGroupName()).withTopic(topicName.getName()).build()));
     }
 
+    public Counter counter(String metric) {
+        return metricRegistry.counter(metricRegistryName(metric));
+    }
+
     public Counter counter(String metric, TopicName topicName) {
         return metricRegistry.counter(metricRegistryName(metric, topicName));
     }
 
     public Counter counter(String metric, TopicName topicName, String name) {
         return metricRegistry.counter(metricRegistryName(metric, topicName, name));
-    }
-
-    public Counter counterForOffsetCommitIdlePeriod(Subscription subscription, KafkaTopicName topic, int partition) {
-        String path = pathForConsumerOffsetCommitIdle(subscription, topic, partition);
-
-        return metricRegistry.counter(path);
-    }
-
-    public void removeCounterForOffsetCommitIdlePeriod(Subscription subscription, KafkaTopicName topic, int partition) {
-        String path = pathForConsumerOffsetCommitIdle(subscription, topic, partition);
-
-        metricRegistry.remove(path);
-    }
-
-    private String pathForConsumerOffsetCommitIdle(Subscription subscription, KafkaTopicName topic, int partition) {
-        return pathCompiler.compile(Counters.OFFSET_COMMIT_IDLE, pathContext()
-                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
-                .withTopic(escapeDots(subscription.getTopicName().getName()))
-                .withSubscription(escapeDots(subscription.getName()))
-                .withKafkaTopic(escapeDots(topic.asString()))
-                .withPartition(partition)
-                .build());
     }
 
     public void registerConsumersThreadGauge(Gauge<Integer> gauge) {
@@ -170,10 +152,6 @@ public class HermesMetrics {
 
     private Counter getInflightCounter(Subscription subscription) {
         return counter(Counters.INFLIGHT, subscription.getTopicName(), subscription.getName());
-    }
-
-    public void removeMetrics(final SubscriptionName subscription) {
-        metricRegistry.removeMatching((name, metric) -> name.contains(String.format(".%s.", subscription.getId())));
     }
 
     public void registerGauge(String name, Gauge<?> gauge) {
