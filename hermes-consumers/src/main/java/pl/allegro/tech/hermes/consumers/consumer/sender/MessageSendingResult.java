@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import org.eclipse.jetty.client.api.Result;
+import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,16 +22,16 @@ public interface MessageSendingResult {
         return new SingleMessageSendingResult(cause);
     }
 
+    static SingleMessageSendingResult failedResult(EndpointAddressResolutionException cause) {
+        return new SingleMessageSendingResult(cause, cause.isIgnoreInRateCalculation());
+    }
+
     static SingleMessageSendingResult failedResult(int statusCode) {
         return new SingleMessageSendingResult(statusCode);
     }
 
     static SingleMessageSendingResult ofStatusCode(int statusCode) {
         return new SingleMessageSendingResult(statusCode);
-    }
-
-    static SingleMessageSendingResult loggedFailResult(Throwable cause) {
-        return new SingleMessageSendingResult(cause, true);
     }
 
     static SingleMessageSendingResult retryAfter(int seconds) {
@@ -54,6 +55,8 @@ public interface MessageSendingResult {
     boolean isTimeout();
 
     boolean succeeded();
+
+    boolean ignoreInRateCalculation(boolean retryClientErrors);
 
     default boolean hasHttpAnswer() {
         return getStatusCode() != 0;
