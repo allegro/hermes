@@ -107,7 +107,6 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private void kill(ConsumerProcess consumerProcess) {
         logger.info("Interrupting consumer process {}", consumerProcess);
-        consumerProcess.markAsPreparedToStop();
         Future task = runningProcesses.getExecutionHandle(consumerProcess);
         if (!task.isDone()) {
             if (task.cancel(true)) {
