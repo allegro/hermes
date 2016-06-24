@@ -59,7 +59,8 @@ public class ConsumerProcess implements Runnable {
     }
 
     public void markAsPreparedToStop() {
-        Thread.currentThread().setName("consumer-" + subscriptionName + "-stale-" + clock.millis());
+        this.healtcheckRefreshTime = clock.millis();
+        Thread.currentThread().setName("consumer-" + subscriptionName + "-stale-" + healtcheckRefreshTime);
     }
 
     public ConsumerProcess accept(Signal signal) {

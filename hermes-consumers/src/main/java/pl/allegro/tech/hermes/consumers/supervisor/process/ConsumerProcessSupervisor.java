@@ -115,6 +115,7 @@ public class ConsumerProcessSupervisor implements Runnable {
             } else {
                 logger.error("Failed to interrupt consumer process {}, possible stale consumer", consumerProcess);
             }
+            runningProcesses.remove(consumerProcess);
         } else {
             logger.info("Consumer was already dead process {}", consumerProcess);
         }
@@ -150,7 +151,6 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private void cleanup(ConsumerProcess consumerProcess) {
         kill(consumerProcess);
-        runningProcesses.remove(consumerProcess);
     }
 
     public void shutdown() {
