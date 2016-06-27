@@ -3,13 +3,14 @@ package pl.allegro.tech.hermes.frontend.cache.topic.zookeeper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import org.apache.curator.framework.CuratorFramework;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.cache.zookeeper.ZookeeperCacheBase;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicCallback;
+import pl.allegro.tech.hermes.frontend.metric.TopicWithMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 
 import javax.inject.Named;
@@ -23,11 +24,12 @@ public class ZookeeperTopicsCache extends ZookeeperCacheBase implements TopicsCa
     public ZookeeperTopicsCache(
             @Named(CuratorType.HERMES) CuratorFramework curatorClient,
             ConfigFactory configFactory,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            HermesMetrics hermesMetrics) {
 
         super(configFactory, curatorClient);
 
-        groupsNodeCache = new GroupsNodeCache(curatorClient, objectMapper, paths.groupsPath(), eventExecutor);
+        groupsNodeCache = new GroupsNodeCache(curatorClient, objectMapper, paths.groupsPath(), eventExecutor, hermesMetrics);
     }
 
     @Override
@@ -47,7 +49,7 @@ public class ZookeeperTopicsCache extends ZookeeperCacheBase implements TopicsCa
     }
 
     @Override
-    public Optional<Topic> getTopic(TopicName topicName) {
+    public Optional<TopicWithMetrics> getTopic(TopicName topicName) {
         return groupsNodeCache.getTopic(topicName);
     }
 }

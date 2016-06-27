@@ -20,4 +20,6 @@ public interface SchemaVersionsRepository {
     }
 
     List<SchemaVersion> versions(Topic topic, boolean online);
+
+    void close();
 }

@@ -10,10 +10,11 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
+import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
+import pl.allegro.tech.hermes.frontend.metric.TopicWithMetrics;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
@@ -29,19 +30,12 @@ import java.util.UUID;
 import static java.time.LocalDateTime.now;
 import static java.time.ZoneOffset.UTC;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class BackupMessagesLoaderTest {
 
     private BrokerMessageProducer producer = mock(BrokerMessageProducer.class);
-
-    private HermesMetrics metrics = mock(HermesMetrics.class);
 
     private BrokerListeners listeners = mock(BrokerListeners.class);
 
@@ -51,6 +45,8 @@ public class BackupMessagesLoaderTest {
 
     private ConfigFactory configFactory = mock(ConfigFactory.class);
 
+    private TopicWithMetrics topicWithMetrics = mock(TopicWithMetrics.class);
+
     private File tempDir;
 
     private final TopicName topicName = TopicName.fromQualifiedName("pl.allegro.tech.hermes.test");
@@ -59,9 +55,10 @@ public class BackupMessagesLoaderTest {
     @Before
     public void setUp() throws Exception {
         tempDir = Files.createTempDir();
-        when(topicsCache.getTopic(topicName)).thenReturn(Optional.of(topic));
-        when(metrics.timer(anyString())).thenReturn(new Timer());
-        when(metrics.timer(anyString(), eq(topicName))).thenReturn(new Timer());
+
+        when(topicWithMetrics.getTopic()).thenReturn(topic);
+        when(topicWithMetrics.startBrokerLatencyTimers()).thenReturn(new StartedTimersPair(new Timer(), new Timer()));
+        when(topicsCache.getTopic(topicName)).thenReturn(Optional.of(topicWithMetrics));
         when(producer.isTopicAvailable(topic)).thenReturn(true);
     }
 
@@ -78,7 +75,7 @@ public class BackupMessagesLoaderTest {
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(2);
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
-        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, metrics, listeners, topicsCache, trackers, configFactory);
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
 
         messageRepository.save(messageOfAge(1), topic);
         messageRepository.save(messageOfAge(10), topic);
@@ -108,7 +105,7 @@ public class BackupMessagesLoaderTest {
 
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
-        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, metrics, listeners, topicsCache, trackers, configFactory);
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
 
         messageRepository.save(messageOfAge(1), topic);
 
@@ -128,7 +125,7 @@ public class BackupMessagesLoaderTest {
 
         when(producer.isTopicAvailable(topic)).thenReturn(false).thenReturn(false).thenReturn(true);
 
-        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, metrics, listeners, topicsCache, trackers, configFactory);
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
         MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
         messageRepository.save(messageOfAge(1), topic);
 

@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.publishing;
+package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import org.apache.avro.Schema;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;

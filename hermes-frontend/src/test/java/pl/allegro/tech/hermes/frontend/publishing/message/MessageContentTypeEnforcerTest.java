@@ -1,11 +1,9 @@
-package pl.allegro.tech.hermes.frontend.publishing;
+package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import org.apache.avro.Schema;
 import org.junit.Test;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
-import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
-import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 import java.io.IOException;

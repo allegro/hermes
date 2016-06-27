@@ -29,4 +29,9 @@ public class SimpleSchemaVersionsRepository implements SchemaVersionsRepository 
             return emptyList();
         }
     }
+
+    @Override
+    public void close() {
+        // nothing to close
+    }
 }

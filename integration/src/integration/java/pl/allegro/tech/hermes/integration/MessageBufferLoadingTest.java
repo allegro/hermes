@@ -37,10 +37,11 @@ import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static org.apache.commons.io.FileUtils.copyFile;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_ZOOKEEPER_CONNECT_STRING;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
-import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class MessageBufferLoadingTest extends IntegrationTest {
 
@@ -89,7 +90,9 @@ public class MessageBufferLoadingTest extends IntegrationTest {
                     frontend.config().getStringProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY)
             );
 
-            assertThat(publisher.publish("backupGroup.uniqueTopic", "message").getStatus()).isEqualTo(CREATED.getStatusCode());
+            await().atMost(5, SECONDS).until(() ->
+                    assertThat(publisher.publish("backupGroup.uniqueTopic", "message").getStatus())
+                            .isEqualTo(CREATED.getStatusCode()));
 
             // when
             kafka.stop();
@@ -110,16 +113,14 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     public void shouldLoadMessageFromBackupStorage() throws Exception {
         // given
         Topic topic = topic("backupGroup", "topic").withContentType(ContentType.JSON).build();
-        File backup = backupFileWithOneMessage(topic);
+        backupFileWithOneMessage(topic);
 
         operations.createSubscription(operations.buildTopic(topic), "subscription", HTTP_ENDPOINT_URL);
 
         remoteService.expectMessages("message");
 
         FrontendStarter frontend = new FrontendStarter(Ports.nextAvailable(), false);
-        String storageDir = frontend.config().getStringProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY);
-
-        copyFile(backup, new File(storageDir + "/hermes-buffer.dat"));
+        frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDir.getAbsolutePath());
 
         // when
         frontend.start();
@@ -132,7 +133,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     }
 
     private File backupFileWithOneMessage(Topic topic) {
-        File backup = new File(tempDir.getAbsoluteFile(), "messages.dat");
+        File backup = new File(tempDir.getAbsoluteFile(), "hermes-buffer.dat");
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(backup);
         MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null);
@@ -148,11 +149,12 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         return backup;
     }
 
-    private static Properties kafkaProperties() {
+    private Properties kafkaProperties() {
         Properties properties = new Properties();
         properties.setProperty("port", String.valueOf(KAFKA_PORT));
         properties.setProperty("zookeeper.connect", KAFKA_ZK_CONNECT_STRING);
         properties.setProperty("broker.id", "0");
+        properties.setProperty("log.dirs", tempDir.getAbsolutePath() + "/kafka-logs-it");
 
         return properties;
     }

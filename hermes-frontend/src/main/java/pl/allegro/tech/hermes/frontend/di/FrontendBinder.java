@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.di;
 
+import io.undertow.server.HttpHandler;
 import org.I0Itec.zkclient.ZkClient;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -11,9 +12,10 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
-import pl.allegro.tech.hermes.frontend.publishing.MessageContentTypeEnforcer;
-import pl.allegro.tech.hermes.frontend.publishing.MessagePublisher;
-import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
@@ -40,7 +42,8 @@ public class FrontendBinder extends AbstractBinder {
     @Override
     protected void configure() {
         bindSingleton(HermesServer.class);
-        bindSingleton(PublishingServlet.class);
+        bindSingleton(MessageErrorProcessor.class);
+        bindSingleton(MessageEndProcessor.class);
         bindSingleton(MessageValidators.class);
 
         bind(hooksHandler).to(HooksHandler.class);
@@ -50,13 +53,13 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(HealthCheckService.class);
         bind(DefaultHeadersPropagator.class).to(HeadersPropagator.class).in(Singleton.class);
 
+        bindFactory(HandlersChainFactory.class).to(HttpHandler.class).in(Singleton.class);
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
         bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);
         bindFactory(ZkClientFactory.class).to(ZkClient.class).in(Singleton.class);
         bindSingleton(PublishingMessageTracker.class);
         bindSingleton(NoOperationPublishingTracker.class);
         bindFactory(ZookeeperTopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
-        bindSingleton(MessagePublisher.class);
         bindSingleton(MessageContentTypeEnforcer.class);
         bindSingleton(JsonTopicMessageValidator.class);
         bindSingleton(AvroTopicMessageValidator.class);

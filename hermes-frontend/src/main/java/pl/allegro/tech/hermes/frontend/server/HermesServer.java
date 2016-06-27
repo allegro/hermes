@@ -2,32 +2,19 @@ package pl.allegro.tech.hermes.frontend.server;
 
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.PathHandler;
+import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
-import io.undertow.servlet.Servlets;
-import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.DeploymentManager;
-import io.undertow.servlet.api.ServletInfo;
-import io.undertow.servlet.util.ImmediateInstanceFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.publishing.PublishingServlet;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 import java.util.Collections;
 
-import static io.undertow.Handlers.path;
-import static io.undertow.Handlers.redirect;
 import static io.undertow.UndertowOptions.*;
-import static io.undertow.servlet.Servlets.deployment;
-import static io.undertow.servlet.Servlets.servlet;
 import static org.xnio.Options.BACKLOG;
 import static org.xnio.Options.READ_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.*;
@@ -40,7 +27,7 @@ public class HermesServer {
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configFactory;
     private final TopicsCache topicsCache;
-    private final PublishingServlet publishingServlet;
+    private final HttpHandler publishingHandler;
     private final HealthCheckService healthCheckService;
     private final MessagePreviewPersister messagePreviewPersister;
     private final int port;
@@ -52,14 +39,14 @@ public class HermesServer {
             TopicsCache topicsCache,
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
-            PublishingServlet publishingServlet,
+            HttpHandler publishingHandler,
             HealthCheckService healthCheckService,
             MessagePreviewPersister messagePreviewPersister) {
 
         this.topicsCache = topicsCache;
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
-        this.publishingServlet = publishingServlet;
+        this.publishingHandler = publishingHandler;
         this.healthCheckService = healthCheckService;
         this.messagePreviewPersister = messagePreviewPersister;
 
@@ -88,7 +75,7 @@ public class HermesServer {
     }
 
     private Undertow configureServer() {
-        gracefulShutdown = new HermesShutdownHandler(deployAndStart(), hermesMetrics);
+        gracefulShutdown = new HermesShutdownHandler(handlers(), hermesMetrics);
         Undertow.Builder builder = Undertow.builder()
                 .addHttpListener(port, host)
                 .setServerOption(REQUEST_PARSE_TIMEOUT, configFactory.getIntProperty(FRONTEND_REQUEST_PARSE_TIMEOUT))
@@ -111,38 +98,16 @@ public class HermesServer {
         return undertow;
     }
 
-    private PathHandler deployAndStart() {
-        try {
-            HttpHandler handler = deploy().start();
-            handler = isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(handler) : handler;
-            return path().addExactPath("/", redirect("/status/health"))
-                    .addExactPath("/status/ping", redirect("/status/health"))
-                    .addPrefixPath("/status/health", new HealthCheckHandler(healthCheckService))
-                    .addPrefixPath("/", handler);
-        } catch (ServletException e) {
-            throw new IllegalStateException("Something went wrong while starting servlet in undertow", e);
-        }
-    }
+    private HttpHandler handlers() {
+        HttpHandler healthCheckHandler = new HealthCheckHandler(healthCheckService);
 
-    private DeploymentManager deploy() {
-        DeploymentManager manager = Servlets.defaultContainer().addDeployment(prepareDeployment());
-        manager.deploy();
-        return manager;
-    }
+        RoutingHandler routingHandler =  new RoutingHandler()
+                .post("/topics/{qualifiedTopicName}", publishingHandler)
+                .get("/status/ping", healthCheckHandler)
+                .get("/status/health", healthCheckHandler)
+                .get("/", healthCheckHandler);
 
-    private DeploymentInfo prepareDeployment() {
-        HermesDispatcher dispatcher = new HermesDispatcher(publishingServlet, new NotFoundServlet(), "topics");
-        ServletInfo dispatcherInfo = servletInfo("dispatcher", "/*", HermesDispatcher.class, dispatcher);
-        return deployment()
-                .setClassLoader(HermesFrontend.class.getClassLoader())
-                .setContextPath("/")
-                .setDeploymentName("hermes")
-                .addServlet(dispatcherInfo);
-    }
-
-    private ServletInfo servletInfo(String name, String mapping, Class<? extends Servlet> clazz, Servlet servlet) {
-        return servlet(name, clazz, new ImmediateInstanceFactory<>(servlet))
-                .addMapping(mapping).setAsyncSupported(true).setLoadOnStartup(1);
+        return isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(routingHandler) : routingHandler;
     }
 
     private boolean isEnabled(Configs property) {

@@ -8,12 +8,12 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
+import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
+import pl.allegro.tech.hermes.frontend.metric.TopicWithMetrics;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
-import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -47,7 +47,6 @@ public class BackupMessagesLoader {
     private static final int THREAD_POOL_SIZE = 16;
 
     private final BrokerMessageProducer brokerMessageProducer;
-    private final HermesMetrics hermesMetrics;
     private final BrokerListeners brokerListeners;
     private final TopicsCache topicsCache;
     private final Trackers trackers;
@@ -58,17 +57,15 @@ public class BackupMessagesLoader {
     private final long readTopicInfoSleep;
 
     private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
-    private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, Topic>>> toResend = new AtomicReference<>();
+    private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, TopicWithMetrics>>> toResend = new AtomicReference<>();
 
     @Inject
     public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
-                                HermesMetrics hermesMetrics,
                                 BrokerListeners brokerListeners,
                                 TopicsCache topicsCache,
                                 Trackers trackers,
                                 ConfigFactory config) {
         this.brokerMessageProducer = brokerMessageProducer;
-        this.hermesMetrics = hermesMetrics;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
         this.trackers = trackers;
@@ -94,7 +91,7 @@ public class BackupMessagesLoader {
 
         do {
             if (retry > 0) {
-                List<Pair<Message, Topic>> retryMessages = Lists.newArrayList(toResend.getAndSet(new ConcurrentLinkedQueue<>()));
+                List<Pair<Message, TopicWithMetrics>> retryMessages = Lists.newArrayList(toResend.getAndSet(new ConcurrentLinkedQueue<>()));
                 resendMessages(retryMessages, retry);
             }
             try {
@@ -120,7 +117,7 @@ public class BackupMessagesLoader {
             int discardedCounter = 0;
             for (BackupMessage backupMessage : messages) {
                 Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
-                Optional<Topic> topic = loadTopic(fromQualifiedName(backupMessage.getQualifiedTopicName()), executor);
+                Optional<TopicWithMetrics> topic = loadTopicWithMetrics(fromQualifiedName(backupMessage.getQualifiedTopicName()), executor);
                 if (sendMessageIfNeeded(message, topic, "sending")) {
                     sentCounter++;
                 } else {
@@ -148,14 +145,14 @@ public class BackupMessagesLoader {
         }
     }
 
-    private void resendMessages(List<Pair<Message, Topic>> messageAndTopicList, int retry) {
+    private void resendMessages(List<Pair<Message, TopicWithMetrics>> messageAndTopicList, int retry) {
         logger.info("Resending {} messages from backup storage retry {}.", messageAndTopicList.size(), retry);
 
         int sentCounter = 0;
         int discardedCounter = 0;
-        for (Pair<Message, Topic> messageAndTopic : messageAndTopicList) {
+        for (Pair<Message, TopicWithMetrics> messageAndTopic : messageAndTopicList) {
             Message message = messageAndTopic.getKey();
-            Optional<Topic> topic = Optional.of(messageAndTopic.getValue());
+            Optional<TopicWithMetrics> topic = Optional.of(messageAndTopic.getValue());
             if (sendMessageIfNeeded(message, topic, "resending")) {
                 sentCounter++;
             } else {
@@ -166,13 +163,13 @@ public class BackupMessagesLoader {
         logger.info("Resent {}/{} messages and discarded {} messages from the backup storage retry {}.", sentCounter, messageAndTopicList.size(), discardedCounter, retry);
     }
 
-    private boolean sendMessageIfNeeded(Message message, Optional<Topic> topic, String contextName) {
-        if (topic.isPresent() && isNotStale(message)) {
-            waitOnBrokerTopicAvailability(topic.get());
-            sendMessage(message, topic.get());
+    private boolean sendMessageIfNeeded(Message message, Optional<TopicWithMetrics> topicWithMetrics, String contextName) {
+        if (topicWithMetrics.isPresent() && isNotStale(message)) {
+            waitOnBrokerTopicAvailability(topicWithMetrics.get().getTopic());
+            sendMessage(message, topicWithMetrics.get());
             return true;
         } else {
-            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topic.get().getQualifiedName(),
+            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topicWithMetrics.get().getTopic().getQualifiedName(),
                     new String(message.getData(), Charset.defaultCharset()));
             return false;
         }
@@ -210,26 +207,28 @@ public class BackupMessagesLoader {
                 .isAfter(LocalDateTime.now().minusHours(messageMaxAgeHours));
     }
 
-    private void sendMessage(Message message, Topic topic) {
-        brokerMessageProducer.send(message, topic, new SimpleExecutionCallback(
-                new MetricsPublishingCallback(hermesMetrics, topic),
-                new PublishingCallback() {
-                    @Override
-                    public void onUnpublished(Message message, Topic topic, Exception exception) {
-                        brokerListeners.onError(message, topic, exception);
-                        trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage());
-                        toResend.get().add(ImmutablePair.of(message, topic));
-                    }
+    private void sendMessage(Message message, TopicWithMetrics topicWithMetrics) {
+        StartedTimersPair brokerTimers = topicWithMetrics.startBrokerLatencyTimers();
+        brokerMessageProducer.send(message, topicWithMetrics.getTopic(), new PublishingCallback() {
+            @Override
+            public void onUnpublished(Message message, Topic topic, Exception exception) {
+                brokerTimers.close();
+                brokerListeners.onError(message, topic, exception);
+                trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage());
+                toResend.get().add(ImmutablePair.of(message, topicWithMetrics));
+            }
 
-                    @Override
-                    public void onPublished(Message message, Topic topic) {
-                        brokerListeners.onAcknowledge(message, topic);
-                        trackers.get(topic).logPublished(message.getId(), topic.getName());
-                    }
-                }));
+            @Override
+            public void onPublished(Message message, Topic topic) {
+                brokerTimers.close();
+                topicWithMetrics.incrementPublished();
+                brokerListeners.onAcknowledge(message, topic);
+                trackers.get(topic).logPublished(message.getId(), topic.getName());
+            }
+        });
     }
 
-    private Optional<Topic> loadTopic(TopicName topicName, Executor executor) {
+    private Optional<TopicWithMetrics> loadTopicWithMetrics(TopicName topicName, Executor executor) {
         try {
             return CompletableFuture.supplyAsync(() -> topicsCache.getTopic(topicName), executor)
                     .get(secondsToWaitForTopicsCache, SECONDS);

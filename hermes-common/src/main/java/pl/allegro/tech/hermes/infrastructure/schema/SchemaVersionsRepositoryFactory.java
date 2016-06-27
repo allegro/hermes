@@ -12,10 +12,7 @@ import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class SchemaVersionsRepositoryFactory implements Factory<SchemaVersionsRepository> {
 
@@ -47,6 +44,6 @@ public class SchemaVersionsRepositoryFactory implements Factory<SchemaVersionsRe
 
     @Override
     public void dispose(SchemaVersionsRepository instance) {
-
+        instance.close();
     }
 }

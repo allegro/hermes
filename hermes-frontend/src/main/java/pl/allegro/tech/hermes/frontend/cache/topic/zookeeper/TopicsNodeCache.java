@@ -9,7 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.cache.zookeeper.StartableCache;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicCallback;
+import pl.allegro.tech.hermes.frontend.metric.TopicWithMetrics;
 
 import java.io.IOException;
 import java.util.Map;
@@ -21,12 +23,15 @@ class TopicsNodeCache extends StartableCache<TopicCallback> implements PathChild
     private static final Logger LOGGER = LoggerFactory.getLogger(TopicsNodeCache.class);
 
     private final ObjectMapper objectMapper;
+    private final HermesMetrics hermesMetrics;
 
-    private Map<String, Topic> topicMap = new ConcurrentHashMap<>();
+    private Map<String, TopicWithMetrics> topicMap = new ConcurrentHashMap<>();
 
-    public TopicsNodeCache(CuratorFramework client, ObjectMapper objectMapper, String path, ExecutorService executorService) {
+    TopicsNodeCache(CuratorFramework client, ObjectMapper objectMapper, String path, ExecutorService executorService,
+                    HermesMetrics hermesMetrics) {
         super(client, path, executorService);
         this.objectMapper = objectMapper;
+        this.hermesMetrics = hermesMetrics;
         getListenable().addListener(this);
     }
 
@@ -42,12 +47,13 @@ class TopicsNodeCache extends StartableCache<TopicCallback> implements PathChild
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Event data {}", new String(event.getData().getData(), Charsets.UTF_8));
         }
+
         switch (event.getType()) {
             case CHILD_ADDED:
                 for (TopicCallback callback : callbacks) {
                     callback.onTopicCreated(topic);
                 }
-                topicMap.put(topic.getName().getName(), topic);
+                topicMap.put(topic.getName().getName(), new TopicWithMetrics(topic, hermesMetrics));
                 break;
             case CHILD_REMOVED:
                 for (TopicCallback callback : callbacks) {
@@ -59,14 +65,14 @@ class TopicsNodeCache extends StartableCache<TopicCallback> implements PathChild
                 for (TopicCallback callback : callbacks) {
                     callback.onTopicChanged(topic);
                 }
-                topicMap.put(topic.getName().getName(), topic);
+                topicMap.put(topic.getName().getName(), new TopicWithMetrics(topic, hermesMetrics));
                 break;
             default:
                 break;
         }
     }
 
-    public Topic getTopic(String name) {
+    public TopicWithMetrics getTopic(String name) {
         return topicMap.get(name);
     }
 

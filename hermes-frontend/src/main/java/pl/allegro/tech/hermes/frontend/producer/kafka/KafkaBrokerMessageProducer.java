@@ -32,9 +32,14 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
     @Override
     public void send(Message message, Topic topic, final PublishingCallback callback) {
-            String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
-            ProducerRecord<byte[], byte[]> producerRecord = new ProducerRecord<>(kafkaTopicName, message.getData());
+        String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
+        ProducerRecord<byte[], byte[]> producerRecord = new ProducerRecord<>(kafkaTopicName, message.getData());
+        try {
             producers.get(topic).send(producerRecord, new SendCallback(message, topic, callback));
+        } catch (Exception e) {
+            // message didn't get to internal producer buffer and it will not be send to a broker
+            callback.onUnpublished(message, topic, e);
+        }
     }
 
     @Override
@@ -67,11 +72,11 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
         @Override
         public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-            if (e != null) {
-                callback.onUnpublished(message, topic, e);
-            } else {
+            if (e == null) {
                 callback.onPublished(message, topic);
                 producers.maybeRegisterNodeMetricsGauges(metrics);
+            } else {
+                callback.onUnpublished(message, topic, e);
             }
         }
     }

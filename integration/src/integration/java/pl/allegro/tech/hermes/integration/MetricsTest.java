@@ -141,7 +141,7 @@ public class MetricsTest extends IntegrationTest {
     public void shouldSendMetricToGraphite() {
         //given
         operations.buildTopic("metricGroup", "topic");
-        graphiteServer.expectMetric(metricNameWithPrefix("producer.*.meter.metricGroup.topic.count"), 1);
+        graphiteServer.expectMetric(metricNameWithPrefix("producer.*.ack-leader.latency.metricGroup.topic.count"), 1);
 
         //when
         publisher.publish("metricGroup.topic", TestMessage.simple().body());

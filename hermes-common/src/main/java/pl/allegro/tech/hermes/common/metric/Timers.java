@@ -22,10 +22,10 @@ public class Timers {
             ACK_ALL_TOPIC_LATENCY = ACK_ALL_LATENCY + "." + GROUP + "." + TOPIC,
 
             ACK_LEADER_LATENCY = "ack-leader.latency",
-            PRODUCER_ACK_LEADER_TOPIC_LATENCY = ACK_LEADER_LATENCY + "." + GROUP + "." + TOPIC,
+            ACK_LEADER_TOPIC_LATENCY = ACK_LEADER_LATENCY + "." + GROUP + "." + TOPIC,
 
-            VALIDATION_LATENCY = "validation-latency",
-            VALIDATION_TOPIC_LATENCY = VALIDATION_LATENCY + "." + TOPIC,
+            MESSAGE_CREATION_LATENCY = "message-creation-latency",
+            MESSAGE_CREATION_TOPIC_LATENCY = MESSAGE_CREATION_LATENCY + "." + TOPIC,
 
             LATENCY = "latency",
             SUBSCRIPTION_LATENCY = LATENCY + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
