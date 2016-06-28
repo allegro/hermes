@@ -3,20 +3,28 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Joiner;
 
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static pl.allegro.tech.hermes.api.helpers.Replacer.replaceInAll;
 
 public class SubscriptionName {
 
-    private String name;
-    private TopicName topicName;
+    private final String name;
+    private final TopicName topicName;
+    private final String id;
 
     @JsonCreator
     public SubscriptionName(@JsonProperty("name") String name, @JsonProperty("topicName") TopicName topicName) {
         this.name = name;
         this.topicName = topicName;
+        this.id = createId();
+    }
+
+    private String createId() {
+        return Joiner.on("_").join(replaceInAll("_", "__", topicName.getGroupName(), topicName.getName(), name));
     }
 
     public String getName() {

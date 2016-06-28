@@ -108,13 +108,13 @@ public class ConsumerProcessSupervisor implements Runnable {
     private void kill(ConsumerProcess consumerProcess) {
         logger.info("Interrupting consumer process {}", consumerProcess);
         Future task = runningProcesses.getExecutionHandle(consumerProcess);
+        runningProcesses.remove(consumerProcess);
         if (!task.isDone()) {
             if (task.cancel(true)) {
                 logger.info("Interrupted consumer process {}", consumerProcess);
             } else {
                 logger.error("Failed to interrupt consumer process {}, possible stale consumer", consumerProcess);
             }
-            runningProcesses.remove(consumerProcess);
         } else {
             logger.info("Consumer was already dead process {}", consumerProcess);
         }
@@ -138,7 +138,7 @@ public class ConsumerProcessSupervisor implements Runnable {
         } else if (runningProcesses.hasProcess(subscriptionName)) {
             process = runningProcesses.getProcess(subscriptionName);
         } else {
-            logger.error("Trying to start process for {} without known Consumer, aborting", subscriptionName);
+            logger.error("Failed to start: no consumer process for {} and none provided", subscriptionName);
             return;
         }
 
