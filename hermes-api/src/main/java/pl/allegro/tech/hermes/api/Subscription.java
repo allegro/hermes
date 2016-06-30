@@ -62,6 +62,8 @@ public class Subscription {
 
     private List<Header> headers;
 
+    private EndpointAddressResolverMetadata endpointAddressResolverMetadata;
+
     public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
@@ -80,7 +82,8 @@ public class Subscription {
                          DeliveryType deliveryType,
                          List<MessageFilterSpecification> filters,
                          SubscriptionMode mode,
-                         List<Header> headers) {
+                         List<Header> headers,
+                         EndpointAddressResolverMetadata endpointAddressResolverMetadata) {
         this.topicName = topicName;
         this.name = name;
         this.endpoint = endpoint;
@@ -97,6 +100,7 @@ public class Subscription {
         this.filters = filters;
         this.mode = mode;
         this.headers = headers;
+        this.endpointAddressResolverMetadata = endpointAddressResolverMetadata;
     }
 
     public static Subscription createSerialSubscription(TopicName topicName,
@@ -112,9 +116,10 @@ public class Subscription {
                                                         ContentType contentType,
                                                         List<MessageFilterSpecification> filters,
                                                         SubscriptionMode mode,
-                                                        List<Header> headers) {
+                                                        List<Header> headers,
+                                                        EndpointAddressResolverMetadata endpointAddressResolverMetadata) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers);
+                contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers, endpointAddressResolverMetadata);
     }
 
     public static Subscription createBatchSubscription(TopicName topicName,
@@ -129,27 +134,31 @@ public class Subscription {
                                                        MonitoringDetails monitoringDetails,
                                                        ContentType contentType,
                                                        List<MessageFilterSpecification> filters,
-                                                       List<Header> headers) {
+                                                       List<Header> headers,
+                                                       EndpointAddressResolverMetadata endpointAddressResolverMetadata) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers);
+                contact, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
+                endpointAddressResolverMetadata);
     }
 
     @JsonCreator
-    public static Subscription create(@JsonProperty("topicName") String topicName,
-                                      @JsonProperty("name") String name,
-                                      @JsonProperty("endpoint") EndpointAddress endpoint,
-                                      @JsonProperty("state") State state,
-                                      @JsonProperty("description") String description,
-                                      @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
-                                      @JsonProperty("trackingEnabled") boolean trackingEnabled,
-                                      @JsonProperty("supportTeam") String supportTeam,
-                                      @JsonProperty("contact") String contact,
-                                      @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
-                                      @JsonProperty("contentType") ContentType contentType,
-                                      @JsonProperty("deliveryType") DeliveryType deliveryType,
-                                      @JsonProperty("filters") List<MessageFilterSpecification> filters,
-                                      @JsonProperty("mode") SubscriptionMode mode,
-                                      @JsonProperty("headers") List<Header> headers) {
+    public static Subscription create(
+            @JsonProperty("topicName") String topicName,
+            @JsonProperty("name") String name,
+            @JsonProperty("endpoint") EndpointAddress endpoint,
+            @JsonProperty("state") State state,
+            @JsonProperty("description") String description,
+            @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
+            @JsonProperty("trackingEnabled") boolean trackingEnabled,
+            @JsonProperty("supportTeam") String supportTeam,
+            @JsonProperty("contact") String contact,
+            @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
+            @JsonProperty("contentType") ContentType contentType,
+            @JsonProperty("deliveryType") DeliveryType deliveryType,
+            @JsonProperty("filters") List<MessageFilterSpecification> filters,
+            @JsonProperty("mode") SubscriptionMode mode,
+            @JsonProperty("headers") List<Header> headers,
+            @JsonProperty("endpointAddressResolverMetadata") EndpointAddressResolverMetadata endpointAddressResolverMetadata) {
 
         DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
         SubscriptionMode subscriptionMode = mode == null ? SubscriptionMode.ANYCAST : mode;
@@ -171,14 +180,16 @@ public class Subscription {
                 validDeliveryType,
                 filters == null ? Collections.emptyList() : filters,
                 subscriptionMode,
-                headers == null ? Collections.emptyList() : headers
+                headers == null ? Collections.emptyList() : headers,
+                endpointAddressResolverMetadata == null ? EndpointAddressResolverMetadata.empty() : endpointAddressResolverMetadata
         );
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy,
-                trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, mode, headers);
+                trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, mode, headers,
+                endpointAddressResolverMetadata);
     }
 
     @Override
@@ -204,7 +215,8 @@ public class Subscription {
                 && Objects.equals(this.contentType, other.contentType)
                 && Objects.equals(this.filters, other.filters)
                 && Objects.equals(this.mode, other.mode)
-                && Objects.equals(this.headers, other.headers);
+                && Objects.equals(this.headers, other.headers)
+                && Objects.equals(this.endpointAddressResolverMetadata, other.endpointAddressResolverMetadata);
     }
 
     public SubscriptionName toSubscriptionName() {
@@ -291,6 +303,10 @@ public class Subscription {
         return Collections.unmodifiableList(headers);
     }
 
+    public EndpointAddressResolverMetadata getEndpointAddressResolverMetadata() {
+        return endpointAddressResolverMetadata;
+    }
+
     @JsonIgnore
     public boolean isBatchSubscription() {
         return this.deliveryType == DeliveryType.BATCH;
@@ -332,7 +348,8 @@ public class Subscription {
                     deliveryType,
                     filters,
                     mode,
-                    headers
+                    headers,
+                    endpointAddressResolverMetadata
             );
         }
         return this;

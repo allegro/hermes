@@ -3,9 +3,9 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
@@ -36,7 +36,9 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     @Override
     public MessageSender create(Subscription subscription) {
         EndpointAddress endpoint = subscription.getEndpoint();
-        ResolvableEndpointAddress resolvableEndpoint = new ResolvableEndpointAddress(endpoint, endpointAddressResolver);
+        EndpointAddressResolverMetadata endpointAddressResolverMetadata = subscription.getEndpointAddressResolverMetadata();
+        ResolvableEndpointAddress resolvableEndpoint = new ResolvableEndpointAddress(endpoint,
+                endpointAddressResolver, endpointAddressResolverMetadata);
         HttpRequestFactory requestFactory = httpRequestFactory(subscription);
 
         if (subscription.getMode() == SubscriptionMode.BROADCAST) {

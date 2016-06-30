@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.resolver;
 import com.googlecode.catchexception.CatchException;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.InterpolationException;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
@@ -22,6 +23,8 @@ public class InterpolatingEndpointAddressResolverTest {
 
     private final InterpolatingEndpointAddressResolver resolver = new InterpolatingEndpointAddressResolver(interpolator);
 
+    private final EndpointAddressResolverMetadata metadata = EndpointAddressResolverMetadata.empty();
+
     @Test
     public void shouldUseInterpolatorToInterpolateURI() throws InterpolationException, EndpointAddressResolutionException {
         // given
@@ -31,7 +34,7 @@ public class InterpolatingEndpointAddressResolverTest {
 
         // when
         URI uri = resolver.resolve(EndpointAddress.of("http://localhost/{a}"),
-                withTestMessage().withContent("content", StandardCharsets.UTF_8).build());
+                withTestMessage().withContent("content", StandardCharsets.UTF_8).build(), metadata);
 
         // then
         assertThat(uri).isEqualTo(URI.create("http://localhost/hello"));
@@ -47,7 +50,7 @@ public class InterpolatingEndpointAddressResolverTest {
 
         // when
         catchException(resolver).resolve(EndpointAddress.of("http://localhost/{a}"),
-                withTestMessage().withContent("content", StandardCharsets.UTF_8).build());
+                withTestMessage().withContent("content", StandardCharsets.UTF_8).build(), metadata);
 
         // then
         assertThat(CatchException.<EndpointAddressResolutionException>caughtException()).isInstanceOf(EndpointAddressResolutionException.class);

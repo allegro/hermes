@@ -153,7 +153,8 @@ public class BatchConsumer implements Consumer {
 
     private void deliver(MessageBatch batch, Retryer<MessageSendingResult> retryer) {
         try (Timer.Context timer = hermesMetrics.subscriptionLatencyTimer(subscription).time()) {
-            MessageSendingResult result = retryer.call(() -> sender.send(batch, subscription.getEndpoint(), subscription.getBatchSubscriptionPolicy().getRequestTimeout()));
+            MessageSendingResult result = retryer.call(() -> sender.send(batch, subscription.getEndpoint(),
+                    subscription.getEndpointAddressResolverMetadata(), subscription.getBatchSubscriptionPolicy().getRequestTimeout()));
             monitoring.markSendingResult(batch, subscription, result);
         } catch (Exception e) {
             logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.toSubscriptionName(), e);

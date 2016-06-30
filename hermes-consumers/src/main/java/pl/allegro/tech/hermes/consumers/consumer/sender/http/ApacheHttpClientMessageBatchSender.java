@@ -7,6 +7,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HTTP;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -36,9 +37,10 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
     }
 
     @Override
-    public MessageSendingResult send(MessageBatch batch, EndpointAddress address, int requestTimeout) {
+    public MessageSendingResult send(MessageBatch batch, EndpointAddress address, EndpointAddressResolverMetadata metadata,
+                                     int requestTimeout) {
         try {
-            return send(batch, resolver.resolve(address, batch), requestTimeout);
+            return send(batch, resolver.resolve(address, batch, metadata), requestTimeout);
         } catch (EndpointAddressResolutionException e) {
             return MessageSendingResult.failedResult(e);
         }

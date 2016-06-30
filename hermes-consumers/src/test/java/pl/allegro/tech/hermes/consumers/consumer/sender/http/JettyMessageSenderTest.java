@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
@@ -34,6 +35,7 @@ public class JettyMessageSenderTest {
 
     private static final int ENDPOINT_PORT = Ports.nextAvailable();
     private static final EndpointAddress ENDPOINT = EndpointAddress.of(format("http://localhost:%d/", ENDPOINT_PORT));
+    private static final EndpointAddressResolverMetadata METADATA = EndpointAddressResolverMetadata.empty();
 
     private static HttpClient client;
     private static WireMockServer wireMockServer;
@@ -63,7 +65,7 @@ public class JettyMessageSenderTest {
     @Before
     public void setUp() throws Exception {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
-        address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver());
+        address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver(), METADATA);
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, new DefaultHttpMetadataAppender(), Optional.empty());
         messageSender = new JettyMessageSender(httpRequestFactory, address);
     }

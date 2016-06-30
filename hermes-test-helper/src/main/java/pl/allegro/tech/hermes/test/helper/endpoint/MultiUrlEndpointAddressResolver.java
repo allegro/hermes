@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import com.google.common.base.Throwables;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
@@ -19,25 +20,25 @@ public class MultiUrlEndpointAddressResolver implements EndpointAddressResolver 
     private final EndpointAddressResolver delegate = new InterpolatingEndpointAddressResolver(new MessageBodyInterpolator());
 
     @Override
-    public List<URI> resolveAll(EndpointAddress address, Message message) throws EndpointAddressResolutionException {
+    public List<URI> resolveAll(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata) throws EndpointAddressResolutionException {
         return Stream.of(address.getEndpoint().split(";"))
-                .map(url -> safeResolve(message, url))
+                .map(url -> safeResolve(message, url, metadata))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public URI resolve(EndpointAddress address, Message message) throws EndpointAddressResolutionException {
-        return delegate.resolve(address, message);
+    public URI resolve(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata) throws EndpointAddressResolutionException {
+        return delegate.resolve(address, message, metadata);
     }
 
     @Override
-    public URI resolve(EndpointAddress address, MessageBatch batch) throws EndpointAddressResolutionException {
-        return delegate.resolve(address, batch);
+    public URI resolve(EndpointAddress address, MessageBatch batch, EndpointAddressResolverMetadata metadata) throws EndpointAddressResolutionException {
+        return delegate.resolve(address, batch, metadata);
     }
 
-    private URI safeResolve(Message message, String url) {
+    private URI safeResolve(Message message, String url, EndpointAddressResolverMetadata metadata) {
         try {
-            return delegate.resolve(EndpointAddress.of(url), message);
+            return delegate.resolve(EndpointAddress.of(url), message, metadata);
         } catch (EndpointAddressResolutionException e) {
             throw Throwables.propagate(e);
         }
