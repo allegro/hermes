@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
+import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
 import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
@@ -48,6 +49,14 @@ class MessageCreateHandler implements HttpHandler {
                     attachment.getTopic(),
                     attachment.getMessageId(),
                     error("Missing schema", SCHEMA_COULD_NOT_BE_LOADED),
+                    exception);
+        } catch (Exception exception) {
+            attachment.removeTimeout();
+            messageErrorProcessor.sendAndLog(
+                    exchange,
+                    attachment.getTopic(),
+                    attachment.getMessageId(),
+                    error("Exception caught while creating message", INTERNAL_ERROR),
                     exception);
         }
     }

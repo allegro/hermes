@@ -41,7 +41,7 @@ public class MessagePreviewPersister {
     }
 
     public void shutdown() {
-        scheduledExecutorService.ifPresent(s -> shutdown());
+        scheduledExecutorService.ifPresent(s -> s.shutdown());
     }
 
 }

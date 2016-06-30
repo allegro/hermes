@@ -48,7 +48,9 @@ public class MessageErrorProcessor {
 
     public void sendQuietly(HttpServerExchange exchange, ErrorDescription error, String messageId) {
         try {
-            send(exchange, error, messageId);
+            if (exchange.getConnection().isOpen()) {
+                send(exchange, error, messageId);
+            }
         } catch (Exception e) {
             logger.warn("Exception in sending error response to a client. {} {} {}",
                     error.getMessage(), messageId, exchange.getHostAndPort(), e);
@@ -62,11 +64,13 @@ public class MessageErrorProcessor {
         exchange.getResponseSender().send(objectMapper.writeValueAsString(error));
     }
 
-    public void log(ErrorDescription error, Topic topic, String messageId, String hostAndPort) {
+    private void log(ErrorDescription error, Topic topic, String messageId, String hostAndPort) {
         logger.error(new StringBuilder()
                 .append(error.getMessage())
                 .append("; publishing on topic: ")
                 .append(topic.getQualifiedName())
+                .append("; message id: ")
+                .append(messageId)
                 .append("; remote host: ")
                 .append(hostAndPort)
                 .toString());
@@ -78,6 +82,8 @@ public class MessageErrorProcessor {
                         .append(error.getMessage())
                         .append("; publishing on topic: ")
                         .append(topic.getQualifiedName())
+                        .append("; message id: ")
+                        .append(messageId)
                         .append("; remote host: ")
                         .append(hostAndPort)
                         .toString(),

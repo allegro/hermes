@@ -71,11 +71,15 @@ public class MessageState {
         state.set(ERROR_IN_SENDING_TO_KAFKA);
     }
 
-    public void onDelayedProcessingSet(Consumer<Void> consumer) {
+    public void onSendingToKafkaSet(Consumer<Void> consumer) {
         if (state.compareAndSet(SENDING_TO_KAFKA_PRODUCER_QUEUE, SENDING_TO_KAFKA)) {
-            if (delayedProcessing && state.compareAndSet(SENDING_TO_KAFKA, DELAYED_PROCESSING)) {
-                consumer.accept(null);
-            }
+            consumer.accept(null);
+        }
+    }
+
+    public void onDelayedProcessingSet(Consumer<Void> consumer) {
+        if (delayedProcessing && state.compareAndSet(SENDING_TO_KAFKA, DELAYED_PROCESSING)) {
+            consumer.accept(null);
         }
     }
 

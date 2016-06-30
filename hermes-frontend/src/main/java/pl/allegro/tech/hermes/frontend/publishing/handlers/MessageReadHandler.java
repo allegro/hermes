@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
@@ -10,7 +9,6 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProce
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
@@ -28,7 +26,7 @@ class MessageReadHandler implements HttpHandler {
     private final int longAsyncTimeout;
 
     MessageReadHandler(HttpHandler next, HttpHandler timeoutHandler, ConfigFactory configFactory,
-                              MessageErrorProcessor messageErrorProcessor) {
+                       MessageErrorProcessor messageErrorProcessor) {
         this.next = next;
         this.timeoutHandler = timeoutHandler;
         this.messageErrorProcessor = messageErrorProcessor;
@@ -45,11 +43,23 @@ class MessageReadHandler implements HttpHandler {
         attachment.setTimeoutHolder(new TimeoutHolder(
                 timeout,
                 exchange.getIoThread().executeAfter(
-                    () -> exchange.dispatch(timeoutHandler),
-                    timeout,
-                    MILLISECONDS)));
+                        () -> runTimeoutHandler(exchange, attachment),
+                        timeout,
+                        MILLISECONDS)));
 
         readMessage(exchange, attachment);
+    }
+
+    private void runTimeoutHandler(HttpServerExchange exchange, AttachmentContent attachment) {
+        exchange.getConnection().getWorker().execute(() -> {
+                    try {
+                        timeoutHandler.handleRequest(exchange);
+                    } catch (Exception e) {
+                        messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
+                                error("Error while handling timeout task.", INTERNAL_ERROR), e);
+                    }
+                }
+        );
     }
 
     private void readMessage(HttpServerExchange exchange, AttachmentContent attachment) {
@@ -76,7 +86,8 @@ class MessageReadHandler implements HttpHandler {
                 },
                 (exchange1, e) -> {
                     startedTimersPair.close();
-                    readException(exchange, attachment, e);
+                    messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
+                            error("Error while reading message. " + getRootCauseMessage(e), INTERNAL_ERROR), e);
                 });
     }
 
@@ -84,21 +95,17 @@ class MessageReadHandler implements HttpHandler {
         try {
             checkContentLength(exchange, messageContent.length);
             attachment.setMessageContent(messageContent);
-            next.handleRequest(exchange);
+            if (exchange.isInIoThread()) {
+                // read was dispatched to io thread, run next handler in worker thread
+                exchange.dispatch(next);
+            } else {
+                next.handleRequest(exchange);
+            }
         } catch (ContentLengthChecker.InvalidContentLengthException e) {
             messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(),
                     attachment.getMessageId(), error(e.getMessage(), VALIDATION_ERROR));
         } catch (Exception e) {
             messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(), e);
         }
-    }
-
-    public void readException(HttpServerExchange exchange, AttachmentContent attachment, IOException exception) {
-        ErrorDescription error = error("Error while reading message. " + getRootCauseMessage(exception), INTERNAL_ERROR);
-        if (exchange.getConnection().isOpen()) {
-            messageErrorProcessor.sendQuietly(exchange, error, attachment.getMessageId());
-        }
-        messageErrorProcessor.log(
-                error, attachment.getTopicWithMetrics().getTopic(), attachment.getMessageId(), exchange.getHostAndPort());
     }
 }

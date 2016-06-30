@@ -30,12 +30,14 @@ class PublishingHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
+        // change state of exchange to dispatched,
+        // thanks to this call, default response with 200 status code is not returned after handlerRequest() finishes its execution
+        exchange.dispatch(() -> handle(exchange));
+    }
+
+    private void handle(HttpServerExchange exchange) {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
         MessageState messageState = attachment.getMessageState();
-
-        // change state of exchange to dispatched,
-        // thanks to this call, default response with 200 status code is not returned after handler finishes its execution
-        exchange.dispatch();
 
         messageState.setSendingToKafkaProducerQueue();
         StartedTimersPair brokerLatencyTimers = attachment.getTopicWithMetrics().startBrokerLatencyTimers();
@@ -67,8 +69,9 @@ class PublishingHandler implements HttpHandler {
             }
         });
 
-        messageState.onDelayedProcessingSet((Void) ->
-                messageEndProcessor.bufferedButDelayed(exchange, attachment.getTopic(), attachment.getMessage()));
+        messageState.onSendingToKafkaSet((Void) ->
+                messageState.onDelayedProcessingSet((Void2) ->
+                        messageEndProcessor.bufferedButDelayed(exchange, attachment.getTopic(), attachment.getMessage())));
     }
 
     private void handleNotPublishedMessage(HttpServerExchange exchange, Topic topic, String messageId, Exception exception) {
