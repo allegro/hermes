@@ -52,6 +52,15 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                 $scope.undelivered = [];
             });
 
+        $scope.notSupportedEndpointAddressResolverMetadataEntries = function(metadataEntries) {
+          var filtered = {};
+          _.each(metadataEntries, function(entry, key) {
+              if (key in config.endpointAddressResolverMetadata === false) {
+                  filtered[key] = entry;
+              }
+          });
+          return filtered;
+        }
 
         $scope.edit = function () {
             $modal.open({

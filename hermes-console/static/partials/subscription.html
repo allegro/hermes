@@ -156,9 +156,13 @@
                         <strong>Monitoring reaction:</strong> {{subscription.monitoringDetails.reaction}}
                         <span uib-popover='Information for monitoring how to react when the subscription becomes unhealthy (e.g. team name or Pager Duty ID).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
-                    <p ng-repeat="(key, value) in subscription.endpointAddressResolverMetadata" ng-init="entry = endpointAddressResolverMetadataConfig[key]">
-                        <strong>{{entry.title || key}}:</strong> {{entry.options[value] || value}}
+                    <p ng-repeat="(key, entry) in endpointAddressResolverMetadataConfig">
+                        <strong>{{entry.title}}:</strong>
+                        {{entry.options[subscription.endpointAddressResolverMetadata[key]] || subscription.endpointAddressResolverMetadata[key]}}
                         <span ng-show="entry.hint" uib-popover="{{entry.hint}}" popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p ng-repeat="(key, value) in notSupportedEndpointAddressResolverMetadataEntries(subscription.endpointAddressResolverMetadata)">
+                        <strong>{{key}}:</strong> {{value}}
                     </p>
                 </div>
             </div>
