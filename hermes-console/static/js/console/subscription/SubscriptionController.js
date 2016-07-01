@@ -7,14 +7,20 @@ var subscriptions = angular.module('hermes.subscription', [
     'hermes.topic.metrics'
 ]);
 
-subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'SubscriptionHealth', 'SubscriptionMetrics', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', '$q', 'ConfirmationModal', 'toaster', 'PasswordService', 'MessagePreviewModal',
-    function (subscriptionRepository, subscriptionHealth, subscriptionMetrics, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, $q, confirmationModal, toaster, passwordService, messagePreviewModal) {
+subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'SubscriptionHealth', 'SubscriptionMetrics',
+    'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', '$q', 'ConfirmationModal',
+    'toaster', 'PasswordService', 'MessagePreviewModal', 'SUBSCRIPTION_CONFIG',
+    function (subscriptionRepository, subscriptionHealth, subscriptionMetrics, topicRepository, topicMetrics,
+              $scope, $location, $stateParams, $modal, $q, confirmationModal, toaster, passwordService,
+              messagePreviewModal, config) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
 
         $scope.subscription = subscriptionRepository.get(topicName, subscriptionName);
         $scope.retransmissionLoading = false;
+
+        $scope.endpointAddressResolverMetadataConfig = config.endpointAddressResolverMetadata;
 
         $scope.metricsUrls = subscriptionMetrics.metricsUrls(groupName, topicName, subscriptionName);
 
@@ -61,6 +67,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     },
                     operation: function () {
                         return 'EDIT';
+                    },
+                    endpointAddressResolverMetadataConfig: function() {
+                        return config.endpointAddressResolverMetadata;
                     }
                 }
             });
@@ -175,11 +184,14 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         };
     }]);
 
-subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$modalInstance', 'subscription', 'topicName', 'PasswordService', 'toaster', 'operation',
-    function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation) {
+subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$modalInstance', 'subscription',
+    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig',
+    function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
+              endpointAddressResolverMetadataConfig) {
         $scope.topicName = topicName;
         $scope.subscription = subscription;
         $scope.operation = operation;
+        $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
 
         var subscriptionBeforeChanges = _.cloneDeep(subscription);
 

@@ -135,8 +135,10 @@
             <div class="form-group {{subscriptionForm.retryClientErrors.$valid ? '' : 'has-error'}}">
                 <label for="retryClientErrors" class="col-md-3 control-label">Retry on 4xx status</label>
                 <div class="col-md-9">
-                    <div class="input-group">
-                        <input type="checkbox" id="retryClientErrors" name="retryClientErrors" ng-model="subscription.subscriptionPolicy.retryClientErrors"/>
+                    <div class="input-group checkbox">
+                        <label>
+                            <input type="checkbox" id="retryClientErrors" name="retryClientErrors" ng-model="subscription.subscriptionPolicy.retryClientErrors"/>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -152,8 +154,10 @@
             <div class="form-group">
                 <label for="trackingEnabled" class="col-md-3 control-label">Tracking enabled</label>
                 <div class="col-md-9">
-                    <div class="input-group">
-                        <input type="checkbox" id="trackingEnabled" name="trackingEnabled" ng-model="subscription.trackingEnabled"/>
+                    <div class="input-group checkbox">
+                        <label>
+                            <input type="checkbox" id="trackingEnabled" name="trackingEnabled" ng-model="subscription.trackingEnabled"/>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -174,6 +178,30 @@
                     <input class="form-control" id="monitoringReaction" name="monitoringReaction" placeholder="information for monitoring how to react when the subscription becomes unhealthy (e.g. team name or Pager Duty ID)" ng-model="subscription.monitoringDetails.reaction"/>
                 </div>
             </div>
+
+            <div class="form-group" ng-repeat="(key, entry) in endpointAddressResolverMetadataConfig">
+                <label for="{{key}}" class="col-md-3 control-label">{{entry.title}}</label>
+                <div class="col-md-9" ng-switch on="entry.type">
+                    <div ng-switch-when="boolean" class="input-group checkbox">
+                        <label>
+                            <input type="checkbox" id="{{key}}" name="{{key}}" ng-model="subscription.endpointAddressResolverMetadata[key]"/>
+                            {{entry.placeholder}}
+                        </label>
+                    </div>
+
+                    <input ng-switch-when="text" empty-to-null class="form-control" type="text" id="{{key}}" name="{{key}}" placeholder="{{entry.placeholder}}" ng-model="subscription.endpointAddressResolverMetadata[key]" />
+
+                    <div ng-switch-when="number" class="input-group">
+                        <input type="number" min="{{entry.min}}" max="{{entry.max}}" step="{{entry.step}}" class="form-control" id="{{key}}" name="{{key}}" placeholder="{{entry.placeholder}}" ng-model="subscription.endpointAddressResolverMetadata[key]"/>
+                        <span class="input-group-addon">{{entry.addon}}</span>
+                    </div>
+
+                    <select ng-switch-when="select" empty-to-null class="form-control" id="{{key}}" name="{{key}}" ng-model="subscription.endpointAddressResolverMetadata[key]">
+                        <option ng-repeat="(key, value) in entry.options" value="{{key}}">{{value}}</option>
+                    </select>
+                </div>
+            </div>
+
         </form>
     </div>
     <div class="modal-footer">
