@@ -20,6 +20,7 @@ hermes.constant('AUTH_OAUTH_CONFIG', config.auth.oauth);
 hermes.constant('METRICS_CONFIG', config.metrics);
 hermes.constant('CONSOLE_CONFIG', config.console);
 hermes.constant('TOPIC_CONFIG', config.topic);
+hermes.constant('SUBSCRIPTION_CONFIG', config.subscription || {});
 
 hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibTooltipProvider',
     function ($stateProvider, $urlRouterProvider, $httpProvider, $tooltipProvider) {
