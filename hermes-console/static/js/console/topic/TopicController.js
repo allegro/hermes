@@ -7,8 +7,10 @@ var topics = angular.module('hermes.topic', [
     'hermes.services'
 ]);
 
-topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', 'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory',
-    function (topicConfig, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, confirmationModal, toaster, passwordService, subscriptionFactory) {
+topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal',
+    'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory', 'SUBSCRIPTION_CONFIG',
+    function (topicConfig, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, confirmationModal, toaster, passwordService,
+              subscriptionFactory, subscriptionConfig) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
 
@@ -98,6 +100,9 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                     },
                     subscription: function () {
                         return subscriptionFactory.create(topicName);
+                    },
+                    endpointAddressResolverMetadataConfig: function() {
+                        return subscriptionConfig.endpointAddressResolverMetadata;
                     }
                 }
             }).result.then(function () {
