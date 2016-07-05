@@ -151,7 +151,7 @@ public enum Configs {
     ADMIN_REAPER_INTERAL_MS("admin.reaper.interval.ms", 30000),
 
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),
-    METADATA_CONTENT_ROOT("message.content.root", "metadata"),
+    METADATA_CONTENT_ROOT("metadata.content.root", "metadata"),
     GRAPHITE_PREFIX("graphite.prefix", "stats.tech.hermes"),
 
     SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES("schema.cache.refresh.after.write.minutes", 10),
