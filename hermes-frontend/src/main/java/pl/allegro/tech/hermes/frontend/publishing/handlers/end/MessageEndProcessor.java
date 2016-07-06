@@ -5,7 +5,7 @@ import io.undertow.util.HttpString;
 import io.undertow.util.StatusCodes;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
-import pl.allegro.tech.hermes.frontend.metric.TopicWithMetrics;
+import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -30,13 +30,13 @@ public class MessageEndProcessor {
     public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
         trackers.get(attachment.getTopic()).logPublished(attachment.getMessageId(), attachment.getTopic().getName());
         sendResponse(exchange, attachment.getMessageId(), StatusCodes.CREATED);
-        attachment.getTopicWithMetrics().incrementPublished();
+        attachment.getCachedTopic().incrementPublished();
     }
 
-    public void delayedSent(TopicWithMetrics topicWithMetrics, Message message) {
-        trackers.get(topicWithMetrics.getTopic()).logPublished(message.getId(), topicWithMetrics.getTopic().getName());
-        brokerListeners.onAcknowledge(message, topicWithMetrics.getTopic());
-        topicWithMetrics.incrementPublished();
+    public void delayedSent(CachedTopic cachedTopic, Message message) {
+        trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName());
+        brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
+        cachedTopic.incrementPublished();
     }
 
     public void bufferedButDelayed(HttpServerExchange exchange, Topic topic, Message message) {

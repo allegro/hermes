@@ -56,7 +56,7 @@ public class MessageFactory {
     }
 
     public Message create(HeaderMap headerMap, AttachmentContent attachment) {
-        try (StartedTimersPair startedTimersPair = attachment.getTopicWithMetrics().startMessageCreationTimers()) {
+        try (StartedTimersPair startedTimersPair = attachment.getCachedTopic().startMessageCreationTimers()) {
             return create(
                     headerMap,
                     attachment.getTopic(),

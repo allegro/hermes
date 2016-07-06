@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.util.AttachmentKey;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.frontend.metric.TopicWithMetrics;
+import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
@@ -10,7 +10,7 @@ public class AttachmentContent {
 
     public static final AttachmentKey<AttachmentContent> KEY = AttachmentKey.create(AttachmentContent.class);
 
-    private final TopicWithMetrics topicWithMetrics;
+    private final CachedTopic cachedTopic;
     private final MessageState messageState;
     private final String messageId;
     private byte[] messageContent;
@@ -21,8 +21,8 @@ public class AttachmentContent {
         return message;
     }
 
-    AttachmentContent(TopicWithMetrics topicWithMetrics, MessageState messageState, String messageId) {
-        this.topicWithMetrics = topicWithMetrics;
+    AttachmentContent(CachedTopic cachedTopic, MessageState messageState, String messageId) {
+        this.cachedTopic = cachedTopic;
         this.messageState = messageState;
         this.messageId = messageId;
     }
@@ -44,11 +44,11 @@ public class AttachmentContent {
     }
 
     public Topic getTopic() {
-        return topicWithMetrics.getTopic();
+        return cachedTopic.getTopic();
     }
 
-    public TopicWithMetrics getTopicWithMetrics() {
-        return topicWithMetrics;
+    public CachedTopic getCachedTopic() {
+        return cachedTopic;
     }
 
     public void setMessageContent(byte[] messageContent) {

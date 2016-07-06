@@ -8,9 +8,10 @@ import pl.allegro.tech.hermes.common.cache.zookeeper.ZookeeperCacheBase;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicCallback;
-import pl.allegro.tech.hermes.frontend.metric.TopicWithMetrics;
+import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 
 import javax.inject.Named;
@@ -25,11 +26,13 @@ public class ZookeeperTopicsCache extends ZookeeperCacheBase implements TopicsCa
             @Named(CuratorType.HERMES) CuratorFramework curatorClient,
             ConfigFactory configFactory,
             ObjectMapper objectMapper,
-            HermesMetrics hermesMetrics) {
+            HermesMetrics hermesMetrics,
+            KafkaNamesMapper kafkaNamesMapper) {
 
         super(configFactory, curatorClient);
 
-        groupsNodeCache = new GroupsNodeCache(curatorClient, objectMapper, paths.groupsPath(), eventExecutor, hermesMetrics);
+        groupsNodeCache = new GroupsNodeCache(
+                curatorClient, objectMapper, paths.groupsPath(), eventExecutor, hermesMetrics, kafkaNamesMapper);
     }
 
     @Override
@@ -49,7 +52,7 @@ public class ZookeeperTopicsCache extends ZookeeperCacheBase implements TopicsCa
     }
 
     @Override
-    public Optional<TopicWithMetrics> getTopic(TopicName topicName) {
+    public Optional<CachedTopic> getTopic(TopicName topicName) {
         return groupsNodeCache.getTopic(topicName);
     }
 }

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -10,6 +9,7 @@ import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -66,11 +66,12 @@ public class AvroMessageContentWrapper {
     }
 
     private Map<Utf8, Utf8> metadataMap(String id, long timestamp, Map<String, String> externalMetadata) {
-        ImmutableMap.Builder<Utf8, Utf8> builder = ImmutableMap.<Utf8, Utf8>builder();
-        builder.put(METADATA_MESSAGE_ID_KEY, new Utf8(id));
-        builder.put(METADATA_TIMESTAMP_KEY, new Utf8(Long.toString(timestamp)));
-        externalMetadata.forEach((key, value) -> builder.put(new Utf8(key), new Utf8(value)));
-        return builder.build();
+        Map<Utf8, Utf8> metadata = new HashMap<>();
+        metadata.put(METADATA_MESSAGE_ID_KEY, new Utf8(id));
+        metadata.put(METADATA_TIMESTAMP_KEY, new Utf8(Long.toString(timestamp)));
+
+        externalMetadata.forEach((key, value) -> metadata.put(new Utf8(key), new Utf8(value)));
+        return metadata;
     }
 
     private long timestampFromMetadata(Map<Utf8, Utf8> metadata) {

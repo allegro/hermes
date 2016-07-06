@@ -51,21 +51,18 @@ class MessageReadHandler implements HttpHandler {
     }
 
     private void runTimeoutHandler(HttpServerExchange exchange, AttachmentContent attachment) {
-        exchange.getConnection().getWorker().execute(() -> {
-                    try {
-                        timeoutHandler.handleRequest(exchange);
-                    } catch (Exception e) {
-                        messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
-                                error("Error while handling timeout task.", INTERNAL_ERROR), e);
-                    }
-                }
-        );
+        try {
+            timeoutHandler.handleRequest(exchange);
+        } catch (Exception e) {
+            messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
+                    error("Error while handling timeout task.", INTERNAL_ERROR), e);
+        }
     }
 
     private void readMessage(HttpServerExchange exchange, AttachmentContent attachment) {
         ByteArrayOutputStream messageContent = new ByteArrayOutputStream();
 
-        StartedTimersPair startedTimersPair = attachment.getTopicWithMetrics().startRequestReadTimers();
+        StartedTimersPair startedTimersPair = attachment.getCachedTopic().startRequestReadTimers();
 
         attachment.getTimeoutHolder().onTimeout((Void) -> {
             startedTimersPair.close();
@@ -96,7 +93,7 @@ class MessageReadHandler implements HttpHandler {
             checkContentLength(exchange, messageContent.length);
             attachment.setMessageContent(messageContent);
             if (exchange.isInIoThread()) {
-                // read was dispatched to io thread, run next handler in worker thread
+                // read was dispatched to io thread, run next handler in  worker thread
                 exchange.dispatch(next);
             } else {
                 next.handleRequest(exchange);

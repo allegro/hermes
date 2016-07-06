@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepos
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
-import pl.allegro.tech.hermes.frontend.metric.TopicWithMetrics;
+import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
@@ -45,7 +45,7 @@ public class BackupMessagesLoaderTest {
 
     private ConfigFactory configFactory = mock(ConfigFactory.class);
 
-    private TopicWithMetrics topicWithMetrics = mock(TopicWithMetrics.class);
+    private CachedTopic cachedTopic = mock(CachedTopic.class);
 
     private File tempDir;
 
@@ -56,10 +56,10 @@ public class BackupMessagesLoaderTest {
     public void setUp() throws Exception {
         tempDir = Files.createTempDir();
 
-        when(topicWithMetrics.getTopic()).thenReturn(topic);
-        when(topicWithMetrics.startBrokerLatencyTimers()).thenReturn(new StartedTimersPair(new Timer(), new Timer()));
-        when(topicsCache.getTopic(topicName)).thenReturn(Optional.of(topicWithMetrics));
-        when(producer.isTopicAvailable(topic)).thenReturn(true);
+        when(cachedTopic.getTopic()).thenReturn(topic);
+        when(cachedTopic.startBrokerLatencyTimers()).thenReturn(new StartedTimersPair(new Timer(), new Timer()));
+        when(topicsCache.getTopic(topicName)).thenReturn(Optional.of(cachedTopic));
+        when(producer.isTopicAvailable(cachedTopic)).thenReturn(true);
     }
 
     @After
@@ -85,7 +85,7 @@ public class BackupMessagesLoaderTest {
         backupMessagesLoader.loadMessages(messageRepository);
 
         //then
-        verify(producer, times(1)).send(any(JsonMessage.class), eq(topic), any(PublishingCallback.class));
+        verify(producer, times(1)).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
     }
 
     @Test
@@ -99,9 +99,9 @@ public class BackupMessagesLoaderTest {
 
         doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
-            ((PublishingCallback) args[2]).onUnpublished((Message) args[0], (Topic) args[1], new Exception("test"));
+            ((PublishingCallback) args[2]).onUnpublished((Message) args[0], ((CachedTopic) args[1]).getTopic(), new Exception("test"));
             return "";
-        }).when(producer).send(any(JsonMessage.class), eq(topic), any(PublishingCallback.class));
+        }).when(producer).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
 
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
@@ -113,7 +113,7 @@ public class BackupMessagesLoaderTest {
         backupMessagesLoader.loadMessages(messageRepository);
 
         //then
-        verify(producer, times(noOfSentCalls)).send(any(JsonMessage.class), eq(topic), any(PublishingCallback.class));
+        verify(producer, times(noOfSentCalls)).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
         verify(listeners, times(noOfSentCalls)).onError(any(JsonMessage.class), eq(topic), any(Exception.class));
     }
 
@@ -123,7 +123,7 @@ public class BackupMessagesLoaderTest {
         when(configFactory.getIntProperty(Configs.MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE)).thenReturn(1);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(10);
 
-        when(producer.isTopicAvailable(topic)).thenReturn(false).thenReturn(false).thenReturn(true);
+        when(producer.isTopicAvailable(cachedTopic)).thenReturn(false).thenReturn(false).thenReturn(true);
 
         BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
         MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
@@ -133,8 +133,8 @@ public class BackupMessagesLoaderTest {
         backupMessagesLoader.loadMessages(messageRepository);
 
         // then
-        verify(producer, times(3)).isTopicAvailable(topic);
-        verify(producer, times(1)).send(any(JsonMessage.class), eq(topic), any(PublishingCallback.class));
+        verify(producer, times(3)).isTopicAvailable(cachedTopic);
+        verify(producer, times(1)).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
     }
 
     private Message messageOfAge(int ageHours) {

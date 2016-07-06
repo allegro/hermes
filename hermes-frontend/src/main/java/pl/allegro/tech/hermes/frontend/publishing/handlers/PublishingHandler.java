@@ -40,8 +40,8 @@ class PublishingHandler implements HttpHandler {
         MessageState messageState = attachment.getMessageState();
 
         messageState.setSendingToKafkaProducerQueue();
-        StartedTimersPair brokerLatencyTimers = attachment.getTopicWithMetrics().startBrokerLatencyTimers();
-        brokerMessageProducer.send(attachment.getMessage(), attachment.getTopic(), new PublishingCallback() {
+        StartedTimersPair brokerLatencyTimers = attachment.getCachedTopic().startBrokerLatencyTimers();
+        brokerMessageProducer.send(attachment.getMessage(), attachment.getCachedTopic(), new PublishingCallback() {
 
             // called from kafka producer thread
             @Override
@@ -54,7 +54,7 @@ class PublishingHandler implements HttpHandler {
                                 attachment.removeTimeout();
                                 messageEndProcessor.sent(exchange, attachment);
                             })
-                            .onDelayed((Void) -> messageEndProcessor.delayedSent(attachment.getTopicWithMetrics(), message));
+                            .onDelayed((Void) -> messageEndProcessor.delayedSent(attachment.getCachedTopic(), message));
                 });
             }
 

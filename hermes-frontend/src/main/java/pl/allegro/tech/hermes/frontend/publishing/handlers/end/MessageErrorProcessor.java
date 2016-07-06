@@ -31,29 +31,29 @@ public class MessageErrorProcessor {
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error) {
-        sendQuietly(exchange, error, messageId);
+        sendQuietly(exchange, error, messageId, topic.getQualifiedName());
         log(error, topic, messageId, exchange.getHostAndPort());
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error, Exception exception) {
-        sendQuietly(exchange, error, messageId);
+        sendQuietly(exchange, error, messageId, topic.getQualifiedName());
         log(error, topic, messageId, exchange.getHostAndPort(), exception);
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, Exception e) {
         ErrorDescription error = error("Error while handling request.", INTERNAL_ERROR);
-        sendQuietly(exchange, error, messageId);
+        sendQuietly(exchange, error, messageId, topic.getQualifiedName());
         log(error, topic, messageId, exchange.getHostAndPort(), e);
     }
 
-    public void sendQuietly(HttpServerExchange exchange, ErrorDescription error, String messageId) {
+    public void sendQuietly(HttpServerExchange exchange, ErrorDescription error, String messageId, String topicName) {
         try {
             if (exchange.getConnection().isOpen()) {
                 send(exchange, error, messageId);
             }
         } catch (Exception e) {
-            logger.warn("Exception in sending error response to a client. {} {} {}",
-                    error.getMessage(), messageId, exchange.getHostAndPort(), e);
+            logger.warn("Exception in sending error response to a client. {} Topic: {} MessageId: {} Host: {}",
+                    error.getMessage(), topicName, messageId, exchange.getHostAndPort(), e);
         }
     }
 

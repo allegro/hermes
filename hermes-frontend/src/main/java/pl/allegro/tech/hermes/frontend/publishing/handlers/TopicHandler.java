@@ -4,7 +4,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.metric.TopicWithMetrics;
+import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
@@ -18,6 +18,8 @@ import static pl.allegro.tech.hermes.api.ErrorDescription.error;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 class TopicHandler implements HttpHandler {
+
+    private static final String UNKNOWN_TOPIC_NAME = "unknown";
 
     private final HttpHandler next;
     private final TopicsCache topicsCache;
@@ -39,21 +41,21 @@ class TopicHandler implements HttpHandler {
 
         String messageId = MessageIdGenerator.generate();
 
-        onTopicPresent(exchange, messageId, topicWithMetrics -> {
-            exchange.addExchangeCompleteListener(new ExchangeMetrics(topicWithMetrics));
-            exchange.putAttachment(AttachmentContent.KEY, new AttachmentContent(topicWithMetrics, new MessageState(), messageId));
+        onTopicPresent(exchange, messageId, cachedTopic -> {
+            exchange.addExchangeCompleteListener(new ExchangeMetrics(cachedTopic));
+            exchange.putAttachment(AttachmentContent.KEY, new AttachmentContent(cachedTopic, new MessageState(), messageId));
             try {
                 next.handleRequest(exchange);
             } catch (Exception e) {
-                messageErrorProcessor.sendAndLog(exchange, topicWithMetrics.getTopic(), messageId, e);
+                messageErrorProcessor.sendAndLog(exchange, cachedTopic.getTopic(), messageId, e);
             }
         });
     }
 
-    private void onTopicPresent(HttpServerExchange exchange, String messageId, Consumer<TopicWithMetrics> consumer) {
+    private void onTopicPresent(HttpServerExchange exchange, String messageId, Consumer<CachedTopic> consumer) {
         TopicName topicName = fromQualifiedName(exchange.getQueryParameters().get("qualifiedTopicName").getFirst());
         try {
-            Optional<TopicWithMetrics> topic = topicsCache.getTopic(topicName);
+            Optional<CachedTopic> topic = topicsCache.getTopic(topicName);
             if (topic.isPresent()) {
                 consumer.accept(topic.get());
                 return;
@@ -68,13 +70,15 @@ class TopicHandler implements HttpHandler {
         messageErrorProcessor.sendQuietly(
                 exchange,
                 error("Missing valid topic group in path. Found " + qualifiedTopicName, GROUP_NOT_EXISTS),
-                messageId);
+                messageId,
+                UNKNOWN_TOPIC_NAME);
     }
 
     public void nonExistentTopic(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
         messageErrorProcessor.sendQuietly(
                 exchange,
                 error("Topic not found: " + qualifiedTopicName, TOPIC_NOT_EXISTS),
-                messageId);
+                messageId,
+                UNKNOWN_TOPIC_NAME);
     }
 }

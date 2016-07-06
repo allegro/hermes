@@ -8,6 +8,7 @@ import org.junit.Test;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -44,7 +45,7 @@ public class ZookeeperTopicsCacheTest extends ZookeeperBaseTest {
 
         groupRepository.createGroup(Group.from("group"));
 
-        topicsCache = new ZookeeperTopicsCache(zookeeperClient, configFactory, objectMapper, metrics);
+        topicsCache = new ZookeeperTopicsCache(zookeeperClient, configFactory, objectMapper, metrics, new NamespaceKafkaNamesMapper("ns"));
         topicsCache.start(ImmutableList.of(callback));
     }
 

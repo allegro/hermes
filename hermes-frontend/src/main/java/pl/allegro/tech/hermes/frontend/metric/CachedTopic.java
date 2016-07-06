@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.frontend.metric;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
@@ -10,9 +12,10 @@ import pl.allegro.tech.hermes.common.metric.Timers;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TopicWithMetrics {
+public class CachedTopic {
 
     private final Topic topic;
+    private final KafkaTopics kafkaTopics;
     private final HermesMetrics hermesMetrics;
 
     private final Timer topicRequestReadLatencyTimer;
@@ -31,8 +34,9 @@ public class TopicWithMetrics {
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
 
-    public TopicWithMetrics(Topic topic, HermesMetrics hermesMetrics) {
+    public CachedTopic(Topic topic, HermesMetrics hermesMetrics, KafkaTopics kafkaTopics) {
         this.topic = topic;
+        this.kafkaTopics = kafkaTopics;
         this.hermesMetrics = hermesMetrics;
 
         globalRequestReadLatencyTimer = hermesMetrics.timer(Timers.PARSING_REQUEST);
@@ -60,6 +64,14 @@ public class TopicWithMetrics {
 
     public Topic getTopic() {
         return topic;
+    }
+
+    public TopicName getTopicName() {
+        return topic.getName();
+    }
+
+    public KafkaTopics getKafkaTopics() {
+        return kafkaTopics;
     }
 
     public StartedTimersPair startRequestReadTimers() {

@@ -36,16 +36,20 @@ class TimeoutHandler implements HttpHandler {
     }
 
     private void delayedSending(HttpServerExchange exchange, Topic topic, Message message) {
-        messageEndProcessor.bufferedButDelayed(exchange, topic, message);
+        exchange.getConnection().getWorker().execute(() ->
+                messageEndProcessor.bufferedButDelayed(exchange, topic, message));
     }
 
     private void readingTimeout(HttpServerExchange exchange, AttachmentContent attachment) {
-        TimeoutHolder timeoutHolder = attachment.getTimeoutHolder();
-        timeoutHolder.timeout();
-        messageErrorProcessor.sendAndLog(
-                exchange,
-                attachment.getTopic(),
-                attachment.getMessageId(),
-                error("Timeout while reading message after milliseconds: " + timeoutHolder.getTimeout(), TIMEOUT));
+        exchange.getConnection().getWorker().execute(() -> {
+            TimeoutHolder timeoutHolder = attachment.getTimeoutHolder();
+            timeoutHolder.timeout();
+
+            messageErrorProcessor.sendAndLog(
+                    exchange,
+                    attachment.getTopic(),
+                    attachment.getMessageId(),
+                    error("Timeout while reading message after milliseconds: " + timeoutHolder.getTimeout(), TIMEOUT));
+                });
     }
 }
