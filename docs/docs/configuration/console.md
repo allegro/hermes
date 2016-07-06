@@ -73,3 +73,39 @@ auth.headers.adminHeader | name of header to bear admin password
 Option                      | Description
 --------------------------- | ------------------------------------------------------------------------------------
 topic.messagePreviewEnabled | show message preview tab on topic view; enable only if message preview is enabled in Frontend
+
+## Subscription configuration
+
+Option                                       | Description
+---------------------------------------------|----------------------------------------------------------------------------------
+subscription.endpointAddressResolverMetadata | extend subscription address resolver configuration with specified metadata fields
+
+Example:
+
+```json
+"subscription": {
+    "endpointAddressResolverMetadata": {
+        "exampleEntryEnabled": {
+            "title": "Example boolean entry",
+            "type": "boolean"
+        },
+        "exampleTextEntry": {
+            "title": "Example text entry",
+            "type": "text",
+            "placeholder": "You should write something here",
+            "hint": "This should help somehow..."
+        },
+        "exampleSelectEntry": {
+            "title": "Example select entry",
+            "type": "select",
+            "options": {
+                "": "<clear>",
+                "a": "An option",
+                "b": "Another option"
+            }
+        }
+    }
+}
+```
+
+This will add 3 additional fields to subscription configuration, all optional. 
