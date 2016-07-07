@@ -91,10 +91,13 @@ public class ConsumerMessageSender {
 
     public synchronized void updateSubscription(Subscription newSubscription) {
         boolean endpointUpdated = !this.subscription.getEndpoint().equals(newSubscription.getEndpoint());
-        boolean subscriptionPolicyUpdated = !Objects.equals(this.subscription.getSerialSubscriptionPolicy(), newSubscription.getSerialSubscriptionPolicy());
+        boolean subscriptionPolicyUpdated = !Objects.equals(this.subscription.getSerialSubscriptionPolicy(),
+                newSubscription.getSerialSubscriptionPolicy());
+        boolean endpointAddressResolverMetadataChanged = !Objects.equals(this.subscription.getEndpointAddressResolverMetadata(),
+                newSubscription.getEndpointAddressResolverMetadata());
         this.requestTimeoutMs = newSubscription.getSerialSubscriptionPolicy().getRequestTimeout();
         this.subscription = newSubscription;
-        if (endpointUpdated || subscriptionPolicyUpdated) {
+        if (endpointUpdated || subscriptionPolicyUpdated || endpointAddressResolverMetadataChanged) {
             this.messageSender = messageSenderFactory.create(newSubscription);
         }
     }

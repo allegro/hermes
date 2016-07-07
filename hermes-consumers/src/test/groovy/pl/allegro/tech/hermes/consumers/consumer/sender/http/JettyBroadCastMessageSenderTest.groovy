@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.util.HttpCookieStore
 import pl.allegro.tech.hermes.api.EndpointAddress
+import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult
@@ -53,7 +54,8 @@ class JettyBroadCastMessageSenderTest extends Specification {
     }
 
     def setup() {
-        def address = new ResolvableEndpointAddress(endpoint, new MultiUrlEndpointAddressResolver());
+        def address = new ResolvableEndpointAddress(endpoint, new MultiUrlEndpointAddressResolver(),
+                EndpointAddressResolverMetadata.empty());
         def httpRequestFactory = new HttpRequestFactory(client, 1000, new DefaultHttpMetadataAppender(), Optional.empty());
         messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address);
     }
