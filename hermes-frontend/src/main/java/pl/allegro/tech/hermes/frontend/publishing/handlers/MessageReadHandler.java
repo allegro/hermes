@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
+import io.undertow.server.DefaultResponseListener;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -9,6 +10,7 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProce
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
 import java.io.ByteArrayOutputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
@@ -73,12 +75,19 @@ class MessageReadHandler implements HttpHandler {
 
         exchange.getRequestReceiver().receivePartialBytes(
                 (exchange1, message, last) -> {
-                    state.onNotTimeout((Void) -> messageContent.write(message, 0, message.length));
+                    if (state.isReadingTimeout()) {
+                        endWithoutResponse(exchange);
+                        return;
+                    }
+                    messageContent.write(message, 0, message.length);
+
                     if (last) {
-                        state.onFullyReadSet((Void) -> {
+                        if (!state.onFullyReadSet((Void) -> {
                             startedTimersPair.close();
                             messageRead(exchange1, messageContent.toByteArray(), attachment);
-                        });
+                        })) {
+                            endWithoutResponse(exchange);
+                        }
                     }
                 },
                 (exchange1, e) -> {
@@ -86,6 +95,22 @@ class MessageReadHandler implements HttpHandler {
                     messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
                             error("Error while reading message. " + getRootCauseMessage(e), INTERNAL_ERROR), e);
                 });
+    }
+
+    private void endWithoutResponse(HttpServerExchange exchange) {
+        // when message reading is interrupted by timeout then without this listener default response can be returned
+        // with 200 status code when message read handler finishes execution before timeout handler
+        exchange.addDefaultResponseListener(new NoResponseListener());
+    }
+
+    private final static class NoResponseListener implements DefaultResponseListener {
+
+        private final AtomicBoolean shouldNotEndExchange = new AtomicBoolean();
+
+        @Override
+        public boolean handleDefaultResponse(HttpServerExchange exchange) {
+            return shouldNotEndExchange.compareAndSet(false, true);
+        }
     }
 
     private void messageRead(HttpServerExchange exchange, byte[] messageContent, AttachmentContent attachment) {

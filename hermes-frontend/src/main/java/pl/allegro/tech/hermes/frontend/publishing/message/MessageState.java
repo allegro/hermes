@@ -22,16 +22,16 @@ public class MessageState {
     private volatile boolean delayedProcessing = false;
     private AtomicReference<State> state = new AtomicReference<>(State.READING);
 
-    public void onFullyReadSet(Consumer<Void> consumer) {
+    public boolean onFullyReadSet(Consumer<Void> consumer) {
         if (state.compareAndSet(READING, FULLY_READ)) {
             consumer.accept(null);
+            return true;
         }
+        return false;
     }
 
-    public void onNotTimeout(Consumer<Void> consumer) {
-        if (state.get() != READING_TIMEOUT) {
-            consumer.accept(null);
-        }
+    public boolean isReadingTimeout() {
+        return state.get() == READING_TIMEOUT;
     }
 
     public void setSendingToKafkaProducerQueue() {
