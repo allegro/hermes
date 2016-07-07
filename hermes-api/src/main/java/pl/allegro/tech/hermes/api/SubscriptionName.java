@@ -27,6 +27,10 @@ public class SubscriptionName {
         return Joiner.on("_").join(replaceInAll("_", "__", topicName.getGroupName(), topicName.getName(), name));
     }
 
+    public String getQualifiedName() {
+        return toString();
+    }
+
     public String getName() {
         return name;
     }
@@ -48,7 +52,7 @@ public class SubscriptionName {
 
     @JsonIgnore
     public String getId() {
-        return Subscription.getId(getTopicName(), getName());
+        return id;
     }
 
     @Override

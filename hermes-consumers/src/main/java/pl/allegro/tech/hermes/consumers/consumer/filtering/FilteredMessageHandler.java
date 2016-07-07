@@ -30,7 +30,7 @@ public class FilteredMessageHandler {
 
     public void handle(FilterResult result, Message message, Subscription subscription) {
         if (result.isFiltered()) {
-            logger.debug("Message filtered for subscription {} {}", subscription.getId(), result);
+            logger.debug("Message filtered for subscription {} {}", subscription.getQualifiedName(), result);
 
             offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
 

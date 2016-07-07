@@ -63,7 +63,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
             result.getLogInfo().stream().forEach(logInfo ->
                     logger.warn(
                             "Abnormal delivery failure: subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
-                            subscription.getId(), logInfo.getRootCause(), logInfo.getUrl(), message.getId(),
+                            subscription.getQualifiedName(), logInfo.getRootCause(), logInfo.getUrl(), message.getId(),
                             message.getPartition(), message.getOffset(), logInfo.getFailure()
                     )
             );

@@ -57,9 +57,9 @@ public class MessageBatchReceiver {
     }
 
     public MessageBatchingResult next(Subscription subscription) {
-        logger.debug("Trying to allocate memory for new batch [subscription={}]", subscription.getId());
+        logger.debug("Trying to allocate memory for new batch [subscription={}]", subscription.getQualifiedName());
         MessageBatch batch = batchFactory.createBatch(subscription);
-        logger.debug("New batch allocated [subscription={}]", subscription.getId());
+        logger.debug("New batch allocated [subscription={}]", subscription.getQualifiedName());
         List<MessageMetadata> discarded = new ArrayList<>();
         while (isReceiving() && !batch.isReadyForDelivery()) {
             try {
@@ -69,10 +69,10 @@ public class MessageBatchReceiver {
                     batch.append(message.getData(), messageMetadata(subscription, batch.getId(), message));
                 } else if (batch.isBiggerThanTotalCapacity(message.getData())) {
                     logger.error("Message size exceeds buffer total capacity [size={}, capacity={}, subscription={}]",
-                            message.getData().length, batch.getCapacity(), subscription.getId());
+                            message.getData().length, batch.getCapacity(), subscription.getQualifiedName());
                     discarded.add(toMessageMetadata(message, subscription));
                 } else {
-                    logger.info("Message too large for current batch [message_size={}, subscription={}]", message.getData().length, subscription.getId());
+                    logger.info("Message too large for current batch [message_size={}, subscription={}]", message.getData().length, subscription.getQualifiedName());
                     checkArgument(inflight.offer(message));
                     break;
                 }
@@ -80,7 +80,7 @@ public class MessageBatchReceiver {
                 // ignore
             }
         }
-        logger.debug("Batch is ready for delivery [subscription={}]", subscription.getId());
+        logger.debug("Batch is ready for delivery [subscription={}]", subscription.getQualifiedName());
         return new MessageBatchingResult(batch.close(), discarded);
     }
 

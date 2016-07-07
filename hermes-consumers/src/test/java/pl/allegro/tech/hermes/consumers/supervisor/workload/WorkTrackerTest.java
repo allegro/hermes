@@ -59,7 +59,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         forceAssignment(sub);
 
         // then
-        assertThat(workTracker.isAssignedTo(sub.toSubscriptionName(), supervisorId)).isTrue();
+        assertThat(workTracker.isAssignedTo(sub.getQualifiedName(), supervisorId)).isTrue();
     }
 
     @Test
@@ -69,10 +69,10 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
 
         // when
         workTracker.dropAssignment(sub);
-        wait.untilZookeeperPathNotExists(basePath, sub.toSubscriptionName().toString());
+        wait.untilZookeeperPathNotExists(basePath, sub.getQualifiedName().toString());
 
         // then
-        assertThat(workTracker.isAssignedTo(sub.toSubscriptionName(), supervisorId)).isFalse();
+        assertThat(workTracker.isAssignedTo(sub.getQualifiedName(), supervisorId)).isFalse();
     }
 
     @Test
@@ -85,9 +85,9 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         SubscriptionAssignmentView assignments = workTracker.getAssignments();
 
         // then
-        assertThat(assignments.getSubscriptions()).containsOnly(s1.toSubscriptionName(), s2.toSubscriptionName());
-        assertThat(workTracker.isAssignedTo(s1.toSubscriptionName(), supervisorId)).isTrue();
-        assertThat(workTracker.isAssignedTo(s2.toSubscriptionName(), supervisorId)).isTrue();
+        assertThat(assignments.getSubscriptions()).containsOnly(s1.getQualifiedName(), s2.getQualifiedName());
+        assertThat(workTracker.isAssignedTo(s1.getQualifiedName(), supervisorId)).isTrue();
+        assertThat(workTracker.isAssignedTo(s2.getQualifiedName(), supervisorId)).isTrue();
     }
 
     @Test
@@ -100,7 +100,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         workTracker.apply(view);
 
         // then
-        wait.untilZookeeperPathIsCreated(basePath, s1.toSubscriptionName().toString(), supervisorId);
+        wait.untilZookeeperPathIsCreated(basePath, s1.getQualifiedName().toString(), supervisorId);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         workTracker.apply(stateWithNoAssignments());
 
         // then
-        wait.untilZookeeperPathNotExists(basePath, s1.toSubscriptionName().toString(), supervisorId);
+        wait.untilZookeeperPathNotExists(basePath, s1.getQualifiedName().toString(), supervisorId);
     }
 
     @Test
@@ -124,7 +124,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         workTracker.apply(stateWithNoAssignments());
 
         // then
-        wait.untilZookeeperPathNotExists(basePath, s1.toSubscriptionName().toString());
+        wait.untilZookeeperPathNotExists(basePath, s1.getQualifiedName().toString());
     }
 
     @Test
@@ -133,13 +133,13 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         Subscription s1 = anySubscription();
         SubscriptionAssignmentView view = stateWithSingleAssignment(s1);
         workTracker.apply(view);
-        wait.untilZookeeperPathIsCreated(basePath, s1.toSubscriptionName().toString(), supervisorId);
+        wait.untilZookeeperPathIsCreated(basePath, s1.getQualifiedName().toString(), supervisorId);
 
         // when
         workTracker.apply(stateWithNoAssignments());
 
         // then
-        wait.untilZookeeperPathNotExists(basePath, s1.toSubscriptionName().toString());
+        wait.untilZookeeperPathNotExists(basePath, s1.getQualifiedName().toString());
     }
 
     @Test
@@ -149,21 +149,21 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         Subscription s2 = forceAssignment(anySubscription());
         SubscriptionAssignmentView view = new SubscriptionAssignmentView(
                 ImmutableMap.of(
-                        s1.toSubscriptionName(), ImmutableSet.of(assignment(supervisorId, s1.toSubscriptionName()), assignment("otherConsumer", s1.toSubscriptionName())),
-                        s2.toSubscriptionName(), ImmutableSet.of(assignment(supervisorId, s2.toSubscriptionName()))));
+                        s1.getQualifiedName(), ImmutableSet.of(assignment(supervisorId, s1.getQualifiedName()), assignment("otherConsumer", s1.getQualifiedName())),
+                        s2.getQualifiedName(), ImmutableSet.of(assignment(supervisorId, s2.getQualifiedName()))));
 
         // when
         workTracker.apply(view);
 
         // then
-        wait.untilZookeeperPathIsCreated(basePath, s1.toSubscriptionName().toString(), supervisorId);
-        wait.untilZookeeperPathIsCreated(basePath, s1.toSubscriptionName().toString(), "otherConsumer");
-        wait.untilZookeeperPathIsCreated(basePath, s2.toSubscriptionName().toString(), supervisorId);
+        wait.untilZookeeperPathIsCreated(basePath, s1.getQualifiedName().toString(), supervisorId);
+        wait.untilZookeeperPathIsCreated(basePath, s1.getQualifiedName().toString(), "otherConsumer");
+        wait.untilZookeeperPathIsCreated(basePath, s2.getQualifiedName().toString(), supervisorId);
     }
 
     private SubscriptionAssignmentView stateWithSingleAssignment(Subscription subscription) {
-        return new SubscriptionAssignmentView(ImmutableMap.of(subscription.toSubscriptionName(),
-                ImmutableSet.of(assignment(supervisorId, subscription.toSubscriptionName()))));
+        return new SubscriptionAssignmentView(ImmutableMap.of(subscription.getQualifiedName(),
+                ImmutableSet.of(assignment(supervisorId, subscription.getQualifiedName()))));
     }
 
     private SubscriptionAssignmentView stateWithNoAssignments() {
@@ -183,13 +183,13 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
 
     private Subscription forceAssignment(Subscription sub) {
         workTracker.forceAssignment(sub);
-        wait.untilZookeeperPathIsCreated(basePath, sub.toSubscriptionName().toString(), supervisorId);
+        wait.untilZookeeperPathIsCreated(basePath, sub.getQualifiedName().toString(), supervisorId);
         return sub;
     }
 
     private Subscription dropAssignment(Subscription sub) {
         workTracker.dropAssignment(sub);
-        wait.untilZookeeperPathNotExists(basePath, sub.toSubscriptionName().toString(), supervisorId);
+        wait.untilZookeeperPathNotExists(basePath, sub.getQualifiedName().toString(), supervisorId);
         return sub;
     }
 }

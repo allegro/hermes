@@ -83,24 +83,24 @@ public class BatchConsumer implements Consumer {
         Optional<MessageBatch> inflight = Optional.empty();
         try {
             signalsInterrupt.run();
-            logger.debug("Trying to create new batch [subscription={}].", subscription.getId());
+            logger.debug("Trying to create new batch [subscription={}].", subscription.getQualifiedName());
 
             MessageBatchingResult result = receiver.next(subscription);
             inflight = of(result.getBatch());
 
             inflight.ifPresent(batch -> {
-                logger.debug("Delivering batch [subscription={}].", subscription.getId());
+                logger.debug("Delivering batch [subscription={}].", subscription.getQualifiedName());
                 offerInflightOffsets(batch);
 
                 deliver(batch, createRetryer(batch, subscription.getBatchSubscriptionPolicy()));
 
                 offerCommittedOffsets(batch);
-                logger.debug("Finished delivering batch [subscription={}]", subscription.getId());
+                logger.debug("Finished delivering batch [subscription={}]", subscription.getQualifiedName());
             });
 
             result.getDiscarded().forEach(m -> monitoring.markDiscarded(m, subscription, "too large"));
         } finally {
-            logger.debug("Cleaning batch [subscription={}]", subscription.getId());
+            logger.debug("Cleaning batch [subscription={}]", subscription.getQualifiedName());
             inflight.ifPresent(this::clean);
         }
     }
@@ -119,10 +119,10 @@ public class BatchConsumer implements Consumer {
 
     @Override
     public void initialize() {
-        logger.debug("Consumer: preparing receiver for subscription {}", subscription.getId());
+        logger.debug("Consumer: preparing receiver for subscription {}", subscription.getQualifiedName());
         MessageReceiver receiver = messageReceiverFactory.createMessageReceiver(topic, subscription);
 
-        logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getId());
+        logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getQualifiedName());
         this.receiver = new MessageBatchReceiver(receiver, batchFactory, hermesMetrics, messageConverterResolver, messageContentWrapper, topic, trackers);
     }
 
@@ -132,7 +132,7 @@ public class BatchConsumer implements Consumer {
         if (receiver != null) {
             receiver.stop();
         } else {
-            logger.info("No batch receiver to stop [subscription={}].", subscription.getId());
+            logger.info("No batch receiver to stop [subscription={}].", subscription.getQualifiedName());
         }
     }
 
@@ -178,7 +178,7 @@ public class BatchConsumer implements Consumer {
             MessageSendingResult result = retryer.call(() -> sender.send(batch, subscription.getEndpoint(), subscription.getBatchSubscriptionPolicy().getRequestTimeout()));
             monitoring.markSendingResult(batch, subscription, result);
         } catch (Exception e) {
-            logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.toSubscriptionName(), e);
+            logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.getQualifiedName(), e);
             monitoring.markDiscarded(batch, subscription, e.getMessage());
         }
     }

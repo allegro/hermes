@@ -22,14 +22,14 @@ public class WorkTracker {
     public void forceAssignment(Subscription subscription) {
         registry.addEphemeralAssignment(new SubscriptionAssignment(
                 consumerNodeId,
-                subscription.toSubscriptionName()
+                subscription.getQualifiedName()
         ));
     }
 
     public void dropAssignment(Subscription subscription) {
         registry.dropAssignment(new SubscriptionAssignment(
                 consumerNodeId,
-                subscription.toSubscriptionName()
+                subscription.getQualifiedName()
         ));
     }
 

@@ -93,13 +93,13 @@ public class MirroringSupervisorController implements SupervisorController {
 
     @Override
     public void onSubscriptionAssigned(Subscription subscription) {
-        logger.info("Assigning consumer for {}", subscription.getId());
+        logger.info("Assigning consumer for {}", subscription.getQualifiedName());
         supervisor.assignConsumerForSubscription(subscription);
     }
 
     @Override
     public void onAssignmentRemoved(SubscriptionName subscription) {
-        logger.info("Removing assignment from consumer for {}", subscription.getId());
+        logger.info("Removing assignment from consumer for {}", subscription);
         supervisor.deleteConsumerForSubscriptionName(subscription);
     }
 

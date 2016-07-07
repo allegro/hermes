@@ -34,7 +34,7 @@ public class SubscriptionPartitionOffset {
         return new SubscriptionPartitionOffset(
                 new SubscriptionPartition(
                         partitionOffset.getTopic(),
-                        subscription.toSubscriptionName(),
+                        subscription.getQualifiedName(),
                         partitionOffset.getPartition()
                 ),
                 partitionOffset.getOffset()

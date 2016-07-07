@@ -13,8 +13,6 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BlockingChannelFactory;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
@@ -49,7 +47,7 @@ public class KafkaBrokerOffsetsRepositoryTest extends IntegrationTest {
     public void setUp() throws Exception {
         kafkaTopicName = new NamespaceKafkaNamesMapper(KAFKA_NAMESPACE).toKafkaTopics(topic).getPrimary().name();
         Subscription subscription = subscription(topic, "subscription").build();
-        subscriptionName = subscription.toSubscriptionName();
+        subscriptionName = subscription.getQualifiedName();
 
         hostnameResolver = mock(HostnameResolver.class);
         when(hostnameResolver.resolve()).thenReturn(kafkaHost);

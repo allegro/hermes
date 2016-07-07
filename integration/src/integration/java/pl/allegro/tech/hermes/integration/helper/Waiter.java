@@ -233,7 +233,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         channel.connect();
 
         waitAtMost(adjust((Duration.ONE_MINUTE))).until(() -> {
-            channel.send(new ConsumerMetadataRequest(kafkaNamesMapper.toConsumerGroupId(subscription.toSubscriptionName()).asString(),
+            channel.send(new ConsumerMetadataRequest(kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName()).asString(),
                     ConsumerMetadataRequest.CurrentVersion(), 0, "0"));
             ConsumerMetadataResponse metadataResponse = ConsumerMetadataResponse.readFrom(channel.receive().buffer());
             return metadataResponse.errorCode() == ErrorMapping.NoError();

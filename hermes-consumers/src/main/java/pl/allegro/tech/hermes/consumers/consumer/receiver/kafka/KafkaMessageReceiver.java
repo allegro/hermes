@@ -78,7 +78,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
         pool = Executors.newFixedThreadPool(iterators.size());
 
         iterators.forEach((kafkaTopic, iterator) -> pool.submit(() -> {
-                Thread.currentThread().setName("Kafka-message-receiver-" + kafkaTopic.contentType() + "-" + subscription.toSubscriptionName());
+                Thread.currentThread().setName("Kafka-message-receiver-" + kafkaTopic.contentType() + "-" + subscription.getQualifiedName());
                 while (consuming) {
                     try {
                         readQueue.put(readMessage(kafkaTopic, iterator));

@@ -77,10 +77,6 @@ public class SerialConsumer implements Consumer {
         );
     }
 
-    private String getId() {
-        return subscription.getId();
-    }
-
     @Override
     public void consume(Runnable signalsInterrupt) {
         try {
@@ -129,7 +125,7 @@ public class SerialConsumer implements Consumer {
 
     @Override
     public void updateSubscription(Subscription newSubscription) {
-        logger.info("Updating consumer for subscription {}", subscription.getId());
+        logger.info("Updating consumer for subscription {}", subscription.getQualifiedName());
         inflightSemaphore.setMaxPermits(calculateInflightSize(newSubscription));
         rateLimiter.updateSubscription(newSubscription);
         sender.updateSubscription(newSubscription);

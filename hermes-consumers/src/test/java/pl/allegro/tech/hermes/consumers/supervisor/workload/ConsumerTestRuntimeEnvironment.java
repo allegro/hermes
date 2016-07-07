@@ -95,7 +95,7 @@ public class ConsumerTestRuntimeEnvironment {
         }
         subscriptionRepository.createSubscription(subscription);
         await().atMost(adjust(ONE_SECOND)).until(() -> subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName()));
-        return subscription.toSubscriptionName();
+        return subscription.getQualifiedName();
     }
 
     public SelectiveSupervisorController findLeader(List<SelectiveSupervisorController> supervisors) {

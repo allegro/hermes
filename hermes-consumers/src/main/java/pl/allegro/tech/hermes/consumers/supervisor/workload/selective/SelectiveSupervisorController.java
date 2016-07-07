@@ -59,28 +59,28 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void onSubscriptionAssigned(Subscription subscription) {
-        logger.info("Scheduling assignment consumer for {}", subscription.getId());
+        logger.info("Scheduling assignment consumer for {}", subscription.getName());
         assignmentExecutor.execute(() -> {
-            logger.info("Assigning consumer for {}", subscription.getId());
+            logger.info("Assigning consumer for {}", subscription.getName());
             supervisor.assignConsumerForSubscription(subscription);
-            logger.info("Consumer assigned for {}", subscription.getId());
+            logger.info("Consumer assigned for {}", subscription.getName());
         });
     }
 
     @Override
     public void onAssignmentRemoved(SubscriptionName subscription) {
-        logger.info("Scheduling assignment removal consumer for {}", subscription.getId());
+        logger.info("Scheduling assignment removal consumer for {}", subscription.getName());
         assignmentExecutor.execute(() -> {
-            logger.info("Removing assignment from consumer for {}", subscription.getId());
+            logger.info("Removing assignment from consumer for {}", subscription.getName());
             supervisor.deleteConsumerForSubscriptionName(subscription);
-            logger.info("Consumer removed for {}", subscription.getId());
+            logger.info("Consumer removed for {}", subscription.getName());
         });
     }
 
     @Override
     public void onSubscriptionChanged(Subscription subscription) {
-        if (workTracker.isAssignedTo(subscription.toSubscriptionName(), getId())) {
-            logger.info("Updating subscription {}", subscription.getId());
+        if (workTracker.isAssignedTo(subscription.getQualifiedName(), getId())) {
+            logger.info("Updating subscription {}", subscription.getName());
             supervisor.updateSubscription(subscription);
         }
     }
@@ -88,7 +88,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     @Override
     public void onTopicChanged(Topic topic) {
         for (Subscription subscription : subscriptionsCache.subscriptionsOfTopic(topic.getName())) {
-            if(workTracker.isAssignedTo(subscription.toSubscriptionName(), getId())) {
+            if(workTracker.isAssignedTo(subscription.getQualifiedName(), getId())) {
                 supervisor.updateTopic(subscription, topic);
             }
         }

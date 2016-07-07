@@ -72,19 +72,19 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
     @Override
     public void assignConsumerForSubscription(Subscription subscription) {
-        logger.info("Creating consumer for {}", subscription.getId());
+        logger.info("Creating consumer for {}", subscription.getQualifiedName());
         try {
             Consumer consumer = consumerFactory.createConsumer(subscription);
-            logger.info("Created consumer for {}", subscription.getId());
+            logger.info("Created consumer for {}", subscription.getQualifiedName());
 
-            backgroundProcess.accept(Signal.of(Signal.SignalType.START, subscription.toSubscriptionName(), consumer));
+            backgroundProcess.accept(Signal.of(Signal.SignalType.START, subscription.getQualifiedName(), consumer));
 
             if (subscription.getState() == PENDING) {
                 subscriptionRepository.updateSubscriptionState(subscription.getTopicName(), subscription.getName(), ACTIVE);
             }
-            logger.info("Consumer for {} was added for execution", subscription.getId());
+            logger.info("Consumer for {} was added for execution", subscription.getQualifiedName());
         } catch (Exception ex) {
-            logger.error("Failed to create consumer for subscription {}", subscription.getId(), ex);
+            logger.error("Failed to create consumer for subscription {}", subscription.getQualifiedName(), ex);
         }
     }
 
@@ -95,12 +95,12 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
     @Override
     public void updateTopic(Subscription subscription, Topic topic) {
-        backgroundProcess.accept(Signal.of(Signal.SignalType.UPDATE_TOPIC, subscription.toSubscriptionName(), topic));
+        backgroundProcess.accept(Signal.of(Signal.SignalType.UPDATE_TOPIC, subscription.getQualifiedName(), topic));
     }
 
     @Override
     public void updateSubscription(Subscription subscription) {
-        backgroundProcess.accept(Signal.of(Signal.SignalType.UPDATE_SUBSCRIPTION, subscription.toSubscriptionName(), subscription));
+        backgroundProcess.accept(Signal.of(Signal.SignalType.UPDATE_SUBSCRIPTION, subscription.getQualifiedName(), subscription));
     }
 
     @Override

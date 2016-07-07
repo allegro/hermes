@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.queue;
 
-import com.codahale.metrics.Gauge;
 import org.jctools.queues.MessagePassingQueue;
 import org.jctools.queues.MpscArrayQueue;
 import org.slf4j.Logger;
@@ -18,7 +17,6 @@ public class MonitoredMpscQueue<T> {
     public MonitoredMpscQueue(HermesMetrics metrics, String name, int capacity) {
         this.queue = new MpscArrayQueue<>(capacity);
         this.name = name;
-
         metrics.registerGauge("queue." + name + ".utilization", () -> queue.size() / queue.capacity());
     }
 

@@ -58,7 +58,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     @Override
     public MessageReceiver createMessageReceiver(Topic topic, Subscription subscription) {
-        return create(topic, createConsumerConfig(kafkaNamesMapper.toConsumerGroupId(subscription.toSubscriptionName())), subscription);
+        return create(topic, createConsumerConfig(kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName())), subscription);
     }
 
     MessageReceiver create(Topic receivingTopic, ConsumerConfig consumerConfig, Subscription subscription) {

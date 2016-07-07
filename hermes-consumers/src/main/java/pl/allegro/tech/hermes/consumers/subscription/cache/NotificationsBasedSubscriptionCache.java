@@ -23,17 +23,17 @@ public class NotificationsBasedSubscriptionCache implements SubscriptionsCache, 
 
     @Override
     public void onSubscriptionCreated(Subscription subscription) {
-        this.subscriptions.put(subscription.toSubscriptionName(), subscription);
+        this.subscriptions.put(subscription.getQualifiedName(), subscription);
     }
 
     @Override
     public void onSubscriptionRemoved(Subscription subscription) {
-        this.subscriptions.remove(subscription.toSubscriptionName(), subscription);
+        this.subscriptions.remove(subscription.getQualifiedName(), subscription);
     }
 
     @Override
     public void onSubscriptionChanged(Subscription subscription) {
-        this.subscriptions.put(subscription.toSubscriptionName(), subscription);
+        this.subscriptions.put(subscription.getQualifiedName(), subscription);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class NotificationsBasedSubscriptionCache implements SubscriptionsCache, 
     public List<SubscriptionName> listActiveSubscriptionNames() {
         return subscriptions.values().stream()
                 .filter(Subscription::isActive)
-                .map(Subscription::toSubscriptionName)
+                .map(Subscription::getQualifiedName)
                 .collect(Collectors.toList());
     }
 }

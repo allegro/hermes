@@ -210,13 +210,14 @@ public class Subscription {
                 && Objects.equals(this.headers, other.headers);
     }
 
-    public SubscriptionName toSubscriptionName() {
+    @JsonIgnore
+    public SubscriptionName getQualifiedName() {
         return subscriptionName;
     }
 
     @JsonIgnore
     public String getId() {
-        return getId(getTopicName(), getName());
+        return subscriptionName.getId();
     }
 
     public static String getId(TopicName topicName, String subscriptionName) {
