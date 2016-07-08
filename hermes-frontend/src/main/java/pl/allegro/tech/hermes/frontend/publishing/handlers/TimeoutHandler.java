@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
@@ -35,20 +36,18 @@ class TimeoutHandler implements HttpHandler {
     }
 
     private void delayedSending(HttpServerExchange exchange, Topic topic, Message message) {
-        exchange.getConnection().getWorker().execute(() ->
-                messageEndProcessor.bufferedButDelayed(exchange, topic, message));
+        messageEndProcessor.bufferedButDelayed(exchange, topic, message);
     }
 
     private void readingTimeout(HttpServerExchange exchange, AttachmentContent attachment) {
-        exchange.getConnection().getWorker().execute(() -> {
-            TimeoutHolder timeoutHolder = attachment.getTimeoutHolder();
-            timeoutHolder.timeout();
+        TimeoutHolder timeoutHolder = attachment.getTimeoutHolder();
+        timeoutHolder.timeout();
 
-            messageErrorProcessor.sendAndLog(
-                    exchange,
-                    attachment.getTopic(),
-                    attachment.getMessageId(),
-                    error("Timeout while reading message after milliseconds: " + timeoutHolder.getTimeout(), TIMEOUT));
-                });
+        ErrorDescription error = error("Timeout while reading message after milliseconds: " + timeoutHolder.getTimeout(), TIMEOUT);
+
+        messageErrorProcessor.sendQuietly(exchange, error, attachment.getMessageId(), attachment.getTopic().getQualifiedName());
+        // switch logging from io to worker thread as it can be blocking operation
+        exchange.getConnection().getWorker().execute(() ->
+                messageErrorProcessor.log(error, attachment.getTopic(), attachment.getMessageId(), exchange.getHostAndPort()));
     }
 }
