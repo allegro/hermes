@@ -175,7 +175,7 @@ public class BackupMessagesLoader {
                     topicName.qualifiedName(), new String(message.getData(), Charset.defaultCharset()));
             return false;
         }
-        logger.error("Topic {} not present. Could not {} message {} {}", topicName.qualifiedName(), contextName,
+        logger.error("Topic {} not present. Not {} message {} {}", topicName.qualifiedName(), contextName,
                 message.getId(), new String(message.getData(), Charset.defaultCharset()));
         return false;
     }

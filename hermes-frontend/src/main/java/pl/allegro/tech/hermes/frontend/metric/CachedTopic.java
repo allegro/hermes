@@ -1,12 +1,14 @@
 package pl.allegro.tech.hermes.frontend.metric;
 
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.Timers;
 
 import java.util.Map;
@@ -30,6 +32,9 @@ public class CachedTopic {
     private final Timer topicMessageCreationTimer;
     private final Timer globalMessageCreationTimer;
 
+    private final Meter globalRequestMeter;
+    private final Meter topicRequestMeter;
+
     private final Counter published;
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
@@ -38,6 +43,9 @@ public class CachedTopic {
         this.topic = topic;
         this.kafkaTopics = kafkaTopics;
         this.hermesMetrics = hermesMetrics;
+
+        globalRequestMeter = hermesMetrics.meter(Meters.METER);
+        topicRequestMeter = hermesMetrics.meter(Meters.TOPIC_METER, topic.getName());
 
         globalRequestReadLatencyTimer = hermesMetrics.timer(Timers.PARSING_REQUEST);
         topicRequestReadLatencyTimer = hermesMetrics.timer(Timers.TOPIC_PARSING_REQUEST, topic.getName());
@@ -89,6 +97,11 @@ public class CachedTopic {
                     hermesMetrics.httpStatusCodeMeter(status),
                     hermesMetrics.httpStatusCodeMeter(status, topic.getName()))
         ).mark();
+    }
+
+    public void markRequestMeter() {
+        globalRequestMeter.mark();
+        topicRequestMeter.mark();
     }
 
     public StartedTimersPair startMessageCreationTimers() {
