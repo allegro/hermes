@@ -26,12 +26,11 @@ class TimeoutHandler implements HttpHandler {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
         MessageState state = attachment.getMessageState();
 
-        if (state.onDelayedSendingSet((Void) -> delayedSending(exchange, attachment.getTopic(), attachment.getMessage()))) {
-            return;
-        } else if (state.onReadingTimeoutSet((Void) -> readingTimeout(exchange, attachment))) {
-            return;
-        } else {
-            state.setDelayedProcessing();
+        state.setTimeoutHasPassed();
+        if (state.setReadingTimeout()) {
+            readingTimeout(exchange, attachment);
+        } else if (state.setDelayedSending()) {
+            delayedSending(exchange, attachment.getTopic(), attachment.getMessage());
         }
     }
 

@@ -19,15 +19,11 @@ public class MessageState {
         DELAYED_PROCESSING
     }
 
-    private volatile boolean delayedProcessing = false;
+    private volatile boolean timeoutHasPassed = false;
     private AtomicReference<State> state = new AtomicReference<>(State.READING);
 
-    public boolean onFullyReadSet(Consumer<Void> consumer) {
-        if (state.compareAndSet(READING, FULLY_READ)) {
-            consumer.accept(null);
-            return true;
-        }
-        return false;
+    public boolean setFullyRead() {
+        return state.compareAndSet(READING, FULLY_READ);
     }
 
     public boolean isReadingTimeout() {
@@ -38,52 +34,35 @@ public class MessageState {
         state.set(SENDING_TO_KAFKA_PRODUCER_QUEUE);
     }
 
-    public MessageState onSentToKafkaSet(Consumer<Void> consumer) {
-        if (state.compareAndSet(SENDING_TO_KAFKA, SENT_TO_KAFKA) || state.compareAndSet(SENDING_TO_KAFKA_PRODUCER_QUEUE, SENT_TO_KAFKA)) {
-            consumer.accept(null);
-        }
-        return this;
+    public boolean setSentToKafka() {
+        return state.compareAndSet(SENDING_TO_KAFKA, SENT_TO_KAFKA) || state.compareAndSet(SENDING_TO_KAFKA_PRODUCER_QUEUE, SENT_TO_KAFKA);
     }
 
-    public void onDelayed(Consumer<Void> consumer) {
-        if (state.get() == DELAYED_SENDING || state.get() == DELAYED_PROCESSING) {
-            consumer.accept(null);
-        }
+    public boolean isDelayed() {
+        return timeoutHasPassed || state.get() == DELAYED_SENDING || state.get() == DELAYED_PROCESSING;
     }
 
-    public boolean onDelayedSendingSet(Consumer<Void> consumer) {
-        if (state.compareAndSet(SENDING_TO_KAFKA, DELAYED_SENDING)) {
-            consumer.accept(null);
-            return true;
-        }
-        return false;
+    public boolean setDelayedSending() {
+        return state.compareAndSet(SENDING_TO_KAFKA, DELAYED_SENDING);
     }
 
-    public boolean onReadingTimeoutSet(Consumer<Void> consumer) {
-        if (state.compareAndSet(READING, READING_TIMEOUT)) {
-            consumer.accept(null);
-            return true;
-        }
-        return false;
+    public boolean setReadingTimeout() {
+        return state.compareAndSet(READING, READING_TIMEOUT);
     }
 
     public void setErrorInSendingToKafka() {
         state.set(ERROR_IN_SENDING_TO_KAFKA);
     }
 
-    public void onSendingToKafkaSet(Consumer<Void> consumer) {
-        if (state.compareAndSet(SENDING_TO_KAFKA_PRODUCER_QUEUE, SENDING_TO_KAFKA)) {
-            consumer.accept(null);
-        }
+    public boolean setSendingToKafka() {
+        return state.compareAndSet(SENDING_TO_KAFKA_PRODUCER_QUEUE, SENDING_TO_KAFKA);
     }
 
-    public void onDelayedProcessingSet(Consumer<Void> consumer) {
-        if (delayedProcessing && state.compareAndSet(SENDING_TO_KAFKA, DELAYED_PROCESSING)) {
-            consumer.accept(null);
-        }
+    public boolean setDelayedProcessing() {
+        return timeoutHasPassed && state.compareAndSet(SENDING_TO_KAFKA, DELAYED_PROCESSING);
     }
 
-    public void setDelayedProcessing() {
-        this.delayedProcessing = true;
+    public void setTimeoutHasPassed() {
+        this.timeoutHasPassed = true;
     }
 }

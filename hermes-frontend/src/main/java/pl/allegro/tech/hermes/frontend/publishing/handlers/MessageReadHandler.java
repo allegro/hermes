@@ -82,10 +82,10 @@ class MessageReadHandler implements HttpHandler {
                     messageContent.write(message, 0, message.length);
 
                     if (last) {
-                        if (!state.onFullyReadSet((Void) -> {
+                        if (state.setFullyRead()) {
                             startedTimersPair.close();
                             messageRead(exchange1, messageContent.toByteArray(), attachment);
-                        })) {
+                        } else {
                             endWithoutResponse(exchange);
                         }
                     }

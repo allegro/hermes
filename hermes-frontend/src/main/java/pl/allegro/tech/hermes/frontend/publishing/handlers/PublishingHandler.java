@@ -48,13 +48,12 @@ class PublishingHandler implements HttpHandler {
             public void onPublished(Message message, Topic topic) {
                 exchange.dispatch(() -> {
                     brokerLatencyTimers.close();
-
-                    messageState
-                            .onSentToKafkaSet((Void) -> {
-                                attachment.removeTimeout();
-                                messageEndProcessor.sent(exchange, attachment);
-                            })
-                            .onDelayed((Void) -> messageEndProcessor.delayedSent(attachment.getCachedTopic(), message));
+                    if (messageState.setSentToKafka()) {
+                        attachment.removeTimeout();
+                        messageEndProcessor.sent(exchange, attachment);
+                    } else if (messageState.isDelayed()) {
+                        messageEndProcessor.delayedSent(attachment.getCachedTopic(), message);
+                    }
                 });
             }
 
@@ -69,9 +68,9 @@ class PublishingHandler implements HttpHandler {
             }
         });
 
-        messageState.onSendingToKafkaSet((Void) ->
-                messageState.onDelayedProcessingSet((Void2) ->
-                        messageEndProcessor.bufferedButDelayed(exchange, attachment.getTopic(), attachment.getMessage())));
+        if (messageState.setSendingToKafka() && messageState.setDelayedProcessing()) {
+            messageEndProcessor.bufferedButDelayed(exchange, attachment.getTopic(), attachment.getMessage());
+        }
     }
 
     private void handleNotPublishedMessage(HttpServerExchange exchange, Topic topic, String messageId, Exception exception) {
