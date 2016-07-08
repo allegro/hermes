@@ -76,7 +76,7 @@ class MessageReadHandler implements HttpHandler {
         exchange.getRequestReceiver().receivePartialBytes(
                 (exchange1, message, last) -> {
                     if (state.isReadingTimeout()) {
-                        endWithoutResponse(exchange);
+                        endWithoutDefaultResponse(exchange);
                         return;
                     }
                     messageContent.write(message, 0, message.length);
@@ -86,7 +86,7 @@ class MessageReadHandler implements HttpHandler {
                             startedTimersPair.close();
                             messageRead(exchange1, messageContent.toByteArray(), attachment);
                         } else {
-                            endWithoutResponse(exchange);
+                            endWithoutDefaultResponse(exchange);
                         }
                     }
                 },
@@ -97,9 +97,41 @@ class MessageReadHandler implements HttpHandler {
                 });
     }
 
-    private void endWithoutResponse(HttpServerExchange exchange) {
-        // when message reading is interrupted by timeout then without this listener default response can be returned
-        // with 200 status code when message read handler finishes execution before timeout handler
+    private void messageRead(HttpServerExchange exchange, byte[] messageContent, AttachmentContent attachment) {
+        try {
+            checkContentLength(exchange, messageContent.length);
+            attachment.setMessageContent(messageContent);
+            if (exchange.isInIoThread()) {
+                dispatchToWorker(exchange, attachment);
+            } else {
+                next.handleRequest(exchange);
+            }
+        } catch (ContentLengthChecker.InvalidContentLengthException e) {
+            messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(),
+                    attachment.getMessageId(), error(e.getMessage(), VALIDATION_ERROR));
+        } catch (Exception e) {
+            messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(), e);
+        }
+    }
+
+    private void dispatchToWorker(HttpServerExchange exchange, AttachmentContent attachment) {
+        // exchange.dispatch(next) is not called here because async io read flag can be still set to true which combined with
+        // dispatch() leads to an exception
+        exchange.getConnection().getWorker().execute(() -> {
+            try {
+                next.handleRequest(exchange);
+            } catch (Exception e) {
+                messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
+                        error("Error while executing handler next to read handler.", INTERNAL_ERROR), e);
+            }
+        });
+        endWithoutDefaultResponse(exchange);
+    }
+
+    private void endWithoutDefaultResponse(HttpServerExchange exchange) {
+        // when a handler doesn't return a response (for example when is interrupted by timeout)
+        // then without this listener default response can be returned with 200 status code when the handler finishes
+        // execution before other one
         exchange.addDefaultResponseListener(new NoResponseListener());
     }
 
@@ -110,24 +142,6 @@ class MessageReadHandler implements HttpHandler {
         @Override
         public boolean handleDefaultResponse(HttpServerExchange exchange) {
             return shouldNotEndExchange.compareAndSet(false, true);
-        }
-    }
-
-    private void messageRead(HttpServerExchange exchange, byte[] messageContent, AttachmentContent attachment) {
-        try {
-            checkContentLength(exchange, messageContent.length);
-            attachment.setMessageContent(messageContent);
-            if (exchange.isInIoThread()) {
-                // read was dispatched to io thread, run next handler in  worker thread
-                exchange.dispatch(next);
-            } else {
-                next.handleRequest(exchange);
-            }
-        } catch (ContentLengthChecker.InvalidContentLengthException e) {
-            messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(),
-                    attachment.getMessageId(), error(e.getMessage(), VALIDATION_ERROR));
-        } catch (Exception e) {
-            messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(), e);
         }
     }
 }

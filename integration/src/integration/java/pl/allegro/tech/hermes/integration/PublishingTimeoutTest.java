@@ -56,4 +56,24 @@ public class PublishingTimeoutTest extends IntegrationTest {
         assertThat(CatchException.<Exception>caughtException()).hasMessage("Broken pipe");
     }
 
+    @Test
+    public void shouldHandleTimeoutForSlowRequestWithChunkedEncoding() throws IOException, InterruptedException {
+        // given
+        operations.buildTopic("slowGroup", "chunkedEncoding");
+        int clientTimeout = 5000;
+        int pauseTimeBetweenChunks = 300;
+        int delayBeforeSendingFirstData = 0;
+        boolean chunkedEncoding = true;
+
+        // when
+        long start = System.currentTimeMillis();
+        String response = client.slowEvent(
+                clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, "slowGroup.chunkedEncoding", chunkedEncoding);
+        long elapsed = System.currentTimeMillis() - start;
+
+        // then
+        assertThat(response).contains("408 Request Time-out");
+        assertThat(elapsed).isLessThan(2500);
+    }
+
 }
