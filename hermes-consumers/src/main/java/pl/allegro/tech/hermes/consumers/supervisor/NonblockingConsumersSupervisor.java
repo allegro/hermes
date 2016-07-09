@@ -58,7 +58,12 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
         this.configs = configFactory;
-        this.offsetCommitter = new OffsetCommitter(offsetQueue, messageCommitters, configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_PERIOD));
+        this.offsetCommitter = new OffsetCommitter(
+                offsetQueue,
+                messageCommitters,
+                configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_PERIOD),
+                metrics
+        );
         this.backgroundProcess = new ConsumerProcessSupervisor(executor, retransmitter, clock, metrics, configFactory);
         this.scheduledExecutor = createExecutorForSupervision();
     }

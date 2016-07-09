@@ -4,6 +4,7 @@ import org.jctools.queues.MpscArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 
 import java.util.HashMap;
@@ -53,6 +54,8 @@ public class OffsetCommitter implements Runnable {
 
     private final List<MessageCommitter> messageCommitters;
 
+    private final HermesMetrics metrics;
+
     private final Set<SubscriptionPartitionOffset> inflightOffsets = new HashSet<>();
 
     private final Set<SubscriptionPartitionOffset> failedToCommitOffsets = new HashSet<>();
@@ -62,39 +65,47 @@ public class OffsetCommitter implements Runnable {
     public OffsetCommitter(
             OffsetQueue offsetQueue,
             List<MessageCommitter> messageCommitters,
-            int offsetCommitPeriodSeconds
+            int offsetCommitPeriodSeconds,
+            HermesMetrics metrics
     ) {
         this.offsetQueue = offsetQueue;
         this.messageCommitters = messageCommitters;
         this.offsetCommitPeriodSeconds = offsetCommitPeriodSeconds;
+        this.metrics = metrics;
     }
 
     @Override
     public void run() {
-        offsetQueue.drainInflightOffsets(inflightOffsets::add);
-        inflightOffsets.addAll(failedToCommitOffsets);
-        failedToCommitOffsets.clear();
+        try {
+            offsetQueue.drainInflightOffsets(inflightOffsets::add);
+            inflightOffsets.addAll(failedToCommitOffsets);
+            failedToCommitOffsets.clear();
 
-        Map<SubscriptionPartition, Long> maxInflightOffsets = calculateInflightOffsets(Math::max);
+            Map<SubscriptionPartition, Long> maxInflightOffsets = calculateInflightOffsets(Math::max);
 
-        offsetQueue.drainCommittedOffsets(inflightOffsets::remove);
+            offsetQueue.drainCommittedOffsets(inflightOffsets::remove);
 
-        Map<SubscriptionPartition, Long> minInflightOffsets = calculateInflightOffsets(Math::min);
+            Map<SubscriptionPartition, Long> minInflightOffsets = calculateInflightOffsets(Math::min);
 
-        Set<SubscriptionPartitionOffset> offsetsToCommit = new HashSet<>();
-        maxInflightOffsets.forEach((k, v) -> {
-            if (minInflightOffsets.containsKey(k)) {
-                offsetsToCommit.add(new SubscriptionPartitionOffset(k, minInflightOffsets.get(k) - 1));
-            } else {
-                offsetsToCommit.add(new SubscriptionPartitionOffset(k, v));
+            Set<SubscriptionPartitionOffset> offsetsToCommit = new HashSet<>();
+            maxInflightOffsets.forEach((k, v) -> {
+                if (minInflightOffsets.containsKey(k)) {
+                    offsetsToCommit.add(new SubscriptionPartitionOffset(k, minInflightOffsets.get(k) - 1));
+                } else {
+                    offsetsToCommit.add(new SubscriptionPartitionOffset(k, v));
+                }
+            });
+
+            for (SubscriptionPartitionOffset offset : offsetsToCommit) {
+                commit(offset);
             }
-        });
+            metrics.counter("offset-committer.committed").inc(offsetsToCommit.size());
+            metrics.counter("offset-committer.failed").inc(failedToCommitOffsets.size());
 
-        for (SubscriptionPartitionOffset offset : offsetsToCommit) {
-            commit(offset);
+            cleanupUnusedSubscriptions();
+        } catch(Exception exception) {
+            logger.error("Failed to run offset committer: {}", exception.getMessage(), exception);
         }
-
-        cleanupUnusedSubscriptions();
     }
 
     private Map<SubscriptionPartition, Long> calculateInflightOffsets(BiFunction<Long, Long, Long> comparer) {
@@ -133,7 +144,7 @@ public class OffsetCommitter implements Runnable {
     }
 
     public void start() {
-        scheduledExecutor.scheduleAtFixedRate(this,
+        scheduledExecutor.scheduleWithFixedDelay(this,
                 offsetCommitPeriodSeconds,
                 offsetCommitPeriodSeconds,
                 TimeUnit.SECONDS
