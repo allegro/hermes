@@ -59,19 +59,19 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void onSubscriptionAssigned(Subscription subscription) {
-        logger.info("Scheduling assignment consumer for {}", subscription.getName());
+        logger.info("Scheduling assignment consumer for {}", subscription.getQualifiedName());
         assignmentExecutor.execute(() -> {
-            logger.info("Assigning consumer for {}", subscription.getName());
+            logger.info("Assigning consumer for {}", subscription.getQualifiedName());
             supervisor.assignConsumerForSubscription(subscription);
-            logger.info("Consumer assigned for {}", subscription.getName());
+            logger.info("Consumer assigned for {}", subscription.getQualifiedName());
         });
     }
 
     @Override
     public void onAssignmentRemoved(SubscriptionName subscription) {
-        logger.info("Scheduling assignment removal consumer for {}", subscription.getName());
+        logger.info("Scheduling assignment removal consumer for {}", subscription.getQualifiedName());
         assignmentExecutor.execute(() -> {
-            logger.info("Removing assignment from consumer for {}", subscription.getName());
+            logger.info("Removing assignment from consumer for {}", subscription.getQualifiedName());
             supervisor.deleteConsumerForSubscriptionName(subscription);
             logger.info("Consumer removed for {}", subscription.getName());
         });

@@ -11,7 +11,7 @@ public class UnsupportedContentTypeException extends InternalProcessingException
     }
 
     public UnsupportedContentTypeException(Subscription subscription) {
-        super(String.format("Unsupported content type %s for subscription %s", subscription.getContentType(), subscription.getName()));
+        super(String.format("Unsupported content type %s for subscription %s", subscription.getContentType(), subscription.getQualifiedName()));
     }
 
 }

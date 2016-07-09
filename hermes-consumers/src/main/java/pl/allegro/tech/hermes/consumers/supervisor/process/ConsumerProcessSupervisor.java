@@ -83,8 +83,9 @@ public class ConsumerProcessSupervisor implements Runnable {
                     break;
                 case RESTART:
                 case KILL_RESTART:
+                    Consumer consumer = process(signal).getConsumer();
                     kill(process(signal));
-                    taskQueue.offer(Signal.of(Signal.SignalType.START, signal.getTarget()));
+                    taskQueue.offer(Signal.of(Signal.SignalType.START, signal.getTarget(), consumer));
                     break;
                 case STOP:
                     process(signal).accept(signal);

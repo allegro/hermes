@@ -154,4 +154,8 @@ public class ConsumerProcess implements Runnable {
     public SubscriptionName getSubscriptionName() {
         return subscriptionName;
     }
+
+    public Consumer getConsumer() {
+        return consumer;
+    }
 }
