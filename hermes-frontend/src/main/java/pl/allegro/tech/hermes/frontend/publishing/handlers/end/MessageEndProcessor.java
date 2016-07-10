@@ -29,7 +29,7 @@ public class MessageEndProcessor {
 
     public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
         trackers.get(attachment.getTopic()).logPublished(attachment.getMessageId(), attachment.getTopic().getName());
-        sendResponse(exchange, attachment.getMessageId(), StatusCodes.CREATED);
+        sendResponse(exchange, attachment, StatusCodes.CREATED);
         attachment.getCachedTopic().incrementPublished();
     }
 
@@ -39,15 +39,17 @@ public class MessageEndProcessor {
         cachedTopic.incrementPublished();
     }
 
-    public void bufferedButDelayed(HttpServerExchange exchange, Topic topic, Message message) {
-        brokerListeners.onTimeout(message, topic);
-        trackers.get(topic).logInflight(message.getId(), topic.getName());
-        sendResponse(exchange, message.getId(), StatusCodes.ACCEPTED);
+    public void bufferedButDelayed(HttpServerExchange exchange, AttachmentContent attachment) {
+        Topic topic = attachment.getTopic();
+        brokerListeners.onTimeout(attachment.getMessage(), topic);
+        trackers.get(topic).logInflight(attachment.getMessageId(), topic.getName());
+        sendResponse(exchange, attachment, StatusCodes.ACCEPTED);
     }
 
-    private void sendResponse(HttpServerExchange exchange, String messageId, int statusCode) {
+    private void sendResponse(HttpServerExchange exchange, AttachmentContent attachment, int statusCode) {
         exchange.setStatusCode(statusCode);
-        exchange.getResponseHeaders().add(messageIdHeader, messageId);
+        exchange.getResponseHeaders().add(messageIdHeader, attachment.getMessageId());
+        attachment.setResponseReady();
         exchange.endExchange();
     }
 }

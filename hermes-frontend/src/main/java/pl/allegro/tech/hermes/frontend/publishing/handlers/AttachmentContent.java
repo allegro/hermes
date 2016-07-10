@@ -16,6 +16,7 @@ public class AttachmentContent {
     private byte[] messageContent;
     private volatile TimeoutHolder timeoutHolder;
     private volatile Message message;
+    private volatile boolean responseReady;
 
     public Message getMessage() {
         return message;
@@ -67,4 +68,11 @@ public class AttachmentContent {
         this.message = message;
     }
 
+    public boolean isResponseReady() {
+        return responseReady;
+    }
+
+    public void setResponseReady() {
+        responseReady = true;
+    }
 }

@@ -17,8 +17,11 @@ public class PreviewHandler implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
-        messagePreviewLog.add(attachment.getTopic().getName(), attachment.getMessageContent());
 
-        next.handleRequest(exchange);
+        try {
+            next.handleRequest(exchange);
+        } finally {
+            messagePreviewLog.add(attachment.getTopic().getName(), attachment.getMessageContent());
+        }
     }
 }

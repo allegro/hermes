@@ -131,17 +131,22 @@ class MessageReadHandler implements HttpHandler {
     private void endWithoutDefaultResponse(HttpServerExchange exchange) {
         // when a handler doesn't return a response (for example when is interrupted by timeout)
         // then without this listener default response can be returned with 200 status code when the handler finishes
-        // execution before other one
-        exchange.addDefaultResponseListener(new NoResponseListener());
+        // execution before the other one
+        exchange.addDefaultResponseListener(new ResponseListener());
     }
 
-    private final static class NoResponseListener implements DefaultResponseListener {
+    private final static class ResponseListener implements DefaultResponseListener {
 
-        private final AtomicBoolean shouldNotEndExchange = new AtomicBoolean();
+        private static final boolean END_WITHOUT_RESPONSE = true;
+        private final AtomicBoolean returnResponseOnlyOnce = new AtomicBoolean();
 
         @Override
         public boolean handleDefaultResponse(HttpServerExchange exchange) {
-            return shouldNotEndExchange.compareAndSet(false, true);
+            if (exchange.getAttachment(AttachmentContent.KEY).isResponseReady()) {
+                return !returnResponseOnlyOnce.compareAndSet(false, true);
+            } else {
+                return END_WITHOUT_RESPONSE;
+            }
         }
     }
 }

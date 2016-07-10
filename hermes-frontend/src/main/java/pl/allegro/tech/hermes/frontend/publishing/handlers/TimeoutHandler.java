@@ -3,10 +3,8 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import pl.allegro.tech.hermes.api.ErrorDescription;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
-import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.TIMEOUT;
@@ -31,12 +29,12 @@ class TimeoutHandler implements HttpHandler {
         if (state.setReadingTimeout()) {
             readingTimeout(exchange, attachment);
         } else if (state.setDelayedSending()) {
-            delayedSending(exchange, attachment.getTopic(), attachment.getMessage());
+            delayedSending(exchange, attachment);
         }
     }
 
-    private void delayedSending(HttpServerExchange exchange, Topic topic, Message message) {
-        messageEndProcessor.bufferedButDelayed(exchange, topic, message);
+    private void delayedSending(HttpServerExchange exchange, AttachmentContent attachment) {
+        messageEndProcessor.bufferedButDelayed(exchange, attachment);
     }
 
     private void readingTimeout(HttpServerExchange exchange, AttachmentContent attachment) {

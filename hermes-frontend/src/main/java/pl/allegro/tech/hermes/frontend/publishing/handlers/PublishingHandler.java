@@ -69,7 +69,7 @@ class PublishingHandler implements HttpHandler {
         });
 
         if (messageState.setSendingToKafka() && messageState.setDelayedProcessing()) {
-            messageEndProcessor.bufferedButDelayed(exchange, attachment.getTopic(), attachment.getMessage());
+            messageEndProcessor.bufferedButDelayed(exchange, attachment);
         }
     }
 
