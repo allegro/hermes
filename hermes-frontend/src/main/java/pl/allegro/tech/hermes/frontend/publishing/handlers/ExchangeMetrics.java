@@ -17,10 +17,12 @@ class ExchangeMetrics implements ExchangeCompletionListener {
 
     @Override
     public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
-        cachedTopic.markRequestMeter();
-        cachedTopic.markStatusCodeMeter(exchange.getStatusCode());
-        producerLatencyTimers.close();
-
-        nextListener.proceed();
+        try {
+            cachedTopic.markRequestMeter();
+            cachedTopic.markStatusCodeMeter(exchange.getStatusCode());
+            producerLatencyTimers.close();
+        } finally {
+            nextListener.proceed();
+        }
     }
 }

@@ -100,6 +100,7 @@ class MessageReadHandler implements HttpHandler {
     private void messageRead(HttpServerExchange exchange, byte[] messageContent, AttachmentContent attachment) {
         try {
             checkContentLength(exchange, messageContent.length);
+            attachment.getCachedTopic().reportMessageContentSize(messageContent.length);
             attachment.setMessageContent(messageContent);
             if (exchange.isInIoThread()) {
                 dispatchToWorker(exchange, attachment);

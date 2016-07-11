@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.metric;
 
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Topic;
@@ -35,6 +36,9 @@ public class CachedTopic {
     private final Meter globalRequestMeter;
     private final Meter topicRequestMeter;
 
+    private final Histogram topicMessageContentSize;
+    private final Histogram globalMessageContentSize;
+
     private final Counter published;
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
@@ -52,6 +56,9 @@ public class CachedTopic {
 
         globalMessageCreationTimer = hermesMetrics.timer(Timers.MESSAGE_CREATION_LATENCY);
         topicMessageCreationTimer = hermesMetrics.timer(Timers.MESSAGE_CREATION_TOPIC_LATENCY, topic.getName());
+
+        topicMessageContentSize = hermesMetrics.messageContentSizeHistogram(topic.getName());
+        globalMessageContentSize = hermesMetrics.messageContentSizeHistogram();
 
         published = hermesMetrics.counter(Counters.PUBLISHED, topic.getName());
 
@@ -114,6 +121,11 @@ public class CachedTopic {
 
     public void incrementPublished() {
         published.inc();
+    }
+
+    public void reportMessageContentSize(int size) {
+        topicMessageContentSize.update(size);
+        globalMessageContentSize.update(size);
     }
 
 }
