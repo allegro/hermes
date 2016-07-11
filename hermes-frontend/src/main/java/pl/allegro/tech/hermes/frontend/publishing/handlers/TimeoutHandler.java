@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
@@ -34,18 +33,20 @@ class TimeoutHandler implements HttpHandler {
     }
 
     private void delayedSending(HttpServerExchange exchange, AttachmentContent attachment) {
-        messageEndProcessor.bufferedButDelayed(exchange, attachment);
+        exchange.getConnection().getWorker().execute(() ->
+                messageEndProcessor.bufferedButDelayed(exchange, attachment));
     }
 
     private void readingTimeout(HttpServerExchange exchange, AttachmentContent attachment) {
-        TimeoutHolder timeoutHolder = attachment.getTimeoutHolder();
-        timeoutHolder.timeout();
+        exchange.getConnection().getWorker().execute(() -> {
+            TimeoutHolder timeoutHolder = attachment.getTimeoutHolder();
+            timeoutHolder.timeout();
 
-        ErrorDescription error = error("Timeout while reading message after milliseconds: " + timeoutHolder.getTimeout(), TIMEOUT);
-
-        messageErrorProcessor.sendQuietly(exchange, error, attachment.getMessageId(), attachment.getTopic().getQualifiedName());
-        // switch logging from io to worker thread as it can be blocking operation
-        exchange.getConnection().getWorker().execute(() ->
-                messageErrorProcessor.log(error, attachment.getTopic(), attachment.getMessageId(), exchange.getHostAndPort()));
+            messageErrorProcessor.sendAndLog(
+                    exchange,
+                    attachment.getTopic(),
+                    attachment.getMessageId(),
+                    error("Timeout while reading message after milliseconds: " + timeoutHolder.getTimeout(), TIMEOUT));
+                });
     }
 }

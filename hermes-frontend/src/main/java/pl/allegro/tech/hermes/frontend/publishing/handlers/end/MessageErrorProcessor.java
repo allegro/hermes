@@ -64,7 +64,7 @@ public class MessageErrorProcessor {
         exchange.getResponseSender().send(objectMapper.writeValueAsString(error));
     }
 
-    public void log(ErrorDescription error, Topic topic, String messageId, String hostAndPort) {
+    private void log(ErrorDescription error, Topic topic, String messageId, String hostAndPort) {
         logger.error(new StringBuilder()
                 .append(error.getMessage())
                 .append("; publishing on topic: ")
