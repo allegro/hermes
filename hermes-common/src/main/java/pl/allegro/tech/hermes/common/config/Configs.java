@@ -140,6 +140,11 @@ public enum Configs {
     CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER("consumer.supervisor.background.unhealty.after", 300_000),
     CONSUMER_SIGNAL_PROCESSING_INTERVAL("consumer.supervisor.signal.processing.interval.ms", 5_000),
 
+    OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
+    OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),
+    OAUTH_PROVIDERS_TOKEN_REQUEST_RATE_LIMITER_RATE_REDUCTION_FACTOR(
+            "oauth.providers.token.request.rate.limiter.rate.reduction.factor", 2.0),
+
     GRAPHITE_HOST("graphite.host", "localhost"),
     GRAPHITE_PORT("graphite.port", 2003),
     GRAPHITE_HTTP_PORT("graphite.http.port", 8082),

@@ -78,7 +78,7 @@ public class SubscriptionService {
     }
 
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
-        return subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName).anonymizePassword();
+        return subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName).anonymize();
     }
 
     public void removeSubscription(TopicName topicName, String subscriptionName) {

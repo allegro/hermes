@@ -18,12 +18,15 @@ public class HermesEndpoints {
 
     private final QueryEndpoint queryEndpoint;
 
+    private final OAuthProviderEndpoint oAuthProviderEndpoint;
+
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
         this.subscriptionEndpoint = hermes.createSubscriptionEndpoint();
         this.schemaEndpoint = hermes.createSchemaEndpoint();
         this.queryEndpoint = hermes.createQueryEndpoint();
+        this.oAuthProviderEndpoint = hermes.createOAuthProviderEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl) {
@@ -64,5 +67,8 @@ public class HermesEndpoints {
         return subscriptionEndpoint.list(group + "." + topic, tracked);
     }
 
+    public OAuthProviderEndpoint oAuthProvider() {
+        return oAuthProviderEndpoint;
+    }
 }
 

@@ -56,7 +56,7 @@ public interface MessageSendingResult {
 
     boolean succeeded();
 
-    boolean ignoreInRateCalculation(boolean retryClientErrors);
+    boolean ignoreInRateCalculation(boolean retryClientErrors, boolean isOAuthSecuredSubscription);
 
     default boolean hasHttpAnswer() {
         return getStatusCode() != 0;

@@ -77,6 +77,10 @@ public class Hermes {
         return createProxy(url, QueryEndpoint.class, managementConfig);
     }
 
+    public OAuthProviderEndpoint createOAuthProviderEndpoint() {
+        return createProxy(url, OAuthProviderEndpoint.class, managementConfig);
+    }
+
     public AsyncMessagePublisher createAsyncMessagePublisher() {
         String resource = TopicEndpoint.class.getAnnotation(Path.class).value();
         return new AsyncMessagePublisher(getClientBuilder(publisherConfig).build().target(url).path(resource));
@@ -115,5 +119,4 @@ public class Hermes {
     private static ClientBuilder getClientBuilder(ClientConfig clientConfig) {
         return ClientBuilder.newBuilder().withConfig(clientConfig).register(JacksonJsonProvider.class);
     }
-
 }

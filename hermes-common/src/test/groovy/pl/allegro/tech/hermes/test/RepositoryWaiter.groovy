@@ -14,6 +14,10 @@ class RepositoryWaiter extends ZookeeperWaiter {
         this.paths =  paths
     }
 
+    void untilOAuthProviderCreated(String oAuthProviderName) {
+        untilZookeeperPathIsCreated(paths.oAuthProviderPath(oAuthProviderName))
+    }
+
     void untilGroupCreated(String groupName) {
         untilZookeeperPathIsCreated(paths.groupPath(groupName))
     }

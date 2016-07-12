@@ -5,5 +5,5 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 public interface SuccessHandler {
-    void handle(Message message, Subscription subscription, MessageSendingResult result);
+    void handleSuccess(Message message, Subscription subscription, MessageSendingResult result);
 }

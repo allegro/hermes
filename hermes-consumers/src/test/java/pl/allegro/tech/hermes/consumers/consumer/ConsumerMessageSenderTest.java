@@ -22,6 +22,7 @@ import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
@@ -29,13 +30,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.passwordGrantOAuthPolicy;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
@@ -104,7 +105,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.sendMessage(message);
-        verify(successHandler, timeout(1000)).handle(eq(message), eq(subscription), any(MessageSendingResult.class));
+        verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
         verifySemaphoreReleased();
@@ -122,7 +123,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.sendMessage(message);
-        verify(successHandler, timeout(1000)).handle(eq(message), eq(subscription), any(MessageSendingResult.class));
+        verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
         verifySemaphoreReleased();
@@ -174,7 +175,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.sendMessage(message);
-        verify(successHandler, timeout(1000)).handle(eq(message), eq(subscriptionWith4xxRetry), any(MessageSendingResult.class));
+        verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscriptionWith4xxRetry), any(MessageSendingResult.class));
 
         // then
         verifySemaphoreReleased();
@@ -216,6 +217,23 @@ public class ConsumerMessageSenderTest {
         ConsumerMessageSender sender = consumerMessageSender(subscriptionWith4xxRetry);
         Message message = message();
         doReturn(failure(403)).doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
+
+        // when
+        sender.sendMessage(message);
+
+        // then
+        verifyRateLimiterFailedSendingCountedTimes(2);
+        verifyRateLimiterSuccessfulSendingCountedTimes(1);
+    }
+
+    @Test
+    public void shouldRetryOn401UnauthorizedForOAuthSecuredSubscription() {
+        // given
+        Subscription subscription = subscriptionWithout4xxRetryAndWithOAuthPolicy();
+        setUpMetrics(subscription);
+        ConsumerMessageSender sender = consumerMessageSender(subscription);
+        Message message = message();
+        doReturn(failure(401)).doReturn(failure(401)).doReturn(success()).when(messageSender).send(message);
 
         // when
         sender.sendMessage(message);
@@ -328,8 +346,9 @@ public class ConsumerMessageSenderTest {
 
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
         when(messageSenderFactory.create(subscription)).thenReturn(messageSender);
-        return new ConsumerMessageSender(subscription, messageSenderFactory, successHandler, errorHandler, rateLimiter,
-                Executors.newSingleThreadExecutor(), () -> inflightSemaphore.release(), hermesMetrics, ASYNC_TIMEOUT_MS,
+        return new ConsumerMessageSender(subscription, messageSenderFactory, Arrays.asList(successHandler),
+                Arrays.asList(errorHandler), rateLimiter, Executors.newSingleThreadExecutor(),
+                () -> inflightSemaphore.release(), hermesMetrics, ASYNC_TIMEOUT_MS,
                 new FutureAsyncTimeout<>(MessageSendingResult::failedResult, Executors.newSingleThreadScheduledExecutor()));
     }
 
@@ -380,6 +399,15 @@ public class ConsumerMessageSenderTest {
         return subscriptionBuilderWithTestValues()
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
                         .withMessageBackoff(backoff)
+                        .build())
+                .build();
+    }
+
+    private Subscription subscriptionWithout4xxRetryAndWithOAuthPolicy() {
+        return subscriptionBuilderWithTestValues()
+                .withOAuthPolicy(passwordGrantOAuthPolicy("myOAuthProvider")
+                        .withUsername("user1")
+                        .withPassword("abc123")
                         .build())
                 .build();
     }

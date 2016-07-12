@@ -1,10 +1,10 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.http;
+package pl.allegro.tech.hermes.consumers.consumer.sender.http.auth;
 
 import org.apache.commons.codec.binary.Base64;
 import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 public class BasicAuthProvider implements HttpAuthorizationProvider {
 
@@ -17,7 +17,7 @@ public class BasicAuthProvider implements HttpAuthorizationProvider {
     }
 
     @Override
-    public String authorizationToken(Message message) {
-        return token;
+    public Optional<String> authorizationToken() {
+        return Optional.of(token);
     }
 }

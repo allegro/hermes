@@ -19,6 +19,7 @@ import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndica
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
+import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
@@ -102,6 +103,11 @@ public class StorageConfiguration {
     @Bean
     SubscriptionRepository subscriptionRepository() {
         return new ZookeeperSubscriptionRepository(storageZookeeper(), objectMapper, zookeeperPaths(), topicRepository());
+    }
+
+    @Bean
+    OAuthProviderRepository oAuthProviderRepository() {
+        return new ZookeeperOAuthProviderRepository(storageZookeeper(), objectMapper, zookeeperPaths());
     }
 
     @Bean

@@ -19,6 +19,7 @@ import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 public class SingleMessageSendingResult implements MessageSendingResult {
 
@@ -93,10 +94,12 @@ public class SingleMessageSendingResult implements MessageSendingResult {
         return family.equals(responseFamily);
     }
 
+    @Override
     public boolean isRetryLater() {
         return getStatusCode() == SERVICE_UNAVAILABLE.getStatusCode();
     }
 
+    @Override
     public boolean succeeded() {
         return getFailure() == null;
     }
@@ -135,18 +138,26 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     }
 
     @Override
-    public boolean ignoreInRateCalculation(boolean retryClientErrors) {
-        return isRetryLater() || this.ignoreInRateCalculation || (isClientError() && !retryClientErrors);
+    public boolean ignoreInRateCalculation(boolean retryClientErrors, boolean isOAuthSecuredSubscription) {
+        return isRetryLater() || this.ignoreInRateCalculation ||
+                (isClientError() && !retryClientErrors && !(isOAuthSecuredSubscription && isUnauthorized()));
     }
 
+    private boolean isUnauthorized() {
+        return UNAUTHORIZED.getStatusCode() == getStatusCode();
+    }
+
+    @Override
     public boolean isTimeout() {
         return failure instanceof TimeoutException;
     }
 
+    @Override
     public List<MessageSendingResultLogInfo> getLogInfo() {
         return Collections.singletonList(new MessageSendingResultLogInfo(requestUri, failure, getRootCause()));
     }
 
+    @Override
     public List<String> getSucceededUris(Predicate<MessageSendingResult> filter) {
         if(filter.test(this)) {
             return Collections.singletonList(requestUri);

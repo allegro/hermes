@@ -42,5 +42,11 @@ public class Waiter {
                 endpoints.topic().get(reference.getQualifiedName()).equals(reference)
         );
     }
+
+    public void untilOAuthProviderCreated(String oAuthProviderName) {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+                endpoints.oAuthProvider().get(oAuthProviderName) != null
+        );
+    }
 }
 

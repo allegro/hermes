@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.test.helper.endpoint;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
@@ -164,5 +165,14 @@ public class HermesAPIOperations {
                 .build();
 
         createSubscription(topic, subscription);
+    }
+
+    public void createOAuthProvider(OAuthProvider oAuthProvider) {
+        if (endpoints.oAuthProvider().list().contains(oAuthProvider.getName())) {
+            return;
+        }
+        assertThat(endpoints.oAuthProvider().create(oAuthProvider).getStatus()).isEqualTo(CREATED.getStatusCode());
+
+        wait.untilOAuthProviderCreated(oAuthProvider.getName());
     }
 }

@@ -2,9 +2,12 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
+import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
+import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.GrantType.CLIENT_CREDENTIALS;
+import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.GrantType.USERNAME_PASSWORD;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
@@ -74,7 +77,30 @@ public class SubscriptionTest {
         Subscription subscription = subscription("group.topic", "subscription").withEndpoint("http://user:password@service/path").build();
 
         // when & then
-        assertThat(subscription.anonymizePassword().getEndpoint()).isEqualTo(new EndpointAddress("http://user:*****@service/path"));
+        assertThat(subscription.anonymize().getEndpoint()).isEqualTo(new EndpointAddress("http://user:*****@service/path"));
     }
 
+    @Test
+    public void shouldApplyPatchChangingSubscriptionOAuthPolicyGrantType() {
+        // given
+        Subscription subscription = subscription("group.topic", "subscription")
+                .withOAuthPolicy(new SubscriptionOAuthPolicy(CLIENT_CREDENTIALS, "myProvider", "repo", null, null))
+                .build();
+        PatchData oAuthPolicyPatchData = patchData()
+                .set("grantType", SubscriptionOAuthPolicy.GrantType.USERNAME_PASSWORD.getName())
+                .set("username", "user1")
+                .set("password", "abc123")
+                .build();
+        PatchData patch = patchData()
+                .set("oAuthPolicy", oAuthPolicyPatchData)
+                .build();
+
+        // when
+        Subscription updated = Patch.apply(subscription, patch);
+
+        // then
+        SubscriptionOAuthPolicy updatedPolicy = updated.getOAuthPolicy();
+        assertThat(updatedPolicy.getGrantType()).isEqualTo(USERNAME_PASSWORD);
+        assertThat(updatedPolicy.getUsername()).isEqualTo("user1");
+    }
 }

@@ -17,6 +17,7 @@ public class ZookeeperPaths {
     public static final String METRICS_PATH = "metrics";
     public static final String ADMIN_PATH = "admin";
     public static final String PREVIEW_PATH = "preview";
+    public static final String OAUTH_PROVIDERS_PATH = "oauth-providers";
 
     private final String basePath;
 
@@ -118,5 +119,13 @@ public class ZookeeperPaths {
                 subscriptionName,
                 METRICS_PATH,
                 metricName);
+    }
+
+    public String oAuthProvidersPath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, OAUTH_PROVIDERS_PATH);
+    }
+
+    public String oAuthProviderPath(String oAuthProviderName) {
+        return Joiner.on(URL_SEPARATOR).join(oAuthProvidersPath(), oAuthProviderName);
     }
 }
