@@ -36,6 +36,9 @@ public class CachedTopic {
     private final Meter globalRequestMeter;
     private final Meter topicRequestMeter;
 
+    private final Meter globalDelayedProcessingMeter;
+    private final Meter topicDelayedProcessingMeter;
+
     private final Histogram topicMessageContentSize;
     private final Histogram globalMessageContentSize;
 
@@ -50,6 +53,9 @@ public class CachedTopic {
 
         globalRequestMeter = hermesMetrics.meter(Meters.METER);
         topicRequestMeter = hermesMetrics.meter(Meters.TOPIC_METER, topic.getName());
+
+        globalDelayedProcessingMeter = hermesMetrics.meter(Meters.DELAYED_PROCESSING);
+        topicDelayedProcessingMeter = hermesMetrics.meter(Meters.TOPIC_DELAYED_PROCESSING, topic.getName());
 
         globalRequestReadLatencyTimer = hermesMetrics.timer(Timers.PARSING_REQUEST);
         topicRequestReadLatencyTimer = hermesMetrics.timer(Timers.TOPIC_PARSING_REQUEST, topic.getName());
@@ -128,4 +134,8 @@ public class CachedTopic {
         globalMessageContentSize.update(size);
     }
 
+    public void markDelayedProcessing() {
+        topicDelayedProcessingMeter.mark();
+        globalDelayedProcessingMeter.mark();
+    }
 }

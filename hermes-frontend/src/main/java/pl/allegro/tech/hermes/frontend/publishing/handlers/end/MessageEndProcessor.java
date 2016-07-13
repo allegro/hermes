@@ -39,6 +39,11 @@ public class MessageEndProcessor {
         cachedTopic.incrementPublished();
     }
 
+    public void bufferedButDelayedProcessing(HttpServerExchange exchange, AttachmentContent attachment) {
+        bufferedButDelayed(exchange, attachment);
+        attachment.getCachedTopic().markDelayedProcessing();
+    }
+
     public void bufferedButDelayed(HttpServerExchange exchange, AttachmentContent attachment) {
         Topic topic = attachment.getTopic();
         brokerListeners.onTimeout(attachment.getMessage(), topic);

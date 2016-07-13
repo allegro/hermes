@@ -30,6 +30,9 @@ public class Meters {
         DISCARDED_TOPIC_METER = DISCARDED_METER + "." + GROUP + "." + TOPIC,
         DISCARDED_SUBSCRIPTION_METER = DISCARDED_TOPIC_METER + "." + SUBSCRIPTION,
 
+        DELAYED_PROCESSING = "delayed-processing",
+        TOPIC_DELAYED_PROCESSING = DELAYED_PROCESSING + "." + GROUP + "." + TOPIC,
+
         EXECUTOR_SUBMITTED = "executors." + EXECUTOR_NAME + ".submitted",
         EXECUTOR_COMPLETED = "executors." + EXECUTOR_NAME + ".completed";
 }
