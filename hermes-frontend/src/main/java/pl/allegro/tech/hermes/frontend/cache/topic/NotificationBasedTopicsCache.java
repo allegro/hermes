@@ -1,8 +1,12 @@
 package pl.allegro.tech.hermes.frontend.cache.topic;
 
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
+import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -13,8 +17,15 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache 
 
     private final ConcurrentMap<String, Topic> topicCache = new ConcurrentHashMap<>();
 
-    @Inject
-    public NotificationBasedTopicsCache(InternalNotificationsBus notificationsBus) {
+    private final GroupRepository groupRepository;
+
+    private final TopicRepository topicRepository;
+
+    public NotificationBasedTopicsCache(InternalNotificationsBus notificationsBus,
+                                        GroupRepository groupRepository,
+                                        TopicRepository topicRepository) {
+        this.groupRepository = groupRepository;
+        this.topicRepository = topicRepository;
         notificationsBus.registerTopicCallback(this);
     }
 
@@ -36,5 +47,14 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache 
     @Override
     public Optional<Topic> getTopic(String topicName) {
         return Optional.ofNullable(topicCache.get(topicName));
+    }
+
+    @Override
+    public void start() {
+        for(String groupName : groupRepository.listGroupNames()) {
+            for(Topic topic : topicRepository.listTopics(groupName)) {
+                topicCache.put(topic.getQualifiedName(), topic);
+            }
+        }
     }
 }

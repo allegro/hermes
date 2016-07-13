@@ -90,9 +90,9 @@ public class SerialConsumer implements Consumer {
             sendMessage(convertedMessage);
         } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {
             inflightSemaphore.release();
-            logger.debug("Timeout while reading message from topic. Trying to read message again", messageReceivingTimeoutException);
+            logger.trace("Timeout while reading message for subscription {}. Trying to read message again", subscription.getQualifiedName(), messageReceivingTimeoutException);
         } catch (Exception e) {
-            logger.error("Consumer loop failed for {}", subscription.getName(), e);
+            logger.error("Consumer loop failed for {}", subscription.getQualifiedName(), e);
         }
     }
 
@@ -107,7 +107,7 @@ public class SerialConsumer implements Consumer {
 
     @Override
     public void initialize() {
-        logger.info("Consumer: preparing message receiver for subscription {}", subscription.getName());
+        logger.info("Consumer: preparing message receiver for subscription {}", subscription.getQualifiedName());
         initializeMessageReceiver();
         rateLimiter.initialize();
     }

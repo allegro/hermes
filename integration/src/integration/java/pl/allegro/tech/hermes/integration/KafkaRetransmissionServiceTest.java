@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -90,8 +91,9 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         Topic topic = operations.buildTopic("resetOffsetGroup", "topicDryRun");
         operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
 
+        // we have 2 partitions, thus 4 messages to get 2 per partition
         sendMessagesOnTopic(topic, 4);
-        Thread.sleep(1000); //wait 1s because our date time format has seconds precision
+        Thread.sleep(2000); //wait 1s because our date time format has seconds precision
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         sendMessagesOnTopic(topic, 2);
         wait.untilConsumerCommitsOffset();

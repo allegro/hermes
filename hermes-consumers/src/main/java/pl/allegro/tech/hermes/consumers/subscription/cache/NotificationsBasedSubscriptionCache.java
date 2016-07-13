@@ -3,8 +3,11 @@ package pl.allegro.tech.hermes.consumers.subscription.cache;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.notifications.SubscriptionCallback;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
+import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -16,9 +19,20 @@ public class NotificationsBasedSubscriptionCache implements SubscriptionsCache, 
 
     private final Map<SubscriptionName, Subscription> subscriptions = new ConcurrentHashMap<>();
 
-    @Inject
-    public NotificationsBasedSubscriptionCache(InternalNotificationsBus notificationsBus) {
+    private final GroupRepository groupRepository;
+
+    private final TopicRepository topicRepository;
+
+    private final SubscriptionRepository subscriptionRepository;
+
+    public NotificationsBasedSubscriptionCache(InternalNotificationsBus notificationsBus,
+                                               GroupRepository groupRepository,
+                                               TopicRepository topicRepository,
+                                               SubscriptionRepository subscriptionRepository) {
         notificationsBus.registerSubscriptionCallback(this);
+        this.groupRepository = groupRepository;
+        this.topicRepository = topicRepository;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     @Override
@@ -54,5 +68,16 @@ public class NotificationsBasedSubscriptionCache implements SubscriptionsCache, 
                 .filter(Subscription::isActive)
                 .map(Subscription::getQualifiedName)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void start() {
+        for(String groupName : groupRepository.listGroupNames()) {
+            for(String topicName : topicRepository.listTopicNames(groupName)) {
+                for(Subscription subscription : subscriptionRepository.listSubscriptions(new TopicName(groupName, topicName))) {
+                    subscriptions.put(subscription.getQualifiedName(), subscription);
+                }
+            }
+        }
     }
 }

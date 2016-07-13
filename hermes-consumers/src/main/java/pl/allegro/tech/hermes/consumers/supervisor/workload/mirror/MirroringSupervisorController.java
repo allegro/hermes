@@ -113,6 +113,7 @@ public class MirroringSupervisorController implements SupervisorController {
         assignementRegistry.registerAssignementCallback(this);
 
         supervisor.start();
+        assignementRegistry.start();
         logger.info("Consumer boot complete. Workload config: [{}]", configFactory.print(CONSUMER_WORKLOAD_NODE_ID, CONSUMER_WORKLOAD_ALGORITHM));
     }
 

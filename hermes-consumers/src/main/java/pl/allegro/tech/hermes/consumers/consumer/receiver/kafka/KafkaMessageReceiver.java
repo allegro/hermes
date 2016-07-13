@@ -85,7 +85,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
                     } catch (InterruptedException | MessageReceivingTimeoutException ignored) {
                         // intentional ignore of exception
                     } catch (Throwable throwable) {
-                        logger.error("Error while reading message", throwable);
+                        logger.error("Error while reading message for subscription {}", subscription.getQualifiedName(), throwable);
                     }
                 }
         }));
@@ -140,8 +140,8 @@ public class KafkaMessageReceiver implements MessageReceiver {
             throw new MessageReceivingTimeoutException("No messages received", consumerTimeoutException);
         } catch (Exception e) {
             if (message != null) {
-                logger.error("Error while receiving message. Last read message: {} Partition: {} Offset: {}",
-                    new String(message.message()), message.partition(), message.offset(), e);
+                logger.error("Error while receiving message for subscription {}. Last read message: {} Partition: {} Offset: {}",
+                    subscription.getQualifiedName(), new String(message.message()), message.partition(), message.offset(), e);
             }
             throw new InternalProcessingException("Message received failed", e);
         }

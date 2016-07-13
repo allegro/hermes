@@ -14,4 +14,6 @@ public interface SubscriptionsCache {
     List<Subscription> subscriptionsOfTopic(TopicName topicName);
 
     List<SubscriptionName> listActiveSubscriptionNames();
+
+    void start();
 }

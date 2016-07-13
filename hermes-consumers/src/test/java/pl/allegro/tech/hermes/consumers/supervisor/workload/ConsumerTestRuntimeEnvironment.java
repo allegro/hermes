@@ -109,7 +109,7 @@ public class ConsumerTestRuntimeEnvironment {
 
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(curator, configFactory).provide();
         InternalNotificationsBus notificationsBus = new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);
-        SubscriptionsCache subscriptionsCache = new NotificationsBasedSubscriptionCache(notificationsBus);
+        SubscriptionsCache subscriptionsCache = new NotificationsBasedSubscriptionCache(notificationsBus, groupRepository, topicRepository, subscriptionRepository);
         SubscriptionAssignmentRegistry assignmentRegistry = new SubscriptionAssignmentRegistryFactory(curator, configFactory, subscriptionsCache).provide();
 
         WorkTracker workTracker = new WorkTracker(configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID), assignmentRegistry);

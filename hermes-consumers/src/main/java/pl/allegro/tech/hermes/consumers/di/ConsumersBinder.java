@@ -51,7 +51,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeo
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.health.HealthCheckServer;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
-import pl.allegro.tech.hermes.consumers.subscription.cache.NotificationsBasedSubscriptionCache;
+import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionCacheFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
@@ -114,7 +114,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindFactory(OffsetStoragesFactory.class).in(Singleton.class).to(new TypeLiteral<List<OffsetsStorage>>() {});
         bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class).to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
         bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class);
-        bind(NotificationsBasedSubscriptionCache.class).to(SubscriptionsCache.class).in(Singleton.class);
+        bindFactory(SubscriptionCacheFactory.class).in(Singleton.class).to(SubscriptionsCache.class);
 
         bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
         bindFactory(WorkTrackerFactory.class).in(Singleton.class).to(WorkTracker.class);

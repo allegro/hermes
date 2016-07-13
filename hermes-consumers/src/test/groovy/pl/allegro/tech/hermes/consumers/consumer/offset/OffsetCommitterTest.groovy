@@ -15,7 +15,7 @@ class OffsetCommitterTest extends Specification {
 
     private MessageCommitter messageCommitter = Mock(MessageCommitter)
 
-    private OffsetCommitter committer = new OffsetCommitter(queue, [messageCommitter], 10)
+    private OffsetCommitter committer = new OffsetCommitter(queue, [messageCommitter], 10, new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
 
     def "should commit smallest offset of uncommitted message - 1"() {
         given:

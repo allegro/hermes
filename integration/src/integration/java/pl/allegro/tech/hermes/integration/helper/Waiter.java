@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -192,16 +193,16 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     private String subscriptionConsumerPath(Topic topic, KafkaTopic kafkaTopic, String subscription) {
-        return KafkaZookeeperPaths.ownersPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription)),
+        return KafkaZookeeperPaths.ownersPath(kafkaNamesMapper.toConsumerGroupId(new SubscriptionName(subscription, topic.getName())),
                 kafkaTopic.name());
     }
 
     private String subscriptionIdsPath(Topic topic, String subscription) {
-        return KafkaZookeeperPaths.idsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription)));
+        return KafkaZookeeperPaths.idsPath(kafkaNamesMapper.toConsumerGroupId(new SubscriptionName(subscription, topic.getName())));
     }
 
     private String subscriptionOffsetPath(Topic topic, KafkaTopic kafkaTopic, String subscription) {
-        return KafkaZookeeperPaths.offsetsPath(kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription)),
+        return KafkaZookeeperPaths.offsetsPath(kafkaNamesMapper.toConsumerGroupId(new SubscriptionName(subscription, topic.getName())),
                 kafkaTopic.name());
     }
 

@@ -120,6 +120,7 @@ public class SelectiveSupervisorController implements SupervisorController {
                         CONSUMER_WORKLOAD_REBALANCE_INTERVAL,
                         CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION,
                         CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER));
+        registry.start();
     }
 
     @Override

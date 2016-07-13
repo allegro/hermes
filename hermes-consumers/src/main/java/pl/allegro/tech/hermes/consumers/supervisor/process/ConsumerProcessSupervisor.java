@@ -50,13 +50,13 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     @Override
     public void run() {
-        logger.info("Starting process supervisor loop");
+        logger.debug("Starting process supervisor loop");
         long currentTime = clock.millis();
 
         restartUnhealthy();
         taskQueue.drain(this::processSignal);
 
-        logger.info("Process supervisor loop took {} ms to check all consumers", clock.millis() - currentTime);
+        logger.debug("Process supervisor loop took {} ms to check all consumers", clock.millis() - currentTime);
     }
 
     private void restartUnhealthy() {

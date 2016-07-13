@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.glassfish.hk2.api.Factory;
+import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -45,12 +46,6 @@ public class SubscriptionAssignmentRegistryFactory implements Factory<Subscripti
                 cache,
                 new SubscriptionAssignmentPathSerializer(paths.consumersRuntimePath(cluster))
         );
-
-        try {
-            registry.start();
-        } catch (Exception e) {
-            throw new IllegalStateException("Unable to start Consumer Supervisor: subscription assignment registry", e);
-        }
 
         return registry;
     }

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.offset;
 import org.jctools.queues.MpscArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
@@ -77,13 +78,18 @@ public class OffsetCommitter implements Runnable {
     @Override
     public void run() {
         try {
+            // committed offsets need to be drained first so that there is no possibility of new committed offsets
+            // showing up after inflight queue is drained - this would lead to stall in committing offsets
+            Set<SubscriptionPartitionOffset> committedOffsets = new HashSet<>();
+            offsetQueue.drainCommittedOffsets(committedOffsets::add);
+
             offsetQueue.drainInflightOffsets(inflightOffsets::add);
             inflightOffsets.addAll(failedToCommitOffsets);
             failedToCommitOffsets.clear();
 
             Map<SubscriptionPartition, Long> maxInflightOffsets = calculateInflightOffsets(Math::max);
 
-            offsetQueue.drainCommittedOffsets(inflightOffsets::remove);
+            inflightOffsets.removeAll(committedOffsets);
 
             Map<SubscriptionPartition, Long> minInflightOffsets = calculateInflightOffsets(Math::min);
 
@@ -97,7 +103,9 @@ public class OffsetCommitter implements Runnable {
             });
 
             for (SubscriptionPartitionOffset offset : offsetsToCommit) {
-                commit(offset);
+                if(offset.getOffset() >= 0) {
+                    commit(offset);
+                }
             }
             metrics.counter("offset-committer.committed").inc(offsetsToCommit.size());
             metrics.counter("offset-committer.failed").inc(failedToCommitOffsets.size());

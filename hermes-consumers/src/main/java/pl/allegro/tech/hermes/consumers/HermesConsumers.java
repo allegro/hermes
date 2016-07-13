@@ -12,7 +12,9 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperHolder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.health.HealthCheckServer;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 

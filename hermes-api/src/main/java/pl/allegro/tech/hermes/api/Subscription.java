@@ -227,15 +227,6 @@ public class Subscription {
         return subscriptionName;
     }
 
-    @JsonIgnore
-    public String getId() {
-        return subscriptionName.getId();
-    }
-
-    public static String getId(TopicName topicName, String subscriptionName) {
-        return Joiner.on("_").join(replaceInAll("_", "__", topicName.getGroupName(), topicName.getName(), subscriptionName));
-    }
-
     public EndpointAddress getEndpoint() {
         return endpoint;
     }

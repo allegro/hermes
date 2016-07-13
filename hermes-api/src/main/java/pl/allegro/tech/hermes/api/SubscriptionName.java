@@ -14,19 +14,14 @@ public class SubscriptionName {
 
     private final String name;
     private final TopicName topicName;
-    private final String id;
 
     @JsonCreator
     public SubscriptionName(@JsonProperty("name") String name, @JsonProperty("topicName") TopicName topicName) {
         this.name = name;
         this.topicName = topicName;
-        this.id = createId();
     }
 
-    private String createId() {
-        return Joiner.on("_").join(replaceInAll("_", "__", topicName.getGroupName(), topicName.getName(), name));
-    }
-
+    @JsonIgnore
     public String getQualifiedName() {
         return toString();
     }
@@ -48,11 +43,6 @@ public class SubscriptionName {
     @Override
     public String toString() {
         return topicName.qualifiedName() + "$" + name;
-    }
-
-    @JsonIgnore
-    public String getId() {
-        return id;
     }
 
     @Override

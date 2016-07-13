@@ -10,4 +10,6 @@ public interface TopicsCache {
 
     Optional<Topic> getTopic(String topicName);
 
+    void start();
+
 }

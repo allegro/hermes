@@ -9,7 +9,10 @@ import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.subscription.cache.NotificationsBasedSubscriptionCache;
+import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
+import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
+import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
@@ -26,14 +29,20 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
 
     private final String basePath = "/hermes/consumers/runtime";
     private final String supervisorId = "c1";
+
+    private final TopicRepository topicRepository = mock(TopicRepository.class);
+    private final GroupRepository groupRepository = mock(GroupRepository.class);
     private final SubscriptionRepository subscriptionRepository = mock(SubscriptionRepository.class);
 
     private final ModelAwareZookeeperNotifyingCache notifyingCache = new ModelAwareZookeeperNotifyingCache(zookeeperClient, "/hermes", 1);
 
+    private final SubscriptionsCache cache = new NotificationsBasedSubscriptionCache(
+            new ZookeeperInternalNotificationBus(new ObjectMapper(), notifyingCache),
+            groupRepository, topicRepository, subscriptionRepository
+    );
+
     private final SubscriptionAssignmentRegistry subscriptionAssignmentRegistry = new SubscriptionAssignmentRegistry(
-            zookeeperClient, basePath, new NotificationsBasedSubscriptionCache(
-            new ZookeeperInternalNotificationBus(new ObjectMapper(), notifyingCache)
-    ), new SubscriptionAssignmentPathSerializer(basePath));
+            supervisorId, zookeeperClient, basePath, cache, new SubscriptionAssignmentPathSerializer(basePath));
 
     private final WorkTracker workTracker = new WorkTracker(supervisorId, subscriptionAssignmentRegistry);
 
