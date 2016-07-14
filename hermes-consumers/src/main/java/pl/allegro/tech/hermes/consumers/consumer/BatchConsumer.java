@@ -82,17 +82,16 @@ public class BatchConsumer implements Consumer {
     public void consume(Runnable signalsInterrupt) {
         Optional<MessageBatch> inflight = Optional.empty();
         try {
-            signalsInterrupt.run();
             logger.debug("Trying to create new batch [subscription={}].", subscription.getQualifiedName());
 
-            MessageBatchingResult result = receiver.next(subscription);
+            MessageBatchingResult result = receiver.next(subscription, signalsInterrupt);
             inflight = of(result.getBatch());
 
             inflight.ifPresent(batch -> {
                 logger.debug("Delivering batch [subscription={}].", subscription.getQualifiedName());
                 offerInflightOffsets(batch);
 
-                deliver(batch, createRetryer(batch, subscription.getBatchSubscriptionPolicy()));
+                deliver(signalsInterrupt, batch, createRetryer(batch, subscription.getBatchSubscriptionPolicy()));
 
                 offerCommittedOffsets(batch);
                 logger.debug("Finished delivering batch [subscription={}]", subscription.getQualifiedName());
@@ -106,13 +105,13 @@ public class BatchConsumer implements Consumer {
     }
 
     private void offerInflightOffsets(MessageBatch batch) {
-        for(PartitionOffset offset : batch.getPartitionOffsets()) {
+        for (PartitionOffset offset : batch.getPartitionOffsets()) {
             offsetQueue.offerInflightOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(offset, subscription));
         }
     }
 
     private void offerCommittedOffsets(MessageBatch batch) {
-        for(PartitionOffset offset : batch.getPartitionOffsets()) {
+        for (PartitionOffset offset : batch.getPartitionOffsets()) {
             offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(offset, subscription));
         }
     }
@@ -143,7 +142,7 @@ public class BatchConsumer implements Consumer {
 
     @Override
     public void updateTopic(Topic newTopic) {
-        if(this.topic.getContentType() != newTopic.getContentType()) {
+        if (this.topic.getContentType() != newTopic.getContentType()) {
             logger.info("Topic content type changed from {} to {}, reinitializing", this.topic.getContentType(), newTopic.getContentType());
             this.topic = newTopic;
             tearDown();
@@ -173,10 +172,17 @@ public class BatchConsumer implements Consumer {
         return !result.isClientError() || retryClientErrors;
     }
 
-    private void deliver(MessageBatch batch, Retryer<MessageSendingResult> retryer) {
+    private void deliver(Runnable signalsInterrupt, MessageBatch batch, Retryer<MessageSendingResult> retryer) {
         try (Timer.Context timer = hermesMetrics.subscriptionLatencyTimer(subscription).time()) {
-            MessageSendingResult result = retryer.call(() -> sender.send(batch, subscription.getEndpoint(),
-                    subscription.getEndpointAddressResolverMetadata(), subscription.getBatchSubscriptionPolicy().getRequestTimeout()));
+            MessageSendingResult result = retryer.call(() -> {
+                signalsInterrupt.run();
+                return sender.send(
+                        batch,
+                        subscription.getEndpoint(),
+                        subscription.getEndpointAddressResolverMetadata(),
+                        subscription.getBatchSubscriptionPolicy().getRequestTimeout()
+                );
+            });
             monitoring.markSendingResult(batch, subscription, result);
         } catch (Exception e) {
             logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.getQualifiedName(), e);

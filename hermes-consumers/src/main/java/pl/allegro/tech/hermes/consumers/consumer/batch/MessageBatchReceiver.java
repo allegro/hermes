@@ -27,6 +27,7 @@ import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter
 
 @NotThreadSafe
 public class MessageBatchReceiver {
+
     private static final Logger logger = LoggerFactory.getLogger(MessageBatchReceiver.class);
 
     private final MessageReceiver receiver;
@@ -56,13 +57,15 @@ public class MessageBatchReceiver {
         this.inflight = new ArrayDeque<>(1);
     }
 
-    public MessageBatchingResult next(Subscription subscription) {
+    public MessageBatchingResult next(Subscription subscription, Runnable signalsInterrupt) {
         logger.debug("Trying to allocate memory for new batch [subscription={}]", subscription.getQualifiedName());
         MessageBatch batch = batchFactory.createBatch(subscription);
         logger.debug("New batch allocated [subscription={}]", subscription.getQualifiedName());
         List<MessageMetadata> discarded = new ArrayList<>();
+
         while (isReceiving() && !batch.isReadyForDelivery()) {
             try {
+                signalsInterrupt.run();
                 Message message = inflight.isEmpty() ? receive(subscription, batch.getId()) : inflight.poll();
 
                 if (batch.canFit(message.getData())) {
