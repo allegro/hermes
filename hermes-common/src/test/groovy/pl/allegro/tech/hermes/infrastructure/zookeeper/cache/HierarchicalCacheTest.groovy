@@ -20,6 +20,10 @@ class HierarchicalCacheTest extends IntegrationTest implements AwaitilityTrait {
 
     private Set calledCallbacks = [] as Set
 
+    void setupSpec() {
+        zookeeper().create().creatingParentsIfNeeded().forPath('/hierarchicalCacheTest/groups')
+    }
+
     void setup() {
         Closure loggingCallback = { e -> calledCallbacks.add(new String(e.data.data)) }
         cache.registerCallback(0, loggingCallback)
