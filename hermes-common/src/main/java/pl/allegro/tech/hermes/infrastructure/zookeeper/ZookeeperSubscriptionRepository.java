@@ -49,7 +49,7 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
         topicRepository.ensureTopicExists(subscription.getTopicName());
 
         String subscriptionPath = paths.subscriptionPath(subscription);
-        logger.info("Creating subscription for path {}", subscriptionPath);
+        logger.info("Creating subscription {}", subscription.getQualifiedName());
 
         try {
             zookeeper.create().forPath(subscriptionPath, mapper.writeValueAsBytes(subscription));
@@ -63,7 +63,7 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     @Override
     public void removeSubscription(TopicName topicName, String subscriptionName) {
         ensureSubscriptionExists(topicName, subscriptionName);
-        logger.info("Removing subscription {} for topic {}", subscriptionName, topicName.qualifiedName());
+        logger.info("Removing subscription {}", new SubscriptionName(subscriptionName, topicName).getQualifiedName());
 
         remove(paths.subscriptionPath(topicName, subscriptionName));
     }
@@ -71,11 +71,7 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     @Override
     public void updateSubscription(Subscription modifiedSubscription) {
         ensureSubscriptionExists(modifiedSubscription.getTopicName(), modifiedSubscription.getName());
-        logger.info("Updating subscription {} for topic {}",
-                modifiedSubscription.getName(),
-                modifiedSubscription.getTopicName().qualifiedName()
-        );
-
+        logger.info("Updating subscription {}", modifiedSubscription.getQualifiedName());
         overwrite(paths.subscriptionPath(modifiedSubscription), modifiedSubscription);
     }
 
@@ -83,7 +79,8 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state) {
         ensureSubscriptionExists(topicName, subscriptionName);
 
-        logger.info("Changing subscription {} for topic {} state to {}", subscriptionName, topicName, state.toString());
+        logger.info("Changing subscription {} state to {}",
+                new SubscriptionName(subscriptionName, topicName).getQualifiedName(), state.toString());
 
         Subscription modifiedSubscription = getSubscriptionDetails(topicName, subscriptionName);
         if (!modifiedSubscription.getState().equals(state)) {

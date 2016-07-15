@@ -32,7 +32,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         STARTERS.put(WireMockStarter.class, new WireMockStarter(HTTP_ENDPOINT_PORT));
         STARTERS.put(GraphiteHttpMockStarter.class, new GraphiteHttpMockStarter());
         STARTERS.put(OAuthServerMockStarter.class, new OAuthServerMockStarter());
-        STARTERS.put(ZookeeperStarter.class, new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_CONNECT_STRING));
+        STARTERS.put(ZookeeperStarter.class, new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_CONNECT_STRING, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT) + "/groups"));
         STARTERS.put(KafkaStarter.class, new KafkaStarter());
         STARTERS.put(CustomKafkaStarter.class, new CustomKafkaStarter(SECONDARY_KAFKA_PORT, SECONDARY_ZK_KAFKA_CONNECT));
         STARTERS.put(JmsStarter.class, new JmsStarter());

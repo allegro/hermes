@@ -64,7 +64,7 @@ public class CuratorClientFactory {
         try {
             curator.blockUntilConnected();
         } catch (InterruptedException interruptedException) {
-            RuntimeException exception = new InternalProcessingException("Could not start curator", interruptedException);
+            RuntimeException exception = new InternalProcessingException("Could not start Zookeeper Curator", interruptedException);
             logger.error(exception.getMessage(), interruptedException);
             throw exception;
         }
