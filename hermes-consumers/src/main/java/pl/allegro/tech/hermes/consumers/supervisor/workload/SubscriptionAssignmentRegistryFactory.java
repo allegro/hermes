@@ -7,10 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
@@ -26,7 +28,7 @@ public class SubscriptionAssignmentRegistryFactory implements Factory<Subscripti
     private final SubscriptionsCache cache;
 
     @Inject
-    public SubscriptionAssignmentRegistryFactory(CuratorFramework curatorClient,
+    public SubscriptionAssignmentRegistryFactory(@Named(CuratorType.HERMES) CuratorFramework curatorClient,
                                                  ConfigFactory configFactory,
                                                  SubscriptionsCache cache) {
         this.curatorClient = curatorClient;

@@ -4,11 +4,13 @@ import org.apache.curator.framework.CuratorFramework;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.domain.topic.schema.*;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 public class SchemaSourceProviderFactory implements Factory<SchemaSourceProvider> {
 
@@ -19,7 +21,7 @@ public class SchemaSourceProviderFactory implements Factory<SchemaSourceProvider
 
     @Inject
     public SchemaSourceProviderFactory(ConfigFactory configFactory, SchemaRepoClient schemaRepoClient,
-                                       CuratorFramework curatorFramework, ZookeeperPaths zookeeperPaths) {
+                                       @Named(CuratorType.HERMES) CuratorFramework curatorFramework, ZookeeperPaths zookeeperPaths) {
         this.configFactory = configFactory;
         this.schemaRepoClient = schemaRepoClient;
         this.curatorFramework = curatorFramework;

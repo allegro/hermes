@@ -155,7 +155,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldSendAuthorizationHeaderIfAuthorizationProviderAttached() {
         // given
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, new DefaultHttpMetadataAppender(), Optional.of(m -> "Basic Hello!"));
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, new DefaultHttpMetadataAppender(), Optional.of(m -> "Basic Auth Hello!"));
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
         Message message = MessageBuilder.withTestMessage().build();
@@ -166,13 +166,14 @@ public class JettyMessageSenderTest {
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
-        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Authorization")).isEqualTo("Basic Hello!");
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Authorization")).isEqualTo("Basic Auth Hello!");
     }
 
     @Test
     public void shouldUseSuppliedTimeout() throws ExecutionException, InterruptedException, TimeoutException {
         // given
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1, new DefaultHttpMetadataAppender(), Optional.of(m -> "Basic Hello!"));
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 100, new DefaultHttpMetadataAppender(), Optional.empty());
+        remoteServiceEndpoint.setDelay(500);
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
         Message message = MessageBuilder.withTestMessage().build();
