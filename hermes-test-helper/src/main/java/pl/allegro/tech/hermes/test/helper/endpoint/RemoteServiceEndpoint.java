@@ -55,12 +55,14 @@ public class RemoteServiceEndpoint {
         this.path = path;
         this.url = String.format("http://localhost:%d%s", service.port(), path);
         this.service = service;
-        service.addMockServiceRequestListener(new RequestListener() {
-            @Override
-            public void requestReceived(Request request, Response response) {
-                if (path.equals(request.getUrl())) {
-                    receivedRequests.add(LoggedRequest.createFrom(request));
-                }
+
+        service.resetMappings();
+        service.resetRequests();
+        service.resetScenarios();
+
+        service.addMockServiceRequestListener((request, response) -> {
+            if (path.equals(request.getUrl())) {
+                receivedRequests.add(LoggedRequest.createFrom(request));
             }
         });
     }
