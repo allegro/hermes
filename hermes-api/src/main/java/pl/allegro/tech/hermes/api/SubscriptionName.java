@@ -3,12 +3,10 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Joiner;
 
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static pl.allegro.tech.hermes.api.helpers.Replacer.replaceInAll;
 
 public class SubscriptionName {
 
