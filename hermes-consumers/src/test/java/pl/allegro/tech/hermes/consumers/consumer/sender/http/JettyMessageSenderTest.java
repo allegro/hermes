@@ -172,7 +172,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldUseSuppliedTimeout() throws ExecutionException, InterruptedException, TimeoutException {
         // given
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 100, new DefaultHttpMetadataAppender(), Optional.empty());
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1, new DefaultHttpMetadataAppender(), Optional.empty());
         remoteServiceEndpoint.setDelay(500);
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
