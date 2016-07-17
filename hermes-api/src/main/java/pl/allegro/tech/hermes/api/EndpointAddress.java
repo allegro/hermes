@@ -102,7 +102,7 @@ public class EndpointAddress {
 
     @Override
     public int hashCode() {
-        return Objects.hash(endpoint);
+        return Objects.hash(rawEndpoint);
     }
 
     @Override
@@ -114,7 +114,7 @@ public class EndpointAddress {
             return false;
         }
         final EndpointAddress other = (EndpointAddress) obj;
-        return Objects.equals(this.endpoint, other.endpoint);
+        return Objects.equals(this.rawEndpoint, other.rawEndpoint);
     }
 
     @Override
