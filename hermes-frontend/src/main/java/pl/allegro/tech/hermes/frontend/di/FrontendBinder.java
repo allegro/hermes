@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.di;
 
-import org.I0Itec.zkclient.ZkClient;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
@@ -26,7 +25,6 @@ import pl.allegro.tech.hermes.frontend.validator.JsonTopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidatorListFactory;
-import pl.allegro.tech.hermes.frontend.zk.ZkClientFactory;
 import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
 import pl.allegro.tech.hermes.tracker.frontend.PublishingMessageTracker;
 
@@ -56,7 +54,6 @@ public class FrontendBinder extends AbstractBinder {
 
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
         bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);
-        bindFactory(ZkClientFactory.class).to(ZkClient.class).in(Singleton.class);
         bindSingleton(PublishingMessageTracker.class);
         bindSingleton(NoOperationPublishingTracker.class);
         bindFactory(TopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
@@ -64,7 +61,8 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageContentTypeEnforcer.class);
         bindSingleton(JsonTopicMessageValidator.class);
         bindSingleton(AvroTopicMessageValidator.class);
-        bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {});
+        bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {
+        });
         bindSingleton(MessageFactory.class);
         bindSingleton(BackupMessagesLoader.class);
         bindSingleton(PersistentBufferExtension.class);
