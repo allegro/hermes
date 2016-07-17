@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ZookeeperGroupRepository extends ZookeeperBasedRepository implements GroupRepository {
@@ -92,16 +93,22 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
     @Override
     public List<Group> listGroups() {
         return listGroupNames().stream()
-                .map(this::getGroupDetails)
+                .map(n -> getGroupDetails(n, true))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Group getGroupDetails(String groupName) {
+        return getGroupDetails(groupName, false).get();
+    }
+
+    private Optional<Group> getGroupDetails(String groupName, boolean quiet) {
         ensureConnected();
         ensureGroupExists(groupName);
 
         String path = paths.groupPath(groupName);
-        return readFrom(path, Group.class);
+        return readFrom(path, Group.class, quiet);
     }
 }

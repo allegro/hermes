@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository implements SubscriptionRepository {
@@ -91,8 +92,12 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
 
     @Override
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
+        return getSubscriptionDetails(topicName, subscriptionName, false).get();
+    }
+
+    private Optional<Subscription> getSubscriptionDetails(TopicName topicName, String subscriptionName, boolean quiet) {
         ensureSubscriptionExists(topicName, subscriptionName);
-        return readFrom(paths.subscriptionPath(topicName, subscriptionName), Subscription.class);
+        return readFrom(paths.subscriptionPath(topicName, subscriptionName), Subscription.class, quiet);
     }
 
     @Override
@@ -108,7 +113,9 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     @Override
     public List<Subscription> listSubscriptions(TopicName topicName) {
         return listSubscriptionNames(topicName).stream()
-                .map(subscription -> getSubscriptionDetails(topicName, subscription))
+                .map(subscription -> getSubscriptionDetails(topicName, subscription, true))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toList());
     }
 }
