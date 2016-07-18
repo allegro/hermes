@@ -4,6 +4,7 @@ var topics = angular.module('hermes.topic', [
     'hermes.subscription',
     'hermes.topic.repository',
     'hermes.topic.metrics',
+    'hermes.topic.factory',
     'hermes.services'
 ]);
 
@@ -111,7 +112,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         };
     }]);
 
-topics.controller('TopicEditController', ['TopicRepository', '$scope', '$modalInstance', 'PasswordService', 'toaster', 'topic', 'messageSchema', 'groupName', 'operation',
+topics.controller('TopicEditController', ['TopicRepository', '$scope', '$uibModalInstance', 'PasswordService', 'toaster', 'topic', 'messageSchema', 'groupName', 'operation',
     function (topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation) {
         $scope.topic = _(topic).clone();
         $scope.messageSchema = messageSchema;

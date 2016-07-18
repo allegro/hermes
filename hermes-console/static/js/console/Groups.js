@@ -32,8 +32,8 @@ groups.controller('GroupsController', ['GroupRepository', '$scope', '$uibModal',
         };
     }]);
 
-groups.controller('GroupController', ['GroupRepository', '$scope', '$location', '$stateParams', '$uibModal', 'toaster', 'ConfirmationModal', 'PasswordService',
-    function (groupRepository, $scope, $location, $stateParams, $modal, toaster, confirmationModal, passwordService) {
+groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope', '$location', '$stateParams', '$uibModal', 'toaster', 'ConfirmationModal', 'PasswordService',
+    function (groupRepository, topicFactory, $scope, $location, $stateParams, $modal, toaster, confirmationModal, passwordService) {
         $scope.fetching = true;
         var groupName = $scope.groupName = $stateParams.groupName;
 
@@ -63,7 +63,7 @@ groups.controller('GroupController', ['GroupRepository', '$scope', '$location', 
                         return groupName;
                     },
                     topic: function () {
-                        return {retentionTime: {duration: 1}, contentType: 'AVRO', ack: 'LEADER'};
+                        return topicFactory.create();
                     },
                     messageSchema: function() {
                         return null;
