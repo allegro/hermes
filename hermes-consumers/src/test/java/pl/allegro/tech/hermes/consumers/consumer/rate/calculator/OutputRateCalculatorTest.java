@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.ActiveConsumerCounter;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -36,9 +37,9 @@ public class OutputRateCalculatorTest {
                 SubscriptionPolicy.Builder.subscriptionPolicy().withRate(200).build()
         ).build();
 
-        HermesMetrics metrics = mock(HermesMetrics.class);
-        when(metrics.countActiveConsumers(subscription)).thenReturn(2);
-        calculator = new OutputRateCalculator(config, metrics);
+        ActiveConsumerCounter consumerCounter = mock(ActiveConsumerCounter.class);
+        when(consumerCounter.countActiveConsumers(subscription)).thenReturn(2);
+        calculator = new OutputRateCalculator(config, consumerCounter);
     }
 
     @Test

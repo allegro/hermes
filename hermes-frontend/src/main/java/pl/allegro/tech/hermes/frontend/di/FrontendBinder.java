@@ -1,12 +1,11 @@
 package pl.allegro.tech.hermes.frontend.di;
 
-import org.I0Itec.zkclient.ZkClient;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.cache.topic.zookeeper.ZookeeperTopicsCacheFactory;
+import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCacheFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
@@ -21,7 +20,11 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.validator.*;
+import pl.allegro.tech.hermes.frontend.validator.AvroTopicMessageValidator;
+import pl.allegro.tech.hermes.frontend.validator.JsonTopicMessageValidator;
+import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
+import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
+import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidatorListFactory;
 import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
 import pl.allegro.tech.hermes.tracker.frontend.PublishingMessageTracker;
 
@@ -53,12 +56,13 @@ public class FrontendBinder extends AbstractBinder {
         bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);
         bindSingleton(PublishingMessageTracker.class);
         bindSingleton(NoOperationPublishingTracker.class);
-        bindFactory(ZookeeperTopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
+        bindFactory(TopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
         bindSingleton(MessagePublisher.class);
         bindSingleton(MessageContentTypeEnforcer.class);
         bindSingleton(JsonTopicMessageValidator.class);
         bindSingleton(AvroTopicMessageValidator.class);
-        bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {});
+        bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {
+        });
         bindSingleton(MessageFactory.class);
         bindSingleton(BackupMessagesLoader.class);
         bindSingleton(PersistentBufferExtension.class);

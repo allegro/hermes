@@ -105,7 +105,7 @@ public class BackupMessagesLoader {
             retry++;
         } while (toResend.get().size() > 0 && retry <= maxResendRetries);
 
-        logger.info("Finished resending messages from backup storage after retry #{} with #{} unsent messages.", retry - 1, toResend.get().size());
+        logger.info("Finished resending messages from backup storage after retry #{} with {} unsent messages.", retry - 1, toResend.get().size());
     }
 
     public void clearTopicsAvailabilityCache() {
@@ -120,7 +120,7 @@ public class BackupMessagesLoader {
             int discardedCounter = 0;
             for (BackupMessage backupMessage : messages) {
                 Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
-                Optional<Topic> topic = loadTopic(fromQualifiedName(backupMessage.getQualifiedTopicName()), executor);
+                Optional<Topic> topic = loadTopic(backupMessage.getQualifiedTopicName(), executor);
                 if (sendMessageIfNeeded(message, topic, "sending")) {
                     sentCounter++;
                 } else {
@@ -172,7 +172,8 @@ public class BackupMessagesLoader {
             sendMessage(message, topic.get());
             return true;
         } else {
-            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topic.get().getQualifiedName(),
+            String topicName = topic.map(t -> t.getName().qualifiedName()).orElse("missing-topic-info");
+            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topicName,
                     new String(message.getData(), Charset.defaultCharset()));
             return false;
         }
@@ -229,7 +230,7 @@ public class BackupMessagesLoader {
                 }));
     }
 
-    private Optional<Topic> loadTopic(TopicName topicName, Executor executor) {
+    private Optional<Topic> loadTopic(String topicName, Executor executor) {
         try {
             return CompletableFuture.supplyAsync(() -> topicsCache.getTopic(topicName), executor)
                     .get(secondsToWaitForTopicsCache, SECONDS);

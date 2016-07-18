@@ -88,7 +88,8 @@ public class PublishingTest extends IntegrationTest {
         remoteService.expectMessages(message.body());
 
         // when
-        publisher.publish("markAsActiveGroup.topic", message.body());
+        Response r = publisher.publish("markAsActiveGroup.topic", message.body());
+        assertThat(r).hasStatus(Response.Status.CREATED);
 
         // then
         remoteService.waitUntilReceived();
@@ -120,6 +121,7 @@ public class PublishingTest extends IntegrationTest {
         Topic topic = operations.buildTopic("publishResumedGroup", "topic");
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         wait.untilSubscriptionIsActivated(topic, "subscription");
+        publisher.publish(topic.getQualifiedName(), TestMessage.of("nothing", "important").body());
 
         operations.suspendSubscription(topic, "subscription");
         wait.untilSubscriptionIsSuspended(topic, "subscription");

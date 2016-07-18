@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper
 import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.domain.group.GroupNotEmptyException
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException
+import pl.allegro.tech.hermes.infrastructure.MalformedDataException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group
@@ -95,5 +96,17 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
         
         then:
         thrown(GroupNotEmptyException)
+    }
+
+    def "should not throw exception on malformed topic when reading list of all topics"() {
+        given:
+        zookeeper().create().forPath(paths.groupPath('malformedGroup'), ''.bytes)
+        wait.untilGroupCreated('malformedGroup')
+
+        when:
+        List<Group> groups = repository.listGroups()
+
+        then:
+        notThrown(MalformedDataException)
     }
 }

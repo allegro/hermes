@@ -59,7 +59,7 @@ public class BackupMessagesLoaderTest {
     @Before
     public void setUp() throws Exception {
         tempDir = Files.createTempDir();
-        when(topicsCache.getTopic(topicName)).thenReturn(Optional.of(topic));
+        when(topicsCache.getTopic(topicName.qualifiedName())).thenReturn(Optional.of(topic));
         when(metrics.timer(anyString())).thenReturn(new Timer());
         when(metrics.timer(anyString(), eq(topicName))).thenReturn(new Timer());
         when(producer.isTopicAvailable(topic)).thenReturn(true);

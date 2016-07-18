@@ -7,7 +7,5 @@ public interface KafkaNamesMapper {
 
     ConsumerGroupId toConsumerGroupId(SubscriptionName subscription);
 
-    ConsumerGroupId toConsumerGroupId(String subscriptionId);
-
     KafkaTopics toKafkaTopics(Topic topic);
 }

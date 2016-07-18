@@ -72,20 +72,20 @@ public class KafkaMessageReceiver implements MessageReceiver {
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumerConnector.createMessageStreams(topicCountMap);
 
         Map<KafkaTopic, ConsumerIterator<byte[],byte[]>> iterators = topics.stream()
-                .collect(Collectors.toMap(Function.<KafkaTopic>identity(), (kafkaTopic) -> iterator(consumerMap.get(kafkaTopic.name().asString()))));
+                .collect(Collectors.toMap(Function.identity(), (kafkaTopic) -> iterator(consumerMap.get(kafkaTopic.name().asString()))));
 
         readQueue = new ArrayBlockingQueue<>(iterators.size());
         pool = Executors.newFixedThreadPool(iterators.size());
 
         iterators.forEach((kafkaTopic, iterator) -> pool.submit(() -> {
-                Thread.currentThread().setName("Kafka-message-receiver-" + kafkaTopic.contentType() + "-" + subscription.toSubscriptionName());
+                Thread.currentThread().setName("Kafka-message-receiver-" + kafkaTopic.contentType() + "-" + subscription.getQualifiedName());
                 while (consuming) {
                     try {
                         readQueue.put(readMessage(kafkaTopic, iterator));
                     } catch (InterruptedException | MessageReceivingTimeoutException ignored) {
                         // intentional ignore of exception
                     } catch (Throwable throwable) {
-                        logger.error("Error while reading message", throwable);
+                        logger.error("Error while reading message for subscription {}", subscription.getQualifiedName(), throwable);
                     }
                 }
         }));
@@ -93,7 +93,6 @@ public class KafkaMessageReceiver implements MessageReceiver {
 
     private Collection<KafkaTopic> getKafkaTopics(Topic topic, KafkaNamesMapper kafkaNamesMapper) {
         KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
-
         ImmutableList.Builder<KafkaTopic> topicsBuilder = new ImmutableList.Builder<KafkaTopic>().add(kafkaTopics.getPrimary());
         kafkaTopics.getSecondary().ifPresent(topicsBuilder::add);
         return topicsBuilder.build();
@@ -141,8 +140,8 @@ public class KafkaMessageReceiver implements MessageReceiver {
             throw new MessageReceivingTimeoutException("No messages received", consumerTimeoutException);
         } catch (Exception e) {
             if (message != null) {
-                logger.error("Error while receiving message. Last read message: {} Partition: {} Offset: {}",
-                    new String(message.message()), message.partition(), message.offset(), e);
+                logger.error("Error while receiving message for subscription {}. Last read message: {} Partition: {} Offset: {}",
+                    subscription.getQualifiedName(), new String(message.message()), message.partition(), message.offset(), e);
             }
             throw new InternalProcessingException("Message received failed", e);
         }

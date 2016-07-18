@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -29,9 +31,9 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     }
 
     @Override
-    public void setSubscriptionOffset(SubscriptionName subscription, PartitionOffset partitionOffset) {
+    public void moveSubscriptionOffset(SubscriptionPartitionOffset partitionOffset) {
         try {
-            String offsetPath = getPartitionOffsetPath(subscription, partitionOffset.getTopic(), partitionOffset.getPartition());
+            String offsetPath = getPartitionOffsetPath(partitionOffset.getSubscriptionPartition());
 
             long currentOffset = OFFSET_MISSING;
             if (curatorFramework.checkExists().forPath(offsetPath) != null) {
@@ -58,9 +60,9 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     }
 
     @Override
-    public long getSubscriptionOffset(SubscriptionName subscription, KafkaTopicName kafkaTopicName, int partitionId) {
+    public long getSubscriptionOffset(SubscriptionPartition subscriptionPartition) {
         try {
-            byte[] offset = curatorFramework.getData().forPath(getPartitionOffsetPath(subscription, kafkaTopicName, partitionId));
+            byte[] offset = curatorFramework.getData().forPath(getPartitionOffsetPath(subscriptionPartition));
             return Long.valueOf(new String(offset));
         } catch (Exception e) {
             throw new InternalProcessingException(e);
@@ -68,11 +70,11 @@ public class ZookeeperOffsetsStorage implements OffsetsStorage {
     }
 
     @VisibleForTesting
-    protected String getPartitionOffsetPath(SubscriptionName subscription, KafkaTopicName kafkaTopicName, int partition) {
+    protected String getPartitionOffsetPath(SubscriptionPartition partitionOffset) {
         return KafkaZookeeperPaths.partitionOffsetPath(
-                kafkaNamesMapper.toConsumerGroupId(subscription),
-                kafkaTopicName,
-                partition
+                kafkaNamesMapper.toConsumerGroupId(partitionOffset.getSubscriptionName()),
+                partitionOffset.getKafkaTopicName(),
+                partitionOffset.getPartition()
         );
     }
 

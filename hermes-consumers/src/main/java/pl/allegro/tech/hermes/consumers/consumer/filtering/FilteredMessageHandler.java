@@ -8,29 +8,34 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class FilteredMessageHandler {
-    private final SubscriptionOffsetCommitQueues offsets;
+
+    private final OffsetQueue offsetQueue;
     private final Trackers trackers;
     private final HermesMetrics metrics;
 
     private static final Logger logger = LoggerFactory.getLogger(FilteredMessageHandler.class);
 
-    public FilteredMessageHandler(SubscriptionOffsetCommitQueues offsets, Trackers trackers, HermesMetrics metrics) {
-        this.offsets = offsets;
+    public FilteredMessageHandler(OffsetQueue offsetQueue, Trackers trackers, HermesMetrics metrics) {
+        this.offsetQueue = offsetQueue;
         this.trackers = trackers;
         this.metrics = metrics;
     }
 
-    public void handle(final FilterResult result, final Message message, final Subscription subscription) {
+    public void handle(FilterResult result, Message message, Subscription subscription) {
         if (result.isFiltered()) {
-            logger.debug("Message filtered for subscription {} {}", subscription.getId(), result);
-            offsets.remove(message);
+            logger.debug("Message filtered for subscription {} {}", subscription.getQualifiedName(), result);
+
+            offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
+
             updateMetrics(message, subscription);
+
             trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
         }
     }

@@ -58,6 +58,8 @@ public class Subscription {
     @NotNull
     private SubscriptionMode mode = SubscriptionMode.ANYCAST;
 
+    private final SubscriptionName subscriptionName;
+
     private List<MessageFilterSpecification> filters = new ArrayList<>();
 
     private List<Header> headers;
@@ -99,6 +101,7 @@ public class Subscription {
         this.serialSubscriptionPolicy = this.deliveryType == DeliveryType.SERIAL ? (SubscriptionPolicy) subscriptionPolicy : null;
         this.filters = filters;
         this.mode = mode;
+        this.subscriptionName = new SubscriptionName(name, topicName);
         this.headers = headers;
         this.endpointAddressResolverMetadata = endpointAddressResolverMetadata;
     }
@@ -219,17 +222,9 @@ public class Subscription {
                 && Objects.equals(this.endpointAddressResolverMetadata, other.endpointAddressResolverMetadata);
     }
 
-    public SubscriptionName toSubscriptionName() {
-        return new SubscriptionName(name, topicName);
-    }
-
     @JsonIgnore
-    public String getId() {
-        return getId(getTopicName(), getName());
-    }
-
-    public static String getId(TopicName topicName, String subscriptionName) {
-        return Joiner.on("_").join(replaceInAll("_", "__", topicName.getGroupName(), topicName.getName(), subscriptionName));
+    public SubscriptionName getQualifiedName() {
+        return subscriptionName;
     }
 
     public EndpointAddress getEndpoint() {

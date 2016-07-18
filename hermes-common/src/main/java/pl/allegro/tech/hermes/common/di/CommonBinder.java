@@ -8,7 +8,24 @@ import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.di.factories.*;
+import pl.allegro.tech.hermes.common.di.factories.BoonObjectMapperFactory;
+import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
+import pl.allegro.tech.hermes.common.di.factories.DistributedEphemeralCounterFactory;
+import pl.allegro.tech.hermes.common.di.factories.GraphiteWebTargetFactory;
+import pl.allegro.tech.hermes.common.di.factories.GroupRepositoryFactory;
+import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
+import pl.allegro.tech.hermes.common.di.factories.KafkaCuratorClientFactory;
+import pl.allegro.tech.hermes.common.di.factories.MessagePreviewRepositoryFactory;
+import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
+import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
+import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
+import pl.allegro.tech.hermes.common.di.factories.PathsCompilerFactory;
+import pl.allegro.tech.hermes.common.di.factories.SharedCounterFactory;
+import pl.allegro.tech.hermes.common.di.factories.SimpleConsumerPoolFactory;
+import pl.allegro.tech.hermes.common.di.factories.SubscriptionOffsetChangeIndicatorFactory;
+import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
+import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
+import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
@@ -18,13 +35,15 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchemaRepository;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.infrastructure.schema.AvroCompiledSchemaRepositoryFactory;
 import pl.allegro.tech.hermes.infrastructure.schema.JsonCompiledSchemaRepositoryFactory;
 import pl.allegro.tech.hermes.infrastructure.schema.SchemaSourceProviderFactory;
 import pl.allegro.tech.hermes.infrastructure.schema.SchemaVersionsRepositoryFactory;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClientFactory;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
 
 import javax.inject.Singleton;
 import java.time.Clock;
@@ -70,5 +89,8 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(PathsCompilerFactory.class);
         bindSingletonFactory(KafkaNamesMapperFactory.class);
         bindSingletonFactory(MessagePreviewRepositoryFactory.class);
+
+        bind(ZookeeperInternalNotificationBus.class).to(InternalNotificationsBus.class);
+        bindSingletonFactory(ModelAwareZookeeperNotifyingCacheFactory.class);
     }
 }

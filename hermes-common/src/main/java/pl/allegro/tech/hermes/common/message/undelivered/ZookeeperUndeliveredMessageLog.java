@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -27,7 +28,7 @@ public class ZookeeperUndeliveredMessageLog implements UndeliveredMessageLog {
     private final ZookeeperPaths paths;
     private final ObjectMapper mapper;
 
-    private final ConcurrentMap<String, SentMessageTrace> lastUndeliveredMessages = new ConcurrentHashMap<>();
+    private final ConcurrentMap<SubscriptionName, SentMessageTrace> lastUndeliveredMessages = new ConcurrentHashMap<>();
 
     public ZookeeperUndeliveredMessageLog(CuratorFramework curator, ZookeeperPaths zookeeperPaths, ObjectMapper mapper) {
         this.curator = curator;
@@ -37,7 +38,7 @@ public class ZookeeperUndeliveredMessageLog implements UndeliveredMessageLog {
 
     @Override
     public void add(SentMessageTrace message) {
-        lastUndeliveredMessages.put(Subscription.getId(message.getTopicName(), message.getSubscription()), message);
+        lastUndeliveredMessages.put(new SubscriptionName(message.getSubscription(), message.getTopicName()), message);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class ZookeeperUndeliveredMessageLog implements UndeliveredMessageLog {
 
     @Override
     public void persist() {
-        for (String key : lastUndeliveredMessages.keySet()) {
+        for (SubscriptionName key : lastUndeliveredMessages.keySet()) {
             log(lastUndeliveredMessages.remove(key));
         }
     }

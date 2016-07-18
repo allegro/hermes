@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class SubscriptionAssignmentPathSerializer {
+
     private final String prefix;
 
     public SubscriptionAssignmentPathSerializer(String prefix) {
