@@ -39,7 +39,14 @@
         }
     },
     "topic": {
-        "messagePreviewEnabled": false
+        "messagePreviewEnabled": false,
+        "defaults": {
+            "ack": "LEADER",
+            "contentType": "JSON",
+            "retentionTime": {
+                "duration": 1
+            }
+        }
     },
     "subscription": {
         "endpointAddressResolverMetadata": {
