@@ -4,6 +4,7 @@ var subscriptions = angular.module('hermes.subscription', [
     'hermes.subscription.repository',
     'hermes.subscription.health',
     'hermes.subscription.metrics',
+    'hermes.subscription.factory',
     'hermes.topic.metrics'
 ]);
 
@@ -193,7 +194,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         };
     }]);
 
-subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$modalInstance', 'subscription',
+subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
     'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
               endpointAddressResolverMetadataConfig) {
@@ -231,34 +232,6 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
                         passwordService.reset();
                     });
         };
-    }]);
-
-subscriptions.factory('SubscriptionFactory', [function () {
-        return {
-            create: function (topicName) {
-                return {
-                    topicName: topicName,
-                    name: '',
-                    endpoint: '',
-                    description: '',
-                    supportTeam: '',
-                    contact: '',
-                    deliveryType: 'SERIAL',
-                    mode: 'ANYCAST',
-                    contentType: 'JSON',
-                    subscriptionPolicy: {
-                        messageTtl: 3600,
-                        messageBackoff: 100,
-                        rate: 1000
-                    },
-                    monitoringDetails: {
-                        severity: 'NON_IMPORTANT',
-                        reaction: ''
-                    }
-                };
-            }
-        };
-
     }]);
 
 function initRetransmissionCalendar(daysBack) {
