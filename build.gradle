@@ -117,6 +117,7 @@ subprojects {
     test {
         testLogging {
             exceptionFormat = 'full'
+            events 'passed', 'skipped', 'failed'
         }
     }
 
@@ -143,8 +144,6 @@ subprojects {
             runtimeClasspath += project.configurations.provided
         }
     }
-
-
 }
 
 nexusStaging {
