@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -90,8 +91,9 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         Topic topic = operations.buildTopic("resetOffsetGroup", "topicDryRun");
         operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
 
+        // we have 2 partitions, thus 4 messages to get 2 per partition
         sendMessagesOnTopic(topic, 4);
-        Thread.sleep(1000); //wait 1s because our date time format has seconds precision
+        Thread.sleep(2000); //wait 1s because our date time format has seconds precision
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         sendMessagesOnTopic(topic, 2);
         wait.untilConsumerCommitsOffset();
@@ -129,8 +131,8 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
                 .build();
         operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", patch);
 
+        Thread.sleep(10000);
         sendAvroMessageOnTopic(topic, user.asTestMessage());
-
         wait.untilConsumerCommitsOffset();
 
         // when
@@ -147,8 +149,9 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
 
     private void sendAvroMessageOnTopic(Topic topic, TestMessage message) {
         remoteService.expectMessages(message);
-        publisher.publish(topic.getQualifiedName(), message.withEmptyAvroMetadata().body());
-        remoteService.waitUntilReceived(120);
+        Response response = publisher.publish(topic.getQualifiedName(), message.withEmptyAvroMetadata().body());
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        remoteService.waitUntilReceived(60);
         remoteService.reset();
     }
 

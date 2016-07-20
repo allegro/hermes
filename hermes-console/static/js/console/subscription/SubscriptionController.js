@@ -4,17 +4,24 @@ var subscriptions = angular.module('hermes.subscription', [
     'hermes.subscription.repository',
     'hermes.subscription.health',
     'hermes.subscription.metrics',
+    'hermes.subscription.factory',
     'hermes.topic.metrics'
 ]);
 
-subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'SubscriptionHealth', 'SubscriptionMetrics', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', '$q', 'ConfirmationModal', 'toaster', 'PasswordService', 'MessagePreviewModal',
-    function (subscriptionRepository, subscriptionHealth, subscriptionMetrics, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, $q, confirmationModal, toaster, passwordService, messagePreviewModal) {
+subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'SubscriptionHealth', 'SubscriptionMetrics',
+    'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', '$q', 'ConfirmationModal',
+    'toaster', 'PasswordService', 'MessagePreviewModal', 'SUBSCRIPTION_CONFIG',
+    function (subscriptionRepository, subscriptionHealth, subscriptionMetrics, topicRepository, topicMetrics,
+              $scope, $location, $stateParams, $modal, $q, confirmationModal, toaster, passwordService,
+              messagePreviewModal, config) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
 
         $scope.subscription = subscriptionRepository.get(topicName, subscriptionName);
         $scope.retransmissionLoading = false;
+
+        $scope.endpointAddressResolverMetadataConfig = config.endpointAddressResolverMetadata;
 
         $scope.metricsUrls = subscriptionMetrics.metricsUrls(groupName, topicName, subscriptionName);
 
@@ -46,6 +53,15 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                 $scope.undelivered = [];
             });
 
+        $scope.notSupportedEndpointAddressResolverMetadataEntries = function(metadataEntries) {
+          var filtered = {};
+          _.each(metadataEntries, function(entry, key) {
+              if (key in config.endpointAddressResolverMetadata === false) {
+                  filtered[key] = entry;
+              }
+          });
+          return filtered;
+        }
 
         $scope.edit = function () {
             $modal.open({
@@ -61,6 +77,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     },
                     operation: function () {
                         return 'EDIT';
+                    },
+                    endpointAddressResolverMetadataConfig: function() {
+                        return config.endpointAddressResolverMetadata;
                     }
                 }
             });
@@ -175,11 +194,14 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         };
     }]);
 
-subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$modalInstance', 'subscription', 'topicName', 'PasswordService', 'toaster', 'operation',
-    function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation) {
+subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
+    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig',
+    function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
+              endpointAddressResolverMetadataConfig) {
         $scope.topicName = topicName;
         $scope.subscription = subscription;
         $scope.operation = operation;
+        $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
 
         var subscriptionBeforeChanges = _.cloneDeep(subscription);
 
@@ -210,34 +232,6 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
                         passwordService.reset();
                     });
         };
-    }]);
-
-subscriptions.factory('SubscriptionFactory', [function () {
-        return {
-            create: function (topicName) {
-                return {
-                    topicName: topicName,
-                    name: '',
-                    endpoint: '',
-                    description: '',
-                    supportTeam: '',
-                    contact: '',
-                    deliveryType: 'SERIAL',
-                    mode: 'ANYCAST',
-                    contentType: 'JSON',
-                    subscriptionPolicy: {
-                        messageTtl: 3600,
-                        messageBackoff: 100,
-                        rate: 1000
-                    },
-                    monitoringDetails: {
-                        severity: 'NON_IMPORTANT',
-                        reaction: ''
-                    }
-                };
-            }
-        };
-
     }]);
 
 function initRetransmissionCalendar(daysBack) {

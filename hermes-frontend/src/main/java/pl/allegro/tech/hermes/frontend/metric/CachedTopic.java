@@ -5,7 +5,6 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -87,8 +86,8 @@ public class CachedTopic {
         return topic;
     }
 
-    public TopicName getTopicName() {
-        return topic.getName();
+    public String getQualifiedName() {
+        return topic.getName().qualifiedName();
     }
 
     public KafkaTopics getKafkaTopics() {

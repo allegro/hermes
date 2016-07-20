@@ -8,20 +8,25 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
+import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.subscription.cache.NotificationsBasedSubscriptionCache;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
-import pl.allegro.tech.hermes.consumers.subscription.cache.zookeeper.ZookeeperSubscriptionsCacheFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
+import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 
 import java.util.List;
@@ -44,6 +49,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class ConsumerTestRuntimeEnvironment {
+
     private final static String CLUSTER_NAME = "primary";
     private final ZookeeperPaths paths;
     private final Supplier<CuratorFramework> curatorSupplier;
@@ -89,7 +95,7 @@ public class ConsumerTestRuntimeEnvironment {
         }
         subscriptionRepository.createSubscription(subscription);
         await().atMost(adjust(ONE_SECOND)).until(() -> subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName()));
-        return subscription.toSubscriptionName();
+        return subscription.getQualifiedName();
     }
 
     public SelectiveSupervisorController findLeader(List<SelectiveSupervisorController> supervisors) {
@@ -99,10 +105,15 @@ public class ConsumerTestRuntimeEnvironment {
 
     public SelectiveSupervisorController node(String id, CuratorFramework curator) {
         curators.put(id, curator);
-        WorkTracker workTracker = new WorkTracker(curator, objectMapper, paths.consumersRuntimePath(CLUSTER_NAME), id, executorService, subscriptionRepository);
         ConsumerNodesRegistry registry = new ConsumerNodesRegistry(curator, executorService, paths.consumersRegistryPath(CLUSTER_NAME), id);
-        SubscriptionsCache subscriptionsCache = new ZookeeperSubscriptionsCacheFactory(curator, configFactory, objectMapper).provide();
-        return new SelectiveSupervisorController(supervisor, subscriptionsCache, workTracker, registry, mock(ZookeeperAdminCache.class), executorService, configFactory, metrics);
+
+        ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(curator, configFactory).provide();
+        InternalNotificationsBus notificationsBus = new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);
+        SubscriptionsCache subscriptionsCache = new NotificationsBasedSubscriptionCache(notificationsBus, groupRepository, topicRepository, subscriptionRepository);
+        SubscriptionAssignmentRegistry assignmentRegistry = new SubscriptionAssignmentRegistryFactory(curator, configFactory, subscriptionsCache).provide();
+
+        WorkTracker workTracker = new WorkTracker(configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID), assignmentRegistry);
+        return new SelectiveSupervisorController(supervisor, notificationsBus, subscriptionsCache, assignmentRegistry, workTracker, registry, mock(ZookeeperAdminCache.class), executorService, configFactory, metrics);
     }
 
     public SelectiveSupervisorController node(String id) {

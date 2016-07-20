@@ -31,8 +31,8 @@ public class JettyBroadCastMessageSender implements MessageSender {
     public CompletableFuture<MessageSendingResult> send(Message message) {
         try {
             return sendMessage(message).thenApply(MultiMessageSendingResult::new);
-        } catch (Exception e) {
-            throw new InternalProcessingException("Failed to send message", e);
+        } catch (Exception exception) {
+            return CompletableFuture.completedFuture(MessageSendingResult.failedResult(exception));
         }
     }
 

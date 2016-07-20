@@ -8,7 +8,8 @@ import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
@@ -19,16 +20,17 @@ import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter
 
 public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultErrorHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultErrorHandler.class);
 
     private final UndeliveredMessageLog undeliveredMessageLog;
     private final Clock clock;
     private final Trackers trackers;
     private final String cluster;
 
-    public DefaultErrorHandler(SubscriptionOffsetCommitQueues offsetHelper, HermesMetrics hermesMetrics,
+    public DefaultErrorHandler(OffsetQueue offsetQueue,
+                               HermesMetrics hermesMetrics,
                                UndeliveredMessageLog undeliveredMessageLog, Clock clock, Trackers trackers, String cluster) {
-        super(offsetHelper, hermesMetrics);
+        super(offsetQueue, hermesMetrics);
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.clock = clock;
         this.trackers = trackers;
@@ -39,7 +41,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     public void handleDiscarded(Message message, Subscription subscription, MessageSendingResult result) {
         logResult(message, subscription, result);
 
-        offsetHelper.remove(message);
+        offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
 
         updateMeters(subscription);
         updateMetrics(Counters.DISCARDED, message, subscription);
@@ -59,9 +61,9 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     private void logResult(Message message, Subscription subscription, MessageSendingResult result) {
         if(result.isLoggable()) {
             result.getLogInfo().stream().forEach(logInfo ->
-                    LOGGER.warn(
+                    logger.warn(
                             "Abnormal delivery failure: subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
-                            subscription.getId(), logInfo.getRootCause(), logInfo.getUrl(), message.getId(),
+                            subscription.getQualifiedName(), logInfo.getRootCause(), logInfo.getUrl(), message.getId(),
                             message.getPartition(), message.getOffset(), logInfo.getFailure()
                     )
             );

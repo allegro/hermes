@@ -5,6 +5,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
 import pl.allegro.tech.hermes.common.hook.Hook;
@@ -23,6 +25,7 @@ import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
@@ -35,6 +38,8 @@ import java.util.function.Function;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 
 public final class HermesFrontend {
+
+    private static final Logger logger = LoggerFactory.getLogger(HermesFrontend.class);
 
     private final ServiceLocator serviceLocator;
     private final HooksHandler hooksHandler;
@@ -96,9 +101,18 @@ public final class HermesFrontend {
         });
 
         serviceLocator.getService(PersistentBufferExtension.class).extend();
+        startCaches(serviceLocator);
 
         hermesServer.start();
         hooksHandler.startup(serviceLocator);
+    }
+
+    private void startCaches(ServiceLocator locator) {
+        try {
+            locator.getService(ModelAwareZookeeperNotifyingCache.class).start();
+        } catch(Exception e) {
+            logger.error("Failed to startup Hermes Frontend", e);
+        }
     }
 
     public void stop() {

@@ -118,7 +118,7 @@ public class SubscriptionPolicy {
         return messageBackoff;
     }
 
-    public int getRequestTimeout() {
+    public Integer getRequestTimeout() {
         return requestTimeout;
     }
 

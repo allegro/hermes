@@ -40,7 +40,6 @@ scmVersion {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'groovy'
-    apply plugin: 'jacoco'
 
     group = 'pl.allegro.tech.hermes'
     version = scmVersion.version
@@ -77,6 +76,7 @@ allprojects {
 
 configure(subprojects - project(':integration')) {
     apply plugin: 'com.bmuschko.nexus'
+    apply plugin: 'jacoco'
 
     modifyPom {
         project {
@@ -121,6 +121,7 @@ subprojects {
     test {
         testLogging {
             exceptionFormat = 'full'
+            events 'passed', 'skipped', 'failed'
         }
     }
 
@@ -147,8 +148,6 @@ subprojects {
             runtimeClasspath += project.configurations.provided
         }
     }
-
-
 }
 
 nexusStaging {
@@ -159,5 +158,5 @@ nexusStaging {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.10'
+    gradleVersion = '2.14'
 }

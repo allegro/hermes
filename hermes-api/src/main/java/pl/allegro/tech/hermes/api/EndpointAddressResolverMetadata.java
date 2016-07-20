@@ -32,6 +32,7 @@ public class EndpointAddressResolverMetadata {
         return Optional.ofNullable(entries.get(key));
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getOrDefault(String key, T defaultValue) {
         return (T) entries.getOrDefault(key, defaultValue);
     }

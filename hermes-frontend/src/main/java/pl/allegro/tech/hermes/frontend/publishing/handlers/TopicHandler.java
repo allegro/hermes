@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
@@ -15,7 +14,6 @@ import java.util.function.Consumer;
 import static pl.allegro.tech.hermes.api.ErrorCode.GROUP_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
-import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 class TopicHandler implements HttpHandler {
 
@@ -53,20 +51,20 @@ class TopicHandler implements HttpHandler {
     }
 
     private void onTopicPresent(HttpServerExchange exchange, String messageId, Consumer<CachedTopic> consumer) {
-        TopicName topicName = fromQualifiedName(exchange.getQueryParameters().get("qualifiedTopicName").getFirst());
+        String qualifiedTopicName = exchange.getQueryParameters().get("qualifiedTopicName").getFirst();
         try {
-            Optional<CachedTopic> topic = topicsCache.getTopic(topicName);
+            Optional<CachedTopic> topic = topicsCache.getTopic(qualifiedTopicName);
             if (topic.isPresent()) {
                 consumer.accept(topic.get());
                 return;
             }
-            nonExistentTopic(exchange, topicName.qualifiedName(), messageId);
+            nonExistentTopic(exchange, qualifiedTopicName, messageId);
         } catch (IllegalArgumentException exception) {
-            missingTopicGroup(exchange, topicName.qualifiedName(), messageId);
+            missingTopicGroup(exchange, qualifiedTopicName, messageId);
         }
     }
 
-    public void missingTopicGroup(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
+    private void missingTopicGroup(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
         messageErrorProcessor.sendQuietly(
                 exchange,
                 error("Missing valid topic group in path. Found " + qualifiedTopicName, GROUP_NOT_EXISTS),
@@ -74,7 +72,7 @@ class TopicHandler implements HttpHandler {
                 UNKNOWN_TOPIC_NAME);
     }
 
-    public void nonExistentTopic(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
+    private void nonExistentTopic(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
         messageErrorProcessor.sendQuietly(
                 exchange,
                 error("Topic not found: " + qualifiedTopicName, TOPIC_NOT_EXISTS),

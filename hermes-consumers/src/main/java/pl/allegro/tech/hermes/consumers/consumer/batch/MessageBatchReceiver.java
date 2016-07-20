@@ -27,6 +27,7 @@ import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter
 
 @NotThreadSafe
 public class MessageBatchReceiver {
+
     private static final Logger logger = LoggerFactory.getLogger(MessageBatchReceiver.class);
 
     private final MessageReceiver receiver;
@@ -56,23 +57,25 @@ public class MessageBatchReceiver {
         this.inflight = new ArrayDeque<>(1);
     }
 
-    public MessageBatchingResult next(Subscription subscription) {
-        logger.debug("Trying to allocate memory for new batch [subscription={}]", subscription.getId());
+    public MessageBatchingResult next(Subscription subscription, Runnable signalsInterrupt) {
+        logger.debug("Trying to allocate memory for new batch [subscription={}]", subscription.getQualifiedName());
         MessageBatch batch = batchFactory.createBatch(subscription);
-        logger.debug("New batch allocated [subscription={}]", subscription.getId());
+        logger.debug("New batch allocated [subscription={}]", subscription.getQualifiedName());
         List<MessageMetadata> discarded = new ArrayList<>();
+
         while (isReceiving() && !batch.isReadyForDelivery()) {
             try {
+                signalsInterrupt.run();
                 Message message = inflight.isEmpty() ? receive(subscription, batch.getId()) : inflight.poll();
 
                 if (batch.canFit(message.getData())) {
                     batch.append(message.getData(), messageMetadata(subscription, batch.getId(), message));
                 } else if (batch.isBiggerThanTotalCapacity(message.getData())) {
                     logger.error("Message size exceeds buffer total capacity [size={}, capacity={}, subscription={}]",
-                            message.getData().length, batch.getCapacity(), subscription.getId());
+                            message.getData().length, batch.getCapacity(), subscription.getQualifiedName());
                     discarded.add(toMessageMetadata(message, subscription));
                 } else {
-                    logger.info("Message too large for current batch [message_size={}, subscription={}]", message.getData().length, subscription.getId());
+                    logger.info("Message too large for current batch [message_size={}, subscription={}]", message.getData().length, subscription.getQualifiedName());
                     checkArgument(inflight.offer(message));
                     break;
                 }
@@ -80,7 +83,7 @@ public class MessageBatchReceiver {
                 // ignore
             }
         }
-        logger.debug("Batch is ready for delivery [subscription={}]", subscription.getId());
+        logger.debug("Batch is ready for delivery [subscription={}]", subscription.getQualifiedName());
         return new MessageBatchingResult(batch.close(), discarded);
     }
 

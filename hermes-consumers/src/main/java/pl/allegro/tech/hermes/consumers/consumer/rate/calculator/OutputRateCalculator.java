@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.ActiveConsumerCounter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.DeliveryCounters;
 
 import javax.inject.Inject;
@@ -13,7 +13,6 @@ import java.util.Map;
 public class OutputRateCalculator {
 
     public enum Mode {
-
         NORMAL,
         SLOW,
         HEARTBEAT
@@ -25,7 +24,7 @@ public class OutputRateCalculator {
     private final MaximumOutputRateCalculator maximumRateCalculator;
 
     @Inject
-    public OutputRateCalculator(ConfigFactory configFactory, HermesMetrics hermesMetrics) {
+    public OutputRateCalculator(ConfigFactory configFactory, ActiveConsumerCounter activeConsumerCounter) {
         modeCalculators.put(Mode.NORMAL,
                 new NormalModeOutputRateCalculator(
                         configFactory.getDoubleProperty(Configs.CONSUMER_RATE_CONVERGENCE_FACTOR),
@@ -41,11 +40,11 @@ public class OutputRateCalculator {
                 1.0 / configFactory.getIntProperty(Configs.CONSUMER_RATE_LIMITER_SLOW_MODE_DELAY))
         );
 
-        maximumRateCalculator = new MaximumOutputRateCalculator(hermesMetrics);
+        maximumRateCalculator = new MaximumOutputRateCalculator(activeConsumerCounter);
     }
 
     public OutputRateCalculationResult recalculateRate(Subscription subscription, DeliveryCounters counters,
-            Mode currentMode, double currentRate) {
+                                                       Mode currentMode, double currentRate) {
         double maximumRate = maximumRateCalculator.calculateMaximumOutputRate(subscription);
         OutputRateCalculationResult recalculatedResult
                 = modeCalculators.get(currentMode).calculateOutputRate(currentRate, maximumRate, counters);

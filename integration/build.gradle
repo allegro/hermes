@@ -104,7 +104,8 @@ task integrationTest(type: Test) {
     }
 
     jvmArgs = args
-    maxHeapSize "2g"
+    minHeapSize "2000m"
+    maxHeapSize "3500m"
 
     group = 'Verification'
     description = 'Runs the integration tests.'

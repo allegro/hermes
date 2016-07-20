@@ -6,12 +6,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
-import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
+import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
@@ -38,7 +37,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class BackupMessagesLoader {
@@ -102,7 +100,7 @@ public class BackupMessagesLoader {
             retry++;
         } while (toResend.get().size() > 0 && retry <= maxResendRetries);
 
-        logger.info("Finished resending messages from backup storage after retry #{} with #{} unsent messages.", retry - 1, toResend.get().size());
+        logger.info("Finished resending messages from backup storage after retry #{} with {} unsent messages.", retry - 1, toResend.get().size());
     }
 
     public void clearTopicsAvailabilityCache() {
@@ -117,9 +115,9 @@ public class BackupMessagesLoader {
             int discardedCounter = 0;
             for (BackupMessage backupMessage : messages) {
                 Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
-                TopicName topicName = fromQualifiedName(backupMessage.getQualifiedTopicName());
-                Optional<CachedTopic> optionalCachedTopic = loadCachedTopic(topicName, executor);
-                if (sendMessageIfNeeded(message, topicName, optionalCachedTopic, "sending")) {
+                String topicQualifiedName = backupMessage.getQualifiedTopicName();
+                Optional<CachedTopic> optionalCachedTopic = loadCachedTopic(topicQualifiedName, executor);
+                if (sendMessageIfNeeded(message, topicQualifiedName, optionalCachedTopic, "sending")) {
                     sentCounter++;
                 } else {
                     discardedCounter++;
@@ -154,7 +152,7 @@ public class BackupMessagesLoader {
         for (Pair<Message, CachedTopic> messageAndTopic : messageAndTopicList) {
             Message message = messageAndTopic.getKey();
             Optional<CachedTopic> cachedTopic = Optional.of(messageAndTopic.getValue());
-            if (sendMessageIfNeeded(message, cachedTopic.get().getTopicName(), cachedTopic, "resending")) {
+            if (sendMessageIfNeeded(message, cachedTopic.get().getQualifiedName(), cachedTopic, "resending")) {
                 sentCounter++;
             } else {
                 discardedCounter++;
@@ -164,7 +162,7 @@ public class BackupMessagesLoader {
         logger.info("Resent {}/{} messages and discarded {} messages from the backup storage retry {}.", sentCounter, messageAndTopicList.size(), discardedCounter, retry);
     }
 
-    private boolean sendMessageIfNeeded(Message message, TopicName topicName, Optional<CachedTopic> cachedTopic, String contextName) {
+    private boolean sendMessageIfNeeded(Message message, String topicQualifiedName, Optional<CachedTopic> cachedTopic, String contextName) {
         if (cachedTopic.isPresent()) {
             if (isNotStale(message)) {
                 waitOnBrokerTopicAvailability(cachedTopic.get());
@@ -172,10 +170,10 @@ public class BackupMessagesLoader {
                 return true;
             }
             logger.warn("Not {} stale message {} {} {}", contextName, message.getId(),
-                    topicName.qualifiedName(), new String(message.getData(), Charset.defaultCharset()));
+                    topicQualifiedName, new String(message.getData(), Charset.defaultCharset()));
             return false;
         }
-        logger.error("Topic {} not present. Not {} message {} {}", topicName.qualifiedName(), contextName,
+        logger.error("Topic {} not present. Not {} message {} {}", topicQualifiedName, contextName,
                 message.getId(), new String(message.getData(), Charset.defaultCharset()));
         return false;
     }
@@ -233,12 +231,12 @@ public class BackupMessagesLoader {
         });
     }
 
-    private Optional<CachedTopic> loadCachedTopic(TopicName topicName, Executor executor) {
+    private Optional<CachedTopic> loadCachedTopic(String topicQualifiedName, Executor executor) {
         try {
-            return CompletableFuture.supplyAsync(() -> topicsCache.getTopic(topicName), executor)
+            return CompletableFuture.supplyAsync(() -> topicsCache.getTopic(topicQualifiedName), executor)
                     .get(secondsToWaitForTopicsCache, SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error("Could not read topic {} from topics cache after {} seconds", topicName, secondsToWaitForTopicsCache);
+            logger.error("Could not read topic {} from topics cache after {} seconds", topicQualifiedName, secondsToWaitForTopicsCache);
             return Optional.empty();
         }
     }

@@ -8,11 +8,16 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
+/**
+ * Offset++, because "This is the position the consumer will pick up from if it crashes before its next commit()"
+ */
 public class ZookeeperMessageCommitter implements MessageCommitter {
 
     private final CuratorFramework curatorFramework;
@@ -24,12 +29,12 @@ public class ZookeeperMessageCommitter implements MessageCommitter {
     }
 
     @Override
-    public void commitOffset(SubscriptionName subscription, PartitionOffset partitionOffset) throws Exception {
+    public void commitOffset(SubscriptionPartitionOffset partitionOffset) throws Exception {
         long firstToRead = partitionOffset.getOffset() + 1;
-        byte[] data = String.valueOf(firstToRead).getBytes(Charset.forName("UTF-8"));
+        byte[] data = String.valueOf(firstToRead).getBytes(StandardCharsets.UTF_8);
         String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(
-                kafkaNamesMapper.toConsumerGroupId(subscription),
-                partitionOffset.getTopic(),
+                kafkaNamesMapper.toConsumerGroupId(partitionOffset.getSubscriptionName()),
+                partitionOffset.getKafkaTopicName(),
                 partitionOffset.getPartition()
         );
         try {
@@ -42,7 +47,7 @@ public class ZookeeperMessageCommitter implements MessageCommitter {
     @Override
     public void removeOffset(TopicName topicName, String subscriptionName, KafkaTopicName topic, int partition) throws Exception {
         String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(
-                kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topicName, subscriptionName)),
+                kafkaNamesMapper.toConsumerGroupId(new SubscriptionName(subscriptionName, topicName)),
                 topic,
                 partition
         );

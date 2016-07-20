@@ -14,7 +14,6 @@ public class Counters {
             DISCARDED = "discarded." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
             FILTERED = "filtered." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
             INFLIGHT = "inflight." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
-            OFFSET_COMMIT_IDLE = "offset-commit-idle." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + "." + PARTITION,
             EXECUTOR_RUNNING = "executors." + EXECUTOR_NAME + ".running",
             SCHEDULED_EXECUTOR_OVERRUN = "executors." + EXECUTOR_NAME + ".overrun";
 }

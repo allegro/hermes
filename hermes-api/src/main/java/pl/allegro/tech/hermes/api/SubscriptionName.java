@@ -10,13 +10,18 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 public class SubscriptionName {
 
-    private String name;
-    private TopicName topicName;
+    private final String name;
+    private final TopicName topicName;
 
     @JsonCreator
     public SubscriptionName(@JsonProperty("name") String name, @JsonProperty("topicName") TopicName topicName) {
         this.name = name;
         this.topicName = topicName;
+    }
+
+    @JsonIgnore
+    public String getQualifiedName() {
+        return toString();
     }
 
     public String getName() {
@@ -36,11 +41,6 @@ public class SubscriptionName {
     @Override
     public String toString() {
         return topicName.qualifiedName() + "$" + name;
-    }
-
-    @JsonIgnore
-    public String getId() {
-        return Subscription.getId(getTopicName(), getName());
     }
 
     @Override

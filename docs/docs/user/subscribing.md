@@ -28,13 +28,20 @@ Minimal request:
 
 All options:
 
-Option                               | Description                      | Default value
------------------------------------- | -------------------------------- | -------------
-trackingEnabled                      | track incoming messages?         | false
-subscriptionPolicy.rate              | maximum sending speed in rps     | 100
-subscriptionPolicy.messageTtl        | inflight Time To Live in seconds | 3600
-subscriptionPolicy.retryClientErrors | retry on receiving 4xx status    | false
-subscriptionPolicy.requestTimeout    | request timeout in millis        | 1000
+Option                               | Description                          | Default value
+------------------------------------ | ------------------------------------ | -------------
+trackingEnabled                      | track incoming messages?             | false
+subscriptionPolicy.rate              | maximum sending speed in rps         | 100
+subscriptionPolicy.messageTtl        | inflight Time To Live in seconds     | 3600
+subscriptionPolicy.messageBackoff    | backoff time between retry attempts  | 100
+subscriptionPolicy.messageBackoff    | backoff time between retry attempts  | 100
+subscriptionPolicy.retryClientErrors | retry on receiving 4xx status        | false
+subscriptionPolicy.requestTimeout    | request timeout in millis            | 1000
+subscriptionPolicy.inflightSize      | max number of pending requests       | 100
+headers                              | additional HTTP request headers      | [] (array of headers)
+filters                              | used for skipping unwanted messages  | [] (array of filters)
+endpointAddressResolverMetadata      | additional address resolver metadata | {} (map)
+
 
 Request that specifies all available options:
 
@@ -50,7 +57,21 @@ Request that specifies all available options:
         "rate": 100,
         "messageTtl": 3600,
         "retryClientErrors": false,
-        "requestTimeout": 1000
+        "messageBackoff": 100,
+        "requestTimeout": 1000,
+        "inflightSize": 100
+    },
+    "headers": [
+        {"name": "SOME_HEADER", "value": "ABC"}, 
+        {"name": "OTHER_HEADER", "value": "123"}
+    ],
+    "filters": [
+        {"type": "jsonpath", "path": "$.user.name", "matcher": "^abc.*"},
+        {"type": "jsonpath", "path": "$.user.status", "matcher": "new"}
+    ],
+    "endpointAddressResolverMetadata": {
+        "ignoreMessageHeaders": true,
+        "serviceInstanceId": 123 
     }
 }
 ```
@@ -151,6 +172,71 @@ This is important when trying to understand why subscriber receives less message
 is growing. First things first, you should check subscription metrics for signs of any problems.
 
 If you want to know the exact algorithm, check [rate limiting configuration page](/configuration/rate-limiting/).
+
+## Additional headers
+
+Each subscription can define a number of additional `headers` that will be added to every HTTP request when sending messages.
+They can be useful on test environments to pass security tokens or on production to communicate with some legacy systems that 
+require custom headers.
+
+## Endpoint address resolver metadata
+
+Custom implementation of Consumer's `EndpointAddressResolver` interface can make use of provided `endpointAddressResolverMetadata` 
+for selecting address resolving strategies. This object is deserialized to `Map<String, Object>` and may contain any data needed,
+like feature flags. 
+
+It's ignored by the default implementation.
+
+See [console integration](/configuration/console/#subscription-configuration) for more information.
+
+## Message filtering
+
+Each subscription can define set of filters that are going to be applied after receiving message from kafka in order
+of their declaration.
+
+### Choosing appropriate filter
+
+This mainly concerns message content type. Filtering is done *before* any conversion takes place so all messages have 
+the same content type as topic on which they were published.
+
+Topic content-type    | Filter type
+--------------------- | -----------
+avro                  | avropath
+json                  | jsonpath
+
+### JsonPath configuration
+
+JsonPath filter is based on popular [library](https://github.com/jayway/JsonPath) of the same name that can query
+json documents. In this case it is used as a selector to retrieve value that is later matched by regexp.
+
+Option                | Description
+--------------------- | ---------------------------------------------------
+type                  | type of filter
+path                  | JsonPath expression to query json document
+matcher               | regexp expression to match value from json document
+
+Example:
+```
+{"type": "jsonpath", "path": "$.user.name", "matcher": "^abc.*"}
+```
+
+### AvroPath configuration
+
+AvroPath is our custom filter that works with avro documents. Currently there are no commonly used query languages for
+avro so we decided to introduce very simple dotted path format without any advanced features. It is very easy to
+understand if you're familiar with JsonPath. Right now only basic selectors that point to specific fields are
+supported.
+
+Option                | Description
+--------------------- | ---------------------------------------------------
+type                  | type of filter
+path                  | dotted expression to query avro document
+matcher               | regexp expression to match value from avro document
+
+Example:
+```
+{"type": "avropath", "path": ".user.name", "matcher": "^abc.*"}
+```
 
 ## Authorization
 

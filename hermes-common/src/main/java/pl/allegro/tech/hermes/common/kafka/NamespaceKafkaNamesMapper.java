@@ -1,9 +1,12 @@
 package pl.allegro.tech.hermes.common.kafka;
 
+import com.google.common.base.Joiner;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.function.Function;
+
+import static pl.allegro.tech.hermes.api.helpers.Replacer.replaceInAll;
 
 public class NamespaceKafkaNamesMapper implements KafkaNamesMapper {
 
@@ -16,13 +19,10 @@ public class NamespaceKafkaNamesMapper implements KafkaNamesMapper {
     }
 
     @Override
-    public ConsumerGroupId toConsumerGroupId(SubscriptionName subscription) {
-        return toConsumerGroupId(subscription.getId());
-    }
-
-    @Override
-    public ConsumerGroupId toConsumerGroupId(String subscriptionId) {
-        return ConsumerGroupId.valueOf(appendNamespace(subscriptionId));
+    public ConsumerGroupId toConsumerGroupId(SubscriptionName subscriptionName) {
+        return ConsumerGroupId.valueOf(
+                appendNamespace(subscriptionNameToConsumerId(subscriptionName))
+        );
     }
 
     @Override
@@ -38,7 +38,15 @@ public class NamespaceKafkaNamesMapper implements KafkaNamesMapper {
 
     protected Function<KafkaTopic, KafkaTopics> mapToKafkaTopics = KafkaTopics::new;
 
+    private String subscriptionNameToConsumerId(SubscriptionName subscriptionName) {
+        return Joiner.on("_").join(replaceInAll("_", "__",
+                subscriptionName.getTopicName().getGroupName(),
+                subscriptionName.getTopicName().getName(),
+                subscriptionName.getName())
+        );
+    }
+
     private String appendNamespace(String name) {
-        return namespace.isEmpty()? name : namespace + SEPARATOR + name;
+        return namespace.isEmpty() ? name : namespace + SEPARATOR + name;
     }
 }

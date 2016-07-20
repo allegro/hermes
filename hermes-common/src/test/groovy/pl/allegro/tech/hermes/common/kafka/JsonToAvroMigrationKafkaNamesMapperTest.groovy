@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.kafka
 
 import pl.allegro.tech.hermes.api.ContentType
+import pl.allegro.tech.hermes.api.SubscriptionName
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -23,17 +24,17 @@ class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
     }
 
     @Unroll
-    def "should map subscription id '#subscriptionId' to consumer group '#consumerGroupId' for namespace '#namespace'"() {
+    def "should map subscription name '#subscriptionName' to consumer group '#consumerGroupId' for namespace '#namespace'"() {
         given:
         def mapper = new JsonToAvroMigrationKafkaNamesMapper(namespace)
 
         expect:
-        mapper.toConsumerGroupId(subscriptionId) == ConsumerGroupId.valueOf(consumerGroupId)
+        mapper.toConsumerGroupId(subscriptionName) == ConsumerGroupId.valueOf(consumerGroupId)
 
         where:
-        namespace | subscriptionId     | consumerGroupId
-        "ns"      | "subscription_id" | "ns_subscription_id"
-        ""        | "subscription_id" | "subscription_id"
+        namespace | subscriptionName                                         | consumerGroupId
+        "ns"      | SubscriptionName.fromString('group.topic$subscription')  | "ns_group_topic_subscription"
+        ""        | SubscriptionName.fromString('group.topic$subscription')  | "group_topic_subscription"
     }
 
     def "should append '_avro' suffix for topics of type AVRO"() {

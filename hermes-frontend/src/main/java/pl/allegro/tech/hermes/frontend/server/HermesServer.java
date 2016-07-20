@@ -7,12 +7,10 @@ import io.undertow.server.handlers.RequestDumpingHandler;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
-import java.util.Collections;
 
 import static io.undertow.UndertowOptions.*;
 import static org.xnio.Options.BACKLOG;
@@ -26,7 +24,6 @@ public class HermesServer {
 
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configFactory;
-    private final TopicsCache topicsCache;
     private final HttpHandler publishingHandler;
     private final HealthCheckService healthCheckService;
     private final MessagePreviewPersister messagePreviewPersister;
@@ -36,14 +33,12 @@ public class HermesServer {
 
     @Inject
     public HermesServer(
-            TopicsCache topicsCache,
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
             HttpHandler publishingHandler,
             HealthCheckService healthCheckService,
             MessagePreviewPersister messagePreviewPersister) {
 
-        this.topicsCache = topicsCache;
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.publishingHandler = publishingHandler;
@@ -56,7 +51,6 @@ public class HermesServer {
     }
 
     public void start() {
-        topicsCache.start(Collections.emptyList());
         configureServer().start();
         messagePreviewPersister.start();
     }

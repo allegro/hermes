@@ -7,14 +7,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
-import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
+import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
@@ -49,8 +48,7 @@ public class BackupMessagesLoaderTest {
 
     private File tempDir;
 
-    private final TopicName topicName = TopicName.fromQualifiedName("pl.allegro.tech.hermes.test");
-    private final Topic topic = TopicBuilder.topic(topicName).build();
+    private final Topic topic = TopicBuilder.topic("pl.allegro.tech.hermes.test").build();
 
     @Before
     public void setUp() throws Exception {
@@ -58,7 +56,7 @@ public class BackupMessagesLoaderTest {
 
         when(cachedTopic.getTopic()).thenReturn(topic);
         when(cachedTopic.startBrokerLatencyTimers()).thenReturn(new StartedTimersPair(new Timer(), new Timer()));
-        when(topicsCache.getTopic(topicName)).thenReturn(Optional.of(cachedTopic));
+        when(topicsCache.getTopic(topic.getQualifiedName())).thenReturn(Optional.of(cachedTopic));
         when(producer.isTopicAvailable(cachedTopic)).thenReturn(true);
     }
 
