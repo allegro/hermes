@@ -18,8 +18,8 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_INTERVAL;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_INTERVAL;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class SerialConsumer implements Consumer {
@@ -85,7 +85,14 @@ public class SerialConsumer implements Consumer {
             } while (!inflightSemaphore.tryAcquire(signalProcessingInterval, TimeUnit.MILLISECONDS));
 
             Message message = messageReceiver.next();
-            logger.debug("Read message {} partition {} offset {}", message.getContentType(), message.getPartition(), message.getOffset());
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Read message {} partition {} offset {}",
+                        message.getContentType(), message.getPartition(), message.getOffset()
+                );
+            }
+
             Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
             sendMessage(convertedMessage);
         } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {
@@ -135,7 +142,7 @@ public class SerialConsumer implements Consumer {
 
     @Override
     public void updateTopic(Topic newTopic) {
-        if(this.topic.getContentType() != newTopic.getContentType()) {
+        if (this.topic.getContentType() != newTopic.getContentType()) {
             logger.info("Topic content type changed from {} to {}, reinitializing message recevier", this.topic.getContentType(), newTopic.getContentType());
             this.topic = newTopic;
 

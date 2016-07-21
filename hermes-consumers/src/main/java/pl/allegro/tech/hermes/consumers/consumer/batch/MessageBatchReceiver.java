@@ -58,9 +58,14 @@ public class MessageBatchReceiver {
     }
 
     public MessageBatchingResult next(Subscription subscription, Runnable signalsInterrupt) {
-        logger.debug("Trying to allocate memory for new batch [subscription={}]", subscription.getQualifiedName());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Trying to allocate memory for new batch [subscription={}]", subscription.getQualifiedName());
+        }
+
         MessageBatch batch = batchFactory.createBatch(subscription);
-        logger.debug("New batch allocated [subscription={}]", subscription.getQualifiedName());
+        if (logger.isDebugEnabled()) {
+            logger.debug("New batch allocated [subscription={}]", subscription.getQualifiedName());
+        }
         List<MessageMetadata> discarded = new ArrayList<>();
 
         while (isReceiving() && !batch.isReadyForDelivery()) {
@@ -75,7 +80,10 @@ public class MessageBatchReceiver {
                             message.getData().length, batch.getCapacity(), subscription.getQualifiedName());
                     discarded.add(toMessageMetadata(message, subscription));
                 } else {
-                    logger.info("Message too large for current batch [message_size={}, subscription={}]", message.getData().length, subscription.getQualifiedName());
+                    logger.debug(
+                            "Message too large for current batch [message_size={}, subscription={}]",
+                            message.getData().length, subscription.getQualifiedName()
+                    );
                     checkArgument(inflight.offer(message));
                     break;
                 }
@@ -83,7 +91,9 @@ public class MessageBatchReceiver {
                 // ignore
             }
         }
-        logger.debug("Batch is ready for delivery [subscription={}]", subscription.getQualifiedName());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Batch is ready for delivery [subscription={}]", subscription.getQualifiedName());
+        }
         return new MessageBatchingResult(batch.close(), discarded);
     }
 

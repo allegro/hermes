@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
 import org.jctools.queues.MessagePassingQueue;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
 
@@ -13,9 +15,11 @@ public class OffsetQueue {
     private final MonitoredMpscQueue<SubscriptionPartitionOffset> commitOffsetsQueue;
 
     @Inject
-    public OffsetQueue(HermesMetrics metrics) {
-        this.inflightOffsetsQueue = new MonitoredMpscQueue<>(metrics, "inflightOffsets", 100_000);
-        this.commitOffsetsQueue = new MonitoredMpscQueue<>(metrics, "committedOffsets", 100_000);
+    public OffsetQueue(HermesMetrics metrics, ConfigFactory configFactory) {
+        int queueSize = configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_QUEUES_SIZE);
+
+        this.inflightOffsetsQueue = new MonitoredMpscQueue<>(metrics, "inflightOffsets", queueSize);
+        this.commitOffsetsQueue = new MonitoredMpscQueue<>(metrics, "committedOffsets", queueSize);
     }
 
     public void offerInflightOffset(SubscriptionPartitionOffset offset) {

@@ -39,7 +39,7 @@ def getAlpnVersion() {
                 return '8.1.6.v20151105'
             case 71..77:
                 return '8.1.7.v20160121'
-            case 78..92:
+            case 78..101:
                 return '8.1.8.v20160420'
             default:
                 throw new IllegalStateException("ALPN version not defined for Java version: ${javaVersion}; extracted minor version: ${version}")

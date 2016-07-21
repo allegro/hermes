@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.result
 
 import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.Message
@@ -18,7 +19,10 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 
 class DefaultErrorHandlerTest extends Specification {
 
-    private OffsetQueue offsetQueue = new OffsetQueue(new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
+    private OffsetQueue offsetQueue = new OffsetQueue(
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
+            new ConfigFactory()
+    )
 
     private UndeliveredMessageLog undeliveredLog = Mock(UndeliveredMessageLog)
 
