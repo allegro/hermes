@@ -2,8 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.offset
 
 import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
-import pl.allegro.tech.hermes.api.TopicName
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
+import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter
 import pl.allegro.tech.hermes.metrics.PathsCompiler
@@ -11,13 +10,18 @@ import spock.lang.Specification
 
 class OffsetCommitterTest extends Specification {
 
-    private OffsetQueue queue = new OffsetQueue(new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
+    private OffsetQueue queue = new OffsetQueue(
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
+            new ConfigFactory()
+    )
 
     private MessageCommitter messageCommitter = Mock(MessageCommitter)
 
-    private OffsetCommitter committer = new OffsetCommitter(queue, [messageCommitter], 10, new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
+    private OffsetCommitter committer = new OffsetCommitter(
+            queue, [messageCommitter], 10, new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
+    )
 
-    def "should commit smallest offset of uncommitted message - 1"() {
+    def "should commit smallest offset of uncommitted message"() {
         given:
         queue.offerInflightOffset(offset(1, 1))
         queue.offerInflightOffset(offset(1, 2))
@@ -31,10 +35,10 @@ class OffsetCommitterTest extends Specification {
         committer.run()
 
         then:
-        1 * messageCommitter.commitOffset(offset(1, 1))
+        1 * messageCommitter.commitOffset(offset(1, 2))
     }
 
-    def "should commit max offset of inflight when no offsets found after committing"() {
+    def "should commit max offset of committed offsets when no smaller inflights exist"() {
         given:
         queue.offerInflightOffset(offset(1, 3))
         queue.offerInflightOffset(offset(1, 4))
@@ -51,22 +55,19 @@ class OffsetCommitterTest extends Specification {
 
     def "should commit same offset twice when there are no new offsets to commit"() {
         given:
-        queue.offerInflightOffset(offset(1, 3))
-        queue.offerInflightOffset(offset(1, 4))
-
-        queue.offerCommittedOffset(offset(1, 3))
+        queue.offerInflightOffset(offset(1, 5))
 
         when:
         committer.run()
 
         then:
-        1 * messageCommitter.commitOffset(offset(1, 3))
+        1 * messageCommitter.commitOffset(offset(1, 5))
 
         when:
         committer.run()
 
         then:
-        1 * messageCommitter.commitOffset(offset(1, 3))
+        1 * messageCommitter.commitOffset(offset(1, 5))
     }
 
     def "should not mix offsets from different partitions and topics"() {
@@ -86,19 +87,19 @@ class OffsetCommitterTest extends Specification {
 
         then:
         1 * messageCommitter.commitOffset(offset(1, 4))
-        1 * messageCommitter.commitOffset(offset(2, 9))
+        1 * messageCommitter.commitOffset(offset(2, 10))
     }
 
-    def "should get rid of leftover inflight offset commits when removing subscription on the second iteration"() {
+    def "should get rid of leftover inflight offset commits on second iteration when removing subscription"() {
         given:
         queue.offerInflightOffset(offset(1, 3))
 
         when:
-        committer.removeUncommittedOffsets(SubscriptionName.fromString("group.topic\$sub"))
+        committer.removeUncommittedOffsets(SubscriptionName.fromString('group.topic$sub'))
         committer.run()
 
         then:
-        1 * messageCommitter.commitOffset(offset(1, 2))
+        1 * messageCommitter.commitOffset(offset(1, 3))
 
         when:
         committer.run()
