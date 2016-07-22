@@ -1,9 +1,14 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
 import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
+import com.codahale.metrics.jvm.FileDescriptorRatioGauge;
+import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
+import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.google.common.base.Joiner;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -16,6 +21,7 @@ import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MetricRegistryFactory implements Factory<MetricRegistry> {
@@ -69,7 +75,25 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
             );
         }
 
+        registerJvmMetrics(registry);
+
         return registry;
+    }
+
+    private void registerJvmMetrics(MetricRegistry metricRegistry) {
+        registerAll("jvm.gc", new GarbageCollectorMetricSet(), metricRegistry);
+        registerAll("jvm.memory", new MemoryUsageGaugeSet(), metricRegistry);
+        metricRegistry.register("jvm.descriptors", new FileDescriptorRatioGauge());
+    }
+
+    private void registerAll(String prefix, MetricSet metricSet, MetricRegistry registry) {
+        for (Map.Entry<String, Metric> entry : metricSet.getMetrics().entrySet()) {
+            if (entry.getValue() instanceof MetricSet) {
+                registerAll(prefix + "." + entry.getKey(), (MetricSet) entry.getValue(), registry);
+            } else {
+                registry.register(prefix + "." + entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     @Override
