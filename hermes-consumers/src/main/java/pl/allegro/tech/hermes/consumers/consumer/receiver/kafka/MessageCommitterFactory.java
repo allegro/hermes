@@ -38,7 +38,7 @@ public class MessageCommitterFactory implements Factory<List<MessageCommitter>> 
 
     @Override
     public List<MessageCommitter> provide() {
-        List<MessageCommitter> committers = new ArrayList<>();
+        List<MessageCommitter> committers = new ArrayList<>(2);
         if (dualCommitEnabled || OffsetsStorageType.KAFKA == offsetsStorageType) {
             committers.add(new BrokerMessageCommitter(brokerOffsetsRepository));
         }
