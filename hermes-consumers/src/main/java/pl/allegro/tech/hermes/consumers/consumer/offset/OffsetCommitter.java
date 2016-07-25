@@ -148,12 +148,11 @@ public class OffsetCommitter implements Runnable {
 
     private void commit(SubscriptionPartitionOffset offset) {
         for (MessageCommitter committer : messageCommitters) {
-            try {
+            try (Timer.Context c = metrics.timer("offset-committer.single-commit." + committer.name()).time()) {
                 committer.commitOffset(offset);
             } catch (Exception e) {
-                // it will be treated as min in next iteration, so it needs the + 1
                 failedToCommitOffsets.add(new SubscriptionPartitionOffset(offset.getSubscriptionPartition(), offset.getOffset()));
-                logger.error("Failed to commit offset {} using {} committer", offset, committer.getClass().getSimpleName(), e);
+                logger.error("Failed to commit offset {} using {} committer", offset, committer.name(), e);
             }
         }
     }

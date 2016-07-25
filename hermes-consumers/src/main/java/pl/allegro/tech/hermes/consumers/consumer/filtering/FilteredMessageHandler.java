@@ -30,13 +30,17 @@ public class FilteredMessageHandler {
 
     public void handle(FilterResult result, Message message, Subscription subscription) {
         if (result.isFiltered()) {
-            logger.debug("Message filtered for subscription {} {}", subscription.getQualifiedName(), result);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Message filtered for subscription {} {}", subscription.getQualifiedName(), result);
+            }
 
             offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
 
             updateMetrics(message, subscription);
 
-            trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
+            if (subscription.isTrackingEnabled()) {
+                trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
+            }
         }
     }
 
