@@ -1,8 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker;
 
-import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
@@ -20,11 +17,11 @@ public class KafkaOffsetsStorage implements OffsetsStorage {
 
     @Override
     public void moveSubscriptionOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) throws Exception {
-        brokerOffsetsRepository.saveIfOffsetInThePast(subscriptionPartitionOffset);
+        brokerOffsetsRepository.moveOffset(subscriptionPartitionOffset);
     }
 
     @Override
     public long getSubscriptionOffset(SubscriptionPartition subscriptionPartition) {
-        return brokerOffsetsRepository.find(subscriptionPartition);
+        return brokerOffsetsRepository.findOffset(subscriptionPartition);
     }
 }
