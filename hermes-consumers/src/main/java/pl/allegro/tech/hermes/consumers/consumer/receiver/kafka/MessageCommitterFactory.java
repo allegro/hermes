@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BrokerOffsetsRepository;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.broker.BrokerMessageCommitter;
@@ -22,17 +23,20 @@ public class MessageCommitterFactory implements Factory<List<MessageCommitter>> 
     private final CuratorFramework curatorFramework;
     private final BrokerOffsetsRepository brokerOffsetsRepository;
     private final KafkaNamesMapper kafkaNamesMapper;
+    private final HermesMetrics metrics;
     private final boolean dualCommitEnabled;
 
     @Inject
     public MessageCommitterFactory(ConfigFactory configFactory,
                                    @Named(CuratorType.KAFKA) CuratorFramework curatorFramework,
                                    BrokerOffsetsRepository brokerOffsetsRepository,
-                                   KafkaNamesMapper kafkaNamesMapper) {
+                                   KafkaNamesMapper kafkaNamesMapper,
+                                   HermesMetrics metrics) {
         this.curatorFramework = curatorFramework;
         this.brokerOffsetsRepository = brokerOffsetsRepository;
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.offsetsStorageType = OffsetsStorageType.valueOf(configFactory.getStringProperty(Configs.KAFKA_CONSUMER_OFFSETS_STORAGE).toUpperCase());
+        this.metrics = metrics;
         this.dualCommitEnabled = configFactory.getBooleanProperty(Configs.KAFKA_CONSUMER_DUAL_COMMIT_ENABLED);
     }
 
@@ -43,7 +47,7 @@ public class MessageCommitterFactory implements Factory<List<MessageCommitter>> 
             committers.add(new BrokerMessageCommitter(brokerOffsetsRepository));
         }
         if (dualCommitEnabled || OffsetsStorageType.ZOOKEEPER == offsetsStorageType) {
-            committers.add(new ZookeeperMessageCommitter(curatorFramework, kafkaNamesMapper));
+            committers.add(new ZookeeperMessageCommitter(curatorFramework, kafkaNamesMapper, metrics));
         }
         return committers;
     }

@@ -4,7 +4,6 @@ import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Specification
 
@@ -15,7 +14,7 @@ class OffsetCommitterTest extends Specification {
             new ConfigFactory()
     )
 
-    private MessageCommitter messageCommitter = Mock(MessageCommitter)
+    private MockMessageCommitter messageCommitter = new MockMessageCommitter()
 
     private OffsetCommitter committer = new OffsetCommitter(
             queue, [messageCommitter], 10, new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
@@ -35,7 +34,21 @@ class OffsetCommitterTest extends Specification {
         committer.run()
 
         then:
-        1 * messageCommitter.commitOffset(offset(1, 2))
+        messageCommitter.wereCommitted(1, offset(1, 2))
+    }
+
+    def "should increment offset by 1 only if it comes from committed offsets to match Kafka offset definition"() {
+        given:
+        queue.offerInflightOffset(offset(1, 1))
+        queue.offerCommittedOffset(offset(1, 1))
+
+        queue.offerInflightOffset(offset(2, 1))
+
+        when:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(1, offset(1, 2), offset(2, 1))
     }
 
     def "should commit max offset of committed offsets when no smaller inflights exist"() {
@@ -50,7 +63,7 @@ class OffsetCommitterTest extends Specification {
         committer.run()
 
         then:
-        1 * messageCommitter.commitOffset(offset(1, 4))
+        messageCommitter.wereCommitted(1, offset(1, 5))
     }
 
     def "should commit same offset twice when there are no new offsets to commit"() {
@@ -61,13 +74,13 @@ class OffsetCommitterTest extends Specification {
         committer.run()
 
         then:
-        1 * messageCommitter.commitOffset(offset(1, 5))
+        messageCommitter.wereCommitted(1, offset(1, 5))
 
         when:
         committer.run()
 
         then:
-        1 * messageCommitter.commitOffset(offset(1, 5))
+        messageCommitter.wereCommitted(2, offset(1, 5))
     }
 
     def "should not mix offsets from different partitions and topics"() {
@@ -86,8 +99,7 @@ class OffsetCommitterTest extends Specification {
         committer.run()
 
         then:
-        1 * messageCommitter.commitOffset(offset(1, 4))
-        1 * messageCommitter.commitOffset(offset(2, 10))
+        messageCommitter.wereCommitted(1, offset(1, 5), offset(2, 10))
     }
 
     def "should get rid of leftover inflight offset commits on second iteration when removing subscription"() {
@@ -99,13 +111,13 @@ class OffsetCommitterTest extends Specification {
         committer.run()
 
         then:
-        1 * messageCommitter.commitOffset(offset(1, 3))
+        messageCommitter.wereCommitted(1, offset(1, 3))
 
         when:
         committer.run()
 
         then:
-        0 * messageCommitter.commitOffset(_)
+        messageCommitter.wereCommitted(2)
     }
 
     def "should retry committing offsets that failed to commit on first try in next iteration"() {
@@ -113,15 +125,21 @@ class OffsetCommitterTest extends Specification {
         queue.offerInflightOffset(offset(1, 1))
         queue.offerCommittedOffset(offset(1, 1))
 
+        FailedToCommitOffsets failedResult = new FailedToCommitOffsets()
+        failedResult.add(offset(1, 2))
+
+        messageCommitter.returnValue(failedResult)
+
         when:
         committer.run()
         committer.run()
 
         then:
-        2 * messageCommitter.commitOffset(offset(1, 1)) >> { throw new IllegalStateException() } >> {}
+        messageCommitter.wereCommitted(1, offset(1, 2))
+        messageCommitter.wereCommitted(2, offset(1, 2))
     }
 
     private SubscriptionPartitionOffset offset(int partition, long offset) {
-        return SubscriptionPartitionOffset.subscriptionPartitionOffset("group_topic", "group.topic\$sub", partition, offset)
+        return SubscriptionPartitionOffset.subscriptionPartitionOffset("group_topic", 'group.topic$sub', partition, offset)
     }
 }
