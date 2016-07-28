@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
-import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -60,7 +60,7 @@ public class ConsumerMessageSenderTest {
     private ErrorHandler errorHandler;
 
     @Mock
-    private ConsumerRateLimiter rateLimiter;
+    private SerialConsumerRateLimiter rateLimiter;
 
     @Mock
     private HermesMetrics hermesMetrics;

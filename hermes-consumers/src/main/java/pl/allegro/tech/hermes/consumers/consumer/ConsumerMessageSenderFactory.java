@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
-import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultSuccessHandler;
@@ -53,7 +53,7 @@ public class ConsumerMessageSenderFactory {
                 configFactory.getBooleanProperty(Configs.CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_MONITORING));
     }
     
-    public ConsumerMessageSender create(Subscription subscription, ConsumerRateLimiter consumerRateLimiter,
+    public ConsumerMessageSender create(Subscription subscription, SerialConsumerRateLimiter consumerRateLimiter,
                                         OffsetQueue offsetQueue, InflightsPool inflight) {
         
         SuccessHandler successHandler = new DefaultSuccessHandler(offsetQueue, hermesMetrics, trackers);

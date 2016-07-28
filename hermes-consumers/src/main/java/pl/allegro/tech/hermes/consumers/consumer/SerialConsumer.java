@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResol
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
-import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -28,7 +28,7 @@ public class SerialConsumer implements Consumer {
 
     private final ReceiverFactory messageReceiverFactory;
     private final HermesMetrics hermesMetrics;
-    private final ConsumerRateLimiter rateLimiter;
+    private final SerialConsumerRateLimiter rateLimiter;
     private final Trackers trackers;
     private final MessageConverterResolver messageConverterResolver;
     private final ConsumerMessageSender sender;
@@ -46,7 +46,7 @@ public class SerialConsumer implements Consumer {
     public SerialConsumer(ReceiverFactory messageReceiverFactory,
                           HermesMetrics hermesMetrics,
                           Subscription subscription,
-                          ConsumerRateLimiter rateLimiter,
+                          SerialConsumerRateLimiter rateLimiter,
                           ConsumerMessageSenderFactory consumerMessageSenderFactory,
                           Trackers trackers,
                           MessageConverterResolver messageConverterResolver,
@@ -120,7 +120,7 @@ public class SerialConsumer implements Consumer {
     }
 
     private void initializeMessageReceiver() {
-        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription);
+        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter);
     }
 
     @Override
