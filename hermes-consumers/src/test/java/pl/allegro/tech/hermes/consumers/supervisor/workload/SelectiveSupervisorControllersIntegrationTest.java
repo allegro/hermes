@@ -1,8 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
@@ -16,37 +15,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBaseTest {
-    private ConsumerTestRuntimeEnvironment runtime;
+
+    private static ConsumerTestRuntimeEnvironment runtime;
+
+    @BeforeClass
+    public static void setupAlways() {
+        runtime = new ConsumerTestRuntimeEnvironment(ZookeeperBaseTest::newClient);
+    }
 
     @Before
     public void setup() throws Exception {
-        runtime = new ConsumerTestRuntimeEnvironment(ZookeeperBaseTest::otherClient);
-    }
-
-    @After
-    public void cleanup() throws Exception {
-        deleteAllNodes();
+        runtime.killAll();
+        deleteData("/hermes");
+        createPath("/hermes/groups");
     }
 
     @Test
-    public void shouldRegisterConsumerOnStartup() throws Exception {
-        // given
-        String id = "supervisor1";
-
+    public void shouldRegisterConsumerInActiveNodesRegistryOnStartup() throws Exception {
         // when
-        runtime.node(id).start();
+        String consumerId = runtime.spawnConsumer().getId();
 
         // then
-        runtime.waitForRegistration(id);
+        runtime.waitForRegistration(consumerId);
     }
 
     @Test
     public void shouldElectOnlyOneLeaderFromRegisteredConsumers() {
-        // given
-        List<SelectiveSupervisorController> supervisors = runtime.nodes(3);
-
         // when
-        supervisors.forEach(runtime::startNode);
+        List<SelectiveSupervisorController> supervisors = runtime.spawnConsumers(3);
 
         // then
         assertThat(supervisors.stream().filter(SelectiveSupervisorController::isLeader).count()).isEqualTo(1);
@@ -55,8 +51,7 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     @Test
     public void shouldElectNewLeaderAfterShutdown() throws InterruptedException {
         // given
-        List<SelectiveSupervisorController> supervisors = runtime.nodes(3);
-        supervisors.forEach(runtime::startNode);
+        List<SelectiveSupervisorController> supervisors = runtime.spawnConsumers(3);
         SelectiveSupervisorController leader = runtime.findLeader(supervisors);
 
         // when
@@ -70,26 +65,22 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     @Test
     public void shouldAssignConsumerToSubscription() {
         // given
-        SelectiveSupervisorController node = runtime.spawnNode();
+        SelectiveSupervisorController node = runtime.spawnConsumer();
 
         // when
-        SubscriptionName subscription = runtime.createSubscription("com.example.topic$test");
+        SubscriptionName subscription = runtime.createSubscription();
 
         // then
         runtime.awaitUntilAssignmentExists(subscription, node);
     }
 
-    /*
-     * This test is unreliable.
-     */
     @Test
-    @Ignore
     public void shouldAssignSubscriptionToMultipleConsumers() {
         // given
-        List<SelectiveSupervisorController> nodes = runtime.spawnNodes(2);
+        List<SelectiveSupervisorController> nodes = runtime.spawnConsumers(2);
 
         // when
-        SubscriptionName subscription = runtime.createSubscription("com.example.topic$test");
+        SubscriptionName subscription = runtime.createSubscription();
 
         // then
         nodes.forEach(node -> runtime.awaitUntilAssignmentExists(subscription, node));
@@ -98,7 +89,7 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     @Test
     public void shouldAssignConsumerToMultipleSubscriptions() {
         // given
-        SelectiveSupervisorController node = runtime.spawnNode();
+        SelectiveSupervisorController node = runtime.spawnConsumer();
 
         // when
         List<SubscriptionName> subscriptions = runtime.createSubscription(2);

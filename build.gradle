@@ -68,6 +68,12 @@ allprojects {
         testCompile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
         testCompile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
     }
+
+    test {
+        if(project.hasProperty('tests.timeout.multiplier')) {
+            jvmArgs = ["-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"]
+        }
+    }
 }
 
 configure(subprojects - project(':integration')) {

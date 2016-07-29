@@ -35,7 +35,7 @@ public class DistributedEphemeralCounterTest extends ZookeeperBaseTest {
     @Test
     public void shouldResetNodeWhenConnectionIsClosed() {
         // given
-        try (CuratorFramework otherClient = otherClient()) {
+        try (CuratorFramework otherClient = newClient()) {
             DistributedEphemeralCounter otherCounter = new DistributedEphemeralCounter(otherClient);
 
             otherCounter.increment("/ephemeral/host1/metric", 10);
