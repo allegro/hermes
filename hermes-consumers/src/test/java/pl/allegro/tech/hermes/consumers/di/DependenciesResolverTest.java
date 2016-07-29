@@ -1,51 +1,31 @@
 package pl.allegro.tech.hermes.consumers.di;
 
-import org.apache.curator.test.TestingServer;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
+import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
+import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
-import java.io.IOException;
-
-import static org.mockito.Mockito.doReturn;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_ZOOKEEPER_CONNECT_STRING;
-import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_CONNECT_STRING;
-
-@RunWith(MockitoJUnitRunner.class)
-public class DependenciesResolverTest {
+public class DependenciesResolverTest extends ZookeeperBaseTest {
 
     private static final String USER_DIR = "user.dir";
-    private static TestingServer testingServer;
 
-    @Spy
-    private ConfigFactory configFactory;
+    private static MutableConfigFactory configFactory;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
+        configFactory = new MutableConfigFactory();
+        configFactory.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, zookeeperServer.getConnectString());
+        configFactory.overrideProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING, zookeeperServer.getConnectString());
+
         if (System.getProperty(USER_DIR).endsWith("consumers")) {
             System.setProperty(USER_DIR, System.getProperty(USER_DIR) + "/..");
         }
-        testingServer = new TestingServer();
-    }
-
-    @AfterClass
-    public static void afterClass() throws IOException {
-        testingServer.stop();
-    }
-
-    @Before
-    public void setUp() {
-        doReturn(testingServer.getConnectString()).when(configFactory).getStringProperty(ZOOKEEPER_CONNECT_STRING);
-        doReturn(testingServer.getConnectString()).when(configFactory).getStringProperty(KAFKA_ZOOKEEPER_CONNECT_STRING);
     }
 
     @Test
