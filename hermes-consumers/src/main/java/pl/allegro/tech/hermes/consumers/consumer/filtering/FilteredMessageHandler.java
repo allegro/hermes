@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
@@ -17,13 +18,18 @@ import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter
 public class FilteredMessageHandler {
 
     private final OffsetQueue offsetQueue;
+    private final ConsumerRateLimiter consumerRateLimiter;
     private final Trackers trackers;
     private final HermesMetrics metrics;
 
     private static final Logger logger = LoggerFactory.getLogger(FilteredMessageHandler.class);
 
-    public FilteredMessageHandler(OffsetQueue offsetQueue, Trackers trackers, HermesMetrics metrics) {
+    public FilteredMessageHandler(OffsetQueue offsetQueue,
+                                  ConsumerRateLimiter consumerRateLimiter,
+                                  Trackers trackers,
+                                  HermesMetrics metrics) {
         this.offsetQueue = offsetQueue;
+        this.consumerRateLimiter = consumerRateLimiter;
         this.trackers = trackers;
         this.metrics = metrics;
     }
@@ -41,6 +47,8 @@ public class FilteredMessageHandler {
             if (subscription.isTrackingEnabled()) {
                 trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
             }
+
+            consumerRateLimiter.acquire();
         }
     }
 

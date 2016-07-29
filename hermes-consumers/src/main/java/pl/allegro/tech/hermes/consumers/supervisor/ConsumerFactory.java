@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
-import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
@@ -82,7 +82,7 @@ public class ConsumerFactory {
                     subscription,
                     topic);
         } else {
-            ConsumerRateLimiter consumerRateLimiter = new ConsumerRateLimiter(subscription, outputRateCalculator, hermesMetrics,
+            SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription, outputRateCalculator, hermesMetrics,
                     consumerRateLimitSupervisor);
 
             return new SerialConsumer(

@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
-import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -16,8 +16,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogI
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,7 +25,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 
 public class ConsumerMessageSender {
 
@@ -34,7 +33,7 @@ public class ConsumerMessageSender {
     private final ExecutorService deliveryReportingExecutor;
     private final SuccessHandler successHandler;
     private final ErrorHandler errorHandler;
-    private final ConsumerRateLimiter rateLimiter;
+    private final SerialConsumerRateLimiter rateLimiter;
     private final MessageSenderFactory messageSenderFactory;
     private final InflightsPool inflight;
     private final FutureAsyncTimeout<MessageSendingResult> async;
@@ -46,9 +45,15 @@ public class ConsumerMessageSender {
 
     private volatile boolean running = true;
 
-    public ConsumerMessageSender(Subscription subscription, MessageSenderFactory messageSenderFactory, SuccessHandler successHandler,
-                                 ErrorHandler errorHandler, ConsumerRateLimiter rateLimiter, ExecutorService deliveryReportingExecutor,
-                                 InflightsPool inflight, HermesMetrics hermesMetrics, int asyncTimeoutMs,
+    public ConsumerMessageSender(Subscription subscription,
+                                 MessageSenderFactory messageSenderFactory,
+                                 SuccessHandler successHandler,
+                                 ErrorHandler errorHandler,
+                                 SerialConsumerRateLimiter rateLimiter,
+                                 ExecutorService deliveryReportingExecutor,
+                                 InflightsPool inflight,
+                                 HermesMetrics hermesMetrics,
+                                 int asyncTimeoutMs,
                                  FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout) {
         this.deliveryReportingExecutor = deliveryReportingExecutor;
         this.successHandler = successHandler;
