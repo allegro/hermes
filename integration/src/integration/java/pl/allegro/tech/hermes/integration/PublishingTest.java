@@ -10,9 +10,10 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.integration.client.SlowClient;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
-import pl.allegro.tech.hermes.integration.helper.Assertions;
 import pl.allegro.tech.hermes.integration.metadata.TraceContext;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
@@ -45,14 +46,10 @@ public class PublishingTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
 
-    private Assertions assertions;
-
     private String schema;
 
     @BeforeClass
     public void initialize() throws IOException {
-        this.assertions = new Assertions(SharedServices.services().zookeeper());
-
         schema = IOUtils.toString(this.getClass().getResourceAsStream("/schema/example.json"));
     }
 
@@ -246,26 +243,29 @@ public class PublishingTest extends IntegrationTest {
 
     @Test
     public void shouldNotCreateTopicWhenPublishingToNonExistingTopic() throws Exception {
+        // given
         TopicName nonExisting = TopicName.fromQualifiedName("nonExistingGroup.nonExistingTopic8326");
-        TopicName existing = TopicName.fromQualifiedName("existingGroup.topic");
-        operations.buildTopic(existing.getGroupName(), existing.getName());
 
+        // when
         Response responseForNonExisting = publisher.publish(nonExisting.qualifiedName(), TestMessage.simple().body());
-        Response responseForExisting = publisher.publish(existing.qualifiedName(), TestMessage.simple().body());
 
+        // then
         assertThat(responseForNonExisting.getStatus()).isEqualTo(404);
-        assertThat(responseForExisting.getStatus()).isEqualTo(201);
 
-        wait.untilTopicDetailsAreCreated(existing);
-        assertions.topicDetailsNotExists(nonExisting);
+        ZookeeperPaths paths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue().toString());
+        assertThat(SharedServices.services().zookeeper().checkExists().forPath(paths.topicPath(nonExisting))).isNull();
     }
 
     @Test
     public void shouldPublishValidMessageWithJsonSchema() {
         //given
         String message = "{\"id\": 6}";
-        operations.buildTopic(
-                topic("schema.topic.validJson").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
+        Topic topic = operations.buildTopic(topic("schema.topic.validJson")
+                .withValidation(true)
+                .withContentType(JSON)
+                .build()
+        );
+        operations.saveSchema(topic, schema);
 
         //when
         Response response = publisher.publish("schema.topic.validJson", message);
@@ -278,8 +278,12 @@ public class PublishingTest extends IntegrationTest {
     public void shouldNotPublishInvalidMessageWithJsonSchema() {
         // given
         String messageInvalidWithSchema = "{\"id\": \"shouldBeNumber\"}";
-        operations.buildTopic(
-                topic("schema.topic.invalidJson").withValidation(true).withMessageSchema(schema).withContentType(JSON).build());
+        Topic topic = operations.buildTopic(topic("schema.topic.invalidJson")
+                .withValidation(true)
+                .withContentType(JSON)
+                .build()
+        );
+        operations.saveSchema(topic, schema);
 
         //when
         Response response = publisher.publish("schema.topic.invalidJson", messageInvalidWithSchema);
@@ -292,12 +296,13 @@ public class PublishingTest extends IntegrationTest {
     public void shouldPublishInvalidJsonMessageOnValidationDryRun() {
         // given
         String invalidMessage = "{\"id\": \"shouldBeNumber\"}";
-        operations.buildTopic(
-                topic("schema.topicWithValidationDryRun")
-                        .withValidation(true)
-                        .withValidationDryRun(true)
-                        .withMessageSchema(schema)
-                        .withContentType(JSON).build());
+        Topic topic = operations.buildTopic(topic("schema.topicWithValidationDryRun")
+                .withValidation(true)
+                .withValidationDryRun(true)
+                .withContentType(JSON)
+                .build()
+        );
+        operations.saveSchema(topic, schema);
 
         //when
         Response response = publisher.publish("schema.topicWithValidationDryRun", invalidMessage);

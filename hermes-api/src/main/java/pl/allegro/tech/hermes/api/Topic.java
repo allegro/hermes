@@ -17,8 +17,6 @@ public class Topic {
     @NotNull
     private String description;
 
-    private String messageSchema;
-
     private boolean validationEnabled = false;
 
     private boolean validationDryRunEnabled = false;
@@ -45,14 +43,13 @@ public class Topic {
 
     private boolean schemaVersionAwareSerializationEnabled = false;
 
-    public Topic(TopicName name, String description, RetentionTime retentionTime, String messageSchema,
+    public Topic(TopicName name, String description, RetentionTime retentionTime,
                  boolean validationEnabled, boolean validationDryRunEnabled, boolean migratedFromJsonType,
                  Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
                  boolean schemaVersionAwareSerializationEnabled) {
         this.name = name;
         this.description = description;
         this.retentionTime = retentionTime;
-        this.messageSchema = messageSchema;
         this.validationEnabled = validationEnabled;
         this.validationDryRunEnabled = validationDryRunEnabled;
         this.ack = (ack == null ? Ack.LEADER : ack);
@@ -68,7 +65,6 @@ public class Topic {
             @JsonProperty("name") String qualifiedName,
             @JsonProperty("description") String description,
             @JsonProperty("retentionTime") RetentionTime retentionTime,
-            @JsonProperty("messageSchema") String messageSchema,
             @JsonProperty("validation") boolean validationEnabled,
             @JsonProperty("validationDryRun") boolean validationDryRunEnabled,
             @JsonProperty("jsonToAvroDryRun") boolean jsonToAvroDryRunEnabled,
@@ -77,7 +73,7 @@ public class Topic {
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
             @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType) {
-        this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, messageSchema, validationEnabled,
+        this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, validationEnabled,
                 validationDryRunEnabled, migratedFromJsonType, ack, trackingEnabled, contentType, jsonToAvroDryRunEnabled,
                 schemaVersionAwareSerializationEnabled);
     }
@@ -88,7 +84,7 @@ public class Topic {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, retentionTime, messageSchema, validationEnabled, validationDryRunEnabled,
+        return Objects.hash(name, description, retentionTime, validationEnabled, validationDryRunEnabled,
                 migratedFromJsonType, trackingEnabled, ack, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled);
     }
 
@@ -105,7 +101,6 @@ public class Topic {
         return Objects.equals(this.name, other.name)
                 && Objects.equals(this.description, other.description)
                 && Objects.equals(this.retentionTime, other.retentionTime)
-                && Objects.equals(this.messageSchema, other.messageSchema)
                 && Objects.equals(this.isValidationEnabled(), other.isValidationEnabled())
                 && Objects.equals(this.validationDryRunEnabled, other.validationDryRunEnabled)
                 && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
@@ -136,10 +131,6 @@ public class Topic {
 
     public void setRetentionTime(RetentionTime retentionTime) {
         this.retentionTime = retentionTime;
-    }
-
-    public String getMessageSchema() {
-        return messageSchema;
     }
 
     @JsonProperty("validation")
