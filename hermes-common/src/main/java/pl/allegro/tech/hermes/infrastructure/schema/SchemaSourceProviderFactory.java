@@ -5,7 +5,10 @@ import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.CuratorType;
-import pl.allegro.tech.hermes.domain.topic.schema.*;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepoSchemaSourceProvider;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepositoryType;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaSourceProvider;
+import pl.allegro.tech.hermes.domain.topic.schema.ZookeeperSchemaSourceProvider;
 import pl.allegro.tech.hermes.infrastructure.schema.repo.SchemaRepoClient;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
@@ -20,8 +23,10 @@ public class SchemaSourceProviderFactory implements Factory<SchemaSourceProvider
     private final ZookeeperPaths zookeeperPaths;
 
     @Inject
-    public SchemaSourceProviderFactory(ConfigFactory configFactory, SchemaRepoClient schemaRepoClient,
-                                       @Named(CuratorType.HERMES) CuratorFramework curatorFramework, ZookeeperPaths zookeeperPaths) {
+    public SchemaSourceProviderFactory(ConfigFactory configFactory,
+                                       SchemaRepoClient schemaRepoClient,
+                                       @Named(CuratorType.HERMES) CuratorFramework curatorFramework,
+                                       ZookeeperPaths zookeeperPaths) {
         this.configFactory = configFactory;
         this.schemaRepoClient = schemaRepoClient;
         this.curatorFramework = curatorFramework;
@@ -36,8 +41,6 @@ public class SchemaSourceProviderFactory implements Factory<SchemaSourceProvider
                 return new SchemaRepoSchemaSourceProvider(schemaRepoClient);
             case ZOOKEEPER:
                 return new ZookeeperSchemaSourceProvider(curatorFramework, zookeeperPaths);
-            case TOPIC_FIELD:
-                return new TopicFieldSchemaSourceProvider();
             default:
                 throw new IllegalStateException("Unknown schema repository type " + schemaRepositoryType);
         }
@@ -45,7 +48,6 @@ public class SchemaSourceProviderFactory implements Factory<SchemaSourceProvider
 
     @Override
     public void dispose(SchemaSourceProvider instance) {
-
     }
 
 }

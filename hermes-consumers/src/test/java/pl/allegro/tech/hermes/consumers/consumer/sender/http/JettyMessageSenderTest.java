@@ -138,18 +138,17 @@ public class JettyMessageSenderTest {
     }
 
     @Test
-    public void shouldSendRetryCounterInHeader() {
+    public void shouldSendRetryCounterInHeader() throws InterruptedException, ExecutionException, TimeoutException {
         // given
-        Message message = MessageBuilder.withTestMessage().build();
-        message.incrementRetryCounter(Collections.emptySet());
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
-        messageSender.send(message);
+        CompletableFuture<MessageSendingResult> result = messageSender.send(testMessage());
 
         // then
+        assertThat(result.get(1000, TimeUnit.MILLISECONDS).getStatusCode()).isEqualTo(200);
         remoteServiceEndpoint.waitUntilReceived();
-        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Hermes-Retry-Count")).isEqualTo("1");
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Hermes-Retry-Count")).isEqualTo("0");
     }
 
     @Test
@@ -172,11 +171,16 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldUseSuppliedTimeout() throws ExecutionException, InterruptedException, TimeoutException {
         // given
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1, new DefaultHttpMetadataAppender(), Optional.empty());
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client,
+                100,
+                new DefaultHttpMetadataAppender(),
+                Optional.empty()
+        );
         remoteServiceEndpoint.setDelay(500);
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
         Message message = MessageBuilder.withTestMessage().build();
+        remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
         MessageSendingResult messageSendingResult = messageSender.send(message).get(1000, TimeUnit.MILLISECONDS);
