@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 
 public class BalancingJob implements LeaderLatchListener, Runnable {
 
+    private static final Logger logger = LoggerFactory.getLogger(BalancingJob.class);
+
     private final ConsumerNodesRegistry consumersRegistry;
     private final SubscriptionsCache subscriptionsCache;
     private final SelectiveWorkBalancer workBalancer;
@@ -22,11 +24,10 @@ public class BalancingJob implements LeaderLatchListener, Runnable {
     private final HermesMetrics metrics;
     private final String kafkaCluster;
     private final ScheduledExecutorService executorService;
+
     private final int intervalSeconds;
 
     private ScheduledFuture job;
-
-    private static final Logger logger = LoggerFactory.getLogger(BalancingJob.class);
 
     public BalancingJob(ConsumerNodesRegistry consumersRegistry,
                         SubscriptionsCache subscriptionsCache,
@@ -47,16 +48,21 @@ public class BalancingJob implements LeaderLatchListener, Runnable {
 
     @Override
     public void run() {
-        if (consumersRegistry.isLeader()) {
-            try (Timer.Context ctx = metrics.consumersWorkloadRebalanceDurationTimer(kafkaCluster).time()) {
-                logger.info("Initializing workload balance.");
-                WorkBalancingResult work = workBalancer.balance(subscriptionsCache.listActiveSubscriptionNames(),
-                        consumersRegistry.list(),
-                        workTracker.getAssignments());
-                WorkTracker.WorkDistributionChanges changes = workTracker.apply(work.getAssignmentsView());
-                logger.info("Finished workload balance {}, {}", work.toString(), changes.toString());
-                metrics.reportConsumersWorkloadStats(kafkaCluster, work.getMissingResources(), changes.getDeletedAssignmentsCount(), changes.getCreatedAssignmentsCount());
+        try {
+            if (consumersRegistry.isLeader()) {
+                try (Timer.Context ctx = metrics.consumersWorkloadRebalanceDurationTimer(kafkaCluster).time()) {
+                    logger.info("Initializing workload balance.");
+                    WorkBalancingResult work = workBalancer.balance(subscriptionsCache.listActiveSubscriptionNames(),
+                            consumersRegistry.list(),
+                            workTracker.getAssignments());
+                    WorkTracker.WorkDistributionChanges changes = workTracker.apply(work.getAssignmentsView());
+                    logger.info("Finished workload balance {}, {}", work.toString(), changes.toString());
+                    metrics.reportConsumersWorkloadStats(kafkaCluster, work.getMissingResources(), changes.getDeletedAssignmentsCount(), changes.getCreatedAssignmentsCount());
+                }
             }
+        }
+        catch(Exception e) {
+            logger.error("Caught exception when running balancing job", e);
         }
     }
 

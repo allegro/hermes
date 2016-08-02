@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 public interface OffsetsStorage {
 
-    void setSubscriptionOffset(SubscriptionName subscription, PartitionOffset partitionOffset) throws Exception;
+    void moveSubscriptionOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) throws Exception;
 
-    long getSubscriptionOffset(SubscriptionName subscription, KafkaTopicName kafkaTopicName, int partitionId);
+    long getSubscriptionOffset(SubscriptionPartition subscriptionPartition);
 }

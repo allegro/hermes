@@ -19,7 +19,9 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchingResult;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.rate.BatchConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSender;
@@ -27,39 +29,37 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static com.github.rholder.retry.WaitStrategies.fixedWait;
 import static java.util.Optional.of;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class BatchConsumer implements Consumer {
+
     private static final Logger logger = LoggerFactory.getLogger(BatchConsumer.class);
 
     private final ReceiverFactory messageReceiverFactory;
     private final MessageBatchSender sender;
     private final MessageBatchFactory batchFactory;
-    private final SubscriptionOffsetCommitQueues offsets;
-    private final CountDownLatch stoppedLatch = new CountDownLatch(1);
+    private final OffsetQueue offsetQueue;
     private final HermesMetrics hermesMetrics;
     private final MessageConverterResolver messageConverterResolver;
     private final MessageContentWrapper messageContentWrapper;
-    private final Topic topic;
     private final Trackers trackers;
-    private Optional<MessageBatchReceiver> receiver = Optional.empty();
 
+    private Topic topic;
     private Subscription subscription;
+
     private volatile boolean consuming = true;
 
     private BatchMonitoring monitoring;
+    private MessageBatchReceiver receiver;
 
     public BatchConsumer(ReceiverFactory messageReceiverFactory,
                          MessageBatchSender sender,
                          MessageBatchFactory batchFactory,
-                         SubscriptionOffsetCommitQueues offsets,
+                         OffsetQueue offsetQueue,
                          MessageConverterResolver messageConverterResolver,
                          MessageContentWrapper messageContentWrapper,
                          HermesMetrics hermesMetrics,
@@ -69,7 +69,7 @@ public class BatchConsumer implements Consumer {
         this.messageReceiverFactory = messageReceiverFactory;
         this.sender = sender;
         this.batchFactory = batchFactory;
-        this.offsets = offsets;
+        this.offsetQueue = offsetQueue;
         this.subscription = subscription;
         this.hermesMetrics = hermesMetrics;
         this.monitoring = new BatchMonitoring(hermesMetrics, trackers);
@@ -80,52 +80,74 @@ public class BatchConsumer implements Consumer {
     }
 
     @Override
-    public void run() {
-        setThreadName();
-        logger.info("Starting batch consumer for subscription {} ", subscription.getId());
-        Timer.Context timer = new Timer().time();
-        receiver = Optional.of(initializeMessageReceiver());
-        logger.info("Started batch consumer for subscription {} in {} ms", subscription.getId(), TimeUnit.NANOSECONDS.toMillis(timer.stop()));
+    public void consume(Runnable signalsInterrupt) {
+        Optional<MessageBatch> inflight = Optional.empty();
         try {
-            consume();
+            logger.debug("Trying to create new batch [subscription={}].", subscription.getQualifiedName());
+
+            MessageBatchingResult result = receiver.next(subscription, signalsInterrupt);
+            inflight = of(result.getBatch());
+
+            inflight.ifPresent(batch -> {
+                logger.debug("Delivering batch [subscription={}].", subscription.getQualifiedName());
+                offerInflightOffsets(batch);
+
+                deliver(signalsInterrupt, batch, createRetryer(batch, subscription.getBatchSubscriptionPolicy()));
+
+                offerCommittedOffsets(batch);
+                logger.debug("Finished delivering batch [subscription={}]", subscription.getQualifiedName());
+            });
+
+            result.getDiscarded().forEach(m -> monitoring.markDiscarded(m, subscription, "too large"));
         } finally {
-            logger.info("Stopped consumer for subscription {}", subscription.getId());
-            unsetThreadName();
-            stoppedLatch.countDown();
+            logger.debug("Cleaning batch [subscription={}]", subscription.getQualifiedName());
+            inflight.ifPresent(this::clean);
         }
     }
 
-    private MessageBatchReceiver initializeMessageReceiver() {
-        try {
-            logger.debug("Consumer: preparing receiver for subscription {}", subscription.getId());
-            MessageReceiver receiver = messageReceiverFactory.createMessageReceiver(topic, subscription);
-            logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getId());
-            return new MessageBatchReceiver(receiver, batchFactory, hermesMetrics, messageConverterResolver, messageContentWrapper, topic, trackers);
-        } catch (Exception e) {
-            logger.info("Failed to create consumer for subscription {} ", subscription.getId(), e);
-            throw e;
+    private void offerInflightOffsets(MessageBatch batch) {
+        for (PartitionOffset offset : batch.getPartitionOffsets()) {
+            offsetQueue.offerInflightOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(offset, subscription));
         }
     }
 
-    private void consume() {
-        while (isConsuming()) {
-            Optional<MessageBatch> inflight = Optional.empty();
-            try {
-                logger.debug("Trying to create new batch [subscription={}].", subscription.getId());
+    private void offerCommittedOffsets(MessageBatch batch) {
+        for (PartitionOffset offset : batch.getPartitionOffsets()) {
+            offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(offset, subscription));
+        }
+    }
 
-                MessageBatchingResult result = receiver.get().next(subscription);
-                inflight = of(result.getBatch());
-                inflight.ifPresent(batch -> {
-                    logger.debug("Delivering batch [subscription={}].", subscription.getId());
-                    deliver(batch, createRetryer(batch, subscription.getBatchSubscriptionPolicy()));
-                    logger.debug("Finished delivering batch [subscription={}]", subscription.getId());
-                    offsets.putAllDelivered(batch.getPartitionOffsets());
-                });
-                result.getDiscarded().forEach(m -> monitoring.markDiscarded(m, subscription, "too large"));
-            } finally {
-                logger.debug("Cleaning batch [subscription={}]", subscription.getId());
-                inflight.ifPresent(this::clean);
-            }
+    @Override
+    public void initialize() {
+        logger.debug("Consumer: preparing receiver for subscription {}", subscription.getQualifiedName());
+        MessageReceiver receiver = messageReceiverFactory.createMessageReceiver(topic, subscription, new BatchConsumerRateLimiter());
+
+        logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getQualifiedName());
+        this.receiver = new MessageBatchReceiver(receiver, batchFactory, hermesMetrics, messageConverterResolver, messageContentWrapper, topic, trackers);
+    }
+
+    @Override
+    public void tearDown() {
+        consuming = false;
+        if (receiver != null) {
+            receiver.stop();
+        } else {
+            logger.info("No batch receiver to stop [subscription={}].", subscription.getQualifiedName());
+        }
+    }
+
+    @Override
+    public void updateSubscription(Subscription subscription) {
+        this.subscription = subscription;
+    }
+
+    @Override
+    public void updateTopic(Topic newTopic) {
+        if (this.topic.getContentType() != newTopic.getContentType()) {
+            logger.info("Topic content type changed from {} to {}, reinitializing", this.topic.getContentType(), newTopic.getContentType());
+            this.topic = newTopic;
+            tearDown();
+            initialize();
         }
     }
 
@@ -137,7 +159,7 @@ public class BatchConsumer implements Consumer {
         return RetryerBuilder.<MessageSendingResult>newBuilder()
                 .retryIfExceptionOfType(IOException.class)
                 .retryIfRuntimeException()
-                .retryIfResult(result -> isConsuming() && !result.succeeded() && shouldRetryOnClientError(retryClientErrors, result))
+                .retryIfResult(result -> consuming && !result.succeeded() && shouldRetryOnClientError(retryClientErrors, result))
                 .withWaitStrategy(fixedWait(messageBackoff, MILLISECONDS))
                 .withStopStrategy(attempt -> attempt.getDelaySinceFirstAttempt() > messageTtl)
                 .withRetryListener(getRetryListener(result -> {
@@ -151,13 +173,20 @@ public class BatchConsumer implements Consumer {
         return !result.isClientError() || retryClientErrors;
     }
 
-    private void deliver(MessageBatch batch, Retryer<MessageSendingResult> retryer) {
+    private void deliver(Runnable signalsInterrupt, MessageBatch batch, Retryer<MessageSendingResult> retryer) {
         try (Timer.Context timer = hermesMetrics.subscriptionLatencyTimer(subscription).time()) {
-            MessageSendingResult result = retryer.call(() -> sender.send(batch, subscription.getEndpoint(),
-                    subscription.getEndpointAddressResolverMetadata(), subscription.getBatchSubscriptionPolicy().getRequestTimeout()));
+            MessageSendingResult result = retryer.call(() -> {
+                signalsInterrupt.run();
+                return sender.send(
+                        batch,
+                        subscription.getEndpoint(),
+                        subscription.getEndpointAddressResolverMetadata(),
+                        subscription.getBatchSubscriptionPolicy().getRequestTimeout()
+                );
+            });
             monitoring.markSendingResult(batch, subscription, result);
         } catch (Exception e) {
-            logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.toSubscriptionName(), e);
+            logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.getQualifiedName(), e);
             monitoring.markDiscarded(batch, subscription, e.getMessage());
         }
     }
@@ -165,39 +194,6 @@ public class BatchConsumer implements Consumer {
     private void clean(MessageBatch batch) {
         batchFactory.destroyBatch(batch);
         monitoring.closeInflightMetrics(batch, subscription);
-    }
-
-    @Override
-    public Subscription getSubscription() {
-        return subscription;
-    }
-
-    @Override
-    public void updateSubscription(Subscription modifiedSubscription) {
-        this.subscription = modifiedSubscription;
-        this.receiver.ifPresent(r -> r.updateSubscription(modifiedSubscription));
-    }
-
-    @Override
-    public void stopConsuming() {
-        logger.info("Stopping consumer [subscription={}].", subscription.getId());
-        this.receiver.ifPresent(MessageBatchReceiver::stop);
-        consuming = false;
-    }
-
-    @Override
-    public void waitUntilStopped() throws InterruptedException {
-        stoppedLatch.await();
-    }
-
-    @Override
-    public List<PartitionOffset> getOffsetsToCommit() {
-        return offsets.getOffsetsToCommit();
-    }
-
-    @Override
-    public boolean isConsuming() {
-        return consuming;
     }
 
     private RetryListener getRetryListener(java.util.function.Consumer<MessageSendingResult> consumer) {

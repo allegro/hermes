@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.domain.group.GroupNotExistsException
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException
 import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
+import pl.allegro.tech.hermes.infrastructure.MalformedDataException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
@@ -173,5 +174,17 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
         then:
         thrown(TopicNotEmptyException)
+    }
+
+    def "should not throw exception on malformed topic when reading list of all topics"() {
+        given:
+        zookeeper().create().forPath(paths.topicPath(new TopicName(GROUP, 'malformed')), ''.bytes)
+        wait.untilTopicCreated(GROUP, 'malformed')
+
+        when:
+        List<Topic> topics = repository.listTopics(GROUP)
+
+        then:
+        notThrown(MalformedDataException)
     }
 }

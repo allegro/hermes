@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
-import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -16,8 +16,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogI
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,7 +25,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 
 public class ConsumerMessageSender {
 
@@ -34,7 +33,7 @@ public class ConsumerMessageSender {
     private final ExecutorService deliveryReportingExecutor;
     private final SuccessHandler successHandler;
     private final ErrorHandler errorHandler;
-    private final ConsumerRateLimiter rateLimiter;
+    private final SerialConsumerRateLimiter rateLimiter;
     private final MessageSenderFactory messageSenderFactory;
     private final InflightsPool inflight;
     private final FutureAsyncTimeout<MessageSendingResult> async;
@@ -44,11 +43,17 @@ public class ConsumerMessageSender {
     private MessageSender messageSender;
     private Subscription subscription;
 
-    private volatile boolean consumerIsConsuming = true;
+    private volatile boolean running = true;
 
-    public ConsumerMessageSender(Subscription subscription, MessageSenderFactory messageSenderFactory, SuccessHandler successHandler,
-                                 ErrorHandler errorHandler, ConsumerRateLimiter rateLimiter, ExecutorService deliveryReportingExecutor,
-                                 InflightsPool inflight, HermesMetrics hermesMetrics, int asyncTimeoutMs,
+    public ConsumerMessageSender(Subscription subscription,
+                                 MessageSenderFactory messageSenderFactory,
+                                 SuccessHandler successHandler,
+                                 ErrorHandler errorHandler,
+                                 SerialConsumerRateLimiter rateLimiter,
+                                 ExecutorService deliveryReportingExecutor,
+                                 InflightsPool inflight,
+                                 HermesMetrics hermesMetrics,
+                                 int asyncTimeoutMs,
                                  FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout) {
         this.deliveryReportingExecutor = deliveryReportingExecutor;
         this.successHandler = successHandler;
@@ -66,7 +71,16 @@ public class ConsumerMessageSender {
     }
 
     public void shutdown() {
-        consumerIsConsuming = false;
+        running = false;
+    }
+
+
+    public void sendAsync(Message message) {
+        sendAsync(message, 0);
+    }
+
+    private void sendAsync(Message message, int delayMillis) {
+        retrySingleThreadExecutor.schedule(() -> sendMessage(message), delayMillis, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -74,18 +88,10 @@ public class ConsumerMessageSender {
      * Main responsibility of this method is that no message will be fully processed or rejected without release on semaphore.
      */
     public void sendMessage(final Message message) {
-        while (consumerIsConsuming) {
-            try {
-                submitAsyncSendMessageRequest(message, consumerLatencyTimer);
-                return;
-            } catch (RuntimeException e) {
-                handleFailedSending(message, failedResult(e));
-                if (!consumerIsConsuming || isTtlExceeded(message)) {
-                    handleMessageDiscarding(message, failedResult(e));
-                    return;
-                }
-            }
-        }
+        rateLimiter.acquire();
+        ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
+        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs));
+        response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
     }
 
     public synchronized void updateSubscription(Subscription newSubscription) {
@@ -99,17 +105,6 @@ public class ConsumerMessageSender {
         if (endpointUpdated || subscriptionPolicyUpdated || endpointAddressResolverMetadataChanged) {
             this.messageSender = messageSenderFactory.create(newSubscription);
         }
-    }
-
-    private void submitAsyncSendMessageRequest(final Message message, final ConsumerLatencyTimer consumerLatencyTimer) {
-        rateLimiter.acquire();
-        ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
-        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs));
-        response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
-    }
-
-    private boolean isTtlExceeded(Message message) {
-        return willExceedTtl(message, 0);
     }
 
     private boolean willExceedTtl(Message message, long delay) {
@@ -168,7 +163,7 @@ public class ConsumerMessageSender {
                 message.incrementRetryCounter(succeededUris);
 
                 long retryDelay = extractRetryDelay(result);
-                if (consumerIsConsuming && shouldAttemptResending(result, retryDelay)) {
+                if (running && shouldAttemptResending(result, retryDelay)) {
                     retrySingleThreadExecutor.schedule(() -> retrySending(result), retryDelay, TimeUnit.MILLISECONDS);
                 } else {
                     handleMessageDiscarding(message, result);
@@ -198,7 +193,7 @@ public class ConsumerMessageSender {
             logger.debug(
                     format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
                             logInfo.getUrl(), message.getId(), message.getOffset(), message.getPartition(),
-                            subscription.getId(), logInfo.getRootCause()),
+                            subscription.getQualifiedName(), logInfo.getRootCause()),
                     logInfo.getFailure());
         }
     }

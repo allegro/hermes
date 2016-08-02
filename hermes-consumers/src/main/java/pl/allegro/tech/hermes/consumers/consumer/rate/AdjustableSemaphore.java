@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /*
  *  CAUTION!
@@ -94,6 +95,10 @@ public final class AdjustableSemaphore {
      */
     public void acquire() throws InterruptedException {
         this.semaphore.acquire();
+    }
+
+    public boolean tryAcquire(long timeout, TimeUnit unit) throws InterruptedException {
+        return this.semaphore.tryAcquire(timeout, unit);
     }
 
     public int availablePermits(){

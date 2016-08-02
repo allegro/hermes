@@ -21,7 +21,7 @@ public abstract class ZookeeperBaseTest {
     }
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeZookeeperClass() throws Exception {
         zookeeperServer = new TestingServer(45678);
         zookeeperClient = CuratorFrameworkFactory.builder()
                 .connectString(zookeeperServer.getConnectString())
@@ -33,19 +33,25 @@ public abstract class ZookeeperBaseTest {
         wait.untilZookeeperClientStarted();
     }
 
-    protected static CuratorFramework otherClient() {
-        CuratorFramework otherClient = CuratorFrameworkFactory.builder()
+    protected static CuratorFramework newClient() {
+        CuratorFramework newClient = CuratorFrameworkFactory.builder()
                 .connectString(zookeeperServer.getConnectString())
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
                 .build();
-        otherClient.start();
-        wait.untilZookeeperClientStarted(otherClient);
-        return otherClient;
+        newClient.start();
+        wait.untilZookeeperClientStarted(newClient);
+        return newClient;
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
         zookeeperServer.stop();
+    }
+
+    public void createPath(String path) throws Exception {
+        if(zookeeperClient.checkExists().forPath(path) == null) {
+            zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
+        }
     }
 
     public void deleteData(String path) throws Exception {

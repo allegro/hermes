@@ -19,10 +19,12 @@ public class ZookeeperStarter implements Starter<TestingServer> {
 
     private final int port;
     private final String connectString;
+    private final String[] pathsToInitialize;
 
-    public ZookeeperStarter(int port, String connectString) {
+    public ZookeeperStarter(int port, String connectString, String... pathsToInitialize) {
         this.port = port;
         this.connectString = connectString;
+        this.pathsToInitialize = pathsToInitialize;
     }
 
     @Override
@@ -32,11 +34,13 @@ public class ZookeeperStarter implements Starter<TestingServer> {
 
         String[] zkConnectStringSplitted = connectString.split("/", 2);
 
-        if (zkConnectStringSplitted.length > 1) {
-
-            CuratorFramework curator = startZookeeperClient(zkConnectStringSplitted[0]);
-            curator.create().forPath("/" + zkConnectStringSplitted[1]);
-            curator.close();
+        try(CuratorFramework curator = startZookeeperClient(zkConnectStringSplitted[0])) {
+            if (zkConnectStringSplitted.length > 1) {
+                curator.create().creatingParentsIfNeeded().forPath("/" + zkConnectStringSplitted[1]);
+            }
+            for(String path : pathsToInitialize) {
+                curator.create().creatingParentsIfNeeded().forPath(path);
+            }
         }
     }
 

@@ -1,29 +1,17 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.api.Topic;
 
-import java.util.List;
+public interface Consumer {
 
-public interface Consumer extends Runnable {
+    void consume(Runnable signalsInterrupt);
 
-    Subscription getSubscription();
+    void initialize();
 
-    void updateSubscription(Subscription modifiedSubscription);
+    void tearDown();
 
-    void stopConsuming();
+    void updateSubscription(Subscription subscription);
 
-    void waitUntilStopped() throws InterruptedException;
-
-    List<PartitionOffset> getOffsetsToCommit();
-
-    boolean isConsuming();
-
-    default void setThreadName() {
-        Thread.currentThread().setName("Consumer-" + getSubscription().getId());
-    }
-
-    default void unsetThreadName() {
-        Thread.currentThread().setName("Released thread");
-    }
+    void updateTopic(Topic topic);
 }

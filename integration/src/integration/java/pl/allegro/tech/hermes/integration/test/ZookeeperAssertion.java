@@ -5,6 +5,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -24,7 +25,7 @@ public class ZookeeperAssertion extends AbstractAssert<ZookeeperAssertion, Curat
     }
 
     public void offsetsAreNotRetractedOnPrimaryKafkaTopic(Topic topic, String subscription, int partitions, int offset) {
-        ConsumerGroupId kafkaGroupId = kafkaNamesMapper.toConsumerGroupId(Subscription.getId(topic.getName(), subscription));
+        ConsumerGroupId kafkaGroupId = kafkaNamesMapper.toConsumerGroupId(new SubscriptionName(subscription, topic.getName()));
         KafkaTopicName kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name();
 
         for (int i = 0; i < 200; i++) {

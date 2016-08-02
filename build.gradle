@@ -36,7 +36,6 @@ scmVersion {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'groovy'
-    apply plugin: 'jacoco'
 
     group = 'pl.allegro.tech.hermes'
     version = scmVersion.version
@@ -69,10 +68,17 @@ allprojects {
         testCompile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
         testCompile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
     }
+
+    test {
+        if(project.hasProperty('tests.timeout.multiplier')) {
+            jvmArgs = ["-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"]
+        }
+    }
 }
 
 configure(subprojects - project(':integration')) {
     apply plugin: 'com.bmuschko.nexus'
+    apply plugin: 'jacoco'
 
     modifyPom {
         project {
@@ -117,6 +123,7 @@ subprojects {
     test {
         testLogging {
             exceptionFormat = 'full'
+            events 'passed', 'skipped', 'failed'
         }
     }
 
@@ -143,8 +150,6 @@ subprojects {
             runtimeClasspath += project.configurations.provided
         }
     }
-
-
 }
 
 nexusStaging {
@@ -155,5 +160,5 @@ nexusStaging {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.10'
+    gradleVersion = '2.14'
 }

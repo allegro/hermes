@@ -11,9 +11,10 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionOffsetCommitQueues;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
@@ -28,6 +29,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final ConfigFactory configFactory;
     private final MessageContentWrapper messageContentWrapper;
     private final HermesMetrics hermesMetrics;
+    private final OffsetQueue offsetQueue;
     private final Clock clock;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final SchemaRepository schemaRepository;
@@ -38,6 +40,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     public KafkaMessageReceiverFactory(ConfigFactory configFactory,
                                        MessageContentWrapper messageContentWrapper,
                                        HermesMetrics hermesMetrics,
+                                       OffsetQueue offsetQueue,
                                        Clock clock,
                                        KafkaNamesMapper kafkaNamesMapper,
                                        SchemaRepository schemaRepository,
@@ -46,6 +49,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         this.configFactory = configFactory;
         this.messageContentWrapper = messageContentWrapper;
         this.hermesMetrics = hermesMetrics;
+        this.offsetQueue = offsetQueue;
         this.clock = clock;
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.schemaRepository = schemaRepository;
@@ -54,11 +58,19 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     }
 
     @Override
-    public MessageReceiver createMessageReceiver(Topic receivingTopic, Subscription subscription) {
-        return create(receivingTopic, createConsumerConfig(kafkaNamesMapper.toConsumerGroupId(subscription.toSubscriptionName())), subscription);
+    public MessageReceiver createMessageReceiver(Topic topic,
+                                                 Subscription subscription,
+                                                 ConsumerRateLimiter consumerRateLimiter) {
+        return create(topic,
+                createConsumerConfig(kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName())),
+                subscription,
+                consumerRateLimiter);
     }
 
-    MessageReceiver create(Topic receivingTopic, ConsumerConfig consumerConfig, Subscription subscription) {
+    MessageReceiver create(Topic receivingTopic,
+                           ConsumerConfig consumerConfig,
+                           Subscription subscription,
+                           ConsumerRateLimiter consumerRateLimiter) {
         MessageReceiver receiver = new KafkaMessageReceiver(
                 receivingTopic,
                 Consumer.createJavaConsumerConnector(consumerConfig),
@@ -72,8 +84,11 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 schemaRepository);
 
         if (configFactory.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
-            SubscriptionOffsetCommitQueues offsets = new SubscriptionOffsetCommitQueues(subscription, hermesMetrics, clock, configFactory);
-            FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(offsets, trackers, hermesMetrics);
+            FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
+                    offsetQueue,
+                    consumerRateLimiter,
+                    trackers,
+                    hermesMetrics);
             receiver = new FilteringMessageReceiver(receiver, filteredMessageHandler, filterChainFactory, subscription);
         }
         return receiver;
@@ -97,5 +112,4 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
         return new ConsumerConfig(props);
     }
-
 }

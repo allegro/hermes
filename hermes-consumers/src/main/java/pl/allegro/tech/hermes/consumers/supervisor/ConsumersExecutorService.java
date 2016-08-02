@@ -6,10 +6,11 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.Consumer;
+import pl.allegro.tech.hermes.consumers.supervisor.process.ConsumerProcess;
 
 import javax.inject.Inject;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -31,8 +32,8 @@ public class ConsumersExecutorService {
         hermesMetrics.registerConsumersThreadGauge(() -> executor.getActiveCount());
     }
 
-    public void execute(Consumer consumer) {
-        executor.execute(consumer);
+    public Future execute(ConsumerProcess consumer) {
+        return executor.submit(consumer);
     }
 
     public void shutdown() {

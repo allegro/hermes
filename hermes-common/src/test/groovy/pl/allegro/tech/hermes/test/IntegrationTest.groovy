@@ -20,8 +20,7 @@ abstract class IntegrationTest extends Specification {
     @ClassRule
     @Shared
     ZookeeperResource zookeeperResource = new ZookeeperResource(42182, true, { starter ->
-        starter.curator().create().forPath("/hermes")
-        starter.curator().create().forPath("/hermes/groups")
+        starter.curator().create().creatingParentsIfNeeded().forPath("/hermes/groups")
     } as Consumer)
 
     protected ZookeeperPaths paths = new ZookeeperPaths("/hermes")

@@ -8,19 +8,15 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
 
     private static final String GROUP = 'subscriptionOffsetIndicator'
 
-    private static final TopicName TOPIC_NAME = new TopicName(GROUP, 'topic')
-
-    private static final Topic TOPIC = topic(TOPIC_NAME).build()
-
-    private static final String BROKERS_CLUSTER_NAME = 'primary'
+    private static final Topic TOPIC = topic(new TopicName(GROUP, 'topic')).build()
 
     private KafkaTopicName primaryKafkaTopicName
 
@@ -37,25 +33,25 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
 
     def "should set offsets for subscription to indicate that they should be changed in Kafka"() {
         given:
-        subscriptionRepository.createSubscription(subscription(TOPIC_NAME, 'override').build())
-        wait.untilSubscriptionCreated(TOPIC_NAME, 'override')
+        subscriptionRepository.createSubscription(subscription(TOPIC.name, 'override').build())
+        wait.untilSubscriptionCreated(TOPIC.name, 'override')
 
         when:
-        indicator.setSubscriptionOffset(TOPIC_NAME, 'override', BROKERS_CLUSTER_NAME, new PartitionOffset(primaryKafkaTopicName, 10, 1))
+        indicator.setSubscriptionOffset(TOPIC.name, 'override', 'primary', new PartitionOffset(primaryKafkaTopicName, 10, 1))
 
         then:
-        def offsets = indicator.getSubscriptionOffsets(TOPIC, 'override', BROKERS_CLUSTER_NAME)
+        def offsets = indicator.getSubscriptionOffsets(TOPIC.name, 'override', 'primary')
         offsets.find { it.partition == 1 } == new PartitionOffset(primaryKafkaTopicName, 10, 1)
     }
 
     def "should extract changed offsets"() {
         given:
-        subscriptionRepository.createSubscription(subscription(TOPIC_NAME, 'read').build())
-        wait.untilSubscriptionCreated(TOPIC_NAME, 'read')
-        indicator.setSubscriptionOffset(TOPIC_NAME, 'read', BROKERS_CLUSTER_NAME, new PartitionOffset(primaryKafkaTopicName, 10, 1))
+        subscriptionRepository.createSubscription(subscription(TOPIC.name, 'read').build())
+        wait.untilSubscriptionCreated(TOPIC.name, 'read')
+        indicator.setSubscriptionOffset(TOPIC.name, 'read', 'primary', new PartitionOffset(primaryKafkaTopicName, 10, 1))
 
         when:
-        PartitionOffsets offsets = indicator.getSubscriptionOffsets(TOPIC, 'read', BROKERS_CLUSTER_NAME)
+        PartitionOffsets offsets = indicator.getSubscriptionOffsets(TOPIC.name, 'read', 'primary')
 
         then:
         (offsets.find { it.partition == 1 } as PartitionOffset).offset == 10
@@ -63,7 +59,7 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
 
     def "should throw exception when trying to set offsets for nonexistent subscription"() {
         when:
-        indicator.setSubscriptionOffset(TOPIC_NAME, 'unknown', BROKERS_CLUSTER_NAME, new PartitionOffset(primaryKafkaTopicName, 10, 1))
+        indicator.setSubscriptionOffset(TOPIC.name, 'unknown', 'primary', new PartitionOffset(primaryKafkaTopicName, 10, 1))
 
         then:
         thrown(SubscriptionNotExistsException)

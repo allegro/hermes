@@ -1,12 +1,10 @@
 package pl.allegro.tech.hermes.common.kafka
 
 import pl.allegro.tech.hermes.api.ContentType
-import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
 import spock.lang.Specification
 
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class NamespaceKafkaNamesMapperTest extends Specification {
@@ -26,10 +24,10 @@ class NamespaceKafkaNamesMapperTest extends Specification {
 
     def "should create consumer group id from subscription id"() {
         given:
-        String subscriptionId = subscription('pl.group.topic', 'subscription').build().getId()
+        SubscriptionName name = SubscriptionName.fromString('pl.group.topic$subscription')
 
         when:
-        ConsumerGroupId consumerGroupId = mapper.toConsumerGroupId(subscriptionId)
+        ConsumerGroupId consumerGroupId = mapper.toConsumerGroupId(name)
 
         then:
         consumerGroupId.asString() == "namespace_pl.group_topic_subscription"

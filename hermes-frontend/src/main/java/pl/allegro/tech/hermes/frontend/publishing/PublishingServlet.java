@@ -80,14 +80,14 @@ public class PublishingServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        TopicName topicName = parseTopicName(request);
+        String topicName = parseTopicName(request);
         final String messageId = UUID.randomUUID().toString();
         Optional<Topic> topic = topicsCache.getTopic(topicName);
 
         if (topic.isPresent()) {
             handlePublishAsynchronously(request, response, topic.get(), messageId);
         } else {
-            String cause = format("Topic %s not exists in group %s", topicName.getName(), topicName.getGroupName());
+            String cause = format("Topic %s not exists", topicName);
             errorSender.sendErrorResponse(new ErrorDescription(cause, TOPIC_NOT_EXISTS), response, messageId);
         }
     }
@@ -128,7 +128,7 @@ public class PublishingServlet extends HttpServlet {
                 throwable -> httpResponder.internalError(throwable, "Error while reading request"));
     }
 
-    private TopicName parseTopicName(HttpServletRequest request) {
-        return fromQualifiedName(substringAfterLast(strip(request.getRequestURI(), "/"), "/"));
+    private String parseTopicName(HttpServletRequest request) {
+        return substringAfterLast(strip(request.getRequestURI(), "/"), "/");
     }
 }

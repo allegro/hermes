@@ -34,6 +34,7 @@ dependencies {
     compile group: 'org.apache.avro', name: 'avro', version: '1.7.7'
 
     compile group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: '3.1.1'
+    compile group: 'io.dropwizard.metrics', name: 'metrics-jvm', version: '3.1.1'
 
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.0'
 
@@ -55,4 +56,5 @@ dependencies {
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testCompile group: 'com.jayway.awaitility', name: 'awaitility-groovy', version: '1.7.0'
 }
