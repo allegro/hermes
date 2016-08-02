@@ -23,7 +23,8 @@ public class AvroCompiledSchemaRepositoryFactory implements Factory<CompiledSche
     public CompiledSchemaRepository<Schema> provide() {
         return new CachedCompiledSchemaRepository<>(
                 new DirectCompiledSchemaRepository<>(schemaSourceProvider, SchemaCompilersFactory.avroSchemaCompiler()),
-                configFactory.getIntProperty(Configs.SCHEMA_CACHE_COMPILED_MAXIMUM_SIZE));
+                configFactory.getIntProperty(Configs.SCHEMA_CACHE_COMPILED_MAXIMUM_SIZE),
+                configFactory.getIntProperty(Configs.SCHEMA_CACHE_COMPILED_EXPIRE_AFTER_ACCESS_MINUTES));
     }
 
     @Override

@@ -6,15 +6,17 @@ import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class CachedCompiledSchemaRepository<T> implements CompiledSchemaRepository<T> {
 
     private final LoadingCache<TopicAndSchemaVersion, CompiledSchema<T>> cache;
 
-    public CachedCompiledSchemaRepository(CompiledSchemaRepository<T> delegate, long maximumCacheSize) {
+    public CachedCompiledSchemaRepository(CompiledSchemaRepository<T> delegate, long maximumCacheSize, int expireAfterAccessMinutes) {
         this.cache = CacheBuilder
                 .newBuilder()
                 .maximumSize(maximumCacheSize)
+                .expireAfterAccess(expireAfterAccessMinutes, TimeUnit.MINUTES)
                 .build(new SchemaSourceLoader<>(delegate));
     }
 

@@ -26,7 +26,8 @@ public class JsonCompiledSchemaRepositoryFactory implements Factory<CompiledSche
     public CompiledSchemaRepository<JsonSchema> provide() {
         return new CachedCompiledSchemaRepository<>(
                 new DirectCompiledSchemaRepository<>(schemaSourceProvider, SchemaCompilersFactory.jsonSchemaCompiler(objectMapper)),
-                configFactory.getIntProperty(Configs.SCHEMA_CACHE_COMPILED_MAXIMUM_SIZE));
+                configFactory.getIntProperty(Configs.SCHEMA_CACHE_COMPILED_MAXIMUM_SIZE),
+                configFactory.getIntProperty(Configs.SCHEMA_CACHE_COMPILED_EXPIRE_AFTER_ACCESS_MINUTES));
     }
 
     @Override
