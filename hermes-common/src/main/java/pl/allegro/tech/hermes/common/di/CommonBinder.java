@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.common.di.factories.KafkaCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MessagePreviewRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
+import pl.allegro.tech.hermes.common.di.factories.OAuthProviderRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.common.di.factories.PathsCompilerFactory;
 import pl.allegro.tech.hermes.common.di.factories.SharedCounterFactory;
@@ -92,5 +93,6 @@ public class CommonBinder extends AbstractBinder {
 
         bind(ZookeeperInternalNotificationBus.class).to(InternalNotificationsBus.class);
         bindSingletonFactory(ModelAwareZookeeperNotifyingCacheFactory.class);
+        bindSingletonFactory(OAuthProviderRepositoryFactory.class);
     }
 }

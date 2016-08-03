@@ -33,8 +33,7 @@ class DefaultErrorHandlerTest extends Specification {
     private Subscription subscription = subscription('group.topic', 'subscription').withTrackingEnabled(true).build()
 
     private DefaultErrorHandler handler = new DefaultErrorHandler(
-            offsetQueue, Stub(HermesMetrics), undeliveredLog, Clock.systemUTC(), trackers, "cluster"
-    )
+            offsetQueue, Stub(HermesMetrics), undeliveredLog, Clock.systemUTC(), trackers, "cluster")
 
     def "should save tracking information on message failure but not commit message"() {
         given:
@@ -61,5 +60,4 @@ class DefaultErrorHandlerTest extends Specification {
         sendingTracker.hasDiscardedLog('kafka_topic', 0, 123L)
         offsetQueue.drainCommittedOffsets({ o -> assert o.partition == 0 && o.offset == 123L })
     }
-
 }

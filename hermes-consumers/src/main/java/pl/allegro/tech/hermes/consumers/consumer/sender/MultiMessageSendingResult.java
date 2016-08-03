@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 
@@ -35,8 +34,8 @@ public class MultiMessageSendingResult implements MessageSendingResult {
     }
 
     @Override
-    public boolean ignoreInRateCalculation(boolean retryClientErrors) {
-        return children.stream().allMatch(r -> r.ignoreInRateCalculation(retryClientErrors));
+    public boolean ignoreInRateCalculation(boolean retryClientErrors, boolean isOAuthSecuredSubscription) {
+        return children.stream().allMatch(r -> r.ignoreInRateCalculation(retryClientErrors, isOAuthSecuredSubscription));
     }
 
     @Override
@@ -69,6 +68,7 @@ public class MultiMessageSendingResult implements MessageSendingResult {
         return children.isEmpty() || children.stream().anyMatch(MessageSendingResult::isRetryLater);
     }
 
+    @Override
     public List<MessageSendingResultLogInfo> getLogInfo() {
             return children.stream().map(child ->
                     new MessageSendingResultLogInfo(child.getRequestUri(), child.getFailure(), child.getRootCause()))
@@ -76,6 +76,7 @@ public class MultiMessageSendingResult implements MessageSendingResult {
 
     }
 
+    @Override
     public List<String> getSucceededUris(Predicate<MessageSendingResult> filter) {
             return children.stream()
                     .filter(filter)

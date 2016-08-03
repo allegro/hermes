@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.ActiveConsumerCounter;
+import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.batch.ByteBufferMessageBatchFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
@@ -20,6 +21,16 @@ import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilters;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokensLoader;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthConsumerAuthorizationHandler;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthProvidersNotifyingCache;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthProvidersNotifyingCacheFactory;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthSubscriptionAccessTokens;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthSubscriptionHandlerFactory;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthTokenRequestRateLimiterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClient;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.BlockingChannelFactory;
@@ -39,9 +50,9 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
@@ -126,6 +137,14 @@ public class ConsumersBinder extends AbstractBinder {
         bind(HttpMessageBatchSenderFactory.class).to(MessageBatchSenderFactory.class).in(Singleton.class);
         bindSingleton(FilterChainFactory.class);
         bind(new MessageFilters(Collections.emptyList(), Collections.emptyList())).to(MessageFilterSource.class);
+
+        bind(OAuthConsumerAuthorizationHandler.class).in(Singleton.class).to(ConsumerAuthorizationHandler.class);
+        bindSingleton(OAuthSubscriptionHandlerFactory.class);
+        bindSingleton(OAuthTokenRequestRateLimiterFactory.class);
+        bindSingleton(OAuthAccessTokensLoader.class);
+        bind(OAuthHttpClient.class).in(Singleton.class).to(OAuthClient.class);
+        bind(OAuthSubscriptionAccessTokens.class).in(Singleton.class).to(OAuthAccessTokens.class);
+        bindFactory(OAuthProvidersNotifyingCacheFactory.class).in(Singleton.class).to(OAuthProvidersNotifyingCache.class);
     }
 
     private <T> void bindSingleton(Class<T> clazz) {

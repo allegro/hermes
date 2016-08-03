@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.BatchConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
+import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
@@ -37,6 +38,7 @@ public class ConsumerFactory {
     private final MessageContentWrapper messageContentWrapper;
     private final MessageBatchSenderFactory batchSenderFactory;
     private final OffsetQueue offsetQueue;
+    private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
 
     @Inject
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
@@ -51,7 +53,8 @@ public class ConsumerFactory {
                            MessageBatchFactory byteBufferMessageBatchFactory,
                            MessageContentWrapper messageContentWrapper,
                            MessageBatchSenderFactory batchSenderFactory,
-                           OffsetQueue offsetQueue) {
+                           OffsetQueue offsetQueue,
+                           ConsumerAuthorizationHandler consumerAuthorizationHandler) {
 
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
@@ -66,6 +69,7 @@ public class ConsumerFactory {
         this.messageContentWrapper = messageContentWrapper;
         this.batchSenderFactory = batchSenderFactory;
         this.offsetQueue = offsetQueue;
+        this.consumerAuthorizationHandler = consumerAuthorizationHandler;
     }
 
     Consumer createConsumer(Subscription subscription) {
@@ -94,7 +98,9 @@ public class ConsumerFactory {
                     trackers,
                     messageConverterResolver,
                     topic,
-                    configFactory, offsetQueue);
+                    configFactory,
+                    offsetQueue,
+                    consumerAuthorizationHandler);
         }
     }
 }

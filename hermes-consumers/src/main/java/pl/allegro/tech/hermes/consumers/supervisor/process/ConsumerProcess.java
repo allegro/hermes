@@ -52,6 +52,7 @@ public class ConsumerProcess implements Runnable {
             stop();
 
         } finally {
+            logger.info("Consumer process of subscription {} released", subscriptionName);
             refreshHealthcheck();
             Thread.currentThread().setName("consumer-released-thread");
         }

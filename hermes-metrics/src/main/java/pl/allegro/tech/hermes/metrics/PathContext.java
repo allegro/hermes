@@ -13,6 +13,7 @@ public class PathContext {
     private final Optional<Integer> httpCode;
     private final Optional<String> httpCodeFamily;
     private final Optional<String> executorName;
+    private final Optional<String> oAuthProviderName;
 
     private PathContext(Optional<String> group,
                         Optional<String> topic,
@@ -22,7 +23,8 @@ public class PathContext {
                         Optional<String> kafkaCluster,
                         Optional<Integer> httpCode,
                         Optional<String> httpCodeFamily,
-                        Optional<String> executorName)  {
+                        Optional<String> executorName,
+                        Optional<String> oAuthProviderName)  {
         this.group = group;
         this.topic = topic;
         this.subscription = subscription;
@@ -32,6 +34,7 @@ public class PathContext {
         this.httpCode = httpCode;
         this.httpCodeFamily = httpCodeFamily;
         this.executorName = executorName;
+        this.oAuthProviderName = oAuthProviderName;
     }
 
     public Optional<String> getGroup() {
@@ -70,6 +73,10 @@ public class PathContext {
         return executorName;
     }
 
+    public Optional<String> getoAuthProviderName() {
+        return oAuthProviderName;
+    }
+
     public static Builder pathContext() {
         return new Builder();
     }
@@ -85,6 +92,7 @@ public class PathContext {
         private Optional<Integer> httpCode = Optional.empty();
         private Optional<String> httpCodeFamily = Optional.empty();
         private Optional<String> executorName = Optional.empty();
+        private Optional<String> oAuthProviderName = Optional.empty();
 
         public Builder withGroup(String group) {
             this.group = Optional.of(group);
@@ -131,8 +139,14 @@ public class PathContext {
             return this;
         }
 
+        public Builder withOAuthProvider(String oAuthProviderName) {
+            this.oAuthProviderName = Optional.of(oAuthProviderName);
+            return this;
+        }
+
         public PathContext build() {
-            return new PathContext(group, topic, subscription, kafkaTopic, partition, kafkaCluster, httpCode, httpCodeFamily, executorName);
+            return new PathContext(group, topic, subscription, kafkaTopic, partition, kafkaCluster,
+                    httpCode, httpCodeFamily, executorName, oAuthProviderName);
         }
     }
 }

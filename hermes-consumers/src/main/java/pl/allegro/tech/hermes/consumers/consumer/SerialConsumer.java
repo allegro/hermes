@@ -33,6 +33,7 @@ public class SerialConsumer implements Consumer {
     private final MessageConverterResolver messageConverterResolver;
     private final ConsumerMessageSender sender;
     private final OffsetQueue offsetQueue;
+    private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
     private final AdjustableSemaphore inflightSemaphore;
 
     private final int defaultInflight;
@@ -52,7 +53,9 @@ public class SerialConsumer implements Consumer {
                           MessageConverterResolver messageConverterResolver,
                           Topic topic,
                           ConfigFactory configFactory,
-                          OffsetQueue offsetQueue) {
+                          OffsetQueue offsetQueue,
+                          ConsumerAuthorizationHandler consumerAuthorizationHandler) {
+
         this.defaultInflight = configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE);
         this.signalProcessingInterval = configFactory.getIntProperty(CONSUMER_SIGNAL_PROCESSING_INTERVAL);
         this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
@@ -61,7 +64,9 @@ public class SerialConsumer implements Consumer {
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
         this.offsetQueue = offsetQueue;
-        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, offsetQueue, inflightSemaphore::release);
+        this.consumerAuthorizationHandler = consumerAuthorizationHandler;
+        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, offsetQueue,
+                inflightSemaphore::release);
         this.trackers = trackers;
         this.messageConverterResolver = messageConverterResolver;
         this.messageReceiver = () -> {
@@ -117,6 +122,7 @@ public class SerialConsumer implements Consumer {
         logger.info("Consumer: preparing message receiver for subscription {}", subscription.getQualifiedName());
         initializeMessageReceiver();
         rateLimiter.initialize();
+        consumerAuthorizationHandler.createSubscriptionHandler(subscription.getQualifiedName());
     }
 
     private void initializeMessageReceiver() {
@@ -128,6 +134,7 @@ public class SerialConsumer implements Consumer {
         messageReceiver.stop();
         rateLimiter.shutdown();
         sender.shutdown();
+        consumerAuthorizationHandler.removeSubscriptionHandler(subscription.getQualifiedName());
     }
 
     @Override
@@ -137,13 +144,15 @@ public class SerialConsumer implements Consumer {
         rateLimiter.updateSubscription(newSubscription);
         sender.updateSubscription(newSubscription);
         messageReceiver.update(newSubscription);
+        consumerAuthorizationHandler.updateSubscription(newSubscription.getQualifiedName());
         this.subscription = newSubscription;
     }
 
     @Override
     public void updateTopic(Topic newTopic) {
         if (this.topic.getContentType() != newTopic.getContentType()) {
-            logger.info("Topic content type changed from {} to {}, reinitializing message recevier", this.topic.getContentType(), newTopic.getContentType());
+            logger.info("Topic content type changed from {} to {}, reinitializing message receiver",
+                    this.topic.getContentType(), newTopic.getContentType());
             this.topic = newTopic;
 
             messageReceiver.stop();

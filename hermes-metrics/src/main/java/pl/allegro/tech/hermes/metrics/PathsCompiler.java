@@ -16,6 +16,7 @@ public class PathsCompiler {
     public static final String HTTP_CODE = "$http_code";
     public static final String HTTP_CODE_FAMILY = "$http_family_of_code";
     public static final String EXECUTOR_NAME = "$executor_name";
+    public static final String OAUTH_PROVIDER_NAME = "$oauth_provider_name";
 
     private final String hostname;
 
@@ -39,6 +40,7 @@ public class PathsCompiler {
         context.getHttpCode().ifPresent(c -> pathBuilder.replaceAll(HTTP_CODE, c.toString()));
         context.getHttpCodeFamily().ifPresent(cf -> pathBuilder.replaceAll(HTTP_CODE_FAMILY, cf));
         context.getExecutorName().ifPresent(c -> pathBuilder.replaceAll(EXECUTOR_NAME, c));
+        context.getoAuthProviderName().ifPresent(c -> pathBuilder.replaceAll(OAUTH_PROVIDER_NAME, c));
 
         pathBuilder.replaceAll(HOSTNAME, hostname);
 

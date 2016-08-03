@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Joiner;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
@@ -12,7 +11,6 @@ import javax.validation.constraints.Pattern;
 import java.util.*;
 
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
-import static pl.allegro.tech.hermes.api.helpers.Replacer.replaceInAll;
 
 public class Subscription {
 
@@ -66,10 +64,12 @@ public class Subscription {
 
     private EndpointAddressResolverMetadata endpointAddressResolverMetadata;
 
+    @Valid
+    private SubscriptionOAuthPolicy oAuthPolicy;
+
     public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
-
     private Subscription(TopicName topicName,
                          String name,
                          EndpointAddress endpoint,
@@ -85,7 +85,8 @@ public class Subscription {
                          List<MessageFilterSpecification> filters,
                          SubscriptionMode mode,
                          List<Header> headers,
-                         EndpointAddressResolverMetadata endpointAddressResolverMetadata) {
+                         EndpointAddressResolverMetadata endpointAddressResolverMetadata,
+                         SubscriptionOAuthPolicy oAuthPolicy) {
         this.topicName = topicName;
         this.name = name;
         this.endpoint = endpoint;
@@ -104,6 +105,7 @@ public class Subscription {
         this.subscriptionName = new SubscriptionName(name, topicName);
         this.headers = headers;
         this.endpointAddressResolverMetadata = endpointAddressResolverMetadata;
+        this.oAuthPolicy = oAuthPolicy;
     }
 
     public static Subscription createSerialSubscription(TopicName topicName,
@@ -120,9 +122,11 @@ public class Subscription {
                                                         List<MessageFilterSpecification> filters,
                                                         SubscriptionMode mode,
                                                         List<Header> headers,
-                                                        EndpointAddressResolverMetadata endpointAddressResolverMetadata) {
+                                                        EndpointAddressResolverMetadata endpointAddressResolverMetadata,
+                                                        SubscriptionOAuthPolicy oAuthPolicy) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers, endpointAddressResolverMetadata);
+                contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
+                endpointAddressResolverMetadata, oAuthPolicy);
     }
 
     public static Subscription createBatchSubscription(TopicName topicName,
@@ -138,10 +142,11 @@ public class Subscription {
                                                        ContentType contentType,
                                                        List<MessageFilterSpecification> filters,
                                                        List<Header> headers,
-                                                       EndpointAddressResolverMetadata endpointAddressResolverMetadata) {
+                                                       EndpointAddressResolverMetadata endpointAddressResolverMetadata,
+                                                       SubscriptionOAuthPolicy oAuthPolicy) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
                 contact, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
-                endpointAddressResolverMetadata);
+                endpointAddressResolverMetadata, oAuthPolicy);
     }
 
     @JsonCreator
@@ -161,7 +166,8 @@ public class Subscription {
             @JsonProperty("filters") List<MessageFilterSpecification> filters,
             @JsonProperty("mode") SubscriptionMode mode,
             @JsonProperty("headers") List<Header> headers,
-            @JsonProperty("endpointAddressResolverMetadata") EndpointAddressResolverMetadata endpointAddressResolverMetadata) {
+            @JsonProperty("endpointAddressResolverMetadata") EndpointAddressResolverMetadata endpointAddressResolverMetadata,
+            @JsonProperty("oAuthPolicy") SubscriptionOAuthPolicy oAuthPolicy) {
 
         DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
         SubscriptionMode subscriptionMode = mode == null ? SubscriptionMode.ANYCAST : mode;
@@ -184,7 +190,8 @@ public class Subscription {
                 filters == null ? Collections.emptyList() : filters,
                 subscriptionMode,
                 headers == null ? Collections.emptyList() : headers,
-                endpointAddressResolverMetadata == null ? EndpointAddressResolverMetadata.empty() : endpointAddressResolverMetadata
+                endpointAddressResolverMetadata == null ? EndpointAddressResolverMetadata.empty() : endpointAddressResolverMetadata,
+                oAuthPolicy
         );
     }
 
@@ -192,7 +199,7 @@ public class Subscription {
     public int hashCode() {
         return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy,
                 trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, mode, headers,
-                endpointAddressResolverMetadata);
+                endpointAddressResolverMetadata, oAuthPolicy);
     }
 
     @Override
@@ -219,7 +226,8 @@ public class Subscription {
                 && Objects.equals(this.filters, other.filters)
                 && Objects.equals(this.mode, other.mode)
                 && Objects.equals(this.headers, other.headers)
-                && Objects.equals(this.endpointAddressResolverMetadata, other.endpointAddressResolverMetadata);
+                && Objects.equals(this.endpointAddressResolverMetadata, other.endpointAddressResolverMetadata)
+                && Objects.equals(this.oAuthPolicy, other.oAuthPolicy);
     }
 
     @JsonIgnore
@@ -326,8 +334,18 @@ public class Subscription {
         return mode;
     }
 
-    public Subscription anonymizePassword() {
-        if (getEndpoint().containsCredentials()) {
+    @JsonProperty("oAuthPolicy")
+    public SubscriptionOAuthPolicy getOAuthPolicy() {
+        return oAuthPolicy;
+    }
+
+    @JsonIgnore
+    public boolean hasOAuthPolicy() {
+        return oAuthPolicy != null;
+    }
+
+    public Subscription anonymize() {
+        if (getEndpoint().containsCredentials() || hasOAuthPolicy()) {
             return new Subscription(
                     topicName,
                     name,
@@ -344,7 +362,8 @@ public class Subscription {
                     filters,
                     mode,
                     headers,
-                    endpointAddressResolverMetadata
+                    endpointAddressResolverMetadata,
+                    oAuthPolicy != null ? oAuthPolicy.anonymize() : null
             );
         }
         return this;
