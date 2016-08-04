@@ -4,9 +4,11 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
+import java.util.Optional;
+
 public interface MessageReceiver {
 
-    Message next();
+    Optional<Message> next();
 
     default void stop() {}
 

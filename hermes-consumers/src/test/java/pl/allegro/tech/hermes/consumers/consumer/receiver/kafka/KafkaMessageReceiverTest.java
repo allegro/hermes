@@ -31,6 +31,7 @@ import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
@@ -99,22 +100,23 @@ public class KafkaMessageReceiverTest {
         when(kafkaStream.iterator().next()).thenReturn(messageAndMetadata);
 
         // when
-        Message msg = kafkaMsgReceiver.next();
+        Optional<Message> message = kafkaMsgReceiver.next();
 
         // then
-        assertThat(new String(msg.getData())).isEqualTo(CONTENT);
+        assertThat(message).isPresent();
+        assertThat(new String(message.get().getData())).isEqualTo(CONTENT);
     }
 
     @Test
-    public void shouldThrowTimeoutExceptionWhilePollingFromEmptyQueue() {
+    public void shouldReturnEmptyOptionalWhilePollingFromEmptyQueue() {
         // given
         when(kafkaStream.iterator().next()).thenThrow(new ConsumerTimeoutException());
 
         // when
-        catchException(kafkaMsgReceiver).next();
+        Optional<Message> message = kafkaMsgReceiver.next();
 
         // then
-        assertThat((Throwable) caughtException()).isInstanceOf(MessageReceivingTimeoutException.class);
+        assertThat(message).isEmpty();
     }
 
 }

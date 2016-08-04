@@ -16,11 +16,16 @@ class CounterMatcher {
     private void parseCounter(String counterName) {
         String[] splitted = counterName.split("\\.");
         if (isTopicPublished()) {
-            topicName = splitted[splitted.length-2] + "." + splitted[splitted.length-1];
+            topicName = splitted[splitted.length - 2] + "." + splitted[splitted.length - 1];
             subscription = Optional.empty();
-        } else if (isSubscriptionDelivered() || isSubscriptionDiscarded() || isSubscriptionInflight()) {
-            subscription = Optional.of(splitted[splitted.length -1]);
-            topicName = splitted[splitted.length-3] + "." + splitted[splitted.length-2];
+        } else if (
+                isSubscriptionDelivered()
+                        || isSubscriptionDiscarded()
+                        || isSubscriptionInflight()
+                        || isSubscriptionFiltered()
+                ) {
+            subscription = Optional.of(splitted[splitted.length - 1]);
+            topicName = splitted[splitted.length - 3] + "." + splitted[splitted.length - 2];
         }
     }
 
@@ -38,6 +43,10 @@ class CounterMatcher {
 
     public boolean isSubscriptionInflight() {
         return counterName.startsWith("inflight.");
+    }
+
+    public boolean isSubscriptionFiltered() {
+        return counterName.startsWith("filtered.");
     }
 
     public String getTopicName() {
