@@ -71,10 +71,10 @@ public class MessageBatchReceiver {
         while (isReceiving() && !batch.isReadyForDelivery()) {
             signalsInterrupt.run();
             Optional<Message> maybeMessage = inflight.isEmpty() ?
-                    receiver.next() : Optional.ofNullable(inflight.poll());
+                    readAndTransform(subscription, batch.getId()) : Optional.ofNullable(inflight.poll());
 
             if (maybeMessage.isPresent()) {
-                Message message = transform(maybeMessage.get(), subscription, batch.getId());
+                Message message = maybeMessage.get();
 
                 if (batch.canFit(message.getData())) {
                     batch.append(message.getData(), messageMetadata(subscription, batch.getId(), message));
@@ -98,12 +98,20 @@ public class MessageBatchReceiver {
         return new MessageBatchingResult(batch.close(), discarded);
     }
 
-    private Message transform(Message message, Subscription subscription, String batchId) {
-        Message transformed = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
-        transformed = message().fromMessage(transformed).withData(wrap(subscription, transformed)).build();
-        hermesMetrics.incrementInflightCounter(subscription);
-        trackers.get(subscription).logInflight(messageMetadata(subscription, batchId, transformed));
-        return transformed;
+    private Optional<Message> readAndTransform(Subscription subscription, String batchId) {
+        Optional<Message> maybeMessage = receiver.next();
+
+        if (maybeMessage.isPresent()) {
+            Message message = maybeMessage.get();
+
+            Message transformed = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
+            transformed = message().fromMessage(transformed).withData(wrap(subscription, transformed)).build();
+            hermesMetrics.incrementInflightCounter(subscription);
+            trackers.get(subscription).logInflight(messageMetadata(subscription, batchId, transformed));
+
+            return Optional.of(transformed);
+        }
+        return Optional.empty();
     }
 
     private byte[] wrap(Subscription subscription, Message next) {
