@@ -29,6 +29,7 @@ import java.time.Clock;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -82,7 +83,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
                 while (consuming) {
                     try {
                         readQueue.put(readMessage(kafkaTopic, iterator));
-                    } catch (InterruptedException | MessageReceivingTimeoutException ignored) {
+                    } catch (InterruptedException | ConsumerTimeoutException ignored) {
                         // intentional ignore of exception
                     } catch (Throwable throwable) {
                         logger.error("Error while reading message for subscription {}", subscription.getQualifiedName(), throwable);
@@ -99,16 +100,12 @@ public class KafkaMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public Message next() {
+    public Optional<Message> next() {
         try {
             Message message = readQueue.poll(readTimeout, TimeUnit.MILLISECONDS);
-            if (message == null) {
-                throw new MessageReceivingTimeoutException("No messages received");
-            } else {
-                return message;
-            }
+            return Optional.ofNullable(message);
         } catch (InterruptedException ex) {
-            throw new MessageReceivingTimeoutException("No messages received", ex);
+            return Optional.empty();
         }
     }
 
@@ -137,7 +134,7 @@ public class KafkaMessageReceiver implements MessageReceiver {
             );
 
         } catch (ConsumerTimeoutException consumerTimeoutException) {
-            throw new MessageReceivingTimeoutException("No messages received", consumerTimeoutException);
+            throw consumerTimeoutException;
         } catch (Exception e) {
             if (message != null) {
                 logger.error("Error while receiving message for subscription {}. Last read message: {} Partition: {} Offset: {}",
