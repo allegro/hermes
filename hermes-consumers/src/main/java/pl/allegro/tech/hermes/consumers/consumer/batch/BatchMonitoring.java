@@ -32,19 +32,19 @@ public class BatchMonitoring {
     public void markSendingResult(MessageBatch batch, Subscription subscription, MessageSendingResult result) {
         metrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
         if (result.succeeded()) {
-            markDelivered(batch, subscription);
+            markDelivered(batch, subscription, result.getHostname());
         } else {
             markDiscarded(batch, subscription, "Retry policy exhausted with status code " + result.getStatusCode());
         }
     }
 
-    private void markDelivered(MessageBatch batch, Subscription subscription) {
+    private void markDelivered(MessageBatch batch, Subscription subscription, String hostname) {
         metrics.meter(METER).mark(batch.size());
         metrics.meter(TOPIC_METER, subscription.getTopicName()).mark(batch.size());
         metrics.meter(SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark(batch.size());
         metrics.meter(SUBSCRIPTION_BATCH_METER, subscription.getTopicName(), subscription.getName()).mark();
         metrics.counter(Counters.DELIVERED, subscription.getTopicName(), subscription.getName()).inc(batch.size());
-        batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logSent(m));
+        batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logSent(m, hostname));
     }
 
     public void markDiscarded(MessageBatch batch, Subscription subscription, String reason) {
@@ -59,7 +59,7 @@ public class BatchMonitoring {
         metrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
         metrics.meter(Meters.FAILED_METER_SUBSCRIPTION, subscription.getTopicName(), subscription.getName()).mark();
         registerFailureMetrics(subscription, result);
-        batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logFailed(m, result.getRootCause()));
+        batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logFailed(m, result.getRootCause(), result.getHostname()));
     }
 
     private void registerFailureMetrics(Subscription subscription, MessageSendingResult result) {

@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogInfo;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -171,7 +172,7 @@ public class ConsumerMessageSender {
             } else {
                 handleFailedSending(message, result);
 
-                List<String> succeededUris = result.getSucceededUris(ConsumerMessageSender.this::messageSentSucceeded);
+                List<URI> succeededUris = result.getSucceededUris(ConsumerMessageSender.this::messageSentSucceeded);
                 message.incrementRetryCounter(succeededUris);
 
                 long retryDelay = extractRetryDelay(result);
@@ -204,7 +205,7 @@ public class ConsumerMessageSender {
         private void logResultInfo(MessageSendingResultLogInfo logInfo) {
             logger.debug(
                     format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                            logInfo.getUrl(), message.getId(), message.getOffset(), message.getPartition(),
+                            logInfo.getUrlString(), message.getId(), message.getOffset(), message.getPartition(),
                             subscription.getQualifiedName(), logInfo.getRootCause()),
                     logInfo.getFailure());
         }

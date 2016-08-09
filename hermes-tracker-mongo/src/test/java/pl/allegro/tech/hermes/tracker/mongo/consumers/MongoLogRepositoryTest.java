@@ -27,7 +27,7 @@ public class MongoLogRepositoryTest extends AbstractLogRepositoryTest implements
 
     @Override
     protected LogRepository createLogRepository() {
-        return new MongoLogRepository(database, 1000, 100, "cluster", new MetricRegistry(), new PathsCompiler("localhost"));
+        return new MongoLogRepository(database, 1000, 100, "cluster", "host", new MetricRegistry(), new PathsCompiler("localhost"));
     }
 
     protected void awaitUntilMessageIsPersisted(String topic, String subscription, String messageId, SentMessageTraceStatus status) {

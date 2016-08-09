@@ -54,12 +54,12 @@ public class HttpResponder {
     }
 
     public void accept() {
-        trackers.get(topic).logInflight(messageId, topic.getName());
+        trackers.get(topic).logInflight(messageId, topic.getName(), remoteHost);
         completeCorrect(SC_ACCEPTED);
     }
 
     public void ok() {
-        trackers.get(topic).logPublished(messageId, topic.getName());
+        trackers.get(topic).logPublished(messageId, topic.getName(), remoteHost);
         completeCorrect(SC_CREATED);
     }
 
@@ -98,7 +98,7 @@ public class HttpResponder {
             asyncContext.complete();
         }
 
-        trackers.get(topic).logError(messageId, topic.getName(), desc.getMessage());
+        trackers.get(topic).logError(messageId, topic.getName(), desc.getMessage(), remoteHost);
     }
 
     private void completeCorrect(int status) {

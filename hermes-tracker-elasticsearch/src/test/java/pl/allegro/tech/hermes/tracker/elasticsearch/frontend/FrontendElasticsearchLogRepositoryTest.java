@@ -59,7 +59,11 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     }
 
     @Override
-    protected void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status, String reason) throws Exception {
+    protected void awaitUntilMessageIsPersisted(String topic,
+                                                String id,
+                                                PublishedMessageTraceStatus status,
+                                                String reason,
+                                                String remoteHostname) throws Exception {
         awaitUntilMessageIsIndexed(
                 filteredQuery(matchAllQuery(),
                         FilterBuilders.andFilter(
@@ -67,19 +71,24 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
                                 FilterBuilders.termFilter(MESSAGE_ID, id),
                                 FilterBuilders.termFilter(STATUS, status.toString()),
                                 FilterBuilders.termFilter(REASON, reason),
-                                FilterBuilders.termFilter(CLUSTER, CLUSTER_NAME)
+                                FilterBuilders.termFilter(CLUSTER, CLUSTER_NAME),
+                                FilterBuilders.termFilter(REMOTE_HOSTNAME, remoteHostname)
                         )));
     }
 
     @Override
-    protected void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status) throws Exception {
+    protected void awaitUntilMessageIsPersisted(String topic,
+                                                String id,
+                                                PublishedMessageTraceStatus status,
+                                                String remoteHostname) throws Exception {
         awaitUntilMessageIsIndexed(
                 filteredQuery(matchAllQuery(),
                         FilterBuilders.andFilter(
                                 FilterBuilders.termFilter(TOPIC_NAME, topic),
                                 FilterBuilders.termFilter(MESSAGE_ID, id),
                                 FilterBuilders.termFilter(STATUS, status.toString()),
-                                FilterBuilders.termFilter(CLUSTER, CLUSTER_NAME)
+                                FilterBuilders.termFilter(CLUSTER, CLUSTER_NAME),
+                                FilterBuilders.termFilter(REMOTE_HOSTNAME, remoteHostname)
                         )));
     }
 

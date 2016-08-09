@@ -83,13 +83,13 @@ class MultiMessageSendingResultTest extends Specification {
 
     def "should return log info for all children"() {
         def child1 = Stub(SingleMessageSendingResult) {
-            getRequestUri() >> "url1"
+            getRequestUri() >> Optional.of(URI.create("http://url1"))
             getRootCause() >> "error1"
             getFailure() >> new Exception("exception1")
         }
 
         def child2 = Stub(SingleMessageSendingResult) {
-            getRequestUri() >> "url2"
+            getRequestUri() >> Optional.of(URI.create("http://url2"))
             getRootCause() >> "error2"
             getFailure() >> new Exception("exception2")
         }
@@ -98,31 +98,31 @@ class MultiMessageSendingResultTest extends Specification {
 
         expect:
         messageSendingResult.getLogInfo().rootCause == ["error1", "error2"]
-        messageSendingResult.getLogInfo().url == ["url1", "url2"]
+        messageSendingResult.getLogInfo().url.value.collect{it.toString()} == ["http://url1", "http://url2"]
         messageSendingResult.getLogInfo().failure.message == ["exception1", "exception2"]
     }
 
     def "should build exception root cause from all children"() {
         given:
         def child1 = Stub(SingleMessageSendingResult) {
-            getRequestUri() >> "url1"
+            getRequestUri() >> Optional.of(URI.create("http://url1"))
             getRootCause() >> "error1"
         }
 
         def child2 = Stub(SingleMessageSendingResult) {
-            getRequestUri() >> "url2"
+            getRequestUri() >> Optional.of(URI.create("http://url2"))
             getRootCause() >> "error2"
         }
 
         def messageSendingResult = new MultiMessageSendingResult([child1, child2])
 
         expect:
-        messageSendingResult.getRootCause() == "url1:error1;url2:error2"
+        messageSendingResult.getRootCause() == "http://url1:error1;http://url2:error2"
     }
 
     def "should retun only succeeded url filtered by predicate"() {
         given:
-        def messageSendingResult = new MultiMessageSendingResult([succeededResult(), failedResult(400), failedResult(500)])
+        def messageSendingResult = new MultiMessageSendingResult([succeededResult(URI.create("http://url1")), failedResult(400), failedResult(500)])
         def predicate = { MessageSendingResult result -> result.getStatusCode() == 200 }
 
         expect:

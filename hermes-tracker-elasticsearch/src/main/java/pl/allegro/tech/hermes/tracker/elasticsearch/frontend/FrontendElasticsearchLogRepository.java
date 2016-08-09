@@ -26,13 +26,14 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
 
     private FrontendElasticsearchLogRepository(Client elasticClient,
                                                String clusterName,
+                                               String hostname,
                                                int queueSize,
                                                int commitInterval,
                                                IndexFactory indexFactory,
                                                String typeName,
                                                MetricRegistry metricRegistry,
                                                PathsCompiler pathsCompiler) {
-        super(queueSize, clusterName, metricRegistry, pathsCompiler);
+        super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
 
         registerQueueSizeGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
         registerRemainingCapacityGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY);
@@ -42,31 +43,40 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
     }
 
     @Override
-    public void logPublished(String messageId, long timestamp, String topicName) {
-        queue.offer(build(() -> document(messageId, timestamp, topicName, SUCCESS)));
+    public void logPublished(String messageId, long timestamp, String topicName, String hostname) {
+        queue.offer(build(() -> document(messageId, timestamp, topicName, SUCCESS, hostname)));
     }
 
     @Override
-    public void logError(String messageId, long timestamp, String topicName, String reason) {
-        queue.offer(build(() -> document(messageId, timestamp, topicName, ERROR, reason)));
+    public void logError(String messageId, long timestamp, String topicName, String reason, String hostname) {
+        queue.offer(build(() -> document(messageId, timestamp, topicName, ERROR, reason, hostname)));
     }
 
     @Override
-    public void logInflight(String messageId, long timestamp, String topicName) {
-        queue.offer(build(() -> document(messageId, timestamp, topicName, INFLIGHT)));
+    public void logInflight(String messageId, long timestamp, String topicName, String hostname) {
+        queue.offer(build(() -> document(messageId, timestamp, topicName, INFLIGHT, hostname)));
     }
 
-    private XContentBuilder document(String messageId, long timestamp, String topicName, PublishedMessageTraceStatus status)
+    private XContentBuilder document(String messageId,
+                                     long timestamp,
+                                     String topicName,
+                                     PublishedMessageTraceStatus status,
+                                     String hostname)
             throws IOException {
-        return notEndedDocument(messageId, timestamp, topicName, status.toString()).endObject();
+        return notEndedDocument(messageId, timestamp, topicName, status.toString(), hostname).endObject();
     }
 
-    private XContentBuilder document(String messageId, long timestamp, String topicName, PublishedMessageTraceStatus status, String reason)
+    private XContentBuilder document(String messageId,
+                                     long timestamp,
+                                     String topicName,
+                                     PublishedMessageTraceStatus status,
+                                     String reason,
+                                     String hostname)
             throws IOException {
-        return notEndedDocument(messageId, timestamp, topicName, status.toString()).field(REASON, reason).endObject();
+        return notEndedDocument(messageId, timestamp, topicName, status.toString(), hostname).field(REASON, reason).endObject();
     }
 
-    protected XContentBuilder notEndedDocument(String messageId, long timestamp, String topicName, String status)
+    protected XContentBuilder notEndedDocument(String messageId, long timestamp, String topicName, String status, String hostname)
             throws IOException {
         return jsonBuilder(new BytesStreamOutput(DOCUMENT_EXPECTED_SIZE))
                 .startObject()
@@ -74,13 +84,16 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
                 .field(TIMESTAMP, timestamp)
                 .field(TOPIC_NAME, topicName)
                 .field(STATUS, status)
-                .field(CLUSTER, clusterName);
+                .field(CLUSTER, clusterName)
+                .field(SOURCE_HOSTNAME, this.hostname)
+                .field(REMOTE_HOSTNAME, hostname);
     }
 
     public static class Builder {
 
         private Client elasticClient;
         private String clusterName = "primary";
+        private String hostName = "unknown";
         private int queueSize = 1000;
         private int commitInterval = 100;
         private FrontendIndexFactory indexFactory = new FrontendDailyIndexFactory();
@@ -102,6 +115,11 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
 
         public Builder withClusterName(String clusterName) {
             this.clusterName = clusterName;
+            return this;
+        }
+
+        public Builder withHostName(String hostName) {
+            this.hostName = hostName;
             return this;
         }
 
@@ -128,6 +146,7 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
         public FrontendElasticsearchLogRepository build() {
             return new FrontendElasticsearchLogRepository(elasticClient,
                     clusterName,
+                    hostName,
                     queueSize,
                     commitInterval,
                     indexFactory,

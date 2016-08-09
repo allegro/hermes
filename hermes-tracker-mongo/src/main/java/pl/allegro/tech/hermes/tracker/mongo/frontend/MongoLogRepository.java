@@ -21,9 +21,10 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
                               int queueSize,
                               int commitIntervalMs,
                               String clusterName,
+                              String hostname,
                               MetricRegistry metricRegistry,
                               PathsCompiler pathsCompiler) {
-        super(queueSize, clusterName, metricRegistry, pathsCompiler);
+        super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
 
         registerQueueSizeGauge(Gauges.PRODUCER_TRACKER_MONGO_QUEUE_SIZE);
         registerRemainingCapacityGauge(Gauges.PRODUCER_TRACKER_MONGO_REMAINING_CAPACITY);
@@ -33,17 +34,17 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
     }
 
     @Override
-    public void logPublished(String messageId, long timestamp, String topicName) {
+    public void logPublished(String messageId, long timestamp, String topicName, String hostname) {
         queue.offer(topicLog(messageId, timestamp, topicName, SUCCESS));
     }
 
     @Override
-    public void logError(String messageId, long timestamp, String topicName, String reason) {
+    public void logError(String messageId, long timestamp, String topicName, String reason, String hostname) {
         queue.offer(topicLog(messageId, timestamp, topicName, ERROR).append(REASON, reason));
     }
 
     @Override
-    public void logInflight(String messageId, long timestamp, String topicName) {
+    public void logInflight(String messageId, long timestamp, String topicName, String hostname) {
         queue.offer(topicLog(messageId, timestamp, topicName, INFLIGHT));
     }
 
@@ -53,6 +54,7 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
                 .append(TIMESTAMP, timestamp)
                 .append(STATUS, status.toString())
                 .append(TOPIC_NAME, topicName)
-                .append(CLUSTER, clusterName);
+                .append(CLUSTER, clusterName)
+                .append(SOURCE_HOSTNAME, hostname);
     }
 }
