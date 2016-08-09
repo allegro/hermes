@@ -21,9 +21,10 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
                               int queueSize,
                               int commitIntervalMs,
                               String clusterName,
+                              String hostname,
                               MetricRegistry metricRegistry,
                               PathsCompiler pathsCompiler) {
-        super(queueSize, clusterName, metricRegistry, pathsCompiler);
+        super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
 
         registerQueueSizeGauge(Gauges.PRODUCER_TRACKER_MONGO_QUEUE_SIZE);
         registerRemainingCapacityGauge(Gauges.PRODUCER_TRACKER_MONGO_REMAINING_CAPACITY);
@@ -53,6 +54,7 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
                 .append(TIMESTAMP, timestamp)
                 .append(STATUS, status.toString())
                 .append(TOPIC_NAME, topicName)
-                .append(CLUSTER, clusterName);
+                .append(CLUSTER, clusterName)
+                .append(SOURCE_HOSTNAME, hostname);
     }
 }

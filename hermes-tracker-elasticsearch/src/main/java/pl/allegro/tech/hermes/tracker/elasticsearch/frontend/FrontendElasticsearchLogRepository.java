@@ -26,13 +26,14 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
 
     private FrontendElasticsearchLogRepository(Client elasticClient,
                                                String clusterName,
+                                               String hostname,
                                                int queueSize,
                                                int commitInterval,
                                                IndexFactory indexFactory,
                                                String typeName,
                                                MetricRegistry metricRegistry,
                                                PathsCompiler pathsCompiler) {
-        super(queueSize, clusterName, metricRegistry, pathsCompiler);
+        super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
 
         registerQueueSizeGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
         registerRemainingCapacityGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY);
@@ -74,13 +75,15 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
                 .field(TIMESTAMP, timestamp)
                 .field(TOPIC_NAME, topicName)
                 .field(STATUS, status)
-                .field(CLUSTER, clusterName);
+                .field(CLUSTER, clusterName)
+                .field(SOURCE_HOSTNAME, hostname);
     }
 
     public static class Builder {
 
         private Client elasticClient;
         private String clusterName = "primary";
+        private String hostName = "unknown";
         private int queueSize = 1000;
         private int commitInterval = 100;
         private FrontendIndexFactory indexFactory = new FrontendDailyIndexFactory();
@@ -102,6 +105,11 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
 
         public Builder withClusterName(String clusterName) {
             this.clusterName = clusterName;
+            return this;
+        }
+
+        public Builder withHostName(String hostName) {
+            this.hostName = hostName;
             return this;
         }
 
@@ -128,6 +136,7 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
         public FrontendElasticsearchLogRepository build() {
             return new FrontendElasticsearchLogRepository(elasticClient,
                     clusterName,
+                    hostName,
                     queueSize,
                     commitInterval,
                     indexFactory,

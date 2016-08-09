@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import com.google.common.collect.ImmutableList;
 
+import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -76,10 +77,12 @@ public class MultiMessageSendingResult implements MessageSendingResult {
 
     }
 
-    public List<String> getSucceededUris(Predicate<MessageSendingResult> filter) {
+    public List<URI> getSucceededUris(Predicate<MessageSendingResult> filter) {
             return children.stream()
                     .filter(filter)
                     .map(SingleMessageSendingResult::getRequestUri)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .collect(Collectors.toList());
 
     }
@@ -91,7 +94,7 @@ public class MultiMessageSendingResult implements MessageSendingResult {
     @Override
     public String getRootCause() {
         return children.stream()
-                .map(child -> child.getRequestUri()+":"+child.getRootCause())
+                .map(child -> child.getRequestUri().map(Object::toString).orElse("") +":"+child.getRootCause())
                 .collect(joining(";"));
     }
 }

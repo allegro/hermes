@@ -63,7 +63,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
             result.getLogInfo().stream().forEach(logInfo ->
                     logger.warn(
                             "Abnormal delivery failure: subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
-                            subscription.getQualifiedName(), logInfo.getRootCause(), logInfo.getUrl(), message.getId(),
+                            subscription.getQualifiedName(), logInfo.getRootCause(), logInfo.getUrlString(), message.getId(),
                             message.getPartition(), message.getOffset(), logInfo.getFailure()
                     )
             );
@@ -80,7 +80,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     public void handleFailed(Message message, Subscription subscription, MessageSendingResult result) {
         hermesMetrics.meter(Meters.FAILED_METER_SUBSCRIPTION, subscription.getTopicName(), subscription.getName()).mark();
         registerFailureMetrics(subscription, result);
-        trackers.get(subscription).logFailed(toMessageMetadata(message, subscription), result.getRootCause());
+        trackers.get(subscription).logFailed(toMessageMetadata(message, subscription), result.getRootCause(), result.getHostname());
     }
 
     private void registerFailureMetrics(Subscription subscription, MessageSendingResult result) {

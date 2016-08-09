@@ -12,11 +12,17 @@ public class BatchingLogRepository<T> {
     protected final MetricRegistry metricRegistry;
     protected final PathsCompiler pathsCompiler;
     protected final String clusterName;
+    protected final String hostname;
     protected BlockingQueue<T> queue;
 
-    public BatchingLogRepository(int queueSize, String clusterName, MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
+    public BatchingLogRepository(int queueSize,
+                                 String clusterName,
+                                 String hostname,
+                                 MetricRegistry metricRegistry,
+                                 PathsCompiler pathsCompiler) {
         this.queue = new LinkedBlockingQueue<>(queueSize);
         this.clusterName = clusterName;
+        this.hostname = hostname;
         this.metricRegistry = metricRegistry;
         this.pathsCompiler = pathsCompiler;
     }

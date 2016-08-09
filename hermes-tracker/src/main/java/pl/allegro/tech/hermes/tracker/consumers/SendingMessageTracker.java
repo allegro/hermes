@@ -13,17 +13,17 @@ class SendingMessageTracker implements SendingTracker {
     }
 
     @Override
-    public void logSent(MessageMetadata message) {
-        repositories.forEach(r -> r.logSuccessful(message, clock.millis()));
+    public void logSent(MessageMetadata message, String hostname) {
+        repositories.forEach(r -> r.logSuccessful(message, hostname, clock.millis()));
     }
 
     @Override
-    public void logFailed(MessageMetadata message, final String reason) {
-        repositories.forEach(r -> r.logFailed(message, clock.millis(), reason));
+    public void logFailed(MessageMetadata message, String reason, String hostname) {
+        repositories.forEach(r -> r.logFailed(message, hostname, clock.millis(), reason));
     }
 
     @Override
-    public void logDiscarded(MessageMetadata message, final String reason) {
+    public void logDiscarded(MessageMetadata message, String reason) {
         repositories.forEach(r ->
                 r.logDiscarded(message, clock.millis(), reason));
     }

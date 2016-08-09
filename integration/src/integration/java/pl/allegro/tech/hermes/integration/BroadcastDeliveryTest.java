@@ -91,7 +91,7 @@ public class BroadcastDeliveryTest extends IntegrationTest {
         remoteServices = Stream.generate(this::createRemoteServiceEndpoint).limit(4).collect(toList());
         firstRemoteService = remoteServices.get(0);
 
-        return this.remoteServices.stream().map(RemoteServiceEndpoint::getUrl).collect(joining(";"));
+        return this.remoteServices.stream().map(RemoteServiceEndpoint::getUrl).map(Object::toString).collect(joining(";"));
     }
 
 }
