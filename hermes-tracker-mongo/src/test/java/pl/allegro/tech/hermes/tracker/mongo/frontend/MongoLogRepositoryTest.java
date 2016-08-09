@@ -21,7 +21,7 @@ public class MongoLogRepositoryTest extends AbstractLogRepositoryTest implements
 
     @Override
     protected LogRepository createRepository() {
-        return new MongoLogRepository(database, 1000, 100, "cluster", new MetricRegistry(), new PathsCompiler("localhost"));
+        return new MongoLogRepository(database, 1000, 100, "cluster", "host", new MetricRegistry(), new PathsCompiler("localhost"));
     }
 
     @Override

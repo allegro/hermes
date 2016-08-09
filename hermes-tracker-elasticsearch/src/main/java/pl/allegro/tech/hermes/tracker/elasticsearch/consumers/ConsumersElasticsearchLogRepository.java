@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.elasticsearch.*;
+import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendElasticsearchLogRepository;
 import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Gauges;
 import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Timers;
 
@@ -27,9 +28,9 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
 
     private static final int DOCUMENT_EXPECTED_SIZE = 1024;
 
-    private ConsumersElasticsearchLogRepository(Client elasticClient, String clusterName, int queueSize, int commitInterval,
+    private ConsumersElasticsearchLogRepository(Client elasticClient, String clusterName, String hostname, int queueSize, int commitInterval,
                                                 IndexFactory indexFactory, String typeName, MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
-        super(queueSize, clusterName, metricRegistry, pathsCompiler);
+        super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
 
         registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
         registerRemainingCapacityGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY);
@@ -39,13 +40,20 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
     }
 
     @Override
-    public void logSuccessful(MessageMetadata message, long timestamp) {
-        queue.offer(document(message, timestamp, SUCCESS));
+    public void logSuccessful(MessageMetadata message, String hostname, long timestamp) {
+        queue.offer(build(() ->
+                notEndedDocument(message, timestamp, SUCCESS.toString())
+                        .field(TARGET_HOSTNAME, hostname)
+                        .endObject()));
     }
 
     @Override
-    public void logFailed(MessageMetadata message, long timestamp, String reason) {
-        queue.offer(document(message, timestamp, FAILED, reason));
+    public void logFailed(MessageMetadata message, String hostname, long timestamp, String reason) {
+        queue.offer(build(() ->
+                notEndedDocument(message, timestamp, FAILED.toString())
+                        .field(REASON, reason)
+                        .field(TARGET_HOSTNAME, hostname)
+                        .endObject()));
     }
 
     @Override
@@ -84,13 +92,15 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
                 .field(STATUS, status)
                 .field(OFFSET, message.getOffset())
                 .field(PARTITION, message.getPartition())
-                .field(CLUSTER, clusterName);
+                .field(CLUSTER, clusterName)
+                .field(SOURCE_HOSTNAME, hostname);
     }
 
     public static class Builder {
 
         private Client elasticClient;
         private String clusterName = "primary";
+        private String hostName = "unknown";
         private int queueSize = 1000;
         private int commitInterval = 100;
         private ConsumersIndexFactory indexFactory = new ConsumersDailyIndexFactory();
@@ -112,6 +122,11 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
 
         public Builder withClusterName(String clusterName) {
             this.clusterName = clusterName;
+            return this;
+        }
+
+        public Builder withHostName(String hostName) {
+            this.hostName = hostName;
             return this;
         }
 
@@ -138,6 +153,7 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
         public ConsumersElasticsearchLogRepository build() {
             return new ConsumersElasticsearchLogRepository(elasticClient,
                     clusterName,
+                    hostName,
                     queueSize,
                     commitInterval,
                     indexFactory,

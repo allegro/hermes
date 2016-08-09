@@ -42,7 +42,7 @@ public abstract class AbstractLogRepositoryTest {
         String topic = "group.sentMessage";
 
         // when
-        logRepository.logSuccessful(TestMessageMetadata.of(id, topic, SUBSCRIPTION), 1234L);
+        logRepository.logSuccessful(TestMessageMetadata.of(id, topic, SUBSCRIPTION), "host", 1234L);
 
         // then
         awaitUntilMessageIsPersisted(topic, SUBSCRIPTION, id, SUCCESS);
@@ -82,7 +82,7 @@ public abstract class AbstractLogRepositoryTest {
         String topic = "group.sentBatchMessage";
 
         // when
-        logRepository.logSuccessful(TestMessageMetadata.of(messageId, batchId, topic, SUBSCRIPTION), 1234L);
+        logRepository.logSuccessful(TestMessageMetadata.of(messageId, batchId, topic, SUBSCRIPTION), "host", 1234L);
 
         // then
         awaitUntilBatchMessageIsPersisted(topic, SUBSCRIPTION, messageId, batchId, SUCCESS);
