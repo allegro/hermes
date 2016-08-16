@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
 import java.time.Clock;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 public class ConsumerProcess implements Runnable {
 
@@ -23,19 +24,25 @@ public class ConsumerProcess implements Runnable {
 
     private final Retransmitter retransmitter;
 
+    private final BiConsumer<SubscriptionName, Signal.SignalType> shutdownCallback;
+
     private volatile boolean running = true;
 
-    private volatile long healtcheckRefreshTime;
+    private Signal.SignalType shutdownReason;
+
+    private long healtcheckRefreshTime;
 
     public ConsumerProcess(
             SubscriptionName subscriptionName,
             Consumer consumer,
             Retransmitter retransmitter,
+            BiConsumer<SubscriptionName, Signal.SignalType> shutdownCallback,
             Clock clock
     ) {
         this.subscriptionName = subscriptionName;
         this.consumer = consumer;
         this.retransmitter = retransmitter;
+        this.shutdownCallback = shutdownCallback;
         this.clock = clock;
         this.healtcheckRefreshTime = clock.millis();
     }
@@ -52,7 +59,8 @@ public class ConsumerProcess implements Runnable {
             stop();
 
         } finally {
-            logger.info("Consumer process of subscription {} released", subscriptionName);
+            logger.info("Releasing consumer process thred of subscription {}", subscriptionName);
+            shutdownCallback.accept(subscriptionName, shutdownReason);
             refreshHealthcheck();
             Thread.currentThread().setName("consumer-released-thread");
         }
@@ -82,17 +90,19 @@ public class ConsumerProcess implements Runnable {
             case RESTART:
                 restart();
                 break;
+            case STOP_RESTART:
             case STOP:
+                this.shutdownReason = signal.getType();
                 this.running = false;
                 break;
             case RETRANSMIT:
                 retransmit();
                 break;
             case UPDATE_SUBSCRIPTION:
-                consumer.updateSubscription(signal.getExtractedPayload());
+                consumer.updateSubscription(signal.getPayload());
                 break;
             case UPDATE_TOPIC:
-                consumer.updateTopic(signal.getExtractedPayload());
+                consumer.updateTopic(signal.getPayload());
                 break;
         }
     }
@@ -159,4 +169,6 @@ public class ConsumerProcess implements Runnable {
     public Consumer getConsumer() {
         return consumer;
     }
+
+
 }

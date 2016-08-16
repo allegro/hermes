@@ -89,7 +89,7 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
             }
             logger.info("Consumer for {} was added for execution", subscription.getQualifiedName());
         } catch (Exception ex) {
-            logger.error("Failed to create consumer for subscription {}", subscription.getQualifiedName(), ex);
+            logger.error("Failed to create consumea jr for subscription {}", subscription.getQualifiedName(), ex);
         }
     }
 

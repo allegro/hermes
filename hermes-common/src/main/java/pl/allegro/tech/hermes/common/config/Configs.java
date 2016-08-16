@@ -38,7 +38,7 @@ public enum Configs {
     KAFKA_CONSUMER_DUAL_COMMIT_ENABLED("kafka.consumer.dual.commit.enabled", true),
     KAFKA_CONSUMER_METADATA_READ_TIMEOUT("kafka.consumer.metadata.read.timeout", 5000),
     KAFKA_CONSUMER_OFFSET_COMMITTER_BROKER_CONNECTION_EXPIRATION("kafka.consumer.offset.commiter.broker.connection.expiration", 60),
-    KAFKA_CONSUMER_REBALANCE_MAX_RETRIES("kafka.consumer.rebalance.max.retries", 150),
+    KAFKA_CONSUMER_REBALANCE_MAX_RETRIES("kafka.consumer.rebalance.max.retries", 60),
     KAFKA_CONSUMER_REBALANCE_BACKOFF("kafka.consumer.rebalance.backoff", 4000),
 
     KAFKA_SIMPLE_CONSUMER_TIMEOUT_MS("kafka.simple.consumer.timeout.ms", 5000),
@@ -138,7 +138,8 @@ public enum Configs {
     CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
 
     CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 20_000),
-    CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER("consumer.supervisor.background.unhealty.after", 300_000),
+    CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER("consumer.supervisor.background.unhealty.after", 600_000),
+    CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER("consumer.supervisor.background.kill.after", 300_000),
     CONSUMER_SIGNAL_PROCESSING_INTERVAL("consumer.supervisor.signal.processing.interval.ms", 5_000),
 
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
