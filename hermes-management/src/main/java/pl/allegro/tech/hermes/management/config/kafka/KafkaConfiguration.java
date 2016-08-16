@@ -2,7 +2,9 @@ package pl.allegro.tech.hermes.management.config.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kafka.utils.ZKStringSerializer$;
+import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.ZkConnection;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
@@ -102,10 +104,11 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
         zkClients.forEach(ZkClient::close);
     }
 
-    private ZkClient zkClient(KafkaProperties kafkaProperties) {
+    private ZkUtils zkClient(KafkaProperties kafkaProperties) {
+        ZkConnection connection = new ZkConnection(kafkaProperties.getConnectionString(), kafkaProperties.getSessionTimeout());
+
         ZkClient zkClient = new ZkClient(
-                kafkaProperties.getConnectionString(),
-                kafkaProperties.getSessionTimeout(),
+                connection,
                 kafkaProperties.getConnectionTimeout(),
                 ZKStringSerializer$.MODULE$
         );
@@ -114,7 +117,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
         zkClients.add(zkClient);
 
-        return zkClient;
+        return new ZkUtils(zkClient, connection, false);
     }
 
     private CuratorFramework curatorFramework(KafkaProperties kafkaProperties) {

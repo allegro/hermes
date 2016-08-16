@@ -30,6 +30,7 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.github.rholder.retry.WaitStrategies.fixedWait;
 import static java.util.Optional.of;
@@ -42,13 +43,13 @@ public class BatchConsumer implements Consumer {
     private final ReceiverFactory messageReceiverFactory;
     private final MessageBatchSender sender;
     private final MessageBatchFactory batchFactory;
-    private final OffsetQueue offsetQueue;
     private final HermesMetrics hermesMetrics;
     private final MessageConverterResolver messageConverterResolver;
     private final MessageContentWrapper messageContentWrapper;
     private final Trackers trackers;
 
     private Topic topic;
+    private OffsetQueue offsetQueue;
     private Subscription subscription;
 
     private volatile boolean consuming = true;
@@ -148,6 +149,20 @@ public class BatchConsumer implements Consumer {
             this.topic = newTopic;
             tearDown();
             initialize();
+        }
+    }
+
+    @Override
+    public void commit(Set<SubscriptionPartitionOffset> offsetsToCommit) {
+        if (receiver != null) {
+            receiver.commit(offsetsToCommit);
+        }
+    }
+
+    @Override
+    public void moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
+        if (receiver != null) {
+            receiver.moveOffset(subscriptionPartitionOffset);
         }
     }
 

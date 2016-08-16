@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.common.exception.RetransmissionException;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsStorage;
+import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 
@@ -22,19 +22,16 @@ public class Retransmitter {
     private static final Logger logger = LoggerFactory.getLogger(Retransmitter.class);
 
     private SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
-    private List<OffsetsStorage> offsetsStorages;
     private String brokersClusterName;
 
     @Inject
     public Retransmitter(SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
-                         List<OffsetsStorage> offsetsStorages,
                          ConfigFactory configs) {
         this.subscriptionOffsetChangeIndicator = subscriptionOffsetChangeIndicator;
-        this.offsetsStorages = offsetsStorages;
         this.brokersClusterName = configs.getStringProperty(KAFKA_CLUSTER_NAME);
     }
 
-    public void reloadOffsets(SubscriptionName subscriptionName) {
+    public void reloadOffsets(SubscriptionName subscriptionName, Consumer consumer) {
         logger.info("Reloading offsets for {}", subscriptionName);
         try {
             PartitionOffsets offsets = subscriptionOffsetChangeIndicator.getSubscriptionOffsets(
@@ -45,10 +42,7 @@ public class Retransmitter {
                         new SubscriptionPartition(partitionOffset.getTopic(), subscriptionName, partitionOffset.getPartition()),
                         partitionOffset.getOffset()
                 );
-
-                for (OffsetsStorage s: offsetsStorages) {
-                    s.moveSubscriptionOffset(subscriptionPartitionOffset);
-                }
+                consumer.moveOffset(subscriptionPartitionOffset);
             }
         } catch (Exception ex) {
             throw new RetransmissionException(ex);

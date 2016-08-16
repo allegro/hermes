@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.internals.Metadata;
+import org.apache.kafka.clients.Metadata;
 import org.apache.kafka.common.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

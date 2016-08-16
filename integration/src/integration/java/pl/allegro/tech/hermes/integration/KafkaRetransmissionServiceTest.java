@@ -36,7 +36,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         remoteService = new RemoteServiceEndpoint(services().serviceMock());
     }
 
-    @Test(enabled = false)
+    @Test
     @Unreliable
     public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
         // given

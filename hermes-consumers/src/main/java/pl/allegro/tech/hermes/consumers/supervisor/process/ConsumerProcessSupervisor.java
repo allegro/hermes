@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
-import org.jctools.queues.MpscArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -8,19 +7,21 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
+import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.ArrayList;
 import java.util.concurrent.Future;
 
 public class ConsumerProcessSupervisor implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerProcessSupervisor.class);
 
-    private final MpscArrayQueue<Signal> taskQueue = new MpscArrayQueue<>(1000);
+    private final MonitoredMpscQueue<Signal> taskQueue;
 
     private final RunningConsumerProcesses runningProcesses = new RunningConsumerProcesses();
 
@@ -49,7 +50,7 @@ public class ConsumerProcessSupervisor implements Runnable {
         this.metrics = metrics;
         this.unhealthyAfter = configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER);
         this.killAfter = configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER);
-
+        this.taskQueue = new MonitoredMpscQueue(metrics, "signalQueue", configs.getIntProperty(Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE));
         this.signalsFilter = new SignalsFilter(taskQueue, clock);
     }
 
@@ -113,10 +114,14 @@ public class ConsumerProcessSupervisor implements Runnable {
                     process(signal).accept(Signal.of(Signal.SignalType.RESTART, signal.getTarget()));
                     taskQueue.offer(Signal.of(Signal.SignalType.KILL_UNHEALTHY, signal.getTarget(), killTime()));
                     break;
+                case COMMIT:
+                    process(signal).accept(signal);
+                    break;
                 case KILL_UNHEALTHY:
                     Consumer consumer = runningProcesses.getProcess(signal.getTarget()).getConsumer();
                     taskQueue.offer(Signal.of(Signal.SignalType.START, signal.getTarget(), consumer));
                     kill(signal.getTarget());
+                    break;
                 case CLEANUP:
                     cleanup(signal.getTarget());
                     break;
@@ -188,5 +193,13 @@ public class ConsumerProcessSupervisor implements Runnable {
     public void shutdown() {
         runningProcesses.stream().forEach(p -> p.accept(Signal.of(Signal.SignalType.STOP, p.getSubscriptionName())));
         executor.shutdown();
+    }
+
+    public List<String> listRunningSubscriptions() {
+        return runningProcesses.listRunningSubscriptions();
+    }
+
+    public Integer countRunningSubscriptions() {
+        return runningProcesses.count();
     }
 }

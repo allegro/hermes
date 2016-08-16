@@ -1,7 +1,9 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
 import kafka.admin.AdminUtils;
+import kafka.admin.RackAwareMode;
 import kafka.log.LogConfig;
+import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -16,11 +18,11 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     private final TopicProperties topicProperties;
 
-    private final ZkClient client;
+    private final ZkUtils client;
 
     private final KafkaNamesMapper kafkaNamesMapper;
 
-    public KafkaBrokerTopicManagement(TopicProperties topicProperties, ZkClient zkClient, KafkaNamesMapper kafkaNamesMapper) {
+    public KafkaBrokerTopicManagement(TopicProperties topicProperties, ZkUtils zkClient, KafkaNamesMapper kafkaNamesMapper) {
         this.topicProperties = topicProperties;
         this.client = zkClient;
         this.kafkaNamesMapper = kafkaNamesMapper;
@@ -36,7 +38,8 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
                                 k.name().asString(),
                                 topicProperties.getPartitions(),
                                 topicProperties.getReplicationFactor(),
-                                config
+                                config,
+                                kafka.admin.RackAwareMode.Enforced$.MODULE$
                         )
         );
     }
@@ -57,7 +60,8 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
                     kafkaTopics.getPrimary().name().asString(),
                     topicProperties.getPartitions(),
                     topicProperties.getReplicationFactor(),
-                    config
+                    config,
+                    kafka.admin.RackAwareMode.Enforced$.MODULE$
             );
         } else {
             AdminUtils.changeTopicConfig(client, kafkaTopics.getPrimary().name().asString(), config);
@@ -81,7 +85,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties) {
         Properties props = new Properties();
-        props.put(LogConfig.RententionMsProp(), String.valueOf(TimeUnit.DAYS.toMillis(retentionPolicy)));
+        props.put(LogConfig.RetentionMsProp(), String.valueOf(TimeUnit.DAYS.toMillis(retentionPolicy)));
         props.put(LogConfig.UncleanLeaderElectionEnableProp(), Boolean.toString(topicProperties.isUncleanLeaderElectionEnabled()));
 
         return props;

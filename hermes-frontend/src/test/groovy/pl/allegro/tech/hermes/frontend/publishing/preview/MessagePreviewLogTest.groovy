@@ -53,7 +53,7 @@ class MessagePreviewLogTest extends Specification {
         }
 
         if (!latch.await(10, TimeUnit.SECONDS)) {
-            throw new IllegalStateException('Faild to run all testing threads within specified timeout')
+            throw new IllegalStateException('Faild to commit all testing threads within specified timeout')
         }
 
         when:

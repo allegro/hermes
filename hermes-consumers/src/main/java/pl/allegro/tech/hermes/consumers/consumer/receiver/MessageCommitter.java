@@ -6,9 +6,5 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.FailedToCommitOffsets;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsToCommit;
 
 public interface MessageCommitter {
-
-    FailedToCommitOffsets commitOffsets(OffsetsToCommit offsetsToCommit);
-
-    void removeOffset(TopicName topicName, String subscriptionName, KafkaTopicName topic, int partition) throws Exception;
-
+    void commitOffsets(OffsetsToCommit offsetsToCommit);
 }
