@@ -21,18 +21,33 @@ public class MongoLogRepositoryTest extends AbstractLogRepositoryTest implements
 
     @Override
     protected LogRepository createRepository() {
-        return new MongoLogRepository(database, 1000, 100, "cluster", new MetricRegistry(), new PathsCompiler("localhost"));
+        return new MongoLogRepository(database, 1000, 100, "cluster", "host", new MetricRegistry(), new PathsCompiler("localhost"));
     }
 
     @Override
-    protected void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status) throws Exception {
-        awaitUntilMessageIsPersisted(new BasicDBObject(TOPIC_NAME, topic).append(STATUS, status.toString()).append(MESSAGE_ID, id));
-    }
-
-    @Override
-    protected void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status, String reason) throws Exception {
+    protected void awaitUntilMessageIsPersisted(String topic,
+                                                String id,
+                                                PublishedMessageTraceStatus status,
+                                                String remoteHostname) throws Exception {
         awaitUntilMessageIsPersisted(
-                new BasicDBObject(TOPIC_NAME, topic).append(STATUS, status.toString()).append(MESSAGE_ID, id).append(REASON, reason));
+                new BasicDBObject(TOPIC_NAME, topic)
+                .append(STATUS, status.toString())
+                .append(MESSAGE_ID, id)
+                .append(REMOTE_HOSTNAME, remoteHostname));
+    }
+
+    @Override
+    protected void awaitUntilMessageIsPersisted(String topic,
+                                                String id,
+                                                PublishedMessageTraceStatus status,
+                                                String reason,
+                                                String remoteHostname) throws Exception {
+        awaitUntilMessageIsPersisted(
+                new BasicDBObject(TOPIC_NAME, topic)
+                .append(STATUS, status.toString())
+                .append(MESSAGE_ID, id)
+                .append(REASON, reason)
+                .append(REMOTE_HOSTNAME, remoteHostname));
     }
 
     private void awaitUntilMessageIsPersisted(DBObject query) throws Exception {

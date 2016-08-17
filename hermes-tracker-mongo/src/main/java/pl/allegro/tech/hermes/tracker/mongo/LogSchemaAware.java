@@ -15,5 +15,6 @@ public interface LogSchemaAware {
     String OFFSET = "offset";
     String REASON = "reason";
     String CLUSTER = "cluster";
-
+    String SOURCE_HOSTNAME = "hostname";
+    String REMOTE_HOSTNAME = "remote_hostname";
 }

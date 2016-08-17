@@ -6,7 +6,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
@@ -38,7 +37,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class BackupMessagesLoader {
@@ -218,14 +216,14 @@ public class BackupMessagesLoader {
                     @Override
                     public void onUnpublished(Message message, Topic topic, Exception exception) {
                         brokerListeners.onError(message, topic, exception);
-                        trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage());
+                        trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage(), "");
                         toResend.get().add(ImmutablePair.of(message, topic));
                     }
 
                     @Override
                     public void onPublished(Message message, Topic topic) {
                         brokerListeners.onAcknowledge(message, topic);
-                        trackers.get(topic).logPublished(message.getId(), topic.getName());
+                        trackers.get(topic).logPublished(message.getId(), topic.getName(), "");
                     }
                 }));
     }

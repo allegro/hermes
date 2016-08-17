@@ -28,7 +28,7 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
         updateMeters(subscription, result);
         updateMetrics(Counters.DELIVERED, message, subscription);
 
-        trackers.get(subscription).logSent(toMessageMetadata(message, subscription));
+        trackers.get(subscription).logSent(toMessageMetadata(message, subscription), result.getHostname());
     }
 
     private void updateMeters(Subscription subscription, MessageSendingResult result) {

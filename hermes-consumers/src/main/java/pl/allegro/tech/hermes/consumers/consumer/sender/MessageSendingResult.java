@@ -3,11 +3,13 @@ package pl.allegro.tech.hermes.consumers.consumer.sender;
 import org.eclipse.jetty.client.api.Result;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
@@ -16,6 +18,10 @@ public interface MessageSendingResult {
 
     static SingleMessageSendingResult succeededResult() {
         return new SingleMessageSendingResult(OK.getStatusCode());
+    }
+
+    static SingleMessageSendingResult succeededResult(URI requestURI) {
+        return new SingleMessageSendingResult(OK.getStatusCode(), requestURI);
     }
 
     static SingleMessageSendingResult failedResult(Throwable cause) {
@@ -66,5 +72,9 @@ public interface MessageSendingResult {
 
     List<MessageSendingResultLogInfo> getLogInfo();
 
-    List<String> getSucceededUris(Predicate<MessageSendingResult> filter) ;
+    List<URI> getSucceededUris(Predicate<MessageSendingResult> filter);
+
+    default String getHostname() {
+        return getLogInfo().stream().filter(i -> i.getUrl().isPresent()).map(i -> i.getUrl().get().getHost()).collect(joining(","));
+    };
 }

@@ -1,18 +1,25 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
-public class MessageSendingResultLogInfo {
-    private final String url;
-    private final String rootCause;
-    private final  Throwable failure;
+import java.net.URI;
+import java.util.Optional;
 
-    public MessageSendingResultLogInfo(String url, Throwable failure, String rootCause) {
+public class MessageSendingResultLogInfo {
+    private final Optional<URI> url;
+    private final String rootCause;
+    private final Throwable failure;
+
+    public MessageSendingResultLogInfo(Optional<URI> url, Throwable failure, String rootCause) {
         this.url = url;
         this.failure = failure;
         this.rootCause = rootCause;
     }
 
-    public String getUrl() {
+    public Optional<URI> getUrl() {
         return url;
+    }
+
+    public String getUrlString() {
+        return url.isPresent() ? url.get().toString() : "";
     }
 
     public String getRootCause() {

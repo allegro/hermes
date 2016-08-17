@@ -22,9 +22,10 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
                               int queueSize,
                               int commitInterval,
                               String clusterName,
+                              String hostname,
                               MetricRegistry metricRegistry,
                               PathsCompiler pathsCompiler) {
-        super(queueSize, clusterName, metricRegistry, pathsCompiler);
+        super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
 
         registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_MONGO_QUEUE_SIZE);
         registerRemainingCapacityGauge(Gauges.CONSUMER_TRACKER_MONGO_REMAINING_CAPACITY);
@@ -34,13 +35,13 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
     }
 
     @Override
-    public void logSuccessful(MessageMetadata message, long timestamp) {
-        queue.offer(subscriptionLog(message, timestamp, SUCCESS));
+    public void logSuccessful(MessageMetadata message, String hostname, long timestamp) {
+        queue.offer(subscriptionLog(message, timestamp, SUCCESS).append(REMOTE_HOSTNAME, hostname));
     }
 
     @Override
-    public void logFailed(MessageMetadata message, long timestamp, String reason) {
-        queue.offer(subscriptionLog(message, timestamp, FAILED).append(REASON, reason));
+    public void logFailed(MessageMetadata message, String hostname, long timestamp, String reason) {
+        queue.offer(subscriptionLog(message, timestamp, FAILED).append(REASON, reason).append(REMOTE_HOSTNAME, hostname));
     }
 
     @Override
@@ -69,6 +70,7 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
                 .append(PARTITION, message.getPartition())
                 .append(OFFSET, message.getOffset())
                 .append(STATUS, status.toString())
-                .append(CLUSTER, clusterName);
+                .append(CLUSTER, clusterName)
+                .append(SOURCE_HOSTNAME, hostname);
     }
 }

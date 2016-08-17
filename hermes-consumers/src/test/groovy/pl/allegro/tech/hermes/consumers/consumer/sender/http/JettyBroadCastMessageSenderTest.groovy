@@ -91,7 +91,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
         !messageSendingResult.succeeded()
 
         and:
-        messageSendingResult.children.find { it.statusCode == 500 && it.requestUri == failedServiceEndpoint.url }
+        messageSendingResult.children.find { it.statusCode == 500 && it.requestUri.get() == failedServiceEndpoint.url }
     }
 
     def "should not send to already sent url on retry"() {
