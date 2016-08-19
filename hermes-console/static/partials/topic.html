@@ -15,6 +15,11 @@
     <h1><small>Topic:</small> {{topic.name}}</h1>
     <p class="lead">{{topic.description}}</p>
 
+    <div class="alert alert-danger" role="alert" ng-show="isBlacklisted">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        The topic has been blacklistted - contact Hermes admins why publishing returns 403's.
+    </div>
+
     <div class="row">
         <div class="col-md-6">
             <div class="panel panel-info">

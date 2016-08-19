@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.GROUP_NOT_EXISTS;
+import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_BLACKLISTED;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
 
@@ -55,10 +56,14 @@ class TopicHandler implements HttpHandler {
         try {
             Optional<CachedTopic> topic = topicsCache.getTopic(qualifiedTopicName);
             if (topic.isPresent()) {
-                consumer.accept(topic.get());
-                return;
+                if (!topicsCache.isBlacklisted(qualifiedTopicName)) {
+                    consumer.accept(topic.get());
+                } else {
+                    topicBlacklisted(exchange, qualifiedTopicName, messageId);
+                }
+            } else {
+                nonExistentTopic(exchange, qualifiedTopicName, messageId);
             }
-            nonExistentTopic(exchange, qualifiedTopicName, messageId);
         } catch (IllegalArgumentException exception) {
             missingTopicGroup(exchange, qualifiedTopicName, messageId);
         }
@@ -78,5 +83,9 @@ class TopicHandler implements HttpHandler {
                 error("Topic not found: " + qualifiedTopicName, TOPIC_NOT_EXISTS),
                 messageId,
                 UNKNOWN_TOPIC_NAME);
+    }
+
+    private void topicBlacklisted(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
+        messageErrorProcessor.sendQuietly(exchange, error("Topic blacklisted: " + qualifiedTopicName, TOPIC_BLACKLISTED),  messageId, qualifiedTopicName);
     }
 }

@@ -36,6 +36,10 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
 
         loadSubscriptions();
 
+        topicRepository.blacklistStatus(topicName).then(function(blacklistStatus) {
+            $scope.isBlacklisted = blacklistStatus.blacklisted;
+        });
+
         topicRepository.preview(topicName).then(function(preview) {
             $scope.preview = preview;
         });

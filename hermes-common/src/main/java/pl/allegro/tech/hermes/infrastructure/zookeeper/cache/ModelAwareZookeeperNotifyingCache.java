@@ -3,20 +3,13 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper.cache;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import pl.allegro.tech.hermes.common.cache.queue.LinkedHashSetBlockingQueue;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
-import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE;
 
 public class ModelAwareZookeeperNotifyingCache {
 

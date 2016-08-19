@@ -4,7 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Query;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicMetrics;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
@@ -44,7 +48,8 @@ public class TopicService {
                         TopicRepository topicRepository,
                         GroupService groupService,
                         TopicProperties topicProperties,
-                        ApiPreconditions preconditions, TopicMetricsRepository metricRepository,
+                        ApiPreconditions preconditions,
+                        TopicMetricsRepository metricRepository,
                         TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
                         MessagePreviewRepository messagePreviewRepository,
