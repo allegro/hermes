@@ -25,6 +25,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class BatchDeliveryTest extends IntegrationTest {
+
     private RemoteServiceEndpoint remoteService;
 
     private ObjectMapper mapper = new ObjectMapper();

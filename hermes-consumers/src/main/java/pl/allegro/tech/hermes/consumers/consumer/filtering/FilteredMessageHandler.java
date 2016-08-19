@@ -55,7 +55,5 @@ public class FilteredMessageHandler {
     protected void updateMetrics(Message message, Subscription subscription) {
         metrics.meter(Meters.FILTERED_METER).mark();
         metrics.counter(Counters.FILTERED, subscription.getTopicName(), subscription.getName()).inc();
-        metrics.decrementInflightCounter(subscription);
-        metrics.inflightTimeHistogram(subscription).update(System.currentTimeMillis() - message.getReadingTimestamp());
     }
 }

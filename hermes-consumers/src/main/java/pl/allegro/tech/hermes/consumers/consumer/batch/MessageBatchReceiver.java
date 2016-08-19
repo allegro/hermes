@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
@@ -19,6 +18,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -69,9 +69,12 @@ public class MessageBatchReceiver {
         List<MessageMetadata> discarded = new ArrayList<>();
 
         while (isReceiving() && !batch.isReadyForDelivery()) {
-            try {
-                signalsInterrupt.run();
-                Message message = inflight.isEmpty() ? receive(subscription, batch.getId()) : inflight.poll();
+            signalsInterrupt.run();
+            Optional<Message> maybeMessage = inflight.isEmpty() ?
+                    readAndTransform(subscription, batch.getId()) : Optional.ofNullable(inflight.poll());
+
+            if (maybeMessage.isPresent()) {
+                Message message = maybeMessage.get();
 
                 if (batch.canFit(message.getData())) {
                     batch.append(message.getData(), messageMetadata(subscription, batch.getId(), message));
@@ -87,8 +90,6 @@ public class MessageBatchReceiver {
                     checkArgument(inflight.offer(message));
                     break;
                 }
-            } catch (MessageReceivingTimeoutException ex) {
-                // ignore
             }
         }
         if (logger.isDebugEnabled()) {
@@ -97,13 +98,20 @@ public class MessageBatchReceiver {
         return new MessageBatchingResult(batch.close(), discarded);
     }
 
-    private Message receive(Subscription subscription, String batchId) {
-        Message next = receiver.next();
-        next = messageConverterResolver.converterFor(next, subscription).convert(next, topic);
-        next = message().fromMessage(next).withData(wrap(subscription, next)).build();
-        hermesMetrics.incrementInflightCounter(subscription);
-        trackers.get(subscription).logInflight(messageMetadata(subscription, batchId, next));
-        return next;
+    private Optional<Message> readAndTransform(Subscription subscription, String batchId) {
+        Optional<Message> maybeMessage = receiver.next();
+
+        if (maybeMessage.isPresent()) {
+            Message message = maybeMessage.get();
+
+            Message transformed = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
+            transformed = message().fromMessage(transformed).withData(wrap(subscription, transformed)).build();
+            hermesMetrics.incrementInflightCounter(subscription);
+            trackers.get(subscription).logInflight(messageMetadata(subscription, batchId, transformed));
+
+            return Optional.of(transformed);
+        }
+        return Optional.empty();
     }
 
     private byte[] wrap(Subscription subscription, Message next) {

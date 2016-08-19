@@ -12,10 +12,10 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOff
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
@@ -89,20 +89,23 @@ public class SerialConsumer implements Consumer {
                 signalsInterrupt.run();
             } while (!inflightSemaphore.tryAcquire(signalProcessingInterval, TimeUnit.MILLISECONDS));
 
-            Message message = messageReceiver.next();
+            Optional<Message> maybeMessage = messageReceiver.next();
 
-            if (logger.isDebugEnabled()) {
-                logger.debug(
-                        "Read message {} partition {} offset {}",
-                        message.getContentType(), message.getPartition(), message.getOffset()
-                );
+            if (maybeMessage.isPresent()) {
+                Message message = maybeMessage.get();
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Read message {} partition {} offset {}",
+                            message.getContentType(), message.getPartition(), message.getOffset()
+                    );
+                }
+
+                Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
+                sendMessage(convertedMessage);
+            } else {
+                inflightSemaphore.release();
             }
-
-            Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
-            sendMessage(convertedMessage);
-        } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {
-            inflightSemaphore.release();
-            logger.trace("Timeout while reading message for subscription {}. Trying to read message again", subscription.getQualifiedName(), messageReceivingTimeoutException);
         } catch (Exception e) {
             logger.error("Consumer loop failed for {}", subscription.getQualifiedName(), e);
         }
