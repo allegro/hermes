@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.consumers.supervisor.process;
 
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
+import java.util.Objects;
+
 public class Signal {
 
     private final SignalType type;
@@ -59,5 +61,19 @@ public class Signal {
                 "type=" + type +
                 ", target=" + target +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Signal)) return false;
+        Signal signal = (Signal) o;
+        return type == signal.type &&
+                Objects.equals(target, signal.target);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, target);
     }
 }

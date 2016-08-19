@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
 import java.time.Clock;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
 public class ConsumerProcess implements Runnable {
 
@@ -24,11 +23,9 @@ public class ConsumerProcess implements Runnable {
 
     private final Retransmitter retransmitter;
 
-    private final BiConsumer<SubscriptionName, Signal.SignalType> shutdownCallback;
+    private final java.util.function.Consumer<SubscriptionName> shutdownCallback;
 
     private volatile boolean running = true;
-
-    private Signal.SignalType shutdownReason;
 
     private long healtcheckRefreshTime;
 
@@ -36,7 +33,7 @@ public class ConsumerProcess implements Runnable {
             SubscriptionName subscriptionName,
             Consumer consumer,
             Retransmitter retransmitter,
-            BiConsumer<SubscriptionName, Signal.SignalType> shutdownCallback,
+            java.util.function.Consumer<SubscriptionName> shutdownCallback,
             Clock clock
     ) {
         this.subscriptionName = subscriptionName;
@@ -60,7 +57,7 @@ public class ConsumerProcess implements Runnable {
 
         } finally {
             logger.info("Releasing consumer process thred of subscription {}", subscriptionName);
-            shutdownCallback.accept(subscriptionName, shutdownReason);
+            shutdownCallback.accept(subscriptionName);
             refreshHealthcheck();
             Thread.currentThread().setName("consumer-released-thread");
         }
@@ -90,9 +87,7 @@ public class ConsumerProcess implements Runnable {
             case RESTART:
                 restart();
                 break;
-            case STOP_RESTART:
             case STOP:
-                this.shutdownReason = signal.getType();
                 this.running = false;
                 break;
             case RETRANSMIT:

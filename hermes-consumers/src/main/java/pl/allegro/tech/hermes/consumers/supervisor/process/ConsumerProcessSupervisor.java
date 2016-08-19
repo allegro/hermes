@@ -31,6 +31,8 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private final HermesMetrics metrics;
 
+    private final SignalsFilter signalsFilter;
+
     private final long unhealthyAfter;
 
     private long killAfter;
@@ -46,6 +48,8 @@ public class ConsumerProcessSupervisor implements Runnable {
         this.metrics = metrics;
         this.unhealthyAfter = configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER);
         this.killAfter = configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER);
+
+        this.signalsFilter = new SignalsFilter(taskQueue, clock);
     }
 
     public void accept(Signal signal) {
@@ -59,9 +63,9 @@ public class ConsumerProcessSupervisor implements Runnable {
 
         restartUnhealthy();
 
-        List<Signal> generatedSignals = new ArrayList<>();
-        taskQueue.drain(s -> processSignal(s, generatedSignals));
-        generatedSignals.forEach(taskQueue::offer);
+        List<Signal> signalsToProcess = new ArrayList<>();
+        taskQueue.drain(signalsToProcess::add);
+        signalsFilter.filterSignals(signalsToProcess, runningProcesses.existingConsumers()).forEach(this::processSignal);
 
         logger.debug("Process supervisor loop took {} ms to check all consumers", clock.millis() - currentTime);
     }
@@ -72,19 +76,9 @@ public class ConsumerProcessSupervisor implements Runnable {
                 .forEach(consumerProcess -> taskQueue.offer(Signal.of(Signal.SignalType.RESTART_UNHEALTHY, consumerProcess.getSubscriptionName())));
     }
 
-    private void processSignal(Signal signal, List<Signal> generatedSignals) {
+    private void processSignal(Signal signal) {
         try {
             logger.debug("Processing signal: {}", signal);
-            if (shouldSkipSignal(signal)) {
-                logger.info("Skipping stale signal {} for subscription {}", signal.getType(), signal.getTarget());
-                return;
-            }
-
-            if (!signal.canExecuteNow(clock.millis())) {
-                generatedSignals.add(signal);
-                return;
-            }
-
             metrics.counter("supervisor.signal." + signal.getType().name()).inc();
 
             switch (signal.getType()) {
@@ -103,18 +97,18 @@ public class ConsumerProcessSupervisor implements Runnable {
                     break;
                 case STOP:
                     process(signal).accept(signal);
-                    generatedSignals.add(Signal.of(Signal.SignalType.KILL, signal.getTarget(), killTime()));
+                    taskQueue.offer(Signal.of(Signal.SignalType.KILL, signal.getTarget(), killTime()));
                     break;
                 case KILL:
                     kill(signal.getTarget());
                     break;
                 case RESTART_UNHEALTHY:
-                    process(signal).accept(Signal.of(Signal.SignalType.STOP_RESTART, signal.getTarget()));
-                    generatedSignals.add(Signal.of(Signal.SignalType.KILL_UNHEALTHY, signal.getTarget(), killTime()));
+                    process(signal).accept(Signal.of(Signal.SignalType.RESTART, signal.getTarget()));
+                    taskQueue.offer(Signal.of(Signal.SignalType.KILL_UNHEALTHY, signal.getTarget(), killTime()));
                     break;
                 case KILL_UNHEALTHY:
                     Consumer consumer = runningProcesses.getProcess(signal.getTarget()).getConsumer();
-                    generatedSignals.add(Signal.of(Signal.SignalType.START, signal.getTarget(), consumer));
+                    taskQueue.offer(Signal.of(Signal.SignalType.START, signal.getTarget(), consumer));
                     kill(signal.getTarget());
                 case CLEANUP:
                     cleanup(signal.getTarget());
@@ -125,10 +119,6 @@ public class ConsumerProcessSupervisor implements Runnable {
         } catch (Exception exception) {
             logger.error("Supervisor failed to process signal {}", signal, exception);
         }
-    }
-
-    private boolean shouldSkipSignal(Signal signal) {
-        return signal.getType() != Signal.SignalType.START && !runningProcesses.hasProcess(signal.getTarget());
     }
 
     private long killTime() {
@@ -185,12 +175,8 @@ public class ConsumerProcessSupervisor implements Runnable {
         }
     }
 
-    private void handleProcessShutdown(SubscriptionName subscriptionName, Signal.SignalType reason) {
-        Consumer consumer = runningProcesses.getProcess(subscriptionName).getConsumer();
+    private void handleProcessShutdown(SubscriptionName subscriptionName) {
         accept(Signal.of(Signal.SignalType.CLEANUP, subscriptionName));
-        if (reason == Signal.SignalType.STOP_RESTART) {
-            accept(Signal.of(Signal.SignalType.START, subscriptionName, consumer));
-        }
     }
 
     private void cleanup(SubscriptionName subscriptionName) {

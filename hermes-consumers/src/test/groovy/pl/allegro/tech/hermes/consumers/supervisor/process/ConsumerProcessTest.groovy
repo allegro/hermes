@@ -28,7 +28,7 @@ class ConsumerProcessTest extends Specification {
             subscription,
             consumer,
             retransmitter,
-            { a, b -> shutdownRun = true },
+            { a -> shutdownRun = true },
             Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault())
     )
 
