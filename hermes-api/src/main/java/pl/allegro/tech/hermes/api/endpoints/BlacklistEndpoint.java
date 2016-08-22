@@ -32,4 +32,9 @@ public interface BlacklistEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/topics/{topicName}")
     BlacklistStatus isTopicBlacklisted(@PathParam("topicName") String qualifiedTopicName);
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/topics")
+    List<String> topicsBlacklist();
 }

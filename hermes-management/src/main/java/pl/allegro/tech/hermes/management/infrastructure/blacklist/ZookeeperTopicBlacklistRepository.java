@@ -6,14 +6,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperBasedRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.management.domain.topic.blacklist.BlacklistRepository;
-import pl.allegro.tech.hermes.management.domain.topic.blacklist.NotBlacklistedException;
+import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.domain.blacklist.NotUnblacklistedException;
 
-public class ZookeeperBlacklistRepository extends ZookeeperBasedRepository implements BlacklistRepository {
+import java.util.List;
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperBlacklistRepository.class);
+public class ZookeeperTopicBlacklistRepository extends ZookeeperBasedRepository implements TopicBlacklistRepository {
 
-    public ZookeeperBlacklistRepository(CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperTopicBlacklistRepository.class);
+
+    public ZookeeperTopicBlacklistRepository(CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
         super(zookeeper, mapper, paths);
     }
 
@@ -26,8 +28,12 @@ public class ZookeeperBlacklistRepository extends ZookeeperBasedRepository imple
     @Override
     public void remove(String qualifiedTopicName) {
         logger.info("Removing topic {} from Blacklist", qualifiedTopicName);
-        ensureBlacklisted(qualifiedTopicName);
-        super.remove(paths.blacklistedTopicPath(qualifiedTopicName));
+        try {
+            super.remove(paths.blacklistedTopicPath(qualifiedTopicName));
+        } catch (Exception e) {
+            logger.warn("Removing topic {} from Blacklist caused an exception", qualifiedTopicName, e);
+            throw new NotUnblacklistedException(qualifiedTopicName, e);
+        }
     }
 
     @Override
@@ -35,9 +41,8 @@ public class ZookeeperBlacklistRepository extends ZookeeperBasedRepository imple
         return pathExists(paths.blacklistedTopicPath(qualifiedTopicName));
     }
 
-    private void ensureBlacklisted(String qualifiedTopicName) {
-        if (!isBlacklisted(qualifiedTopicName)) {
-            throw new NotBlacklistedException(qualifiedTopicName);
-        }
+    @Override
+    public List<String> list() {
+        return childrenOf(paths.topicsBlacklistPath());
     }
 }

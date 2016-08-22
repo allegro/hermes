@@ -19,6 +19,7 @@ public class CachedTopic {
     private final Topic topic;
     private final KafkaTopics kafkaTopics;
     private final HermesMetrics hermesMetrics;
+    private final boolean blacklisted;
 
     private final Timer topicRequestReadLatencyTimer;
     private final Timer globalRequestReadLatencyTimer;
@@ -46,9 +47,14 @@ public class CachedTopic {
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
 
     public CachedTopic(Topic topic, HermesMetrics hermesMetrics, KafkaTopics kafkaTopics) {
+        this(topic, hermesMetrics, kafkaTopics, false);
+    }
+
+    public CachedTopic(Topic topic, HermesMetrics hermesMetrics, KafkaTopics kafkaTopics, boolean blacklisted) {
         this.topic = topic;
         this.kafkaTopics = kafkaTopics;
         this.hermesMetrics = hermesMetrics;
+        this.blacklisted = blacklisted;
 
         globalRequestMeter = hermesMetrics.meter(Meters.METER);
         topicRequestMeter = hermesMetrics.meter(Meters.TOPIC_METER, topic.getName());
@@ -92,6 +98,10 @@ public class CachedTopic {
 
     public KafkaTopics getKafkaTopics() {
         return kafkaTopics;
+    }
+
+    public boolean isBlacklisted() {
+        return blacklisted;
     }
 
     public StartedTimersPair startRequestReadTimers() {

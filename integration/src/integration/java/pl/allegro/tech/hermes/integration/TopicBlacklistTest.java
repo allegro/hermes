@@ -103,4 +103,18 @@ public class TopicBlacklistTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(BAD_REQUEST);
     }
+
+    @Test
+    public void shouldProperlyReturnTopicsBlacklist() {
+        // when
+        management.blacklist().blacklistTopics(Arrays.asList("g.t1", "g.t2", "g.t3"));
+        wait.untilTopicBlacklisted("g.t1");
+        wait.untilTopicBlacklisted("g.t2");
+        wait.untilTopicBlacklisted("g.t3");
+        management.blacklist().unblacklistTopic("g.t2");
+        wait.untilTopicUnblacklisted("group.topic");
+
+        // then
+        assertThat(management.blacklist().topicsBlacklist()).containsAll(Arrays.asList("g.t1", "g.t3"));
+    }
 }

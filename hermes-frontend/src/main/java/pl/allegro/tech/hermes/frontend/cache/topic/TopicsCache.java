@@ -8,8 +8,6 @@ public interface TopicsCache {
 
     Optional<CachedTopic> getTopic(String qualifiedTopicName);
 
-    boolean isBlacklisted(String qualifiedTopicName);
-
     void start();
 
 }

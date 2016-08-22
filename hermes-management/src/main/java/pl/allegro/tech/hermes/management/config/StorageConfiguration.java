@@ -25,8 +25,8 @@ import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.*;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
-import pl.allegro.tech.hermes.management.domain.topic.blacklist.BlacklistRepository;
-import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperBlacklistRepository;
+import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
 
 import javax.annotation.PostConstruct;
 import java.util.Optional;
@@ -112,8 +112,8 @@ public class StorageConfiguration {
     }
 
     @Bean
-    BlacklistRepository topicBlacklistRepository() {
-        return new ZookeeperBlacklistRepository(storageZookeeper(), objectMapper, zookeeperPaths());
+    TopicBlacklistRepository topicBlacklistRepository() {
+        return new ZookeeperTopicBlacklistRepository(storageZookeeper(), objectMapper, zookeeperPaths());
     }
 
     @Bean

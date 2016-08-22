@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.domain.topic.blacklist.BlacklistService;
+import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistService;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -30,19 +30,28 @@ import static pl.allegro.tech.hermes.api.BlacklistStatus.NOT_BLACKLISTED;
 @Api(value = "/blacklist", description = "Operations on topics")
 public class BlacklistEndpoint {
 
-    private final BlacklistService blacklistService;
+    private final TopicBlacklistService topicBlacklistService;
 
     @Autowired
-    public BlacklistEndpoint(BlacklistService blacklistService) {
-        this.blacklistService = blacklistService;
+    public BlacklistEndpoint(TopicBlacklistService topicBlacklistService) {
+        this.topicBlacklistService = topicBlacklistService;
     }
 
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/topics/{topicName}")
-    @ApiOperation(value = "Blacklist topic", httpMethod = HttpMethod.GET)
+    @ApiOperation(value = "Is topic blacklisted", httpMethod = HttpMethod.GET)
     public BlacklistStatus isTopicBlacklisted(@PathParam("topicName") String qualifiedTopicName) {
-        return blacklistService.isBlacklisted(qualifiedTopicName) ? BLACKLISTED : NOT_BLACKLISTED;
+        return topicBlacklistService.isBlacklisted(qualifiedTopicName) ? BLACKLISTED : NOT_BLACKLISTED;
+    }
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/topics")
+    @RolesAllowed(Roles.ADMIN)
+    @ApiOperation(value = "Get topics blacklist", httpMethod = HttpMethod.GET)
+    public List<String> topicsBlacklist() {
+        return topicBlacklistService.list();
     }
 
     @POST
@@ -52,7 +61,7 @@ public class BlacklistEndpoint {
     @RolesAllowed(Roles.ADMIN)
     @ApiOperation(value = "Blacklist topics", httpMethod = HttpMethod.POST)
     public Response blacklistTopics(List<String> qualifiedTopicNames) {
-        qualifiedTopicNames.forEach(blacklistService::blacklistTopic);
+        qualifiedTopicNames.forEach(topicBlacklistService::blacklist);
         return status(Response.Status.OK).build();
     }
 
@@ -60,9 +69,9 @@ public class BlacklistEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/topics/{topicName}")
     @RolesAllowed(Roles.ADMIN)
-    @ApiOperation(value = "Blacklist topic", httpMethod = HttpMethod.DELETE)
+    @ApiOperation(value = "Unblacklist topic", httpMethod = HttpMethod.DELETE)
     public Response unblacklistTopic(@PathParam("topicName") String qualifiedTopicName) {
-        blacklistService.unblacklistTopic(qualifiedTopicName);
+        topicBlacklistService.unblacklist(qualifiedTopicName);
         return status(Response.Status.OK).build();
     }
 }

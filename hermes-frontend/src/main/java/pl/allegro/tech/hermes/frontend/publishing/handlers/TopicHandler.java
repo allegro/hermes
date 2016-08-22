@@ -54,10 +54,11 @@ class TopicHandler implements HttpHandler {
     private void onTopicPresent(HttpServerExchange exchange, String messageId, Consumer<CachedTopic> consumer) {
         String qualifiedTopicName = exchange.getQueryParameters().get("qualifiedTopicName").getFirst();
         try {
-            Optional<CachedTopic> topic = topicsCache.getTopic(qualifiedTopicName);
-            if (topic.isPresent()) {
-                if (!topicsCache.isBlacklisted(qualifiedTopicName)) {
-                    consumer.accept(topic.get());
+            Optional<CachedTopic> cachedTopic = topicsCache.getTopic(qualifiedTopicName);
+            if (cachedTopic.isPresent()) {
+                CachedTopic topic = cachedTopic.get();
+                if (!topic.isBlacklisted()) {
+                    consumer.accept(topic);
                 } else {
                     topicBlacklisted(exchange, qualifiedTopicName, messageId);
                 }
