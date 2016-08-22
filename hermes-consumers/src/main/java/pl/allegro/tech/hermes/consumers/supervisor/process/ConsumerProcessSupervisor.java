@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 public class ConsumerProcessSupervisor implements Runnable {
@@ -54,6 +55,10 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     public void accept(Signal signal) {
         taskQueue.offer(signal);
+    }
+
+    public Set<SubscriptionName> existingConsumers() {
+        return runningProcesses.existingConsumers();
     }
 
     @Override
@@ -135,19 +140,14 @@ public class ConsumerProcessSupervisor implements Runnable {
         } else {
             logger.info("Interrupting consumer process for subscription {}", subscriptionName);
             Future task = runningProcesses.getExecutionHandle(subscriptionName);
-            runningProcesses.remove(subscriptionName);
-            try {
-                if (!task.isDone()) {
-                    if (task.cancel(true)) {
-                        logger.info("Interrupted consumer process {}", subscriptionName);
-                    } else {
-                        logger.error("Failed to interrupt consumer process {}, possible stale consumer", subscriptionName);
-                    }
+            if (!task.isDone()) {
+                if (task.cancel(true)) {
+                    logger.info("Interrupted consumer process {}", subscriptionName);
                 } else {
-                    logger.info("Consumer was already dead process {}", subscriptionName);
+                    logger.error("Failed to interrupt consumer process {}, possible stale consumer", subscriptionName);
                 }
-            } finally {
-                cleanup(subscriptionName);
+            } else {
+                logger.info("Consumer was already dead process {}", subscriptionName);
             }
         }
     }

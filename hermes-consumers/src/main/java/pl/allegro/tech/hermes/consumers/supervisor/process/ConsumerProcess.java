@@ -50,7 +50,7 @@ public class ConsumerProcess implements Runnable {
             Thread.currentThread().setName("consumer-" + subscriptionName);
 
             start();
-            while (running) {
+            while (running && !Thread.interrupted()) {
                 consumer.consume(() -> processSignals());
             }
             stop();
