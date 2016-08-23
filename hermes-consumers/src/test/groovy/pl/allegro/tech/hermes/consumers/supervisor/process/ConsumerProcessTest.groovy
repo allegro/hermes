@@ -28,8 +28,11 @@ class ConsumerProcessTest extends Specification {
             subscription,
             consumer,
             retransmitter,
+            { a -> shutdownRun = true },
             Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault())
     )
+
+    private boolean shutdownRun = false
 
     def "should run main loop till stop signal sent"() {
         when:
@@ -44,6 +47,16 @@ class ConsumerProcessTest extends Specification {
         consumer.tornDown
     }
 
+    def "should run shutdown callback on Consumer stop"() {
+        when:
+        executor.submit(process)
+        process.accept(Signal.of(Signal.SignalType.STOP, subscription))
+        waiter.waitForSignalProcessing()
+
+        then:
+        shutdownRun
+    }
+
     def "should refresh healthcheck when signals are processed"() {
         given:
         executor.submit(process)
@@ -56,7 +69,7 @@ class ConsumerProcessTest extends Specification {
         process.healtcheckRefreshTime() == 1024
     }
 
-    def "should tear down and initialize consumer on restart"() {
+    def "should tear down and initialize consumer on restart but not call shutdown hook"() {
         given:
         executor.submit(process)
 
@@ -71,6 +84,7 @@ class ConsumerProcessTest extends Specification {
         cleanup:
         process.accept(Signal.of(Signal.SignalType.STOP, subscription))
         waiter.waitForSignalProcessing()
+        !shutdownRun
     }
 
     def "should stop, retransmit and start consumer on retransmission"() {

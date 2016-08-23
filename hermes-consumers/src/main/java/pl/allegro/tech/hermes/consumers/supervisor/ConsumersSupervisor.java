@@ -4,6 +4,8 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 
+import java.util.Set;
+
 public interface ConsumersSupervisor {
 
     void assignConsumerForSubscription(Subscription subscription);
@@ -19,6 +21,8 @@ public interface ConsumersSupervisor {
     void retransmit(SubscriptionName subscription) throws Exception;
 
     void restartConsumer(SubscriptionName subscription) throws Exception;
+
+    Set<SubscriptionName> runningConsumers();
 
     void start() throws Exception;
 }

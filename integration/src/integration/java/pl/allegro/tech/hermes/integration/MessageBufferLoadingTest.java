@@ -39,8 +39,10 @@ import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.apache.commons.io.FileUtils.copyFile;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_ZOOKEEPER_CONNECT_STRING;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
-import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class MessageBufferLoadingTest extends IntegrationTest {
 
