@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,6 +26,8 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NOD
 public class MirroringSupervisorController implements SupervisorController {
 
     private static final Logger logger = LoggerFactory.getLogger(MirroringSupervisorController.class);
+
+    private final String consumerNodeId;
 
     private final ConsumersSupervisor supervisor;
     private final InternalNotificationsBus notificationsBus;
@@ -43,6 +46,8 @@ public class MirroringSupervisorController implements SupervisorController {
                                          WorkTracker workTracker,
                                          ZookeeperAdminCache adminCache,
                                          ConfigFactory configFactory) {
+        this.consumerNodeId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
+
         this.supervisor = supervisor;
         this.notificationsBus = notificationsBus;
         this.assignementRegistry = assignementRegistry;
@@ -115,6 +120,11 @@ public class MirroringSupervisorController implements SupervisorController {
         supervisor.start();
         assignementRegistry.start();
         logger.info("Consumer boot complete. Workload config: [{}]", configFactory.print(CONSUMER_WORKLOAD_NODE_ID, CONSUMER_WORKLOAD_ALGORITHM));
+    }
+
+    @Override
+    public Set<SubscriptionName> assignedSubscriptions() {
+        return assignementRegistry.createSnapshot().getSubscriptionsForConsumerNode(consumerNodeId);
     }
 
     @Override

@@ -22,6 +22,7 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import javax.inject.Inject;
 import java.time.Clock;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -116,6 +117,11 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
     @Override
     public void restartConsumer(SubscriptionName subscription) {
         backgroundProcess.accept(Signal.of(Signal.SignalType.RESTART, subscription));
+    }
+
+    @Override
+    public Set<SubscriptionName> runningConsumers() {
+        return backgroundProcess.existingConsumers();
     }
 
     @Override

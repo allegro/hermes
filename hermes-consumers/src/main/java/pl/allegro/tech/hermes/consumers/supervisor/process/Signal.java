@@ -65,8 +65,12 @@ public class Signal {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Signal)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Signal)) {
+            return false;
+        }
         Signal signal = (Signal) o;
         return type == signal.type &&
                 Objects.equals(target, signal.target);

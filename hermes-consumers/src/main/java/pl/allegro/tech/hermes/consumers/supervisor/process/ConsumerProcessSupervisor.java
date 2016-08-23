@@ -78,7 +78,9 @@ public class ConsumerProcessSupervisor implements Runnable {
     private void restartUnhealthy() {
         runningProcesses.stream()
                 .filter(consumerProcess -> !isHealthy(consumerProcess))
-                .forEach(consumerProcess -> taskQueue.offer(Signal.of(Signal.SignalType.RESTART_UNHEALTHY, consumerProcess.getSubscriptionName())));
+                .forEach(consumerProcess -> taskQueue.offer(Signal.of(
+                        Signal.SignalType.RESTART_UNHEALTHY, consumerProcess.getSubscriptionName())
+                ));
     }
 
     private void processSignal(Signal signal) {

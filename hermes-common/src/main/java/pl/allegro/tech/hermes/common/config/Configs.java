@@ -131,6 +131,7 @@ public enum Configs {
     CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE("consumer.workload.assignment.processing.thread.pool.size", 5),
     CONSUMER_WORKLOAD_NODE_ID("consumer.workload.node.id",
             new InetAddressHostnameResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits())),
+    CONSUMER_WORKLOAD_MONITOR_SCAN_INTERVAL("consumer.workload.monitor.scan.interval.seconds", 120),
     CONSUMER_BATCH_POOLABLE_SIZE("consumer.batch.poolable.size", 1024),
     CONSUMER_BATCH_MAX_POOL_SIZE("consumer.batch.max.pool.size", 64*1024*1024),
     CONSUMER_BATCH_CONNECTION_TIMEOUT("consumer.batch.connection.timeout", 500),

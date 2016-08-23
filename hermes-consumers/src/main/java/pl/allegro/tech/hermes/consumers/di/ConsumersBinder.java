@@ -68,6 +68,8 @@ import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.NonblockingConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
+import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitorFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistryFactory;
@@ -131,6 +133,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindFactory(WorkTrackerFactory.class).in(Singleton.class).to(WorkTracker.class);
         bindFactory(SubscriptionAssignmentRegistryFactory.class).in(Singleton.class).to(SubscriptionAssignmentRegistry.class);
         bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);
+        bindFactory(ConsumersRuntimeMonitorFactory.class).in(Singleton.class).to(ConsumersRuntimeMonitor.class);
 
         bindSingleton(UndeliveredMessageLogPersister.class);
         bindFactory(ByteBufferMessageBatchFactoryProvider.class).in(Singleton.class).to(MessageBatchFactory.class);

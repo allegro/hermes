@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperHolder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.health.HealthCheckServer;
+import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -84,6 +85,7 @@ public class HermesConsumers {
             kafkaNamesMapper.ifPresent(it -> ((KafkaNamesMapperHolder) serviceLocator.getService(KafkaNamesMapper.class)).setKafkaNamespaceMapper(it.apply(serviceLocator)));
 
             supervisorController.start();
+            serviceLocator.getService(ConsumersRuntimeMonitor.class).start();
             healthCheckServer.start();
             hooksHandler.startup(serviceLocator);
         } catch (Exception e) {
