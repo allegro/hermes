@@ -5,7 +5,8 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
 
         var repository = $resource(discovery.resolve('/topics/:name'), null, {update: {method: 'PUT'}});
         var previewRepository = $resource(discovery.resolve('/topics/:name/preview'), null);
-        var blacklistRepository = $resource(discovery.resolve('/blacklist/topics/:name'), null);
+        var blacklistRepository = $resource(discovery.resolve('/blacklist/topics/:name'), null,
+            { blacklist: { method: 'POST', url: discovery.resolve('/blacklist/topics') } });
         var listing = $resource(discovery.resolve('/topics'));
 
         function wrapSchemaSave(topic, schema, promise) {
@@ -64,6 +65,12 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
             },
             blacklistStatus: function (topicName) {
                 return blacklistRepository.get({name: topicName}).$promise;
+            },
+            blacklist: function (topicName) {
+                return blacklistRepository.blacklist([topicName])
+            },
+            unblacklist: function (topicName) {
+                return blacklistRepository.delete({name: topicName})
             }
         };
     }]);

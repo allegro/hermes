@@ -34,11 +34,14 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             });
         }
 
-        loadSubscriptions();
+        function loadBlacklistStatus() {
+            topicRepository.blacklistStatus(topicName).then(function (blacklistStatus) {
+                $scope.isBlacklisted = blacklistStatus.blacklisted;
+            });
+        }
 
-        topicRepository.blacklistStatus(topicName).then(function(blacklistStatus) {
-            $scope.isBlacklisted = blacklistStatus.blacklisted;
-        });
+        loadSubscriptions();
+        loadBlacklistStatus();
 
         topicRepository.preview(topicName).then(function(preview) {
             $scope.preview = preview;
@@ -89,6 +92,46 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                             passwordService.reset();
                         });
                 });
+        };
+
+        $scope.blacklist = function () {
+            confirmationModal.open({
+                action: 'Blacklist',
+                actionSubject: 'Topic ' + $scope.topic.name,
+                passwordLabel: 'Group password',
+                passwordHint: 'Password for group ' + groupName
+            }).result.then(function () {
+                topicRepository.blacklist(topicName).$promise
+                    .then(function () {
+                        toaster.pop('success', 'Success', 'Topic has been blacklisted');
+                    })
+                    .catch(function (response) {
+                        toaster.pop('error', 'Error ' + response.status, response.data.message);
+                    })
+                    .finally(function () {
+                        loadBlacklistStatus();
+                    });
+            });
+        };
+
+        $scope.unblacklist = function () {
+            confirmationModal.open({
+                action: 'Unblacklist',
+                actionSubject: 'Topic ' + $scope.topic.name,
+                passwordLabel: 'Group password',
+                passwordHint: 'Password for group ' + groupName
+            }).result.then(function () {
+                topicRepository.unblacklist(topicName).$promise
+                    .then(function () {
+                        toaster.pop('success', 'Success', 'Topic has been unblacklisted');
+                    })
+                    .catch(function (response) {
+                        toaster.pop('error', 'Error ' + response.status, response.data.message);
+                    })
+                    .finally(function () {
+                        loadBlacklistStatus();
+                    });
+            });
         };
 
         $scope.addSubscription = function () {

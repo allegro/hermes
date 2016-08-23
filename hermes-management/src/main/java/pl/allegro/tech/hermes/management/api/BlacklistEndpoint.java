@@ -49,7 +49,6 @@ public class BlacklistEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/topics")
     @RolesAllowed(Roles.ADMIN)
-    @ApiOperation(value = "Get topics blacklist", httpMethod = HttpMethod.GET)
     public List<String> topicsBlacklist() {
         return topicBlacklistService.list();
     }

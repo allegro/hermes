@@ -9,6 +9,8 @@
 
     <div class="pull-right">
         <button class="btn btn-primary" ng-click="edit()">Edit</button>
+        <button class="btn btn-warning" ng-click="blacklist()" ng-show="!isBlacklisted">Blacklist</button>
+        <button class="btn btn-default" ng-click="unblacklist()" ng-show="isBlacklisted">Unblacklist</button>
         <button class="btn btn-danger" ng-click="remove()">Remove</button>
     </div>
 
@@ -17,7 +19,7 @@
 
     <div class="alert alert-danger" role="alert" ng-show="isBlacklisted">
         <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-        The topic has been blacklistted - contact Hermes admins why publishing returns 403's.
+        The topic has been blacklisted - contact Hermes admins why publishing returns 403's.
     </div>
 
     <div class="row">
