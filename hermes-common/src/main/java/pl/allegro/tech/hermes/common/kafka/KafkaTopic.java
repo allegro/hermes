@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.kafka;
 
+import com.google.common.base.MoreObjects;
 import pl.allegro.tech.hermes.api.ContentType;
 
 import java.util.Objects;
@@ -40,7 +41,7 @@ public class KafkaTopic {
 
     @Override
     public String toString() {
-        return com.google.common.base.Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("name", name)
                 .add("contentType", contentType)
                 .toString();

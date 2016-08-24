@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper
 
+import com.google.common.primitives.Longs
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
@@ -7,6 +8,8 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
 import pl.allegro.tech.hermes.test.IntegrationTest
+
+import java.nio.charset.StandardCharsets
 
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription

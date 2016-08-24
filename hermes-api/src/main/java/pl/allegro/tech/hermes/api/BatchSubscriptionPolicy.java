@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.base.MoreObjects;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.validation.constraints.Min;
@@ -92,7 +93,7 @@ public class BatchSubscriptionPolicy {
 
     @Override
     public String toString() {
-        return com.google.common.base.Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("messageTtl", messageTtl)
                 .add("messageBackoff", messageBackoff)
                 .add("retryClientErrors", retryClientErrors)
