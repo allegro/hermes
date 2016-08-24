@@ -1,7 +1,12 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.endpoints.*;
+import pl.allegro.tech.hermes.api.endpoints.BlacklistEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.test.helper.client.Hermes;
 
 import java.util.List;
@@ -18,12 +23,15 @@ public class HermesEndpoints {
 
     private final QueryEndpoint queryEndpoint;
 
+    private final BlacklistEndpoint blacklistEndpoint;
+
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
         this.subscriptionEndpoint = hermes.createSubscriptionEndpoint();
         this.schemaEndpoint = hermes.createSchemaEndpoint();
         this.queryEndpoint = hermes.createQueryEndpoint();
+        this.blacklistEndpoint = hermes.createBlacklistEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl) {
@@ -54,6 +62,10 @@ public class HermesEndpoints {
 
     public QueryEndpoint query() {
         return queryEndpoint;
+    }
+
+    public BlacklistEndpoint blacklist() {
+        return blacklistEndpoint;
     }
 
     public List<String> findTopics(Topic topic, boolean tracking) {

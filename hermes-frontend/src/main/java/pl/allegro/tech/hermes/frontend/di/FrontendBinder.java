@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.di;
 
 import io.undertow.server.HttpHandler;
 import org.glassfish.hk2.api.TypeLiteral;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import pl.allegro.tech.hermes.common.di.AbstractBinder;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
@@ -11,9 +11,9 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
@@ -71,9 +71,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(PersistentBufferExtension.class);
         bindSingleton(MessagePreviewPersister.class);
         bindSingleton(MessagePreviewLog.class);
+        bindSingletonFactory(BlacklistZookeeperNotifyingCacheFactory.class);
     }
 
-    private <T> void bindSingleton(Class<T> clazz) {
-        bind(clazz).in(Singleton.class).to(clazz);
-    }
 }

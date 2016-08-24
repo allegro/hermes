@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.GROUP_NOT_EXISTS;
+import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_BLACKLISTED;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
 
@@ -53,12 +54,17 @@ class TopicHandler implements HttpHandler {
     private void onTopicPresent(HttpServerExchange exchange, String messageId, Consumer<CachedTopic> consumer) {
         String qualifiedTopicName = exchange.getQueryParameters().get("qualifiedTopicName").getFirst();
         try {
-            Optional<CachedTopic> topic = topicsCache.getTopic(qualifiedTopicName);
-            if (topic.isPresent()) {
-                consumer.accept(topic.get());
-                return;
+            Optional<CachedTopic> cachedTopic = topicsCache.getTopic(qualifiedTopicName);
+            if (cachedTopic.isPresent()) {
+                CachedTopic topic = cachedTopic.get();
+                if (!topic.isBlacklisted()) {
+                    consumer.accept(topic);
+                } else {
+                    topicBlacklisted(exchange, qualifiedTopicName, messageId);
+                }
+            } else {
+                nonExistentTopic(exchange, qualifiedTopicName, messageId);
             }
-            nonExistentTopic(exchange, qualifiedTopicName, messageId);
         } catch (IllegalArgumentException exception) {
             missingTopicGroup(exchange, qualifiedTopicName, messageId);
         }
@@ -78,5 +84,9 @@ class TopicHandler implements HttpHandler {
                 error("Topic not found: " + qualifiedTopicName, TOPIC_NOT_EXISTS),
                 messageId,
                 UNKNOWN_TOPIC_NAME);
+    }
+
+    private void topicBlacklisted(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
+        messageErrorProcessor.sendQuietly(exchange, error("Topic blacklisted: " + qualifiedTopicName, TOPIC_BLACKLISTED),  messageId, qualifiedTopicName);
     }
 }

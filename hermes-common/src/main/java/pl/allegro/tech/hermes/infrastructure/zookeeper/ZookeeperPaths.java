@@ -17,6 +17,7 @@ public class ZookeeperPaths {
     public static final String METRICS_PATH = "metrics";
     public static final String ADMIN_PATH = "admin";
     public static final String PREVIEW_PATH = "preview";
+    public static final String BLACKLIST_PATH = "blacklist";
 
     private final String basePath;
 
@@ -105,6 +106,14 @@ public class ZookeeperPaths {
                 consumersPath(),
                 hostname + subscriptionMetricPathWithoutBasePath(topicName, subscriptionName, metricName)
         );
+    }
+
+    public String topicsBlacklistPath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, BLACKLIST_PATH, TOPICS_PATH);
+    }
+
+    public String blacklistedTopicPath(String qualifiedTopicName) {
+        return Joiner.on(URL_SEPARATOR).join(topicsBlacklistPath(), qualifiedTopicName);
     }
 
     public String subscriptionMetricPathWithoutBasePath(TopicName topicName, String subscriptionName, String metricName) {
