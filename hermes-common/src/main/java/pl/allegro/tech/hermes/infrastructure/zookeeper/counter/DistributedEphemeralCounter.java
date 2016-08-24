@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper.counter;
 
 import com.google.common.primitives.Longs;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.utils.EnsurePath;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
@@ -59,10 +58,8 @@ public class DistributedEphemeralCounter {
 
     private void ensureCounterExists(String path) {
         try {
-            new EnsurePath(path).excludingLast().ensure(curatorClient.getZookeeperClient());
-            if (curatorClient.checkExists().forPath(path) == null) {
-                curatorClient.create().withMode(CreateMode.EPHEMERAL).forPath(path);
-                curatorClient.setData().forPath(path, Longs.toByteArray(0));
+            if (curatorClient.checkExists().creatingParentContainersIfNeeded().forPath(path) == null) {
+                curatorClient.create().withMode(CreateMode.EPHEMERAL).forPath(path, Longs.toByteArray(0));
             }
         } catch (Exception e) {
             throw new ZookeeperCounterException(path, e);

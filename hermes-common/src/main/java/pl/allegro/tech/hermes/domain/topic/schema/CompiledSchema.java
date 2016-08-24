@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.domain.topic.schema;
 
+import com.google.common.base.MoreObjects;
+
 import java.util.Objects;
 
 public class CompiledSchema<T> {
@@ -40,7 +42,7 @@ public class CompiledSchema<T> {
 
     @Override
     public String toString() {
-        return com.google.common.base.Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("schema", schema)
                 .add("version", version)
                 .toString();
