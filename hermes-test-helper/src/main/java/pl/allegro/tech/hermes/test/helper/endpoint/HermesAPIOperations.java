@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.test.helper.endpoint;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
@@ -12,7 +13,6 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.ws.rs.core.Response;
 
-import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,11 +57,14 @@ public class HermesAPIOperations {
         assertThat(endpoints.topic().create(topic).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilTopicCreated(topic);
-
-        ofNullable(topic.getMessageSchema()).ifPresent(s ->
-                assertThat(endpoints.schema().save(topic.getQualifiedName(), false, s).getStatus()).isEqualTo(CREATED.getStatusCode()));
-
         return topic;
+    }
+
+    public void saveSchema(Topic topic, String schema) {
+        Response response = endpoints.schema().save(topic.getQualifiedName(), false, schema);
+        assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
+
+        wait.untilSchemaCreated(topic);
     }
 
     public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint) {
@@ -134,9 +137,6 @@ public class HermesAPIOperations {
         Topic beforeUpdate = endpoints.topic().get(topicName.qualifiedName());
         Topic reference = Patch.apply(beforeUpdate, patch);
 
-        ofNullable(reference.getMessageSchema()).ifPresent(s ->
-                assertThat(endpoints.schema().save(reference.getQualifiedName(), false, s).getStatus()).isEqualTo(CREATED.getStatusCode()));
-
         assertThat(endpoints.topic().update(topicName.qualifiedName(), patch).getStatus()).isEqualTo(OK.getStatusCode());
         wait.untilTopicUpdated(reference);
     }
@@ -164,5 +164,14 @@ public class HermesAPIOperations {
                 .build();
 
         createSubscription(topic, subscription);
+    }
+
+    public void createOAuthProvider(OAuthProvider oAuthProvider) {
+        if (endpoints.oAuthProvider().list().contains(oAuthProvider.getName())) {
+            return;
+        }
+        assertThat(endpoints.oAuthProvider().create(oAuthProvider).getStatus()).isEqualTo(CREATED.getStatusCode());
+
+        wait.untilOAuthProviderCreated(oAuthProvider.getName());
     }
 }

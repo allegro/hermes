@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.base.MoreObjects;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.validation.constraints.Max;
@@ -88,7 +89,7 @@ public class SubscriptionPolicy {
 
     @Override
     public String toString() {
-        return com.google.common.base.Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("rate", rate)
                 .add("messageTtl", messageTtl)
                 .add("requestTimeout", requestTimeout)

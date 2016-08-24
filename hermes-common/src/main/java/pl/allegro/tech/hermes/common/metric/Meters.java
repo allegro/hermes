@@ -31,5 +31,8 @@ public class Meters {
         DISCARDED_SUBSCRIPTION_METER = DISCARDED_TOPIC_METER + "." + SUBSCRIPTION,
 
         EXECUTOR_SUBMITTED = "executors." + EXECUTOR_NAME + ".submitted",
-        EXECUTOR_COMPLETED = "executors." + EXECUTOR_NAME + ".completed";
+        EXECUTOR_COMPLETED = "executors." + EXECUTOR_NAME + ".completed",
+
+        OAUTH_SUBSCRIPTION_TOKEN_REQUEST = "oauth.subscription." + GROUP + "." + TOPIC + "." + SUBSCRIPTION
+                + ".token-request." + OAUTH_PROVIDER_NAME;
 }

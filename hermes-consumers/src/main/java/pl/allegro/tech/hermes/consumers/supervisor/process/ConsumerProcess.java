@@ -23,19 +23,23 @@ public class ConsumerProcess implements Runnable {
 
     private final Retransmitter retransmitter;
 
+    private final java.util.function.Consumer<SubscriptionName> shutdownCallback;
+
     private volatile boolean running = true;
 
-    private volatile long healtcheckRefreshTime;
+    private long healtcheckRefreshTime;
 
     public ConsumerProcess(
             SubscriptionName subscriptionName,
             Consumer consumer,
             Retransmitter retransmitter,
+            java.util.function.Consumer<SubscriptionName> shutdownCallback,
             Clock clock
     ) {
         this.subscriptionName = subscriptionName;
         this.consumer = consumer;
         this.retransmitter = retransmitter;
+        this.shutdownCallback = shutdownCallback;
         this.clock = clock;
         this.healtcheckRefreshTime = clock.millis();
     }
@@ -46,12 +50,14 @@ public class ConsumerProcess implements Runnable {
             Thread.currentThread().setName("consumer-" + subscriptionName);
 
             start();
-            while (running) {
+            while (running && !Thread.interrupted()) {
                 consumer.consume(() -> processSignals());
             }
             stop();
 
         } finally {
+            logger.info("Releasing consumer process thred of subscription {}", subscriptionName);
+            shutdownCallback.accept(subscriptionName);
             refreshHealthcheck();
             Thread.currentThread().setName("consumer-released-thread");
         }
@@ -88,10 +94,10 @@ public class ConsumerProcess implements Runnable {
                 retransmit();
                 break;
             case UPDATE_SUBSCRIPTION:
-                consumer.updateSubscription(signal.getExtractedPayload());
+                consumer.updateSubscription(signal.getPayload());
                 break;
             case UPDATE_TOPIC:
-                consumer.updateTopic(signal.getExtractedPayload());
+                consumer.updateTopic(signal.getPayload());
                 break;
         }
     }
@@ -158,4 +164,6 @@ public class ConsumerProcess implements Runnable {
     public Consumer getConsumer() {
         return consumer;
     }
+
+
 }

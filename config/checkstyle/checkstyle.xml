@@ -131,6 +131,7 @@
         <!--<module name="InnerAssignment"/>-->
         <module name="MagicNumber">
             <property name="severity" value="info"/>
+            <property name="ignoreAnnotation" value="true" />
         </module>
         <module name="MissingSwitchDefault"/>
         <module name="SimplifyBooleanExpression"/>

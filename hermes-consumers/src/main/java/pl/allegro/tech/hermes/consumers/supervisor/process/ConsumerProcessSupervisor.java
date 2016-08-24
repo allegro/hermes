@@ -11,7 +11,9 @@ import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 
 import java.time.Clock;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 public class ConsumerProcessSupervisor implements Runnable {
@@ -30,7 +32,11 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private final HermesMetrics metrics;
 
-    private long unhealthyAfter;
+    private final SignalsFilter signalsFilter;
+
+    private final long unhealthyAfter;
+
+    private long killAfter;
 
     public ConsumerProcessSupervisor(ConsumersExecutorService executor,
                                      Retransmitter retransmitter,
@@ -42,10 +48,17 @@ public class ConsumerProcessSupervisor implements Runnable {
         this.clock = clock;
         this.metrics = metrics;
         this.unhealthyAfter = configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER);
+        this.killAfter = configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER);
+
+        this.signalsFilter = new SignalsFilter(taskQueue, clock);
     }
 
     public void accept(Signal signal) {
         taskQueue.offer(signal);
+    }
+
+    public Set<SubscriptionName> existingConsumers() {
+        return runningProcesses.existingConsumers();
     }
 
     @Override
@@ -54,7 +67,10 @@ public class ConsumerProcessSupervisor implements Runnable {
         long currentTime = clock.millis();
 
         restartUnhealthy();
-        taskQueue.drain(this::processSignal);
+
+        List<Signal> signalsToProcess = new ArrayList<>();
+        taskQueue.drain(signalsToProcess::add);
+        signalsFilter.filterSignals(signalsToProcess, runningProcesses.existingConsumers()).forEach(this::processSignal);
 
         logger.debug("Process supervisor loop took {} ms to check all consumers", clock.millis() - currentTime);
     }
@@ -62,7 +78,9 @@ public class ConsumerProcessSupervisor implements Runnable {
     private void restartUnhealthy() {
         runningProcesses.stream()
                 .filter(consumerProcess -> !isHealthy(consumerProcess))
-                .forEach(consumerProcess -> taskQueue.offer(Signal.of(Signal.SignalType.KILL_RESTART, consumerProcess.getSubscriptionName())));
+                .forEach(consumerProcess -> taskQueue.offer(Signal.of(
+                        Signal.SignalType.RESTART_UNHEALTHY, consumerProcess.getSubscriptionName())
+                ));
     }
 
     private void processSignal(Signal signal) {
@@ -82,17 +100,25 @@ public class ConsumerProcessSupervisor implements Runnable {
                     process(signal).accept(signal);
                     break;
                 case RESTART:
-                case KILL_RESTART:
-                    Consumer consumer = process(signal).getConsumer();
-                    kill(process(signal));
-                    taskQueue.offer(Signal.of(Signal.SignalType.START, signal.getTarget(), consumer));
+                    process(signal).accept(signal);
                     break;
                 case STOP:
                     process(signal).accept(signal);
-                    taskQueue.offer(Signal.of(Signal.SignalType.CLEANUP, signal.getTarget()));
+                    taskQueue.offer(Signal.of(Signal.SignalType.KILL, signal.getTarget(), killTime()));
                     break;
+                case KILL:
+                    kill(signal.getTarget());
+                    break;
+                case RESTART_UNHEALTHY:
+                    process(signal).accept(Signal.of(Signal.SignalType.RESTART, signal.getTarget()));
+                    taskQueue.offer(Signal.of(Signal.SignalType.KILL_UNHEALTHY, signal.getTarget(), killTime()));
+                    break;
+                case KILL_UNHEALTHY:
+                    Consumer consumer = runningProcesses.getProcess(signal.getTarget()).getConsumer();
+                    taskQueue.offer(Signal.of(Signal.SignalType.START, signal.getTarget(), consumer));
+                    kill(signal.getTarget());
                 case CLEANUP:
-                    cleanup(process(signal));
+                    cleanup(signal.getTarget());
                     break;
                 default:
                     break;
@@ -102,22 +128,29 @@ public class ConsumerProcessSupervisor implements Runnable {
         }
     }
 
+    private long killTime() {
+        return clock.millis() + killAfter;
+    }
+
     private ConsumerProcess process(Signal signal) {
         return runningProcesses.getProcess(signal.getTarget());
     }
 
-    private void kill(ConsumerProcess consumerProcess) {
-        logger.info("Interrupting consumer process {}", consumerProcess);
-        Future task = runningProcesses.getExecutionHandle(consumerProcess);
-        runningProcesses.remove(consumerProcess);
-        if (!task.isDone()) {
-            if (task.cancel(true)) {
-                logger.info("Interrupted consumer process {}", consumerProcess);
-            } else {
-                logger.error("Failed to interrupt consumer process {}, possible stale consumer", consumerProcess);
-            }
+    private void kill(SubscriptionName subscriptionName) {
+        if (runningProcesses.hasProcess(subscriptionName)) {
+            logger.info("Process for subscription {} no longer exists", subscriptionName);
         } else {
-            logger.info("Consumer was already dead process {}", consumerProcess);
+            logger.info("Interrupting consumer process for subscription {}", subscriptionName);
+            Future task = runningProcesses.getExecutionHandle(subscriptionName);
+            if (!task.isDone()) {
+                if (task.cancel(true)) {
+                    logger.info("Interrupted consumer process {}", subscriptionName);
+                } else {
+                    logger.error("Failed to interrupt consumer process {}, possible stale consumer", subscriptionName);
+                }
+            } else {
+                logger.info("Consumer was already dead process {}", subscriptionName);
+            }
         }
     }
 
@@ -130,27 +163,26 @@ public class ConsumerProcessSupervisor implements Runnable {
         return true;
     }
 
-    private void start(SubscriptionName subscriptionName, Optional<Consumer> consumer) {
+    private void start(SubscriptionName subscriptionName, Consumer consumer) {
         logger.info("Starting consumer process {}", subscriptionName);
 
-        ConsumerProcess process;
-        if (consumer.isPresent()) {
-            process = new ConsumerProcess(subscriptionName, consumer.get(), retransmitter, clock);
-        } else if (runningProcesses.hasProcess(subscriptionName)) {
-            process = runningProcesses.getProcess(subscriptionName);
+        if (!runningProcesses.hasProcess(subscriptionName)) {
+            ConsumerProcess process = new ConsumerProcess(subscriptionName, consumer, retransmitter,
+                    this::handleProcessShutdown, clock);
+            Future future = executor.execute(process);
+            runningProcesses.add(process, future);
+            logger.info("Started consumer process {}", process);
         } else {
-            logger.error("Failed to start: no consumer process for {} and none provided", subscriptionName);
-            return;
+            logger.info("Abort consumer process start: process for subscription {} is already running", subscriptionName);
         }
-
-        Future future = executor.execute(process);
-        runningProcesses.add(process, future);
-
-        logger.info("Started consumer process {}", process);
     }
 
-    private void cleanup(ConsumerProcess consumerProcess) {
-        kill(consumerProcess);
+    private void handleProcessShutdown(SubscriptionName subscriptionName) {
+        accept(Signal.of(Signal.SignalType.CLEANUP, subscriptionName));
+    }
+
+    private void cleanup(SubscriptionName subscriptionName) {
+        runningProcesses.remove(subscriptionName);
     }
 
     public void shutdown() {

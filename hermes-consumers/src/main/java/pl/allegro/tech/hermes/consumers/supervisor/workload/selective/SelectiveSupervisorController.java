@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import static pl.allegro.tech.hermes.common.config.Configs.*;
@@ -121,6 +122,11 @@ public class SelectiveSupervisorController implements SupervisorController {
                         CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION,
                         CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER));
         registry.start();
+    }
+
+    @Override
+    public Set<SubscriptionName> assignedSubscriptions() {
+        return registry.createSnapshot().getSubscriptionsForConsumerNode(getId());
     }
 
     @Override

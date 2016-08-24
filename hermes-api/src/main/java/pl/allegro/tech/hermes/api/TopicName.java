@@ -2,11 +2,13 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Pattern;
+
+import java.util.Objects;
 
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 
@@ -59,7 +61,7 @@ public class TopicName {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("name", name)
                 .add("groupName", groupName)
                 .toString();
@@ -76,12 +78,12 @@ public class TopicName {
 
         TopicName that = (TopicName) o;
 
-        return Objects.equal(this.name, that.name)
-                && Objects.equal(this.groupName, that.groupName);
+        return Objects.equals(this.name, that.name)
+                && Objects.equals(this.groupName, that.groupName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(name, groupName);
+        return Objects.hash(name, groupName);
     }
 }

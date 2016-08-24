@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
@@ -49,9 +50,8 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     }
 
     private HttpRequestFactory httpRequestFactory(Subscription subscription) {
-        EndpointAddress endpoint = subscription.getEndpoint();
         int requestTimeout = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
-        return new HttpRequestFactory(httpClient, requestTimeout, metadataAppender, authorizationProviderFactory.create(endpoint));
+        return new HttpRequestFactory(httpClient, requestTimeout, metadataAppender, authorizationProviderFactory.create(subscription));
     }
 
 

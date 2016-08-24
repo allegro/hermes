@@ -5,14 +5,14 @@ import pl.allegro.tech.hermes.api.TopicName;
 public class NoOperationPublishingTracker implements PublishingTracker {
 
     @Override
-    public void logInflight(String messageId, TopicName topicName) {
+    public void logInflight(String messageId, TopicName topicName, String hostname) {
     }
 
     @Override
-    public void logPublished(String messageId, TopicName topicName) {
+    public void logPublished(String messageId, TopicName topicName, String hostname) {
     }
 
     @Override
-    public void logError(String messageId, TopicName topicName, String reason) {
+    public void logError(String messageId, TopicName topicName, String reason, String hostname) {
     }
 }

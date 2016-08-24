@@ -3,12 +3,12 @@ package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import com.google.common.collect.ImmutableList;
 
+import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 
@@ -35,8 +35,8 @@ public class MultiMessageSendingResult implements MessageSendingResult {
     }
 
     @Override
-    public boolean ignoreInRateCalculation(boolean retryClientErrors) {
-        return children.stream().allMatch(r -> r.ignoreInRateCalculation(retryClientErrors));
+    public boolean ignoreInRateCalculation(boolean retryClientErrors, boolean isOAuthSecuredSubscription) {
+        return children.stream().allMatch(r -> r.ignoreInRateCalculation(retryClientErrors, isOAuthSecuredSubscription));
     }
 
     @Override
@@ -69,6 +69,7 @@ public class MultiMessageSendingResult implements MessageSendingResult {
         return children.isEmpty() || children.stream().anyMatch(MessageSendingResult::isRetryLater);
     }
 
+    @Override
     public List<MessageSendingResultLogInfo> getLogInfo() {
             return children.stream().map(child ->
                     new MessageSendingResultLogInfo(child.getRequestUri(), child.getFailure(), child.getRootCause()))
@@ -76,10 +77,13 @@ public class MultiMessageSendingResult implements MessageSendingResult {
 
     }
 
-    public List<String> getSucceededUris(Predicate<MessageSendingResult> filter) {
+    @Override
+    public List<URI> getSucceededUris(Predicate<MessageSendingResult> filter) {
             return children.stream()
                     .filter(filter)
                     .map(SingleMessageSendingResult::getRequestUri)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .collect(Collectors.toList());
 
     }
@@ -91,7 +95,7 @@ public class MultiMessageSendingResult implements MessageSendingResult {
     @Override
     public String getRootCause() {
         return children.stream()
-                .map(child -> child.getRequestUri()+":"+child.getRootCause())
+                .map(child -> child.getRequestUri().map(Object::toString).orElse("") + ":" + child.getRootCause())
                 .collect(joining(";"));
     }
 }

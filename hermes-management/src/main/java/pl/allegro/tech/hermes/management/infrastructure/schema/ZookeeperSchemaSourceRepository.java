@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.schema;
 
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.utils.EnsurePath;
 import pl.allegro.tech.hermes.api.SchemaSource;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.schema.ZookeeperSchemaSourceProvider;
@@ -20,8 +19,12 @@ public class ZookeeperSchemaSourceRepository extends ZookeeperSchemaSourceProvid
     public void save(SchemaSource schemaSource, Topic topic) {
         try {
             String schemaPath = zkPaths.topicPath(topic.getName(), SCHEMA_SUFFIX);
-            new EnsurePath(schemaPath).ensure(curatorFramework.getZookeeperClient());
-            curatorFramework.setData().forPath(schemaPath, schemaSource.value().getBytes());
+            byte[] schema = schemaSource.value().getBytes();
+            if (curatorFramework.checkExists().forPath(schemaPath) == null) {
+                curatorFramework.create().creatingParentsIfNeeded().forPath(schemaPath, schema);
+            } else {
+                curatorFramework.setData().forPath(schemaPath, schema);
+            }
         } catch (Exception e) {
             throw new CouldNotSaveSchemaException("Could not store in zookeeper schema for topic " + topic.getQualifiedName(), e);
         }

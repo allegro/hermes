@@ -27,9 +27,7 @@ class DefaultSuccessHandlerTest extends Specification {
 
     private Subscription subscription = subscription('group.topic', 'subscription').withTrackingEnabled(true).build()
 
-    private DefaultSuccessHandler handler = new DefaultSuccessHandler(
-            offsetQueue, Stub(HermesMetrics), trackers
-    )
+    private DefaultSuccessHandler handler = new DefaultSuccessHandler(offsetQueue, Stub(HermesMetrics), trackers)
 
     def "should commit message and save tracking information on message success"() {
         given:
@@ -37,11 +35,10 @@ class DefaultSuccessHandlerTest extends Specification {
         MessageSendingResult result = MessageSendingResult.failedResult(500)
 
         when:
-        handler.handle(message, subscription, result)
+        handler.handleSuccess(message, subscription, result)
 
         then:
         sendingTracker.hasSuccessfulLog('kafka_topic', 0, 123L)
         offsetQueue.drainCommittedOffsets({ o -> assert o.partition == 0 && o.offset == 123L })
     }
-
 }

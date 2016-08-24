@@ -1,26 +1,32 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http
 
 import pl.allegro.tech.hermes.api.EndpointAddress
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.BasicAuthProvider
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory
+import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder
 import spock.lang.Specification
 
 class HttpAuthorizationProviderFactoryTest extends Specification {
 
-    private final HttpAuthorizationProviderFactory factory = new HttpAuthorizationProviderFactory()
+    private final HttpAuthorizationProviderFactory factory = new HttpAuthorizationProviderFactory(null)
 
     def "should return empty when URL has no credentials"() {
         given:
-        EndpointAddress address = EndpointAddress.of("http://example.com")
-
+        def subscription = SubscriptionBuilder.subscription("group.topic", "subscription")
+                .withEndpoint(EndpointAddress.of("http://example.com"))
+                .build()
         expect:
-        !factory.create(address).present
+        !factory.create(subscription).present
     }
 
     def "should return BasicAuth provider when URL contains credentials"() {
         given:
-        EndpointAddress address = EndpointAddress.of("http://user:password@example.com")
+        def subscription = SubscriptionBuilder.subscription("group.topic", "subscription")
+                .withEndpoint(EndpointAddress.of("http://user:password@example.com"))
+                .build()
 
         expect:
-        factory.create(address).get() instanceof BasicAuthProvider
+        factory.create(subscription).get() instanceof BasicAuthProvider
     }
 
 }

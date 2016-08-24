@@ -11,8 +11,6 @@ public class TopicBuilder {
 
     private String description = "description";
 
-    private String messageSchema;
-
     private boolean validationEnabled = false;
 
     private boolean validationDryRunEnabled = false;
@@ -49,7 +47,7 @@ public class TopicBuilder {
 
     public Topic build() {
         return new Topic(
-                name, description, retentionTime, messageSchema, validationEnabled, validationDryRunEnabled, migratedFromJsonType,
+                name, description, retentionTime, validationEnabled, validationDryRunEnabled, migratedFromJsonType,
                 ack, trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerialization
         );
     }
@@ -66,11 +64,6 @@ public class TopicBuilder {
 
     public TopicBuilder withRetentionTime(int retentionTime) {
         this.retentionTime = new RetentionTime(retentionTime);
-        return this;
-    }
-
-    public TopicBuilder withMessageSchema(String messageSchema) {
-        this.messageSchema = messageSchema;
         return this;
     }
 

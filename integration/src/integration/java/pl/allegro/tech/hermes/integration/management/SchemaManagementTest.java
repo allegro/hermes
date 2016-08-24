@@ -9,8 +9,8 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class SchemaManagementTest extends IntegrationTest {
 
@@ -78,9 +78,9 @@ public class SchemaManagementTest extends IntegrationTest {
         AvroUser avroUser = new AvroUser();
         Topic avroTopic = topic("avroGroup", "avroTopic")
                 .withContentType(ContentType.AVRO)
-                .withMessageSchema(avroUser.getSchema().toString())
                 .build();
         operations.buildTopic(avroTopic);
+        operations.saveSchema(avroTopic, avroUser.getSchemaAsString());
 
         // when
         Response response = management.schema().delete("avroGroup.avroTopic");
@@ -93,11 +93,11 @@ public class SchemaManagementTest extends IntegrationTest {
     public void shouldNotSaveInvalidAvroSchema() throws IOException {
         // given
         AvroUser avroUser = new AvroUser();
-        Topic avroTopic = topic("avroGroup", "avroTopic")
+        Topic avroTopic = operations.buildTopic(topic("avroGroup", "avroTopic")
                 .withContentType(ContentType.AVRO)
-                .withMessageSchema(avroUser.getSchema().toString())
-                .build();
-        operations.buildTopic(avroTopic);
+                .build()
+        );
+        operations.saveSchema(avroTopic, avroUser.getSchemaAsString());
 
         // when
         Response response = management.schema().save("avroGroup.avroTopic", "{");

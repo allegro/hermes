@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper.cache;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
-import org.apache.curator.utils.EnsurePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -83,7 +82,9 @@ public class HierarchicalCache {
 
     private void ensureBasePath() {
         try {
-            new EnsurePath(path(0, basePath));
+            if (curatorFramework.checkExists().forPath(basePath) == null) {
+                curatorFramework.create().creatingParentsIfNeeded().forPath(basePath);
+            }
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }

@@ -9,7 +9,10 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
+import java.net.URI;
 import java.util.*;
+
+import static java.util.stream.Collectors.toList;
 
 public class Message {
 
@@ -89,9 +92,9 @@ public class Message {
         return currentTimestamp > readingTimestamp + ttlMillis;
     }
 
-    public void incrementRetryCounter(Collection<String> succeededUris) {
+    public void incrementRetryCounter(Collection<URI> succeededUris) {
         this.retryCounter++;
-        this.succeededUris.addAll(succeededUris);
+        this.succeededUris.addAll(succeededUris.stream().map(URI::toString).collect(toList()));
     }
 
     public int getRetryCounter() {

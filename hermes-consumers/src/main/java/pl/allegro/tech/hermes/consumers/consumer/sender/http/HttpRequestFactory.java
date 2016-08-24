@@ -7,6 +7,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import java.net.URI;
@@ -51,7 +52,8 @@ class HttpRequestFactory {
                 .content(new BytesContentProvider(message.getData()));
 
         message.getSchema().ifPresent(schema -> request.header(SCHEMA_VERSION.getName(), valueOf(schema.getVersion().value())));
-        authorizationProvider.ifPresent(p -> request.header(HttpHeader.AUTHORIZATION.toString(), p.authorizationToken(message)));
+        authorizationProvider.ifPresent(p -> p.authorizationToken()
+                .ifPresent(token -> request.header(HttpHeader.AUTHORIZATION.toString(), token)));
 
         metadataAppender.append(request, message);
 
