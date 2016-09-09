@@ -13,7 +13,12 @@ public class AllowAllSecurityContextProvider implements SecurityContextProvider 
         return new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
-                throw new NotImplementedException();
+                return new Principal() {
+                    @Override
+                    public String getName() {
+                        return "[anonymous user]";
+                    }
+                };
             }
 
             @Override

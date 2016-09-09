@@ -2,15 +2,26 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.MessageTrace;
+import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Query;
+import pl.allegro.tech.hermes.api.SentMessageTrace;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicMetrics;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,18 +32,13 @@ public class SubscriptionService {
     private static final int LAST_MESSAGE_COUNT = 100;
 
     private final SubscriptionRepository subscriptionRepository;
-
     private final TopicService topicService;
-
     private final SubscriptionMetricsRepository metricsRepository;
-
     private final SubscriptionHealthChecker subscriptionHealthChecker;
-
     private final UndeliveredMessageLog undeliveredMessageLog;
-
     private final LogRepository logRepository;
-
     private final ApiPreconditions preconditions;
+    private final Auditor auditor;
 
     @Autowired
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
@@ -41,7 +47,8 @@ public class SubscriptionService {
                                SubscriptionHealthChecker subscriptionHealthChecker,
                                UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
-                               ApiPreconditions apiPreconditions) {
+                               ApiPreconditions apiPreconditions,
+                               Auditor auditor) {
         this.subscriptionRepository = subscriptionRepository;
         this.topicService = topicService;
         this.metricsRepository = metricsRepository;
@@ -49,6 +56,7 @@ public class SubscriptionService {
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
         this.preconditions = apiPreconditions;
+        this.auditor = auditor;
     }
 
     public List<String> listSubscriptionNames(TopicName topicName) {
@@ -68,30 +76,36 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
-    public List<Subscription> listSubscriptions(TopicName topicName) {
+    private List<Subscription> listSubscriptions(TopicName topicName) {
         return subscriptionRepository.listSubscriptions(topicName);
     }
 
-    public void createSubscription(Subscription subscription) {
+    public void createSubscription(Subscription subscription, Principal createdBy) {
         preconditions.checkConstraints(subscription);
         subscriptionRepository.createSubscription(subscription);
+        auditor.objectCreated(createdBy.getName(), subscription);
     }
 
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
         return subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName).anonymize();
     }
 
-    public void removeSubscription(TopicName topicName, String subscriptionName) {
+    public void removeSubscription(TopicName topicName, String subscriptionName, Principal removedBy) {
         subscriptionRepository.removeSubscription(topicName, subscriptionName);
+        auditor.objectRemoved(removedBy.getName(), subscriptionName);
     }
 
-    public void updateSubscription(TopicName topicName, String subscriptionName, PatchData patch) {
+    public void updateSubscription(TopicName topicName,
+                                   String subscriptionName,
+                                   PatchData patch,
+                                   Principal modifiedBy) {
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         Subscription updated = Patch.apply(retrieved, patch);
         preconditions.checkConstraints(updated);
 
         if (!retrieved.equals(updated)) {
             subscriptionRepository.updateSubscription(updated);
+            auditor.objectUpdated(modifiedBy.getName(), retrieved, updated);
         }
     }
 
@@ -133,7 +147,7 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
-    public List<Subscription> getAllSubscriptions() {
+    private List<Subscription> getAllSubscriptions() {
         return topicService.getAllTopics()
                 .stream()
                 .map(Topic::getName)

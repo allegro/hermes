@@ -12,7 +12,9 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,8 +65,8 @@ public class TopicsEndpoint {
     @Produces(APPLICATION_JSON)
     @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
-    public Response create(Topic topic) {
-        topicService.createTopic(topic);
+    public Response create(Topic topic, @Context SecurityContext securityContext) {
+        topicService.createTopic(topic, securityContext.getUserPrincipal());
         return status(Response.Status.CREATED).build();
     }
 
@@ -73,8 +75,9 @@ public class TopicsEndpoint {
     @Path("/{topicName}")
     @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
-    public Response remove(@PathParam("topicName") String qualifiedTopicName) {
-        topicService.removeTopic(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)));
+    public Response remove(@PathParam("topicName") String qualifiedTopicName, @Context SecurityContext securityContext) {
+        topicService.removeTopic(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
+                securityContext.getUserPrincipal());
         return status(Response.Status.OK).build();
     }
 
@@ -84,8 +87,10 @@ public class TopicsEndpoint {
     @Path("/{topicName}")
     @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update topic", httpMethod = HttpMethod.PUT)
-    public Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch) {
-        topicService.updateTopic(TopicName.fromQualifiedName(qualifiedTopicName), patch);
+    public Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch,
+                           @Context SecurityContext securityContext) {
+        topicService.updateTopic(TopicName.fromQualifiedName(qualifiedTopicName), patch,
+                securityContext.getUserPrincipal());
         return status(Response.Status.OK).build();
     }
 

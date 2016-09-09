@@ -21,7 +21,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -31,7 +33,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Api(value = "/groups", description = "Operations on groups")
 public class GroupsEndpoint {
 
-    public static final String PASSWORD_KEY = "groupPassword";
+    private static final String PASSWORD_KEY = "groupPassword";
 
     private final GroupService groupService;
 
@@ -50,7 +52,6 @@ public class GroupsEndpoint {
         return groupService.listGroupNames();
     }
 
-
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/{groupName}")
@@ -64,9 +65,9 @@ public class GroupsEndpoint {
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Create group", response = String.class, httpMethod = HttpMethod.POST)
     @RolesAllowed(Roles.ADMIN)
-    public Response create(Group group) {
+    public Response create(Group group, @Context SecurityContext securityContext) {
         preconditions.checkConstraints(group);
-        return passwordResponse(groupService.createGroup(group));
+        return passwordResponse(groupService.createGroup(group, securityContext.getUserPrincipal()));
     }
 
     @PUT
@@ -75,8 +76,10 @@ public class GroupsEndpoint {
     @Path("/{groupName}")
     @ApiOperation(value = "Update group", response = String.class, httpMethod = HttpMethod.PUT)
     @RolesAllowed(Roles.ADMIN)
-    public Response update(@PathParam("groupName") String groupName, PatchData patch) {
-        groupService.updateGroup(groupName, patch);
+    public Response update(@PathParam("groupName") String groupName,
+                           PatchData patch,
+                           @Context SecurityContext securityContext) {
+        groupService.updateGroup(groupName, patch, securityContext.getUserPrincipal());
         return responseStatus(Response.Status.NO_CONTENT);
     }
 
@@ -84,8 +87,8 @@ public class GroupsEndpoint {
     @Path("/{groupName}")
     @ApiOperation(value = "Remove group", response = String.class, httpMethod = HttpMethod.DELETE)
     @RolesAllowed(Roles.ADMIN)
-    public Response delete(@PathParam("groupName") String groupName) {
-        groupService.removeGroup(groupName);
+    public Response delete(@PathParam("groupName") String groupName, @Context SecurityContext securityContext) {
+        groupService.removeGroup(groupName, securityContext.getUserPrincipal());
         return responseStatus(Response.Status.OK);
     }
 
