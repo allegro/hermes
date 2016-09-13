@@ -15,10 +15,10 @@ public class AuditConfiguration {
 
     @Bean
     public Auditor auditor(ObjectMapper objectMapper, AuditProperties auditProperties) {
-        if (auditProperties.isAuditManagementOperations()) {
+        if (auditProperties.isEnabled()) {
             return new LoggingAuditor(javers(), objectMapper);
         } else {
-            return Auditor.noopAuditor();
+            return Auditor.noOpAuditor();
         }
     }
 

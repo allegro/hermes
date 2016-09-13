@@ -25,4 +25,4 @@ management:
 
 schema.repository.type: zookeeper
 
-audit.auditManagementOperations: false
+audit.enabled: false

@@ -3,15 +3,15 @@ package pl.allegro.tech.hermes.management.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "audit")
-public class AuditProperties {
+class AuditProperties {
 
-    private boolean auditManagementOperations = false;
+    private boolean enabled = false;
 
-    public boolean isAuditManagementOperations() {
-        return auditManagementOperations;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setAuditManagementOperations(boolean auditManagementOperations) {
-        this.auditManagementOperations = auditManagementOperations;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }
