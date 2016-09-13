@@ -55,7 +55,7 @@ public class ConsumersRuntimeMonitor implements Runnable {
 
         Set<SubscriptionName> oversusbcribedSubscriptions = oversubscribed(assignedSubscriptions, existingSubscriptions);
         hermesMetrics.counter("consumers-workload.monitor.oversubscribed").inc(oversusbcribedSubscriptions.size());
-        for (SubscriptionName subscriptionName : missingSubscriptions) {
+        for (SubscriptionName subscriptionName : oversusbcribedSubscriptions) {
             logger.warn("Unwanted consumer process for subscription: {}", subscriptionName);
         }
 
