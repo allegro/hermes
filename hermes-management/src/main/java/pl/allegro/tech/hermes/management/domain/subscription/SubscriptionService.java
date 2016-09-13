@@ -76,7 +76,7 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
-    private List<Subscription> listSubscriptions(TopicName topicName) {
+    public List<Subscription> listSubscriptions(TopicName topicName) {
         return subscriptionRepository.listSubscriptions(topicName);
     }
 
@@ -147,7 +147,7 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
-    private List<Subscription> getAllSubscriptions() {
+    public List<Subscription> getAllSubscriptions() {
         return topicService.getAllTopics()
                 .stream()
                 .map(Topic::getName)

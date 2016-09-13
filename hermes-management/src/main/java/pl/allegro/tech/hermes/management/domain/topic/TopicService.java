@@ -140,6 +140,10 @@ public class TopicService {
                 .collect(Collectors.toList());
     }
 
+    public List<Topic> listTopics(String groupName) {
+        return topicRepository.listTopics(groupName);
+    }
+
     public List<String> listQualifiedTopicNames() {
         return groupService.listGroupNames().stream()
                 .map(this::listQualifiedTopicNames)
@@ -174,10 +178,6 @@ public class TopicService {
                 .filter(Topic::isTrackingEnabled)
                 .map(Topic::getQualifiedName)
                 .collect(Collectors.toList());
-    }
-
-    private List<Topic> listTopics(String groupName) {
-        return topicRepository.listTopics(groupName);
     }
 
     public List<String> listFilteredTopicNames(Query<Topic> query) {

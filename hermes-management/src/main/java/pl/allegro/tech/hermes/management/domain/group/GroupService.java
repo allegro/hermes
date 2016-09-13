@@ -31,6 +31,10 @@ public class GroupService {
         this.auditor = auditor;
     }
 
+    public List<Group> listGroups() {
+        return groupRepository.listGroups();
+    }
+
     public List<String> listGroupNames() {
         return groupRepository.listGroupNames();
     }
@@ -72,9 +76,5 @@ public class GroupService {
         return query
                 .filter(listGroups())
                 .collect(Collectors.toList());
-    }
-
-    private List<Group> listGroups() {
-        return groupRepository.listGroups();
     }
 }

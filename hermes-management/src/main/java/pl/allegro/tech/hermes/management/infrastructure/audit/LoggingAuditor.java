@@ -23,7 +23,7 @@ public class LoggingAuditor implements Auditor {
 
     @Override
     public void objectCreated(String username, Object createdObject) {
-        wrapWithException(() ->
+        ignoringExceptions(() ->
             logger.info("User {} has created new object {}.", username, objectMapper.writeValueAsString(createdObject)));
     }
 
@@ -34,17 +34,17 @@ public class LoggingAuditor implements Auditor {
 
     @Override
     public void objectUpdated(String username, Object oldObject, Object newObject) {
-        wrapWithException(() -> {
+        ignoringExceptions(() -> {
             Diff diff = javers.compare(oldObject, newObject);
             logger.info("User {} has updated object {}. {}", username, objectMapper.writeValueAsString(oldObject), diff);
         });
     }
 
-    private void wrapWithException(Wrapped wrapped) {
+    private void ignoringExceptions(Wrapped wrapped) {
         try {
             wrapped.execute();
         } catch (Exception e) {
-            logger.info("Unable to serialize object {}.", e);
+            logger.info("Audit log failed {}.", e);
         }
     }
 

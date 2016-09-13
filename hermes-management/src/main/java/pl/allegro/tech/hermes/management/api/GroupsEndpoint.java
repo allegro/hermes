@@ -33,7 +33,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Api(value = "/groups", description = "Operations on groups")
 public class GroupsEndpoint {
 
-    private static final String PASSWORD_KEY = "groupPassword";
+    public static final String PASSWORD_KEY = "groupPassword";
 
     private final GroupService groupService;
 
