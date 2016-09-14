@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,15 +42,15 @@ public class GroupService {
         return groupRepository.getGroupDetails(groupName);
     }
 
-    public String createGroup(Group group, Principal createdBy) {
+    public String createGroup(Group group, String createdBy) {
         groupRepository.createGroup(group);
-        auditor.objectCreated(createdBy.getName(), group);
+        auditor.objectCreated(createdBy, group);
         return "";
     }
 
-    public void removeGroup(String groupName, Principal removedBy) {
+    public void removeGroup(String groupName, String removedBy) {
         groupRepository.removeGroup(groupName);
-        auditor.objectRemoved(removedBy.getName(), groupName);
+        auditor.objectRemoved(removedBy, groupName);
     }
 
     public void checkGroupExists(String groupName) {
@@ -60,12 +59,12 @@ public class GroupService {
         }
     }
 
-    public void updateGroup(String groupName, PatchData patch, Principal modifiedBy) {
+    public void updateGroup(String groupName, PatchData patch, String modifiedBy) {
         try {
             Group retrieved = groupRepository.getGroupDetails(groupName);
             Group modified = Patch.apply(retrieved, patch);
             groupRepository.updateGroup(modified);
-            auditor.objectUpdated(modifiedBy.getName(), retrieved, modified);
+            auditor.objectUpdated(modifiedBy, retrieved, modified);
         } catch (MalformedDataException exception) {
             logger.warn("Problem with reading details of group {}.", groupName);
             throw exception;

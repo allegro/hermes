@@ -90,7 +90,7 @@ public class SubscriptionsEndpoint {
     public Response create(@PathParam("topicName") String qualifiedTopicName,
                            Subscription subscription,
                            @Context SecurityContext securityContext) {
-        subscriptionService.createSubscription(subscription, securityContext.getUserPrincipal());
+        subscriptionService.createSubscription(subscription, securityContext.getUserPrincipal().getName());
         return responseStatus(Response.Status.CREATED);
     }
 
@@ -175,7 +175,7 @@ public class SubscriptionsEndpoint {
                            @PathParam("subscriptionName") String subscriptionId,
                            @Context SecurityContext securityContext) {
         subscriptionService.removeSubscription(fromQualifiedName(qualifiedTopicName),
-                subscriptionId, securityContext.getUserPrincipal());
+                subscriptionId, securityContext.getUserPrincipal().getName());
         return responseStatus(OK);
     }
 
@@ -189,7 +189,7 @@ public class SubscriptionsEndpoint {
                            PatchData patch,
                            @Context SecurityContext securityContext) {
         subscriptionService.updateSubscription(TopicName.fromQualifiedName(qualifiedTopicName),
-                subscriptionName, patch, securityContext.getUserPrincipal());
+                subscriptionName, patch, securityContext.getUserPrincipal().getName());
         return responseStatus(OK);
     }
 

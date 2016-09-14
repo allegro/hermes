@@ -21,7 +21,6 @@ import pl.allegro.tech.hermes.management.domain.subscription.health.Subscription
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -80,32 +79,32 @@ public class SubscriptionService {
         return subscriptionRepository.listSubscriptions(topicName);
     }
 
-    public void createSubscription(Subscription subscription, Principal createdBy) {
+    public void createSubscription(Subscription subscription, String createdBy) {
         preconditions.checkConstraints(subscription);
         subscriptionRepository.createSubscription(subscription);
-        auditor.objectCreated(createdBy.getName(), subscription);
+        auditor.objectCreated(createdBy, subscription);
     }
 
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
         return subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName).anonymize();
     }
 
-    public void removeSubscription(TopicName topicName, String subscriptionName, Principal removedBy) {
+    public void removeSubscription(TopicName topicName, String subscriptionName, String removedBy) {
         subscriptionRepository.removeSubscription(topicName, subscriptionName);
-        auditor.objectRemoved(removedBy.getName(), subscriptionName);
+        auditor.objectRemoved(removedBy, subscriptionName);
     }
 
     public void updateSubscription(TopicName topicName,
                                    String subscriptionName,
                                    PatchData patch,
-                                   Principal modifiedBy) {
+                                   String modifiedBy) {
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         Subscription updated = Patch.apply(retrieved, patch);
         preconditions.checkConstraints(updated);
 
         if (!retrieved.equals(updated)) {
             subscriptionRepository.updateSubscription(updated);
-            auditor.objectUpdated(modifiedBy.getName(), retrieved, updated);
+            auditor.objectUpdated(modifiedBy, retrieved, updated);
         }
     }
 

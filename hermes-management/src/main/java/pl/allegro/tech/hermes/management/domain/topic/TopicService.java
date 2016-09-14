@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Principal;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -71,14 +70,14 @@ public class TopicService {
         this.auditor = auditor;
     }
 
-    public void createTopic(Topic topic, Principal createdBy) {
+    public void createTopic(Topic topic, String createdBy) {
         topicValidator.ensureCreatedTopicIsValid(topic);
         topicRepository.createTopic(topic);
         preconditions.checkConstraints(topic);
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
-            auditor.objectCreated(createdBy.getName(), topic);
+            auditor.objectCreated(createdBy, topic);
         } else {
             logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
         }
@@ -98,16 +97,16 @@ public class TopicService {
         }
     }
 
-    public void removeTopic(Topic topic, Principal removedBy) {
+    public void removeTopic(Topic topic, String removedBy) {
         if (!allowRemoval) {
             throw new TopicRemovalDisabledException(topic);
         }
         topicRepository.removeTopic(topic.getName());
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
-        auditor.objectRemoved(removedBy.getName(), topic.getQualifiedName());
+        auditor.objectRemoved(removedBy, topic.getQualifiedName());
     }
 
-    public void updateTopic(TopicName topicName, PatchData patch, Principal modifiedBy) {
+    public void updateTopic(TopicName topicName, PatchData patch, String modifiedBy) {
         groupService.checkGroupExists(topicName.getGroupName());
 
         Topic retrieved = getTopicDetails(topicName);
@@ -126,7 +125,7 @@ public class TopicService {
             if (!retrieved.wasMigratedFromJsonType() && modified.wasMigratedFromJsonType()) {
                 topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
             }
-            auditor.objectUpdated(modifiedBy.getName(), retrieved, modified);
+            auditor.objectUpdated(modifiedBy, retrieved, modified);
         }
     }
 

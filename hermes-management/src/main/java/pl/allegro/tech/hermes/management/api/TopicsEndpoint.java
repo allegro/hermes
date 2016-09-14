@@ -66,7 +66,7 @@ public class TopicsEndpoint {
     @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
     public Response create(Topic topic, @Context SecurityContext securityContext) {
-        topicService.createTopic(topic, securityContext.getUserPrincipal());
+        topicService.createTopic(topic, securityContext.getUserPrincipal().getName());
         return status(Response.Status.CREATED).build();
     }
 
@@ -77,7 +77,7 @@ public class TopicsEndpoint {
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName, @Context SecurityContext securityContext) {
         topicService.removeTopic(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
-                securityContext.getUserPrincipal());
+                securityContext.getUserPrincipal().getName());
         return status(Response.Status.OK).build();
     }
 
@@ -90,7 +90,7 @@ public class TopicsEndpoint {
     public Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch,
                            @Context SecurityContext securityContext) {
         topicService.updateTopic(TopicName.fromQualifiedName(qualifiedTopicName), patch,
-                securityContext.getUserPrincipal());
+                securityContext.getUserPrincipal().getName());
         return status(Response.Status.OK).build();
     }
 

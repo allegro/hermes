@@ -5,48 +5,54 @@ import pl.allegro.tech.hermes.api.PatchData
 import pl.allegro.tech.hermes.api.helpers.Patch
 import pl.allegro.tech.hermes.domain.group.GroupRepository
 import pl.allegro.tech.hermes.management.domain.Auditor
+import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
 import spock.lang.Specification
 
 import java.security.Principal
 
 class GroupServiceSpec extends Specification {
 
-    static Group TEST_GROUP = new Group("testGroup", "testOwner", "testTeam", "testContact")
     static String TEST_USER = "testUser"
 
-    GroupRepository groupRepository = Stub() {
-        getGroupDetails(TEST_GROUP.groupName) >> TEST_GROUP
-    }
+    GroupRepository groupRepository = Stub()
     Auditor auditor = Mock()
     GroupService groupService = new GroupService(groupRepository, auditor)
 
     def "should audit group creation"() {
+        given:
+            Group toBeCreated = GroupBuilder.group("testGroup").build()
+
         when:
-            groupService.createGroup(TEST_GROUP, principal())
+            groupService.createGroup(toBeCreated, TEST_USER)
 
         then:
-            1 * auditor.objectCreated(TEST_USER, TEST_GROUP)
+            1 * auditor.objectCreated(TEST_USER, toBeCreated)
     }
 
     def "should audit group removal"() {
+        given:
+            Group toBeRemoved = GroupBuilder.group("testGroup").build()
+
         when:
-            groupService.removeGroup(TEST_GROUP.groupName, principal())
+            groupService.removeGroup(toBeRemoved.groupName, TEST_USER)
 
         then:
-            1 * auditor.objectRemoved(TEST_USER, TEST_GROUP.groupName)
+            1 * auditor.objectRemoved(TEST_USER, toBeRemoved.groupName)
     }
 
-    def "should audit group modification"() {
+    def "should audit group update"() {
         given:
-            PatchData groupPatch = PatchData.from(["groupName" : TEST_GROUP.groupName,
-                                                   "technicalOwner": TEST_GROUP.technicalOwner,
-                                                   "supportTeam": TEST_GROUP.supportTeam,
+            Group toBeUpdated = GroupBuilder.group("testGroup").build()
+            groupRepository.getGroupDetails(toBeUpdated.groupName) >> toBeUpdated
+            PatchData groupPatch = PatchData.from(["groupName" : toBeUpdated.groupName,
+                                                   "technicalOwner": toBeUpdated.technicalOwner,
+                                                   "supportTeam": toBeUpdated.supportTeam,
                                                    "contact": "modifiedContact"])
         when:
-            groupService.updateGroup(TEST_GROUP.groupName, groupPatch, principal())
+            groupService.updateGroup(toBeUpdated.groupName, groupPatch, TEST_USER)
 
         then:
-            1 * auditor.objectUpdated(TEST_USER, TEST_GROUP, Patch.apply(TEST_GROUP, groupPatch))
+            1 * auditor.objectUpdated(TEST_USER, toBeUpdated, Patch.apply(toBeUpdated, groupPatch))
     }
 
     def Principal principal() {

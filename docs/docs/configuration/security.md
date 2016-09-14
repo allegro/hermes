@@ -56,7 +56,7 @@ public class MyCustomSecurityContextProvider implements SecurityContextProvider 
 ## Management operations auditing
 
 Hermes includes management operations auditor, which audits group, topic or subscription creation, removal or modification.
-It can be configures using following options:
+It can be configured using following options:
 
 
 Option                    | Description                            | Default value

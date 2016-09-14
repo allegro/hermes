@@ -1,12 +1,15 @@
 package pl.allegro.tech.hermes.management.infrastructure.audit
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.javers.core.Javers
 import org.javers.core.JaversBuilder
+import org.javers.core.metamodel.clazz.EntityDefinitionBuilder
 import org.junit.Before
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.management.utils.MockAppender
+import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
 import spock.lang.Specification
 
 import static org.slf4j.Logger.ROOT_LOGGER_NAME
@@ -14,9 +17,9 @@ import static org.slf4j.Logger.ROOT_LOGGER_NAME
 class LoggingAuditorSpec extends Specification {
 
     static final String TEST_USER = "testUser"
-    static final Group TEST_GROUP = new Group("testGroup", "testOwner", "testSupportTeam", "testContact")
 
     MockAppender mockAppender
+    LoggingAuditor auditor = new LoggingAuditor(javers(), new ObjectMapper())
 
     @Before
     def createAndAddMockAppenderToLogger() {
@@ -27,46 +30,54 @@ class LoggingAuditorSpec extends Specification {
 
     def "should log new object creation"() {
         given:
-            LoggingAuditor auditor = new LoggingAuditor(JaversBuilder.javers().build(), new ObjectMapper())
+            Group toBeCreated = GroupBuilder.group("testGroup").build()
 
         when:
-            auditor.objectCreated(TEST_USER, TEST_GROUP)
+            auditor.objectCreated(TEST_USER, toBeCreated)
 
         then:
             with(mockAppender.list.last().toString()) {
                 it.contains(TEST_USER)
-                it.contains(TEST_GROUP.groupName)
+                it.contains(toBeCreated.groupName)
             }
     }
 
     def "should log object removal"() {
         given:
-            LoggingAuditor auditor = new LoggingAuditor(JaversBuilder.javers().build(), new ObjectMapper())
+            Group toBeRemoved = GroupBuilder.group("testGroup").build()
 
         when:
-            auditor.objectRemoved(TEST_USER, TEST_GROUP.getGroupName())
+            auditor.objectRemoved(TEST_USER, toBeRemoved.getGroupName())
 
         then:
             with(mockAppender.list.last().toString()) {
                 it.contains(TEST_USER)
-                it.contains(TEST_GROUP.groupName)
+                it.contains(toBeRemoved.groupName)
             }
     }
 
     def "should log object update"() {
         given:
-            LoggingAuditor auditor = new LoggingAuditor(JaversBuilder.javers().build(), new ObjectMapper())
-            Group updatedGroup = new Group(TEST_GROUP.groupName, TEST_GROUP.technicalOwner, TEST_GROUP.supportTeam, "updated contact")
+            Group toBeUpdated = GroupBuilder.group("testGroup").build()
+            Group updatedGroup = GroupBuilder.group(toBeUpdated.groupName).withContact("updatedContact").build()
 
         when:
-            auditor.objectUpdated(TEST_USER, TEST_GROUP, updatedGroup)
+            auditor.objectUpdated(TEST_USER, toBeUpdated, updatedGroup)
 
         then:
             with(mockAppender.list.last().toString()) {
                 it.contains(TEST_USER)
-                it.contains(TEST_GROUP.groupName)
-                it.contains(TEST_GROUP.contact)
+                it.contains(toBeUpdated.groupName)
+                it.contains(toBeUpdated.contact)
                 it.contains(updatedGroup.contact)
             }
+    }
+
+    def Javers javers() {
+        return JaversBuilder.javers()
+                .registerEntity(EntityDefinitionBuilder.entityDefinition(Group.class)
+                        .withIdPropertyName("groupName")
+                        .build())
+                .build()
     }
 }

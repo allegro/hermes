@@ -67,7 +67,7 @@ public class GroupsEndpoint {
     @RolesAllowed(Roles.ADMIN)
     public Response create(Group group, @Context SecurityContext securityContext) {
         preconditions.checkConstraints(group);
-        return passwordResponse(groupService.createGroup(group, securityContext.getUserPrincipal()));
+        return passwordResponse(groupService.createGroup(group, securityContext.getUserPrincipal().getName()));
     }
 
     @PUT
@@ -79,7 +79,7 @@ public class GroupsEndpoint {
     public Response update(@PathParam("groupName") String groupName,
                            PatchData patch,
                            @Context SecurityContext securityContext) {
-        groupService.updateGroup(groupName, patch, securityContext.getUserPrincipal());
+        groupService.updateGroup(groupName, patch, securityContext.getUserPrincipal().getName());
         return responseStatus(Response.Status.NO_CONTENT);
     }
 
@@ -88,7 +88,7 @@ public class GroupsEndpoint {
     @ApiOperation(value = "Remove group", response = String.class, httpMethod = HttpMethod.DELETE)
     @RolesAllowed(Roles.ADMIN)
     public Response delete(@PathParam("groupName") String groupName, @Context SecurityContext securityContext) {
-        groupService.removeGroup(groupName, securityContext.getUserPrincipal());
+        groupService.removeGroup(groupName, securityContext.getUserPrincipal().getName());
         return responseStatus(Response.Status.OK);
     }
 
