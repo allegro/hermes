@@ -35,6 +35,7 @@ Client should be always built using `HermesClientBuilder`, which allows on setti
 HermesClient client = HermesClientBuilder.hermesClient(...)
     .withURI(...) // Hermes URI
     .withRetries(...) // how many times retry in case of errors, default: 3
+    .withRetrySleep(...) // initial and max delay between consecutive retries in milliseconds, default: 100ms (initial), 300ms (max)
     .withDefaultContentType(...) // what Content-Type to use when none set, default: application/json
     .withDefaultHeaderValue(...) // append default headers added to each message
     .withMetrics(metricsRegistry) // see Metrics section below
