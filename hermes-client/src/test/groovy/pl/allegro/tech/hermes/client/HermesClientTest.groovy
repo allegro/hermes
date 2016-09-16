@@ -59,7 +59,10 @@ class HermesClientTest extends Specification {
 
     def "should interpret message as failed for status different than 201 or 202"() {
         given:
-        HermesClient client = hermesClient({uri, msg -> statusFuture(status)}).withURI(create(HERMES_URI)).build()
+        HermesClient client = hermesClient({uri, msg -> statusFuture(status)})
+                .withURI(create(HERMES_URI))
+                .withRetrySleep(0)
+                .build()
 
          when:
          HermesResponse response = client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
@@ -76,11 +79,13 @@ class HermesClientTest extends Specification {
     def "should retry on http failure"() {
         given:
         CountDownLatch latch = new CountDownLatch(5)
-        HermesClient client = hermesClient(getCountDownSender(latch, (Integer) status)).withRetries(5).build()
+        HermesClient client = hermesClient(getCountDownSender(latch, (Integer) status))
+                .withRetries(5)
+                .withRetrySleep(0)
+                .build()
 
         when:
         client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
-
         then:
         latch.count == 0
 
@@ -91,7 +96,10 @@ class HermesClientTest extends Specification {
     def "should retry on sender exception"() {
         given:
         CountDownLatch latch = new CountDownLatch(5)
-        HermesClient client = hermesClient(getExceptionallyFailingCountDownSender(latch)).withRetries(5).build()
+        HermesClient client = hermesClient(getExceptionallyFailingCountDownSender(latch))
+                .withRetries(5)
+                .withRetrySleep(0)
+                .build()
 
         when:
         client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
@@ -103,7 +111,9 @@ class HermesClientTest extends Specification {
     def "should not retry when supplied retry condition says it should not retry"() {
         given:
         CountDownLatch latch = new CountDownLatch(2)
-        HermesClient client = hermesClient(getCountDownSender(latch, 503)).withRetries(5, {false}).build()
+        HermesClient client = hermesClient(getCountDownSender(latch, 503))
+                .withRetries(5, {false})
+                .build()
 
         when:
         client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
@@ -115,7 +125,10 @@ class HermesClientTest extends Specification {
     def "should not retry when one of the attempts succeeds to send"() {
         given:
         CountDownLatch latch = new CountDownLatch(5)
-        HermesClient client = hermesClient(getCountDownSender(latch, {latch.getCount() > 2 ? 408 : 201})).withRetries(5).build()
+        HermesClient client = hermesClient(getCountDownSender(latch, {latch.getCount() > 2 ? 408 : 201}))
+                .withRetries(5)
+                .withRetrySleep(0)
+                .build()
 
         when:
         client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
@@ -127,7 +140,10 @@ class HermesClientTest extends Specification {
     def "should wait until all sent after shutdown"() {
         given:
         CountDownLatch latch = new CountDownLatch(5)
-        HermesClient client = hermesClient(getCountDownDelayedSender(latch, 408, 20)).withRetries(5).build()
+        HermesClient client = hermesClient(getCountDownDelayedSender(latch, 408, 20))
+                .withRetries(5)
+                .withRetrySleep(0)
+                .build()
 
         when:
         client.publish(TOPIC, CONTENT_TYPE, CONTENT)
@@ -154,7 +170,10 @@ class HermesClientTest extends Specification {
     def "should keep retrying on sender exception after shutdown"() {
         given:
         CountDownLatch latch = new CountDownLatch(5)
-        HermesClient client = hermesClient(getExceptionallyFailingCountDownSender(latch, 20)).withRetries(5).build()
+        HermesClient client = hermesClient(getExceptionallyFailingCountDownSender(latch, 20))
+                .withRetries(5)
+                .withRetrySleep(0)
+                .build()
 
         when:
         client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
@@ -199,6 +218,21 @@ class HermesClientTest extends Specification {
         then:
         headers['Content-Type'] == 'application/json;charset=UTF-8'
         headers['Header'] == 'OtherValue'
+    }
+
+    def "should retry on sender exception when retry sleep is provided"() {
+        given:
+            CountDownLatch latch = new CountDownLatch(2)
+            HermesClient client = hermesClient(getExceptionallyFailingCountDownSender(latch))
+                    .withRetries(2)
+                    .withRetrySleep(10)
+                    .build()
+
+        when:
+            client.publish(HermesMessage.hermesMessage(TOPIC, CONTENT).build()).join()
+
+        then:
+            latch.count == 0
     }
 
     private HermesSender getExceptionallyFailingCountDownSender(CountDownLatch latch, long delay) {
