@@ -24,19 +24,21 @@ public class LoggingAuditor implements Auditor {
     @Override
     public void objectCreated(String username, Object createdObject) {
         ignoringExceptions(() ->
-            logger.info("User {} has created new object {}.", username, objectMapper.writeValueAsString(createdObject)));
+            logger.info("User {} has created new {} {}.", username, createdObject.getClass().getSimpleName(),
+                    objectMapper.writeValueAsString(createdObject)));
     }
 
     @Override
-    public void objectRemoved(String username, String removedObjectName) {
-        logger.info("User {} has removed object {}.", username, removedObjectName);
+    public void objectRemoved(String username, String removedObjectType, String removedObjectName) {
+        logger.info("User {} has removed {} {}.", username, removedObjectType, removedObjectName);
     }
 
     @Override
     public void objectUpdated(String username, Object oldObject, Object newObject) {
         ignoringExceptions(() -> {
             Diff diff = javers.compare(oldObject, newObject);
-            logger.info("User {} has updated object {}. {}", username, objectMapper.writeValueAsString(oldObject), diff);
+            logger.info("User {} has updated {} {}. {}", username, oldObject.getClass().getSimpleName(),
+                    objectMapper.writeValueAsString(oldObject), diff);
         });
     }
 

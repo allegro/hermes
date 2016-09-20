@@ -4,7 +4,7 @@ public interface Auditor {
     default void objectCreated(String username, Object createdObject) {
     }
 
-    default void objectRemoved(String username, String removedObjectName) {
+    default void objectRemoved(String username, String removedObjectType, String removedObjectName) {
     }
 
     default void objectUpdated(String username, Object oldObject, Object newObject) {

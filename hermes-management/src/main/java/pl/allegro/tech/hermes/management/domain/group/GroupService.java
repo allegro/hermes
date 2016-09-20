@@ -50,7 +50,7 @@ public class GroupService {
 
     public void removeGroup(String groupName, String removedBy) {
         groupRepository.removeGroup(groupName);
-        auditor.objectRemoved(removedBy, groupName);
+        auditor.objectRemoved(removedBy, Group.class.getSimpleName(), groupName);
     }
 
     public void checkGroupExists(String groupName) {

@@ -103,7 +103,7 @@ public class TopicService {
         }
         topicRepository.removeTopic(topic.getName());
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
-        auditor.objectRemoved(removedBy, topic.getQualifiedName());
+        auditor.objectRemoved(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
     }
 
     public void updateTopic(TopicName topicName, PatchData patch, String modifiedBy) {
