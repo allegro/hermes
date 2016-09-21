@@ -8,6 +8,7 @@ import org.junit.Before
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import pl.allegro.tech.hermes.api.Group
+import pl.allegro.tech.hermes.api.OAuthProvider
 import pl.allegro.tech.hermes.management.utils.MockAppender
 import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
 import spock.lang.Specification
@@ -79,6 +80,9 @@ class LoggingAuditorSpec extends Specification {
                 .registerEntity(EntityDefinitionBuilder.entityDefinition(Group.class)
                         .withIdPropertyName("groupName")
                         .build())
+                .registerEntity(EntityDefinitionBuilder.entityDefinition(OAuthProvider.class)
+                    .withIdPropertyName("name")
+                    .build())
                 .build()
     }
 }

@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.management.domain;
 
-public interface Auditor {
-    default void objectCreated(String username, Object createdObject) {
+public interface Auditor<T extends Object> {
+    default void objectCreated(String username, T createdObject) {
     }
 
     default void objectRemoved(String username, String removedObjectType, String removedObjectName) {
     }
 
-    default void objectUpdated(String username, Object oldObject, Object newObject) {
+    default void objectUpdated(String username, T oldObject, T newObject) {
     }
 
     static Auditor noOpAuditor() {
