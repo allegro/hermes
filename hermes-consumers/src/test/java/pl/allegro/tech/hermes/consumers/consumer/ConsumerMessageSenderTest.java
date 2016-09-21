@@ -29,13 +29,7 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.passwordGrantOAuthPolicy;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -346,10 +340,21 @@ public class ConsumerMessageSenderTest {
 
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
         when(messageSenderFactory.create(subscription)).thenReturn(messageSender);
-        return new ConsumerMessageSender(subscription, messageSenderFactory, Arrays.asList(successHandler),
-                Arrays.asList(errorHandler), rateLimiter, Executors.newSingleThreadExecutor(),
-                () -> inflightSemaphore.release(), hermesMetrics, ASYNC_TIMEOUT_MS,
-                new FutureAsyncTimeout<>(MessageSendingResult::failedResult, Executors.newSingleThreadScheduledExecutor()));
+        ConsumerMessageSender sender = new ConsumerMessageSender(
+                subscription,
+                messageSenderFactory,
+                Arrays.asList(successHandler),
+                Arrays.asList(errorHandler),
+                rateLimiter,
+                Executors.newSingleThreadExecutor(),
+                () -> inflightSemaphore.release(),
+                hermesMetrics,
+                ASYNC_TIMEOUT_MS,
+                new FutureAsyncTimeout<>(MessageSendingResult::failedResult, Executors.newSingleThreadScheduledExecutor())
+        );
+        sender.initialize();
+
+        return sender;
     }
 
     private void verifyRateLimiterSuccessfulSendingCountedTimes(int count) {
@@ -380,18 +385,18 @@ public class ConsumerMessageSenderTest {
 
     private Subscription subscriptionWithTtl(int ttl) {
         return subscriptionBuilderWithTestValues()
-            .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
-                    .withMessageTtl(ttl)
-                    .build())
-            .build();
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
+                        .withMessageTtl(ttl)
+                        .build())
+                .build();
     }
 
     private Subscription subscriptionWithTtlAndClientErrorRetry(int ttl) {
         return subscriptionBuilderWithTestValues()
-            .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
-                    .withMessageTtl(ttl)
-                    .withClientErrorRetry()
-                    .build())
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
+                        .withMessageTtl(ttl)
+                        .withClientErrorRetry()
+                        .build())
                 .build();
     }
 
@@ -421,7 +426,7 @@ public class ConsumerMessageSenderTest {
     }
 
     private SubscriptionBuilder subscriptionBuilderWithTestValues() {
-        return subscription("group.topic","subscription");
+        return subscription("group.topic", "subscription");
     }
 
     private RuntimeException exception() {
