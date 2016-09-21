@@ -91,7 +91,7 @@ public class SubscriptionService {
 
     public void removeSubscription(TopicName topicName, String subscriptionName, String removedBy) {
         subscriptionRepository.removeSubscription(topicName, subscriptionName);
-        auditor.objectRemoved(removedBy, subscriptionName);
+        auditor.objectRemoved(removedBy, Subscription.class.getSimpleName(), subscriptionName);
     }
 
     public void updateSubscription(TopicName topicName,

@@ -30,7 +30,7 @@ class LoggingAuditorSpec extends Specification {
 
     def "should log new object creation"() {
         given:
-            Group toBeCreated = GroupBuilder.group("testGroup").build()
+            Group toBeCreated = GroupBuilder.group("test-group").build()
 
         when:
             auditor.objectCreated(TEST_USER, toBeCreated)
@@ -38,6 +38,7 @@ class LoggingAuditorSpec extends Specification {
         then:
             with(mockAppender.list.last().toString()) {
                 it.contains(TEST_USER)
+                it.contains(Group.class.getSimpleName())
                 it.contains(toBeCreated.groupName)
             }
     }
@@ -47,7 +48,7 @@ class LoggingAuditorSpec extends Specification {
             Group toBeRemoved = GroupBuilder.group("testGroup").build()
 
         when:
-            auditor.objectRemoved(TEST_USER, toBeRemoved.getGroupName())
+            auditor.objectRemoved(TEST_USER, Group.class.getSimpleName(), toBeRemoved.getGroupName())
 
         then:
             with(mockAppender.list.last().toString()) {
