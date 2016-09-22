@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.domain.Auditor;
-import pl.allegro.tech.hermes.management.infrastructure.audit.AnonymizingAuditor;
 import pl.allegro.tech.hermes.management.infrastructure.audit.LoggingAuditor;
 
 @Configuration
@@ -26,11 +25,6 @@ public class AuditConfiguration {
         } else {
             return Auditor.noOpAuditor();
         }
-    }
-
-    @Bean(name = "anonymizingAuditor")
-    public Auditor anonymizingAuditor(ObjectMapper objectMapper, AuditProperties auditProperties) {
-        return new AnonymizingAuditor(auditor(objectMapper, auditProperties));
     }
 
     private Javers javers() {

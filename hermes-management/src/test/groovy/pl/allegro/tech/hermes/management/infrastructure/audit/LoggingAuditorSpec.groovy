@@ -18,6 +18,8 @@ import static org.slf4j.Logger.ROOT_LOGGER_NAME
 class LoggingAuditorSpec extends Specification {
 
     static final String TEST_USER = "testUser"
+    static final String CLIENT_SECRET = "CLIENT_SECRET"
+    static final String UPDATED_CLIENT_SECRET = "UPDATED_CLIENT_SECRET"
 
     MockAppender mockAppender
     LoggingAuditor auditor = new LoggingAuditor(javers(), new ObjectMapper())
@@ -73,6 +75,34 @@ class LoggingAuditorSpec extends Specification {
                 it.contains(toBeUpdated.contact)
                 it.contains(updatedGroup.contact)
             }
+    }
+
+    def "should log anonymized data when object is created"() {
+        given:
+            OAuthProvider toBeCreated = new OAuthProvider("name", "endpoint", "clientId", CLIENT_SECRET, 1, 1, 1)
+
+        when:
+            auditor.objectCreated(TEST_USER, toBeCreated)
+
+        then:
+            with(mockAppender.list.last().toString()) {
+                !it.contains(CLIENT_SECRET)
+        }
+    }
+
+    def "should log anonymized data when object is updated"() {
+        given:
+            OAuthProvider toBeUpdated = new OAuthProvider("name", "endpoint", "clientId", CLIENT_SECRET, 1, 1, 1)
+            OAuthProvider updated = new OAuthProvider("name", "endpoint", "clientId", UPDATED_CLIENT_SECRET, 1, 1, 1)
+
+        when:
+            auditor.objectUpdated(TEST_USER, toBeUpdated, updated)
+
+        then:
+            with(mockAppender.list.last().toString()) {
+                !it.contains(CLIENT_SECRET)
+                !it.contains(UPDATED_CLIENT_SECRET)
+        }
     }
 
     def Javers javers() {

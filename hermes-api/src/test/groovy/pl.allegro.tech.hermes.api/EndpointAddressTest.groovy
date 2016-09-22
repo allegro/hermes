@@ -41,7 +41,7 @@ class EndpointAddressTest extends Specification {
 
     def "should anonymize password"() {
         when:
-        EndpointAddress anonymizedEndpoint = EndpointAddress.of('http://user:password@endpoint.com').anonymizePassword()
+        EndpointAddress anonymizedEndpoint = EndpointAddress.of('http://user:password@endpoint.com').anonymize()
 
         then:
         anonymizedEndpoint.password == '*****'
@@ -49,7 +49,7 @@ class EndpointAddressTest extends Specification {
 
     def "should append anonymized password to rawEndpoint"() {
         when:
-        EndpointAddress anonymizedEndpoint = EndpointAddress.of('http://user:password@endpoint.com').anonymizePassword()
+        EndpointAddress anonymizedEndpoint = EndpointAddress.of('http://user:password@endpoint.com').anonymize()
 
         then:
         anonymizedEndpoint.rawEndpoint == 'http://user:*****@endpoint.com'

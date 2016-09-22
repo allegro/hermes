@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.oauth;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -20,8 +19,7 @@ public class OAuthProviderService {
     private final Auditor auditor;
 
     @Autowired
-    public OAuthProviderService(OAuthProviderRepository repository, ApiPreconditions preconditions,
-                                @Qualifier("anonymizingAuditor") Auditor auditor) {
+    public OAuthProviderService(OAuthProviderRepository repository, ApiPreconditions preconditions, Auditor auditor) {
         this.repository = repository;
         this.preconditions = preconditions;
         this.auditor = auditor;
@@ -35,7 +33,6 @@ public class OAuthProviderService {
         return repository.getOAuthProviderDetails(oAuthProviderName).anonymize();
     }
 
-    @SuppressWarnings("unchecked")
     public void createOAuthProvider(OAuthProvider oAuthProvider, String createdBy) {
         preconditions.checkConstraints(oAuthProvider);
         repository.createOAuthProvider(oAuthProvider);
@@ -47,7 +44,6 @@ public class OAuthProviderService {
         auditor.objectRemoved(removedBy, OAuthProvider.class.getSimpleName(), oAuthProviderName);
     }
 
-    @SuppressWarnings("unchecked")
     public void updateOAuthProvider(String oAuthProviderName, PatchData patch, String updatedBy) {
         OAuthProvider retrieved = repository.getOAuthProviderDetails(oAuthProviderName);
         OAuthProvider updated = Patch.apply(retrieved, patch);

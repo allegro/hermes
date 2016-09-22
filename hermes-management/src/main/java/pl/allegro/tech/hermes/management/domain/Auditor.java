@@ -1,13 +1,24 @@
 package pl.allegro.tech.hermes.management.domain;
 
-public interface Auditor<T extends Object> {
-    default void objectCreated(String username, T createdObject) {
+import pl.allegro.tech.hermes.api.Anonymizable;
+
+public interface Auditor {
+
+    default void objectCreated(String username, Object createdObject) {
+    }
+
+    default void objectCreated(String username, Anonymizable createdObject) {
+        objectCreated(username, (Object) createdObject.anonymize());
     }
 
     default void objectRemoved(String username, String removedObjectType, String removedObjectName) {
     }
 
-    default void objectUpdated(String username, T oldObject, T newObject) {
+    default void objectUpdated(String username, Object oldObject, Object newObject) {
+    }
+
+    default void objectUpdated(String username, Anonymizable oldObject, Anonymizable newObject) {
+        objectUpdated(username, (Object) oldObject.anonymize(), (Object) newObject.anonymize());
     }
 
     static Auditor noOpAuditor() {

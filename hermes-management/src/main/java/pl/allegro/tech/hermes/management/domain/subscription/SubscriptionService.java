@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.subscription;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -48,7 +47,7 @@ public class SubscriptionService {
                                UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
                                ApiPreconditions apiPreconditions,
-                               @Qualifier("anonymizingAuditor") Auditor auditor) {
+                               Auditor auditor) {
         this.subscriptionRepository = subscriptionRepository;
         this.topicService = topicService;
         this.metricsRepository = metricsRepository;
@@ -80,7 +79,6 @@ public class SubscriptionService {
         return subscriptionRepository.listSubscriptions(topicName);
     }
 
-    @SuppressWarnings("unchecked")
     public void createSubscription(Subscription subscription, String createdBy) {
         preconditions.checkConstraints(subscription);
         subscriptionRepository.createSubscription(subscription);
@@ -96,7 +94,6 @@ public class SubscriptionService {
         auditor.objectRemoved(removedBy, Subscription.class.getSimpleName(), subscriptionName);
     }
 
-    @SuppressWarnings("unchecked")
     public void updateSubscription(TopicName topicName,
                                    String subscriptionName,
                                    PatchData patch,

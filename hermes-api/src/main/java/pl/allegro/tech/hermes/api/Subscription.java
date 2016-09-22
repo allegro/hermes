@@ -354,7 +354,7 @@ public class Subscription implements Anonymizable {
             return new Subscription(
                     topicName,
                     name,
-                    endpoint.anonymizePassword(),
+                    endpoint.anonymize(),
                     state,
                     description,
                     deliveryType == DeliveryType.BATCH ? batchSubscriptionPolicy : serialSubscriptionPolicy,
