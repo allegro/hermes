@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 @JsonDeserialize(using = EndpointAddressDeserializer.class)
 @JsonSerialize(using = EndpointAddressSerializer.class)
-public class EndpointAddress {
+public class EndpointAddress implements Anonymizable {
 
     private static final String ANONYMIZED_PASSWORD = "*****";
 
@@ -143,7 +143,7 @@ public class EndpointAddress {
         return username;
     }
 
-    public EndpointAddress anonymizePassword() {
+    public EndpointAddress anonymize() {
         if(containsCredentials) {
             return new EndpointAddress(protocol, endpoint, username);
         }

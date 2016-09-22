@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.domain.Auditor;
@@ -36,6 +37,9 @@ public class AuditConfiguration {
                         .withIdPropertyName("name")
                         .build())
                 .registerEntity(EntityDefinitionBuilder.entityDefinition(Subscription.class)
+                        .withIdPropertyName("name")
+                        .build())
+                .registerEntity(EntityDefinitionBuilder.entityDefinition(OAuthProvider.class)
                         .withIdPropertyName("name")
                         .build())
                 .build();

@@ -17,7 +17,7 @@ import java.util.Objects;
 
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 
-public class Subscription {
+public class Subscription implements Anonymizable {
 
     @Valid
     @NotNull
@@ -354,7 +354,7 @@ public class Subscription {
             return new Subscription(
                     topicName,
                     name,
-                    endpoint.anonymizePassword(),
+                    endpoint.anonymize(),
                     state,
                     description,
                     deliveryType == DeliveryType.BATCH ? batchSubscriptionPolicy : serialSubscriptionPolicy,

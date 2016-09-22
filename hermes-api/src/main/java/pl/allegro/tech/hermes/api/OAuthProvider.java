@@ -12,7 +12,7 @@ import java.util.Objects;
 
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 
-public class OAuthProvider {
+public class OAuthProvider implements Anonymizable {
 
     private static final String ANONYMIZED_CLIENT_SECRET = "******";
 
