@@ -252,6 +252,122 @@ http://user:password@example.com
 Password is never displayed in public and is not available via API. When editing subscription endpoint, remember that
 you need to provide full credentials.
 
+### OAuth
+
+Hermes supports OAuth 2 [resource owner password](https://tools.ietf.org/html/rfc6749#section-4.3) 
+and [client credentials](https://tools.ietf.org/html/rfc6749#section-4.4) grants for subscription endpoints authorization. 
+
+To enable OAuth, first register Hermes as an OAuth client in your OAuth provider service. 
+Hermes will be given it's unique `id` and `secret`.
+
+#### Registering an OAuth provider
+
+The Hermes administrator needs to define an OAuth provider authority that is responsible 
+for issuing OAuth tokens for subscriptions. There can be many OAuth providers configured in Hermes. 
+A single OAuth provider registration can be configured for a given subscription. 
+
+To register an OAuth provider in Hermes send `POST` request with to `/oauth/providers` of Hermes-management:
+
+```json
+{
+    "name": "myOAuthService",
+    "tokenEndpoint": "https://oauth.example.com/oauth2/token",
+    "clientId": "myHermes",
+    "clientSecret": "abc123",
+    "tokenRequestInitialDelay": 1000,
+    "tokenRequestMaxDelay": 30000,
+    "requestTimeout": 1000
+}
+```
+
+Field                    | Description
+------------------------ | ---------------------------------------------------
+name                     | Hermes-wide id of a specific OAuth provider
+tokenEndpoint            | Token request URL of the provider
+clientId                 | OAuth client id of Hermes
+clientSecret             | OAuth client secret of Hermes
+tokenRequestInitialDelay | Min delay between possible token requests
+tokenRequestMaxDelay     | Max delay between possible token requests
+requestTimeout           | HTTP timeout for token request
+
+Verify the OAuth provider is registered by calling `GET` on `/oauth/providers` and `/oauth/providers/{providerName}` endpoints.
+Hermes HTTP endpoints return asterisks (`******`) in place of the actual secrets.
+
+**Important**: Note that OAuth configuration credentials (secrets, passwords) are stored as plaintext in Zookeeper. 
+Make sure access to it is [properly secured](/configuration/kafka-and-zookeeper#Zookeeper)! 
+
+#### Requesting tokens
+
+When Hermes tries to send a message to an OAuth-secured subscription and it gets `401 Unauthorized` response, 
+it will request an OAuth token using the configured OAuth policy's credentials ([see below](#securing-subscription)). 
+The message will be resent to subscriber along with the issued token (`Authorization: Bearer <token>` header).
+Hermes will resend messages to OAuth-secured subscribers irrespectively from `retryClientErrors` subscription setting value.
+
+To prevent from requesting tokens too often (when subscription is responding with 401 for some unknown reason 
+even though token is provided) Hermes will rate limit it's token requests using `tokenRequestInitialDelay` and `tokenRequestMaxDelay` 
+values set for subscription's OAuth provider. The delay duration grows exponentially and is being reset to initial value 
+after each `200 OK` response (meaning the token is valid and there's no need to request a new one).
+
+The tokens are stored in-memory and are not distributed between Hermes consumer nodes meaning each node requests 
+it's own tokens and performs the token request rate limiting calculation locally.
+
+#### Securing subscription
+
+Both OAuth 2 server-side grants are supported by Hermes in order to secure subscription endpoints.
+
+#### Client credentials grant
+
+[Cient credentials grant](https://tools.ietf.org/html/rfc6749#section-4.4) is the simpler OAuth grant type where a client (Hermes) 
+is given permission to send messages to subscription endpoint. 
+To acquire an access token Hermes will use it's credentials configured in a specific OAuth provider definition.
+
+Enable this grant type by extending the subscription definition with `oAuthPolicy` entry, for example:
+
+```json
+"oAuthPolicy": {
+  "grantType": "clientCredentials",
+  "providerName": "myOAuthService",
+  "scope": "someScope"
+}
+```
+
+Field        | Description
+-------------| ----------------------------------------------------------
+grantType    | Needs to be set to `clientCredentials` for this grant type
+providerName | OAuth provider to be used for token request
+scope        | An optional scope of the access request
+
+#### Resource owner password grant
+
+[Resource owner password grant](https://tools.ietf.org/html/rfc6749#section-4.3) is a more complex grant type that may be useful 
+when subscriptions are owned by different users. A subscription endpoint is a resource and the owner wants to be the only 
+one able to access it. The user needs to provide it's credentials (username and password) to access the resource 
+and Hermes will request an access token on behalf of the user using these credentials.
+
+**Important**: Note that the current implementation of this grant type performs a single request to the OAuth provider 
+when requesting token (containing both client's and resource owner's credentials) and the OAuth provider 
+should be aware of that and support it.
+
+Enable this grant type by extending the subscription definition with following content:
+
+```json
+"oAuthPolicy": {
+  "grantType": "password",
+  "providerName": "myOAuthService",
+  "username": "someUser",
+  "password": "password123",
+  "scope": "someScope"
+}
+```
+
+Field        | Description
+-------------| ----------------------------------------------------------
+grantType    | Needs to be set to `password` for this grant type
+providerName | OAuth provider name to be used for token request
+username     | Resource owner's username
+password     | Resource owner's password
+scope        | An optional scope of the access request
+
 ## Metrics
 
 Subscription metrics are available at:
