@@ -1,3 +1,34 @@
+## 0.8.12 (23.09.2016)
+
+### Features
+
+#### ([#566](https://github.com/allegro/hermes/issues/566)) Auditing management operations
+
+All operations in Management can be auditable. By default this option is disabled, but can be enabled using:
+
+```
+audit.enabled = true
+```
+
+By default changes are sent to logs, but own implementation can be provided. Reed more in [auditing documentation](http://hermes-pubsub.readthedocs.io/en/latest/configuration/security/#management-operations-auditing).
+
+#### ([#481](https://github.com/allegro/hermes/issues/481)) Delay between retries in Hermes Client
+
+It is now possible to specify delay between consecutive retries of sending message.
+
+```java
+HermesClient client = HermesClientBuilder.hermesClient(...)
+    .withRetries(3)
+    .withRetrySleep(100, 10_000)
+```
+
+The delay can rise exponentially in specified range (100ms to 10 seconds in example above).
+
+### Bugs
+
+#### ([577](https://github.com/allegro/hermes/issues/557)) Consumer won't stop if there are messages in send queue
+
+#### ([579](https://github.com/allegro/hermes/pull/579)) Wrong path to lag stats in Hermes Console
 
 ## 0.8.11 (24.08.2016)
 
