@@ -13,7 +13,7 @@ public class AllowAllSecurityContextProvider implements SecurityContextProvider 
         return new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
-                throw new NotImplementedException();
+                return new AnonymousUserPrincipal();
             }
 
             @Override
@@ -31,5 +31,13 @@ public class AllowAllSecurityContextProvider implements SecurityContextProvider 
                 throw new NotImplementedException();
             }
         };
+    }
+
+    private static class AnonymousUserPrincipal implements Principal {
+
+        @Override
+        public String getName() {
+            return "[anonymous user]";
+        }
     }
 }

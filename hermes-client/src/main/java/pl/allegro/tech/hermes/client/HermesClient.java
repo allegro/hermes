@@ -1,20 +1,20 @@
 package pl.allegro.tech.hermes.client;
 
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
+
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.IntStream.range;
 import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
 
 public class HermesClient {
@@ -22,21 +22,34 @@ public class HermesClient {
     private final HermesSender sender;
     private final String uri;
     private final Map<String, String> defaultHeaders;
-    private final int retries;
-    private final Predicate<HermesResponse> retryCondition;
     private final AtomicInteger currentlySending = new AtomicInteger(0);
+    private final RetryPolicy retryPolicy;
+    private final ScheduledExecutorService scheduler;
     private volatile boolean shutdown = false;
 
     HermesClient(HermesSender sender,
                  URI uri,
                  Map<String, String> defaultHeaders,
                  int retries,
-                 Predicate<HermesResponse> retryCondition) {
+                 Predicate<HermesResponse> retryCondition,
+                 long retrySleepInMillis,
+                 long maxRetrySleepInMillis,
+                 ScheduledExecutorService scheduler) {
         this.sender = sender;
         this.uri = createUri(uri);
         this.defaultHeaders = Collections.unmodifiableMap(new HashMap<>(defaultHeaders));
-        this.retries = retries;
-        this.retryCondition = retryCondition;
+        this.retryPolicy = createRetryPolicy(retries, retryCondition, retrySleepInMillis, maxRetrySleepInMillis);
+        this.scheduler = scheduler;
+    }
+
+    private RetryPolicy createRetryPolicy(int retries, Predicate<HermesResponse> retryCondition,
+                                          long retrySleepInMillis, long maxRetrySleepInMillis) {
+        RetryPolicy retryPolicy = new RetryPolicy().withMaxRetries(retries)
+                .retryIf(retryCondition::test);
+        if (retrySleepInMillis > 0) {
+            retryPolicy.withBackoff(retrySleepInMillis, maxRetrySleepInMillis, TimeUnit.MILLISECONDS);
+        }
+        return retryPolicy;
     }
 
     private String createUri(URI uri) {
@@ -77,12 +90,14 @@ public class HermesClient {
             return completedWithShutdownException();
         }
         HermesMessage.appendDefaults(message, defaultHeaders);
-        return publish(message, (response) -> retryCondition.test(response) ? sendOnce(message) : completedFuture(response));
+        return publishWithRetries(message);
     }
 
-    private CompletableFuture<HermesResponse> publish(HermesMessage message, Function<HermesResponse, CompletionStage<HermesResponse>> retryDecision) {
+    private CompletableFuture<HermesResponse> publishWithRetries(HermesMessage message) {
         currentlySending.incrementAndGet();
-        return range(0, retries).boxed().reduce(sendOnce(message), (future, attempt) -> future.thenCompose(retryDecision), (future, attempt) -> future)
+        return Failsafe.with(retryPolicy)
+                .with(scheduler)
+                .future(() -> sendOnce(message))
                 .whenComplete((response, ex) -> currentlySending.decrementAndGet());
     }
 
@@ -98,7 +113,9 @@ public class HermesClient {
 
     public CompletableFuture<Void> closeAsync(long pollInterval) {
         shutdown = true;
-        return new HermesClientTermination(pollInterval).observe(() -> currentlySending.get() == 0);
+        return new HermesClientTermination(pollInterval)
+                .observe(() -> currentlySending.get() == 0)
+                .whenComplete((response, ex) -> scheduler.shutdown());
     }
 
     public void close(long pollInterval, long timeout) throws InterruptedException, TimeoutException {

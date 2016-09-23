@@ -124,6 +124,7 @@ public class SerialConsumer implements Consumer {
     public void initialize() {
         logger.info("Consumer: preparing message receiver for subscription {}", subscription.getQualifiedName());
         initializeMessageReceiver();
+        sender.initialize();
         rateLimiter.initialize();
         consumerAuthorizationHandler.createSubscriptionHandler(subscription.getQualifiedName());
     }

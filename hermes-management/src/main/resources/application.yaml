@@ -24,3 +24,5 @@ management:
   context-path: /
 
 schema.repository.type: zookeeper
+
+audit.enabled: false

@@ -28,7 +28,7 @@ public class SubscriptionPolicy {
     private int messageBackoff = DEFAULT_MESSAGE_BACKOFF;
 
     @Min(100)
-    @Max(60000)
+    @Max(300_000)
     private int requestTimeout = DEFAULT_REQUEST_TIMEOUT;
 
     @Min(1)

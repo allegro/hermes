@@ -8,11 +8,16 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 
-public class Subscription {
+public class Subscription implements Anonymizable {
 
     @Valid
     @NotNull
@@ -349,7 +354,7 @@ public class Subscription {
             return new Subscription(
                     topicName,
                     name,
-                    endpoint.anonymizePassword(),
+                    endpoint.anonymize(),
                     state,
                     description,
                     deliveryType == DeliveryType.BATCH ? batchSubscriptionPolicy : serialSubscriptionPolicy,

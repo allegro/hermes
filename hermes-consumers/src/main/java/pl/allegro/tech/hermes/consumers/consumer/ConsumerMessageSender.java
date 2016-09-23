@@ -31,7 +31,6 @@ import static java.lang.String.format;
 public class ConsumerMessageSender {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerMessageSender.class);
-    private final ScheduledExecutorService retrySingleThreadExecutor;
     private final ExecutorService deliveryReportingExecutor;
     private final List<SuccessHandler> successHandlers;
     private final List<ErrorHandler> errorHandlers;
@@ -40,11 +39,13 @@ public class ConsumerMessageSender {
     private final InflightsPool inflight;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
+
     private int requestTimeoutMs;
     private ConsumerLatencyTimer consumerLatencyTimer;
     private MessageSender messageSender;
     private Subscription subscription;
 
+    private ScheduledExecutorService retrySingleThreadExecutor;
     private volatile boolean running = true;
 
     public ConsumerMessageSender(Subscription subscription,
@@ -65,15 +66,25 @@ public class ConsumerMessageSender {
         this.messageSender = messageSenderFactory.create(subscription);
         this.subscription = subscription;
         this.inflight = inflight;
-        this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1);
         this.async = futureAsyncTimeout;
         this.requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
     }
 
+    public void initialize() {
+        running = true;
+        this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1);
+    }
+
     public void shutdown() {
         running = false;
+        retrySingleThreadExecutor.shutdown();
+        try {
+            retrySingleThreadExecutor.awaitTermination(1, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            logger.warn("Failed to stop retry executor within one minute with following exception", e);
+        }
     }
 
 
@@ -92,19 +103,30 @@ public class ConsumerMessageSender {
     public void sendMessage(final Message message) {
         rateLimiter.acquire();
         ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
-        CompletableFuture<MessageSendingResult> response = async.within(messageSender.send(message), Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs));
+        CompletableFuture<MessageSendingResult> response = async.within(
+                messageSender.send(message),
+                Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs)
+        );
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
     }
 
-    public synchronized void updateSubscription(Subscription newSubscription) {
+    public void updateSubscription(Subscription newSubscription) {
         boolean endpointUpdated = !this.subscription.getEndpoint().equals(newSubscription.getEndpoint());
-        boolean subscriptionPolicyUpdated = !Objects.equals(this.subscription.getSerialSubscriptionPolicy(),
-                newSubscription.getSerialSubscriptionPolicy());
-        boolean endpointAddressResolverMetadataChanged = !Objects.equals(this.subscription.getEndpointAddressResolverMetadata(),
-                newSubscription.getEndpointAddressResolverMetadata());
-        boolean oAuthPolicyChanged = !Objects.equals(this.subscription.getOAuthPolicy(), newSubscription.getOAuthPolicy());
-        this.requestTimeoutMs = newSubscription.getSerialSubscriptionPolicy().getRequestTimeout();
+        boolean subscriptionPolicyUpdated = !Objects.equals(
+                this.subscription.getSerialSubscriptionPolicy(),
+                newSubscription.getSerialSubscriptionPolicy()
+        );
+        boolean endpointAddressResolverMetadataChanged = !Objects.equals(
+                this.subscription.getEndpointAddressResolverMetadata(),
+                newSubscription.getEndpointAddressResolverMetadata()
+        );
+        boolean oAuthPolicyChanged = !Objects.equals(
+                this.subscription.getOAuthPolicy(), newSubscription.getOAuthPolicy()
+        );
+
         this.subscription = newSubscription;
+        this.requestTimeoutMs = newSubscription.getSerialSubscriptionPolicy().getRequestTimeout();
+
         if (endpointUpdated || subscriptionPolicyUpdated || endpointAddressResolverMetadataChanged || oAuthPolicyChanged) {
             this.messageSender = messageSenderFactory.create(newSubscription);
         }

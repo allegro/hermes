@@ -54,7 +54,6 @@ public class ConsumerProcess implements Runnable {
                 consumer.consume(() -> processSignals());
             }
             stop();
-
         } finally {
             logger.info("Releasing consumer process thred of subscription {}", subscriptionName);
             shutdownCallback.accept(subscriptionName);

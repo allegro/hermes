@@ -27,6 +27,12 @@ function GraphiteUrlResolver(config) {
         return value.replace(/\./g, '_');
     }
 
+    function consumerGroupId(group, topic, subscription) {
+        return compile("{}_{}_{}", _.map([group, topic, subscription], function(item) {
+            return sanitize(item.replace(/_/g, '__'));
+        }));
+    }
+
     function url(value) {
         return config.url + '/render/?width=1514&height=952&target=' + value;
     }
@@ -57,8 +63,8 @@ function GraphiteUrlResolver(config) {
             '2xx': url(compile('sumSeries({}.consumer.*.status.{}.2xx.m1_rate)', [prefix, subscriptionPath(group, topic, subscription)])),
             '4xx': url(compile('sumSeries({}.consumer.*.status.{}.4xx.m1_rate)', [prefix, subscriptionPath(group, topic, subscription)])),
             '5xx': url(compile('sumSeries({}.consumer.*.status.{}.5xx.m1_rate)', [prefix, subscriptionPath(group, topic, subscription)])),
-            lag: url(compile('sumSeries({}.consumer-offset.*.{}_{}*.{}_{}_{}.*.lag)', [
-                    prefix, sanitize(group), sanitize(topic), sanitize(group), sanitize(topic), sanitize(subscription)
+            lag: url(compile('sumSeries({}.consumer-offset.*.{}_{}*.{}.*.lag)', [
+                    prefix, sanitize(group), sanitize(topic), consumerGroupId(group, topic, subscription)
                 ]))
         };
     };

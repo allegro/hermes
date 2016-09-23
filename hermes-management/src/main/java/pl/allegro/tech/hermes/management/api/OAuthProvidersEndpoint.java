@@ -19,7 +19,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -57,8 +59,9 @@ public class OAuthProvidersEndpoint {
     @Produces(APPLICATION_JSON)
     @RolesAllowed(Roles.ADMIN)
     @ApiOperation(value = "Create OAuth provider", httpMethod = HttpMethod.POST)
-    public Response create(OAuthProvider oAuthProvider) {
-        service.createOAuthProvider(oAuthProvider);
+    public Response create(OAuthProvider oAuthProvider,
+                           @Context SecurityContext securityContext) {
+        service.createOAuthProvider(oAuthProvider, securityContext.getUserPrincipal().getName());
         return status(Response.Status.CREATED).build();
     }
 
@@ -68,8 +71,9 @@ public class OAuthProvidersEndpoint {
     @RolesAllowed(Roles.ADMIN)
     @Path("/{oAuthProviderName}")
     @ApiOperation(value = "Update OAuth provider", httpMethod = HttpMethod.PUT)
-    public Response update(@PathParam("oAuthProviderName") String oAuthProviderName, PatchData patch) {
-        service.updateOAuthProvider(oAuthProviderName, patch);
+    public Response update(@PathParam("oAuthProviderName") String oAuthProviderName, PatchData patch,
+                           @Context SecurityContext securityContext) {
+        service.updateOAuthProvider(oAuthProviderName, patch, securityContext.getUserPrincipal().getName());
         return status(Response.Status.OK).build();
     }
 
@@ -78,8 +82,9 @@ public class OAuthProvidersEndpoint {
     @RolesAllowed(Roles.ADMIN)
     @Path("/{oAuthProviderName}")
     @ApiOperation(value = "Remove OAuth provider", httpMethod = HttpMethod.DELETE)
-    public Response remove(@PathParam("oAuthProviderName") String oAuthProviderName) {
-        service.removeOAuthProvider(oAuthProviderName);
+    public Response remove(@PathParam("oAuthProviderName") String oAuthProviderName,
+                           @Context SecurityContext securityContext) {
+        service.removeOAuthProvider(oAuthProviderName, securityContext.getUserPrincipal().getName());
         return status(Response.Status.OK).build();
     }
 }
