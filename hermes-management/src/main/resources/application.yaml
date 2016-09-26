@@ -22,6 +22,9 @@ server:
 
 management:
   context-path: /
+  restTemplate:
+    connect-timeout: 2000
+    read-timeout: 2000
 
 schema.repository.type: zookeeper
 

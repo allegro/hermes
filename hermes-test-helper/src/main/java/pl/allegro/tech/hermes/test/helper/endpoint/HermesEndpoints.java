@@ -20,6 +20,8 @@ public class HermesEndpoints {
 
     private final OAuthProviderEndpoint oAuthProviderEndpoint;
 
+    private final SupportTeamsEndpoint supportTeamsEndpoint;
+
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
@@ -27,6 +29,7 @@ public class HermesEndpoints {
         this.schemaEndpoint = hermes.createSchemaEndpoint();
         this.queryEndpoint = hermes.createQueryEndpoint();
         this.oAuthProviderEndpoint = hermes.createOAuthProviderEndpoint();
+        this.supportTeamsEndpoint = hermes.createSupportTeamsEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl) {
@@ -57,6 +60,10 @@ public class HermesEndpoints {
 
     public QueryEndpoint query() {
         return queryEndpoint;
+    }
+
+    public SupportTeamsEndpoint supportTeams() {
+        return supportTeamsEndpoint;
     }
 
     public List<String> findTopics(Topic topic, boolean tracking) {
