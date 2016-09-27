@@ -1,14 +1,13 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.consumers;
 
-import com.beust.jcommander.internal.Lists;
 import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.lang.ArrayUtils;
 import org.assertj.core.util.Arrays;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.consumers.AbstractLogRepositoryTest;
@@ -41,13 +40,13 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     public static ElasticsearchResource elasticsearch = new ElasticsearchResource(indexFactory);
     private SchemaManager schemaManager;
 
-    @BeforeClass
+    @BeforeSuite
     public void before() throws Throwable {
         elasticsearch.before();
         schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, indexFactory);
     }
 
-    @AfterClass
+    @AfterSuite
     public void after() {
         elasticsearch.after();
     }
