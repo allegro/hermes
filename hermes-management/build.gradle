@@ -1,4 +1,4 @@
-project.ext.versions += [spring: '1.2.3.RELEASE']
+project.ext.versions += [spring: '1.4.1.RELEASE']
 
 dependencies {
     compile project(':hermes-api')
