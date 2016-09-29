@@ -23,7 +23,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.time.Clock;
 import java.util.Collection;
@@ -134,7 +134,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
     private UnwrappedMessageContent getUnwrappedMessageContent(ConsumerRecord<byte[], byte[]> message) {
         if (topic.getContentType() == ContentType.AVRO) {
-            return messageContentWrapper.unwrapAvro(message.value(), topic, schemaRepository);
+            return messageContentWrapper.unwrapAvro(message.value(), topic);
         } else if (topic.getContentType() == ContentType.JSON) {
             return messageContentWrapper.unwrapJson(message.value());
         }

@@ -3,10 +3,10 @@ package pl.allegro.tech.hermes.management.domain.topic.validator
 import org.apache.avro.Schema
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository
-import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion
+import pl.allegro.tech.hermes.schema.CompiledSchema
+import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException
+import pl.allegro.tech.hermes.schema.SchemaRepository
+import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import spock.lang.Specification
 
@@ -81,7 +81,7 @@ class TopicValidatorTest extends Specification {
         given:
         def jsonTopic = topic('group.topic').withContentType(ContentType.JSON).build()
         def migratedTopic = topic('group.topic').withContentType(ContentType.AVRO).migratedFromJsonType().build()
-        schemaRepository.getAvroSchema(migratedTopic) >> { throw new CouldNotLoadSchemaException("", new RuntimeException()) }
+        schemaRepository.getLatestAvroSchema(migratedTopic) >> { throw new CouldNotLoadSchemaException("", new RuntimeException()) }
 
         when:
         topicValidator.ensureUpdatedTopicIsValid(migratedTopic, jsonTopic)
@@ -94,7 +94,7 @@ class TopicValidatorTest extends Specification {
         given:
         def jsonTopic = topic('group.topic').withContentType(ContentType.JSON).build()
         def migratedTopic = topic('group.topic').withContentType(ContentType.AVRO).migratedFromJsonType().build()
-        schemaRepository.getAvroSchema(migratedTopic) >> new CompiledSchema<Schema>(new AvroUser().schema, SchemaVersion.valueOf(1))
+        schemaRepository.getLatestAvroSchema(migratedTopic) >> new CompiledSchema<Schema>(new AvroUser().schema, SchemaVersion.valueOf(1))
 
         when:
         topicValidator.ensureUpdatedTopicIsValid(migratedTopic, jsonTopic)

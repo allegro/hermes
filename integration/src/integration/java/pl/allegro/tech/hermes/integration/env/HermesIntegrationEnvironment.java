@@ -36,10 +36,12 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         STARTERS.put(OAuthServerMockStarter.class, new OAuthServerMockStarter());
         STARTERS.put(CustomKafkaStarter.class, new CustomKafkaStarter(SECONDARY_KAFKA_PORT, SECONDARY_ZK_KAFKA_CONNECT));
         STARTERS.put(JmsStarter.class, new JmsStarter());
-        STARTERS.put(SchemaRepoStarter.class, new SchemaRepoStarter(SCHEMA_REPO_PORT));
+        STARTERS.put(ConfluentSchemaRegistryStarter.class, new ConfluentSchemaRegistryStarter(SCHEMA_REPO_PORT,
+                SECONDARY_ZK_KAFKA_CONNECT));
         STARTERS.put(ConsumersStarter.class, new ConsumersStarter());
         STARTERS.put(FrontendStarter.class, new FrontendStarter(FRONTEND_PORT));
         STARTERS.put(ManagementStarter.class, new ManagementStarter(MANAGEMENT_PORT));
+
     }
 
     private CuratorFramework zookeeper;

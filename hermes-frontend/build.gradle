@@ -2,6 +2,7 @@ dependencies {
     compile project(':hermes-common')
     compile project(':hermes-tracker')
     compile project(':hermes-metrics')
+    compile project(':hermes-schema')
 
     compile group: 'io.undertow', name: 'undertow-servlet', version: '1.3.23.Final'
     compile group: 'org.apache.kafka', name: 'kafka-clients', version: '0.8.2.0'

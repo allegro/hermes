@@ -52,6 +52,17 @@ public class HermesAPIOperations {
         return created;
     }
 
+    public Topic createAvroTopic(String group, String topic) {
+        Topic created = topic(group, topic)
+                .withRetentionTime(1000)
+                .withDescription("Test topic")
+                .withContentType(ContentType.AVRO)
+                .build();
+
+        createTopic(created);
+        return created;
+    }
+
     public Topic createTopic(Topic topic) {
         if (endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName())) {
             return topic;
@@ -106,6 +117,11 @@ public class HermesAPIOperations {
     public Topic buildTopic(String group, String topic) {
         createGroup(group);
         return createTopic(group, topic);
+    }
+
+    public Topic buildAvroTopic(String group, String topic) {
+        createGroup(group);
+        return createAvroTopic(group, topic);
     }
 
     public Topic buildTopic(Topic topic) {

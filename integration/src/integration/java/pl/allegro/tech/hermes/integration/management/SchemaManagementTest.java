@@ -14,6 +14,8 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class SchemaManagementTest extends IntegrationTest {
 
+    private static final String EXAMPLE_SCHEMA = "\"string\"";
+
     @Test
     public void shouldNotSaveSchemaForInvalidTopic() {
         // given && when
@@ -26,10 +28,10 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldSaveSchemaForExistingTopic() {
         // given
-        operations.buildTopic("schemaGroup1", "schemaTopic1");
+        operations.buildAvroTopic("schemaGroup1", "schemaTopic1");
 
         // when
-        Response response = management.schema().save("schemaGroup1.schemaTopic1", "{}");
+        Response response = management.schema().save("schemaGroup1.schemaTopic1", EXAMPLE_SCHEMA);
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
@@ -38,20 +40,20 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnSchemaForTopic() {
         // given
-        operations.buildTopic("schemaGroup2", "schemaTopic2");
-        management.schema().save("schemaGroup2.schemaTopic2", "{}");
+        operations.buildAvroTopic("schemaGroup2", "schemaTopic2");
+        management.schema().save("schemaGroup2.schemaTopic2", EXAMPLE_SCHEMA);
 
         // when
         Response response = management.schema().get("schemaGroup2.schemaTopic2");
 
         // then
-        assertThat(response.readEntity(String.class)).isEqualTo("{}");
+        assertThat(response.readEntity(String.class)).isEqualTo(EXAMPLE_SCHEMA);
     }
 
     @Test
     public void shouldRespondWithNoContentOnMissingSchema() {
         // given
-        operations.buildTopic("schemaGroup3", "schemaTopic3");
+        operations.buildAvroTopic("schemaGroup3", "schemaTopic3");
 
         // when
         Response response = management.schema().get("schemaGroup3.schemaTopic3");
@@ -61,19 +63,7 @@ public class SchemaManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldNotSaveInvalidJsonSchema() throws IOException {
-        // given
-        operations.buildTopic("jsonGroup", "jsonTopic");
-
-        // when
-        Response response = management.schema().save("jsonGroup.jsonTopic", "{");
-
-        // then
-        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
-    }
-
-    @Test
-    public void shouldNotRemoveAvroSchema() throws IOException {
+    public void shouldReturnMethodNotAcceptableWhenRemovingSchemaIsDisabled() throws IOException {
         // given
         AvroUser avroUser = new AvroUser();
         Topic avroTopic = topic("avroGroup", "avroTopic")
@@ -86,7 +76,7 @@ public class SchemaManagementTest extends IntegrationTest {
         Response response = management.schema().delete("avroGroup.avroTopic");
 
         // then
-        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+        assertThat(response).hasStatus(Response.Status.NOT_ACCEPTABLE);
     }
 
     @Test

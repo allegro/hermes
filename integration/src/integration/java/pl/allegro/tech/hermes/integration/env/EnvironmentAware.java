@@ -26,13 +26,13 @@ public interface EnvironmentAware {
     String CLIENT_FRONTEND_URL = "http://localhost:" + FRONTEND_PORT;
 
     String FRONTEND_TOPICS_ENDPOINT = FRONTEND_URL + "topics";
-    
+
     String FRONTEND_HEALTH_ENDPOINT = FRONTEND_URL + "status/health";
 
     String MANAGEMENT_ENDPOINT_URL = "http://localhost:" + MANAGEMENT_PORT + "/";
 
     String CONSUMER_ENDPOINT_URL = "http://localhost:" + CONFIG_FACTORY.getIntProperty(Configs.CONSUMER_HEALTH_CHECK_PORT) + "/";
-    
+
     int GRAPHITE_HTTP_SERVER_PORT = 18089;
 
     int GRAPHITE_SERVER_PORT = 18023;

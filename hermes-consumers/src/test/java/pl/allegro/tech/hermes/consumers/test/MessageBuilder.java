@@ -6,8 +6,8 @@ import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

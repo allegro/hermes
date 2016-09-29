@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_TYPE;
-import static pl.allegro.tech.hermes.domain.topic.schema.SchemaRepositoryType.SCHEMA_REPO;
+import static pl.allegro.tech.hermes.common.schema.SchemaRepositoryType.SCHEMA_REGISTRY;
 
 public class ConsumersStarter implements Starter<HermesConsumers> {
 
@@ -28,7 +28,7 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
     @Override
     public void start() throws Exception {
         LOGGER.info("Starting Hermes Consumers");
-        configFactory.overrideProperty(SCHEMA_REPOSITORY_TYPE, SCHEMA_REPO.name());
+        configFactory.overrideProperty(SCHEMA_REPOSITORY_TYPE, SCHEMA_REGISTRY.name());
         configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, false);
         configFactory.overrideProperty(KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG, "earliest");
         consumers = HermesConsumers.consumers()

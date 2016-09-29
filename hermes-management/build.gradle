@@ -4,6 +4,7 @@ dependencies {
     compile project(':hermes-api')
     compile project(':hermes-common')
     compile project(':hermes-tracker')
+    compile project(':hermes-schema')
 
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.spring
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-jersey', version: versions.spring

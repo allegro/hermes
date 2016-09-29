@@ -137,7 +137,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         File backup = new File(tempDir.getAbsoluteFile(), "messages.dat");
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(backup);
-        MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null);
+        MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null, null);
 
         String messageId = randomUUID().toString();
         long timestamp = now().toEpochMilli();

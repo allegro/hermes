@@ -3,6 +3,7 @@ apply plugin: 'groovy'
 dependencies {
     compile project(':hermes-api')
     compile project(':hermes-metrics')
+    compile project(':hermes-schema')
 
     compile group: 'com.netflix.archaius', name: 'archaius-core', version: '0.6.0'
 
@@ -13,9 +14,6 @@ dependencies {
     compile (group: 'org.apache.curator', name: 'curator-recipes', version: versions.curator) {
         exclude module: 'slf4j-log4j12'
         exclude module: 'log4j'
-    }
-    compile (group: 'com.github.fge', name: 'json-schema-validator', version: '2.2.6') {
-        exclude group: 'net.sf.jopt-simple'
     }
 
     compile group: 'org.glassfish.hk2', name: 'hk2-locator', version: '2.3.0-b01'
@@ -30,7 +28,6 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version: versions.guava
 
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
-    compile group: 'io.fastjson', name: 'boon', version: '0.28'
     compile group: 'org.apache.avro', name: 'avro', version: '1.7.7'
 
     compile group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: '3.1.1'

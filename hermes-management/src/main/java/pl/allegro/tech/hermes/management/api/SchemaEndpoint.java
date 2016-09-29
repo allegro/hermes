@@ -3,10 +3,10 @@ package pl.allegro.tech.hermes.management.api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.SchemaSource;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceService;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
@@ -56,7 +56,7 @@ public class SchemaEndpoint {
     public Response save(@PathParam("topicName") String qualifiedTopicName,
                          @DefaultValue("true") @QueryParam(value = "validate") boolean validate,
                          String schema) {
-        schemaSourceService.saveSchemaSource(qualifiedTopicName, schema, validate);
+        schemaSourceService.registerSchemaSource(qualifiedTopicName, schema, validate);
         notifyFrontendSchemaChanged(qualifiedTopicName);
         return Response.status(Response.Status.CREATED).build();
     }
@@ -69,7 +69,7 @@ public class SchemaEndpoint {
     @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Delete schema", httpMethod = HttpMethod.DELETE)
     public Response delete(@PathParam("topicName") String qualifiedTopicName) {
-        schemaSourceService.deleteSchemaSource(qualifiedTopicName);
+        schemaSourceService.deleteAllSchemaSources(qualifiedTopicName);
         return Response.status(Response.Status.OK).build();
     }
 }
