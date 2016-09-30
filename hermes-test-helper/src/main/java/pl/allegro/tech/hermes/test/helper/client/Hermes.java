@@ -81,6 +81,10 @@ public class Hermes {
         return createProxy(url, OAuthProviderEndpoint.class, managementConfig);
     }
 
+    public SupportTeamsEndpoint createSupportTeamsEndpoint() {
+        return createProxy(url, SupportTeamsEndpoint.class, managementConfig);
+    }
+
     public AsyncMessagePublisher createAsyncMessagePublisher() {
         String resource = TopicEndpoint.class.getAnnotation(Path.class).value();
         return new AsyncMessagePublisher(getClientBuilder(publisherConfig).build().target(url).path(resource));

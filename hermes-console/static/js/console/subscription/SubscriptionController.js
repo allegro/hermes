@@ -195,9 +195,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
-    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig',
+    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'SupportTeamService',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
-              endpointAddressResolverMetadataConfig) {
+              endpointAddressResolverMetadataConfig, supportTeamService) {
         $scope.topicName = topicName;
         $scope.subscription = subscription;
         $scope.operation = operation;
@@ -232,6 +232,11 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
                         passwordService.reset();
                     });
         };
+
+        $scope.groups = function(groupName) {
+            return supportTeamService.getGroups(groupName);
+        };
+
     }]);
 
 function initRetransmissionCalendar(daysBack) {

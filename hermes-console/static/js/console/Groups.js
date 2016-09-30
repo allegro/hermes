@@ -123,10 +123,14 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
         loadTopics();
     }]);
 
-groups.controller('GroupEditController', ['GroupRepository', '$scope', '$modalInstance', 'group', 'PasswordService', 'toaster', 'operation',
-    function (groupRepository, $scope, $modal, group, passwordService, toaster, operation) {
+groups.controller('GroupEditController', ['GroupRepository', '$scope', '$uibModalInstance', 'group', 'PasswordService', 'toaster', 'operation', 'SupportTeamService',
+    function (groupRepository, $scope, $modal, group, passwordService, toaster, operation, supportTeamService) {
         $scope.group = group;
         $scope.operation = operation;
+
+        $scope.groups = function(groupName) {
+            return supportTeamService.getGroups(groupName);
+        };
 
         $scope.save = function () {
             passwordService.setRoot($scope.rootPassword);
