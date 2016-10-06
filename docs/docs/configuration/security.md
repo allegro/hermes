@@ -25,7 +25,12 @@ public class MyCustomSecurityContextProvider implements SecurityContextProvider 
         return new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
-                /* ... */
+                return new Principal() {
+                    @Override
+                    public String getName() {
+                        return username;
+                    }
+                };
             }
 
             @Override
@@ -46,3 +51,19 @@ public class MyCustomSecurityContextProvider implements SecurityContextProvider 
     }
 }
 ```
+
+
+## Management operations auditing
+
+Hermes includes management operations auditor, which audits group, topic or subscription creation, removal or modification.
+It can be configured using following options:
+
+
+Option                    | Description                            | Default value
+------------------------- | -------------------------------------- | -------------
+enabled                   | enable Auditor                         | false
+
+
+Auditor uses `java.security.Principal` obtained from `javax.ws.rs.core.SecurityContext` to get user name. 
+`SecurityContext` is provided by component implementing `pl.allegro.tech.hermes.management.api.auth.SecurityContextProvider` as in `MyCustomSecurityContextProvider` example above.
+Currently basic `pl.allegro.tech.hermes.management.infrastructure.audit.LoggingAuditor` is provided.

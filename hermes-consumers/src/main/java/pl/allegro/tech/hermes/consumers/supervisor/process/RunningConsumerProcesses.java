@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
@@ -16,12 +16,16 @@ class RunningConsumerProcesses {
         this.processes.put(process.getSubscriptionName(), new RunningProcess(process, executionHandle));
     }
 
+    void remove(SubscriptionName subscriptionName) {
+        processes.remove(subscriptionName);
+    }
+
     void remove(ConsumerProcess process) {
         processes.remove(process.getSubscriptionName());
     }
 
-    Future getExecutionHandle(ConsumerProcess process) {
-        return processes.get(process.getSubscriptionName()).executionHandle;
+    Future getExecutionHandle(SubscriptionName subscriptionName) {
+        return processes.get(subscriptionName).executionHandle;
     }
 
     ConsumerProcess getProcess(SubscriptionName subscriptionName) {
@@ -34,6 +38,10 @@ class RunningConsumerProcesses {
 
     Stream<ConsumerProcess> stream() {
         return processes.values().stream().map(p -> p.process);
+    }
+
+    Set<SubscriptionName> existingConsumers() {
+        return processes.keySet();
     }
 
     private static class RunningProcess {

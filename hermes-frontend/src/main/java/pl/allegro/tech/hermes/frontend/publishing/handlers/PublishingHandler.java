@@ -52,7 +52,7 @@ class PublishingHandler implements HttpHandler {
                         attachment.removeTimeout();
                         messageEndProcessor.sent(exchange, attachment);
                     } else if (messageState.isDelayed()) {
-                        messageEndProcessor.delayedSent(attachment.getCachedTopic(), message);
+                        messageEndProcessor.delayedSent(exchange, attachment.getCachedTopic(), message);
                     }
                 });
             }

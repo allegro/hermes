@@ -217,7 +217,7 @@ public class BackupMessagesLoader {
             public void onUnpublished(Message message, Topic topic, Exception exception) {
                 brokerTimers.close();
                 brokerListeners.onError(message, topic, exception);
-                trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage());
+                trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage(), "");
                 toResend.get().add(ImmutablePair.of(message, cachedTopic));
             }
 
@@ -226,7 +226,7 @@ public class BackupMessagesLoader {
                 brokerTimers.close();
                 cachedTopic.incrementPublished();
                 brokerListeners.onAcknowledge(message, topic);
-                trackers.get(topic).logPublished(message.getId(), topic.getName());
+                trackers.get(topic).logPublished(message.getId(), topic.getName(), "");
             }
         });
     }

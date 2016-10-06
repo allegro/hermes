@@ -3,13 +3,15 @@ package pl.allegro.tech.hermes.consumers.consumer.filtering
 import pl.allegro.tech.hermes.api.MessageFilterSpecification
 import pl.allegro.tech.hermes.consumers.consumer.filtering.json.JsonPathSubscriptionMessageFilterCompiler
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import static java.nio.charset.Charset.defaultCharset
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage
 
 class JsonPathMessageFilterSpec extends Specification {
 
-    def "basic paths"(String path, String matcher, boolean result) {
+    @Unroll
+    def "should filter '#path' matching '#matcher' with result: #result"(String path, String matcher, boolean result) {
         given:
         def json = '''
             {
@@ -45,22 +47,22 @@ class JsonPathMessageFilterSpec extends Specification {
         expect:
         result == new JsonPathSubscriptionMessageFilterCompiler().compile(spec)
                 .test(withTestMessage()
-                    .withContent(json, defaultCharset())
-                    .build())
+                .withContent(json, defaultCharset())
+                .build())
 
         where:
-        path                                  | matcher       | result
-        '$.type'                              | "donut"       | true
-        '$.type'                              | "not_donut"   | false
-        '$.does.not.exist'                    | ".*"          | false
-        '$.batters.batter[1].type'            | "^Choco.*"    | true
-        '$.batters.batter[2].type'            | "^Choco.*"    | false
-        '$.[?(@.ppu > 0.5)].name'             | "Cake"        | true
-        '$.[?(@.ppu < 0.5)].name'             | "Cake"        | false
-        '$.topping[?(@.id == 5007)].type'     | "^Powdered.*" | true
-        '$.topping[?(@.id == 5007)].type'     | "^Maple.*"    | false
-        '$.topping[?(@.id == 5001)].type'     | "None"        | true
-        '$.topping[4:6].type'                 | "^Choco.*"    | true
-        '$.topping[4:7].type'                 | "^Choco.*"    | false
+        path                              | matcher       | result
+        '$.type'                          | "donut"       | true
+        '$.type'                          | "not_donut"   | false
+        '$.does.not.exist'                | ".*"          | false
+        '$.batters.batter[1].type'        | "^Choco.*"    | true
+        '$.batters.batter[2].type'        | "^Choco.*"    | false
+        '$.[?(@.ppu > 0.5)].name'         | "Cake"        | true
+        '$.[?(@.ppu < 0.5)].name'         | "Cake"        | false
+        '$.topping[?(@.id == 5007)].type' | "^Powdered.*" | true
+        '$.topping[?(@.id == 5007)].type' | "^Maple.*"    | false
+        '$.topping[?(@.id == 5001)].type' | "None"        | true
+        '$.topping[4:6].type'             | "^Choco.*"    | true
+        '$.topping[4:7].type'             | "^Choco.*"    | false
     }
 }

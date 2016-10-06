@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import pl.allegro.tech.hermes.api.constraints.ValidAddress;
@@ -15,7 +16,7 @@ import java.util.regex.Pattern;
 
 @JsonDeserialize(using = EndpointAddressDeserializer.class)
 @JsonSerialize(using = EndpointAddressSerializer.class)
-public class EndpointAddress {
+public class EndpointAddress implements Anonymizable {
 
     private static final String ANONYMIZED_PASSWORD = "*****";
 
@@ -119,7 +120,7 @@ public class EndpointAddress {
 
     @Override
     public String toString() {
-        return com.google.common.base.Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("endpoint", endpoint)
                 .toString();
     }
@@ -142,7 +143,7 @@ public class EndpointAddress {
         return username;
     }
 
-    public EndpointAddress anonymizePassword() {
+    public EndpointAddress anonymize() {
         if(containsCredentials) {
             return new EndpointAddress(protocol, endpoint, username);
         }

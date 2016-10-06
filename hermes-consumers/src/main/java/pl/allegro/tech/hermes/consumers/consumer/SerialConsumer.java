@@ -10,16 +10,16 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResol
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
-import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceivingTimeoutException;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_INTERVAL;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_INTERVAL;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class SerialConsumer implements Consumer {
@@ -28,11 +28,12 @@ public class SerialConsumer implements Consumer {
 
     private final ReceiverFactory messageReceiverFactory;
     private final HermesMetrics hermesMetrics;
-    private final ConsumerRateLimiter rateLimiter;
+    private final SerialConsumerRateLimiter rateLimiter;
     private final Trackers trackers;
     private final MessageConverterResolver messageConverterResolver;
     private final ConsumerMessageSender sender;
     private final OffsetQueue offsetQueue;
+    private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
     private final AdjustableSemaphore inflightSemaphore;
 
     private final int defaultInflight;
@@ -46,13 +47,15 @@ public class SerialConsumer implements Consumer {
     public SerialConsumer(ReceiverFactory messageReceiverFactory,
                           HermesMetrics hermesMetrics,
                           Subscription subscription,
-                          ConsumerRateLimiter rateLimiter,
+                          SerialConsumerRateLimiter rateLimiter,
                           ConsumerMessageSenderFactory consumerMessageSenderFactory,
                           Trackers trackers,
                           MessageConverterResolver messageConverterResolver,
                           Topic topic,
                           ConfigFactory configFactory,
-                          OffsetQueue offsetQueue) {
+                          OffsetQueue offsetQueue,
+                          ConsumerAuthorizationHandler consumerAuthorizationHandler) {
+
         this.defaultInflight = configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE);
         this.signalProcessingInterval = configFactory.getIntProperty(CONSUMER_SIGNAL_PROCESSING_INTERVAL);
         this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
@@ -61,7 +64,9 @@ public class SerialConsumer implements Consumer {
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
         this.offsetQueue = offsetQueue;
-        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, offsetQueue, inflightSemaphore::release);
+        this.consumerAuthorizationHandler = consumerAuthorizationHandler;
+        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, offsetQueue,
+                inflightSemaphore::release);
         this.trackers = trackers;
         this.messageConverterResolver = messageConverterResolver;
         this.messageReceiver = () -> {
@@ -84,13 +89,23 @@ public class SerialConsumer implements Consumer {
                 signalsInterrupt.run();
             } while (!inflightSemaphore.tryAcquire(signalProcessingInterval, TimeUnit.MILLISECONDS));
 
-            Message message = messageReceiver.next();
-            logger.debug("Read message {} partition {} offset {}", message.getContentType(), message.getPartition(), message.getOffset());
-            Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
-            sendMessage(convertedMessage);
-        } catch (MessageReceivingTimeoutException messageReceivingTimeoutException) {
-            inflightSemaphore.release();
-            logger.trace("Timeout while reading message for subscription {}. Trying to read message again", subscription.getQualifiedName(), messageReceivingTimeoutException);
+            Optional<Message> maybeMessage = messageReceiver.next();
+
+            if (maybeMessage.isPresent()) {
+                Message message = maybeMessage.get();
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Read message {} partition {} offset {}",
+                            message.getContentType(), message.getPartition(), message.getOffset()
+                    );
+                }
+
+                Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
+                sendMessage(convertedMessage);
+            } else {
+                inflightSemaphore.release();
+            }
         } catch (Exception e) {
             logger.error("Consumer loop failed for {}", subscription.getQualifiedName(), e);
         }
@@ -109,11 +124,13 @@ public class SerialConsumer implements Consumer {
     public void initialize() {
         logger.info("Consumer: preparing message receiver for subscription {}", subscription.getQualifiedName());
         initializeMessageReceiver();
+        sender.initialize();
         rateLimiter.initialize();
+        consumerAuthorizationHandler.createSubscriptionHandler(subscription.getQualifiedName());
     }
 
     private void initializeMessageReceiver() {
-        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription);
+        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter);
     }
 
     @Override
@@ -121,6 +138,7 @@ public class SerialConsumer implements Consumer {
         messageReceiver.stop();
         rateLimiter.shutdown();
         sender.shutdown();
+        consumerAuthorizationHandler.removeSubscriptionHandler(subscription.getQualifiedName());
     }
 
     @Override
@@ -130,13 +148,15 @@ public class SerialConsumer implements Consumer {
         rateLimiter.updateSubscription(newSubscription);
         sender.updateSubscription(newSubscription);
         messageReceiver.update(newSubscription);
+        consumerAuthorizationHandler.updateSubscription(newSubscription.getQualifiedName());
         this.subscription = newSubscription;
     }
 
     @Override
     public void updateTopic(Topic newTopic) {
-        if(this.topic.getContentType() != newTopic.getContentType()) {
-            logger.info("Topic content type changed from {} to {}, reinitializing message recevier", this.topic.getContentType(), newTopic.getContentType());
+        if (this.topic.getContentType() != newTopic.getContentType()) {
+            logger.info("Topic content type changed from {} to {}, reinitializing message receiver",
+                    this.topic.getContentType(), newTopic.getContentType());
             this.topic = newTopic;
 
             messageReceiver.stop();

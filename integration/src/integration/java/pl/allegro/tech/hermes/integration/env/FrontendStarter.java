@@ -55,6 +55,7 @@ public class FrontendStarter implements Starter<HermesFrontend> {
                     10,
                     1000,
                     configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
+                    configFactory.getStringProperty(Configs.HOSTNAME),
                     serviceLocator.getService(MetricRegistry.class),
                     serviceLocator.getService(PathsCompiler.class)))
             .withKafkaTopicsNamesMapper(serviceLocator ->

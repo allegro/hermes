@@ -13,11 +13,11 @@ import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
+import static pl.allegro.tech.hermes.frontend.publishing.handlers.end.RemoteHostReader.readHostAndPort;
 
 public class MessageErrorProcessor {
     private static final Logger logger = LoggerFactory.getLogger(MessageErrorProcessor.class);
@@ -33,18 +33,18 @@ public class MessageErrorProcessor {
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error) {
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error, topic, messageId, getHostAndPort(exchange));
+        log(error, topic, messageId, readHostAndPort(exchange));
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error, Exception exception) {
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error, topic, messageId, getHostAndPort(exchange), exception);
+        log(error, topic, messageId, readHostAndPort(exchange), exception);
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, Exception e) {
         ErrorDescription error = error("Error while handling request.", INTERNAL_ERROR);
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error, topic, messageId, getHostAndPort(exchange), e);
+        log(error, topic, messageId, readHostAndPort(exchange), e);
     }
 
     public void sendQuietly(HttpServerExchange exchange, ErrorDescription error, String messageId, String topicName) {
@@ -54,7 +54,7 @@ public class MessageErrorProcessor {
             }
         } catch (Exception e) {
             logger.warn("Exception in sending error response to a client. {} Topic: {} MessageId: {} Host: {}",
-                    error.getMessage(), topicName, messageId, getHostAndPort(exchange), e);
+                    error.getMessage(), topicName, messageId, readHostAndPort(exchange), e);
         }
     }
 
@@ -75,7 +75,7 @@ public class MessageErrorProcessor {
                 .append("; remote host: ")
                 .append(hostAndPort)
                 .toString());
-        trackers.get(topic).logError(messageId, topic.getName(), error.getMessage());
+        trackers.get(topic).logError(messageId, topic.getName(), error.getMessage(), hostAndPort);
     }
 
     private void log(ErrorDescription error, Topic topic, String messageId, String hostAndPort, Exception exception) {
@@ -89,15 +89,6 @@ public class MessageErrorProcessor {
                         .append(hostAndPort)
                         .toString(),
                 exception);
-        trackers.get(topic).logError(messageId, topic.getName(), error.getMessage());
-    }
-
-    private String getHostAndPort(HttpServerExchange exchange) {
-        InetSocketAddress sourceAddress = exchange.getSourceAddress();
-        if(sourceAddress == null) {
-            return "";
-        }
-
-        return sourceAddress.getHostString() + ":" + sourceAddress.getPort();
+        trackers.get(topic).logError(messageId, topic.getName(), error.getMessage(), hostAndPort);
     }
 }

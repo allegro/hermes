@@ -27,6 +27,7 @@ public enum Configs {
     KAFKA_ZOOKEEPER_CONNECT_STRING("kafka.zookeeper.connect.string", "localhost:2181"),
 
     ENVIRONMENT_NAME("environment.name", "dev"),
+    HOSTNAME("hostname", new InetAddressHostnameResolver().resolve()),
 
     KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary"),
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
@@ -37,7 +38,7 @@ public enum Configs {
     KAFKA_CONSUMER_DUAL_COMMIT_ENABLED("kafka.consumer.dual.commit.enabled", true),
     KAFKA_CONSUMER_METADATA_READ_TIMEOUT("kafka.consumer.metadata.read.timeout", 5000),
     KAFKA_CONSUMER_OFFSET_COMMITTER_BROKER_CONNECTION_EXPIRATION("kafka.consumer.offset.commiter.broker.connection.expiration", 60),
-    KAFKA_CONSUMER_REBALANCE_MAX_RETRIES("kafka.consumer.rebalance.max.retries", 150),
+    KAFKA_CONSUMER_REBALANCE_MAX_RETRIES("kafka.consumer.rebalance.max.retries", 60),
     KAFKA_CONSUMER_REBALANCE_BACKOFF("kafka.consumer.rebalance.backoff", 4000),
 
     KAFKA_SIMPLE_CONSUMER_TIMEOUT_MS("kafka.simple.consumer.timeout.ms", 5000),
@@ -103,7 +104,8 @@ public enum Configs {
     MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE("frontend.messages.loading.wait.for.topics.cache", 10),
     MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO("frontend.messages.loading.wait.for.broker.topic.info", 5),
 
-    CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 20),
+    CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 15),
+    CONSUMER_COMMIT_OFFSET_QUEUES_SIZE("consumer.commit.offset.queues.size", 500_000),
     CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE("consumer.sender.async.timeout.thread.pool.size", 32),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING("consumer.sender.async.timeout.thread.pool.monitoring", false),
@@ -121,8 +123,6 @@ public enum Configs {
     CONSUMER_RATE_CONVERGENCE_FACTOR("consumer.rate.convergence.factor", 0.2),
     CONSUMER_RATE_FAILURES_NOCHANGE_TOLERANCE_RATIO("consumer.rate.failures.nochange.tolerance.ratio", 0.05),
     CONSUMER_RATE_FAILURES_SPEEDUP_TOLERANCE_RATIO("consumer.rate.failures.speedup.tolerance.ratio", 0.01),
-    CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_MINIMAL_IDLE_PERIOD("consumer.offset.commit.queue.alert.minimal.idle.period", 3600),
-    CONSUMER_OFFSET_COMMIT_QUEUE_ALERT_SIZE("consumer.offset.commit.queue.alert.size", 20_000),
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
     CONSUMER_WORKLOAD_ALGORITHM("consumer.workload.algorithm", "mirror"),
     CONSUMER_WORKLOAD_REBALANCE_INTERVAL("consumer.workload.rebalance.interval.seconds", 30),
@@ -131,15 +131,22 @@ public enum Configs {
     CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE("consumer.workload.assignment.processing.thread.pool.size", 5),
     CONSUMER_WORKLOAD_NODE_ID("consumer.workload.node.id",
             new InetAddressHostnameResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits())),
+    CONSUMER_WORKLOAD_MONITOR_SCAN_INTERVAL("consumer.workload.monitor.scan.interval.seconds", 120),
     CONSUMER_BATCH_POOLABLE_SIZE("consumer.batch.poolable.size", 1024),
     CONSUMER_BATCH_MAX_POOL_SIZE("consumer.batch.max.pool.size", 64*1024*1024),
     CONSUMER_BATCH_CONNECTION_TIMEOUT("consumer.batch.connection.timeout", 500),
     CONSUMER_BATCH_SOCKET_TIMEOUT("consumer.batch.socket.timeout", 500),
     CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
 
-    CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 10_000),
-    CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER("consumer.supervisor.background.unhealty.after", 300_000),
-    CONSUMER_SIGNAL_PROCESSING_INTERVAL("consumer.supervisor.signal.processing.interval.ms", 500),
+    CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 20_000),
+    CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER("consumer.supervisor.background.unhealty.after", 600_000),
+    CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER("consumer.supervisor.background.kill.after", 300_000),
+    CONSUMER_SIGNAL_PROCESSING_INTERVAL("consumer.supervisor.signal.processing.interval.ms", 5_000),
+
+    OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
+    OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),
+    OAUTH_PROVIDERS_TOKEN_REQUEST_RATE_LIMITER_RATE_REDUCTION_FACTOR(
+            "oauth.providers.token.request.rate.limiter.rate.reduction.factor", 2.0),
 
     GRAPHITE_HOST("graphite.host", "localhost"),
     GRAPHITE_PORT("graphite.port", 2003),
@@ -161,6 +168,7 @@ public enum Configs {
 
     SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES("schema.cache.refresh.after.write.minutes", 10),
     SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES("schema.cache.expire.after.write.minutes", 60 * 24),
+    SCHEMA_CACHE_COMPILED_EXPIRE_AFTER_ACCESS_MINUTES("schema.cache.compiled.expire.after.access.minutes", 60 * 48),
     SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE("schema.cache.reload.thread.pool.size", 2),
     SCHEMA_CACHE_ENABLED("schema.cache.enabled", true),
     SCHEMA_CACHE_COMPILED_MAXIMUM_SIZE("schema.cache.compiled.maximum.size", 2000),

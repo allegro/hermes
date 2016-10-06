@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http
 
 import pl.allegro.tech.hermes.api.EndpointAddress
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.BasicAuthProvider
 import spock.lang.Specification
 
 class BasicAuthProviderTest extends Specification {
@@ -11,10 +12,9 @@ class BasicAuthProviderTest extends Specification {
         BasicAuthProvider provider = new BasicAuthProvider(address)
 
         when:
-        String header = provider.authorizationToken(null)
+        String header = provider.authorizationToken().get()
 
         then:
         header == 'Basic dXNlcjpwYXNzd29yZA=='
     }
-
 }

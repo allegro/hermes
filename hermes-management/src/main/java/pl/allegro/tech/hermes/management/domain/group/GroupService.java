@@ -6,11 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
-import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.api.Query;
+import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
+import pl.allegro.tech.hermes.management.domain.Auditor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,10 +22,12 @@ public class GroupService {
     private static final Logger logger = LoggerFactory.getLogger(GroupService.class);
 
     private final GroupRepository groupRepository;
+    private final Auditor auditor;
 
     @Autowired
-    public GroupService(GroupRepository groupRepository) {
+    public GroupService(GroupRepository groupRepository, Auditor auditor) {
         this.groupRepository = groupRepository;
+        this.auditor = auditor;
     }
 
     public List<Group> listGroups() {
@@ -39,13 +42,15 @@ public class GroupService {
         return groupRepository.getGroupDetails(groupName);
     }
 
-    public String createGroup(Group group) {
+    public String createGroup(Group group, String createdBy) {
         groupRepository.createGroup(group);
+        auditor.objectCreated(createdBy, group);
         return "";
     }
 
-    public void removeGroup(String groupName) {
+    public void removeGroup(String groupName, String removedBy) {
         groupRepository.removeGroup(groupName);
+        auditor.objectRemoved(removedBy, Group.class.getSimpleName(), groupName);
     }
 
     public void checkGroupExists(String groupName) {
@@ -54,11 +59,12 @@ public class GroupService {
         }
     }
 
-    public void updateGroup(String groupName, PatchData patch) {
+    public void updateGroup(String groupName, PatchData patch, String modifiedBy) {
         try {
             Group retrieved = groupRepository.getGroupDetails(groupName);
             Group modified = Patch.apply(retrieved, patch);
             groupRepository.updateGroup(modified);
+            auditor.objectUpdated(modifiedBy, retrieved, modified);
         } catch (MalformedDataException exception) {
             logger.warn("Problem with reading details of group {}.", groupName);
             throw exception;
@@ -70,5 +76,4 @@ public class GroupService {
                 .filter(listGroups())
                 .collect(Collectors.toList());
     }
-
 }

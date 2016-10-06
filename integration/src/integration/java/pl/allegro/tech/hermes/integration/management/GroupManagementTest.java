@@ -7,13 +7,12 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 
 import javax.ws.rs.core.Response;
-
 import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
+import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
-import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class GroupManagementTest extends IntegrationTest {
 

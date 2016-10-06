@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
+import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -42,6 +43,7 @@ public class TopicService {
     private final TopicValidator topicValidator;
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
     private final Clock clock;
+    private final Auditor auditor;
 
     @Autowired
     public TopicService(MultiDCAwareService multiDCAwareService,
@@ -53,7 +55,8 @@ public class TopicService {
                         TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
                         MessagePreviewRepository messagePreviewRepository,
-                        Clock clock) {
+                        Clock clock,
+                        Auditor auditor) {
         this.multiDCAwareService = multiDCAwareService;
         this.preconditions = preconditions;
         this.allowRemoval = topicProperties.isAllowRemoval();
@@ -64,19 +67,20 @@ public class TopicService {
         this.topicContentTypeMigrationService = topicContentTypeMigrationService;
         this.messagePreviewRepository = messagePreviewRepository;
         this.clock = clock;
+        this.auditor = auditor;
     }
 
-    public void createTopic(Topic topic) {
+    public void createTopic(Topic topic, String createdBy) {
         topicValidator.ensureCreatedTopicIsValid(topic);
         topicRepository.createTopic(topic);
         preconditions.checkConstraints(topic);
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
+            auditor.objectCreated(createdBy, topic);
         } else {
             logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
         }
-
     }
 
     private void createTopicInBrokers(Topic topic) {
@@ -93,15 +97,16 @@ public class TopicService {
         }
     }
 
-    public void removeTopic(Topic topic) {
+    public void removeTopic(Topic topic, String removedBy) {
         if (!allowRemoval) {
             throw new TopicRemovalDisabledException(topic);
         }
         topicRepository.removeTopic(topic.getName());
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
+        auditor.objectRemoved(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
     }
 
-    public void updateTopic(TopicName topicName, PatchData patch) {
+    public void updateTopic(TopicName topicName, PatchData patch, String modifiedBy) {
         groupService.checkGroupExists(topicName.getGroupName());
 
         Topic retrieved = getTopicDetails(topicName);
@@ -120,6 +125,7 @@ public class TopicService {
             if (!retrieved.wasMigratedFromJsonType() && modified.wasMigratedFromJsonType()) {
                 topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
             }
+            auditor.objectUpdated(modifiedBy, retrieved, modified);
         }
     }
 
@@ -133,16 +139,16 @@ public class TopicService {
                 .collect(Collectors.toList());
     }
 
+    public List<Topic> listTopics(String groupName) {
+        return topicRepository.listTopics(groupName);
+    }
+
     public List<String> listQualifiedTopicNames() {
         return groupService.listGroupNames().stream()
                 .map(this::listQualifiedTopicNames)
                 .flatMap(List::stream)
                 .sorted()
                 .collect(Collectors.toList());
-    }
-
-    public List<Topic> listTopics(String groupName) {
-        return topicRepository.listTopics(groupName);
     }
 
     public Topic getTopicDetails(TopicName topicName) {

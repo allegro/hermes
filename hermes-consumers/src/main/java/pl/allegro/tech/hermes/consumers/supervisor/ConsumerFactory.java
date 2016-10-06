@@ -7,13 +7,14 @@ import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.BatchConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
+import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
-import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
@@ -37,6 +38,7 @@ public class ConsumerFactory {
     private final MessageContentWrapper messageContentWrapper;
     private final MessageBatchSenderFactory batchSenderFactory;
     private final OffsetQueue offsetQueue;
+    private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
 
     @Inject
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
@@ -51,7 +53,8 @@ public class ConsumerFactory {
                            MessageBatchFactory byteBufferMessageBatchFactory,
                            MessageContentWrapper messageContentWrapper,
                            MessageBatchSenderFactory batchSenderFactory,
-                           OffsetQueue offsetQueue) {
+                           OffsetQueue offsetQueue,
+                           ConsumerAuthorizationHandler consumerAuthorizationHandler) {
 
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
@@ -66,6 +69,7 @@ public class ConsumerFactory {
         this.messageContentWrapper = messageContentWrapper;
         this.batchSenderFactory = batchSenderFactory;
         this.offsetQueue = offsetQueue;
+        this.consumerAuthorizationHandler = consumerAuthorizationHandler;
     }
 
     Consumer createConsumer(Subscription subscription) {
@@ -82,7 +86,7 @@ public class ConsumerFactory {
                     subscription,
                     topic);
         } else {
-            ConsumerRateLimiter consumerRateLimiter = new ConsumerRateLimiter(subscription, outputRateCalculator, hermesMetrics,
+            SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription, outputRateCalculator, hermesMetrics,
                     consumerRateLimitSupervisor);
 
             return new SerialConsumer(
@@ -94,7 +98,9 @@ public class ConsumerFactory {
                     trackers,
                     messageConverterResolver,
                     topic,
-                    configFactory, offsetQueue);
+                    configFactory,
+                    offsetQueue,
+                    consumerAuthorizationHandler);
         }
     }
 }

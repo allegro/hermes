@@ -4,7 +4,7 @@ language: java
 
 install: ./gradlew assemble
 script:
-  - "./gradlew check -i"
+  - "./gradlew check -Ptests.timeout.multiplier=3"
   - "./gradlew -Ptests.timeout.multiplier=3 integrationTest -i"
 
 jdk:

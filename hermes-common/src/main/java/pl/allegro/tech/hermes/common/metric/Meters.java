@@ -34,5 +34,8 @@ public class Meters {
         TOPIC_DELAYED_PROCESSING = DELAYED_PROCESSING + "." + GROUP + "." + TOPIC,
 
         EXECUTOR_SUBMITTED = "executors." + EXECUTOR_NAME + ".submitted",
-        EXECUTOR_COMPLETED = "executors." + EXECUTOR_NAME + ".completed";
+        EXECUTOR_COMPLETED = "executors." + EXECUTOR_NAME + ".completed",
+
+        OAUTH_SUBSCRIPTION_TOKEN_REQUEST = "oauth.subscription." + GROUP + "." + TOPIC + "." + SUBSCRIPTION
+                + ".token-request." + OAUTH_PROVIDER_NAME;
 }

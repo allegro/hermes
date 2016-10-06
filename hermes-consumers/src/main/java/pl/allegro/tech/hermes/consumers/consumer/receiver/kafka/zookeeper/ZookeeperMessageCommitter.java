@@ -1,37 +1,57 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.zookeeper;
 
+import com.codahale.metrics.Timer;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
-import pl.allegro.tech.hermes.api.Subscription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.offset.FailedToCommitOffsets;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsToCommit;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Offset++, because "This is the position the consumer will pick up from if it crashes before its next commit()"
- */
 public class ZookeeperMessageCommitter implements MessageCommitter {
+
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperMessageCommitter.class);
 
     private final CuratorFramework curatorFramework;
     private final KafkaNamesMapper kafkaNamesMapper;
+    private final HermesMetrics metrics;
 
-    public ZookeeperMessageCommitter(CuratorFramework curatorFramework, KafkaNamesMapper kafkaNamesMapper) {
+    public ZookeeperMessageCommitter(CuratorFramework curatorFramework,
+                                     KafkaNamesMapper kafkaNamesMapper,
+                                     HermesMetrics metrics) {
         this.curatorFramework = curatorFramework;
         this.kafkaNamesMapper = kafkaNamesMapper;
+        this.metrics = metrics;
     }
 
     @Override
-    public void commitOffset(SubscriptionPartitionOffset partitionOffset) throws Exception {
-        long firstToRead = partitionOffset.getOffset() + 1;
-        byte[] data = String.valueOf(firstToRead).getBytes(StandardCharsets.UTF_8);
+    public FailedToCommitOffsets commitOffsets(OffsetsToCommit offsetsToCommit) {
+        FailedToCommitOffsets failedOffsets = new FailedToCommitOffsets();
+        for (SubscriptionName subscriptionName : offsetsToCommit.subscriptionNames()) {
+            for (SubscriptionPartitionOffset offset : offsetsToCommit.batchFor(subscriptionName)) {
+                try(Timer.Context c = metrics.timer("offset-committer.single-commit.zookeeper").time()) {
+                    commitOffset(offset);
+                } catch (Exception exception) {
+                    logger.warn("Failed to commit offset {}", offset);
+                    failedOffsets.add(offset);
+                }
+            }
+        }
+        return failedOffsets;
+    }
+
+    private void commitOffset(SubscriptionPartitionOffset partitionOffset) throws Exception {
+        byte[] data = String.valueOf(partitionOffset.getOffset()).getBytes(StandardCharsets.UTF_8);
         String offsetPath = KafkaZookeeperPaths.partitionOffsetPath(
                 kafkaNamesMapper.toConsumerGroupId(partitionOffset.getSubscriptionName()),
                 partitionOffset.getKafkaTopicName(),

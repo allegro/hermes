@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.result
 
 import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.Message
@@ -18,7 +19,10 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 
 class DefaultErrorHandlerTest extends Specification {
 
-    private OffsetQueue offsetQueue = new OffsetQueue(new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
+    private OffsetQueue offsetQueue = new OffsetQueue(
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
+            new ConfigFactory()
+    )
 
     private UndeliveredMessageLog undeliveredLog = Mock(UndeliveredMessageLog)
 
@@ -29,8 +33,7 @@ class DefaultErrorHandlerTest extends Specification {
     private Subscription subscription = subscription('group.topic', 'subscription').withTrackingEnabled(true).build()
 
     private DefaultErrorHandler handler = new DefaultErrorHandler(
-            offsetQueue, Stub(HermesMetrics), undeliveredLog, Clock.systemUTC(), trackers, "cluster"
-    )
+            offsetQueue, Stub(HermesMetrics), undeliveredLog, Clock.systemUTC(), trackers, "cluster")
 
     def "should save tracking information on message failure but not commit message"() {
         given:
@@ -57,5 +60,4 @@ class DefaultErrorHandlerTest extends Specification {
         sendingTracker.hasDiscardedLog('kafka_topic', 0, 123L)
         offsetQueue.drainCommittedOffsets({ o -> assert o.partition == 0 && o.offset == 123L })
     }
-
 }

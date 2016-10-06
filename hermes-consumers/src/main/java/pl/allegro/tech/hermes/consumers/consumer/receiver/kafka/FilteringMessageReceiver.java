@@ -2,13 +2,14 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChain;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class FilteringMessageReceiver implements MessageReceiver {
     private MessageReceiver receiver;
@@ -17,7 +18,6 @@ public class FilteringMessageReceiver implements MessageReceiver {
 
     private volatile FilterChain filterChain;
     private Subscription subscription;
-    private boolean consuming = true;
 
     public FilteringMessageReceiver(MessageReceiver receiver,
                                     FilteredMessageHandler filteredMessageHandler,
@@ -31,23 +31,20 @@ public class FilteringMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public Message next() {
-        Message message;
-        do {
-            message = receiver.next();
-        } while (consuming && filter(message));
-        return message;
+    public Optional<Message> next() {
+        return receiver.next().map(message ->
+                allow(message) ? message : null
+        );
     }
 
-    private boolean filter(Message message) {
+    private boolean allow(Message message) {
         FilterResult result = filterChain.apply(message);
         filteredMessageHandler.handle(result, message, subscription);
-        return result.isFiltered();
+        return !result.isFiltered();
     }
 
     @Override
     public void stop() {
-        this.consuming = false;
         receiver.stop();
     }
 

@@ -41,6 +41,8 @@ public class SubscriptionBuilder {
 
     private EndpointAddressResolverMetadata metadata = EndpointAddressResolverMetadata.empty();
 
+    private SubscriptionOAuthPolicy oAuthPolicy;
+
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
         this.name = subscriptionName;
@@ -85,13 +87,15 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, mode, headers, metadata
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType,
+                    filters, mode, headers, metadata, oAuthPolicy
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, headers, metadata
+                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType,
+                    filters, headers, metadata, oAuthPolicy
             );
         }
     }
@@ -183,6 +187,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withEndpointAddressResolverMetadata(EndpointAddressResolverMetadata metadata) {
         this.metadata = metadata;
+        return this;
+    }
+
+    public SubscriptionBuilder withOAuthPolicy(SubscriptionOAuthPolicy oAuthPolicy) {
+        this.oAuthPolicy = oAuthPolicy;
         return this;
     }
 }

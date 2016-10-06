@@ -18,7 +18,7 @@ import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
 public abstract class AbstractLogRepositoryTest {
 
     private LogRepository logRepository;
-
+    
     @BeforeSuite
     public void setUpRetry(ITestContext context) {
         for (ITestNGMethod method : context.getAllTestMethods()) {
@@ -38,12 +38,13 @@ public abstract class AbstractLogRepositoryTest {
         // given
         String id = "publishedMessage";
         String topic = "group.sentMessage";
+        String hostname = "172.16.254.1";
 
         // when
-        logRepository.logPublished(id, 1234L, topic);
+        logRepository.logPublished(id, 1234L, topic, hostname);
 
         // then
-        awaitUntilMessageIsPersisted(topic, id, SUCCESS);
+        awaitUntilMessageIsPersisted(topic, id, SUCCESS, hostname);
     }
 
     @Test
@@ -51,12 +52,13 @@ public abstract class AbstractLogRepositoryTest {
         // given
         String id = "errorMessage";
         String topic = "group.sentMessage";
+        String hostname = "172.16.254.1";
 
         // when
-        logRepository.logError(id, 1234L, topic, "reason");
+        logRepository.logError(id, 1234L, topic, "reason", hostname);
 
         // then
-        awaitUntilMessageIsPersisted(topic, id, ERROR, "reason");
+        awaitUntilMessageIsPersisted(topic, id, ERROR, "reason", hostname);
     }
 
     @Test
@@ -64,17 +66,18 @@ public abstract class AbstractLogRepositoryTest {
         // given
         String id = "inflightMessage";
         String topic = "group.sentMessage";
+        String hostname = "172.16.254.1";
 
         // when
-        logRepository.logInflight(id, 1234L, topic);
+        logRepository.logInflight(id, 1234L, topic, hostname);
 
         // then
-        awaitUntilMessageIsPersisted(topic, id, INFLIGHT);
+        awaitUntilMessageIsPersisted(topic, id, INFLIGHT, hostname);
     }
 
-    protected abstract void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status) throws Exception;
+    protected abstract void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status, String remoteHostname) throws Exception;
 
-    protected abstract void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status, String reason)
+    protected abstract void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status, String reason, String remoteHostname)
             throws Exception;
 
 }

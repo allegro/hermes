@@ -4,14 +4,15 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.boon.collections.ConcurrentHashSet;
 
 public class ConsumerRateLimitSupervisor implements Runnable {
 
-    private final Set<ConsumerRateLimiter> consumerRateLimiters = new ConcurrentHashSet<>();
+    private final Set<ConsumerRateLimiter> consumerRateLimiters = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     @Inject
     public ConsumerRateLimitSupervisor(ConfigFactory configFactory) {

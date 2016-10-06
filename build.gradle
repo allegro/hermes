@@ -15,7 +15,7 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'pl.allegro.tech.build.axion-release' version '1.3.0'
+    id 'pl.allegro.tech.build.axion-release' version '1.4.0'
 }
 
 apply plugin: 'io.codearte.nexus-staging'
@@ -26,10 +26,6 @@ scmVersion {
     }
 
     versionCreator 'versionWithBranch'
-
-    branchVersionCreators = [
-            'rc': { version, position -> version }
-    ]
 
     hooks {
         pre 'fileUpdate', [files: ['mkdocs.yml', 'hermes-console/package.json'], pattern: {v, p -> /$v/ }, replacement: {v, p -> "$v"}]
@@ -48,10 +44,10 @@ allprojects {
     targetCompatibility = 1.8
 
     project.ext.versions = [
-            guava       : '16.0.1',
+            guava       : '19.0',
             jackson     : '2.5.1',
-            jersey      : '2.12',
-            curator     : '2.7.0',
+            jersey      : '2.23.2',
+            curator     : '2.11.0',
             wiremock    : '1.58',
             fongo       : '1.6.1',
             spock       : '1.0-groovy-2.4',
@@ -71,6 +67,12 @@ allprojects {
         testCompile group: 'org.assertj', name: 'assertj-core', version: '3.1.0'
         testCompile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
         testCompile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
+    }
+
+    test {
+        if(project.hasProperty('tests.timeout.multiplier')) {
+            jvmArgs = ["-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"]
+        }
     }
 }
 
@@ -158,5 +160,5 @@ nexusStaging {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.14'
+    gradleVersion = '3.1'
 }

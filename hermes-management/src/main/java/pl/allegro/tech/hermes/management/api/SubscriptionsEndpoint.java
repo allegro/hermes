@@ -5,12 +5,12 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -30,7 +30,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,8 +87,10 @@ public class SubscriptionsEndpoint {
     @Consumes(APPLICATION_JSON)
     @RolesAllowed({Roles.ANY})
     @ApiOperation(value = "Create subscription", httpMethod = HttpMethod.POST)
-    public Response create(@PathParam("topicName") String qualifiedTopicName, Subscription subscription) {
-        subscriptionService.createSubscription(subscription);
+    public Response create(@PathParam("topicName") String qualifiedTopicName,
+                           Subscription subscription,
+                           @Context SecurityContext securityContext) {
+        subscriptionService.createSubscription(subscription, securityContext.getUserPrincipal().getName());
         return responseStatus(Response.Status.CREATED);
     }
 
@@ -168,8 +172,10 @@ public class SubscriptionsEndpoint {
     @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Remove subscription", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName,
-                           @PathParam("subscriptionName") String subscriptionId) {
-        subscriptionService.removeSubscription(fromQualifiedName(qualifiedTopicName), subscriptionId);
+                           @PathParam("subscriptionName") String subscriptionId,
+                           @Context SecurityContext securityContext) {
+        subscriptionService.removeSubscription(fromQualifiedName(qualifiedTopicName),
+                subscriptionId, securityContext.getUserPrincipal().getName());
         return responseStatus(OK);
     }
 
@@ -180,8 +186,10 @@ public class SubscriptionsEndpoint {
     @ApiOperation(value = "Update subscription", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionName,
-                           PatchData patch) {
-        subscriptionService.updateSubscription(TopicName.fromQualifiedName(qualifiedTopicName), subscriptionName, patch);
+                           PatchData patch,
+                           @Context SecurityContext securityContext) {
+        subscriptionService.updateSubscription(TopicName.fromQualifiedName(qualifiedTopicName),
+                subscriptionName, patch, securityContext.getUserPrincipal().getName());
         return responseStatus(OK);
     }
 

@@ -14,15 +14,19 @@ public class MonitoredMpscQueue<T> {
 
     private final String name;
 
+    private final HermesMetrics metrics;
+
     public MonitoredMpscQueue(HermesMetrics metrics, String name, int capacity) {
         this.queue = new MpscArrayQueue<>(capacity);
         this.name = name;
+        this.metrics = metrics;
         metrics.registerGauge("queue." + name + ".utilization", () -> queue.size() / queue.capacity());
     }
 
     public boolean offer(T element) {
         boolean accepted = queue.offer(element);
         if (!accepted) {
+            metrics.counter("queue." + name + ".failures").inc();
             logger.error("[Queue: {}] Unable to add item: queue is full. Offered item: {}", name, element);
         }
         return accepted;

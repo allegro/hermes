@@ -2,28 +2,21 @@ package pl.allegro.tech.hermes.integration;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
-import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -31,26 +24,12 @@ import static java.util.stream.Collectors.summingLong;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.message.TestMessage.simpleMessages;
 
-public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment {
+public class KafkaRetransmissionServiceTest extends IntegrationTest {
 
-    private HermesEndpoints endpoints;
-    private HermesPublisher publisher;
-    private HermesAPIOperations operations;
     private RemoteServiceEndpoint remoteService;
-    private Waiter wait;
-    private AvroUser user;
-
-    @BeforeClass
-    public void initialize() throws IOException {
-        publisher = new HermesPublisher(FRONTEND_URL);
-        endpoints = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL);
-        wait = new Waiter(endpoints, services().zookeeper(), services().kafkaZookeeper(), KAFKA_NAMESPACE);
-        operations = new HermesAPIOperations(endpoints, wait);
-        user = new AvroUser();
-    }
+    private final AvroUser user = new AvroUser();
 
     @BeforeMethod
     public void initializeAlways() {
@@ -75,7 +54,7 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
 
         // when
         remoteService.expectMessages(simpleMessages(2));
-        Response response = endpoints.subscription().retransmit(topic.getQualifiedName(), subscription, false, dateTime);
+        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription, false, dateTime);
         wait.untilSubscriptionEndsReiteration(topic, subscription);
 
         // then
@@ -99,13 +78,14 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         wait.untilConsumerCommitsOffset();
 
         // when
-        Response response = endpoints.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
+        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);
         MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
 
-        assertThat(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME).get(0).getOffset()).isEqualTo(2);
+        assertThat(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME).get(0).getOffset())
+                .isEqualTo(2);
         remoteService.makeSureNoneReceived();
     }
 
@@ -126,9 +106,9 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
 
         PatchData patch = patchData()
                 .set("contentType", ContentType.AVRO)
-                .set("messageSchema", user.getSchemaAsString())
                 .set("migratedFromJsonType", true)
                 .build();
+        operations.saveSchema(topic, user.getSchemaAsString());
         operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", patch);
 
         Thread.sleep(10000);
@@ -136,12 +116,14 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         wait.untilConsumerCommitsOffset();
 
         // when
-        Response response = endpoints.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
+        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);
         MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
-        PartitionOffsetsPerKafkaTopic offsets = PartitionOffsetsPerKafkaTopic.from(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME));
+        PartitionOffsetsPerKafkaTopic offsets = PartitionOffsetsPerKafkaTopic.from(
+                summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME)
+        );
 
         assertThat(offsets.jsonPartitionOffsets.stream().collect(summingLong(PartitionOffset::getOffset))).isEqualTo(1);
         assertThat(offsets.avroPartitionOffsets.stream().collect(summingLong(PartitionOffset::getOffset))).isEqualTo(0);
@@ -168,7 +150,10 @@ public class KafkaRetransmissionServiceTest extends HermesIntegrationEnvironment
         private final List<PartitionOffset> avroPartitionOffsets;
         private final List<PartitionOffset> jsonPartitionOffsets;
 
-        private PartitionOffsetsPerKafkaTopic(List<PartitionOffset> avroPartitionOffsets, List<PartitionOffset> jsonPartitionOffsets) {
+        private PartitionOffsetsPerKafkaTopic(
+                List<PartitionOffset> avroPartitionOffsets,
+                List<PartitionOffset> jsonPartitionOffsets
+        ) {
             this.avroPartitionOffsets = avroPartitionOffsets;
             this.jsonPartitionOffsets = jsonPartitionOffsets;
         }

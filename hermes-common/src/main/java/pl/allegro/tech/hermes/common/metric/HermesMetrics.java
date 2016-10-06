@@ -1,32 +1,18 @@
 package pl.allegro.tech.hermes.common.metric;
 
-import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.codahale.metrics.graphite.Graphite;
-import com.codahale.metrics.graphite.GraphiteReporter;
-import com.google.common.base.Joiner;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
-import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
-import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
-import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import javax.inject.Inject;
-import javax.inject.Named;
-import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES;
@@ -271,6 +257,23 @@ public class HermesMetrics {
 
     public Timer subscriptionLatencyTimer(Subscription subscription) {
         return timer(SUBSCRIPTION_LATENCY, subscription.getTopicName(), subscription.getName());
+    }
+
+    public Timer oAuthProviderLatencyTimer(String oAuthProviderName) {
+        PathContext pathContext = pathContext()
+                .withOAuthProvider(escapeDots(oAuthProviderName))
+                .build();
+        return metricRegistry.timer(pathCompiler.compile(Timers.OAUTH_PROVIDER_TOKEN_REQUEST_LATENCY, pathContext));
+    }
+
+    public Meter oAuthSubscriptionTokenRequestMeter(Subscription subscription, String oAuthProviderName) {
+        PathContext pathContext = pathContext()
+                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
+                .withTopic(escapeDots(subscription.getTopicName().getName()))
+                .withSubscription(escapeDots(subscription.getName()))
+                .withOAuthProvider(escapeDots(oAuthProviderName))
+                .build();
+        return metricRegistry.meter(pathCompiler.compile(Meters.OAUTH_SUBSCRIPTION_TOKEN_REQUEST, pathContext));
     }
 }
 

@@ -8,6 +8,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,7 @@ import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 public class SingleMessageSendingResult implements MessageSendingResult {
 
@@ -27,7 +29,7 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     private boolean ignoreInRateCalculation = false;
 
     private Optional<Long> retryAfterMillis = Optional.empty();
-    private String requestUri = "";
+    private Optional<URI> requestUri = Optional.empty();
     private int statusCode;
     private Response.Status.Family responseFamily;
 
@@ -52,11 +54,16 @@ public class SingleMessageSendingResult implements MessageSendingResult {
         }
 
         this.loggable = !isTimeout() && !hasHttpAnswer();
-        this.requestUri = result.getRequest().getURI().toString();
+        this.requestUri = Optional.ofNullable(result.getRequest().getURI());
     }
 
     SingleMessageSendingResult(int statusCode) {
         initializeForStatusCode(statusCode);
+    }
+
+    SingleMessageSendingResult(int statusCode, URI requestURI) {
+        this(statusCode);
+        this.requestUri = Optional.of(requestURI);
     }
 
     SingleMessageSendingResult(int statusCode, long retryAfterMillis) {
@@ -93,10 +100,12 @@ public class SingleMessageSendingResult implements MessageSendingResult {
         return family.equals(responseFamily);
     }
 
+    @Override
     public boolean isRetryLater() {
         return getStatusCode() == SERVICE_UNAVAILABLE.getStatusCode();
     }
 
+    @Override
     public boolean succeeded() {
         return getFailure() == null;
     }
@@ -125,7 +134,7 @@ public class SingleMessageSendingResult implements MessageSendingResult {
         return retryAfterMillis;
     }
 
-    public String getRequestUri() {
+    public Optional<URI> getRequestUri() {
         return requestUri;
     }
 
@@ -135,21 +144,29 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     }
 
     @Override
-    public boolean ignoreInRateCalculation(boolean retryClientErrors) {
-        return isRetryLater() || this.ignoreInRateCalculation || (isClientError() && !retryClientErrors);
+    public boolean ignoreInRateCalculation(boolean retryClientErrors, boolean isOAuthSecuredSubscription) {
+        return isRetryLater() || this.ignoreInRateCalculation ||
+                (isClientError() && !retryClientErrors && !(isOAuthSecuredSubscription && isUnauthorized()));
     }
 
+    private boolean isUnauthorized() {
+        return UNAUTHORIZED.getStatusCode() == getStatusCode();
+    }
+
+    @Override
     public boolean isTimeout() {
         return failure instanceof TimeoutException;
     }
 
+    @Override
     public List<MessageSendingResultLogInfo> getLogInfo() {
-        return Collections.singletonList(new MessageSendingResultLogInfo(requestUri, failure, getRootCause()));
+        return Collections.singletonList(new MessageSendingResultLogInfo(getRequestUri(), failure, getRootCause()));
     }
 
-    public List<String> getSucceededUris(Predicate<MessageSendingResult> filter) {
-        if(filter.test(this)) {
-            return Collections.singletonList(requestUri);
+    @Override
+    public List<URI> getSucceededUris(Predicate<MessageSendingResult> filter) {
+        if (filter.test(this) && requestUri.isPresent()) {
+            return Collections.singletonList(getRequestUri().get());
         } else {
             return Collections.emptyList();
         }

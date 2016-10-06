@@ -28,14 +28,14 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 public class KafkaSingleMessageReaderTest extends IntegrationTest {
 
     private static final int NUMBER_OF_PARTITIONS = 2;
+
     private RemoteServiceEndpoint remoteService;
 
-    AvroUser avroUser;
+    private final AvroUser avroUser = new AvroUser("Bob", 50, "blue");
 
     @BeforeMethod
     public void initializeAlways() throws Exception {
         remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
-        avroUser = new AvroUser("Bob", 50, "blue");
     }
 
     @Test
@@ -65,10 +65,9 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         // given
         Topic topic = topic("avro.fetch")
                 .withValidation(true)
-                .withMessageSchema(avroUser.getSchemaAsString())
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
-        wait.untilTopicDetailsAreCreated(topic.getName());
+        operations.saveSchema(topic, avroUser.getSchemaAsString());
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
         HermesAssertions.assertThat(response).hasStatus(CREATED);
@@ -88,11 +87,10 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         // given
         Topic topic = topic("avro.fetchSchemaAwareSerialization")
                 .withValidation(true)
-                .withMessageSchema(avroUser.getSchemaAsString())
                 .withSchemaVersionAwareSerialization()
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
-        wait.untilTopicDetailsAreCreated(topic.getName());
+        operations.saveSchema(topic, avroUser.getSchemaAsString());
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
         HermesAssertions.assertThat(response).hasStatus(CREATED);

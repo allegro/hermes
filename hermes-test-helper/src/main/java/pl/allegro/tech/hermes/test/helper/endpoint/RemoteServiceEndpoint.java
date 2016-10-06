@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,7 +33,7 @@ public class RemoteServiceEndpoint {
 
     private final List<LoggedRequest> receivedRequests = Collections.synchronizedList(new ArrayList<>());
     private final String path;
-    private final String url;
+    private final URI url;
 
     private final WireMock listener;
     private final WireMockServer service;
@@ -50,7 +51,7 @@ public class RemoteServiceEndpoint {
     public RemoteServiceEndpoint(WireMockServer service, final String path) {
         this.listener = new WireMock("localhost", service.port());
         this.path = path;
-        this.url = String.format("http://localhost:%d%s", service.port(), path);
+        this.url = URI.create(String.format("http://localhost:%d%s", service.port(), path));
         this.service = service;
 
         service.resetMappings();
@@ -198,7 +199,7 @@ public class RemoteServiceEndpoint {
         return this;
     }
 
-    public String getUrl() {
+    public URI getUrl() {
         return url;
     }
 

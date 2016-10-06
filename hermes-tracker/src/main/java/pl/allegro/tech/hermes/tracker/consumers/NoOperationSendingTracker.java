@@ -3,12 +3,12 @@ package pl.allegro.tech.hermes.tracker.consumers;
 public class NoOperationSendingTracker implements SendingTracker {
 
     @Override
-    public void logSent(MessageMetadata message) {
+    public void logSent(MessageMetadata message, String hostname) {
 
     }
 
     @Override
-    public void logFailed(MessageMetadata message, String reason) {
+    public void logFailed(MessageMetadata message, String reason, String hostname) {
 
     }
 

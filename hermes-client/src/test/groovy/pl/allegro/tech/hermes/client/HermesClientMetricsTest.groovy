@@ -14,7 +14,9 @@ class HermesClientMetricsTest extends Specification {
 
     def "should register latency timer in sanitized path"() {
         given:
-        HermesClient client = hermesClient({uri, msg -> completedFuture({201} as HermesResponse)}).withMetrics(metrics).build()
+        HermesClient client = hermesClient({uri, msg -> completedFuture({201} as HermesResponse)})
+                .withRetrySleep(0)
+                .withMetrics(metrics).build()
 
         when:
         client.publish("com.group.topic", "123").join()
@@ -26,7 +28,9 @@ class HermesClientMetricsTest extends Specification {
 
     def "should close timer on exceptional completion and log failure metric"() {
         given:
-        HermesClient client = hermesClient({uri, msg ->  failingFuture(new RuntimeException())}).withMetrics(metrics).build()
+        HermesClient client = hermesClient({uri, msg ->  failingFuture(new RuntimeException())})
+                .withRetrySleep(0)
+                .withMetrics(metrics).build()
 
         when:
         silence({ client.publish("com.group.topic", "123").join() })

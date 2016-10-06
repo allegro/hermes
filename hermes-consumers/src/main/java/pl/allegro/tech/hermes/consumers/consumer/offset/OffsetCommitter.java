@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
+import com.codahale.metrics.Timer;
+import com.google.common.collect.Sets;
+import org.jctools.queues.MessagePassingQueue;
 import org.jctools.queues.MpscArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
@@ -18,9 +20,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Note on algorithm used to calculate offsets to actually commit.
+ * <p>
+ * The idea behind this algorithm is that we would like to commit:
+ * * maximal offset marked as committed
+ * * but not larger than smallest inflight offset (smallest inflight - 1)
+ * <p>
+ * Important note! This class is Kafka OffsetCommiter, and so it perceives offsets in Kafka way. Most importantly
+ * committed offset marks message that is read as first on Consumer restart (offset is inclusive for reading and
+ * exclusive for writing).
  * <p>
  * There are two queues which are used by Consumers to report message state:
  * * inflightOffsets: message offsets that are currently being sent (inflight)
@@ -30,16 +41,23 @@ import java.util.function.BiFunction;
  * inlfightOffsets are all offsets that are currently in inflight state.
  * failedToCommitOffsets are offsets that could not be committed in previous algorithm iteration
  * <p>
- * In scheduled periods, commit algorithm is run:
- * * drain inflightOffsets queue to inlfightOffsets set
- * * add all failedToCommitOffsets to inlightOffsets set and clear the failed set
- * * calculate max offset for each topic & partition from inflightOffsets set
- * * drain committedOffsets by removing all elements from inflightOffsets set
- * * calculate min offset for each topic & partition from inflightOffsets set
+ * In scheduled periods, commit algorithm is run. It has three phases. First one is draining the queues and performing
+ * reductions:
+ * * drain committedOffsets queue to collection - it needs to be done before draining inflights, so this collection
+ * will not grow anymore, resulting in having inflights unmatched by commits; commits are incremented by 1 to match
+ * Kafka commit definition
+ * * add all previously uncommitted offsets from failedToCommitOffsets collection to committedOffsets and clear
+ * failedToCommitOffsets collection
+ * * drain inflightOffset
  * <p>
- * For each item in topic & partition max offsets do:
- * * if there is min offset for topic & partition -> commit this offset - 1
- * * if there is no min offset, commit max (all other offsets were committed)
+ * Second phase is calculating the offsets:
+ * <p>
+ * * calculate maximal committed offset for each subscription & partition
+ * * calculate minimal inflight offset for each subscription & partition
+ * <p>
+ * Third phase is choosing which offset to commit for each subscription/partition. This is the minimal value of
+ * * maximum committed offset
+ * * minimum inflight offset
  * <p>
  * This algorithm is very simple, memory efficient, can be performed in single thread and introduces no locks.
  */
@@ -77,62 +95,74 @@ public class OffsetCommitter implements Runnable {
 
     @Override
     public void run() {
-        try {
+        try (Timer.Context c = metrics.timer("offset-committer.duration").time()) {
             // committed offsets need to be drained first so that there is no possibility of new committed offsets
             // showing up after inflight queue is drained - this would lead to stall in committing offsets
-            Set<SubscriptionPartitionOffset> committedOffsets = new HashSet<>();
-            offsetQueue.drainCommittedOffsets(committedOffsets::add);
+            ReducingConsumer committedOffsetsReducer = processCommittedOffsets();
+            Map<SubscriptionPartition, Long> maxCommittedOffsets = committedOffsetsReducer.reduced;
 
-            offsetQueue.drainInflightOffsets(inflightOffsets::add);
-            inflightOffsets.addAll(failedToCommitOffsets);
-            failedToCommitOffsets.clear();
+            ReducingConsumer inflightOffsetReducer = processInflightOffsets(committedOffsetsReducer.all);
+            Map<SubscriptionPartition, Long> minInflightOffsets = inflightOffsetReducer.reduced;
 
-            Map<SubscriptionPartition, Long> maxInflightOffsets = calculateInflightOffsets(Math::max);
-
-            inflightOffsets.removeAll(committedOffsets);
-
-            Map<SubscriptionPartition, Long> minInflightOffsets = calculateInflightOffsets(Math::min);
-
-            Set<SubscriptionPartitionOffset> offsetsToCommit = new HashSet<>();
-            maxInflightOffsets.forEach((k, v) -> {
-                if (minInflightOffsets.containsKey(k)) {
-                    offsetsToCommit.add(new SubscriptionPartitionOffset(k, minInflightOffsets.get(k) - 1));
-                } else {
-                    offsetsToCommit.add(new SubscriptionPartitionOffset(k, v));
-                }
-            });
-
-            for (SubscriptionPartitionOffset offset : offsetsToCommit) {
-                if(offset.getOffset() >= 0) {
-                    commit(offset);
+            int scheduledToCommit = 0;
+            OffsetsToCommit offsetsToCommit = new OffsetsToCommit();
+            for (SubscriptionPartition partition : Sets.union(minInflightOffsets.keySet(), maxCommittedOffsets.keySet())) {
+                long offset = Math.min(
+                        minInflightOffsets.getOrDefault(partition, Long.MAX_VALUE),
+                        maxCommittedOffsets.getOrDefault(partition, Long.MAX_VALUE)
+                );
+                if (offset >= 0 && offset < Long.MAX_VALUE) {
+                    scheduledToCommit++;
+                    offsetsToCommit.add(new SubscriptionPartitionOffset(partition, offset));
                 }
             }
-            metrics.counter("offset-committer.committed").inc(offsetsToCommit.size());
+
+            commit(offsetsToCommit);
+
+            metrics.counter("offset-committer.committed").inc(scheduledToCommit - failedToCommitOffsets.size());
             metrics.counter("offset-committer.failed").inc(failedToCommitOffsets.size());
 
             cleanupUnusedSubscriptions();
-        } catch(Exception exception) {
+        } catch (Exception exception) {
             logger.error("Failed to run offset committer: {}", exception.getMessage(), exception);
         }
     }
 
-    private Map<SubscriptionPartition, Long> calculateInflightOffsets(BiFunction<Long, Long, Long> comparer) {
-        Map<SubscriptionPartition, Long> calculatedOnflightOffsets = new HashMap<>();
-        inflightOffsets.forEach(p -> calculatedOnflightOffsets.compute(
-                p.getSubscriptionPartition(),
-                (k, v) -> v == null ? p.getOffset() : comparer.apply(v, p.getOffset())
-        ));
-        return calculatedOnflightOffsets;
+    private ReducingConsumer processCommittedOffsets() {
+        ReducingConsumer committedOffsetsReducer = new ReducingConsumer(Math::max, c -> c + 1);
+        offsetQueue.drainCommittedOffsets(committedOffsetsReducer);
+        committedOffsetsReducer.resetModifierFunction();
+        failedToCommitOffsets.forEach(committedOffsetsReducer::accept);
+        failedToCommitOffsets.clear();
+
+        return committedOffsetsReducer;
     }
 
-    private void commit(SubscriptionPartitionOffset offset) {
+    private ReducingConsumer processInflightOffsets(Set<SubscriptionPartitionOffset> committedOffsets) {
+        ReducingConsumer inflightOffsetReducer = new ReducingConsumer(Math::min);
+        offsetQueue.drainInflightOffsets(o -> reduceIfNotCommitted(o, inflightOffsetReducer, committedOffsets));
+        inflightOffsets.forEach(o -> reduceIfNotCommitted(o, inflightOffsetReducer, committedOffsets));
+
+        inflightOffsets.clear();
+        inflightOffsets.addAll(inflightOffsetReducer.all);
+
+        return inflightOffsetReducer;
+    }
+
+    private void reduceIfNotCommitted(SubscriptionPartitionOffset offset,
+                                      ReducingConsumer inflightOffsetReducer,
+                                      Set<SubscriptionPartitionOffset> committedOffsets) {
+        if (!committedOffsets.contains(offset)) {
+            inflightOffsetReducer.accept(offset);
+        }
+    }
+
+    private void commit(OffsetsToCommit offsetsToCommit) {
         for (MessageCommitter committer : messageCommitters) {
-            try {
-                committer.commitOffset(offset);
-            } catch (Exception e) {
-                // it will be treated as min in next iteration, so it needs the + 1
-                failedToCommitOffsets.add(new SubscriptionPartitionOffset(offset.getSubscriptionPartition(), offset.getOffset() + 1));
-                logger.error("Failed to commit offset {} using {} committer", offset, committer.getClass().getSimpleName(), e);
+            FailedToCommitOffsets failedOffsets = committer.commitOffsets(offsetsToCommit);
+
+            if (failedOffsets.hasFailed()) {
+                failedToCommitOffsets.addAll(failedOffsets.failedOffsets());
             }
         }
     }
@@ -161,5 +191,37 @@ public class OffsetCommitter implements Runnable {
 
     public void shutdown() {
         scheduledExecutor.shutdown();
+    }
+
+    private static final class ReducingConsumer implements MessagePassingQueue.Consumer<SubscriptionPartitionOffset> {
+        private final BiFunction<Long, Long, Long> reductor;
+        private Function<Long, Long> modifier;
+        private final Map<SubscriptionPartition, Long> reduced = new HashMap<>();
+        private final Set<SubscriptionPartitionOffset> all = new HashSet<>();
+
+        private ReducingConsumer(BiFunction<Long, Long, Long> reductor, Function<Long, Long> offsetModifier) {
+            this.reductor = reductor;
+            this.modifier = offsetModifier;
+        }
+
+        private ReducingConsumer(BiFunction<Long, Long, Long> reductor) {
+            this(reductor, Function.identity());
+        }
+
+        private void resetModifierFunction() {
+            this.modifier = Function.identity();
+        }
+
+        @Override
+        public void accept(SubscriptionPartitionOffset p) {
+            all.add(p);
+            reduced.compute(
+                    p.getSubscriptionPartition(),
+                    (k, v) -> {
+                        long offset = modifier.apply(p.getOffset());
+                        return v == null ? offset : reductor.apply(v, offset);
+                    }
+            );
+        }
     }
 }

@@ -25,6 +25,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class BatchDeliveryTest extends IntegrationTest {
+
     private RemoteServiceEndpoint remoteService;
 
     private ObjectMapper mapper = new ObjectMapper();
@@ -104,9 +105,9 @@ public class BatchDeliveryTest extends IntegrationTest {
 
         Topic topic = topic("batch.avro.topic")
                 .withValidation(true)
-                .withMessageSchema(user.getSchemaAsString())
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
+        operations.saveSchema(topic, user.getSchemaAsString());
 
         operations.createBatchSubscription(topic, HTTP_ENDPOINT_URL, buildBatchPolicy()
                 .withBatchSize(2)
@@ -164,7 +165,7 @@ public class BatchDeliveryTest extends IntegrationTest {
             assertThat(batch).hasSize(expectedContents.length);
             for (int i = 0; i < expectedContents.length; i++) {
                 assertThat(batch.get(i).get("message")).isEqualTo(expectedContents[i].getContent());
-                assertThat((String)((Map) batch.get(i).get("metadata")).get("id")).isNotEmpty();
+                assertThat((String) ((Map) batch.get(i).get("metadata")).get("id")).isNotEmpty();
             }
         });
     }

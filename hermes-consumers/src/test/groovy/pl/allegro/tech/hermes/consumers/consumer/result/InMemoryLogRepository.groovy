@@ -12,12 +12,12 @@ class InMemoryLogRepository implements LogRepository {
     private final List<MessageMetadata> filtered = []
 
     @Override
-    void logSuccessful(MessageMetadata message, long timestamp) {
+    void logSuccessful(MessageMetadata message, String hostname, long timestamp) {
         successful.add(message)
     }
 
     @Override
-    void logFailed(MessageMetadata message, long timestamp, String reason) {
+    void logFailed(MessageMetadata message, String hostname, long timestamp, String reason) {
         failed.add(message)
     }
 

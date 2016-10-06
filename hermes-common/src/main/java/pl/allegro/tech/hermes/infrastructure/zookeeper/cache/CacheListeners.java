@@ -4,9 +4,6 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
@@ -26,7 +23,8 @@ class CacheListeners {
             try {
                 callback.accept(event);
             } catch (Exception exception) {
-                logger.error("Failed to run callback action {}", callback.getClass().getSimpleName(), exception);
+                logger.error("Failed to run callback action {} for event with data: {}",
+                        callback.getClass().getSimpleName(), event.getData(), exception);
             }
         }
     }
