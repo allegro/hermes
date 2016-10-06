@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.domain.topic.schema;
 
+import jersey.repackaged.com.google.common.collect.ImmutableList;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import pl.allegro.tech.hermes.api.SchemaSource;
@@ -8,7 +9,10 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Optional;
+
+import static pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion.valueOf;
 
 public class ZookeeperSchemaSourceProvider implements SchemaSourceProvider {
 
@@ -34,4 +38,13 @@ public class ZookeeperSchemaSourceProvider implements SchemaSourceProvider {
         }
     }
 
+    @Override
+    public Optional<SchemaSource> get(Topic topic, SchemaVersion version) {
+        return get(topic);
+    }
+
+    @Override
+    public List<SchemaVersion> versions(Topic topic) {
+        return ImmutableList.of(valueOf(0));
+    }
 }

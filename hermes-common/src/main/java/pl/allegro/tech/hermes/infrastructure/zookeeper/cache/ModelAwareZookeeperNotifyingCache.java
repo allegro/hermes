@@ -20,16 +20,18 @@ public class ModelAwareZookeeperNotifyingCache {
     private static final int SUBSCRIPTION_LEVEL = 2;
 
     private final HierarchicalCache cache;
+    private final ThreadPoolExecutor executor;
 
     public ModelAwareZookeeperNotifyingCache(CuratorFramework curator, String rootPath, int processingThreadPoolSize) {
         List<String> levelPrefixes = Arrays.asList(
                 ZookeeperPaths.GROUPS_PATH, ZookeeperPaths.TOPICS_PATH, ZookeeperPaths.SUBSCRIPTIONS_PATH
         );
 
+        executor = new ThreadPoolExecutor(1, processingThreadPoolSize,
+                Integer.MAX_VALUE, TimeUnit.SECONDS, new LinkedHashSetBlockingQueue<>());
         this.cache = new HierarchicalCache(
                 curator,
-                new ThreadPoolExecutor(1, processingThreadPoolSize,
-                        Integer.MAX_VALUE, TimeUnit.SECONDS, new LinkedHashSetBlockingQueue<>()),
+                executor,
                 rootPath,
                 3,
                 levelPrefixes
@@ -42,6 +44,7 @@ public class ModelAwareZookeeperNotifyingCache {
 
     public void stop() throws Exception {
         cache.stop();
+        executor.shutdownNow();
     }
 
     public void registerGroupCallback(Consumer<PathChildrenCacheEvent> callback) {

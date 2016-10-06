@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
-public class BlacklistStatus {
+public final class BlacklistStatus {
 
     public static final BlacklistStatus BLACKLISTED = new BlacklistStatus(true);
     public static final BlacklistStatus NOT_BLACKLISTED = new BlacklistStatus(false);
@@ -23,8 +23,12 @@ public class BlacklistStatus {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         BlacklistStatus that = (BlacklistStatus) o;
         return blacklisted == that.blacklisted;
     }
