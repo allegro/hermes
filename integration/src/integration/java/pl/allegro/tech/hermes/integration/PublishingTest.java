@@ -113,27 +113,6 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldSendPendingMessagesAfterSubscriptionIsResumed() {
-        // given
-        Topic topic = operations.buildTopic("publishResumedGroup", "topic");
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsActivated(topic, "subscription");
-        publisher.publish(topic.getQualifiedName(), TestMessage.of("nothing", "important").body());
-
-        operations.suspendSubscription(topic, "subscription");
-        wait.untilSubscriptionIsSuspended(topic, "subscription");
-        remoteService.expectMessages(TestMessage.of("hello", "world").body());
-
-        // when
-        publisher.publish(topic.getQualifiedName(), TestMessage.of("hello", "world").body());
-
-        operations.activateSubscription(topic, "subscription");
-
-        // then
-        remoteService.waitUntilReceived();
-    }
-
-    @Test
     public void shouldConsumeMessagesOnMultipleSubscriptions() {
         // given
         Topic topic = operations.buildTopic("publishMultipleGroup", "topic");

@@ -96,9 +96,7 @@ class ConsumerProcessTest extends Specification {
         waiter.waitForSignalProcessing()
 
         then:
-        consumer.tearDownCount == 1
-        1 * retransmitter.reloadOffsets(_)
-        consumer.initializationCount == 2
+        1 * retransmitter.reloadOffsets(_,_)
 
         cleanup:
         process.accept(Signal.of(Signal.SignalType.STOP, subscription))

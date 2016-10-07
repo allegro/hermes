@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
-import kafka.consumer.Consumer;
-import kafka.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -10,10 +9,8 @@ import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -24,12 +21,13 @@ import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Properties;
 
+import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
+
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
-    private final ConfigFactory configFactory;
+    private final ConfigFactory configs;
     private final MessageContentWrapper messageContentWrapper;
     private final HermesMetrics hermesMetrics;
-    private final OffsetQueue offsetQueue;
     private final Clock clock;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final SchemaRepository schemaRepository;
@@ -37,19 +35,17 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final Trackers trackers;
 
     @Inject
-    public KafkaMessageReceiverFactory(ConfigFactory configFactory,
+    public KafkaMessageReceiverFactory(ConfigFactory configs,
                                        MessageContentWrapper messageContentWrapper,
                                        HermesMetrics hermesMetrics,
-                                       OffsetQueue offsetQueue,
                                        Clock clock,
                                        KafkaNamesMapper kafkaNamesMapper,
                                        SchemaRepository schemaRepository,
                                        FilterChainFactory filterChainFactory,
                                        Trackers trackers) {
-        this.configFactory = configFactory;
+        this.configs = configs;
         this.messageContentWrapper = messageContentWrapper;
         this.hermesMetrics = hermesMetrics;
-        this.offsetQueue = offsetQueue;
         this.clock = clock;
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.schemaRepository = schemaRepository;
@@ -61,31 +57,21 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     public MessageReceiver createMessageReceiver(Topic topic,
                                                  Subscription subscription,
                                                  ConsumerRateLimiter consumerRateLimiter) {
-        return create(topic,
-                createConsumerConfig(kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName())),
-                subscription,
-                consumerRateLimiter);
-    }
 
-    MessageReceiver create(Topic receivingTopic,
-                           ConsumerConfig consumerConfig,
-                           Subscription subscription,
-                           ConsumerRateLimiter consumerRateLimiter) {
-        MessageReceiver receiver = new KafkaMessageReceiver(
-                receivingTopic,
-                Consumer.createJavaConsumerConnector(consumerConfig),
+        MessageReceiver receiver = new KafkaSingleThreadedMessageReceiver(
+                createKafkaConsumer(kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName())),
                 messageContentWrapper,
-                hermesMetrics.timer(Timers.READ_LATENCY),
-                clock,
+                hermesMetrics,
+                schemaRepository,
                 kafkaNamesMapper,
-                configFactory.getIntProperty(Configs.KAFKA_STREAM_COUNT),
-                configFactory.getIntProperty(Configs.KAFKA_CONSUMER_TIMEOUT_MS),
+                topic,
                 subscription,
-                schemaRepository);
+                clock,
+                configs.getIntProperty(Configs.CONSUMER_RECEIVER_POOL_TIMEOUT),
+                configs.getIntProperty(Configs.CONSUMER_RECEIVER_READ_QUEUE_CAPACITY));
 
-        if (configFactory.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
+        if (configs.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
             FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
-                    offsetQueue,
                     consumerRateLimiter,
                     trackers,
                     hermesMetrics);
@@ -94,22 +80,32 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         return receiver;
     }
 
-    private ConsumerConfig createConsumerConfig(ConsumerGroupId groupId) {
+    private KafkaConsumer<byte[], byte[]> createKafkaConsumer(ConsumerGroupId groupId) {
         Properties props = new Properties();
+        props.put(GROUP_ID_CONFIG, groupId.asString());
+        props.put(ENABLE_AUTO_COMMIT_CONFIG, "false");
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
 
-        props.put("group.id", groupId.asString());
-        props.put("zookeeper.connect", configFactory.getStringProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING));
-        props.put("zookeeper.connection.timeout.ms", configFactory.getIntPropertyAsString(Configs.ZOOKEEPER_CONNECTION_TIMEOUT));
-        props.put("zookeeper.session.timeout.ms", configFactory.getIntPropertyAsString(Configs.ZOOKEEPER_SESSION_TIMEOUT));
-        props.put("auto.commit.enable", "false");
-        props.put("fetch.wait.max.ms", "10000");
-        props.put("consumer.timeout.ms", configFactory.getIntPropertyAsString(Configs.KAFKA_CONSUMER_TIMEOUT_MS));
-        props.put("auto.offset.reset", configFactory.getStringProperty(Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET));
-        props.put("offsets.storage", configFactory.getStringProperty(Configs.KAFKA_CONSUMER_OFFSETS_STORAGE));
-        props.put("dual.commit.enabled", Boolean.toString(configFactory.getBooleanProperty(Configs.KAFKA_CONSUMER_DUAL_COMMIT_ENABLED)));
-        props.put("rebalance.max.retries", configFactory.getIntPropertyAsString(Configs.KAFKA_CONSUMER_REBALANCE_MAX_RETRIES));
-        props.put("rebalance.backoff.ms", configFactory.getIntPropertyAsString(Configs.KAFKA_CONSUMER_REBALANCE_BACKOFF));
-
-        return new ConsumerConfig(props);
+        props.put(CLIENT_ID_CONFIG, configs.getStringProperty(Configs.CONSUMER_CLIENT_ID) + "_" + groupId.asString());
+        props.put(BOOTSTRAP_SERVERS_CONFIG, configs.getStringProperty(Configs.KAFKA_BROKER_LIST));
+        props.put(AUTO_OFFSET_RESET_CONFIG, configs.getStringProperty(Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG));
+        props.put(SESSION_TIMEOUT_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG));
+        props.put(HEARTBEAT_INTERVAL_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG));
+        props.put(METADATA_MAX_AGE_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_METADATA_MAX_AGE_CONFIG));
+        props.put(MAX_PARTITION_FETCH_BYTES_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES_CONFIG));
+        props.put(SEND_BUFFER_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_SEND_BUFFER_CONFIG));
+        props.put(RECEIVE_BUFFER_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_RECEIVE_BUFFER_CONFIG));
+        props.put(FETCH_MIN_BYTES_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_FETCH_MIN_BYTES_CONFIG));
+        props.put(FETCH_MAX_WAIT_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_FETCH_MAX_WAIT_MS_CONFIG));
+        props.put(RECONNECT_BACKOFF_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG));
+        props.put(RETRY_BACKOFF_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG));
+        props.put(CHECK_CRCS_CONFIG, configs.getBooleanProperty(Configs.KAFKA_CONSUMER_CHECK_CRCS_CONFIG));
+        props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_METRICS_SAMPLE_WINDOW_MS_CONFIG));
+        props.put(METRICS_NUM_SAMPLES_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_METRICS_NUM_SAMPLES_CONFIG));
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG));
+        props.put(CONNECTIONS_MAX_IDLE_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_CONNECTIONS_MAX_IDLE_MS_CONFIG));
+        props.put(MAX_POLL_RECORDS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG));
+        return new KafkaConsumer<byte[], byte[]>(props);
     }
 }
