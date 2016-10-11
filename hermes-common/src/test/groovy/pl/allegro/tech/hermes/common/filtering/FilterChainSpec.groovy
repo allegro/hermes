@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering
+package pl.allegro.tech.hermes.common.filtering
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification
 import pl.allegro.tech.hermes.common.filtering.MessageFilter
@@ -12,7 +12,7 @@ import spock.lang.Specification
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Predicate
 
-import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.testMessage
+import static pl.allegro.tech.hermes.common.message.MessageContentBuilder.testMessage
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 
 class FilterChainSpec extends Specification {
