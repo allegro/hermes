@@ -4,7 +4,6 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.common.filtering.FilteringException;
-import pl.allegro.tech.hermes.common.message.Message;
 import pl.allegro.tech.hermes.common.message.MessageContent;
 
 import java.io.ByteArrayInputStream;

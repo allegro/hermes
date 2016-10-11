@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.common.filtering.json;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Option;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
-import pl.allegro.tech.hermes.common.message.Message;
 import pl.allegro.tech.hermes.common.filtering.SubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.common.message.MessageContent;
 

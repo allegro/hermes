@@ -47,8 +47,8 @@ public class MessageContent {
             return this;
         }
 
-        public MessageContent.Builder withSchema(CompiledSchema<Object> schema) {
-            this.message.schema = Optional.of(schema);
+        public MessageContent.Builder withSchema(Optional<CompiledSchema<Object>> schema) {
+            this.message.schema = schema;
             return this;
         }
 

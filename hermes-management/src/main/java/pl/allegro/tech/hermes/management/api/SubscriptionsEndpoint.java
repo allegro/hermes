@@ -12,6 +12,8 @@ import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.api.mappers.FilterValidation;
+import pl.allegro.tech.hermes.management.api.mappers.MessageValidationWrapper;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -223,6 +225,17 @@ public class SubscriptionsEndpoint {
         List<MessageTrace> status = subscriptionService.getMessageStatus(qualifiedTopicName, subscriptionName, messageId);
 
         return Response.status(OK).entity(status).build();
+    }
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @Path("/filter")
+    public FilterValidation validateFilter(MessageValidationWrapper messageValidationWrapper) {
+        final boolean isFiltered = messageValidationWrapper.getMessageFilterList().stream()
+                .allMatch(t -> t.test(messageValidationWrapper.getMessage()));
+
+        return new FilterValidation(isFiltered);
     }
 
     private Response responseStatus(Response.Status responseStatus) {

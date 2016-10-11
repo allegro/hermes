@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.common.filtering.chain;
 
 import pl.allegro.tech.hermes.common.filtering.MessageFilter;
-import pl.allegro.tech.hermes.common.message.Message;
 import pl.allegro.tech.hermes.common.message.MessageContent;
 
 import java.util.ArrayList;

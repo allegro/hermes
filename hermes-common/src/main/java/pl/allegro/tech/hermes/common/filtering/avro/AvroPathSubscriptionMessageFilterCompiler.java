@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.common.filtering.avro;
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.common.filtering.SubscriptionMessageFilterCompiler;
-import pl.allegro.tech.hermes.common.message.Message;
 import pl.allegro.tech.hermes.common.message.MessageContent;
 
 import java.util.function.Predicate;

@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.common.filtering.MessageFilter
 import pl.allegro.tech.hermes.common.filtering.MessageFilters
 import pl.allegro.tech.hermes.common.filtering.NoSuchFilterException
 import pl.allegro.tech.hermes.common.filtering.SubscriptionMessageFilterCompiler
+import pl.allegro.tech.hermes.common.message.MessageContent
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.common.filtering.chain.FilterChainFactory
 import spock.lang.Specification
@@ -138,13 +139,13 @@ class FilterChainSpec extends Specification {
         }
 
         @Override
-        Predicate<Message> compile(MessageFilterSpecification specification) {
+        Predicate<MessageContent> compile(MessageFilterSpecification specification) {
             compiled = true
             this
         }
 
         @Override
-        boolean test(Message message) {
+        boolean test(MessageContent message) {
             order = counter.getAndIncrement()
             tested = true
             tested
@@ -157,7 +158,7 @@ class FilterChainSpec extends Specification {
         }
 
         @Override
-        boolean test(Message message) {
+        boolean test(MessageContent message) {
             super.test(message)
             throw new IllegalStateException()
         }

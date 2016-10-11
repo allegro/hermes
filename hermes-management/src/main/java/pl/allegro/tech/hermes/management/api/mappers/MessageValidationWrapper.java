@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.common.filtering.MessageFilter;
 import pl.allegro.tech.hermes.common.filtering.json.JsonPathPredicate;
-import pl.allegro.tech.hermes.common.message.Message;
+import pl.allegro.tech.hermes.common.message.MessageContent;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import static java.util.stream.Collectors.toList;
 
 public class MessageValidationWrapper {
-    private final Message message;
+    private final MessageContent message;
     private final List<MessageFilter> messageFilterList;
 
     @Override
@@ -27,7 +27,7 @@ public class MessageValidationWrapper {
                 '}';
     }
 
-    public Message getMessage() {
+    public MessageContent getMessage() {
         return message;
     }
 
@@ -41,7 +41,7 @@ public class MessageValidationWrapper {
                         Configuration.defaultConfiguration().addOptions(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS)))
                 .map(f -> new MessageFilter("jsonpath", f))
                 .collect(toList());
-        this.message = Message.message()
+        this.message = new MessageContent.Builder()
                 .withData(stringMessage.getBytes())
                 .withContentType(ContentType.JSON)
                 .build();

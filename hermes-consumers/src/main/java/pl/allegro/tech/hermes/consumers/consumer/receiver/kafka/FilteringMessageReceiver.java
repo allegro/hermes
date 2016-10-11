@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.message.MessageContent;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
@@ -42,8 +43,13 @@ public class FilteringMessageReceiver implements MessageReceiver {
     }
 
     private boolean allow(Message message) {
-        FilterResult result = filterChain.apply(message);
-        filteredMessageHandler.handle(result, message, subscription, (offset) -> receiver.commit(singleton(offset)));
+        MessageContent messageContent = new MessageContent.Builder()
+                .withContentType(message.getContentType())
+                .withSchema(message.getSchema())
+                .withData(message.getData())
+                .build();
+        FilterResult result = filterChain.apply(messageContent);
+        filteredMessageHandler.handle(result, messageContent, subscription, (offset) -> receiver.commit(singleton(offset)));
         return !result.isFiltered();
     }
 
