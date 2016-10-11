@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.filtering
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification
-import pl.allegro.tech.hermes.consumers.consumer.filtering.json.JsonPathSubscriptionMessageFilterCompiler
+import pl.allegro.tech.hermes.common.filtering.json.JsonPathSubscriptionMessageFilterCompiler
 import spock.lang.Specification
 import spock.lang.Unroll
 

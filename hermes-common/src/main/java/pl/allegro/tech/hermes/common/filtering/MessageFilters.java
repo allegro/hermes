@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering;
+package pl.allegro.tech.hermes.common.filtering;
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 

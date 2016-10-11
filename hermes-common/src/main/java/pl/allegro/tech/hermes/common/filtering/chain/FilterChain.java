@@ -1,7 +1,8 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering.chain;
+package pl.allegro.tech.hermes.common.filtering.chain;
 
-import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilter;
+import pl.allegro.tech.hermes.common.filtering.MessageFilter;
+import pl.allegro.tech.hermes.common.message.Message;
+import pl.allegro.tech.hermes.common.message.MessageContent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ public final class FilterChain {
         this.messageFilters = new ArrayList<>(messageFilters);
     }
 
-    public FilterResult apply(final Message message) {
+    public FilterResult apply(final MessageContent message) {
         for (MessageFilter filter : messageFilters) {
             try {
                 if (!filter.test(message)) {

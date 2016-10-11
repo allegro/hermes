@@ -1,8 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.filtering
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification
+import pl.allegro.tech.hermes.common.filtering.MessageFilter
+import pl.allegro.tech.hermes.common.filtering.MessageFilters
+import pl.allegro.tech.hermes.common.filtering.NoSuchFilterException
+import pl.allegro.tech.hermes.common.filtering.SubscriptionMessageFilterCompiler
 import pl.allegro.tech.hermes.consumers.consumer.Message
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory
+import pl.allegro.tech.hermes.common.filtering.chain.FilterChainFactory
 import spock.lang.Specification
 
 import java.util.concurrent.atomic.AtomicInteger

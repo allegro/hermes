@@ -1,11 +1,12 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering.avro;
+package pl.allegro.tech.hermes.common.filtering.avro;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException;
-import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.common.filtering.FilteringException;
+import pl.allegro.tech.hermes.common.message.MessageContent;
+import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -19,9 +20,8 @@ import java.util.regex.Pattern;
 import static java.util.Optional.empty;
 import static org.apache.commons.lang.StringUtils.strip;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
-import static pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException.check;
 
-public class AvroPathPredicate implements Predicate<Message> {
+public class AvroPathPredicate implements Predicate<MessageContent> {
     private List<String> path;
     private Pattern pattern;
 
@@ -31,8 +31,8 @@ public class AvroPathPredicate implements Predicate<Message> {
     }
 
     @Override
-    public boolean test(final Message message) {
-        check(message.getContentType() == ContentType.AVRO, "This filter supports only AVRO contentType.");
+    public boolean test(final MessageContent message) {
+        FilteringException.check(message.getContentType() == ContentType.AVRO, "This filter supports only AVRO contentType.");
         try {
             return select(message).map(this::matches).orElse(false);
         } catch (Exception exception) {
@@ -40,7 +40,7 @@ public class AvroPathPredicate implements Predicate<Message> {
         }
     }
 
-    private Optional<Object> select(final Message message) throws IOException {
+    private Optional<Object> select(final MessageContent message) throws IOException {
         CompiledSchema<Schema> compiledSchema = message.<Schema>getSchema().get();
         return select(bytesToRecord(message.getData(), compiledSchema.getSchema()));
     }

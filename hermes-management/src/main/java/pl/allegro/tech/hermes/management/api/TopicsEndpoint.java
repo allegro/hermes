@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
+import pl.allegro.tech.hermes.common.message.Message;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.api.mappers.MessageValidationWrapper;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
@@ -152,6 +154,17 @@ public class TopicsEndpoint {
                     brokersClusterName, qualifiedTopicName, partition, offset
             ));
         }
+    }
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @Path("/filter")
+    public String validateFilter(MessageValidationWrapper messageValidationWrapper) {
+        final boolean isFiltered = messageValidationWrapper.getMessageFilterList().stream()
+                .allMatch(t -> t.test(messageValidationWrapper.getMessage()));
+
+        return "{\"isFiltered\":" + isFiltered +"}"; //todo class
     }
 
     private List<String> listTracked(String groupName) {

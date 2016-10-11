@@ -2,7 +2,8 @@ package pl.allegro.tech.hermes.consumers.consumer.filtering
 
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.MessageFilterSpecification
-import pl.allegro.tech.hermes.consumers.consumer.filtering.avro.AvroPathSubscriptionMessageFilterCompiler
+import pl.allegro.tech.hermes.common.filtering.FilteringException
+import pl.allegro.tech.hermes.common.filtering.avro.AvroPathSubscriptionMessageFilterCompiler
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import spock.lang.Specification

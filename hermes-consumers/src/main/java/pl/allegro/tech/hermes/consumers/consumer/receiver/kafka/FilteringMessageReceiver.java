@@ -3,10 +3,10 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChain;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
+import pl.allegro.tech.hermes.common.filtering.chain.FilterChain;
+import pl.allegro.tech.hermes.common.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.common.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 
 import java.util.Objects;

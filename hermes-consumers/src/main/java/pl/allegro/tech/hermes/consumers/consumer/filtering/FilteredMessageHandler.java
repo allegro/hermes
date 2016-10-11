@@ -3,11 +3,14 @@ package pl.allegro.tech.hermes.consumers.consumer.filtering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
+import pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -43,7 +46,7 @@ public class FilteredMessageHandler {
             updateMetrics(message, subscription);
 
             if (subscription.isTrackingEnabled()) {
-                trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
+                trackers.get(subscription).logFiltered(MessageConverter.toMessageMetadata(message, subscription), result.getFilterType().get());
             }
 
             consumerRateLimiter.acquire();

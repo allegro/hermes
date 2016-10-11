@@ -1,8 +1,8 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering.chain;
+package pl.allegro.tech.hermes.common.filtering.chain;
 
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilter;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilterSource;
+import pl.allegro.tech.hermes.common.filtering.MessageFilter;
+import pl.allegro.tech.hermes.common.filtering.MessageFilterSource;
 
 import javax.inject.Inject;
 import java.util.stream.Collectors;
