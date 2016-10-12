@@ -4,8 +4,8 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
+import static io.undertow.util.StatusCodes.OK;
+import static io.undertow.util.StatusCodes.SERVICE_UNAVAILABLE;
 
 public class HealthCheckHandler implements HttpHandler {
 
@@ -25,11 +25,11 @@ public class HealthCheckHandler implements HttpHandler {
     }
 
     private void success(HttpServerExchange exchange) {
-        response(exchange, SC_OK, "UP");
+        response(exchange, OK, "UP");
     }
 
     private void unavailable(HttpServerExchange exchange) {
-        response(exchange, SC_SERVICE_UNAVAILABLE, "SHUTDOWN");
+        response(exchange, SERVICE_UNAVAILABLE, "SHUTDOWN");
     }
 
     private void response(HttpServerExchange exchange, int status, String data) {
