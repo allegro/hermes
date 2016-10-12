@@ -13,8 +13,8 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
+import static pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 
 public class SubscriptionAssignmentRegistryFactory implements Factory<SubscriptionAssignmentRegistry> {
 
@@ -37,18 +37,15 @@ public class SubscriptionAssignmentRegistryFactory implements Factory<Subscripti
 
     @Override
     public SubscriptionAssignmentRegistry provide() {
-        return provide(configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID));
-    }
-
-    public SubscriptionAssignmentRegistry provide(String consumerId) {
         ZookeeperPaths paths = new ZookeeperPaths(configFactory.getStringProperty(Configs.ZOOKEEPER_ROOT));
         String cluster = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
 
+        String consumersRuntimePath = paths.consumersRuntimePath(cluster);
         SubscriptionAssignmentRegistry registry = new SubscriptionAssignmentRegistry(
-                consumerId,
                 curatorClient,
-                paths.consumersRuntimePath(cluster),
-                cache
+                consumersRuntimePath,
+                cache,
+                new SubscriptionAssignmentPathSerializer(consumersRuntimePath, AUTO_ASSIGNED_MARKER)
         );
 
         return registry;

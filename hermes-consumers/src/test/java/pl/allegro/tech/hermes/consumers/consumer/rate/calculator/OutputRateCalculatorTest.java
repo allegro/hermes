@@ -8,8 +8,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.ActiveConsumerCounter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProvider;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -37,15 +36,16 @@ public class OutputRateCalculatorTest {
                 SubscriptionPolicy.Builder.subscriptionPolicy().withRate(200).build()
         ).build();
 
-        ActiveConsumerCounter consumerCounter = mock(ActiveConsumerCounter.class);
-        when(consumerCounter.countActiveConsumers(subscription)).thenReturn(2);
-        calculator = new OutputRateCalculator(config, consumerCounter);
+        MaxRateProvider maxRateProvider = mock(MaxRateProvider.class);
+        when(maxRateProvider.get()).thenReturn(100D);
+
+        calculator = new OutputRateCalculator(subscription, config, maxRateProvider);
     }
 
     @Test
     public void shouldStartInNormalModeAndGraduallyIncreaseToMaximumWhenOnlySuccessfulDeliveries() {
         //given
-        OutputRateCalculationScenario scenario = new OutputRateCalculationScenario(subscription, calculator);
+        OutputRateCalculationScenario scenario = new OutputRateCalculationScenario(calculator);
 
         // when
         scenario.start(10).fastForwardWithSuccesses(10);
@@ -57,7 +57,7 @@ public class OutputRateCalculatorTest {
     @Test
     public void shouldStartInNormalModeReachMaximumAndGoToHeartbeatViaSlowWhenDeliveryStartsFailing() {
         // given
-        OutputRateCalculationScenario scenario = new OutputRateCalculationScenario(subscription, calculator);
+        OutputRateCalculationScenario scenario = new OutputRateCalculationScenario(calculator);
 
         // when
         scenario.start(10).fastForwardWithSuccesses(10).nextInteration(2, 10).fastForwardWithFailures(20);
@@ -70,7 +70,7 @@ public class OutputRateCalculatorTest {
     @Test
     public void shouldRecoverFromHeartbeatModeAndGetToMaximumViaSlowWhenDeliveringWithSuccess() {
         // given
-        OutputRateCalculationScenario scenario = new OutputRateCalculationScenario(subscription, calculator);
+        OutputRateCalculationScenario scenario = new OutputRateCalculationScenario(calculator);
 
         // when
         scenario.start(10).fastForwardWithFailures(10)
@@ -84,7 +84,7 @@ public class OutputRateCalculatorTest {
     @Test
     public void shouldImmediatelySwitchToHeartbeatModeWhenAllMessagesFail() {
         // given
-        OutputRateCalculationScenario scenario = new OutputRateCalculationScenario(subscription, calculator);
+        OutputRateCalculationScenario scenario = new OutputRateCalculationScenario(calculator);
 
         // when
         scenario.start(10).fastForwardWithSuccesses(10).fastForwardWithFailures(2);

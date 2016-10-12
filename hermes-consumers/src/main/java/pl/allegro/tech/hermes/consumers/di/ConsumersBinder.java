@@ -34,6 +34,13 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClient;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
+import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.SubscriptionConsumersCache;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.SubscriptionConsumersCacheFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
@@ -96,8 +103,8 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(HttpAuthorizationProviderFactory.class);
         bindSingleton(ConsumerFactory.class);
         bindSingleton(ConsumerRateLimitSupervisor.class);
-        bindSingleton(OutputRateCalculator.class);
         bindSingleton(ConsumersExecutorService.class);
+        bindSingleton(OutputRateCalculatorFactory.class);
         bindSingleton(ZookeeperAdminCache.class);
         bindSingleton(InstrumentedExecutorServiceFactory.class);
         bindSingleton(ConsumerMessageSenderFactory.class);
@@ -120,6 +127,11 @@ public class ConsumersBinder extends AbstractBinder {
         bindFactory(SubscriptionAssignmentRegistryFactory.class).in(Singleton.class).to(SubscriptionAssignmentRegistry.class);
         bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);
         bindFactory(ConsumersRuntimeMonitorFactory.class).in(Singleton.class).to(ConsumersRuntimeMonitor.class);
+
+        bindFactory(SubscriptionConsumersCacheFactory.class).in(Singleton.class).to(SubscriptionConsumersCache.class);
+        bindSingleton(MaxRateSupervisor.class);
+        bindSingleton(MaxRateProviderFactory.class);
+        bindSingleton(MaxRateRegistry.class);
 
         bindSingleton(UndeliveredMessageLogPersister.class);
         bindFactory(ByteBufferMessageBatchFactoryProvider.class).in(Singleton.class).to(MessageBatchFactory.class);

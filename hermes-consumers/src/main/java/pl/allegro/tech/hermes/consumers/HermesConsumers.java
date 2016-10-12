@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.hook.FlushLogsShutdownHook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
@@ -33,6 +34,7 @@ public class HermesConsumers {
     private final ServiceLocator serviceLocator;
 
     private final SupervisorController supervisorController;
+    private final MaxRateSupervisor maxRateSupervisor;
 
     public static void main(String... args) {
         consumers().build().start();
@@ -54,11 +56,13 @@ public class HermesConsumers {
         messageSenderFactory = serviceLocator.getService(MessageSenderFactory.class);
 
         supervisorController = serviceLocator.getService(SupervisorController.class);
+        maxRateSupervisor = serviceLocator.getService(MaxRateSupervisor.class);
 
         hooksHandler.addShutdownHook((s) -> {
             try {
                 consumerHttpServer.stop();
                 supervisorController.shutdown();
+                maxRateSupervisor.shutdown();
                 s.shutdown();
             } catch (Exception e) {
                 logger.error("Exception while shutdown Hermes Consumers", e);
@@ -80,6 +84,7 @@ public class HermesConsumers {
                     ));
 
             supervisorController.start();
+            maxRateSupervisor.start();
             serviceLocator.getService(ConsumersRuntimeMonitor.class).start();
             consumerHttpServer.start();
             hooksHandler.startup(serviceLocator);

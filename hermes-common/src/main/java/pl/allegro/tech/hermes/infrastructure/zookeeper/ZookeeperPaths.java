@@ -14,6 +14,7 @@ public class ZookeeperPaths {
     public static final String URL_SEPARATOR = "/";
     public static final String CONSUMERS_PATH = "consumers";
     public static final String CONSUMERS_WORKLOAD_PATH = "consumers-workload";
+    public static final String CONSUMERS_RATE_PATH = "consumers-rate";
     public static final String METRICS_PATH = "metrics";
     public static final String ADMIN_PATH = "admin";
     public static final String PREVIEW_PATH = "preview";
@@ -100,6 +101,30 @@ public class ZookeeperPaths {
 
     public String consumersRegistryPath(String cluster) {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH, cluster, "registry");
+    }
+
+    public String consumersWorkloadPath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH);
+    }
+
+    public String consumersRateRuntimePath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "runtime");
+    }
+
+    public String consumersRatePath(String subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId);
+    }
+
+    public String consumersRateHistoryPath(String subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, "history");
+    }
+
+    public String consumersMaxRatePath(String subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, "max-rate");
+    }
+
+    public String maxRateLeaderPath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "leader");
     }
 
     public String inflightPath(String hostname, TopicName topicName, String subscriptionName, String metricName) {

@@ -43,7 +43,7 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     @Test
     public void shouldRegisterConsumerInActiveNodesRegistryOnStartup() throws Exception {
         // when
-        String consumerId = runtime.spawnConsumer().getId();
+        String consumerId = runtime.spawnConsumer().watchedConsumerId().get();
 
         // then
         runtime.waitForRegistration(consumerId);

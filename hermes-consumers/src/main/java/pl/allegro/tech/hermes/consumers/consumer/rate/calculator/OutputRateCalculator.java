@@ -3,10 +3,9 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.consumers.consumer.ActiveConsumerCounter;
-import pl.allegro.tech.hermes.consumers.consumer.rate.DeliveryCounters;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProvider;
 
-import javax.inject.Inject;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -18,13 +17,18 @@ public class OutputRateCalculator {
         HEARTBEAT
     }
 
-    private final Map<Mode, ModeOutputRateCalculator> modeCalculators
-            = new EnumMap<>(Mode.class);
+    private final Map<Mode, ModeOutputRateCalculator> modeCalculators = new EnumMap<>(Mode.class);
 
-    private final MaximumOutputRateCalculator maximumRateCalculator;
+    private final MaxRateProvider maxRateProvider;
 
-    @Inject
-    public OutputRateCalculator(ConfigFactory configFactory, ActiveConsumerCounter activeConsumerCounter) {
+    private final Subscription subscription;
+
+    public OutputRateCalculator(Subscription subscription,
+                                ConfigFactory configFactory,
+                                MaxRateProvider maxRateProvider) {
+        this.subscription = subscription;
+        this.maxRateProvider = maxRateProvider;
+
         modeCalculators.put(Mode.NORMAL,
                 new NormalModeOutputRateCalculator(
                         configFactory.getDoubleProperty(Configs.CONSUMER_RATE_CONVERGENCE_FACTOR),
@@ -39,15 +43,14 @@ public class OutputRateCalculator {
         modeCalculators.put(Mode.HEARTBEAT, new HeartbeatModeOutputRateCalculator(
                 1.0 / configFactory.getIntProperty(Configs.CONSUMER_RATE_LIMITER_SLOW_MODE_DELAY))
         );
-
-        maximumRateCalculator = new MaximumOutputRateCalculator(activeConsumerCounter);
     }
 
-    public OutputRateCalculationResult recalculateRate(Subscription subscription, DeliveryCounters counters,
-                                                       Mode currentMode, double currentRate) {
-        double maximumRate = maximumRateCalculator.calculateMaximumOutputRate(subscription);
+    public OutputRateCalculationResult recalculateRate(SendCounters counters,
+                                                       Mode currentMode, double currentRateLimit) {
+
+        double maximumRate = maxRateProvider.get();
         OutputRateCalculationResult recalculatedResult
-                = modeCalculators.get(currentMode).calculateOutputRate(currentRate, maximumRate, counters);
+                = modeCalculators.get(currentMode).calculateOutputRate(currentRateLimit, maximumRate, counters);
 
         if (recalculatedResult.rate() > maximumRate) {
             recalculatedResult = OutputRateCalculationResult.adjustRate(recalculatedResult, maximumRate);
