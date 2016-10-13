@@ -279,5 +279,20 @@ public class HermesMetrics {
                 .build();
         return metricRegistry.meter(pathCompiler.compile(Meters.OAUTH_SUBSCRIPTION_TOKEN_REQUEST, pathContext));
     }
+
+    public Counter rateHistoryFailuresCounter(Subscription subscription) {
+        return metricRegistry.counter(metricRegistryName(
+                Counters.MAXRATE_RATE_HISTORY_FAILURES, subscription.getTopicName(), subscription.getName()));
+    }
+
+    public Counter maxRateFetchFailuresCounter(Subscription subscription) {
+        return metricRegistry.counter(metricRegistryName(
+                Counters.MAXRATE_FETCH_FAILURES, subscription.getTopicName(), subscription.getName()));
+    }
+
+    public Counter maxRateUpdatesCounter(Subscription subscription) {
+        return metricRegistry.counter(metricRegistryName(
+                Counters.MAXRATE_UPDATES, subscription.getTopicName(), subscription.getName()));
+    }
 }
 

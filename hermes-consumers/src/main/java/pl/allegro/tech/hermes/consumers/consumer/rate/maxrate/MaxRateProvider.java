@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 
 import java.util.Optional;
@@ -11,54 +12,61 @@ public class MaxRateProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(MaxRateProvider.class);
 
-    private static final double FALLBACK_MAX_RATE = 100.0;
+    private static final double FALLBACK_MAX_RATE = 1.0;
 
     private final String consumerId;
     private final MaxRateRegistry registry;
     private final Subscription subscription;
     private final SendCounters sendCounters;
+    private final HermesMetrics metrics;
     private final int historyLimit;
-    private volatile double maxRate;
+    private volatile double maxRate = FALLBACK_MAX_RATE;
 
-    public MaxRateProvider(String consumerId, MaxRateRegistry registry, Subscription subscription,
-                           SendCounters sendCounters, int historyLimit) {
+    MaxRateProvider(String consumerId, MaxRateRegistry registry, Subscription subscription,
+                    SendCounters sendCounters, HermesMetrics metrics, int historyLimit) {
         this.consumerId = consumerId;
         this.registry = registry;
         this.subscription = subscription;
         this.sendCounters = sendCounters;
+        this.metrics = metrics;
         this.historyLimit = historyLimit;
     }
 
     public double get() {
-        if (maxRate == 0) {
-            maxRate = fetchOrDefaultMaxRate();
-        }
-
         return maxRate;
     }
 
-    public void tickForHistory() {
+    void tickForHistory() {
+        recordCurrentRate(sendCounters.getRate());
+        maxRate = fetchOrDefaultMaxRate();
+    }
+
+    private void recordCurrentRate(double actualRate) {
         try {
-            double actualRate = sendCounters.getRate();
-            recordCurrentRate(actualRate);
-            maxRate = fetchOrDefaultMaxRate();
+            double usedRate = Math.min(actualRate / Math.max(maxRate, 1), 1.0);
+            RateHistory rateHistory = registry.readOrCreateRateHistory(subscription, consumerId);
+            RateHistory updatedHistory = RateHistory.updatedRates(rateHistory, usedRate, historyLimit);
+            registry.writeRateHistory(subscription, consumerId, updatedHistory);
         } catch (Exception e) {
-            logger.warn("Encountered problem updating consumer's max rate");
+            metrics.rateHistoryFailuresCounter(subscription).inc();
+            logger.warn("Encountered problem updating max rate for subscription {}, consumer {}",
+                    subscription.getQualifiedName(), consumerId, e);
         }
     }
 
-    private void recordCurrentRate(double actualRate) throws Exception {
-        double usedRate = Math.min(actualRate / Math.max(maxRate, 1), 0.0);
-        RateHistory rateHistory = registry.readOrCreateRateHistory(subscription, consumerId);
-        RateHistory updatedHistory = RateHistory.updatedRates(rateHistory, usedRate, historyLimit);
-        registry.writeRateHistory(subscription, consumerId, updatedHistory);
-    }
-
     private double fetchOrDefaultMaxRate() {
+        // TODO: if I can't fetch max rate, I need to temporarily slow down so I don't abuse the subscriber
         return fetchCurrentMaxRate().orElse(new MaxRate(FALLBACK_MAX_RATE)).getMaxRate();
     }
 
     private Optional<MaxRate> fetchCurrentMaxRate() {
-        return registry.readMaxRate(subscription, consumerId);
+        try {
+            return registry.readMaxRate(subscription, consumerId);
+        } catch (Exception e) {
+            metrics.maxRateFetchFailuresCounter(subscription).inc();
+            logger.warn("Encountered problem fetching max rate for subscription: {}, consumer: {}. Setting default max rate: {}",
+                    subscription.getQualifiedName(), consumerId, FALLBACK_MAX_RATE);
+            return Optional.empty();
+        }
     }
 }

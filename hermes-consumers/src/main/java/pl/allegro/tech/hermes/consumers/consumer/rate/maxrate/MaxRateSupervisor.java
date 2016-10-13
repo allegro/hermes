@@ -3,10 +3,12 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import javax.inject.Inject;
+import java.time.Clock;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +26,8 @@ public class MaxRateSupervisor implements Runnable {
     private final MaxRateRegistry maxRateRegistry;
     private final SubscriptionsCache subscriptionsCache;
     private final ZookeeperPaths zookeeperPaths;
+    private final HermesMetrics metrics;
+    private final Clock clock;
 
     @Inject
     public MaxRateSupervisor(ConfigFactory configFactory,
@@ -31,13 +35,17 @@ public class MaxRateSupervisor implements Runnable {
                              SubscriptionConsumersCache subscriptionConsumersCache,
                              MaxRateRegistry maxRateRegistry,
                              SubscriptionsCache subscriptionsCache,
-                             ZookeeperPaths zookeeperPaths) {
+                             ZookeeperPaths zookeeperPaths,
+                             HermesMetrics metrics,
+                             Clock clock) {
         this.configFactory = configFactory;
         this.curator = curator;
         this.subscriptionConsumersCache = subscriptionConsumersCache;
         this.maxRateRegistry = maxRateRegistry;
         this.subscriptionsCache = subscriptionsCache;
         this.zookeeperPaths = zookeeperPaths;
+        this.metrics = metrics;
+        this.clock = clock;
     }
 
     public void start() throws Exception {
@@ -50,7 +58,11 @@ public class MaxRateSupervisor implements Runnable {
                 subscriptionConsumersCache,
                 new MaxRateBalancer(),
                 maxRateRegistry,
-                zookeeperPaths.maxRateLeaderPath(), subscriptionsCache).start();
+                zookeeperPaths.maxRateLeaderPath(),
+                subscriptionsCache,
+                metrics,
+                clock
+        ).start();
 
         int selfUpdateInterval = configFactory.getIntProperty(Configs.CONSUMER_MAXRATE_UPDATE_INTERVAL_SECONDS);
         Executors.newSingleThreadScheduledExecutor()

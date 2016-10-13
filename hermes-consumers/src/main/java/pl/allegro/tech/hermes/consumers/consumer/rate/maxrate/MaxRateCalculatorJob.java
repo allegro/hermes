@@ -4,8 +4,10 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 
+import java.time.Clock;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -27,11 +29,15 @@ public class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
                                 SubscriptionConsumersCache subscriptionConsumersCache,
                                 MaxRateBalancer balancer,
                                 MaxRateRegistry maxRateRegistry,
-                                String leaderPath, SubscriptionsCache subscriptionsCache) {
+                                String leaderPath,
+                                SubscriptionsCache subscriptionsCache,
+                                HermesMetrics metrics,
+                                Clock clock) {
         this.curator = curator;
         this.intervalSeconds = intervalSeconds;
         this.executorService = executorService;
-        this.maxRateCalculator = new MaxRateCalculator(subscriptionConsumersCache, subscriptionsCache, balancer, maxRateRegistry);
+        this.maxRateCalculator = new MaxRateCalculator(subscriptionConsumersCache, subscriptionsCache, balancer,
+                maxRateRegistry, metrics, clock);
         this.leaderLatch = new LeaderLatch(curator, leaderPath, consumerNodeId);
     }
 

@@ -31,7 +31,7 @@ public class SubscriptionConsumersCache {
 
     private final List<SubscriptionAssignmentCache> caches = new ArrayList<>();
 
-    public SubscriptionConsumersCache(CuratorFramework curator,
+    SubscriptionConsumersCache(CuratorFramework curator,
                                       ZookeeperPaths zookeeperPaths,
                                       SubscriptionsCache subscriptionsCache) {
         this.curator = curator;
@@ -39,7 +39,7 @@ public class SubscriptionConsumersCache {
         this.subscriptionsCache = subscriptionsCache;
     }
 
-    public void start() throws Exception {
+    void start() throws Exception {
         List<String> clusters = curator.getChildren().forPath(zookeeperPaths.consumersWorkloadPath());
 
         clusters.stream()
@@ -57,7 +57,7 @@ public class SubscriptionConsumersCache {
         }
     }
 
-    public void stop() {
+    void stop() {
         caches.forEach(cache -> {
             try {
                 cache.stop();
@@ -67,7 +67,7 @@ public class SubscriptionConsumersCache {
         });
     }
 
-    public Map<SubscriptionName, Set<String>> getSubscriptionsConsumers() {
+    Map<SubscriptionName, Set<String>> getSubscriptionsConsumers() {
         List<SubscriptionAssignmentView> views = caches.stream()
                 .map(SubscriptionAssignmentCache::createSnapshot)
                 .collect(Collectors.toList());
@@ -78,5 +78,4 @@ public class SubscriptionConsumersCache {
                         SubscriptionAssignment::getSubscriptionName,
                         Collectors.mapping(SubscriptionAssignment::getConsumerNodeId, Collectors.toSet())));
     }
-
 }

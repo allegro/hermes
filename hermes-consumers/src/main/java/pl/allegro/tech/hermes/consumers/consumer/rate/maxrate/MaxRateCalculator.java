@@ -1,30 +1,53 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
-import org.apache.curator.framework.CuratorFramework;
+import com.codahale.metrics.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.common.metric.Gauges;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
-public class MaxRateCalculator {
+class MaxRateCalculator {
+    private static final Logger logger = LoggerFactory.getLogger(MaxRateCalculator.class);
+
     private final SubscriptionConsumersCache subscriptionConsumersCache;
     private final SubscriptionsCache subscriptionsCache;
     private final MaxRateBalancer balancer;
     private final MaxRateRegistry maxRateRegistry;
+    private final HermesMetrics metrics;
+    private final Clock clock;
 
-    public MaxRateCalculator(SubscriptionConsumersCache subscriptionConsumersCache,
-                             SubscriptionsCache subscriptionsCache,
-                             MaxRateBalancer balancer,
-                             MaxRateRegistry maxRateRegistry) {
+    private volatile long lastUpdateDurationMillis = 0;
+
+    MaxRateCalculator(SubscriptionConsumersCache subscriptionConsumersCache,
+                      SubscriptionsCache subscriptionsCache,
+                      MaxRateBalancer balancer,
+                      MaxRateRegistry maxRateRegistry,
+                      HermesMetrics metrics,
+                      Clock clock) {
         this.subscriptionConsumersCache = subscriptionConsumersCache;
         this.subscriptionsCache = subscriptionsCache;
         this.balancer = balancer;
         this.maxRateRegistry = maxRateRegistry;
+        this.metrics = metrics;
+        this.clock = clock;
+
+        metrics.registerGauge(Gauges.MAX_RATE_CALCULATION_DURATION, () -> lastUpdateDurationMillis);
     }
 
-    public void calculate() {
+    void calculate() {
+        logger.info("Max rate calculation started");
+
+        long start = clock.millis();
+
         Map<SubscriptionName, Set<String>> subscriptionConsumers = subscriptionConsumersCache.getSubscriptionsConsumers();
 
         subscriptionConsumers.entrySet().forEach(entry -> {
@@ -33,10 +56,19 @@ public class MaxRateCalculator {
 
             Set<ConsumerRateInfo> rateInfos = maxRateRegistry.ensureCorrectAssignments(subscription, consumerIds);
 
-            Map<String, MaxRate> newRates
+            Optional<Map<String, MaxRate>> newRates
                     = balancer.balance(subscription.getSerialSubscriptionPolicy().getRate(), rateInfos);
 
-            maxRateRegistry.update(subscription, newRates);
+            newRates.ifPresent(rates -> {
+                maxRateRegistry.update(subscription, rates);
+                metrics.maxRateUpdatesCounter(subscription).inc();
+            });
         });
+
+        lastUpdateDurationMillis = clock.millis() - start;
+
+        logger.info("Max rate calculation done in {}", Duration.ofMillis(lastUpdateDurationMillis));
     }
+
+
 }

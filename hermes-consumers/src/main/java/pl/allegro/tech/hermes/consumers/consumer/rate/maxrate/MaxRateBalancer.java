@@ -1,12 +1,13 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MaxRateBalancer {
+class MaxRateBalancer {
 
-    public Map<String, MaxRate> balance(double subscriptionMax, Set<ConsumerRateInfo> rateInfos) {
+    Optional<Map<String, MaxRate>> balance(double subscriptionMax, Set<ConsumerRateInfo> rateInfos) {
 //        double rateLeft = subscriptionMax;
 
         double defaultRate = subscriptionMax / Math.max(1, rateInfos.size());
@@ -17,9 +18,9 @@ public class MaxRateBalancer {
 //        })
 
         // TODO: alright, here is the algorithm
-        return rateInfos.stream()
+        return Optional.of(rateInfos.stream()
                 .collect(Collectors.toMap(ConsumerRateInfo::getConsumerId,
-                        rateInfo -> new MaxRate(defaultRate)));
+                        rateInfo -> new MaxRate(defaultRate))));
     }
 
 }

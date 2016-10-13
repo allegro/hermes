@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.google.common.base.Joiner;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 
@@ -111,15 +112,19 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "runtime");
     }
 
-    public String consumersRatePath(String subscription, String consumerId) {
+    public String consumersRateRuntimePath(SubscriptionName subscription) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription);
+    }
+
+    public String consumersRatePath(SubscriptionName subscription, String consumerId) {
         return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId);
     }
 
-    public String consumersRateHistoryPath(String subscription, String consumerId) {
+    public String consumersRateHistoryPath(SubscriptionName subscription, String consumerId) {
         return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, "history");
     }
 
-    public String consumersMaxRatePath(String subscription, String consumerId) {
+    public String consumersMaxRatePath(SubscriptionName subscription, String consumerId) {
         return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, "max-rate");
     }
 
