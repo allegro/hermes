@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.schema;
 
-import pl.allegro.tech.hermes.api.SchemaSource;
+import pl.allegro.tech.hermes.api.RawSchema;
 
 @FunctionalInterface
 public interface SchemaCompiler<T> {
 
-    T compile(SchemaSource schemaSource);
+    T compile(RawSchema rawSchema);
 
 }

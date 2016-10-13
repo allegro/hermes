@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.SchemaSource;
+import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.schema.InvalidSchemaException;
 import pl.allegro.tech.hermes.schema.SchemaRepositoryServerException;
-import pl.allegro.tech.hermes.schema.SchemaSourceClient;
+import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.ws.rs.client.Client;
@@ -26,28 +26,28 @@ import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
-public class SchemaRepoSchemaSourceClient implements SchemaSourceClient {
+public class SchemaRepoRawSchemaClient implements RawSchemaClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(SchemaRepoSchemaSourceClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(SchemaRepoRawSchemaClient.class);
 
     private final WebTarget target;
 
-    public SchemaRepoSchemaSourceClient(Client client, URI schemaRepoServerUri) {
+    public SchemaRepoRawSchemaClient(Client client, URI schemaRepoServerUri) {
         this.target = client.target(schemaRepoServerUri);
     }
 
     @Override
-    public Optional<SchemaSource> getSchemaSource(TopicName topic, SchemaVersion version) {
+    public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version) {
         String subject = topic.qualifiedName();
         Response response = target.path(subject).path("id").path(Integer.toString(version.value())).request().get();
-        return extractSchema(subject, response).map(SchemaSource::valueOf);
+        return extractSchema(subject, response).map(RawSchema::valueOf);
     }
 
     @Override
-    public Optional<SchemaSource> getLatestSchemaSource(TopicName topic) {
+    public Optional<RawSchema> getLatestSchema(TopicName topic) {
         String subject = topic.qualifiedName();
         Response response = target.path(subject).path("latest").request().get();
-        return extractSchema(subject, response).map(SchemaSource::valueOf);
+        return extractSchema(subject, response).map(RawSchema::valueOf);
     }
 
     @Override
@@ -66,12 +66,12 @@ public class SchemaRepoSchemaSourceClient implements SchemaSourceClient {
     }
 
     @Override
-    public void registerSchemaSource(TopicName topic, SchemaSource schemaSource) {
+    public void registerSchema(TopicName topic, RawSchema rawSchema) {
         String topicName = topic.qualifiedName();
         if (!isSubjectRegistered(topicName)) {
             registerSubject(topicName);
         }
-        registerSchema(topicName, schemaSource.value());
+        registerSchema(topicName, rawSchema.value());
     }
 
     private boolean isSubjectRegistered(String subject) {
@@ -111,7 +111,7 @@ public class SchemaRepoSchemaSourceClient implements SchemaSourceClient {
     }
 
     @Override
-    public void deleteAllSchemaSources(TopicName topic) {
+    public void deleteAllSchemaVersions(TopicName topic) {
         throw new UnsupportedOperationException("Deleting schemas is not supported by this repository type");
     }
 

@@ -10,13 +10,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
-import pl.allegro.tech.hermes.schema.confluent.SchemaRegistrySchemaSourceClient;
+import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
 import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.DirectSchemaVersionsRepository;
 import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
-import pl.allegro.tech.hermes.schema.schemarepo.SchemaRepoSchemaSourceClient;
+import pl.allegro.tech.hermes.schema.schemarepo.SchemaRepoRawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
-import pl.allegro.tech.hermes.schema.SchemaSourceClient;
+import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
 
 import javax.ws.rs.client.Client;
@@ -34,24 +34,24 @@ public class SchemaRepositoryConfiguration {
     private SchemaRepositoryProperties schemaRepositoryProperties;
 
     @Bean
-    @ConditionalOnMissingBean(SchemaSourceClient.class)
+    @ConditionalOnMissingBean(RawSchemaClient.class)
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_repo")
-    public SchemaSourceClient schemaRepoSchemaSourceClient(Client httpClient) {
-        return new SchemaRepoSchemaSourceClient(httpClient, URI.create(schemaRepositoryProperties.getServerUrl()));
+    public RawSchemaClient schemaRepoRawSchemaClient(Client httpClient) {
+        return new SchemaRepoRawSchemaClient(httpClient, URI.create(schemaRepositoryProperties.getServerUrl()));
     }
 
     @Bean
-    @ConditionalOnMissingBean(SchemaSourceClient.class)
+    @ConditionalOnMissingBean(RawSchemaClient.class)
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_registry")
-    public SchemaSourceClient confluentSchemaRegistrySchemaSourceClient(Client httpClient) {
-        return new SchemaRegistrySchemaSourceClient(httpClient, URI.create(schemaRepositoryProperties.getServerUrl()));
+    public RawSchemaClient schemaRegistryRawSchemaClient(Client httpClient) {
+        return new SchemaRegistryRawSchemaClient(httpClient, URI.create(schemaRepositoryProperties.getServerUrl()));
     }
 
     @Bean
-    public SchemaRepository aggregateSchemaRepository(SchemaSourceClient schemaSourceClient) {
-        SchemaVersionsRepository versionsRepository = new DirectSchemaVersionsRepository(schemaSourceClient);
+    public SchemaRepository aggregateSchemaRepository(RawSchemaClient rawSchemaClient) {
+        SchemaVersionsRepository versionsRepository = new DirectSchemaVersionsRepository(rawSchemaClient);
         CompiledSchemaRepository<Schema> avroSchemaRepository = new DirectCompiledSchemaRepository<>(
-                schemaSourceClient, SchemaCompilersFactory.avroSchemaCompiler());
+                rawSchemaClient, SchemaCompilersFactory.avroSchemaCompiler());
 
         return new SchemaRepository(versionsRepository, avroSchemaRepository);
     }

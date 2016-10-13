@@ -5,26 +5,26 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.schema.confluent.SchemaRegistrySchemaSourceClient;
-import pl.allegro.tech.hermes.schema.schemarepo.SchemaRepoSchemaSourceClient;
-import pl.allegro.tech.hermes.schema.SchemaSourceClient;
+import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
+import pl.allegro.tech.hermes.schema.schemarepo.SchemaRepoRawSchemaClient;
 
 import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.net.URI;
 
-public class SchemaSourceClientFactory implements Factory<SchemaSourceClient> {
+public class RawSchemaClientFactory implements Factory<RawSchemaClient> {
 
     private final ConfigFactory configFactory;
 
     @Inject
-    public SchemaSourceClientFactory(ConfigFactory configFactory) {
+    public RawSchemaClientFactory(ConfigFactory configFactory) {
         this.configFactory = configFactory;
     }
 
     @Override
-    public SchemaSourceClient provide() {
+    public RawSchemaClient provide() {
 
         int httpReadTimeoutMs = configFactory.getIntProperty(Configs.SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS);
         int httpConnectTimeoutMs = configFactory.getIntProperty(Configs.SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS);
@@ -38,16 +38,16 @@ public class SchemaSourceClientFactory implements Factory<SchemaSourceClient> {
         URI schemaRepositoryServerUri = URI.create(configFactory.getStringProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL));
         switch (SchemaRepositoryType.valueOf(schemaRepositoryType)) {
             case SCHEMA_REPO:
-                return new SchemaRepoSchemaSourceClient(client, schemaRepositoryServerUri);
+                return new SchemaRepoRawSchemaClient(client, schemaRepositoryServerUri);
             case SCHEMA_REGISTRY:
-                return new SchemaRegistrySchemaSourceClient(client, schemaRepositoryServerUri);
+                return new SchemaRegistryRawSchemaClient(client, schemaRepositoryServerUri);
             default:
                 throw new IllegalStateException("Unknown schema repository type " + schemaRepositoryType);
         }
     }
 
     @Override
-    public void dispose(SchemaSourceClient instance) {
+    public void dispose(RawSchemaClient instance) {
 
     }
 }

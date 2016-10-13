@@ -21,29 +21,29 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
 
     private static final Logger logger = LoggerFactory.getLogger(CachedSchemaVersionsRepository.class);
 
-    private final SchemaSourceClient schemaSourceClient;
+    private final RawSchemaClient rawSchemaClient;
     private final LoadingCache<Topic, List<SchemaVersion>> versionsCache;
 
-    public CachedSchemaVersionsRepository(SchemaSourceClient schemaSourceClient, ExecutorService versionsReloader,
+    public CachedSchemaVersionsRepository(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader,
                                           int refreshAfterWriteMinutes, int expireAfterWriteMinutes) {
-        this(schemaSourceClient, versionsReloader, refreshAfterWriteMinutes, expireAfterWriteMinutes, Ticker.systemTicker());
+        this(rawSchemaClient, versionsReloader, refreshAfterWriteMinutes, expireAfterWriteMinutes, Ticker.systemTicker());
     }
 
-    CachedSchemaVersionsRepository(SchemaSourceClient schemaSourceClient, ExecutorService versionsReloader,
+    CachedSchemaVersionsRepository(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader,
                                    int refreshAfterWriteMinutes, int expireAfterWriteMinutes, Ticker ticker) {
-        this.schemaSourceClient = schemaSourceClient;
+        this.rawSchemaClient = rawSchemaClient;
         this.versionsCache = CacheBuilder
                 .newBuilder()
                 .ticker(ticker)
                 .refreshAfterWrite(refreshAfterWriteMinutes, TimeUnit.MINUTES)
                 .expireAfterWrite(expireAfterWriteMinutes, TimeUnit.MINUTES)
-                .build(new SchemaVersionsLoader(schemaSourceClient, versionsReloader));
+                .build(new SchemaVersionsLoader(rawSchemaClient, versionsReloader));
     }
 
     @Override
     public List<SchemaVersion> versions(Topic topic, boolean online) {
         try {
-            return online? schemaSourceClient.getVersions(topic.getName()) : versionsCache.get(topic);
+            return online? rawSchemaClient.getVersions(topic.getName()) : versionsCache.get(topic);
         } catch (ExecutionException e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
             return emptyList();
@@ -52,18 +52,18 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
 
     private static class SchemaVersionsLoader extends CacheLoader<Topic, List<SchemaVersion>> {
 
-        private final SchemaSourceClient schemaSourceClient;
+        private final RawSchemaClient rawSchemaClient;
         private final ExecutorService versionsReloader;
 
-        public SchemaVersionsLoader(SchemaSourceClient schemaSourceClient, ExecutorService versionsReloader) {
-            this.schemaSourceClient = schemaSourceClient;
+        public SchemaVersionsLoader(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader) {
+            this.rawSchemaClient = rawSchemaClient;
             this.versionsReloader = versionsReloader;
         }
 
         @Override
         public List<SchemaVersion> load(Topic topic) throws Exception {
             logger.info("Loading schema versions for topic {}", topic.getQualifiedName());
-            return schemaSourceClient.getVersions(topic.getName());
+            return rawSchemaClient.getVersions(topic.getName());
         }
 
         @Override
@@ -71,7 +71,7 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
             ListenableFutureTask<List<SchemaVersion>> task = ListenableFutureTask.create(() -> {
                 logger.info("Reloading schema versions for topic {}", topic.getQualifiedName());
                 try {
-                    return schemaSourceClient.getVersions(topic.getName());
+                    return rawSchemaClient.getVersions(topic.getName());
                 } catch (Exception e) {
                     logger.warn("Could not reload schema versions for topic {}", topic.getQualifiedName(), e);
                     throw e;

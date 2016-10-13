@@ -34,7 +34,7 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.schema.AvroCompiledSchemaRepositoryFactory;
 import pl.allegro.tech.hermes.common.schema.SchemaRepositoryFactory;
-import pl.allegro.tech.hermes.common.schema.SchemaSourceClientFactory;
+import pl.allegro.tech.hermes.common.schema.RawSchemaClientFactory;
 import pl.allegro.tech.hermes.common.schema.SchemaVersionsRepositoryFactory;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
@@ -54,7 +54,7 @@ public class CommonBinder extends AbstractBinder {
         bindFactory(ClockFactory.class).in(Singleton.class).to(Clock.class);
         bind(ZookeeperBrokerStorage.class).to(BrokerStorage.class).in(Singleton.class);
         bind(InetAddressHostnameResolver.class).in(Singleton.class).to(HostnameResolver.class);
-        bindSingletonFactory(SchemaSourceClientFactory.class);
+        bindSingletonFactory(RawSchemaClientFactory.class);
         bindSingletonFactory(SchemaVersionsRepositoryFactory.class);
         bindFactory(AvroCompiledSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<CompiledSchemaRepository<Schema>>() {});
         bindSingletonFactory(SchemaRepositoryFactory.class);

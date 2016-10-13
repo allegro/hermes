@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.schema.confluent;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import pl.allegro.tech.hermes.api.SchemaSource;
+import pl.allegro.tech.hermes.api.RawSchema;
 
 import java.util.Objects;
 
@@ -15,8 +15,8 @@ class SchemaRegistryRequest {
         this.schema = schema;
     }
 
-    static SchemaRegistryRequest fromSchemaSource(SchemaSource schemaSource) {
-        return new SchemaRegistryRequest(schemaSource.value());
+    static SchemaRegistryRequest fromRawSchema(RawSchema rawSchema) {
+        return new SchemaRegistryRequest(rawSchema.value());
     }
 
     public String getSchema() {

@@ -18,16 +18,16 @@ public class SchemaRepository {
 
     public CompiledSchema<Schema> getLatestAvroSchema(Topic topic) {
         SchemaVersion latestVersion = schemaVersionsRepository.latestSchemaVersion(topic)
-                .orElseThrow(() -> new SchemaSourceNotFoundException(topic));
+                .orElseThrow(() -> new SchemaNotFoundException(topic));
         if (!schemaVersionsRepository.schemaVersionExists(topic, latestVersion)) {
-            throw new SchemaSourceNotFoundException(topic, latestVersion);
+            throw new SchemaNotFoundException(topic, latestVersion);
         }
         return compiledAvroSchemaRepository.getSchema(topic, latestVersion);
     }
 
     public CompiledSchema<Schema> getAvroSchema(Topic topic, SchemaVersion version) {
         if (!schemaVersionsRepository.schemaVersionExists(topic, version)) {
-            throw new SchemaSourceNotFoundException(topic, version);
+            throw new SchemaNotFoundException(topic, version);
         }
         return compiledAvroSchemaRepository.getSchema(topic, version);
     }

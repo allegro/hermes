@@ -2,12 +2,12 @@ package pl.allegro.tech.hermes.schema.confluent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.SchemaSource;
+import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.schema.CouldNotRemoveSchemaException;
 import pl.allegro.tech.hermes.schema.InvalidSchemaException;
 import pl.allegro.tech.hermes.schema.SchemaRepositoryServerException;
-import pl.allegro.tech.hermes.schema.SchemaSourceClient;
+import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.ws.rs.client.Client;
@@ -24,41 +24,41 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * This implementation of SchemaSourceClient is compatible with Confluent Schema Registry API
- * except for the deleteAllSchemaSources, which is basically not supported by the Confluent project
+ * This implementation of RawSchemaClient is compatible with Confluent Schema Registry API
+ * except for the deleteAllSchemaVersions, which is basically not supported by the Confluent project
  */
-public class SchemaRegistrySchemaSourceClient implements SchemaSourceClient {
+public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(SchemaRegistrySchemaSourceClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(SchemaRegistryRawSchemaClient.class);
 
     private static final String SCHEMA_REPO_CONTENT_TYPE = "application/vnd.schemaregistry.v1+json";
 
     private final WebTarget target;
 
-    public SchemaRegistrySchemaSourceClient(Client client, URI schemaRegistryUri) {
+    public SchemaRegistryRawSchemaClient(Client client, URI schemaRegistryUri) {
         this.target = client.target(schemaRegistryUri);
     }
 
     @Override
-    public Optional<SchemaSource> getSchemaSource(TopicName topic, SchemaVersion version) {
+    public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version) {
         Response response = target.path("subjects")
                 .path(topic.qualifiedName())
                 .path("versions")
                 .path(Integer.toString(version.value()))
                 .request()
                 .get();
-        return extractSchema(topic.qualifiedName(), response).map(SchemaSource::valueOf);
+        return extractSchema(topic.qualifiedName(), response).map(RawSchema::valueOf);
     }
 
     @Override
-    public Optional<SchemaSource> getLatestSchemaSource(TopicName topic) {
+    public Optional<RawSchema> getLatestSchema(TopicName topic) {
         Response response = target.path("subjects")
                 .path(topic.qualifiedName())
                 .path("versions")
                 .path("latest")
                 .request()
                 .get();
-        return extractSchema(topic.qualifiedName(), response).map(SchemaSource::valueOf);
+        return extractSchema(topic.qualifiedName(), response).map(RawSchema::valueOf);
     }
 
     private Optional<String> extractSchema(String subject, Response response) {
@@ -94,13 +94,13 @@ public class SchemaRegistrySchemaSourceClient implements SchemaSourceClient {
     }
 
     @Override
-    public void registerSchemaSource(TopicName topic, SchemaSource schemaSource) {
+    public void registerSchema(TopicName topic, RawSchema rawSchema) {
         Response response = target.path("subjects")
                 .path(topic.qualifiedName())
                 .path("versions")
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(SchemaRegistryRequest.fromSchemaSource(schemaSource), SCHEMA_REPO_CONTENT_TYPE));
+                .post(Entity.entity(SchemaRegistryRequest.fromRawSchema(rawSchema), SCHEMA_REPO_CONTENT_TYPE));
         checkSchemaRegistration(response.getStatusInfo(), topic.qualifiedName(), response.readEntity(String.class));
     }
 
@@ -110,7 +110,7 @@ public class SchemaRegistrySchemaSourceClient implements SchemaSourceClient {
                 logger.info("Successful write to schema registry for subject {}", topicName);
                 break;
             case CLIENT_ERROR:
-                logger.warn("Invalid schema for subject {}. Details: {}", topicName, response);
+                logger.warn("Invalid schema for subject {}. Reason: {}", topicName, response);
                 throw new InvalidSchemaException("Invalid schema. Reason: " + response);
             case SERVER_ERROR:
                 logger.error("Failure write to schema repo for subject {}. Reason: {}", topicName, response);
@@ -123,7 +123,7 @@ public class SchemaRegistrySchemaSourceClient implements SchemaSourceClient {
     }
 
     @Override
-    public void deleteAllSchemaSources(TopicName topic) {
+    public void deleteAllSchemaVersions(TopicName topic) {
         Response response = target.path("subjects")
                 .path(topic.qualifiedName())
                 .path("versions")

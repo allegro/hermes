@@ -12,16 +12,16 @@ public class DirectSchemaVersionsRepository implements SchemaVersionsRepository 
 
     private static final Logger logger = LoggerFactory.getLogger(DirectSchemaVersionsRepository.class);
 
-    private final SchemaSourceClient schemaSourceClient;
+    private final RawSchemaClient rawSchemaClient;
 
-    public DirectSchemaVersionsRepository(SchemaSourceClient schemaSourceClient) {
-        this.schemaSourceClient = schemaSourceClient;
+    public DirectSchemaVersionsRepository(RawSchemaClient rawSchemaClient) {
+        this.rawSchemaClient = rawSchemaClient;
     }
 
     @Override
     public List<SchemaVersion> versions(Topic topic, boolean online) {
         try {
-            return schemaSourceClient.getVersions(topic.getName());
+            return rawSchemaClient.getVersions(topic.getName());
         } catch (Exception e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
             return emptyList();

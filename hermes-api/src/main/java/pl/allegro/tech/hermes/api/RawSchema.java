@@ -5,16 +5,16 @@ import java.util.Objects;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.emptyToNull;
 
-public final class SchemaSource {
+public final class RawSchema {
 
     private final String value;
 
-    private SchemaSource(String value) {
+    private RawSchema(String value) {
         this.value = checkNotNull(emptyToNull(value));
     }
 
-    public static SchemaSource valueOf(String schemaSource) {
-        return new SchemaSource(schemaSource);
+    public static RawSchema valueOf(String schema) {
+        return new RawSchema(schema);
     }
 
     public String value() {
@@ -30,7 +30,7 @@ public final class SchemaSource {
             return false;
         }
 
-        SchemaSource that = (SchemaSource) o;
+        RawSchema that = (RawSchema) o;
 
         return value.equals(that.value);
     }
@@ -42,6 +42,6 @@ public final class SchemaSource {
 
     @Override
     public String toString() {
-        return "SchemaSource(" + value + ")";
+        return "RawSource(" + value + ")";
     }
 }

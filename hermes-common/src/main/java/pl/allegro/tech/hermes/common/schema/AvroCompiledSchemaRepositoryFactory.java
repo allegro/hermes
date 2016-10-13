@@ -8,25 +8,25 @@ import pl.allegro.tech.hermes.schema.CachedCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
-import pl.allegro.tech.hermes.schema.SchemaSourceClient;
+import pl.allegro.tech.hermes.schema.RawSchemaClient;
 
 import javax.inject.Inject;
 
 public class AvroCompiledSchemaRepositoryFactory implements Factory<CompiledSchemaRepository<Schema>> {
 
-    private final SchemaSourceClient schemaSourceClient;
+    private final RawSchemaClient rawSchemaClient;
     private final ConfigFactory configFactory;
 
     @Inject
-    public AvroCompiledSchemaRepositoryFactory(SchemaSourceClient schemaSourceClient, ConfigFactory configFactory) {
-        this.schemaSourceClient = schemaSourceClient;
+    public AvroCompiledSchemaRepositoryFactory(RawSchemaClient rawSchemaClient, ConfigFactory configFactory) {
+        this.rawSchemaClient = rawSchemaClient;
         this.configFactory = configFactory;
     }
 
     @Override
     public CompiledSchemaRepository<Schema> provide() {
         return new CachedCompiledSchemaRepository<>(
-                new DirectCompiledSchemaRepository<>(schemaSourceClient, SchemaCompilersFactory.avroSchemaCompiler()),
+                new DirectCompiledSchemaRepository<>(rawSchemaClient, SchemaCompilersFactory.avroSchemaCompiler()),
                 configFactory.getIntProperty(Configs.SCHEMA_CACHE_COMPILED_MAXIMUM_SIZE),
                 configFactory.getIntProperty(Configs.SCHEMA_CACHE_COMPILED_EXPIRE_AFTER_ACCESS_MINUTES));
     }

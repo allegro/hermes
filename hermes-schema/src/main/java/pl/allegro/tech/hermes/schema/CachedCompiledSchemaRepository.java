@@ -17,7 +17,7 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
                 .newBuilder()
                 .maximumSize(maximumCacheSize)
                 .expireAfterAccess(expireAfterAccessMinutes, TimeUnit.MINUTES)
-                .build(new SchemaSourceLoader<>(delegate));
+                .build(new CompiledSchemaLoader<>(delegate));
     }
 
     @Override
@@ -29,11 +29,11 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         }
     }
 
-    private static class SchemaSourceLoader<T> extends CacheLoader<TopicAndSchemaVersion, CompiledSchema<T>> {
+    private static class CompiledSchemaLoader<T> extends CacheLoader<TopicAndSchemaVersion, CompiledSchema<T>> {
 
         private final CompiledSchemaRepository<T> delegate;
 
-        public SchemaSourceLoader(CompiledSchemaRepository<T> delegate) {
+        public CompiledSchemaLoader(CompiledSchemaRepository<T> delegate) {
             this.delegate = delegate;
         }
 

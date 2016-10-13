@@ -18,16 +18,16 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
     static final SchemaVersion v1 = SchemaVersion.valueOf(1)
     static final SchemaVersion v0 = SchemaVersion.valueOf(0)
 
-    def schemaSourceClient = Stub(SchemaSourceClient)
+    def rawSchemaClient = Stub(RawSchemaClient)
     def ticker = new FakeTicker()
-    def versionsRepository = new CachedSchemaVersionsRepository(schemaSourceClient, MoreExecutors.sameThreadExecutor(),
+    def versionsRepository = new CachedSchemaVersionsRepository(rawSchemaClient, MoreExecutors.sameThreadExecutor(),
             (int) REFRESH_TIME.toMinutes(), (int) EXPIRE_TIME.toMinutes(), ticker)
 
     def topic = topic("group", "topic").build()
 
     def "should indicate if schema version exists"() {
         given:
-        schemaSourceClient.getVersions(topic.getName()) >> [v1, v0]
+        rawSchemaClient.getVersions(topic.getName()) >> [v1, v0]
 
         expect:
         versionsRepository.schemaVersionExists(topic, version) == expectedResult
@@ -41,7 +41,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
 
     def "should provide latest schema version"() {
         given:
-        schemaSourceClient.getVersions(topic.getName()) >> versions
+        rawSchemaClient.getVersions(topic.getName()) >> versions
 
         expect:
         versionsRepository.latestSchemaVersion(topic).get() == latestVersion
@@ -56,7 +56,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
 
     def "should empty latest schema version for topic without schema versions available"() {
         given:
-        schemaSourceClient.getVersions(TopicName.fromQualifiedName("other.topic")) >> []
+        rawSchemaClient.getVersions(TopicName.fromQualifiedName("other.topic")) >> []
 
         expect:
         !versionsRepository.latestSchemaVersion(topic).isPresent()
@@ -64,7 +64,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
 
     def "should respond using cached schema versions if schema versions didn't expire"() {
         given:
-        schemaSourceClient.getVersions(topic.getName()) >>> [[v1, v0], [v2, v1, v0]]
+        rawSchemaClient.getVersions(topic.getName()) >>> [[v1, v0], [v2, v1, v0]]
         versionsRepository.latestSchemaVersion(topic)
         ticker.advance(REFRESH_TIME.minusMinutes(1))
 
@@ -75,7 +75,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
 
     def "should respond using fresh schema versions if schema versions did expire"() {
         given:
-        schemaSourceClient.getVersions(topic.getName()) >>> [[v1, v0], [v2, v1, v0]]
+        rawSchemaClient.getVersions(topic.getName()) >>> [[v1, v0], [v2, v1, v0]]
         versionsRepository.latestSchemaVersion(topic)
         ticker.advance(REFRESH_TIME.plusMinutes(1))
 
@@ -87,7 +87,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
     def "should respond with stale data if refresh failed"() {
         given:
         def failing = false
-        schemaSourceClient.getVersions(topic.getName()) >> {
+        rawSchemaClient.getVersions(topic.getName()) >> {
             if (failing) {
                 throw new RuntimeException("failing mode on")
             }
