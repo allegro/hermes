@@ -14,7 +14,7 @@ public final class MessageContentBuilder {
 
     private ContentType contentType;
     private byte[] content;
-    private Optional<CompiledSchema<Object>> schema = Optional.empty();
+    private Optional<CompiledSchema<Schema>> schema = Optional.empty();
 
     private MessageContentBuilder() {
     }
@@ -34,7 +34,7 @@ public final class MessageContentBuilder {
     }
 
     public MessageContentBuilder withSchema(Schema schema, int version) {
-        this.schema = Optional.of(new CompiledSchema<Object>(schema, SchemaVersion.valueOf(version)));
+        this.schema = Optional.of(new CompiledSchema<>(schema, SchemaVersion.valueOf(version)));
         return this;
     }
 

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.message;
 
+import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 
@@ -7,7 +8,7 @@ import java.util.Optional;
 
 public class MessageContent {
     private ContentType contentType;
-    private Optional<CompiledSchema<Object>> schema;
+    private Optional<CompiledSchema<Schema>> schema;
     private byte[] data;
 
 
@@ -16,15 +17,15 @@ public class MessageContent {
 
     public MessageContent(byte[] content,
                           ContentType contentType,
-                          Optional<CompiledSchema<Object>> schema) {
+                          Optional<CompiledSchema<Schema>> schema) {
         this.data = content;
         this.contentType = contentType;
         this.schema = schema;
     }
 
     @SuppressWarnings("unchecked")
-    public <T> Optional<CompiledSchema<T>> getSchema() {
-        return schema.map(schema -> (CompiledSchema<T>) schema);
+    public Optional<CompiledSchema<Schema>> getSchema() {
+        return schema;
     }
 
     public ContentType getContentType() {
@@ -47,7 +48,7 @@ public class MessageContent {
             return this;
         }
 
-        public MessageContent.Builder withSchema(Optional<CompiledSchema<Object>> schema) {
+        public MessageContent.Builder withSchema(Optional<CompiledSchema<Schema>> schema) {
             this.message.schema = schema;
             return this;
         }

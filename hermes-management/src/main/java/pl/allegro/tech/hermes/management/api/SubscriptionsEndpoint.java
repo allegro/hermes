@@ -3,17 +3,12 @@ package pl.allegro.tech.hermes.management.api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
-import pl.allegro.tech.hermes.api.MessageTrace;
-import pl.allegro.tech.hermes.api.PatchData;
-import pl.allegro.tech.hermes.api.Query;
-import pl.allegro.tech.hermes.api.SentMessageTrace;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
-import pl.allegro.tech.hermes.api.SubscriptionMetrics;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.mappers.FilterValidation;
 import pl.allegro.tech.hermes.management.api.mappers.MessageValidationWrapper;
+import pl.allegro.tech.hermes.management.domain.subscription.FilteringService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -21,17 +16,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChang
 import pl.allegro.tech.hermes.management.infrastructure.time.TimeFormatter;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -50,16 +35,19 @@ public class SubscriptionsEndpoint {
     private final TopicService topicService;
     private final MultiDCAwareService multiDCAwareService;
     private final TimeFormatter timeFormatter;
+    private final FilteringService filteringService;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
                                  TopicService topicService,
                                  MultiDCAwareService multiDCAwareService,
-                                 TimeFormatter timeFormatter) {
+                                 TimeFormatter timeFormatter,
+                                 FilteringService filteringService) {
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
         this.multiDCAwareService = multiDCAwareService;
         this.timeFormatter = timeFormatter;
+        this.filteringService = filteringService;
     }
 
     @GET
@@ -230,12 +218,11 @@ public class SubscriptionsEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @Path("/filter")
-    public FilterValidation validateFilter(MessageValidationWrapper messageValidationWrapper) {
-        final boolean isFiltered = messageValidationWrapper.getMessageFilterList().stream()
-                .allMatch(t -> t.test(messageValidationWrapper.getMessage()));
+    @Path("/{subscriptionName}/filter")
+    public FilterValidation validateFilter(@PathParam("topicName") String qualifiedTopicName, MessageValidationWrapper wrapper) {
+        final Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
 
-        return new FilterValidation(isFiltered);
+        return filteringService.isFiltered(wrapper, topic);
     }
 
     private Response responseStatus(Response.Status responseStatus) {
