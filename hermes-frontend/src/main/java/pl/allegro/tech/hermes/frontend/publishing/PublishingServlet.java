@@ -3,13 +3,10 @@ package pl.allegro.tech.hermes.frontend.publishing;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaMissingException;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.publishing.callbacks.*;
@@ -18,6 +15,8 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
+import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
+import pl.allegro.tech.hermes.common.message.wrapper.SchemaMissingException;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
@@ -35,7 +34,6 @@ import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.strip;
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
-import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MESSAGE_PREVIEW_ENABLED;
 
 public class PublishingServlet extends HttpServlet {

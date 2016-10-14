@@ -42,7 +42,6 @@ public class FilteringAvroTest extends IntegrationTest {
     public void shouldFilterIncomingEvents() {
         // given
         final Topic topic = topic("filteredTopic.topic")
-                .withValidation(true)
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
         operations.saveSchema(topic, AvroUserSchemaLoader.load().toString());
@@ -69,7 +68,6 @@ public class FilteringAvroTest extends IntegrationTest {
     public void shouldChainMultipleFilters() {
         // given
         final Topic topic = topic("filteredChainTopic.topic")
-                .withValidation(true)
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
         operations.saveSchema(topic, AvroUserSchemaLoader.load().toString());

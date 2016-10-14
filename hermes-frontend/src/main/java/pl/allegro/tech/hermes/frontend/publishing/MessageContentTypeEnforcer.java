@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing;
 
 import org.apache.avro.Schema;
-import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;

@@ -64,7 +64,6 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     public void shouldFetchSingleAvroMessage() throws IOException {
         // given
         Topic topic = topic("avro.fetch")
-                .withValidation(true)
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
         operations.saveSchema(topic, avroUser.getSchemaAsString());
@@ -86,7 +85,6 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     public void shouldFetchSingleAvroMessageWithSchemaAwareSerialization() throws IOException {
         // given
         Topic topic = topic("avro.fetchSchemaAwareSerialization")
-                .withValidation(true)
                 .withSchemaVersionAwareSerialization()
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);

@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.util.Optional;
 
@@ -14,7 +14,7 @@ public interface Message {
 
     ContentType getContentType();
 
-    <T> Optional<CompiledSchema<T>> getCompiledSchema();
+    default <T> Optional<CompiledSchema<T>> getCompiledSchema() { return Optional.empty(); }
 
     default <T> T getSchema() {
         return this.<T>getCompiledSchema().get().getSchema();

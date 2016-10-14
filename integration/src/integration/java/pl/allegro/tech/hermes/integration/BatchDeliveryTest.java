@@ -104,7 +104,6 @@ public class BatchDeliveryTest extends IntegrationTest {
         AvroUser user = new AvroUser("Bob", 50, "blue");
 
         Topic topic = topic("batch.avro.topic")
-                .withValidation(true)
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
         operations.saveSchema(topic, user.getSchemaAsString());

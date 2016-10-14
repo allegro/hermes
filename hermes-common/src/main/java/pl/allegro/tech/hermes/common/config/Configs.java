@@ -188,8 +188,8 @@ public enum Configs {
     SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE("schema.cache.reload.thread.pool.size", 2),
     SCHEMA_CACHE_ENABLED("schema.cache.enabled", true),
     SCHEMA_CACHE_COMPILED_MAXIMUM_SIZE("schema.cache.compiled.maximum.size", 2000),
-    SCHEMA_REPOSITORY_TYPE("schema.repository.type", "zookeeper"),
-    SCHEMA_REPOSITORY_SERVER_URL("schema.repository.serverUrl", "http://localhost:8888/schema-repo/"),
+    SCHEMA_REPOSITORY_TYPE("schema.repository.type", "schema_registry"),
+    SCHEMA_REPOSITORY_SERVER_URL("schema.repository.serverUrl", "http://localhost:8888/"),
     SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS("schema.repository.http.read.timeout.ms", 2000),
     SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS("schema.repository.http.connect.timeout.ms", 2000),
 

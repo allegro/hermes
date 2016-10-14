@@ -2,10 +2,11 @@ package pl.allegro.tech.hermes.integration.helper;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
 public class GraphiteEndpoint implements EnvironmentAware {
 

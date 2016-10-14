@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFact
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import javax.inject.Inject;

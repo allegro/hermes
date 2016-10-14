@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
-import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
@@ -45,13 +43,6 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 public class PublishingTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
-
-    private String schema;
-
-    @BeforeClass
-    public void initialize() throws IOException {
-        schema = IOUtils.toString(this.getClass().getResourceAsStream("/schema/example.json"));
-    }
 
     @BeforeMethod
     public void initializeAlways() {
@@ -233,61 +224,6 @@ public class PublishingTest extends IntegrationTest {
 
         ZookeeperPaths paths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue().toString());
         assertThat(SharedServices.services().zookeeper().checkExists().forPath(paths.topicPath(nonExisting))).isNull();
-    }
-
-    @Test
-    public void shouldPublishValidMessageWithJsonSchema() {
-        //given
-        String message = "{\"id\": 6}";
-        Topic topic = operations.buildTopic(topic("schema.topic.validJson")
-                .withValidation(true)
-                .withContentType(JSON)
-                .build()
-        );
-        operations.saveSchema(topic, schema);
-
-        //when
-        Response response = publisher.publish("schema.topic.validJson", message);
-
-        //then
-        assertThat(response).hasStatus(CREATED);
-    }
-
-    @Test
-    public void shouldNotPublishInvalidMessageWithJsonSchema() {
-        // given
-        String messageInvalidWithSchema = "{\"id\": \"shouldBeNumber\"}";
-        Topic topic = operations.buildTopic(topic("schema.topic.invalidJson")
-                .withValidation(true)
-                .withContentType(JSON)
-                .build()
-        );
-        operations.saveSchema(topic, schema);
-
-        //when
-        Response response = publisher.publish("schema.topic.invalidJson", messageInvalidWithSchema);
-
-        //then
-        assertThat(response).hasStatus(BAD_REQUEST);
-    }
-
-    @Test
-    public void shouldPublishInvalidJsonMessageOnValidationDryRun() {
-        // given
-        String invalidMessage = "{\"id\": \"shouldBeNumber\"}";
-        Topic topic = operations.buildTopic(topic("schema.topicWithValidationDryRun")
-                .withValidation(true)
-                .withValidationDryRun(true)
-                .withContentType(JSON)
-                .build()
-        );
-        operations.saveSchema(topic, schema);
-
-        //when
-        Response response = publisher.publish("schema.topicWithValidationDryRun", invalidMessage);
-
-        //then
-        assertThat(response).hasStatus(CREATED);
     }
 
     @Test

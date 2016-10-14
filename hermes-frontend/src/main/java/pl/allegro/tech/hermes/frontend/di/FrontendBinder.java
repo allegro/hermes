@@ -21,7 +21,6 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersiste
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.AvroTopicMessageValidator;
-import pl.allegro.tech.hermes.frontend.validator.JsonTopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidatorListFactory;
@@ -59,7 +58,6 @@ public class FrontendBinder extends AbstractBinder {
         bindFactory(TopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
         bindSingleton(MessagePublisher.class);
         bindSingleton(MessageContentTypeEnforcer.class);
-        bindSingleton(JsonTopicMessageValidator.class);
         bindSingleton(AvroTopicMessageValidator.class);
         bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {
         });
