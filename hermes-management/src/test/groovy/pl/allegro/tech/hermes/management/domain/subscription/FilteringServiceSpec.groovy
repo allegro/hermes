@@ -9,8 +9,9 @@ import pl.allegro.tech.hermes.common.filtering.json.JsonPathSubscriptionMessageF
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion
-import pl.allegro.tech.hermes.domain.topic.schema.UnknownSchemaVersionException
-import pl.allegro.tech.hermes.management.api.mappers.MessageValidationWrapper
+import pl.allegro.tech.hermes.management.domain.message.filtering.FilteringConversionException
+import pl.allegro.tech.hermes.management.domain.message.filtering.InvalidFilterTypeException
+import pl.allegro.tech.hermes.api.MessageValidationWrapper
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import spock.lang.Specification
 
@@ -21,8 +22,11 @@ class FilteringServiceSpec extends Specification {
     Topic topic = Mock()
 
     def filteringService = new FilteringService(messageFilters, schemaRepository)
-    def spec1 = new MessageFilterSpecification([path: ".id", matcher: "0001"])
-    def spec2 = new MessageFilterSpecification([path: ".name", matcher: "abc"])
+    def jsonSpec1 = new MessageFilterSpecification([type: "jsonpath", path: ".id", matcher: "0001"])
+    def jsonSpec2 = new MessageFilterSpecification([type: "jsonpath", path: ".name", matcher: "abc"])
+
+    def avroSpec1 = new MessageFilterSpecification([type: "avropath", path: ".id", matcher: "0001"])
+    def avroSpec2 = new MessageFilterSpecification([type: "avropath", path: ".name", matcher: "abc"])
 
     def schema = AvroUserSchemaLoader.load("/simple.avsc")
 
@@ -34,7 +38,7 @@ class FilteringServiceSpec extends Specification {
             "name": "XYZ"
         }
         '''
-        def wrapper = new MessageValidationWrapper(json, [spec1, spec2], null)
+        def wrapper = new MessageValidationWrapper(json, [jsonSpec1, jsonSpec2], null)
         topic.getContentType() >> ContentType.JSON
 
         when:
@@ -42,7 +46,6 @@ class FilteringServiceSpec extends Specification {
 
         then:
         result.filtered
-        0 * schemaRepository._
     }
 
     def "should not filter json message"() {
@@ -53,7 +56,7 @@ class FilteringServiceSpec extends Specification {
             "name": "abc"
         }
         '''
-        def wrapper = new MessageValidationWrapper(json, [spec1, spec2], null)
+        def wrapper = new MessageValidationWrapper(json, [jsonSpec1, jsonSpec2], null)
         topic.getContentType() >> ContentType.JSON
 
         when:
@@ -61,7 +64,6 @@ class FilteringServiceSpec extends Specification {
 
         then:
         !result.filtered
-        0 * schemaRepository._
     }
 
     def "should filter avro message"() {
@@ -72,7 +74,7 @@ class FilteringServiceSpec extends Specification {
             "name": "XYZ"
         }
         '''
-        def wrapper = new MessageValidationWrapper(rawMessage, [spec1, spec2], null)
+        def wrapper = new MessageValidationWrapper(rawMessage, [avroSpec1, avroSpec2], null)
 
 
         when:
@@ -80,7 +82,7 @@ class FilteringServiceSpec extends Specification {
 
         then:
         result.filtered
-        1 * schemaRepository.getAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
+        schemaRepository.getAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
         topic.getContentType() >> ContentType.AVRO
     }
 
@@ -92,56 +94,52 @@ class FilteringServiceSpec extends Specification {
             "name": "abc"
         }
         '''
-        def wrapper = new MessageValidationWrapper(rawMessage, [spec1, spec2], null)
+        def wrapper = new MessageValidationWrapper(rawMessage, [avroSpec1, avroSpec2], null)
 
         when:
         def result = filteringService.isFiltered(wrapper, topic)
 
         then:
         !result.filtered
-        1 * schemaRepository.getAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
+        schemaRepository.getAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
         topic.getContentType() >> ContentType.AVRO
 
     }
 
-    def "should get specific version of avro schema"() {
-        given:
+    def "should throw InvalidFilterTypeException when invalid content type for filter is provided"() {
         def rawMessage = '''
         {
             "id": "0001",
             "name": "abc"
         }
         '''
-        def wrapper = new MessageValidationWrapper(rawMessage, [spec1, spec2], 42)
-
-        when:
-        def result = filteringService.isFiltered(wrapper, topic)
-
-        then:
-        !result.filtered
-        1 * schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(42)) >> new CompiledSchema(schema, SchemaVersion.valueOf(42))
-        topic.getContentType() >> ContentType.AVRO
-    }
-
-    def "should throw exception when retrieving wrong version of avro schema"() {
-        def rawMessage = '''
-        {
-            "id": "0001",
-            "name": "abc"
-        }
-        '''
-        def wrapper = new MessageValidationWrapper(rawMessage, [spec1, spec2], 1)
+        def spec = new MessageFilterSpecification([type: "jsonpath", path: ".name", matcher: "abc"])
+        def wrapper = new MessageValidationWrapper(rawMessage, [spec], null)
 
         when:
         filteringService.isFiltered(wrapper, topic)
 
         then:
-        1 * schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(1)) >> {
-            throw new UnknownSchemaVersionException(topic, SchemaVersion.valueOf(1))
-        }
+        schemaRepository.getAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
         topic.getContentType() >> ContentType.AVRO
-        thrown UnknownSchemaVersionException
+        thrown InvalidFilterTypeException
     }
 
-    //todo test with wrong schemaVersion?
+    def "should throw exception when converting using wrong schema"() {
+        given:
+        def rawMessage = '''
+        {
+            "id": "0001"
+        }
+        '''
+        def wrapper = new MessageValidationWrapper(rawMessage, [avroSpec1, avroSpec2], 1)
+
+        when:
+        filteringService.isFiltered(wrapper, topic)
+
+        then:
+        schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(1)) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
+        topic.getContentType() >> ContentType.AVRO
+        thrown FilteringConversionException
+    }
 }

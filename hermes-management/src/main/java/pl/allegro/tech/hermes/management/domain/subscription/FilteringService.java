@@ -3,18 +3,21 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 import org.apache.avro.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.filtering.MessageFilter;
 import pl.allegro.tech.hermes.common.filtering.MessageFilters;
 import pl.allegro.tech.hermes.common.filtering.chain.FilterChain;
+import pl.allegro.tech.hermes.common.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.common.message.MessageContent;
 import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
-import pl.allegro.tech.hermes.management.api.mappers.FilterValidation;
-import pl.allegro.tech.hermes.management.api.mappers.MessageValidationWrapper;
+import pl.allegro.tech.hermes.management.domain.message.filtering.FilteringConversionException;
+import pl.allegro.tech.hermes.api.FilterValidation;
+import pl.allegro.tech.hermes.management.domain.message.filtering.InvalidFilterTypeException;
+import pl.allegro.tech.hermes.api.MessageValidationWrapper;
+import tech.allegro.schema.json2avro.converter.AvroConversionException;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import java.util.List;
@@ -27,12 +30,14 @@ import static jersey.repackaged.com.google.common.collect.ImmutableMap.of;
 public class FilteringService {
     private final MessageFilters messageFilters;
     private final SchemaRepository schemaRepository;
+    private final JsonAvroConverter jsonAvroConverter;
 
 
     @Autowired
     public FilteringService(MessageFilters messageFilters, SchemaRepository schemaRepository) {
         this.messageFilters = messageFilters;
         this.schemaRepository = schemaRepository;
+        jsonAvroConverter = new JsonAvroConverter();
     }
 
     public FilterValidation isFiltered(MessageValidationWrapper wrapper, Topic topic) {
@@ -42,23 +47,24 @@ public class FilteringService {
     }
 
     private MessageContent getMessageContent(MessageValidationWrapper wrapper, Topic topic) {
-        JsonAvroConverter jsonAvroConverter = new JsonAvroConverter();
-
         CompiledSchema<Schema> schema = null;
         byte[] bytes = null;
-        if (topic.getContentType() == ContentType.AVRO) {
-            if (wrapper.getSchemaVersion().isPresent()) {
-                schema = schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(wrapper.getSchemaVersion().get()));
-            } else {
-                schema = schemaRepository.getAvroSchema(topic);
-            }
-            bytes = jsonAvroConverter.convertToAvro(wrapper.getMessage().getBytes(), schema.getSchema());
-        }
-        else if(topic.getContentType() == ContentType.JSON){
-            bytes = wrapper.getMessage().getBytes();
-        }
-        else {
-//            throw new Exception(); //todo throw specific exception
+        switch (topic.getContentType()) {
+            case JSON:
+                bytes = wrapper.getMessage().getBytes();
+                break;
+            case AVRO:
+                try {
+                    if (Optional.ofNullable(wrapper.getSchemaVersion()).isPresent()) {
+                        schema = schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(wrapper.getSchemaVersion()));
+                    } else {
+                        schema = schemaRepository.getAvroSchema(topic);
+                    }
+                    bytes = jsonAvroConverter.convertToAvro(wrapper.getMessage().getBytes(), schema.getSchema());
+                } catch (AvroConversionException e) {
+                    throw new FilteringConversionException("Could not convert to avro message. Please check schema version");
+                }
+                break;
         }
 
         return new MessageContent.Builder()
@@ -70,16 +76,15 @@ public class FilteringService {
 
     private FilterValidation isFiltered(MessageContent message, List<MessageFilterSpecification> filterSpecifications) {
         final List<MessageFilter> filters = filterSpecifications.stream()
-                .map(filterSpec -> new MessageFilterSpecification(of(
-                        "type", message.getContentType().toString().toLowerCase() + "path",
-                        "path", filterSpec.getPath(),
-                        "matcher", filterSpec.getMatcher())
-                ))
                 .map(messageFilters::compile)
                 .collect(toList());
 
-        final FilterChain filterChain = new FilterChain(filters);
+        final FilterResult result = new FilterChain(filters).apply(message);
 
-        return new FilterValidation(filterChain.apply(message).isFiltered());
+        if(result.getCause().isPresent()) {
+            throw new InvalidFilterTypeException("Filters don't match topic's content type");
+        }
+
+        return new FilterValidation(result.isFiltered());
     }
 }

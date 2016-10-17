@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.api.mappers.FilterValidation;
-import pl.allegro.tech.hermes.management.api.mappers.MessageValidationWrapper;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 

@@ -1,9 +1,6 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
-import pl.allegro.tech.hermes.api.PatchData;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
-import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.*;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -109,4 +106,12 @@ public interface SubscriptionEndpoint {
     Response getMessageTrace(@PathParam("topicName") String qualifiedTopicName,
                              @PathParam("subscriptionName") String subscriptionName,
                              @PathParam("messageId") String messageId);
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @Path("/{subscriptionName}/filter")
+    Response validateFilter(@PathParam("topicName") String qualifiedTopicName,
+                                    @PathParam("subscriptionName") String subscriptionName,
+                                    MessageValidationWrapper wrapper);
 }

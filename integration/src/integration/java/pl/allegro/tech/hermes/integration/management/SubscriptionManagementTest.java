@@ -2,11 +2,7 @@ package pl.allegro.tech.hermes.integration.management;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -19,11 +15,13 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import static com.google.common.collect.ImmutableMap.of;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.net.URI.create;
 import static javax.ws.rs.client.ClientBuilder.newClient;
@@ -259,6 +257,150 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(subscriptionHealth).isEqualTo(SubscriptionHealth.NO_DATA);
+    }
+
+    @Test
+    public void shouldReturnCorrectResultWhenValidatingJsonFilters() {
+        // given
+        String groupName = "group";
+        String topicName = "topic";
+
+        final TestMessage testMessage = TestMessage.of("id", "0001");
+
+        // and
+        Topic topic = operations.buildTopic(groupName, topicName);
+        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "jsonpath", "path", ".id", "matcher", "0001"));
+        final MessageFilterSpecification spec2 = new MessageFilterSpecification(of("type", "jsonpath", "path", ".id", "matcher", "0002"));
+        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(testMessage.toString(), Arrays.asList(spec1), null);
+        final MessageValidationWrapper wrapper2 = new MessageValidationWrapper(testMessage.toString(), Arrays.asList(spec2), null);
+
+        // when
+        final Response response1 = management.subscription().validateFilter(topic.getQualifiedName(), "subscription", wrapper1);
+        final Response response2 = management.subscription().validateFilter(topic.getQualifiedName(), "subscription", wrapper2);
+
+        // then
+        assertThat(response1).hasStatus(Response.Status.OK);
+        assertThat(response2).hasStatus(Response.Status.OK);
+        assertThat(response1.readEntity(FilterValidation.class).isFiltered()).isFalse();
+        assertThat(response2.readEntity(FilterValidation.class).isFiltered()).isTrue();
+    }
+
+    @Test
+    public void shouldReturnCorrectResultWhenValidationAvroFilters() {
+        // given
+        String groupName = "group";
+        String topicName = "topic";
+        String subscriptionName = "subscription";
+
+        Topic topic = operations.buildTopic(topic(groupName, topicName)
+                .withContentType(ContentType.AVRO)
+                .build());
+
+        String schema = "{" +
+                "\"namespace\": \"hermes\"," +
+                "\"type\": \"record\"," +
+                "\"name\": \"User\"," +
+                "\"fields\": [" +
+                    "{" +
+                        "\"name\": \"id\"," +
+                        "\"type\": \"string\"" +
+                    "}" +
+                "]" +
+            "}";
+
+        operations.saveSchema(topic, schema);
+        operations.createSubscription(topic, subscription(topic.getQualifiedName(), subscriptionName, HTTP_ENDPOINT_URL).build());
+        final TestMessage message = TestMessage.of("id", "0001");
+
+        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "avropath", "path", ".id", "matcher", "0001"));
+        final MessageFilterSpecification spec2 = new MessageFilterSpecification(of("type", "avropath", "path", ".id", "matcher", "0002"));
+        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(message.toString(), Arrays.asList(spec1), null);
+        final MessageValidationWrapper wrapper2 = new MessageValidationWrapper(message.toString(), Arrays.asList(spec2), null);
+
+        // when
+        final Response response1 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper1);
+        final Response response2 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper2);
+
+        // then
+        assertThat(response1).hasStatus(Response.Status.OK);
+        assertThat(response2).hasStatus(Response.Status.OK);
+        assertThat(response1.readEntity(FilterValidation.class).isFiltered()).isFalse();
+        assertThat(response2.readEntity(FilterValidation.class).isFiltered()).isTrue();
+
+    }
+
+    @Test
+    public void shouldReturnBadRequestWhenCannotConvertToAvro() {
+        // given
+        String groupName = "group";
+        String topicName = "topic";
+        String subscriptionName = "subscription";
+
+        Topic topic = operations.buildTopic(topic(groupName, topicName)
+                .withContentType(ContentType.AVRO)
+                .build());
+
+        String schema = "{" +
+                "\"namespace\": \"hermes\"," +
+                "\"type\": \"record\"," +
+                "\"name\": \"User\"," +
+                "\"fields\": [" +
+                "{" +
+                "\"name\": \"id\"," +
+                "\"type\": \"string\"" +
+                "}," +
+                "{" +
+                "\"name\": \"count\"," +
+                "\"type\": \"long\"" +
+                "}" +
+                "]" +
+                "}";
+
+        operations.saveSchema(topic, schema);
+        final TestMessage message = TestMessage.of("id", "0001");
+
+        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "avropath", "path", ".id", "matcher", "0001"));
+        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(message.toString(), Arrays.asList(spec1), null);
+
+        // when
+        final Response response = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper1);
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void shouldReturnBadRequestWhenFilterTypeDoesntMatchTopicType() {
+        //given
+        String groupName = "group";
+        String topicName = "topic";
+        String subscriptionName = "subscription";
+
+        Topic topic = operations.buildTopic(topic(groupName, topicName).build());
+
+        String schema = "{" +
+                "\"namespace\": \"hermes\"," +
+                "\"type\": \"record\"," +
+                "\"name\": \"User\"," +
+                "\"fields\": [" +
+                "{" +
+                "\"name\": \"id\"," +
+                "\"type\": \"string\"" +
+                "}" +
+                "]" +
+                "}";
+
+        operations.saveSchema(topic, schema);
+        final TestMessage message = TestMessage.of("id", "0001");
+
+        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "avropath", "path", ".id", "matcher", "0001"));
+        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(message.toString(), Arrays.asList(spec1), null);
+
+        //when
+        final Response response = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper1);
+
+        //then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {

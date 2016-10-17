@@ -4,10 +4,8 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.*;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.api.mappers.FilterValidation;
-import pl.allegro.tech.hermes.management.api.mappers.MessageValidationWrapper;
+import pl.allegro.tech.hermes.api.MessageValidationWrapper;
 import pl.allegro.tech.hermes.management.domain.subscription.FilteringService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -219,10 +217,11 @@ public class SubscriptionsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/filter")
-    public FilterValidation validateFilter(@PathParam("topicName") String qualifiedTopicName, MessageValidationWrapper wrapper) {
+    @ApiOperation(value = "Validate filter", httpMethod = HttpMethod.POST)
+    public Response validateFilter(@PathParam("topicName") String qualifiedTopicName, @PathParam("subscriptionName") String subscriptionName, MessageValidationWrapper wrapper) {
         final Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
 
-        return filteringService.isFiltered(wrapper, topic);
+        return Response.status(OK).entity(filteringService.isFiltered(wrapper, topic)).build();
     }
 
     private Response responseStatus(Response.Status responseStatus) {
