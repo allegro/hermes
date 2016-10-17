@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.common.hook;
 
-import ch.qos.logback.classic.LoggerContext;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,11 +35,7 @@ public class HooksHandler {
     }
 
     private void runShutdownHooks(ServiceLocator serviceLocator) {
-        try {
-            shutdownHooks.forEach(c -> c.accept(serviceLocator));
-        } finally {
-            ((LoggerContext) LoggerFactory.getILoggerFactory()).stop();
-        }
+        shutdownHooks.forEach(c -> c.accept(serviceLocator));
     }
 
     private void registerGlobalShutdownHook(ServiceLocator serviceLocator) {

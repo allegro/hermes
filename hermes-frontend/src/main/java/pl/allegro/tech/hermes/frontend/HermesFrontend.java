@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
+import pl.allegro.tech.hermes.common.hook.FlushLogsShutdownHook;
 import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
@@ -55,7 +56,8 @@ public final class HermesFrontend {
     private HermesFrontend(HooksHandler hooksHandler,
                            List<Binder> binders,
                            List<Function<ServiceLocator, LogRepository>> logRepositories,
-                           Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper) {
+                           Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper,
+                           boolean flushLogsShutdownHookEnabled) {
         this.hooksHandler = hooksHandler;
         this.logRepositories = logRepositories;
         this.kafkaNamesMapper = kafkaNamesMapper;
@@ -71,6 +73,9 @@ public final class HermesFrontend {
 
         hooksHandler.addStartupHook((s) -> s.getService(HealthCheckService.class).startup());
         hooksHandler.addShutdownHook(defaultShutdownHook());
+        if (flushLogsShutdownHookEnabled) {
+            hooksHandler.addShutdownHook(new FlushLogsShutdownHook());
+        }
     }
 
     private ServiceAwareHook gracefulShutdownHook() {
@@ -149,11 +154,12 @@ public final class HermesFrontend {
         private final BrokerListeners listeners = new BrokerListeners();
         private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();
         private Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper = Optional.empty();
+        private boolean flushLogsShutdownHookEnabled = true;
 
         public HermesFrontend build() {
             withDefaultRankBinding(listeners, BrokerListeners.class);
             binders.add(new TrackersBinder(new ArrayList<>()));
-            return new HermesFrontend(hooksHandler, binders, logRepositories, kafkaNamesMapper);
+            return new HermesFrontend(hooksHandler, binders, logRepositories, kafkaNamesMapper, flushLogsShutdownHookEnabled);
         }
 
         public Builder withStartupHook(ServiceAwareHook hook) {
@@ -174,8 +180,14 @@ public final class HermesFrontend {
             return withShutdownHook(s -> hook.apply());
         }
 
+
         public Builder withDisabledGlobalShutdownHook() {
             hooksHandler.disableGlobalShutdownHook();
+            return this;
+        }
+
+        public Builder withDisabledFlushLogsShutdownHook() {
+            flushLogsShutdownHookEnabled = false;
             return this;
         }
 
