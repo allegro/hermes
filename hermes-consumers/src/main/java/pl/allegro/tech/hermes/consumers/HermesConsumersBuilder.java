@@ -38,6 +38,7 @@ public final class HermesConsumersBuilder {
     private final List<MessageFilter> globalFilters = new ArrayList<>();
 
     private Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper = Optional.empty();
+    private boolean flushLogsShutdownHookEnabled = true;
 
     private final List<Binder> binders = Lists.newArrayList(
             new CommonBinder(),
@@ -63,6 +64,11 @@ public final class HermesConsumersBuilder {
 
     public HermesConsumersBuilder withDisabledGlobalShutdownHook() {
         hooksHandler.disableGlobalShutdownHook();
+        return this;
+    }
+
+    public HermesConsumersBuilder withDisabledFlushLogsShutdownHook() {
+        flushLogsShutdownHookEnabled = false;
         return this;
     }
 
@@ -123,7 +129,8 @@ public final class HermesConsumersBuilder {
         messageSenderProviders.add(
                 "jms", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultJmsMessageSenderProvider")
         );
-        return new HermesConsumers(hooksHandler, binders, messageSenderProviders, logRepositories, kafkaNamesMapper);
+        return new HermesConsumers(hooksHandler, binders, messageSenderProviders, logRepositories, kafkaNamesMapper,
+                flushLogsShutdownHookEnabled);
     }
 
     private MessageFilters buildFilters() {
