@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.test.helper.avro;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.io.IOException;

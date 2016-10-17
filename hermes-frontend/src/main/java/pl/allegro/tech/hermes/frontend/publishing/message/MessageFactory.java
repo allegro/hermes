@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
-import com.github.fge.jsonschema.main.JsonSchema;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import org.apache.avro.Schema;
@@ -10,14 +9,14 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
 import javax.inject.Inject;
@@ -77,7 +76,7 @@ public class MessageFactory {
                                 topic.getQualifiedName(), exception);
                     }
                 }
-                return createJsonMessage(headerMap, topic, messageId, messageContent, timestamp);
+                return createJsonMessage(headerMap, messageId, messageContent, timestamp);
             }
             case AVRO:
                 return createAvroMessage(headerMap, topic, messageId, messageContent, timestamp);
@@ -85,10 +84,17 @@ public class MessageFactory {
         }
     }
 
+    private JsonMessage createJsonMessage(HeaderMap headerMap, String messageId, byte[] messageContent, long timestamp) {
+        JsonMessage message = new JsonMessage(messageId, messageContent, timestamp);
+        byte[] wrapped = messageContentWrapper.wrapJson(message.getData(), message.getId(), message.getTimestamp(),
+                headersPropagator.extract(toHeadersMap(headerMap)));
+        return message.withDataReplaced(wrapped);
+    }
+
     private AvroMessage createAvroMessage(HeaderMap headerMap, Topic topic, String messageId, byte[] messageContent, long timestamp) {
         CompiledSchema<Schema> schema = extractSchemaVersion(headerMap)
                 .map(version -> schemaRepository.getAvroSchema(topic, version))
-                .orElse(schemaRepository.getAvroSchema(topic));
+                .orElse(schemaRepository.getLatestAvroSchema(topic));
 
         AvroMessage message = new AvroMessage(
                 messageId,
@@ -99,20 +105,6 @@ public class MessageFactory {
         validators.check(topic, message);
         byte[] wrapped = messageContentWrapper.wrapAvro(message.getData(), message.getId(), message.getTimestamp(),
                 topic, schema, headersPropagator.extract(toHeadersMap(headerMap)));
-        return message.withDataReplaced(wrapped);
-    }
-
-    private JsonMessage createJsonMessage(HeaderMap headerMap, Topic topic, String messageId, byte[] messageContent, long timestamp) {
-        JsonMessage message = new JsonMessage(messageId, messageContent, timestamp);
-        if (topic.isValidationEnabled()) {
-            CompiledSchema<JsonSchema> schema = extractSchemaVersion(headerMap)
-                    .map(version -> schemaRepository.getJsonSchema(topic, version))
-                    .orElse(schemaRepository.getJsonSchema(topic));
-            message = new JsonMessage(messageId, messageContent, timestamp, of(schema));
-        }
-        validators.check(topic, message);
-        byte[] wrapped = messageContentWrapper.wrapJson(
-                message.getData(), message.getId(), message.getTimestamp(), headersPropagator.extract(toHeadersMap(headerMap)));
         return message.withDataReplaced(wrapped);
     }
 

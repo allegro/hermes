@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset
 
-import pl.allegro.tech.hermes.api.TopicName
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter
 
 class MockMessageCommitter implements MessageCommitter {
@@ -30,14 +28,8 @@ class MockMessageCommitter implements MessageCommitter {
     }
 
     @Override
-    FailedToCommitOffsets commitOffsets(OffsetsToCommit offsetsToCommit) {
+    void commitOffsets(OffsetsToCommit offsetsToCommit) {
         recordedValues.add(offsetsToCommit)
         iteration++
-        return returnedValues.size() > iteration ? returnedValues[iteration] : new FailedToCommitOffsets()
-    }
-
-    @Override
-    void removeOffset(TopicName topicName, String subscriptionName, KafkaTopicName topic, int partition) throws Exception {
-
     }
 }

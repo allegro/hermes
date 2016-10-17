@@ -31,13 +31,13 @@ public class ConsumerFactory {
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configFactory;
     private final Trackers trackers;
+    private final OffsetQueue offsetQueue;
     private final ConsumerMessageSenderFactory consumerMessageSenderFactory;
     private final TopicRepository topicRepository;
     private final MessageConverterResolver messageConverterResolver;
     private final MessageBatchFactory batchFactory;
     private final MessageContentWrapper messageContentWrapper;
     private final MessageBatchSenderFactory batchSenderFactory;
-    private final OffsetQueue offsetQueue;
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
 
     @Inject
@@ -47,13 +47,13 @@ public class ConsumerFactory {
                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                            OutputRateCalculator outputRateCalculator,
                            Trackers trackers,
+                           OffsetQueue offsetQueue,
                            ConsumerMessageSenderFactory consumerMessageSenderFactory,
                            TopicRepository topicRepository,
                            MessageConverterResolver messageConverterResolver,
                            MessageBatchFactory byteBufferMessageBatchFactory,
                            MessageContentWrapper messageContentWrapper,
                            MessageBatchSenderFactory batchSenderFactory,
-                           OffsetQueue offsetQueue,
                            ConsumerAuthorizationHandler consumerAuthorizationHandler) {
 
         this.messageReceiverFactory = messageReceiverFactory;
@@ -62,13 +62,13 @@ public class ConsumerFactory {
         this.consumerRateLimitSupervisor = consumerRateLimitSupervisor;
         this.outputRateCalculator = outputRateCalculator;
         this.trackers = trackers;
+        this.offsetQueue = offsetQueue;
         this.consumerMessageSenderFactory = consumerMessageSenderFactory;
         this.topicRepository = topicRepository;
         this.messageConverterResolver = messageConverterResolver;
         this.batchFactory = byteBufferMessageBatchFactory;
         this.messageContentWrapper = messageContentWrapper;
         this.batchSenderFactory = batchSenderFactory;
-        this.offsetQueue = offsetQueue;
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
     }
 

@@ -35,5 +35,4 @@ public class MonitoredMpscQueue<T> {
     public void drain(MessagePassingQueue.Consumer<T> consumer) {
         queue.drain(consumer);
     }
-
 }

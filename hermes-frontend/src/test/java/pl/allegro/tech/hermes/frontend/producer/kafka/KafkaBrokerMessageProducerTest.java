@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,8 +36,9 @@ public class KafkaBrokerMessageProducerTest {
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);
     private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP);
 
-    private MockProducer leaderConfirmsProducer = new MockProducer();
-    private MockProducer everyoneConfirmProducer = new MockProducer();
+    private ByteArraySerializer serializer = new ByteArraySerializer();
+    private MockProducer leaderConfirmsProducer = new MockProducer(true, serializer, serializer);
+    private MockProducer everyoneConfirmProducer = new MockProducer(true, serializer, serializer);
     private Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, new ConfigFactory());
 
     private KafkaBrokerMessageProducer producer;

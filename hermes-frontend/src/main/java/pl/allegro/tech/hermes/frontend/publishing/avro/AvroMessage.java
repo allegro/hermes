@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.frontend.publishing.avro;
 
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.util.Optional;
 

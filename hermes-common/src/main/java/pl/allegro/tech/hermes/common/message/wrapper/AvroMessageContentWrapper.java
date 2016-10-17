@@ -4,7 +4,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
 import pl.allegro.tech.hermes.common.util.MessageId;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import javax.inject.Inject;
 import java.time.Clock;

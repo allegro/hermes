@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.util.Optional;
 

@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset
 import pl.allegro.tech.hermes.consumers.consumer.Consumer
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset
 
 class ConsumerStub implements Consumer {
 
@@ -38,6 +39,15 @@ class ConsumerStub implements Consumer {
 
     @Override
     void updateTopic(Topic topic) {
+    }
+
+    @Override
+    void commit(Set<SubscriptionPartitionOffset> offsets) {
+    }
+
+    @Override
+    void moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
+
     }
 
     boolean getInitialized() {

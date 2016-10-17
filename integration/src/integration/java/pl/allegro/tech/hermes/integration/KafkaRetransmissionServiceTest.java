@@ -18,8 +18,12 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 
+import static com.jayway.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.summingLong;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
@@ -36,7 +40,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         remoteService = new RemoteServiceEndpoint(services().serviceMock());
     }
 
-    @Test(enabled = false)
+    @Test
     @Unreliable
     public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
         // given
@@ -89,7 +93,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         remoteService.makeSureNoneReceived();
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldMoveOffsetInDryRunModeForTopicsMigratedToAvro() throws InterruptedException, IOException {
         // given
         String subscription = "subscription";
@@ -139,9 +143,11 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
 
     private void sendMessagesOnTopic(Topic topic, int n) {
         remoteService.expectMessages(simpleMessages(n));
-        for (TestMessage message : simpleMessages(n)) {
-            publisher.publish(topic.getQualifiedName(), message.body());
-        }
+        Arrays.stream(simpleMessages(n)).forEach(message ->
+            await().atMost(3, SECONDS).pollDelay(300, MILLISECONDS).until(() -> {
+                Response response = publisher.publish(topic.getQualifiedName(), message.body());
+                assertThat(response).hasStatus(Response.Status.CREATED);
+        }));
         remoteService.waitUntilReceived();
         remoteService.reset();
     }

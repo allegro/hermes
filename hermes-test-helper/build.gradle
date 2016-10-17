@@ -17,6 +17,7 @@ dependencies {
     compile(group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock) {
         exclude group: 'org.mortbay.jetty', module: 'servlet-api'
         exclude group: 'net.sf.jopt-simple'
+        exclude group: 'guava'
     }
     compile (group: 'org.apache.curator', name: 'curator-test', version: versions.curator) {
         exclude module: 'slf4j-log4j12'

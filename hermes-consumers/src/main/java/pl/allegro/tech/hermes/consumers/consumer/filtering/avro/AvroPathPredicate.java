@@ -2,11 +2,10 @@ package pl.allegro.tech.hermes.consumers.consumer.filtering.avro;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.commons.lang.StringUtils;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.io.IOException;
 import java.util.Arrays;

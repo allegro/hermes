@@ -88,7 +88,7 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should load topic details"() {
         given:
-        repository.createTopic(topic(GROUP, 'details').withDescription('description').withValidation(true).build())
+        repository.createTopic(topic(GROUP, 'details').withDescription('description').build())
         wait.untilTopicCreated(GROUP, 'details')
 
         when:
@@ -96,7 +96,6 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
         then:
         retrievedTopic.description == 'description'
-        retrievedTopic.validationEnabled
     }
 
     def "should update topic"() {

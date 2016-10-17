@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.management.infrastructure.schema.validator;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.common.exception.InvalidSchemaException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
