@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -262,21 +263,21 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnCorrectResultWhenValidatingJsonFilters() {
         // given
-        String groupName = "group";
+        String groupName = "jsonFilters";
         String topicName = "topic";
-
-        final TestMessage testMessage = TestMessage.of("id", "0001");
+        String subscriptionName = "subscription";
+        AvroUser user = new AvroUser();
 
         // and
         Topic topic = operations.buildTopic(groupName, topicName);
-        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "jsonpath", "path", ".id", "matcher", "0001"));
-        final MessageFilterSpecification spec2 = new MessageFilterSpecification(of("type", "jsonpath", "path", ".id", "matcher", "0002"));
-        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(testMessage.toString(), Arrays.asList(spec1), null);
-        final MessageValidationWrapper wrapper2 = new MessageValidationWrapper(testMessage.toString(), Arrays.asList(spec2), null);
+        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "jsonpath", "path", ".name", "matcher", "defaultName"));
+        final MessageFilterSpecification spec2 = new MessageFilterSpecification(of("type", "jsonpath", "path", ".name", "matcher", "defaultName2"));
+        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec1), null);
+        final MessageValidationWrapper wrapper2 = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec2), null);
 
         // when
-        final Response response1 = management.subscription().validateFilter(topic.getQualifiedName(), "subscription", wrapper1);
-        final Response response2 = management.subscription().validateFilter(topic.getQualifiedName(), "subscription", wrapper2);
+        final Response response1 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper1);
+        final Response response2 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper2);
 
         // then
         assertThat(response1).hasStatus(Response.Status.OK);
@@ -288,9 +289,41 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnCorrectResultWhenValidationAvroFilters() {
         // given
-        String groupName = "group";
+        String groupName = "avroFilters";
         String topicName = "topic";
         String subscriptionName = "subscription";
+        AvroUser user = new AvroUser();
+
+        Topic topic = operations.buildTopic(topic(groupName, topicName)
+                .withContentType(ContentType.AVRO)
+                .build());
+
+        operations.saveSchema(topic, user.getSchemaAsString());
+        operations.createSubscription(topic, subscription(topic.getQualifiedName(), subscriptionName, HTTP_ENDPOINT_URL).build());
+
+        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "avropath", "path", ".name", "matcher", "defaultName"));
+        final MessageFilterSpecification spec2 = new MessageFilterSpecification(of("type", "avropath", "path", ".name", "matcher", "defaultName2"));
+        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec1), null);
+        final MessageValidationWrapper wrapper2 = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec2), null);
+
+        // when
+        final Response response1 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper1);
+        final Response response2 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper2);
+
+        // then
+        assertThat(response1).hasStatus(Response.Status.OK);
+        assertThat(response2).hasStatus(Response.Status.OK);
+        assertThat(response1.readEntity(FilterValidation.class).isFiltered()).isFalse();
+        assertThat(response2.readEntity(FilterValidation.class).isFiltered()).isTrue();
+    }
+
+    @Test
+    public void shouldReturnBadRequestWhenCannotConvertToAvro() {
+        // given
+        String groupName = "wrongAvroSchema";
+        String topicName = "topic";
+        String subscriptionName = "subscription";
+        final TestMessage message = TestMessage.of("id", "0001");
 
         Topic topic = operations.buildTopic(topic(groupName, topicName)
                 .withContentType(ContentType.AVRO)
@@ -304,60 +337,14 @@ public class SubscriptionManagementTest extends IntegrationTest {
                     "{" +
                         "\"name\": \"id\"," +
                         "\"type\": \"string\"" +
+                    "}," +
+                    "{" +
+                        "\"name\": \"count\"," +
+                        "\"type\": \"long\"" +
                     "}" +
-                "]" +
-            "}";
+                "]}";
 
         operations.saveSchema(topic, schema);
-        operations.createSubscription(topic, subscription(topic.getQualifiedName(), subscriptionName, HTTP_ENDPOINT_URL).build());
-        final TestMessage message = TestMessage.of("id", "0001");
-
-        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "avropath", "path", ".id", "matcher", "0001"));
-        final MessageFilterSpecification spec2 = new MessageFilterSpecification(of("type", "avropath", "path", ".id", "matcher", "0002"));
-        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(message.toString(), Arrays.asList(spec1), null);
-        final MessageValidationWrapper wrapper2 = new MessageValidationWrapper(message.toString(), Arrays.asList(spec2), null);
-
-        // when
-        final Response response1 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper1);
-        final Response response2 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper2);
-
-        // then
-        assertThat(response1).hasStatus(Response.Status.OK);
-        assertThat(response2).hasStatus(Response.Status.OK);
-        assertThat(response1.readEntity(FilterValidation.class).isFiltered()).isFalse();
-        assertThat(response2.readEntity(FilterValidation.class).isFiltered()).isTrue();
-
-    }
-
-    @Test
-    public void shouldReturnBadRequestWhenCannotConvertToAvro() {
-        // given
-        String groupName = "group";
-        String topicName = "topic";
-        String subscriptionName = "subscription";
-
-        Topic topic = operations.buildTopic(topic(groupName, topicName)
-                .withContentType(ContentType.AVRO)
-                .build());
-
-        String schema = "{" +
-                "\"namespace\": \"hermes\"," +
-                "\"type\": \"record\"," +
-                "\"name\": \"User\"," +
-                "\"fields\": [" +
-                "{" +
-                "\"name\": \"id\"," +
-                "\"type\": \"string\"" +
-                "}," +
-                "{" +
-                "\"name\": \"count\"," +
-                "\"type\": \"long\"" +
-                "}" +
-                "]" +
-                "}";
-
-        operations.saveSchema(topic, schema);
-        final TestMessage message = TestMessage.of("id", "0001");
 
         final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "avropath", "path", ".id", "matcher", "0001"));
         final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(message.toString(), Arrays.asList(spec1), null);
@@ -372,29 +359,17 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnBadRequestWhenFilterTypeDoesntMatchTopicType() {
         //given
-        String groupName = "group";
+        String groupName = "badContentType";
         String topicName = "topic";
         String subscriptionName = "subscription";
+        AvroUser user = new AvroUser();
 
         Topic topic = operations.buildTopic(topic(groupName, topicName).build());
 
-        String schema = "{" +
-                "\"namespace\": \"hermes\"," +
-                "\"type\": \"record\"," +
-                "\"name\": \"User\"," +
-                "\"fields\": [" +
-                "{" +
-                "\"name\": \"id\"," +
-                "\"type\": \"string\"" +
-                "}" +
-                "]" +
-                "}";
+        operations.saveSchema(topic, user.getSchemaAsString());
 
-        operations.saveSchema(topic, schema);
-        final TestMessage message = TestMessage.of("id", "0001");
-
-        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "avropath", "path", ".id", "matcher", "0001"));
-        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(message.toString(), Arrays.asList(spec1), null);
+        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "avropath", "path", ".name", "matcher", "defaultName"));
+        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec1), null);
 
         //when
         final Response response = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper1);
