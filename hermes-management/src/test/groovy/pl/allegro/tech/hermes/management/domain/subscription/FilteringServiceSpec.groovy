@@ -6,12 +6,12 @@ import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.common.filtering.MessageFilters
 import pl.allegro.tech.hermes.common.filtering.avro.AvroPathSubscriptionMessageFilterCompiler
 import pl.allegro.tech.hermes.common.filtering.json.JsonPathSubscriptionMessageFilterCompiler
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion
 import pl.allegro.tech.hermes.management.domain.message.filtering.FilteringConversionException
 import pl.allegro.tech.hermes.management.domain.message.filtering.InvalidFilterTypeException
 import pl.allegro.tech.hermes.api.MessageValidationWrapper
+import pl.allegro.tech.hermes.schema.CompiledSchema
+import pl.allegro.tech.hermes.schema.SchemaRepository
+import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import spock.lang.Specification
 
@@ -82,7 +82,7 @@ class FilteringServiceSpec extends Specification {
 
         then:
         result.filtered
-        schemaRepository.getAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
+        schemaRepository.getLatestAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
         topic.getContentType() >> ContentType.AVRO
     }
 
@@ -101,7 +101,7 @@ class FilteringServiceSpec extends Specification {
 
         then:
         !result.filtered
-        schemaRepository.getAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
+        schemaRepository.getLatestAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
         topic.getContentType() >> ContentType.AVRO
 
     }
@@ -120,7 +120,7 @@ class FilteringServiceSpec extends Specification {
         filteringService.isFiltered(wrapper, topic)
 
         then:
-        schemaRepository.getAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
+        schemaRepository.getLatestAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
         topic.getContentType() >> ContentType.AVRO
         thrown InvalidFilterTypeException
     }

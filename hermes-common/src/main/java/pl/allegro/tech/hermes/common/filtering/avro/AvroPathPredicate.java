@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException;
 import pl.allegro.tech.hermes.common.filtering.FilteringException;
 import pl.allegro.tech.hermes.common.message.MessageContent;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.io.IOException;
 import java.util.Arrays;

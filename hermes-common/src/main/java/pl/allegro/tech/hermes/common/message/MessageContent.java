@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.common.message;
 
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.util.Optional;
 

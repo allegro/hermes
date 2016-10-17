@@ -10,13 +10,13 @@ import pl.allegro.tech.hermes.common.filtering.MessageFilters;
 import pl.allegro.tech.hermes.common.filtering.chain.FilterChain;
 import pl.allegro.tech.hermes.common.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.common.message.MessageContent;
-import pl.allegro.tech.hermes.domain.topic.schema.CompiledSchema;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
 import pl.allegro.tech.hermes.management.domain.message.filtering.FilteringConversionException;
 import pl.allegro.tech.hermes.api.FilterValidation;
 import pl.allegro.tech.hermes.management.domain.message.filtering.InvalidFilterTypeException;
 import pl.allegro.tech.hermes.api.MessageValidationWrapper;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
@@ -58,7 +58,8 @@ public class FilteringService {
                     if (Optional.ofNullable(wrapper.getSchemaVersion()).isPresent()) {
                         schema = schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(wrapper.getSchemaVersion()));
                     } else {
-                        schema = schemaRepository.getAvroSchema(topic);
+
+                        schema = schemaRepository.getLatestAvroSchema(topic);
                     }
                     bytes = jsonAvroConverter.convertToAvro(wrapper.getMessage().getBytes(), schema.getSchema());
                 } catch (AvroConversionException e) {
