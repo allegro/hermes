@@ -42,8 +42,8 @@ public enum Configs {
     KAFKA_CONSUMER_RECEIVE_BUFFER_CONFIG("kafka.consumer.receive.buffer.bytes", 256 * 1024),
     KAFKA_CONSUMER_FETCH_MIN_BYTES_CONFIG("kafka.consumer.fetch.min.bytes", 1),
     KAFKA_CONSUMER_FETCH_MAX_WAIT_MS_CONFIG("kafka.consumer.fetch.max.wait.ms", 500),
-    KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG("kafka.consumer.reconnect.backoff.ms", 50),
-    KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG("kafka.consumer.retry.backoff.ms", 100),
+    KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG("kafka.consumer.reconnect.backoff.ms", 500),
+    KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG("kafka.consumer.retry.backoff.ms", 500),
     KAFKA_CONSUMER_CHECK_CRCS_CONFIG("kafka.consumer.check.crcs", true),
     KAFKA_CONSUMER_METRICS_SAMPLE_WINDOW_MS_CONFIG("kafka.consumer.metrics.sample.window.ms", 30000),
     KAFKA_CONSUMER_METRICS_NUM_SAMPLES_CONFIG("kafka.consumer.metrics.num.samples", 2),
@@ -117,7 +117,7 @@ public enum Configs {
     CONSUMER_RECEIVER_POOL_TIMEOUT("consumer.receiver.pool.timeout", 100),
     CONSUMER_RECEIVER_READ_QUEUE_CAPACITY("consumer.receiver.read.queue.capacity", 1000),
 
-    CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 15),
+    CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 60),
     CONSUMER_COMMIT_OFFSET_QUEUES_SIZE("consumer.commit.offset.queues.size", 200_000),
 
     CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),

@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
+import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
@@ -198,7 +199,8 @@ public class PublishingAvroTest extends IntegrationTest {
         remoteService.waitUntilReceived();
     }
 
-    @Test
+    @Test(enabled = false)
+    @Unreliable
     public void shouldPublishAndConsumeJsonMessageAfterMigrationFromJsonToAvro() throws Exception {
         // given
         Topic topic = operations.buildTopic(topic("migrated", "topic")
