@@ -27,7 +27,8 @@
             <div class="form-group {{groupForm.supportTeam.$valid ? '' : 'has-error'}}">
                 <label for="supportTeam" class="col-md-3 control-label">Support team</label>
                 <div class="col-md-9">
-                    <input class="form-control" required id="supportTeam" name="supportTeam" placeholder="comma delimited names of groups that will have rights to manage this group" ng-model="group.supportTeam"/>
+                    <input class="form-control" required id="supportTeam" name="supportTeam" uib-typeahead="group.name for group in groups($viewValue)" typeahead-min-length="3"
+                           typeahead-wait-ms="500" placeholder="comma delimited names of groups that will have rights to manage this group" ng-model="group.supportTeam"  autocomplete="off"/>
                 </div>
             </div>
             <div class="form-group {{groupForm.contact.$valid ? '' : 'has-error'}}">

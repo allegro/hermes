@@ -6,10 +6,14 @@ import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandle
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChain;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+
+import static java.util.Collections.singleton;
 
 public class FilteringMessageReceiver implements MessageReceiver {
     private MessageReceiver receiver;
@@ -39,7 +43,7 @@ public class FilteringMessageReceiver implements MessageReceiver {
 
     private boolean allow(Message message) {
         FilterResult result = filterChain.apply(message);
-        filteredMessageHandler.handle(result, message, subscription);
+        filteredMessageHandler.handle(result, message, subscription, (offset) -> receiver.commit(singleton(offset)));
         return !result.isFiltered();
     }
 
@@ -55,5 +59,15 @@ public class FilteringMessageReceiver implements MessageReceiver {
         }
         this.subscription = newSubscription;
         this.receiver.update(newSubscription);
+    }
+
+    @Override
+    public void commit(Set<SubscriptionPartitionOffset> offsets) {
+        receiver.commit(offsets);
+    }
+
+    @Override
+    public void moveOffset(SubscriptionPartitionOffset offset) {
+        receiver.moveOffset(offset);
     }
 }

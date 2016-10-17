@@ -16,7 +16,7 @@ public class Signal {
 
     public enum SignalType {
         START, STOP, RETRANSMIT, UPDATE_SUBSCRIPTION, UPDATE_TOPIC, KILL,
-        RESTART, RESTART_UNHEALTHY, STOP_RESTART, KILL_UNHEALTHY, CLEANUP
+        RESTART, RESTART_UNHEALTHY, STOP_RESTART, KILL_UNHEALTHY, CLEANUP, COMMIT
     }
 
     private Signal(SignalType type, SubscriptionName target, Object payload, long executeAfterTimestamp) {

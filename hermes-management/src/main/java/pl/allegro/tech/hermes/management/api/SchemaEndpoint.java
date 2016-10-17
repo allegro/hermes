@@ -2,11 +2,11 @@ package pl.allegro.tech.hermes.management.api;
 
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import pl.allegro.tech.hermes.api.SchemaSource;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaVersion;
+import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaSourceService;
+import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
@@ -19,12 +19,12 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 @Path("topics/{topicName}/schema")
 public class SchemaEndpoint {
 
-    private final SchemaSourceService schemaSourceService;
+    private final SchemaService schemaService;
     private final TopicService topicService;
 
     @Autowired
-    public SchemaEndpoint(SchemaSourceService schemaSourceService, TopicService topicService) {
-        this.schemaSourceService = schemaSourceService;
+    public SchemaEndpoint(SchemaService schemaService, TopicService topicService) {
+        this.schemaService = schemaService;
         this.topicService = topicService;
     }
 
@@ -32,8 +32,8 @@ public class SchemaEndpoint {
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Get schema", httpMethod = HttpMethod.GET)
     public Response get(@PathParam("topicName") String qualifiedTopicName) {
-        Optional<SchemaSource> schemaSource = schemaSourceService.getSchemaSource(qualifiedTopicName);
-        return schemaSource.map(SchemaSource::value)
+        Optional<RawSchema> rawSchema = schemaService.getSchema(qualifiedTopicName);
+        return rawSchema.map(RawSchema::value)
                 .map(v -> Response.ok(v).build())
                 .orElse(Response.noContent().build());
     }
@@ -43,8 +43,8 @@ public class SchemaEndpoint {
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Get schema", httpMethod = HttpMethod.GET)
     public Response get(@PathParam("topicName") String qualifiedTopicName, @PathParam("version") int version) {
-        Optional<SchemaSource> schemaSource = schemaSourceService.getSchemaSource(qualifiedTopicName, SchemaVersion.valueOf(version));
-        return schemaSource.map(SchemaSource::value)
+        Optional<RawSchema> rawSchema = schemaService.getSchema(qualifiedTopicName, SchemaVersion.valueOf(version));
+        return rawSchema.map(RawSchema::value)
                 .map(v -> Response.ok(v).build())
                 .orElse(Response.noContent().build());
     }
@@ -56,7 +56,7 @@ public class SchemaEndpoint {
     public Response save(@PathParam("topicName") String qualifiedTopicName,
                          @DefaultValue("true") @QueryParam(value = "validate") boolean validate,
                          String schema) {
-        schemaSourceService.saveSchemaSource(qualifiedTopicName, schema, validate);
+        schemaService.registerSchema(qualifiedTopicName, schema, validate);
         notifyFrontendSchemaChanged(qualifiedTopicName);
         return Response.status(Response.Status.CREATED).build();
     }
@@ -69,7 +69,7 @@ public class SchemaEndpoint {
     @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Delete schema", httpMethod = HttpMethod.DELETE)
     public Response delete(@PathParam("topicName") String qualifiedTopicName) {
-        schemaSourceService.deleteSchemaSource(qualifiedTopicName);
+        schemaService.deleteAllSchemaVersions(qualifiedTopicName);
         return Response.status(Response.Status.OK).build();
     }
 }

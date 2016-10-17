@@ -52,6 +52,7 @@ public class MultipleKafkaTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("secondaryKafka", "topic");
         Subscription subscription = operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        wait.untilSubscriptionIsActivated(topic, subscription.getName());
         wait.waitUntilConsumerMetadataAvailable(subscription, "localhost", SECONDARY_KAFKA_PORT);
         remoteService.expectMessages("message");
 
@@ -65,6 +66,7 @@ public class MultipleKafkaTest extends IntegrationTest {
 
     private ConsumersStarter setupConsumers() throws Exception {
         ConsumersStarter consumers = new ConsumersStarter();
+        consumers.overrideProperty(Configs.KAFKA_BROKER_LIST, SECONDARY_KAFKA_CONNECT);
         consumers.overrideProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING, SECONDARY_ZK_KAFKA_CONNECT);
         consumers.overrideProperty(Configs.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         consumers.overrideProperty(Configs.CONSUMER_HEALTH_CHECK_PORT, 7454);

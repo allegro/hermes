@@ -2,10 +2,11 @@ package pl.allegro.tech.hermes.integration.helper;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
 public class GraphiteEndpoint implements EnvironmentAware {
 
@@ -13,18 +14,23 @@ public class GraphiteEndpoint implements EnvironmentAware {
 
     private static final String TOPIC_RESPONSE
             = "[ "
-            + "{\"target\": \"sumSeries(stats.tech.hermes.producer.*.meter.TOPIC.m1_rate)\", \"datapoints\": [[RATE, TIMESTAMP]]},"
-            + "{\"target\": \"sumSeries(stats.tech.hermes.consumer.*.meter.TOPIC.m1_rate)\", \"datapoints\": [[DELIVERY, TIMESTAMP]]}"
+            + "{\"target\": \"sumSeries(stats.tech.hermes.producer.*.meter.TOPIC.m1_rate)\", \"datapoints\": "
+            + "[[RATE, TIMESTAMP]]},"
+            + "{\"target\": \"sumSeries(stats.tech.hermes.consumer.*.meter.TOPIC.m1_rate)\", \"datapoints\": "
+            + "[[DELIVERY, TIMESTAMP]]}"
             + "]";
 
     private static final String SUBSCRIPTION_RESPONSE
             = "[ "
-            + "{\"target\": \"sumSeries(stats.tech.hermes.consumer.*.meter.SUBSCRIPTION.m1_rate)\", \"datapoints\": [[RATE, TIMESTAMP]]}"
+            + "{\"target\": \"sumSeries(stats.tech.hermes.consumer.*.meter.SUBSCRIPTION.m1_rate)\", \"datapoints\": "
+            + "[[RATE, TIMESTAMP]]}"
             + "]";
 
-    private static final String TOPIC_URL_PATTERN = "/.*sumSeries\\(stats.tech.hermes\\.(consumer|producer)\\.\\*\\.meter\\.[^\\.]*\\.[^\\.]*\\.m1_rate\\).*";
+    private static final String TOPIC_URL_PATTERN = "/.*sumSeries%28stats.tech.hermes\\." +
+            "(consumer|producer)\\.%2A\\.meter\\.[^\\.]*\\.[^\\.]*\\.m1_rate%29.*";
 
-    private static final String SUBSCRIPTION_URL_PATTERN = "/.*sumSeries\\(stats.tech.hermes\\.consumer\\.\\*\\.meter\\.[^\\.]*\\.[^\\.]*\\.[^\\.]*\\.m1_rate\\).*";
+    private static final String SUBSCRIPTION_URL_PATTERN = "/.*sumSeries%28stats.tech.hermes\\." +
+            "consumer\\.%2A\\.meter\\.[^\\.]*\\.[^\\.]*\\.[^\\.]*\\.m1_rate%29.*";
 
     private final WireMock graphiteListener;
 

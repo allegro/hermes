@@ -2,8 +2,9 @@ dependencies {
     compile project(':hermes-common')
     compile project(':hermes-tracker')
     compile project(':hermes-metrics')
+    compile project(':hermes-schema')
 
-    compile group: 'org.eclipse.jetty', name: 'jetty-client', version: '9.3.6.v20151106'
+    compile group: 'org.eclipse.jetty', name: 'jetty-client', version: versions.jetty
 
     compile group: 'org.jctools', name: 'jctools-core', version: '1.2'
 

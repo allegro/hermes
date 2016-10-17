@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.time.Clock;
 
@@ -24,9 +25,12 @@ public class MessageConfiguration {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    SchemaRepository schemaRepository;
+
     @Bean
     MessageContentWrapper messageContentWrapper() {
-        return new MessageContentWrapper(jsonMessageContentWrapper(), new AvroMessageContentWrapper(clock));
+        return new MessageContentWrapper(jsonMessageContentWrapper(), new AvroMessageContentWrapper(clock), schemaRepository);
     }
 
     private JsonMessageContentWrapper jsonMessageContentWrapper() {

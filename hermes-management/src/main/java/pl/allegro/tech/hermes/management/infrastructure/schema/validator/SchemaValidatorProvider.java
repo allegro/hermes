@@ -13,9 +13,8 @@ public class SchemaValidatorProvider {
     private final Map<ContentType, SchemaValidator> validators = new EnumMap<>(ContentType.class);
 
     @Autowired
-    public SchemaValidatorProvider(JsonSchemaValidator jsonSchemaValidator, AvroSchemaValidator avroSchemaValidator) {
+    public SchemaValidatorProvider(AvroSchemaValidator avroSchemaValidator) {
         validators.put(ContentType.AVRO, avroSchemaValidator);
-        validators.put(ContentType.JSON, jsonSchemaValidator);
     }
 
     public SchemaValidator provide(ContentType contentType) {

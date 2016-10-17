@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
 import com.google.common.collect.ImmutableMap;
-import org.jctools.queues.MpscArrayQueue;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType;
 
 import java.time.Clock;
@@ -25,9 +25,9 @@ class SignalsFilter {
 
     private final Clock clock;
 
-    private final MpscArrayQueue<Signal> taskQueue;
+    private final MonitoredMpscQueue<Signal> taskQueue;
 
-    SignalsFilter(MpscArrayQueue<Signal> taskQueue, Clock clock) {
+    SignalsFilter(MonitoredMpscQueue<Signal> taskQueue, Clock clock) {
         this.taskQueue = taskQueue;
         this.clock = clock;
     }

@@ -1,0 +1,11 @@
+dependencies {
+    compile project(':hermes-api')
+
+    compile group: 'org.apache.avro', name: 'avro', version: '1.7.7'
+    compile group: 'com.google.guava', name: 'guava', version: versions.guava
+
+    testCompile project(path: ":hermes-test-helper")
+
+    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+
+}

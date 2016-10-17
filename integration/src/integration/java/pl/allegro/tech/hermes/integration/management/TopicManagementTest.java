@@ -5,6 +5,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.integration.shame.Unreliable;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -71,7 +72,8 @@ public class TopicManagementTest extends IntegrationTest {
         assertThat(response).hasStatus(Response.Status.FORBIDDEN).hasErrorCode(ErrorCode.TOPIC_NOT_EMPTY);
     }
 
-    @Test
+    @Test(enabled = false)
+    @Unreliable
     public void shouldRecreateTopicAfterDeletion() {
         // given
         operations.createGroup("recreateTopicGroup");

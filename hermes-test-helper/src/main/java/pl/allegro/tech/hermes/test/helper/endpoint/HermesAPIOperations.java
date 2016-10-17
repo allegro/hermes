@@ -7,11 +7,13 @@ import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
+import pl.allegro.tech.hermes.api.SupportTeam;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -44,6 +46,17 @@ public class HermesAPIOperations {
         Topic created = topic(group, topic)
                 .withRetentionTime(1000)
                 .withDescription("Test topic")
+                .build();
+
+        createTopic(created);
+        return created;
+    }
+
+    public Topic createAvroTopic(String group, String topic) {
+        Topic created = topic(group, topic)
+                .withRetentionTime(1000)
+                .withDescription("Test topic")
+                .withContentType(ContentType.AVRO)
                 .build();
 
         createTopic(created);
@@ -104,6 +117,11 @@ public class HermesAPIOperations {
     public Topic buildTopic(String group, String topic) {
         createGroup(group);
         return createTopic(group, topic);
+    }
+
+    public Topic buildAvroTopic(String group, String topic) {
+        createGroup(group);
+        return createAvroTopic(group, topic);
     }
 
     public Topic buildTopic(Topic topic) {
@@ -173,5 +191,9 @@ public class HermesAPIOperations {
         assertThat(endpoints.oAuthProvider().create(oAuthProvider).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilOAuthProviderCreated(oAuthProvider.getName());
+    }
+
+    public List<SupportTeam> getMatchingSupportTeams(String groupName) {
+        return endpoints.supportTeams().get(groupName);
     }
 }
