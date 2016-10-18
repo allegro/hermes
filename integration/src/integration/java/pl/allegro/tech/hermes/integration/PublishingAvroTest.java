@@ -19,6 +19,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.time.Clock;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -39,8 +40,8 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 public class PublishingAvroTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
-
     private AvroUser user;
+    private Clock clock = Clock.systemDefaultZone();
 
     @BeforeClass
     public void initialize() throws Exception {
@@ -109,9 +110,9 @@ public class PublishingAvroTest extends IntegrationTest {
                 .update(topic.getQualifiedName(), "subscription", patchData().set("contentType", ContentType.AVRO).build()))
                 .hasStatus(OK);
 
+        long currentTime = clock.millis();
         wait.untilSubscriptionContentTypeChanged(topic, "subscription", ContentType.AVRO);
-        wait.untilSubscriptionIsActivated(topic, "subscription");
-        wait.untilConsumersUpdateSubscription();
+        wait.untilConsumersUpdateSubscription(currentTime, topic, "subscription");
 
         publisher.publish("publishAvroAfterTopicEditing.topic", user.asBytes());
 
@@ -199,7 +200,7 @@ public class PublishingAvroTest extends IntegrationTest {
         remoteService.waitUntilReceived();
     }
 
-    @Test(enabled = false)
+    @Test
     @Unreliable
     public void shouldPublishAndConsumeJsonMessageAfterMigrationFromJsonToAvro() throws Exception {
         // given
@@ -215,7 +216,7 @@ public class PublishingAvroTest extends IntegrationTest {
         remoteService.expectMessages(beforeMigrationMessage, afterMigrationMessage);
 
         publisher.publish(topic.getQualifiedName(), beforeMigrationMessage.body());
-        wait.untilConsumerCommitsOffset();
+        wait.untilConsumerCommitsOffset(topic, "subscription");
 
         PatchData patch = patchData()
                 .set("contentType", ContentType.AVRO)

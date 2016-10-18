@@ -66,7 +66,7 @@ public class RemoteServiceEndpoint {
     }
 
     public void expectMessages(TestMessage... messages) {
-        expectMessages(Arrays.asList(messages).stream().map(TestMessage::body).collect(toList()));
+        expectMessages(Arrays.stream(messages).map(TestMessage::body).collect(toList()));
     }
 
     public void expectMessages(String... messages) {
@@ -107,7 +107,7 @@ public class RemoteServiceEndpoint {
 
     public void waitUntilReceived(long seconds) {
         logger.info("Expecting to receive {} messages", expectedMessages.size());
-        await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() -> receivedRequests.size() == expectedMessages.size());
+        await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() -> receivedRequests.size() >= expectedMessages.size());
         assertThat(receivedRequests.stream().map(LoggedRequest::getBodyAsString).collect(toList())).containsAll(expectedMessages);
     }
 
