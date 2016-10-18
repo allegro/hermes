@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers;
 
+import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionStatus;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -13,7 +15,7 @@ public interface ConsumerEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/subscriptions")
-    List<String> listSubscriptions();
+    List<RunningSubscriptionStatus> listSubscriptions();
 
     @GET
     @Path("/subscriptionsCount")

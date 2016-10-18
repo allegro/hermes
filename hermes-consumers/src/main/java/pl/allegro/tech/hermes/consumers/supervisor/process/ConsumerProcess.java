@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
+import com.google.common.collect.ImmutableMap;
 import org.jctools.queues.SpscArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,7 +8,9 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
 import java.time.Clock;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConsumerProcess implements Runnable {
 
@@ -28,6 +31,8 @@ public class ConsumerProcess implements Runnable {
     private volatile boolean running = true;
 
     private long healtcheckRefreshTime;
+
+    private Map<Signal.SignalType, Long> signalTimesheet = new ConcurrentHashMap<>();
 
     public ConsumerProcess(
             SubscriptionName subscriptionName,
@@ -51,14 +56,14 @@ public class ConsumerProcess implements Runnable {
 
             start();
             while (running && !Thread.interrupted()) {
-                consumer.consume(() -> processSignals());
+                consumer.consume(this::processSignals);
             }
             stop();
 
         } catch (Exception ex) {
             logger.error("Consumer process of subscription {} failed", subscriptionName, ex);
         } finally {
-            logger.info("Releasing consumer process thred of subscription {}", subscriptionName);
+            logger.info("Releasing consumer process thread of subscription {}", subscriptionName);
             shutdownCallback.accept(subscriptionName);
             refreshHealthcheck();
             Thread.currentThread().setName("consumer-released-thread");
@@ -70,7 +75,7 @@ public class ConsumerProcess implements Runnable {
         return this;
     }
 
-    public long healtcheckRefreshTime() {
+    public long healthcheckRefreshTime() {
         return healtcheckRefreshTime;
     }
 
@@ -105,6 +110,7 @@ public class ConsumerProcess implements Runnable {
                 consumer.commit(signal.getPayload());
                 break;
         }
+        signalTimesheet.put(signal.getType(), clock.millis());
     }
 
     private void start() {
@@ -113,7 +119,9 @@ public class ConsumerProcess implements Runnable {
 
         consumer.initialize();
 
-        logger.info("Started consumer for subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
+        long initializationTime = clock.millis();
+        logger.info("Started consumer for subscription {} in {}ms", subscriptionName, initializationTime - startTime);
+        signalTimesheet.put(Signal.SignalType.START, initializationTime);
     }
 
     private void stop() {
@@ -168,5 +176,7 @@ public class ConsumerProcess implements Runnable {
         return consumer;
     }
 
-
+    public Map<Signal.SignalType, Long> getSignalTimesheet() {
+        return ImmutableMap.copyOf(signalTimesheet);
+    }
 }

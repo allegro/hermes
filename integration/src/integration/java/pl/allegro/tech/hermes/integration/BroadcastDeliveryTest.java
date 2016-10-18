@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
@@ -15,15 +17,20 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 public class BroadcastDeliveryTest extends IntegrationTest {
+    private static final Logger logger = LoggerFactory.getLogger(BroadcastDeliveryTest.class);
 
     private List<RemoteServiceEndpoint> remoteServices;
     private RemoteServiceEndpoint firstRemoteService;
 
-
-
     @AfterMethod
     public void cleanup() {
-        this.remoteServices.forEach(RemoteServiceEndpoint::stop);
+        this.remoteServices.forEach(service -> {
+            try {
+                service.stop();
+            } catch (Exception ex) {
+                logger.warn("Failed to stop remote service.", ex);
+            }
+        });
     }
 
     @Test

@@ -14,6 +14,12 @@ import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_TYPE;
 import static pl.allegro.tech.hermes.common.schema.SchemaRepositoryType.SCHEMA_REGISTRY;
@@ -31,6 +37,13 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
         configFactory.overrideProperty(SCHEMA_REPOSITORY_TYPE, SCHEMA_REGISTRY.name());
         configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, false);
         configFactory.overrideProperty(KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG, "earliest");
+        configFactory.overrideProperty(KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG, 25);
+        configFactory.overrideProperty(KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG, 25);
+        configFactory.overrideProperty(KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG, 1);
+        configFactory.overrideProperty(KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG, 11000);
+        configFactory.overrideProperty(KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG, 10000);
+        configFactory.overrideProperty(KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG, 50);
+
         consumers = HermesConsumers.consumers()
             .withKafkaTopicsNamesMapper(serviceLocator ->
                     new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())

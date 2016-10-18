@@ -1,11 +1,12 @@
-sudo: false
+sudo: required
+dist: trusty
 
 language: java
 
 install: ./gradlew assemble
 script:
   - "./gradlew check -Ptests.timeout.multiplier=3"
-  - "./gradlew -Ptests.timeout.multiplier=3 integrationTest -i"
+  - "./gradlew -Ptests.timeout.multiplier=3 integrationTest"
 
 jdk:
   - oraclejdk8
@@ -22,6 +23,7 @@ branches:
   only:
       - master
       - develop
+      - 558_travis_tests
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock

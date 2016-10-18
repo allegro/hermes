@@ -10,7 +10,7 @@ import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertTha
 
 public class HealthCheckTest extends AbstractFrontendShutdownTest {
 
-    @Test
+    @Test(enabled = false)
     public void shouldReturnCorrectHealthStatus() throws InterruptedException {
         // given
         WebTarget client = JerseyClientFactory.create().target(FRONTEND_URL).path("status").path("ping");

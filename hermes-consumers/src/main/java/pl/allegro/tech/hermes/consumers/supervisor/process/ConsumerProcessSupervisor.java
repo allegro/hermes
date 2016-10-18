@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 
 import java.time.Clock;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.concurrent.Future;
@@ -160,7 +159,7 @@ public class ConsumerProcessSupervisor implements Runnable {
     }
 
     private boolean isHealthy(ConsumerProcess consumerProcess) {
-        long delta = clock.millis() - consumerProcess.healtcheckRefreshTime();
+        long delta = clock.millis() - consumerProcess.healthcheckRefreshTime();
         if (delta > unhealthyAfter) {
             logger.info("Lost contact with consumer {}, last seen {}ms ago", consumerProcess, delta);
             return false;
@@ -195,7 +194,7 @@ public class ConsumerProcessSupervisor implements Runnable {
         executor.shutdown();
     }
 
-    public List<String> listRunningSubscriptions() {
+    public List<RunningSubscriptionStatus> listRunningSubscriptions() {
         return runningProcesses.listRunningSubscriptions();
     }
 

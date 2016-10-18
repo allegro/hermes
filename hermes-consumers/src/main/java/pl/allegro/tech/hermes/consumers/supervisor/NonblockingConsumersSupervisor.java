@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.supervisor.process.ConsumerProcessSupervisor;
@@ -22,7 +21,6 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
 import javax.inject.Inject;
 import java.time.Clock;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -72,8 +70,8 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                 configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_PERIOD),
                 metrics
         );
-        monitor.register(SUBSCRIPTIONS, () -> backgroundProcess.listRunningSubscriptions());
-        monitor.register(SUBSCRIPTIONS_COUNT, () -> backgroundProcess.countRunningSubscriptions());
+        monitor.register(SUBSCRIPTIONS, backgroundProcess::listRunningSubscriptions);
+        monitor.register(SUBSCRIPTIONS_COUNT, backgroundProcess::countRunningSubscriptions);
     }
 
     private ScheduledExecutorService createExecutorForSupervision() {

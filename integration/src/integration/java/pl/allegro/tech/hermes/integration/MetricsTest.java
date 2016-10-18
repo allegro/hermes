@@ -50,15 +50,15 @@ public class MetricsTest extends IntegrationTest {
         publisher.publish("topicMetricsGroup.topic", TestMessage.simple().body());
         remoteService.waitUntilReceived();
 
-        wait.untilPublishedMetricsPropagation();
+        wait.until(() -> {
+            // when
+            TopicMetrics metrics = management.topic().getMetrics("topicMetricsGroup.topic");
 
-        // when
-        TopicMetrics metrics = management.topic().getMetrics("topicMetricsGroup.topic");
-
-        // then
-        assertThat(metrics.getRate()).isEqualTo("10");
-        assertThat(metrics.getDeliveryRate()).isEqualTo("15");
-        assertThat(metrics.getPublished()).isEqualTo(1);
+            // then
+            assertThat(metrics.getRate()).isEqualTo("10");
+            assertThat(metrics.getDeliveryRate()).isEqualTo("15");
+            assertThat(metrics.getPublished()).isEqualTo(1);
+        });
     }
 
     @Unreliable
@@ -86,7 +86,8 @@ public class MetricsTest extends IntegrationTest {
         assertThat(metrics.getInflight()).isEqualTo(0);
     }
 
-    @Test
+    @Unreliable
+    @Test(enabled = false)
     public void shouldNotCreateNewSubscriptionWhenAskedForNonExistingMetrics() {
         //given
         TopicName topic = new TopicName("pl.group.sub.bug", "topic");
@@ -103,7 +104,8 @@ public class MetricsTest extends IntegrationTest {
                 .isInstanceOf(BadRequestException.class);
     }
 
-    @Test
+    @Unreliable
+    @Test(enabled = false)
     public void shouldReadSubscriptionDeliveryRate() {
         Topic topic = operations.buildTopic("pl.allegro.tech.hermes", "topic");
         operations.createSubscription(topic, "pl.allegro.tech.hermes.subscription", HTTP_ENDPOINT_URL);
@@ -115,29 +117,6 @@ public class MetricsTest extends IntegrationTest {
 
     @Unreliable
     @Test(enabled = false)
-    public void shouldIncreasePublishedMetricsIncrementallyInMultipleMetricUpdateCycles() {
-        // given
-        Topic topic = operations.buildTopic("incrementalMetricsGroup", "topic");
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetricForTopic("incrementalMetricsGroup", "topic", 10, 15);
-
-        remoteService.expectMessages(TestMessage.simple().body(), TestMessage.simple().body());
-        publisher.publish("incrementalMetricsGroup.topic", TestMessage.simple().body());
-        wait.untilPublishedMetricsPropagation();
-
-        publisher.publish("incrementalMetricsGroup.topic", TestMessage.simple().body());
-        wait.untilPublishedMetricsPropagation();
-
-        // when
-        TopicMetrics metrics = management.topic().getMetrics("incrementalMetricsGroup.topic");
-
-        // then
-        remoteService.waitUntilReceived();
-        assertThat(metrics.getPublished()).isEqualTo(2);
-    }
-
-    @Unreliable
-    @Test
     public void shouldSendMetricToGraphite() {
         //given
         operations.buildTopic("metricGroup", "topic");
@@ -150,7 +129,8 @@ public class MetricsTest extends IntegrationTest {
         graphiteServer.waitUntilReceived();
     }
 
-    @Test
+    @Unreliable
+    @Test(enabled = false)
     public void shouldNotCreateNewTopicWhenAskingForNonExistingMetrics() {
         //given
         TopicName newTopic = new TopicName("auto-topic-bug", "not-existing");
@@ -163,7 +143,8 @@ public class MetricsTest extends IntegrationTest {
         assertThat(management.topic().list(newTopic.getGroupName(), false)).doesNotContain(newTopic.qualifiedName());
     }
 
-    @Test
+    @Unreliable
+    @Test(enabled = false)
     public void shouldNotReportMetricsToConfigStorageForRemovedSubscription() {
         //given
         Topic topic = operations.buildTopic("metricsAfterSubscriptionRemovedGroup", "topic");
@@ -190,7 +171,7 @@ public class MetricsTest extends IntegrationTest {
     }
 
     @Unreliable
-    @Test
+    @Test(enabled = false)
     public void shouldReportHttpErrorCodeMetrics() {
         //given
         Topic topic = operations.buildTopic("statusErrorGroup", "topic");
@@ -215,7 +196,7 @@ public class MetricsTest extends IntegrationTest {
     }
 
     @Unreliable
-    @Test
+    @Test(enabled = false)
     public void shouldReportHttpSuccessCodeMetrics() {
         //given
         Topic topic = operations.buildTopic("statusSuccessGroup", "topic");
