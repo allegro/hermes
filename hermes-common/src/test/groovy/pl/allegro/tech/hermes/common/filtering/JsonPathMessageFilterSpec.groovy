@@ -45,7 +45,8 @@ class JsonPathMessageFilterSpec extends Specification {
         def spec = new MessageFilterSpecification([path: path, matcher: matcher])
 
         expect:
-        result == new JsonPathSubscriptionMessageFilterCompiler().compile(spec)
+        result == new JsonPathSubscriptionMessageFilterCompiler()
+                .compile(spec)
                 .test(MessageContentBuilder.withTestMessage()
                 .withContent(json, defaultCharset())
                 .build())

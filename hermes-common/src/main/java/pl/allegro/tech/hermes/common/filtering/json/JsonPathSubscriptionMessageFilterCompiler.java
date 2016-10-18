@@ -9,9 +9,10 @@ import pl.allegro.tech.hermes.common.message.MessageContent;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import static com.jayway.jsonpath.Configuration.defaultConfiguration;
 
 public class JsonPathSubscriptionMessageFilterCompiler implements SubscriptionMessageFilterCompiler {
-    private Configuration configuration = Configuration.defaultConfiguration().addOptions(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS);
+    private Configuration configuration = defaultConfiguration().addOptions(Option.ALWAYS_RETURN_LIST, Option.SUPPRESS_EXCEPTIONS);
 
     @Override
     public String getType() {

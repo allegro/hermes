@@ -5,9 +5,8 @@ import pl.allegro.tech.hermes.common.message.MessageContent;
 import java.util.function.Predicate;
 
 public class MessageFilter implements Predicate<MessageContent> {
-
-    private String type;
-    private Predicate<MessageContent> predicate;
+    private final String type;
+    private final Predicate<MessageContent> predicate;
 
     public MessageFilter(String type, Predicate<MessageContent> predicate) {
         this.type = type;

@@ -17,7 +17,10 @@ import spock.lang.Specification
 
 class FilteringServiceSpec extends Specification {
 
-    MessageFilters messageFilters = new MessageFilters([], [new AvroPathSubscriptionMessageFilterCompiler(), new JsonPathSubscriptionMessageFilterCompiler()])
+    MessageFilters messageFilters = new MessageFilters([], [
+            new AvroPathSubscriptionMessageFilterCompiler(),
+            new JsonPathSubscriptionMessageFilterCompiler()
+    ])
     SchemaRepository schemaRepository = Mock()
     Topic topic = Mock()
 
@@ -30,7 +33,7 @@ class FilteringServiceSpec extends Specification {
 
     def schema = AvroUserSchemaLoader.load("/simple.avsc")
 
-    def "should filter json message"() {
+    def "should filter json message when any filter fails matching"() {
         given:
         def json = '''
         {
@@ -41,14 +44,11 @@ class FilteringServiceSpec extends Specification {
         def wrapper = new MessageValidationWrapper(json, [jsonSpec1, jsonSpec2], null)
         topic.getContentType() >> ContentType.JSON
 
-        when:
-        def result = filteringService.isFiltered(wrapper, topic)
-
-        then:
-        result.filtered
+        expect:
+        filteringService.isFiltered(wrapper, topic).filtered
     }
 
-    def "should not filter json message"() {
+    def "should not filter json message when all filters match"() {
         given:
         def json = '''
         {
@@ -59,14 +59,11 @@ class FilteringServiceSpec extends Specification {
         def wrapper = new MessageValidationWrapper(json, [jsonSpec1, jsonSpec2], null)
         topic.getContentType() >> ContentType.JSON
 
-        when:
-        def result = filteringService.isFiltered(wrapper, topic)
-
-        then:
-        !result.filtered
+        expect:
+        !filteringService.isFiltered(wrapper, topic).filtered
     }
 
-    def "should filter avro message"() {
+    def "should filter avro message when any filter fails matching"() {
         given:
         def rawMessage = '''
         {
@@ -86,7 +83,7 @@ class FilteringServiceSpec extends Specification {
         topic.getContentType() >> ContentType.AVRO
     }
 
-    def "should not filter avro message"() {
+    def "should not filter avro message when all filters match"() {
         given:
         def rawMessage = '''
         {

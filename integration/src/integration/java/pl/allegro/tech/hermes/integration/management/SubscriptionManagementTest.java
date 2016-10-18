@@ -261,35 +261,51 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnCorrectResultWhenValidatingJsonFilters() {
+    public void shouldNotFilterMessageWhenValidatingJsonFilters() {
         // given
-        String groupName = "jsonFilters";
+        String groupName = "jsonFiltersFalse";
         String topicName = "topic";
         String subscriptionName = "subscription";
         AvroUser user = new AvroUser();
 
         // and
         Topic topic = operations.buildTopic(groupName, topicName);
-        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "jsonpath", "path", ".name", "matcher", "defaultName"));
-        final MessageFilterSpecification spec2 = new MessageFilterSpecification(of("type", "jsonpath", "path", ".name", "matcher", "defaultName2"));
-        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec1), null);
-        final MessageValidationWrapper wrapper2 = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec2), null);
+        final MessageFilterSpecification spec = new MessageFilterSpecification(of("type", "jsonpath", "path", ".name", "matcher", "defaultName"));
+        final MessageValidationWrapper wrapper = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec), null);
 
         // when
-        final Response response1 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper1);
-        final Response response2 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper2);
+        final Response response = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper);
 
         // then
-        assertThat(response1).hasStatus(Response.Status.OK);
-        assertThat(response2).hasStatus(Response.Status.OK);
-        assertThat(response1.readEntity(FilterValidation.class).isFiltered()).isFalse();
-        assertThat(response2.readEntity(FilterValidation.class).isFiltered()).isTrue();
+        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response.readEntity(FilterValidation.class).isFiltered()).isFalse();
     }
 
     @Test
-    public void shouldReturnCorrectResultWhenValidationAvroFilters() {
+    public void shouldFilterMessageWhenValidatingJsonFilters() {
         // given
-        String groupName = "avroFilters";
+        String groupName = "jsonFiltersTrue";
+        String topicName = "topic";
+        String subscriptionName = "subscription";
+        AvroUser user = new AvroUser();
+
+        // and
+        Topic topic = operations.buildTopic(groupName, topicName);
+        final MessageFilterSpecification spec = new MessageFilterSpecification(of("type", "jsonpath", "path", ".name", "matcher", "defaultName2"));
+        final MessageValidationWrapper wrapper = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec), null);
+
+        // when
+        final Response response = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper);
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response.readEntity(FilterValidation.class).isFiltered()).isTrue();
+    }
+
+    @Test
+    public void shouldNotFilterMessageWhenValidatingAvroFilters() {
+        // given
+        String groupName = "avroFiltersFalse";
         String topicName = "topic";
         String subscriptionName = "subscription";
         AvroUser user = new AvroUser();
@@ -301,22 +317,42 @@ public class SubscriptionManagementTest extends IntegrationTest {
         operations.saveSchema(topic, user.getSchemaAsString());
         operations.createSubscription(topic, subscription(topic.getQualifiedName(), subscriptionName, HTTP_ENDPOINT_URL).build());
 
-        final MessageFilterSpecification spec1 = new MessageFilterSpecification(of("type", "avropath", "path", ".name", "matcher", "defaultName"));
-        final MessageFilterSpecification spec2 = new MessageFilterSpecification(of("type", "avropath", "path", ".name", "matcher", "defaultName2"));
-        final MessageValidationWrapper wrapper1 = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec1), null);
-        final MessageValidationWrapper wrapper2 = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec2), null);
+        final MessageFilterSpecification spec = new MessageFilterSpecification(of("type", "avropath", "path", ".name", "matcher", "defaultName"));
+        final MessageValidationWrapper wrapper = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec), null);
 
         // when
-        final Response response1 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper1);
-        final Response response2 = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper2);
+        final Response response = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper);
 
         // then
-        assertThat(response1).hasStatus(Response.Status.OK);
-        assertThat(response2).hasStatus(Response.Status.OK);
-        assertThat(response1.readEntity(FilterValidation.class).isFiltered()).isFalse();
-        assertThat(response2.readEntity(FilterValidation.class).isFiltered()).isTrue();
+        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response.readEntity(FilterValidation.class).isFiltered()).isFalse();
     }
 
+    @Test
+    public void shouldFilterMessageWhenValidatingAvroFilters() {
+        // given
+        String groupName = "avroFiltersTrue";
+        String topicName = "topic";
+        String subscriptionName = "subscription";
+        AvroUser user = new AvroUser();
+
+        Topic topic = operations.buildTopic(topic(groupName, topicName)
+                .withContentType(ContentType.AVRO)
+                .build());
+
+        operations.saveSchema(topic, user.getSchemaAsString());
+        operations.createSubscription(topic, subscription(topic.getQualifiedName(), subscriptionName, HTTP_ENDPOINT_URL).build());
+
+        final MessageFilterSpecification spec = new MessageFilterSpecification(of("type", "avropath", "path", ".name", "matcher", "defaultName2"));
+        final MessageValidationWrapper wrapper = new MessageValidationWrapper(user.asJson(), Arrays.asList(spec), null);
+
+        // when
+        final Response response = management.subscription().validateFilter(topic.getQualifiedName(), subscriptionName, wrapper);
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response.readEntity(FilterValidation.class).isFiltered()).isTrue();
+    }
     @Test
     public void shouldReturnBadRequestWhenCannotConvertToAvro() {
         // given

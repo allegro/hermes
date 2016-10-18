@@ -53,6 +53,14 @@ public class FilteringMessageReceiver implements MessageReceiver {
         return !result.isFiltered();
     }
 
+    private MessageContent getMessageContent(Message message) {
+        return new MessageContent.Builder()
+                    .withContentType(message.getContentType())
+                    .withSchema(message.getSchema())
+                    .withData(message.getData())
+                    .build();
+    }
+
     @Override
     public void stop() {
         receiver.stop();

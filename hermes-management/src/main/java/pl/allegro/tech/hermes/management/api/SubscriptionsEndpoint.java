@@ -216,7 +216,7 @@ public class SubscriptionsEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @Path("/{subscriptionName}/filter")
+    @Path("/{subscriptionName}/verifyFilter")
     @ApiOperation(value = "Validate filter", httpMethod = HttpMethod.POST)
     public Response validateFilter(@PathParam("topicName") String qualifiedTopicName, @PathParam("subscriptionName") String subscriptionName, MessageValidationWrapper wrapper) {
         final Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));

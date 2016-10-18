@@ -67,7 +67,8 @@ class AvroPathMessageFilterSpec extends Specification {
         def invalidContent = new byte[10]
 
         when:
-        new AvroPathSubscriptionMessageFilterCompiler().compile(new MessageFilterSpecification([path: ".id", matcher: "0001"]))
+        new AvroPathSubscriptionMessageFilterCompiler()
+                .compile(new MessageFilterSpecification([path: ".id", matcher: "0001"]))
                 .test(MessageContentBuilder
                 .withTestMessage()
                 .withContent(invalidContent)

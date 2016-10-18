@@ -24,14 +24,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static jersey.repackaged.com.google.common.collect.ImmutableMap.of;
 
 @Component
 public class FilteringService {
     private final MessageFilters messageFilters;
     private final SchemaRepository schemaRepository;
     private final JsonAvroConverter jsonAvroConverter;
-
 
     @Autowired
     public FilteringService(MessageFilters messageFilters, SchemaRepository schemaRepository) {
@@ -58,7 +56,6 @@ public class FilteringService {
                     if (Optional.ofNullable(wrapper.getSchemaVersion()).isPresent()) {
                         schema = schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(wrapper.getSchemaVersion()));
                     } else {
-
                         schema = schemaRepository.getLatestAvroSchema(topic);
                     }
                     bytes = jsonAvroConverter.convertToAvro(wrapper.getMessage().getBytes(), schema.getSchema());
@@ -82,8 +79,8 @@ public class FilteringService {
 
         final FilterResult result = new FilterChain(filters).apply(message);
 
-        if(result.getCause().isPresent()) {
-            throw new InvalidFilterTypeException("Filters don't match topic's content type");
+        if (result.getCause().isPresent()) {
+            throw new InvalidFilterTypeException("Filters don't match topic's content type", result.getCause().get());
         }
 
         return new FilterValidation(result.isFiltered());

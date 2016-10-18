@@ -7,13 +7,9 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import java.util.Optional;
 
 public class MessageContent {
-    private ContentType contentType;
-    private Optional<CompiledSchema<Schema>> schema;
-    private byte[] data;
-
-
-    private MessageContent() {
-    }
+    private final ContentType contentType;
+    private final Optional<CompiledSchema<Schema>> schema;
+    private final byte[] data;
 
     public MessageContent(byte[] content,
                           ContentType contentType,
@@ -37,29 +33,27 @@ public class MessageContent {
     }
 
     public static class Builder {
-        private final MessageContent message;
-
-        public Builder() {
-            message = new MessageContent();
-        }
+        private ContentType contentType;
+        private Optional<CompiledSchema<Schema>> schema;
+        private byte[] data;
 
         public MessageContent.Builder withData(byte[] data) {
-            this.message.data = data;
+            this.data = data;
             return this;
         }
 
         public MessageContent.Builder withSchema(Optional<CompiledSchema<Schema>> schema) {
-            this.message.schema = schema;
+            this.schema = schema;
             return this;
         }
 
         public MessageContent.Builder withContentType(ContentType contentType) {
-            this.message.contentType = contentType;
+            this.contentType = contentType;
             return this;
         }
 
         public MessageContent build() {
-            return message;
+            return new MessageContent(data, contentType, schema);
         }
     }
 }

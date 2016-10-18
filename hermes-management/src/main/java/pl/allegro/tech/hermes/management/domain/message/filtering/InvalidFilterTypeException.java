@@ -8,6 +8,10 @@ public class InvalidFilterTypeException extends HermesException {
         super(message);
     }
 
+    public InvalidFilterTypeException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
+
     @Override
     public ErrorCode getCode() {
         return ErrorCode.INVALID_FILTER_TYPE_EXCEPTION;
