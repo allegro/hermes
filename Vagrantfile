@@ -6,7 +6,7 @@ Vagrant.configure(2) do |config|
   config.vm.network "private_network", ip: "10.10.10.10"
   config.vm.hostname = "hermes"
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "1500"
+    vb.memory = "4000"
     vb.name = "hermes"
   end
   config.vm.post_up_message = """

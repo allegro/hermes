@@ -16,6 +16,7 @@ public class MaxRateProvider {
 
     private final String consumerId;
     private final MaxRateRegistry registry;
+    // TODO: need only subscription qualified name - the other details could be updated during runtime, and we don't need to handle that
     private final Subscription subscription;
     private final SendCounters sendCounters;
     private final HermesMetrics metrics;

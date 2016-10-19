@@ -15,8 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS;
-
 public class MaxRateSupervisor implements Runnable {
 
     private final Set<MaxRateProvider> providers = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -49,14 +47,19 @@ public class MaxRateSupervisor implements Runnable {
     }
 
     public void start() throws Exception {
+
+        MaxRateBalancer balancer = new MaxRateBalancer(
+                configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_BUSY_TOLERANCE),
+                configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_MAX_RATE),
+                configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_ALLOWED_CHANGE_PERCENT));
+
         subscriptionConsumersCache.start();
         new MaxRateCalculatorJob(
                 curator,
-                configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID),
-                configFactory.getIntProperty(CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS),
+                configFactory,
                 Executors.newSingleThreadScheduledExecutor(),
                 subscriptionConsumersCache,
-                new MaxRateBalancer(),
+                balancer,
                 maxRateRegistry,
                 zookeeperPaths.maxRateLeaderPath(),
                 subscriptionsCache,
