@@ -192,6 +192,52 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                         });
                 });
         };
+
+        $scope.verifyFilter = function() {
+            if(!$scope.msg || !$scope.filters) {
+                toaster.pop('warning', 'Warning', 'Invalid input(s)');
+                return;
+            }
+
+            subscriptionRepository.verifyFilter(topicName, subscriptionName, $scope.msg, $scope.filters).$promise
+                .then(function (result) {
+                    $scope.filterVerificationResult = result.filtered.toString();
+                })
+                .catch(function(response) {
+                   toaster.pop('error', 'Error ' + response.status, response.data.message);
+                });
+        };
+
+        $scope.prettyPrintJson = function(uglyJson) {
+            if($scope.isValidJson(uglyJson)) {
+                return JSON.stringify(JSON.parse(uglyJson), undefined, 4);
+            }
+            else {
+                return uglyJson;
+            }
+        };
+
+        $scope.isValidJson = function(jsonString) {
+                try {
+                    var o = JSON.parse(jsonString);
+
+                    // Handle non-exception-throwing cases:
+                    // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
+                    // but... JSON.parse(null) returns null, and typeof null === "object",
+                    // so we must check for that, too. Thankfully, null is falsey, so this suffices:
+                    if (o && typeof o === "object") {
+                        return true;
+                    }
+                }
+                catch (e) { }
+
+                return false;
+        };
+
+        $scope.isValidFiltersInput = function() {
+            return (!!$scope.msg && $scope.isValidJson($scope.msg)) &&
+                (!!$scope.filters && $scope.isValidJson($scope.filters));
+        }
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',

@@ -188,8 +188,51 @@
                     </form>
                 </div>
             </div>
+            <div class="panel panel-default">
+                <div ng-click="unfolded = !unfolded" class="panel-heading">
+                    <h3 class="panel-title">
+                        Filter validation
+                        <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': unfolded, 'glyphicon-chevron-left': !unfolded}"></i>
+                    </h3>
+                </div>
+                <div uib-collapse="!unfolded" class="panel-body" >
+                    <div class="panel-body">
+                        <div class="form-group {{isValidJson(msg) || !msg ? '' : 'has-error'}}">
+                            <label for="messageTextArea">Message:</label>
+                            <textarea id="messageTextArea" class="form-control" placeholder="Message..." ng-model="msg"
+                                      rows="7" ng-blur="msg = prettyPrintJson(msg)" ng-change="filterVerificationResult=''">
+                        {{msg}}
+                    </textarea>
+                        </div>
+                        <div class="form-group {{isValidJson(filters) || !filters ? '' : 'has-error'}}">
+                            <label for="filtersTextArea">Filters:</label>
+                            <textarea id="filtersTextArea" class="form-control" placeholder="Filter chain..."
+                                      ng-model="filters"
+                                      rows="7" ng-blur="filters = prettyPrintJson(filters)"
+                                      ng-change="filterVerificationResult=''">
+                            {{filters}}
+                        </textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p ng-show="!!filterVerificationResult" class="pull-left">
+                                    Filtered:
+                                    <span class="label label-info">{{filterVerificationResult}}</span>
+                                </p>
+                                <button class="btn btn-primary pull-right" type="button" ng-click="verifyFilter()" ng-disabled="!isValidFiltersInput()">
+                                    Verify filters
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
         </div>
+
     </div>
+
+
 
     <div class="row">
         <div class="col-md-6" ng-show="lastUndelivered.message">

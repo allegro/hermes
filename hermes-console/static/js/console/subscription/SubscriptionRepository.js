@@ -23,6 +23,7 @@ repository.factory('SubscriptionRepository', ['DiscoveryService', '$resource', f
         var listing = $resource(discovery.resolve('/topics/:topicName/subscriptions/'));
         var eventTrace = $resource(discovery.resolve('/topics/:topicName/subscriptions/:subscriptionName/events/:eventId/trace'));
         var retransmission = $resource(discovery.resolve('/topics/:topicName/subscriptions/:subscriptionName/retransmission'), null, {save: {method: 'PUT'}});
+        var verifyFilter = $resource(discovery.resolve('/topics/:topicName/subscriptions/:subscriptionName/verifyFilter'), null, {save: {method: 'POST'}});
 
         return {
             list: function (topicName) {
@@ -75,6 +76,11 @@ repository.factory('SubscriptionRepository', ['DiscoveryService', '$resource', f
             },
             retransmit: function (topicName, subscriptionName, fromDate) {
                 return retransmission.save({topicName: topicName, subscriptionName: subscriptionName}, fromDate);
+            },
+            verifyFilter: function(topicName, subscriptionName, message, filters) {
+                var escapedMessage = message.replace(/"/g,'\\"').replace(/ /g, '').replace(/\n/g, '');
+                var json = "{ \"message\": \"" +  escapedMessage + "\", \"filters\": "+ filters + "}";
+                return verifyFilter.save({topicName: topicName, subscriptionName: subscriptionName}, json);
             }
         };
     }]);
