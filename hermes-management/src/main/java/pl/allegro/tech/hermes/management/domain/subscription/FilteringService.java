@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.filtering.MessageFilter;
 import pl.allegro.tech.hermes.common.filtering.MessageFilters;
+import pl.allegro.tech.hermes.common.filtering.NoSuchFilterException;
 import pl.allegro.tech.hermes.common.filtering.chain.FilterChain;
 import pl.allegro.tech.hermes.common.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.common.message.MessageContent;
@@ -72,9 +73,14 @@ public class FilteringService {
     }
 
     private FilterValidation isFiltered(MessageContent message, List<MessageFilterSpecification> filterSpecifications) {
-        final List<MessageFilter> filters = filterSpecifications.stream()
-                .map(messageFilters::compile)
-                .collect(toList());
+        final List<MessageFilter> filters;
+        try {
+            filters = filterSpecifications.stream()
+                    .map(messageFilters::compile)
+                    .collect(toList());
+        } catch (NoSuchFilterException ex) {
+            throw new FilterValidationException(ex.getMessage(), ex);
+        }
 
         final FilterResult result = new FilterChain(filters).apply(message);
 

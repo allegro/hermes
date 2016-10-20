@@ -167,4 +167,18 @@ class FilteringServiceSpec extends Specification {
         topic.getContentType() >> ContentType.AVRO
         thrown FilterValidationException
     }
+
+    def "should throw exception when at least one filter has invalid type"() {
+        given:
+        def json = "[]"
+        def wrongSpec = new MessageFilterSpecification([type: "wrong", path: ".id", matcher: "0001"])
+        def wrapper = new MessageValidationWrapper(json, [jsonSpec1, wrongSpec], null)
+
+        when:
+        filteringService.isFiltered(wrapper, topic)
+
+        then:
+        topic.getContentType() >> ContentType.JSON
+        thrown FilterValidationException
+    }
 }
