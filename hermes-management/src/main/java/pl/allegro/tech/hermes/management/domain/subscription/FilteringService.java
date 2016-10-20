@@ -10,9 +10,8 @@ import pl.allegro.tech.hermes.common.filtering.MessageFilters;
 import pl.allegro.tech.hermes.common.filtering.chain.FilterChain;
 import pl.allegro.tech.hermes.common.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.common.message.MessageContent;
-import pl.allegro.tech.hermes.management.domain.message.filtering.FilteringConversionException;
 import pl.allegro.tech.hermes.api.FilterValidation;
-import pl.allegro.tech.hermes.management.domain.message.filtering.InvalidFilterTypeException;
+import pl.allegro.tech.hermes.management.domain.message.filtering.FilterValidationException;
 import pl.allegro.tech.hermes.api.MessageValidationWrapper;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -60,7 +59,7 @@ public class FilteringService {
                     }
                     bytes = jsonAvroConverter.convertToAvro(wrapper.getMessage().getBytes(), schema.getSchema());
                 } catch (AvroConversionException e) {
-                    throw new FilteringConversionException("Could not convert to avro message. Please check schema version");
+                    throw new FilterValidationException("Could not convert to avro message. Cause: " + e.getMessage());
                 }
                 break;
         }
@@ -80,7 +79,8 @@ public class FilteringService {
         final FilterResult result = new FilterChain(filters).apply(message);
 
         if (result.getCause().isPresent()) {
-            throw new InvalidFilterTypeException("Filters don't match topic's content type", result.getCause().get());
+            final Exception exception = result.getCause().get();
+            throw new FilterValidationException(exception.getMessage(), exception);
         }
 
         return new FilterValidation(result.isFiltered());

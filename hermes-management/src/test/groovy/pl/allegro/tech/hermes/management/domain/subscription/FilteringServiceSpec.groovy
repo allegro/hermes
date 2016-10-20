@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.common.filtering.MessageFilters
 import pl.allegro.tech.hermes.common.filtering.avro.AvroPathSubscriptionMessageFilterCompiler
 import pl.allegro.tech.hermes.common.filtering.json.JsonPathSubscriptionMessageFilterCompiler
 import pl.allegro.tech.hermes.management.domain.message.filtering.FilteringConversionException
-import pl.allegro.tech.hermes.management.domain.message.filtering.InvalidFilterTypeException
+import pl.allegro.tech.hermes.management.domain.message.filtering.FilterValidationException
 import pl.allegro.tech.hermes.api.MessageValidationWrapper
 import pl.allegro.tech.hermes.schema.CompiledSchema
 import pl.allegro.tech.hermes.schema.SchemaRepository
@@ -119,7 +119,7 @@ class FilteringServiceSpec extends Specification {
         then:
         schemaRepository.getLatestAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
         topic.getContentType() >> ContentType.AVRO
-        thrown InvalidFilterTypeException
+        thrown FilterValidationException
     }
 
     def "should throw exception when converting using wrong schema"() {
@@ -137,6 +137,34 @@ class FilteringServiceSpec extends Specification {
         then:
         schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(1)) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
         topic.getContentType() >> ContentType.AVRO
-        thrown FilteringConversionException
+        thrown FilterValidationException
+
+    }
+
+    def "should throw exception when message is invalid json on json topic"() {
+        given:
+        def rawMessage = "[asd"
+        def wrapper = new MessageValidationWrapper(rawMessage, [jsonSpec1], null)
+
+        when:
+        filteringService.isFiltered(wrapper, topic)
+
+        then:
+        topic.getContentType() >> ContentType.JSON
+        thrown FilterValidationException
+    }
+
+    def "should throw exception when message is invalid json on avro topic"() {
+        given:
+        def rawMessage = "[asd"
+        def wrapper = new MessageValidationWrapper(rawMessage, [avroSpec1], null)
+
+        when:
+        filteringService.isFiltered(wrapper, topic)
+
+        then:
+        schemaRepository.getLatestAvroSchema(topic) >> new CompiledSchema(schema, SchemaVersion.valueOf(1))
+        topic.getContentType() >> ContentType.AVRO
+        thrown FilterValidationException
     }
 }

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.filtering.json;
 
 import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.InvalidJsonException;
 import com.jayway.jsonpath.JsonPath;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.common.filtering.FilteringException;
@@ -33,6 +34,8 @@ public class JsonPathPredicate implements Predicate<MessageContent> {
             return !result.isEmpty() && result.stream()
                     .map(Objects::toString)
                     .allMatch(o -> matcher.matcher(o).matches());
+        } catch (InvalidJsonException ex) {
+            throw new FilteringException("Corrupted message - could not parse", ex);
         } catch (Exception ex) {
             throw new FilteringException(ex);
         }
