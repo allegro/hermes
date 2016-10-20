@@ -69,7 +69,6 @@ Option            | Description                             | Options     | Defa
 ---------------   | --------------------------------------- | ----------- | -------------
 ack               | acknowledgement level                   | ALL, LEADER | LEADER
 trackingEnabled   | track incoming messages?                | -           | false
-validationEnabled | use message schema to validate messages | -           | false for JSON, true for Avro
 
 Request that specifies all available options:
 
@@ -82,32 +81,28 @@ Request that specifies all available options:
         "duration": 1
     }
     "trackingEnabled": false,
-    "contentType": "JSON",
-    "validationEnabled": false
+    "contentType": "JSON"
 }
 ```
 
-
 ## Message format
 
-Each topic has defined content type. This describes what will be the format of data sent to Kafka.
-At this point Hermes supports messages sent in:
+Each topic has a defined content type that describes the format of data sent to Kafka.
+At this point Hermes supports messages sent in `JSON` and `AVRO`.
 
-* [JSON](publishing-json)
-* [Avro](publishing-avro)
+### JSON
 
-Read provided documentation for detailed description of features and mechanisms for each format.
+When topic has content type set to **JSON** it will accept messages in JSON format and they will be stored as JSON
+in Kafka.
 
-### Message schema
+This mode is dedicated for simple use-cases and offers no validation for published messages.
 
-When enabling validation (or using Avro content type), message schema needs to be attached before sending first message.
-To publish schema, send POST with `application/json` content type at:
+### Avro
 
-```
-/topics/{topicName}/schema
-```
+Avro is the recommended message format for topics in Hermes. It has many advantages over plain JSON, e.g.
+has built-in message validation (against defined schema) and lowers the volume of data sent to Kafka.
 
-Schema differs in format between formats, refer to format-specific documentation listed above for details.
+Read detailed documentation for publishing messages in **Avro** format [here](publishing-avro).
 
 ## Response format
 
