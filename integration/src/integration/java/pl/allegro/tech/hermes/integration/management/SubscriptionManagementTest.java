@@ -101,7 +101,6 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.OK);
         wait.untilSubscriptionEndpointAddressChanged(topic, "subscription", EndpointAddress.of(HTTP_ENDPOINT_URL));
-        wait.untilSubscriptionIsActivated(topic, "subscription");
 
         remoteService.expectMessages(MESSAGE.body());
         publishMessage(topic.getQualifiedName(), MESSAGE.body());
@@ -123,7 +122,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
                 "subscription");
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldGetEventStatus() throws InterruptedException {
         // given
         Topic topic = operations.buildTopic(topic("eventStatus", "topic").withContentType(ContentType.JSON).withTrackingEnabled(true).build());
