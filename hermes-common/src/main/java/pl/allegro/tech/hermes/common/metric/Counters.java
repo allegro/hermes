@@ -15,7 +15,10 @@ public class Counters {
             INFLIGHT = "inflight." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
             EXECUTOR_RUNNING = "executors." + EXECUTOR_NAME + ".running",
             SCHEDULED_EXECUTOR_OVERRUN = "executors." + EXECUTOR_NAME + ".overrun",
-            MAXRATE_UPDATES = "consumers-rate.calculation.updates" + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
-            MAXRATE_RATE_HISTORY_FAILURES = "consumers-rate.history.failures" + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
-            MAXRATE_FETCH_FAILURES = "consumers-rate.max-rate.fetch.failures" + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
+            MAXRATE_UPDATES =
+                    "consumers-rate.coordinator.calculation.updates" + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
+            MAXRATE_RATE_HISTORY_FAILURES =
+                    "consumers-rate.node.history.failures" + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
+            MAXRATE_FETCH_FAILURES =
+                    "consumers-rate.node.max-rate.fetch.failures" + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
 }

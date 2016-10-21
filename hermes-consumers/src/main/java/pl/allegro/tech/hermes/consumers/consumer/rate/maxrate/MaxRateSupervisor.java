@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MaxRateSupervisor implements Runnable {
 
-    private final Set<MaxRateProvider> providers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Set<NegotiatedMaxRateProvider> providers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final ConfigFactory configFactory;
     private final CuratorFramework curator;
     private final SubscriptionConsumersCache subscriptionConsumersCache;
@@ -47,7 +47,6 @@ public class MaxRateSupervisor implements Runnable {
     }
 
     public void start() throws Exception {
-
         MaxRateBalancer balancer = new MaxRateBalancer(
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_BUSY_TOLERANCE),
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_MAX_RATE),
@@ -78,10 +77,14 @@ public class MaxRateSupervisor implements Runnable {
 
     @Override
     public void run() {
-        providers.forEach(MaxRateProvider::tickForHistory);
+        providers.forEach(NegotiatedMaxRateProvider::tickForHistory);
     }
 
-    public void register(MaxRateProvider maxRateProvider) {
+    public void register(NegotiatedMaxRateProvider maxRateProvider) {
         providers.add(maxRateProvider);
+    }
+
+    public void unregister(NegotiatedMaxRateProvider maxRateProvider) {
+        providers.remove(maxRateProvider);
     }
 }

@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProvider;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.NegotiatedMaxRateProvider;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -36,10 +36,10 @@ public class OutputRateCalculatorTest {
                 SubscriptionPolicy.Builder.subscriptionPolicy().withRate(200).build()
         ).build();
 
-        MaxRateProvider maxRateProvider = mock(MaxRateProvider.class);
+        NegotiatedMaxRateProvider maxRateProvider = mock(NegotiatedMaxRateProvider.class);
         when(maxRateProvider.get()).thenReturn(100D);
 
-        calculator = new OutputRateCalculator(subscription, config, maxRateProvider);
+        calculator = new OutputRateCalculator(config, maxRateProvider);
     }
 
     @Test

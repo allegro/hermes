@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
-import com.codahale.metrics.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -48,7 +47,8 @@ class MaxRateCalculator {
 
         long start = clock.millis();
 
-        Map<SubscriptionName, Set<String>> subscriptionConsumers = subscriptionConsumersCache.getSubscriptionsConsumers();
+        Map<SubscriptionName, Set<String>> subscriptionConsumers =
+                subscriptionConsumersCache.getSubscriptionsConsumers();
 
         subscriptionConsumers.entrySet().forEach(entry -> {
             Subscription subscription = subscriptionsCache.getSubscription(entry.getKey());

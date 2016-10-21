@@ -57,6 +57,7 @@ class MaxRateBalancerTest extends Specification {
                 maxRate1 = Optional.of(maxRates["consumer1"])
                 maxRate2 = Optional.of(maxRates["consumer2"])
 
+                println maxRates["consumer1"].getMaxRate() + maxRates["consumer2"].getMaxRate()
                 assert Math.abs(maxRates["consumer1"].getMaxRate() - maxRates["consumer2"].getMaxRate()) <= 1d;
             }
 

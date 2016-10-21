@@ -52,8 +52,9 @@ public class MaxRateRegistry {
     void update(Subscription subscription, Map<String, MaxRate> newMaxRates) {
         try {
             for (Map.Entry<String, MaxRate> entry : newMaxRates.entrySet()) {
-                String maxRatePath = zookeeperPaths.consumersMaxRatePath(subscription.getQualifiedName(), entry.getKey());
-                    writeOrCreate(maxRatePath, objectMapper.writeValueAsBytes(entry.getValue()));
+                String maxRatePath = zookeeperPaths.consumersMaxRatePath(
+                        subscription.getQualifiedName(), entry.getKey());
+                writeOrCreate(maxRatePath, objectMapper.writeValueAsBytes(entry.getValue()));
             }
         } catch (Exception e) {
             throw new InternalProcessingException(e);
@@ -111,10 +112,12 @@ public class MaxRateRegistry {
         List<String> toAdd = ListUtils.subtract(currentConsumers, previousConsumers);
 
         if (!toRemove.isEmpty()) {
-            logger.info("Removing consumers for max rates for subscription {}: {}", subscription.getQualifiedName(), toRemove);
+            logger.info("Removing consumers for max rates for subscription {}: {}",
+                    subscription.getQualifiedName(), toRemove);
         }
         if (!toAdd.isEmpty()) {
-            logger.info("Adding consumers for max rates for subscription {}: {}", subscription.getQualifiedName(), toAdd);
+            logger.info("Adding consumers for max rates for subscription {}: {}",
+                    subscription.getQualifiedName(), toAdd);
         }
 
         toRemove.forEach(removedConsumer -> removeConsumerEntries(subscription, removedConsumer));
@@ -123,7 +126,8 @@ public class MaxRateRegistry {
 
     private void removeConsumerEntries(Subscription subscription, String consumerId) {
         try {
-            curator.delete().deletingChildrenIfNeeded().forPath(zookeeperPaths.consumersRatePath(subscription.getQualifiedName(), consumerId));
+            curator.delete().deletingChildrenIfNeeded()
+                    .forPath(zookeeperPaths.consumersRatePath(subscription.getQualifiedName(), consumerId));
         } catch (KeeperException.NoNodeException e) {
             // ignore
         } catch (Exception e) {

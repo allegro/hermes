@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
@@ -21,12 +20,7 @@ public class OutputRateCalculator {
 
     private final MaxRateProvider maxRateProvider;
 
-    private final Subscription subscription;
-
-    public OutputRateCalculator(Subscription subscription,
-                                ConfigFactory configFactory,
-                                MaxRateProvider maxRateProvider) {
-        this.subscription = subscription;
+    public OutputRateCalculator(ConfigFactory configFactory, MaxRateProvider maxRateProvider) {
         this.maxRateProvider = maxRateProvider;
 
         modeCalculators.put(Mode.NORMAL,
@@ -57,5 +51,13 @@ public class OutputRateCalculator {
         }
 
         return recalculatedResult;
+    }
+
+    public void start() {
+        maxRateProvider.start();
+    }
+
+    public void shutdown() {
+        maxRateProvider.shutdown();
     }
 }

@@ -294,5 +294,25 @@ public class HermesMetrics {
         return metricRegistry.counter(metricRegistryName(
                 Counters.MAXRATE_UPDATES, subscription.getTopicName(), subscription.getName()));
     }
+
+    public void registerMaxRateGauge(Subscription subscription, Gauge<Double> gauge) {
+        metricRegistry.register(metricRegistryName(
+                Gauges.MAX_RATE_VALUE, subscription.getTopicName(), subscription.getName()), gauge);
+    }
+
+    public void unregisterMaxRateGauge(Subscription subscription) {
+        metricRegistry.remove(metricRegistryName(
+                Gauges.MAX_RATE_VALUE, subscription.getTopicName(), subscription.getName()));
+    }
+
+    public void registerRateGauge(Subscription subscription, Gauge<Double> gauge) {
+        metricRegistry.register(metricRegistryName(
+                Gauges.MAX_RATE_ACTUAL_RATE_VALUE, subscription.getTopicName(), subscription.getName()), gauge);
+    }
+
+    public void unregisterRateGauge(Subscription subscription) {
+        metricRegistry.remove(metricRegistryName(
+                Gauges.MAX_RATE_ACTUAL_RATE_VALUE, subscription.getTopicName(), subscription.getName()));
+    }
 }
 

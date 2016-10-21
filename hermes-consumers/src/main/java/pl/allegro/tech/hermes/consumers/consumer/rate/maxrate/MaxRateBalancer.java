@@ -158,10 +158,6 @@ public class MaxRateBalancer {
                 return releasedRate;
             }
 
-            List<ConsumerRateChange> getChanges() {
-                return changes;
-            }
-
             Map<String, MaxRate> calculateNewMaxRates() {
                 return changes.stream()
                         .collect(Collectors.toMap(

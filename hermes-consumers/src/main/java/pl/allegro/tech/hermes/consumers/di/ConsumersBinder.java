@@ -33,14 +33,12 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClient;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
-import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.SubscriptionConsumersCache;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.SubscriptionConsumersCacheFactory;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
@@ -116,19 +114,23 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(Retransmitter.class);
         bindSingleton(ConsumerMonitor.class);
         bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {});
-        bind(DefaultHttpMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Request>>() {});
+        bind(DefaultHttpMetadataAppender.class).in(Singleton.class)
+                .to(new TypeLiteral<MetadataAppender<Request>>() {});
 
-        bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class).to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
+        bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class)
+                .to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
         bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class);
         bindFactory(SubscriptionCacheFactory.class).in(Singleton.class).to(SubscriptionsCache.class);
 
         bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
         bindFactory(WorkTrackerFactory.class).in(Singleton.class).to(WorkTracker.class);
-        bindFactory(SubscriptionAssignmentRegistryFactory.class).in(Singleton.class).to(SubscriptionAssignmentRegistry.class);
+        bindFactory(SubscriptionAssignmentRegistryFactory.class).in(Singleton.class)
+                .to(SubscriptionAssignmentRegistry.class);
         bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);
         bindFactory(ConsumersRuntimeMonitorFactory.class).in(Singleton.class).to(ConsumersRuntimeMonitor.class);
 
-        bindFactory(SubscriptionConsumersCacheFactory.class).in(Singleton.class).to(SubscriptionConsumersCache.class);
+        bindFactory(SubscriptionConsumersCacheFactory.class).in(Singleton.class)
+                .to(SubscriptionConsumersCache.class);
         bindSingleton(MaxRateSupervisor.class);
         bindSingleton(MaxRateProviderFactory.class);
         bindSingleton(MaxRateRegistry.class);
@@ -145,7 +147,8 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(OAuthAccessTokensLoader.class);
         bind(OAuthHttpClient.class).in(Singleton.class).to(OAuthClient.class);
         bind(OAuthSubscriptionAccessTokens.class).in(Singleton.class).to(OAuthAccessTokens.class);
-        bindFactory(OAuthProvidersNotifyingCacheFactory.class).in(Singleton.class).to(OAuthProvidersNotifyingCache.class);
+        bindFactory(OAuthProvidersNotifyingCacheFactory.class).in(Singleton.class)
+                .to(OAuthProvidersNotifyingCache.class);
     }
 
     private <T> void bindSingleton(Class<T> clazz) {
