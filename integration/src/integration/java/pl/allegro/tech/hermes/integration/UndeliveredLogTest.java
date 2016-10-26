@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
 
-import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -31,11 +30,12 @@ public class UndeliveredLogTest extends IntegrationTest {
 
         // when
         publisher.publish("logUndelivered.topic", TestMessage.simple().body());
-        wait.untilMessageDiscarded();
-        Response response = management.subscription().getLatestUndeliveredMessage("logUndelivered.topic", "subscription");
 
         // then
-        wait.until(() -> assertThat(response.getStatusInfo().getFamily()).isEqualTo(SUCCESSFUL));
+        wait.until(() -> {
+            Response response = management.subscription().getLatestUndeliveredMessage("logUndelivered.topic", "subscription");
+            assertThat(response.getStatusInfo().getFamily()).isEqualTo(SUCCESSFUL);
+        });
     }
 
 }

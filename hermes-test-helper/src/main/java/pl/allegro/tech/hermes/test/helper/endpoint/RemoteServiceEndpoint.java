@@ -107,7 +107,8 @@ public class RemoteServiceEndpoint {
 
     public void waitUntilReceived(long seconds) {
         logger.info("Expecting to receive {} messages", expectedMessages.size());
-        await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() -> receivedRequests.size() >= expectedMessages.size());
+        await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() ->
+                assertThat(receivedRequests.size()).isGreaterThanOrEqualTo(expectedMessages.size()));
         assertThat(receivedRequests.stream().map(LoggedRequest::getBodyAsString).collect(toList())).containsAll(expectedMessages);
     }
 
@@ -125,13 +126,14 @@ public class RemoteServiceEndpoint {
 
     public void waitUntilReceived(long seconds, int numberOfExpectedMessages, Consumer<LoggedRequest> requestBodyConsumer) {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
-        await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() -> receivedRequests.size() == numberOfExpectedMessages);
+        await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() ->
+                assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
         receivedRequests.stream().forEach(requestBodyConsumer::accept);
     }
 
     public void waitUntilReceived(Duration duration, int numberOfExpectedMessages, Consumer<LoggedRequest> requestBodyConsumer) {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
-        await().atMost(duration).until(() -> receivedRequests.size() == numberOfExpectedMessages);
+        await().atMost(duration).until(() -> assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
         receivedRequests.stream().forEach(requestBodyConsumer::accept);
     }
 
@@ -141,11 +143,6 @@ public class RemoteServiceEndpoint {
 
     public void makeSureNoneReceived() {
         logger.info("Expecting to receive no messages");
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException exception) {
-            logger.info("Who interrupted me?!", exception);
-        }
         assertThat(receivedRequests).isEmpty();
     }
 

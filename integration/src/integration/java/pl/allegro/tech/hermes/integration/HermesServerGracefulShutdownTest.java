@@ -9,7 +9,7 @@ import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertTha
 
 public class HermesServerGracefulShutdownTest extends AbstractFrontendShutdownTest {
 
-    @Test(enabled = false)
+    @Test
     public void shouldShutdownGracefully() throws Throwable {
         //given
         hermesServer.gracefulShutdown();

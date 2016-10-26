@@ -22,6 +22,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static java.util.stream.Collectors.summingLong;
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -59,7 +61,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         wait.untilSubscriptionEndsReiteration(topic, subscription);
 
         // then
-        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response).hasStatus(OK);
         remoteService.waitUntilReceived();
     }
 
@@ -82,7 +84,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
 
         // then
-        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response).hasStatus(OK);
         MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
 
         assertThat(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME).get(0).getOffset())
@@ -124,7 +126,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription.getName(), true, dateTime);
 
         // then
-        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response).hasStatus(OK);
         MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
         PartitionOffsetsPerKafkaTopic offsets = PartitionOffsetsPerKafkaTopic.from(
                 summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME)
@@ -145,7 +147,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
     private void sendMessagesOnTopic(Topic topic, int n) {
         remoteService.expectMessages(simpleMessages(n));
         for (TestMessage message : simpleMessages(n)) {
-            publisher.publish(topic.getQualifiedName(), message.body());
+            assertThat(publisher.publish(topic.getQualifiedName(), message.body()).getStatusInfo().getFamily()).isEqualTo(SUCCESSFUL);
         }
         remoteService.waitUntilReceived();
         remoteService.reset();

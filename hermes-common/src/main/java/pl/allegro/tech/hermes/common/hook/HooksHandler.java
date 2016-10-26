@@ -21,12 +21,11 @@ public class HooksHandler {
     }
 
     public void shutdown(ServiceLocator serviceLocator) {
-//        try {
+        try {
             shutdownHooks.forEach(c -> c.accept(serviceLocator));
-//        }
-//        finally {
-//            ((LoggerContext) LoggerFactory.getILoggerFactory()).stop();
-//        }
+        } finally {
+            ((LoggerContext) LoggerFactory.getILoggerFactory()).stop();
+        }
     }
 
     public void startup(ServiceLocator serviceLocator) {

@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.integration.helper;
 
 import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionFactory;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import kafka.api.GroupCoordinatorRequest;
 import kafka.api.GroupCoordinatorResponse;
 import kafka.common.ErrorMapping;
@@ -13,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
-import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -31,10 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_SUBSCRIPTION;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_TOPIC;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.*;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
@@ -78,7 +71,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     public void untilSubscriptionIsActivated(long currentTime, Topic topic, String subscription) {
-        until(Duration.ONE_MINUTE, topic, subscription, sub -> sub.getSignalTimesheet().getOrDefault(START, 0L) > currentTime);
+        until(Duration.TEN_SECONDS, topic, subscription, sub -> sub.getSignalTimesheet().getOrDefault(START, 0L) > currentTime);
     }
 
     public void untilSubscriptionIsActivated(Topic topic, String subscription) {
@@ -88,7 +81,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     public void untilSubscriptionIsSuspended(Topic topic, String subscription) {
         untilSubscriptionHasState(topic, subscription, Subscription.State.SUSPENDED);
 
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+        waitAtMost(adjust(Duration.TEN_SECONDS)).until(() ->
                 !endpoints.consumer().listSubscriptions().stream()
                         .filter(sub -> sub.getQualifiedName().equals(topic.getQualifiedName() + "$" + subscription))
                         .findAny()
@@ -105,7 +98,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     public void untilTopicIsUpdatedAfter(final long currentTime, Topic topic, String subscription) {
-        until(Duration.ONE_MINUTE, topic, subscription, sub ->
+        until(Duration.TEN_SECONDS, topic, subscription, sub ->
                 sub.getSignalTimesheet().getOrDefault(UPDATE_TOPIC, 0L) > currentTime);
     }
 
@@ -120,16 +113,8 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
                 sub.getSignalTimesheet().getOrDefault(COMMIT, 0L) > currentTime);
     }
 
-    public void untilPublishedMetricsPropagation() {
-        sleep(2);
-    }
-
-    public void untilMessageDiscarded() {
-        sleep(5);
-    }
-
     private void untilSubscriptionHasState(Topic topic, String subscription, Subscription.State expected) {
-        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() -> {
+        waitAtMost(adjust(Duration.TEN_SECONDS)).until(() -> {
             Subscription.State actual = endpoints.subscription().get(topic.getQualifiedName(), subscription).getState();
             logger.info("Expecting {} subscription state. Actual {}", expected, actual);
             return expected == actual;
@@ -137,7 +122,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     public void untilSubscriptionContentTypeChanged(Topic topic, String subscription, ContentType expected) {
-        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() -> {
+        waitAtMost(adjust(Duration.TEN_SECONDS)).until(() -> {
             ContentType actual = endpoints.subscription().get(topic.getQualifiedName(), subscription).getContentType();
             logger.info("Expecting {} subscription endpoint address. Actual {}", expected, actual);
             return expected.equals(actual);
@@ -145,7 +130,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
     }
 
     public void untilSubscriptionEndpointAddressChanged(Topic topic, String subscription, EndpointAddress expected) {
-        waitAtMost(adjust(Duration.TWO_MINUTES)).until(() -> {
+        waitAtMost(adjust(Duration.TEN_SECONDS)).until(() -> {
             EndpointAddress actual = endpoints.subscription().get(topic.getQualifiedName(), subscription).getEndpoint();
             logger.info("Expecting {} subscription endpoint address. Actual {}", expected, actual);
             return expected.equals(actual);
@@ -162,30 +147,6 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         );
     }
 
-    public void untilMessageTraceLogged(final DBCollection collection, final PublishedMessageTraceStatus status) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> collection.find(new BasicDBObject("status", status.toString())).count() > 0);
-    }
-
-    public void untilMessageTraceLogged(final DBCollection collection, final SentMessageTraceStatus status) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> collection.find(new BasicDBObject("status", status.toString())).count() > 0);
-    }
-
-    public void untilMessageIdLogged(final DBCollection collection, final String messageId) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> collection.find(new BasicDBObject("messageId", messageId)).count() > 0);
-    }
-
-    public void untilReceivedAnyMessage(final DBCollection collection) {
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> collection.find().count() > 0);
-    }
-
-    private void sleep(int seconds) {
-        try {
-            Thread.sleep(adjust(seconds * 1000));
-        } catch (InterruptedException exception) {
-            throw new RuntimeException("Who dares to interrupt me?", exception);
-        }
-    }
-
     private void untilZookeeperNodeCreation(final String path, final CuratorFramework zookeeper) {
         waitAtMost(adjust(60), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath(path) != null);
     }
@@ -198,7 +159,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         BlockingChannel channel = createBlockingChannel(host, port);
         channel.connect();
 
-        waitAtMost(adjust((Duration.ONE_MINUTE))).until(() -> {
+        waitAtMost(adjust((Duration.TEN_SECONDS))).until(() -> {
             channel.send(new GroupCoordinatorRequest(kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName()).asString(),
                     GroupCoordinatorRequest.CurrentVersion(), 0, "0"));
             GroupCoordinatorResponse metadataResponse = GroupCoordinatorResponse.readFrom(channel.receive().payload());
