@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.test.helper.cache.FakeTicker
 import spock.lang.Specification
 
+import javax.ws.rs.core.Response
 import java.time.Duration
 
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
@@ -89,7 +90,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         def failing = false
         rawSchemaClient.getVersions(topic.getName()) >> {
             if (failing) {
-                throw new RuntimeException("failing mode on")
+                throw new CouldNotFetchSchemaVersionsException(topic.qualifiedName, Response.serverError().build())
             }
             return [v1, v0]
         }
@@ -102,5 +103,4 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         versionsRepository.schemaVersionExists(topic, v1)
         versionsRepository.latestSchemaVersion(topic).get() == v1
     }
-
 }

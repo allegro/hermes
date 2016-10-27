@@ -4,9 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionException;
+import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionsException;
+import pl.allegro.tech.hermes.schema.CouldNotRegisterSchemaException;
 import pl.allegro.tech.hermes.schema.CouldNotRemoveSchemaException;
-import pl.allegro.tech.hermes.schema.InvalidSchemaException;
-import pl.allegro.tech.hermes.schema.SchemaRepositoryServerException;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
@@ -41,33 +42,39 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
     @Override
     public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version) {
+        String versionString = Integer.toString(version.value());
         Response response = target.path("subjects")
                 .path(topic.qualifiedName())
                 .path("versions")
-                .path(Integer.toString(version.value()))
+                .path(versionString)
                 .request()
                 .get();
-        return extractSchema(topic.qualifiedName(), response).map(RawSchema::valueOf);
+        return extractSchema(topic.qualifiedName(), versionString, response).map(RawSchema::valueOf);
     }
 
     @Override
     public Optional<RawSchema> getLatestSchema(TopicName topic) {
+        final String version = "latest";
         Response response = target.path("subjects")
                 .path(topic.qualifiedName())
                 .path("versions")
-                .path("latest")
+                .path(version)
                 .request()
                 .get();
-        return extractSchema(topic.qualifiedName(), response).map(RawSchema::valueOf);
+        return extractSchema(topic.qualifiedName(), version, response).map(RawSchema::valueOf);
     }
 
-    private Optional<String> extractSchema(String subject, Response response) {
-        if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-            String schema = response.readEntity(SchemaRegistryResponse.class).getSchema();
-            return Optional.of(schema);
-        } else {
-            logger.error("Could not find schema for subject {}, reason: {}", subject, response.getStatus());
-            return Optional.empty();
+    private Optional<String> extractSchema(String subject, String version, Response response) {
+        switch (response.getStatusInfo().getFamily()) {
+            case SUCCESSFUL:
+                String schema = response.readEntity(SchemaRegistryResponse.class).getSchema();
+                return Optional.of(schema);
+            case CLIENT_ERROR:
+                logger.error("Could not find schema for subject {} at version {}, reason: {}", subject, version, response.getStatus());
+                return Optional.empty();
+            case SERVER_ERROR:
+            default:
+                throw new CouldNotFetchSchemaVersionException(subject, version, response);
         }
     }
 
@@ -82,14 +89,19 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     }
 
     private List<SchemaVersion> extractSchemaVersions(String subject, Response response) {
-        if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-            return Arrays.stream(response.readEntity(Integer[].class))
-                    .sorted(Comparator.reverseOrder())
-                    .map(SchemaVersion::valueOf)
-                    .collect(Collectors.toList());
-        } else {
-            logger.error("Could not find schema versions for subject {}, reason: {}", subject, response.getStatus());
-            return Collections.emptyList();
+        switch (response.getStatusInfo().getFamily()) {
+            case SUCCESSFUL:
+                return Arrays.stream(response.readEntity(Integer[].class))
+                        .sorted(Comparator.reverseOrder())
+                        .map(SchemaVersion::valueOf)
+                        .collect(Collectors.toList());
+            case CLIENT_ERROR:
+                logger.error("Could not find schema versions for subject {}, reason: {} {}", subject, response.getStatus(),
+                        response.readEntity(String.class));
+                return Collections.emptyList();
+            case SERVER_ERROR:
+            default:
+                throw new CouldNotFetchSchemaVersionsException(subject, response);
         }
     }
 
@@ -101,24 +113,18 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(SchemaRegistryRequest.fromRawSchema(rawSchema), SCHEMA_REPO_CONTENT_TYPE));
-        checkSchemaRegistration(response.getStatusInfo(), topic.qualifiedName(), response.readEntity(String.class));
+        checkSchemaRegistration(topic.qualifiedName(), response);
     }
 
-    private void checkSchemaRegistration(Response.StatusType statusType, String topicName, String response) {
-        switch (statusType.getFamily()) {
+    private void checkSchemaRegistration(String subject, Response response) {
+        switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
-                logger.info("Successful write to schema registry for subject {}", topicName);
+                logger.info("Successful write to schema registry for subject {}", subject);
                 break;
             case CLIENT_ERROR:
-                logger.warn("Invalid schema for subject {}. Reason: {}", topicName, response);
-                throw new InvalidSchemaException("Invalid schema. Reason: " + response);
             case SERVER_ERROR:
-                logger.error("Failure write to schema repo for subject {}. Reason: {}", topicName, response);
-                throw new SchemaRepositoryServerException("Failure writing to schema registry. Reason: " + response);
             default:
-                logger.error("Unknown response from schema registry. Subject {}, HTTP status {}, Details: {}",
-                        topicName, statusType.getStatusCode(), response);
-                throw new SchemaRepositoryServerException("Unknown response from schema registry. Reason: " + response);
+                throw new CouldNotRegisterSchemaException(subject, response);
         }
     }
 
