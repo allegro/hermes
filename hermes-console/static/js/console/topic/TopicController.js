@@ -80,7 +80,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 passwordHint: 'Password for group ' + groupName
             }).result.then(function (result) {
                     passwordService.set(result.password);
-                    topicRepository.remove($scope.topic.name).$promise
+                    topicRepository.remove($scope.topic)
                         .then(function () {
                             toaster.pop('success', 'Success', 'Topic has been removed');
                             $location.path('/groups/' + groupName).replace();

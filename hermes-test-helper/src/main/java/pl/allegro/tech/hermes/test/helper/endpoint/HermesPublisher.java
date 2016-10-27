@@ -40,7 +40,7 @@ public class HermesPublisher {
     }
 
     private Hermes hermes(String hermesFrontendUrl) {
-        return new Hermes(hermesFrontendUrl)
+        return new Hermes(hermesFrontendUrl, hermesFrontendUrl)
                 .withManagementConfig(JerseyClientFactory.createConfig())
                 .withPublisherConfig(JerseyClientFactory.createConfig());
     }

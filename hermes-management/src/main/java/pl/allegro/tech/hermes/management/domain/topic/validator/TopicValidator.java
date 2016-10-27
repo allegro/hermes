@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
-import pl.allegro.tech.hermes.domain.topic.schema.CouldNotLoadSchemaException;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
+import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
 
 @Component
 public class TopicValidator {
@@ -30,7 +30,7 @@ public class TopicValidator {
             }
 
             try {
-                schemaRepository.getAvroSchema(updated);
+                schemaRepository.getLatestAvroSchema(updated);
             } catch (CouldNotLoadSchemaException e) {
                 throw new TopicValidationException("Avro schema not available, migration not permitted", e);
             }

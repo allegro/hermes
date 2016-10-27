@@ -26,6 +26,6 @@ management:
     connect-timeout: 2000
     read-timeout: 2000
 
-schema.repository.type: zookeeper
+schema.repository.type: schema_registry
 
 audit.enabled: false

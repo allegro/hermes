@@ -1,7 +1,8 @@
 var repository = angular.module('hermes.topic.repository', ['hermes.subscription.repository']);
 
-repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$location', 'SubscriptionRepository', 'SchemaRepository',
-    function (discovery, $resource, $location, subscriptionRepository, schemaRepository) {
+repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$location', 'SubscriptionRepository',
+    'SchemaRepository', 'TOPIC_CONFIG',
+    function (discovery, $resource, $location, subscriptionRepository, schemaRepository, topicConfig) {
 
         var repository = $resource(discovery.resolve('/topics/:name'), null, {update: {method: 'PUT'}});
         var previewRepository = $resource(discovery.resolve('/topics/:name/preview'), null);
@@ -13,6 +14,15 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
             if (schema && schema.trim()) {
                 return promise.then(function () {
                     return schemaRepository.save(topic.name, schema).$promise;
+                });
+            }
+            return promise;
+        }
+
+        function wrapSchemaRemove(topic, promise) {
+            if (topicConfig.removeSchema && topic.contentType == 'AVRO') {
+                return promise.then(function () {
+                    return schemaRepository.remove(topic.name).$promise;
                 });
             }
             return promise;
@@ -41,8 +51,8 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
             add: function (topic, schema) {
                 return wrapSchemaSave(topic, schema, listing.save({}, topic).$promise);
             },
-            remove: function (name) {
-                return repository.remove({name: name});
+            remove: function (topic) {
+                return wrapSchemaRemove(topic, repository.delete({name: topic.name}).$promise);
             },
             save: function (topic, schema) {
                 return wrapSchemaSave(topic, schema, repository.update({name: topic.name}, topic).$promise);
@@ -85,6 +95,9 @@ repository.factory('SchemaRepository', ['DiscoveryService', '$resource',
             },
             save: function (name, schema) {
                 return repository.save({name: name}, schema);
+            },
+            remove: function(name) {
+                return repository.remove({name: name});
             }
         };
     }]);

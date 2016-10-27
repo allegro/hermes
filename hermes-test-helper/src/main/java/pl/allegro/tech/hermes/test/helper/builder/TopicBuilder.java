@@ -11,10 +11,6 @@ public class TopicBuilder {
 
     private String description = "description";
 
-    private boolean validationEnabled = false;
-
-    private boolean validationDryRunEnabled = false;
-
     private boolean jsonToAvroDryRunEnabled = false;
 
     private Topic.Ack ack = Topic.Ack.LEADER;
@@ -47,8 +43,8 @@ public class TopicBuilder {
 
     public Topic build() {
         return new Topic(
-                name, description, retentionTime, validationEnabled, validationDryRunEnabled, migratedFromJsonType,
-                ack, trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerialization
+                name, description, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
+                jsonToAvroDryRunEnabled, schemaVersionAwareSerialization
         );
     }
 
@@ -64,16 +60,6 @@ public class TopicBuilder {
 
     public TopicBuilder withRetentionTime(int retentionTime) {
         this.retentionTime = new RetentionTime(retentionTime);
-        return this;
-    }
-
-    public TopicBuilder withValidation(boolean enabled) {
-        this.validationEnabled = enabled;
-        return this;
-    }
-
-    public TopicBuilder withValidationDryRun(boolean enabled) {
-        this.validationDryRunEnabled = enabled;
         return this;
     }
 

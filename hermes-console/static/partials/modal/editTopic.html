@@ -58,18 +58,12 @@
                     </select>
                 </div>
             </div>
-            <div class="form-group {{topicForm.messageSchema.$valid ? '' : 'has-error'}}">
-                <label for="messageSchema" class="col-md-3 control-label" ng-show="topic.contentType === 'AVRO'">
+            <div class="form-group {{topicForm.messageSchema.$valid ? '' : 'has-error'}}" ng-show="topic.contentType === 'AVRO'">
+                <label for="messageSchema" class="col-md-3 control-label">
                     <a href="http://hermes-pubsub.rtfd.org/en/latest/user/publishing-avro/" target="_blank">AVRO schema</a>
                 </label>
-                <label for="messageSchema" class="col-md-3 control-label" ng-show="topic.contentType === 'JSON'">
-                    <a href="http://hermes-pubsub.rtfd.org/en/latest/user/publishing-json/" target="_blank">JSON schema</a>
-                </label>
                 <div class="col-md-9">
-                    <textarea class="form-control" id="messageSchema" ng-required="topic.validation || topic.contentType === 'AVRO'"
-                              name="messageSchema" placeholder="Message schema"
-                              ng-model="messageSchema" rows="25"></textarea>
-                    <div class="alert alert-info" ng-show="topic.contentType === 'AVRO'">
+                    <div class="alert alert-info">
                         Schema definition <b>must contain</b> an additional field for Hermes internal use:<br>
                         <pre>
 {
@@ -79,16 +73,9 @@
 }
                         </pre>
                     </div>
-                </div>
-            </div>
-            <div class="form-group" ng-show="topic.contentType === 'JSON'">
-                <div class="col-md-offset-3 col-md-9">
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" id="messageValidation" name="messageValidation" ng-model="topic.validation"/>
-                            Validate events with specified schema.
-                        </label>
-                    </div>
+                    <textarea class="form-control" id="messageSchema" ng-required="topic.contentType === 'AVRO'"
+                              name="messageSchema" placeholder="Message schema"
+                              ng-model="messageSchema" rows="20"></textarea>
                 </div>
             </div>
         </form>

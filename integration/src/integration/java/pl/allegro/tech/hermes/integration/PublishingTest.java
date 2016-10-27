@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
-import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
@@ -32,26 +30,16 @@ import java.net.SocketTimeoutException;
 import java.util.UUID;
 
 import static javax.ws.rs.client.ClientBuilder.newClient;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.glassfish.jersey.client.ClientProperties.REQUEST_ENTITY_PROCESSING;
 import static org.glassfish.jersey.client.RequestEntityProcessing.CHUNKED;
-import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PublishingTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
-
-    private String schema;
-
-    @BeforeClass
-    public void initialize() throws IOException {
-        schema = IOUtils.toString(this.getClass().getResourceAsStream("/schema/example.json"));
-    }
 
     @BeforeMethod
     public void initializeAlways() {
@@ -113,27 +101,6 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldSendPendingMessagesAfterSubscriptionIsResumed() {
-        // given
-        Topic topic = operations.buildTopic("publishResumedGroup", "topic");
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsActivated(topic, "subscription");
-        publisher.publish(topic.getQualifiedName(), TestMessage.of("nothing", "important").body());
-
-        operations.suspendSubscription(topic, "subscription");
-        wait.untilSubscriptionIsSuspended(topic, "subscription");
-        remoteService.expectMessages(TestMessage.of("hello", "world").body());
-
-        // when
-        publisher.publish(topic.getQualifiedName(), TestMessage.of("hello", "world").body());
-
-        operations.activateSubscription(topic, "subscription");
-
-        // then
-        remoteService.waitUntilReceived();
-    }
-
-    @Test
     public void shouldConsumeMessagesOnMultipleSubscriptions() {
         // given
         Topic topic = operations.buildTopic("publishMultipleGroup", "topic");
@@ -173,7 +140,7 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Unreliable
-    @Test(enabled = false)
+    @Test
     public void shouldTreatMessageWithInvalidInterpolationAsUndelivered() {
         // given
         Topic topic = operations.buildTopic("publishInvalidInterpolatedGroup", "topic");
@@ -186,16 +153,16 @@ public class PublishingTest extends IntegrationTest {
 
         TestMessage message = TestMessage.of("hello", "world");
         RemoteServiceEndpoint interpolatedEndpoint = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/hello/");
-        interpolatedEndpoint.expectMessages(message.body());
 
         // when
-        publisher.publish(topic.getQualifiedName(), message.body());
+        assertThat(publisher.publish(topic.getQualifiedName(), message.body())).hasStatus(CREATED);
 
         // then
+        wait.until(() -> {
+            long discarded = management.subscription().getMetrics("publishInvalidInterpolatedGroup.topic", "subscription").getDiscarded();
+            assertThat(discarded).isEqualTo(1);
+        });
         interpolatedEndpoint.makeSureNoneReceived();
-        wait.untilMessageDiscarded();
-        long discarded = management.subscription().getMetrics("publishInvalidInterpolatedGroup.topic", "subscription").getDiscarded();
-        assertThat(discarded).isEqualTo(1);
     }
 
     @Test
@@ -254,61 +221,6 @@ public class PublishingTest extends IntegrationTest {
 
         ZookeeperPaths paths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue().toString());
         assertThat(SharedServices.services().zookeeper().checkExists().forPath(paths.topicPath(nonExisting))).isNull();
-    }
-
-    @Test
-    public void shouldPublishValidMessageWithJsonSchema() {
-        //given
-        String message = "{\"id\": 6}";
-        Topic topic = operations.buildTopic(topic("schema.topic.validJson")
-                .withValidation(true)
-                .withContentType(JSON)
-                .build()
-        );
-        operations.saveSchema(topic, schema);
-
-        //when
-        Response response = publisher.publish("schema.topic.validJson", message);
-
-        //then
-        assertThat(response).hasStatus(CREATED);
-    }
-
-    @Test
-    public void shouldNotPublishInvalidMessageWithJsonSchema() {
-        // given
-        String messageInvalidWithSchema = "{\"id\": \"shouldBeNumber\"}";
-        Topic topic = operations.buildTopic(topic("schema.topic.invalidJson")
-                .withValidation(true)
-                .withContentType(JSON)
-                .build()
-        );
-        operations.saveSchema(topic, schema);
-
-        //when
-        Response response = publisher.publish("schema.topic.invalidJson", messageInvalidWithSchema);
-
-        //then
-        assertThat(response).hasStatus(BAD_REQUEST);
-    }
-
-    @Test
-    public void shouldPublishInvalidJsonMessageOnValidationDryRun() {
-        // given
-        String invalidMessage = "{\"id\": \"shouldBeNumber\"}";
-        Topic topic = operations.buildTopic(topic("schema.topicWithValidationDryRun")
-                .withValidation(true)
-                .withValidationDryRun(true)
-                .withContentType(JSON)
-                .build()
-        );
-        operations.saveSchema(topic, schema);
-
-        //when
-        Response response = publisher.publish("schema.topicWithValidationDryRun", invalidMessage);
-
-        //then
-        assertThat(response).hasStatus(CREATED);
     }
 
     @Test

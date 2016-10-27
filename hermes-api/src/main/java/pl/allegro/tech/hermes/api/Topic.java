@@ -17,10 +17,6 @@ public class Topic {
     @NotNull
     private String description;
 
-    private boolean validationEnabled = false;
-
-    private boolean validationDryRunEnabled = false;
-
     private boolean jsonToAvroDryRunEnabled = false;
 
     @NotNull
@@ -44,14 +40,11 @@ public class Topic {
     private boolean schemaVersionAwareSerializationEnabled = false;
 
     public Topic(TopicName name, String description, RetentionTime retentionTime,
-                 boolean validationEnabled, boolean validationDryRunEnabled, boolean migratedFromJsonType,
-                 Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
-                 boolean schemaVersionAwareSerializationEnabled) {
+                 boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
+                 boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled) {
         this.name = name;
         this.description = description;
         this.retentionTime = retentionTime;
-        this.validationEnabled = validationEnabled;
-        this.validationDryRunEnabled = validationDryRunEnabled;
         this.ack = (ack == null ? Ack.LEADER : ack);
         this.trackingEnabled = trackingEnabled;
         this.migratedFromJsonType = migratedFromJsonType;
@@ -65,17 +58,14 @@ public class Topic {
             @JsonProperty("name") String qualifiedName,
             @JsonProperty("description") String description,
             @JsonProperty("retentionTime") RetentionTime retentionTime,
-            @JsonProperty("validation") boolean validationEnabled,
-            @JsonProperty("validationDryRun") boolean validationDryRunEnabled,
             @JsonProperty("jsonToAvroDryRun") boolean jsonToAvroDryRunEnabled,
             @JsonProperty("ack") Ack ack,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
             @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType) {
-        this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, validationEnabled,
-                validationDryRunEnabled, migratedFromJsonType, ack, trackingEnabled, contentType, jsonToAvroDryRunEnabled,
-                schemaVersionAwareSerializationEnabled);
+        this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, migratedFromJsonType, ack,
+                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled);
     }
 
     public RetentionTime getRetentionTime() {
@@ -84,8 +74,8 @@ public class Topic {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, retentionTime, validationEnabled, validationDryRunEnabled,
-                migratedFromJsonType, trackingEnabled, ack, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled);
+        return Objects.hash(name, description, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
+                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled);
     }
 
     @Override
@@ -101,8 +91,6 @@ public class Topic {
         return Objects.equals(this.name, other.name)
                 && Objects.equals(this.description, other.description)
                 && Objects.equals(this.retentionTime, other.retentionTime)
-                && Objects.equals(this.isValidationEnabled(), other.isValidationEnabled())
-                && Objects.equals(this.validationDryRunEnabled, other.validationDryRunEnabled)
                 && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
@@ -131,16 +119,6 @@ public class Topic {
 
     public void setRetentionTime(RetentionTime retentionTime) {
         this.retentionTime = retentionTime;
-    }
-
-    @JsonProperty("validation")
-    public boolean isValidationEnabled() {
-        return validationEnabled || ContentType.AVRO == contentType;
-    }
-
-    @JsonProperty("validationDryRun")
-    public boolean isValidationDryRunEnabled() {
-        return validationDryRunEnabled;
     }
 
     @JsonProperty("jsonToAvroDryRun")

@@ -10,6 +10,7 @@
     <logger name="org.apache.zookeeper" level="warn" />
     <logger name="kafka" level="warn" />
     <logger name="org.apache.kafka.common.network.Selector" level="error"/>
+    <logger name="org.eclipse.jetty.server.HttpChannel" level="error"/>
 
     <logger name="org.mortbay.log" level="info" />
 

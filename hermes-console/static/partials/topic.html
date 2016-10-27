@@ -54,16 +54,12 @@
                         <span uib-popover='For how many days message is available for subscribers after being published.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p><strong>Tracking enabled:</strong> {{topic.trackingEnabled}}</p>
-                    <p>
-                        <strong>Validation enabled:</strong> {{topic.validation}}
-                        <span uib-popover='Should messages be validated against provided schema. Invalid messages are discarded and 400 response code is sent to publisher. Always on for Avro topics.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
-                    </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row" ng-show="topic.contentType == 'AVRO'">
         <div class="col-md-12">
             <div class="panel panel-default">
                 <div style="position: relative">

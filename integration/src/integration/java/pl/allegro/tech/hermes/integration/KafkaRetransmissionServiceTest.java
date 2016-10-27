@@ -6,9 +6,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -16,11 +16,14 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static java.util.stream.Collectors.summingLong;
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -30,14 +33,14 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
     private final AvroUser user = new AvroUser();
+    private Clock clock = Clock.systemDefaultZone();
 
     @BeforeMethod
     public void initializeAlways() {
         remoteService = new RemoteServiceEndpoint(services().serviceMock());
     }
 
-    @Test(enabled = false)
-    @Unreliable
+    @Test
     public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
         // given
         String subscription = "subscription";
@@ -50,7 +53,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         Thread.sleep(1000);
         sendMessagesOnTopic(topic, 2);
-        wait.untilConsumerCommitsOffset();
+        wait.untilConsumerCommitsOffset(topic, subscription);
 
         // when
         remoteService.expectMessages(simpleMessages(2));
@@ -58,7 +61,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         wait.untilSubscriptionEndsReiteration(topic, subscription);
 
         // then
-        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response).hasStatus(OK);
         remoteService.waitUntilReceived();
     }
 
@@ -75,13 +78,13 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         Thread.sleep(2000); //wait 1s because our date time format has seconds precision
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         sendMessagesOnTopic(topic, 2);
-        wait.untilConsumerCommitsOffset();
+        wait.untilConsumerCommitsOffset(topic, subscription);
 
         // when
         Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
 
         // then
-        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response).hasStatus(OK);
         MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
 
         assertThat(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME).get(0).getOffset())
@@ -92,34 +95,38 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
     @Test
     public void shouldMoveOffsetInDryRunModeForTopicsMigratedToAvro() throws InterruptedException, IOException {
         // given
-        String subscription = "subscription";
-
         Topic topic = operations.buildTopic("resetOffsetGroup", "migratedTopicDryRun");
-        operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
+        long currentTime = clock.millis();
+        Subscription subscription = operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        wait.untilSubscriptionIsActivated(currentTime, topic, subscription.getName());
 
         sendMessagesOnTopic(topic, 1);
+        wait.untilConsumerCommitsOffset(topic, subscription.getName());
+
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
         sendMessagesOnTopic(topic, 1);
-        wait.untilConsumerCommitsOffset();
+        wait.untilConsumerCommitsOffset(topic, subscription.getName());
 
         PatchData patch = patchData()
                 .set("contentType", ContentType.AVRO)
                 .set("migratedFromJsonType", true)
                 .build();
         operations.saveSchema(topic, user.getSchemaAsString());
-        operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", patch);
 
-        Thread.sleep(10000);
+        currentTime = clock.millis();
+        operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", patch);
+        wait.untilTopicIsUpdatedAfter(currentTime, topic, subscription.getName());
+
         sendAvroMessageOnTopic(topic, user.asTestMessage());
-        wait.untilConsumerCommitsOffset();
+        wait.untilConsumerCommitsOffset(topic, subscription.getName());
 
         // when
-        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
+        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription.getName(), true, dateTime);
 
         // then
-        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response).hasStatus(OK);
         MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
         PartitionOffsetsPerKafkaTopic offsets = PartitionOffsetsPerKafkaTopic.from(
                 summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME)
@@ -131,7 +138,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
 
     private void sendAvroMessageOnTopic(Topic topic, TestMessage message) {
         remoteService.expectMessages(message);
-        Response response = publisher.publish(topic.getQualifiedName(), message.withEmptyAvroMetadata().body());
+        Response response = publisher.publish(topic.getQualifiedName(), message.body());
         assertThat(response).hasStatus(Response.Status.CREATED);
         remoteService.waitUntilReceived(60);
         remoteService.reset();
@@ -140,7 +147,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
     private void sendMessagesOnTopic(Topic topic, int n) {
         remoteService.expectMessages(simpleMessages(n));
         for (TestMessage message : simpleMessages(n)) {
-            publisher.publish(topic.getQualifiedName(), message.body());
+            assertThat(publisher.publish(topic.getQualifiedName(), message.body()).getStatusInfo().getFamily()).isEqualTo(SUCCESSFUL);
         }
         remoteService.waitUntilReceived();
         remoteService.reset();

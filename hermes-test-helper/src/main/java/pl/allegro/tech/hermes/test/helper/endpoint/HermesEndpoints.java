@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.endpoints.*;
+import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 import pl.allegro.tech.hermes.test.helper.client.Hermes;
 
 import java.util.List;
@@ -20,6 +21,8 @@ public class HermesEndpoints {
 
     private final OAuthProviderEndpoint oAuthProviderEndpoint;
 
+    private final ConsumerEndpoint consumerEndpoint;
+
     private final SupportTeamsEndpoint supportTeamsEndpoint;
 
     private final BlacklistEndpoint blacklistEndpoint;
@@ -32,15 +35,16 @@ public class HermesEndpoints {
         this.queryEndpoint = hermes.createQueryEndpoint();
         this.blacklistEndpoint = hermes.createBlacklistEndpoint();
         this.oAuthProviderEndpoint = hermes.createOAuthProviderEndpoint();
+        this.consumerEndpoint = hermes.createConsumerEndpoint();
         this.supportTeamsEndpoint = hermes.createSupportTeamsEndpoint();
     }
 
-    public HermesEndpoints(String hermesFrontendUrl) {
-        this(createHermesFromUrl(hermesFrontendUrl));
+    public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
+        this(createHermesFromUrl(hermesFrontendUrl, consumerUrl));
     }
 
-    private static Hermes createHermesFromUrl(String hermesFrontendUrl) {
-        return new Hermes(hermesFrontendUrl)
+    private static Hermes createHermesFromUrl(String hermesFrontendUrl, String consumerUrl) {
+        return new Hermes(hermesFrontendUrl, consumerUrl)
                 .withManagementConfig(JerseyClientFactory.createConfig())
                 .withPublisherConfig(JerseyClientFactory.createConfig());
     }
@@ -83,6 +87,10 @@ public class HermesEndpoints {
 
     public OAuthProviderEndpoint oAuthProvider() {
         return oAuthProviderEndpoint;
+    }
+
+    public ConsumerEndpoint consumer() {
+        return consumerEndpoint;
     }
 }
 

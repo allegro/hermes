@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integration.helper.graphite;
 
 import com.google.common.collect.Maps;
-import com.jayway.awaitility.Duration;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +16,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Duration.TEN_SECONDS;
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class GraphiteMockServer {
 
@@ -68,7 +69,7 @@ public class GraphiteMockServer {
     }
 
     public void waitUntilReceived() {
-        await().atMost(Duration.TEN_SECONDS).until(() -> {
+        await().atMost(adjust(TEN_SECONDS)).until(() -> {
             for (String metric : expectedMetrics.keySet()) {
                 if (assertedMetrics.get(metric) == null || !assertedMetrics.get(metric)) {
                     LOGGER.debug("mismatch metric {}", metric);

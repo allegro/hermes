@@ -46,7 +46,8 @@
             "retentionTime": {
                 "duration": 1
             }
-        }
+        },
+        "removeSchema": false
     },
     "subscription": {
         "endpointAddressResolverMetadata": {

@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
+import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
@@ -18,6 +19,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.time.Clock;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -38,8 +40,8 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 public class PublishingAvroTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
-
     private AvroUser user;
+    private Clock clock = Clock.systemDefaultZone();
 
     @BeforeClass
     public void initialize() throws Exception {
@@ -55,7 +57,6 @@ public class PublishingAvroTest extends IntegrationTest {
     public void shouldPublishAvroAndConsumeJsonMessage() throws InterruptedException, ExecutionException, TimeoutException, IOException {
         // given
         Topic topic = operations.buildTopic(topic("publishAvroConsumeJson.topic")
-                .withValidation(true)
                 .withContentType(AVRO)
                 .build()
         );
@@ -74,7 +75,6 @@ public class PublishingAvroTest extends IntegrationTest {
     public void shouldPublishAvroAndConsumeAvroMessage() throws InterruptedException, ExecutionException, TimeoutException, IOException {
         // given
         Topic topic = operations.buildTopic(topic("publishAvroConsumeAvro.topic")
-                .withValidation(true)
                 .withContentType(AVRO)
                 .build()
         );
@@ -93,7 +93,6 @@ public class PublishingAvroTest extends IntegrationTest {
     public void shouldSendAvroAfterSubscriptionContentTypeChanged() throws Exception {
         // given
         Topic topic = operations.buildTopic(topic("publishAvroAfterTopicEditing.topic")
-                .withValidation(true)
                 .withContentType(AVRO)
                 .build()
         );
@@ -111,9 +110,9 @@ public class PublishingAvroTest extends IntegrationTest {
                 .update(topic.getQualifiedName(), "subscription", patchData().set("contentType", ContentType.AVRO).build()))
                 .hasStatus(OK);
 
+        long currentTime = clock.millis();
         wait.untilSubscriptionContentTypeChanged(topic, "subscription", ContentType.AVRO);
-        wait.untilSubscriptionIsActivated(topic, "subscription");
-        wait.untilConsumersUpdateSubscription();
+        wait.untilConsumersUpdateSubscription(currentTime, topic, "subscription");
 
         publisher.publish("publishAvroAfterTopicEditing.topic", user.asBytes());
 
@@ -125,7 +124,6 @@ public class PublishingAvroTest extends IntegrationTest {
     public void shouldGetBadRequestForPublishingInvalidMessageWithSchema() throws InterruptedException, ExecutionException, TimeoutException {
         // given
         Topic topic = operations.buildTopic(topic("invalidAvro.topic")
-                .withValidation(true)
                 .withContentType(AVRO).build());
         operations.saveSchema(topic, user.getSchemaAsString());
 
@@ -140,8 +138,6 @@ public class PublishingAvroTest extends IntegrationTest {
     public void shouldIgnoreValidationDryRunSettingForAvroTopic() {
         // given
         Topic topic = operations.buildTopic(topic("invalidAvro.topicWithValidationDryRun")
-                .withValidation(true)
-                .withValidationDryRun(true)
                 .withContentType(AVRO).build());
         operations.saveSchema(topic, user.getSchemaAsString());
 
@@ -156,7 +152,6 @@ public class PublishingAvroTest extends IntegrationTest {
     public void shouldPublishJsonMessageConvertedToAvroForAvroTopics() {
         // given
         Topic topic = operations.buildTopic(topic("avro.topic2")
-                .withValidation(true)
                 .withContentType(AVRO)
                 .build()
         );
@@ -172,7 +167,6 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldGetBadRequestForJsonInvalidWithAvroSchema() {
         Topic topic = topic("avro.invalidJson")
-                .withValidation(true)
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
         operations.saveSchema(topic, user.getSchemaAsString());
@@ -207,6 +201,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
+    @Unreliable
     public void shouldPublishAndConsumeJsonMessageAfterMigrationFromJsonToAvro() throws Exception {
         // given
         Topic topic = operations.buildTopic(topic("migrated", "topic")
@@ -221,7 +216,7 @@ public class PublishingAvroTest extends IntegrationTest {
         remoteService.expectMessages(beforeMigrationMessage, afterMigrationMessage);
 
         publisher.publish(topic.getQualifiedName(), beforeMigrationMessage.body());
-        wait.untilConsumerCommitsOffset();
+        wait.untilConsumerCommitsOffset(topic, "subscription");
 
         PatchData patch = patchData()
                 .set("contentType", ContentType.AVRO)
@@ -246,7 +241,6 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // and
         Topic topic = operations.buildTopic(topic("publishAvroConsumeJsonWithTraceId.topic")
-                .withValidation(true)
                 .withContentType(AVRO).build()
         );
         operations.saveSchema(topic, user.getSchemaAsString());
@@ -270,7 +264,6 @@ public class PublishingAvroTest extends IntegrationTest {
     public void shouldUseExplicitSchemaVersionWhenPublishingAndConsuming() throws IOException {
         // given
         Topic topic = operations.buildTopic(topic("explicitSchemaVersion.topic")
-                .withValidation(true)
                 .withContentType(AVRO)
                 .withSchemaVersionAwareSerialization()
                 .build()
@@ -281,12 +274,12 @@ public class PublishingAvroTest extends IntegrationTest {
         operations.saveSchema(topic, load("/schema/user_v2.avsc").toString());
 
         // when
-        assertThat(publisher.publishAvro(topic.getQualifiedName(), user.asBytes(), of(SCHEMA_VERSION.getName(), "0")))
+        assertThat(publisher.publishAvro(topic.getQualifiedName(), user.asBytes(), of(SCHEMA_VERSION.getName(), "1")))
                 .hasStatus(CREATED);
 
         // then
         remoteService.waitUntilRequestReceived(request -> {
-            assertThat(request.getHeaders().getHeader(SCHEMA_VERSION.getName()).firstValue()).isEqualTo("0");
+            assertThat(request.getHeaders().getHeader(SCHEMA_VERSION.getName()).firstValue()).isEqualTo("1");
             assertBodyDeserializesIntoUser(request.getBodyAsString(), user);
         });
     }

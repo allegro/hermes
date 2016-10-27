@@ -11,6 +11,6 @@
         {"name": "name", "type": "string"},
         {"name": "age",  "type": "int"},
         {"name": "favoriteColor", "type": ["null", "string"]},
-        {"name": "other", "type": ["null", "string"]}
+        {"name": "other", "type": ["null", "string"], "default": null}
     ]
 }

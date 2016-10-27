@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.google.common.collect.ImmutableMap;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
@@ -25,7 +26,7 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
 
     @BeforeClass
     public void initializeIntegrationTest() {
-        this.management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL);
+        this.management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL);
         this.publisher = new HermesPublisher(FRONTEND_URL);
         this.wait = new Waiter(management, services().zookeeper(), services().kafkaZookeeper(), KAFKA_NAMESPACE);
         this.operations = new HermesAPIOperations(management, wait);
@@ -35,4 +36,9 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
                 CONFIG_FACTORY);
     }
 
+    @AfterMethod
+    public void after() {
+        management.query().querySubscriptions("{\"query\": {}}").forEach(sub ->
+                management.subscription().remove(sub.getQualifiedTopicName(), sub.getName()));
+    }
 }

@@ -11,7 +11,7 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Group;
-import pl.allegro.tech.hermes.api.SchemaSource;
+import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -101,6 +101,6 @@ public class FrontendEnvironment {
     }
 
     private void saveSchema(CuratorFramework curatorFramework, ZookeeperPaths zkPaths, Topic topic, String schemaSource) {
-        save(curatorFramework, zkPaths.topicPath(topic.getName(), "schema"), SchemaSource.valueOf(schemaSource).value().getBytes());
+        save(curatorFramework, zkPaths.topicPath(topic.getName(), "schema"), RawSchema.valueOf(schemaSource).value().getBytes());
     }
 }

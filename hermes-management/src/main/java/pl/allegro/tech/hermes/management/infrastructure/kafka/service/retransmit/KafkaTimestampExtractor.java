@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
-import pl.allegro.tech.hermes.domain.topic.schema.SchemaRepository;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 
 class KafkaTimestampExtractor {
@@ -36,7 +36,7 @@ class KafkaTimestampExtractor {
     private UnwrappedMessageContent unwrapContent(byte[] message) {
         switch (kafkaTopic.contentType()) {
             case AVRO:
-                return messageContentWrapper.unwrapAvro(message, topic, schemaRepository);
+                return messageContentWrapper.unwrapAvro(message, topic);
             case JSON:
                 return messageContentWrapper.unwrapJson(message);
         }

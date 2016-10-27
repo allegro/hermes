@@ -17,7 +17,7 @@ class OffsetCommitterTest extends Specification {
     private MockMessageCommitter messageCommitter = new MockMessageCommitter()
 
     private OffsetCommitter committer = new OffsetCommitter(
-            queue, [messageCommitter], 10, new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
+            queue, messageCommitter, 10, new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
     )
 
     def "should commit smallest offset of uncommitted message"() {
@@ -118,25 +118,6 @@ class OffsetCommitterTest extends Specification {
 
         then:
         messageCommitter.wereCommitted(2)
-    }
-
-    def "should retry committing offsets that failed to commit on first try in next iteration"() {
-        given:
-        queue.offerInflightOffset(offset(1, 1))
-        queue.offerCommittedOffset(offset(1, 1))
-
-        FailedToCommitOffsets failedResult = new FailedToCommitOffsets()
-        failedResult.add(offset(1, 2))
-
-        messageCommitter.returnValue(failedResult)
-
-        when:
-        committer.run()
-        committer.run()
-
-        then:
-        messageCommitter.wereCommitted(1, offset(1, 2))
-        messageCommitter.wereCommitted(2, offset(1, 2))
     }
 
     private SubscriptionPartitionOffset offset(int partition, long offset) {

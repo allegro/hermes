@@ -52,7 +52,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     private static final String KAFKA_ZK_CONNECT_STRING = ZOOKEEPER_CONNECT_STRING + "/backupKafka";
     private static final String KAFKA_BROKERS_LIST = "localhost:" + KAFKA_PORT;
 
-    private final HermesEndpoints management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL);
+    private final HermesEndpoints management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL);
     private final HermesAPIOperations operations = new HermesAPIOperations(management, new Waiter(management));
     private final HermesPublisher publisher = new HermesPublisher(FRONTEND_URL);
 
@@ -136,7 +136,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         File backup = new File(tempDir.getAbsoluteFile(), "hermes-buffer.dat");
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(backup);
-        MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null);
+        MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null, null);
 
         String messageId = randomUUID().toString();
         long timestamp = now().toEpochMilli();

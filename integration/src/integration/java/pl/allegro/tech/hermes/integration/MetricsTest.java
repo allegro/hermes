@@ -20,6 +20,7 @@ import javax.ws.rs.BadRequestException;
 import java.util.UUID;
 
 import static com.googlecode.catchexception.CatchException.catchException;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
@@ -39,7 +40,7 @@ public class MetricsTest extends IntegrationTest {
     }
 
     @Unreliable
-    @Test(enabled = false)
+    @Test
     public void shouldIncreaseTopicMetricsAfterMessageHasBeenPublished() {
         // given
         Topic topic = operations.buildTopic("topicMetricsGroup", "topic");
@@ -47,22 +48,23 @@ public class MetricsTest extends IntegrationTest {
         graphiteEndpoint.returnMetricForTopic("topicMetricsGroup", "topic", 10, 15);
 
         remoteService.expectMessages(TestMessage.simple().body());
-        publisher.publish("topicMetricsGroup.topic", TestMessage.simple().body());
+        assertThat(publisher.publish("topicMetricsGroup.topic", TestMessage.simple().body()).getStatus())
+                .isEqualTo(CREATED.getStatusCode());
         remoteService.waitUntilReceived();
 
-        wait.untilPublishedMetricsPropagation();
+        wait.until(() -> {
+            // when
+            TopicMetrics metrics = management.topic().getMetrics("topicMetricsGroup.topic");
 
-        // when
-        TopicMetrics metrics = management.topic().getMetrics("topicMetricsGroup.topic");
-
-        // then
-        assertThat(metrics.getRate()).isEqualTo("10");
-        assertThat(metrics.getDeliveryRate()).isEqualTo("15");
-        assertThat(metrics.getPublished()).isEqualTo(1);
+            // then
+            assertThat(metrics.getRate()).isEqualTo("10");
+            assertThat(metrics.getDeliveryRate()).isEqualTo("15");
+            assertThat(metrics.getPublished()).isEqualTo(1);
+        });
     }
 
     @Unreliable
-    @Test(enabled = false)
+    @Test
     public void shouldIncreaseSubscriptionDeliveredMetricsAfterMessageDelivered() {
         // given
         Topic topic = operations.buildTopic("subscriptionMetricsGroup", "topic");
@@ -70,116 +72,104 @@ public class MetricsTest extends IntegrationTest {
         graphiteEndpoint.returnMetricForSubscription("subscriptionMetricsGroup", "topic", "subscription", 15);
 
         remoteService.expectMessages(TestMessage.simple().body());
-        publisher.publish("subscriptionMetricsGroup.topic", TestMessage.simple().body());
+        assertThat(publisher.publish("subscriptionMetricsGroup.topic", TestMessage.simple().body()).getStatus())
+                .isEqualTo(CREATED.getStatusCode());
         remoteService.waitUntilReceived();
 
-        wait.untilPublishedMetricsPropagation();
+        wait.until(() -> {
+            // when
+            SubscriptionMetrics metrics = management.subscription().getMetrics("subscriptionMetricsGroup.topic", "subscription");
 
-        // when
-        SubscriptionMetrics metrics = management.subscription().getMetrics("subscriptionMetricsGroup.topic", "subscription");
-
-        // then
-        assertThat(metrics.getRate()).isEqualTo("15");
-        //we have same instance of metric registry in frontend and consumer, so metrics reporting is duplicated
-        assertThat(metrics.getDelivered()).isEqualTo(2);
-        assertThat(metrics.getDiscarded()).isEqualTo(0);
-        assertThat(metrics.getInflight()).isEqualTo(0);
+            // then
+            assertThat(metrics.getRate()).isEqualTo("15");
+            assertThat(metrics.getDelivered()).isEqualTo(1);
+            assertThat(metrics.getDiscarded()).isEqualTo(0);
+            assertThat(metrics.getInflight()).isEqualTo(0);
+        });
     }
 
+    @Unreliable
     @Test
     public void shouldNotCreateNewSubscriptionWhenAskedForNonExistingMetrics() {
-        //given
+        // given
         TopicName topic = new TopicName("pl.group.sub.bug", "topic");
         operations.buildTopic(topic.getGroupName(), topic.getName());
         String randomSubscription = UUID.randomUUID().toString();
 
-        //when
+        // when
         catchException(management.subscription())
                 .getMetrics(topic.qualifiedName(), randomSubscription);
 
-        //then
+        // then
         assertThat(management.subscription().list(topic.qualifiedName(), false)).doesNotContain(randomSubscription);
         assertThat(CatchException.<BadRequestException>caughtException())
                 .isInstanceOf(BadRequestException.class);
     }
 
+    @Unreliable
     @Test
     public void shouldReadSubscriptionDeliveryRate() {
+        // given
         Topic topic = operations.buildTopic("pl.allegro.tech.hermes", "topic");
         operations.createSubscription(topic, "pl.allegro.tech.hermes.subscription", HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetricForSubscription("pl_allegro_tech_hermes", "topic", "pl_allegro_tech_hermes_subscription", 15);
 
-        SubscriptionMetrics metrics = management.subscription().getMetrics("pl.allegro.tech.hermes.topic", "pl.allegro.tech.hermes.subscription");
-        assertThat(metrics.getRate()).isEqualTo("15");
-    }
+        wait.until(() -> {
+            // when
+            SubscriptionMetrics metrics = management.subscription().getMetrics("pl.allegro.tech.hermes.topic",
+                    "pl.allegro.tech.hermes.subscription");
 
-    @Unreliable
-    @Test(enabled = false)
-    public void shouldIncreasePublishedMetricsIncrementallyInMultipleMetricUpdateCycles() {
-        // given
-        Topic topic = operations.buildTopic("incrementalMetricsGroup", "topic");
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetricForTopic("incrementalMetricsGroup", "topic", 10, 15);
-
-        remoteService.expectMessages(TestMessage.simple().body(), TestMessage.simple().body());
-        publisher.publish("incrementalMetricsGroup.topic", TestMessage.simple().body());
-        wait.untilPublishedMetricsPropagation();
-
-        publisher.publish("incrementalMetricsGroup.topic", TestMessage.simple().body());
-        wait.untilPublishedMetricsPropagation();
-
-        // when
-        TopicMetrics metrics = management.topic().getMetrics("incrementalMetricsGroup.topic");
-
-        // then
-        remoteService.waitUntilReceived();
-        assertThat(metrics.getPublished()).isEqualTo(2);
+            // then
+            assertThat(metrics.getRate()).isEqualTo("15");
+        });
     }
 
     @Unreliable
     @Test
     public void shouldSendMetricToGraphite() {
-        //given
+        // given
         operations.buildTopic("metricGroup", "topic");
         graphiteServer.expectMetric(metricNameWithPrefix("producer.*.ack-leader.latency.metricGroup.topic.count"), 1);
 
-        //when
-        publisher.publish("metricGroup.topic", TestMessage.simple().body());
+        // when
+        assertThat(publisher.publish("metricGroup.topic", TestMessage.simple().body()).getStatus()).isEqualTo(CREATED.getStatusCode());
 
-        //then
+        // then
         graphiteServer.waitUntilReceived();
     }
 
+    @Unreliable
     @Test
     public void shouldNotCreateNewTopicWhenAskingForNonExistingMetrics() {
-        //given
+        // given
         TopicName newTopic = new TopicName("auto-topic-bug", "not-existing");
         operations.createGroup(newTopic.getGroupName());
 
-        //when
+        // when
         management.topic().getMetrics(newTopic.qualifiedName());
 
-        //then
+        // then
         assertThat(management.topic().list(newTopic.getGroupName(), false)).doesNotContain(newTopic.qualifiedName());
     }
 
-    @Test
+    @Unreliable
+    @Test(enabled = false)
     public void shouldNotReportMetricsToConfigStorageForRemovedSubscription() {
-        //given
+        // given
         Topic topic = operations.buildTopic("metricsAfterSubscriptionRemovedGroup", "topic");
         String subscriptionName1 = "subscription";
         operations.createSubscription(topic, subscriptionName1, HTTP_ENDPOINT_URL);
         remoteService.expectMessages(TestMessage.simple().body());
 
-        publisher.publish(topic.getQualifiedName(), TestMessage.simple().body());
+        assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body())).isEqualTo(CREATED);
         remoteService.waitUntilReceived();
 
         wait.untilSubscriptionMetricsIsCreated(topic.getName(), subscriptionName1);
 
-        //when
+        // when
         management.subscription().remove(topic.getQualifiedName(), subscriptionName1);
 
-        //then
+        // then
         wait.untilSubscriptionMetricsIsRemoved(topic.getName(), subscriptionName1);
 
         String subscriptionName2 = "subscription2";
@@ -192,7 +182,7 @@ public class MetricsTest extends IntegrationTest {
     @Unreliable
     @Test
     public void shouldReportHttpErrorCodeMetrics() {
-        //given
+        // given
         Topic topic = operations.buildTopic("statusErrorGroup", "topic");
         operations.createSubscription(topic, subscription(topic, "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)
@@ -207,17 +197,18 @@ public class MetricsTest extends IntegrationTest {
         graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.statusErrorGroup.topic.subscription.4xx.count"), 1);
         remoteService.expectMessages(TestMessage.simple().body());
 
-        //when
-        publisher.publish(topic.getQualifiedName(), TestMessage.simple().body());
+        // when
+        assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
+                .isEqualTo(CREATED.getStatusCode());
 
-        //then
+        // then
         graphiteServer.waitUntilReceived();
     }
 
     @Unreliable
     @Test
     public void shouldReportHttpSuccessCodeMetrics() {
-        //given
+        // given
         Topic topic = operations.buildTopic("statusSuccessGroup", "topic");
         String subscriptionName = "subscription";
         operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
@@ -225,10 +216,11 @@ public class MetricsTest extends IntegrationTest {
         graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.statusSuccessGroup.topic.subscription.2xx.count"), 1);
         remoteService.expectMessages(TestMessage.simple().body());
 
-        //when
-        publisher.publish(topic.getQualifiedName(), TestMessage.simple().body());
+        // when
+        assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
+                .isEqualTo(CREATED.getStatusCode());
 
-        //then
+        // then
         graphiteServer.waitUntilReceived();
     }
 

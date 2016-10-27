@@ -13,9 +13,11 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.UninitializedMessageReceiver;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
@@ -65,14 +67,11 @@ public class SerialConsumer implements Consumer {
         this.rateLimiter = rateLimiter;
         this.offsetQueue = offsetQueue;
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
-        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, offsetQueue,
-                inflightSemaphore::release);
         this.trackers = trackers;
         this.messageConverterResolver = messageConverterResolver;
-        this.messageReceiver = () -> {
-            throw new IllegalStateException("Consumer not initialized");
-        };
+        this.messageReceiver = new UninitializedMessageReceiver();
         this.topic = topic;
+        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, offsetQueue, inflightSemaphore::release);
     }
 
     private int calculateInflightSize(Subscription subscription) {
@@ -162,5 +161,15 @@ public class SerialConsumer implements Consumer {
             messageReceiver.stop();
             initializeMessageReceiver();
         }
+    }
+
+    @Override
+    public void commit(Set<SubscriptionPartitionOffset> offsets) {
+        messageReceiver.commit(offsets);
+    }
+
+    @Override
+    public void moveOffset(SubscriptionPartitionOffset offset) {
+        messageReceiver.moveOffset(offset);
     }
 }
