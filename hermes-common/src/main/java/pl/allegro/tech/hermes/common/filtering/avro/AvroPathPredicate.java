@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.common.filtering.avro;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException;
 import pl.allegro.tech.hermes.common.filtering.FilteringException;
 import pl.allegro.tech.hermes.common.message.MessageContent;
 import pl.allegro.tech.hermes.schema.CompiledSchema;

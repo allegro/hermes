@@ -43,13 +43,8 @@ public class FilteringMessageReceiver implements MessageReceiver {
     }
 
     private boolean allow(Message message) {
-        MessageContent messageContent = new MessageContent.Builder()
-                .withContentType(message.getContentType())
-                .withSchema(message.getSchema())
-                .withData(message.getData())
-                .build();
-        FilterResult result = filterChain.apply(messageContent);
-        filteredMessageHandler.handle(result, messageContent, subscription, (offset) -> receiver.commit(singleton(offset)));
+        FilterResult result = filterChain.apply(getMessageContent(message));
+        filteredMessageHandler.handle(result, message, subscription, (offset) -> receiver.commit(singleton(offset)));
         return !result.isFiltered();
     }
 
