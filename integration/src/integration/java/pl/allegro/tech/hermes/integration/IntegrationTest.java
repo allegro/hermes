@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.google.common.collect.ImmutableMap;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
@@ -35,4 +36,9 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
                 CONFIG_FACTORY);
     }
 
+    @AfterMethod
+    public void after() {
+        management.query().querySubscriptions("{\"query\": {}}").forEach(sub ->
+                management.subscription().remove(sub.getQualifiedTopicName(), sub.getName()));
+    }
 }
