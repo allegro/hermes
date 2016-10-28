@@ -66,14 +66,14 @@ public class FilteringService {
         }
 
         return new MessageContent.Builder()
-                .withData(bytes)
+                .withContent(bytes)
                 .withContentType(topic.getContentType())
                 .withSchema(Optional.ofNullable(schema))
                 .build();
     }
 
     private FilterValidation isFiltered(MessageContent message, List<MessageFilterSpecification> filterSpecifications) {
-        final List<MessageFilter> filters;
+        List<MessageFilter> filters;
         try {
             filters = filterSpecifications.stream()
                     .map(messageFilters::compile)
@@ -82,10 +82,10 @@ public class FilteringService {
             throw new FilterValidationException(ex.getMessage(), ex);
         }
 
-        final FilterResult result = new FilterChain(filters).apply(message);
+        FilterResult result = new FilterChain(filters).apply(message);
 
         if (result.getCause().isPresent()) {
-            final Exception exception = result.getCause().get();
+            Exception exception = result.getCause().get();
             throw new FilterValidationException(exception.getMessage(), exception);
         }
 

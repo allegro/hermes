@@ -9,6 +9,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import static pl.allegro.tech.hermes.common.message.MessageContent.Builder;
+
 public final class MessageContentBuilder {
     public static final String TEST_MESSAGE_CONTENT = "Some test message";
 
@@ -30,7 +32,10 @@ public final class MessageContentBuilder {
     }
 
     public MessageContent build() {
-        return new MessageContent(content, contentType, schema);
+        return new Builder().withContentType(contentType)
+                .withContent(content)
+                .withSchema(schema)
+                .build();
     }
 
     public MessageContentBuilder withSchema(Schema schema, int version) {

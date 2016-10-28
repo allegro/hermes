@@ -41,7 +41,7 @@ public class AvroPathPredicate implements Predicate<MessageContent> {
 
     private Optional<Object> select(final MessageContent message) throws IOException {
         CompiledSchema<Schema> compiledSchema = message.<Schema>getSchema().get();
-        return select(bytesToRecord(message.getData(), compiledSchema.getSchema()));
+        return select(bytesToRecord(message.getContent(), compiledSchema.getSchema()));
     }
 
     private Optional<Object> select(GenericRecord record) {

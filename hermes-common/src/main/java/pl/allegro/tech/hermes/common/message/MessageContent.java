@@ -9,12 +9,12 @@ import java.util.Optional;
 public class MessageContent {
     private final ContentType contentType;
     private final Optional<CompiledSchema<Schema>> schema;
-    private final byte[] data;
+    private final byte[] content;
 
-    public MessageContent(byte[] content,
+    private MessageContent(byte[] content,
                           ContentType contentType,
                           Optional<CompiledSchema<Schema>> schema) {
-        this.data = content;
+        this.content = content;
         this.contentType = contentType;
         this.schema = schema;
     }
@@ -28,17 +28,17 @@ public class MessageContent {
         return contentType;
     }
 
-    public byte[] getData() {
-        return data;
+    public byte[] getContent() {
+        return content;
     }
 
     public static class Builder {
         private ContentType contentType;
         private Optional<CompiledSchema<Schema>> schema;
-        private byte[] data;
+        private byte[] content;
 
-        public MessageContent.Builder withData(byte[] data) {
-            this.data = data;
+        public MessageContent.Builder withContent(byte[] content) {
+            this.content = content;
             return this;
         }
 
@@ -53,7 +53,7 @@ public class MessageContent {
         }
 
         public MessageContent build() {
-            return new MessageContent(data, contentType, schema);
+            return new MessageContent(content, contentType, schema);
         }
     }
 }

@@ -52,7 +52,7 @@ public class FilteringMessageReceiver implements MessageReceiver {
         return new MessageContent.Builder()
                     .withContentType(message.getContentType())
                     .withSchema(message.getSchema())
-                    .withData(message.getData())
+                    .withContent(message.getData())
                     .build();
     }
 

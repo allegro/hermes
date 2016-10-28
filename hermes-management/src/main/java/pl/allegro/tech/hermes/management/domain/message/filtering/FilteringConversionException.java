@@ -10,6 +10,6 @@ public class FilteringConversionException extends HermesException {
 
     @Override
         public ErrorCode getCode() {
-            return ErrorCode.FILTERING_CONVERSION_EXCEPTION;
+            return ErrorCode.FORMAT_ERROR;
         }
 }

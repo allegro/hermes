@@ -194,7 +194,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         };
 
         $scope.verifyFilter = function() {
-            if(!$scope.msg || !$scope.filters) {
+            if (!$scope.msg || !$scope.filters) {
                 toaster.pop('warning', 'Warning', 'Invalid input(s)');
                 return;
             }

@@ -30,7 +30,7 @@ public class JsonPathPredicate implements Predicate<MessageContent> {
     public boolean test(MessageContent message) {
         check(message.getContentType() == ContentType.JSON, "This filter supports only JSON contentType.");
         try {
-            List<Object> result = JsonPath.parse(new ByteArrayInputStream(message.getData()), configuration).read(path);
+            List<Object> result = JsonPath.parse(new ByteArrayInputStream(message.getContent()), configuration).read(path);
             return !result.isEmpty() && result.stream()
                     .map(Objects::toString)
                     .allMatch(o -> matcher.matcher(o).matches());
