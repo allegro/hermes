@@ -73,8 +73,8 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
                 try {
                     return rawSchemaClient.getVersions(topic.getName());
                 } catch (Exception e) {
-                    logger.warn("Could not reload schema versions for topic {}", topic.getQualifiedName(), e);
-                    throw e;
+                    logger.error("Could not reload schema versions for topic {}, will use stale data", topic.getQualifiedName(), e);
+                    return oldVersions;
                 }
             });
             versionsReloader.execute(task);
