@@ -66,7 +66,7 @@ class ConsumerProcessTest extends Specification {
         waiter.waitForSignalProcessing()
 
         then:
-        process.healtcheckRefreshTime() == 1024
+        process.healthcheckRefreshTime() == 1024
     }
 
     def "should tear down and initialize consumer on restart but not call shutdown hook"() {

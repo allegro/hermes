@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integration.env;
 
 import com.codahale.metrics.MetricRegistry;
-import com.jayway.awaitility.Duration;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
@@ -16,11 +15,11 @@ import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.tracker.mongo.frontend.MongoLogRepository;
 
 import static com.jayway.awaitility.Awaitility.await;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_TYPE;
+import static com.jayway.awaitility.Duration.TEN_SECONDS;
+import static javax.ws.rs.core.Response.Status.OK;
+import static pl.allegro.tech.hermes.common.config.Configs.*;
 import static pl.allegro.tech.hermes.common.schema.SchemaRepositoryType.SCHEMA_REGISTRY;
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class FrontendStarter implements Starter<HermesFrontend> {
 
@@ -88,12 +87,12 @@ public class FrontendStarter implements Starter<HermesFrontend> {
 
     private void waitForStartup() throws Exception {
 
-        await().atMost(Duration.TEN_SECONDS).until(() -> {
+        await().atMost(adjust(TEN_SECONDS)).until(() -> {
             Request request = new Request.Builder()
-                    .url("http://localhost:" + port)
+                    .url("http://localhost:" + port + "/status/ping")
                     .build();
 
-            return client.newCall(request).execute().code() == 200;
+            return client.newCall(request).execute().code() == OK.getStatusCode();
         });
     }
 }

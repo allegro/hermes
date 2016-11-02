@@ -6,10 +6,11 @@ import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy
 import com.github.tomakehurst.wiremock.client.WireMock
 import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
+import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionException
+import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionsException
+import pl.allegro.tech.hermes.schema.CouldNotRegisterSchemaException
 import pl.allegro.tech.hermes.schema.CouldNotRemoveSchemaException
-import pl.allegro.tech.hermes.schema.InvalidSchemaException
 import pl.allegro.tech.hermes.schema.RawSchemaClient
-import pl.allegro.tech.hermes.schema.SchemaRepositoryServerException
 import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
@@ -67,18 +68,19 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
                 .withRequestBody(equalTo("""{"schema":"{}"}""")))
     }
 
-    def "should throw invalid schema exception for invalid schema registration"() {
+    def "should throw schema registration exception for invalid schema registration"() {
         given:
-        wireMock.stubFor(post(versionsUrl(topicName)).willReturn(badRequestResponse()))
+        wireMock.stubFor(post(versionsUrl(topicName)).willReturn(badRequestResponse().withBody("Invalid schema")))
 
         when:
         client.registerSchema(topicName, rawSchema)
 
         then:
-        thrown(InvalidSchemaException)
+        def e = thrown(CouldNotRegisterSchemaException)
+        e.message.contains("Invalid schema")
     }
 
-    def "should throw repository server exception for server internal error response when registering schema"() {
+    def "should throw exception for server internal error response when registering schema"() {
         given:
         wireMock.stubFor(post(versionsUrl(topicName)).willReturn(internalErrorResponse()))
 
@@ -86,7 +88,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.registerSchema(topicName, rawSchema)
 
         then:
-        thrown(SchemaRepositoryServerException)
+        thrown(CouldNotRegisterSchemaException)
     }
 
     def "should fetch schema at specified version"() {
@@ -101,6 +103,19 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
         then:
         schema.get() == rawSchema
+    }
+
+    def "should throw exception when not able to fetch schema version"() {
+        given:
+        def version = 3
+        wireMock.stubFor(get(schemaVersionUrl(topicName, version)).willReturn(internalErrorResponse()))
+
+        when:
+        client.getSchema(topicName, SchemaVersion.valueOf(version))
+
+        then:
+        def e = thrown(CouldNotFetchSchemaVersionException)
+        e.message.contains "3"
     }
 
     def "should fetch latest schema version"() {
@@ -124,6 +139,18 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         !schema.isPresent()
     }
 
+    def "should throw exception when not able to fetch latest schema version"() {
+        given:
+        wireMock.stubFor(get(schemaLatestVersionUrl(topicName)).willReturn(internalErrorResponse()))
+
+        when:
+        client.getLatestSchema(topicName)
+
+        then:
+        def e = thrown(CouldNotFetchSchemaVersionException)
+        e.message.contains "latest"
+    }
+
     def "should return all schema versions"() {
         given:
         wireMock.stubFor(get(versionsUrl(topicName)).willReturn(okResponse()
@@ -143,6 +170,17 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
         then:
         versions.isEmpty()
+    }
+
+    def "should throw exception when not able to fetch schema versions"() {
+        given:
+        wireMock.stubFor(get(versionsUrl(topicName)).willReturn(internalErrorResponse()))
+
+        when:
+        client.getVersions(topicName)
+
+        then:
+        thrown(CouldNotFetchSchemaVersionsException)
     }
 
     def "should delete all schema versions"() {

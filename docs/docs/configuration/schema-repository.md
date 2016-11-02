@@ -1,27 +1,37 @@
 # Schema repository
 
-Hermes can use message schema to validate incoming messages on a topic, as described in
-[publishing guide](/user/publishing#message-schema). There are two implementations of message schema store available
-out of box.
+Hermes requires an external schema repository in order to allow [publishing messages in Avro format](/user/publishing-avro).
+Currently, there are two implementations of message schema store available out of box.
 
-## Simple schema store
+## Schema repository integrations
 
-This is the simple, default implementation which stores schema information along with topic information inside
-Metadata Store (Zookeeper). There are no additional schema checks (except for initial vaildation) in place.
+### Confluent schema registry
 
-## Schema-repo store
+Confluent schema registry is the recommended schema repository for Avro topics.
 
-This is remote, specialized schema repo, which has an option to append additional validations and checks when publishing
+> Schema Registry provides a serving layer for your metadata. It provides a RESTful interface for storing and retrieving Avro schemas.
+> It stores a versioned history of all schemas, provides multiple compatibility settings and allows evolution
+> of schemas according to the configured compatibility setting. It provides serializers that plug into Kafka clients
+> that handle schema storage and retrieval for Kafka messages that are sent in the Avro format.
+> - [Schema Registry documentation](https://github.com/confluentinc/schema-registry)
+
+Set schema repository type to `schema_registry` when using this schema repository.
+
+### Schema-repo store
+
+This is another specialized schema repository, which has an option to append additional validations and checks when publishing
 or updating schema (e.g. backwards compatibility, naming convention etc). Documentation can be found at
 [project page](http://schemarepo.org).
 
-This schema repository needs to be enabled and configured in all modules.
+Set schema repository type to `schema_repo` when using this schema repository.
+
+## Configuration
 
 ### Frontend and Consumers
 
 Frontend and Consumers module share the same configuration options. To enable schema-repo, set:
 
-* `schema.repository.type`: `schema_repo`
+* `schema.repository.type`: `schema_registry` or `schema_repo`
 * `schema.repository.url`: URL of repository
 
 Additonal options:
@@ -36,5 +46,5 @@ schema.cache.expire.after.write.minutes  | if schema can't be refreshed, it will
 
 Mandatory options:
 
-* `schema.repository.type`: `schema_repo`
+* `schema.repository.type`: `schema_registry` or `schema_repo`
 * `schema.repository.serverUrl`: URL of repository

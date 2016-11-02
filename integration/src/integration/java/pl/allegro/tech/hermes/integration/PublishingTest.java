@@ -30,15 +30,12 @@ import java.net.SocketTimeoutException;
 import java.util.UUID;
 
 import static javax.ws.rs.client.ClientBuilder.newClient;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.glassfish.jersey.client.ClientProperties.REQUEST_ENTITY_PROCESSING;
 import static org.glassfish.jersey.client.RequestEntityProcessing.CHUNKED;
-import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PublishingTest extends IntegrationTest {
 
@@ -143,7 +140,7 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Unreliable
-    @Test(enabled = false)
+    @Test
     public void shouldTreatMessageWithInvalidInterpolationAsUndelivered() {
         // given
         Topic topic = operations.buildTopic("publishInvalidInterpolatedGroup", "topic");
@@ -156,16 +153,16 @@ public class PublishingTest extends IntegrationTest {
 
         TestMessage message = TestMessage.of("hello", "world");
         RemoteServiceEndpoint interpolatedEndpoint = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/hello/");
-        interpolatedEndpoint.expectMessages(message.body());
 
         // when
-        publisher.publish(topic.getQualifiedName(), message.body());
+        assertThat(publisher.publish(topic.getQualifiedName(), message.body())).hasStatus(CREATED);
 
         // then
+        wait.until(() -> {
+            long discarded = management.subscription().getMetrics("publishInvalidInterpolatedGroup.topic", "subscription").getDiscarded();
+            assertThat(discarded).isEqualTo(1);
+        });
         interpolatedEndpoint.makeSureNoneReceived();
-        wait.untilMessageDiscarded();
-        long discarded = management.subscription().getMetrics("publishInvalidInterpolatedGroup.topic", "subscription").getDiscarded();
-        assertThat(discarded).isEqualTo(1);
     }
 
     @Test

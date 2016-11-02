@@ -4,8 +4,10 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
 
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
+import java.util.concurrent.TimeUnit;
 
+import static com.jayway.awaitility.Awaitility.await;
+import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class HealthCheckTest extends AbstractFrontendShutdownTest {
@@ -14,13 +16,12 @@ public class HealthCheckTest extends AbstractFrontendShutdownTest {
     public void shouldReturnCorrectHealthStatus() throws InterruptedException {
         // given
         WebTarget client = JerseyClientFactory.create().target(FRONTEND_URL).path("status").path("ping");
-        assertThat(client.request().get()).hasStatus(Response.Status.OK);
 
         // when
         hermesServer.gracefulShutdown();
 
         // then
-        assertThat(client.request().get()).hasStatus(Response.Status.SERVICE_UNAVAILABLE);
+        await().atMost(5, TimeUnit.SECONDS).until(() -> assertThat(client.request().get()).hasStatus(SERVICE_UNAVAILABLE));
     }
 
 }

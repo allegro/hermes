@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.test.helper.endpoint;
 import com.jayway.awaitility.Duration;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import sun.security.provider.certpath.OCSPResponse;
 
 import javax.ws.rs.core.Response;
 

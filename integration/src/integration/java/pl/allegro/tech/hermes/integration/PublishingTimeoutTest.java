@@ -53,7 +53,7 @@ public class PublishingTimeoutTest extends IntegrationTest {
         );
 
         //then
-        assertThat(CatchException.<Exception>caughtException()).hasMessage("Broken pipe");
+        assertThat(CatchException.<Exception>caughtException()).hasMessageContaining("Broken pipe");
     }
 
 }
