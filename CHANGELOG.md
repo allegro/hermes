@@ -1,3 +1,11 @@
+## 0.9.1 (02.11.2016)
+
+This patch version was released mostly because of **Schema version cache fix [#608](https://github.com/allegro/hermes/issues/608)**
+
+Beside that:
+ - documentation about schema repository was updated
+ - integration tests should be more reliable
+
 ## 0.9.0 (17.10.2016)
 
 This release introduces Kafka 0.10 producer/consumer API and is no longer compatible with Kafka 0.8.x and 0.9.x deployments.
