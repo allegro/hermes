@@ -15,7 +15,7 @@ markdown_extensions:
         anchorlink: true
 
 extra:
-    version: '0.9.0'
+    version: '0.9.1'
     brand_image: 'img/hermes-mini.png'
 
 pages:
@@ -27,7 +27,6 @@ pages:
     - 'Features maturity': 'overview/features-maturity.md'
   - User Guide:
     - 'Publishing': 'user/publishing.md'
-    - 'Publishing JSON': 'user/publishing-json.md'
     - 'Publishing AVRO': 'user/publishing-avro.md'
     - 'Subscribing': 'user/subscribing.md'
     - 'Topic Preview': 'user/topic-preview.md'
