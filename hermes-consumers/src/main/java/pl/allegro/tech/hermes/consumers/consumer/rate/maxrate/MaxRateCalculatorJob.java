@@ -67,7 +67,7 @@ public class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
 
     @Override
     public void isLeader() {
-        job = executorService.scheduleAtFixedRate(this, intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
+        job = executorService.scheduleAtFixedRate(this, 0, intervalSeconds, TimeUnit.SECONDS);
     }
 
     @Override

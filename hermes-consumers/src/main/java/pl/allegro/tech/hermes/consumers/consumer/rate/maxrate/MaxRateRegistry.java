@@ -143,7 +143,11 @@ public class MaxRateRegistry {
         try {
             curator.setData().forPath(path, serializedData);
         } catch (KeeperException.NoNodeException e) {
-            curator.create().creatingParentContainersIfNeeded().forPath(path, serializedData);
+            try {
+                curator.create().creatingParentContainersIfNeeded().forPath(path, serializedData);
+            } catch (KeeperException.NodeExistsException ex) {
+                // ignore
+            }
         }
     }
 }

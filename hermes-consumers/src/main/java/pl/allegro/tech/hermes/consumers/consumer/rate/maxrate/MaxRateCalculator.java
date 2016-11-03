@@ -43,32 +43,40 @@ class MaxRateCalculator {
     }
 
     void calculate() {
-        logger.info("Max rate calculation started");
+        try {
+            logger.info("Max rate calculation started");
 
-        long start = clock.millis();
+            long start = clock.millis();
 
-        Map<SubscriptionName, Set<String>> subscriptionConsumers =
-                subscriptionConsumersCache.getSubscriptionsConsumers();
+            Map<SubscriptionName, Set<String>> subscriptionConsumers =
+                    subscriptionConsumersCache.getSubscriptionsConsumers();
 
-        subscriptionConsumers.entrySet().forEach(entry -> {
-            Subscription subscription = subscriptionsCache.getSubscription(entry.getKey());
-            Set<String> consumerIds = entry.getValue();
+            subscriptionConsumers.entrySet().forEach(entry -> {
+                try {
+                    Subscription subscription = subscriptionsCache.getSubscription(entry.getKey());
+                    Set<String> consumerIds = entry.getValue();
 
-            Set<ConsumerRateInfo> rateInfos = maxRateRegistry.ensureCorrectAssignments(subscription, consumerIds);
+                    Set<ConsumerRateInfo> rateInfos =
+                            maxRateRegistry.ensureCorrectAssignments(subscription, consumerIds);
 
-            Optional<Map<String, MaxRate>> newRates
-                    = balancer.balance(subscription.getSerialSubscriptionPolicy().getRate(), rateInfos);
+                    Optional<Map<String, MaxRate>> newRates
+                            = balancer.balance(subscription.getSerialSubscriptionPolicy().getRate(), rateInfos);
 
-            newRates.ifPresent(rates -> {
-                maxRateRegistry.update(subscription, rates);
-                metrics.maxRateUpdatesCounter(subscription).inc();
+                    newRates.ifPresent(rates -> {
+                        logger.info("Calculated new max rates for {}: {}", subscription.getQualifiedName(), rates);
+
+                        maxRateRegistry.update(subscription, rates);
+                        metrics.maxRateUpdatesCounter(subscription).inc();
+                    });
+                } catch (Exception e) {
+                    logger.error("Problem calculating max rates for subscription {}", entry.getKey(), e);
+                }
             });
-        });
 
-        lastUpdateDurationMillis = clock.millis() - start;
-
-        logger.info("Max rate calculation done in {}", Duration.ofMillis(lastUpdateDurationMillis));
+            lastUpdateDurationMillis = clock.millis() - start;
+            logger.info("Max rate calculation done in {}", Duration.ofMillis(lastUpdateDurationMillis));
+        } catch (Exception e) {
+            logger.error("Problem calculating max rate", e);
+        }
     }
-
-
 }

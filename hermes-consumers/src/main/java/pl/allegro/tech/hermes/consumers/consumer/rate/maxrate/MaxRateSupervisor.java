@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -13,6 +14,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class MaxRateSupervisor implements Runnable {
@@ -53,10 +55,14 @@ public class MaxRateSupervisor implements Runnable {
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_ALLOWED_CHANGE_PERCENT));
 
         subscriptionConsumersCache.start();
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder().setNameFormat("max-rate-balancer-%d").build());
+
         new MaxRateCalculatorJob(
                 curator,
                 configFactory,
-                Executors.newSingleThreadScheduledExecutor(),
+                executor,
                 subscriptionConsumersCache,
                 balancer,
                 maxRateRegistry,
@@ -67,8 +73,9 @@ public class MaxRateSupervisor implements Runnable {
         ).start();
 
         int selfUpdateInterval = configFactory.getIntProperty(Configs.CONSUMER_MAXRATE_UPDATE_INTERVAL_SECONDS);
-        Executors.newSingleThreadScheduledExecutor()
-                .scheduleAtFixedRate(this, selfUpdateInterval, selfUpdateInterval, TimeUnit.SECONDS);
+        Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder().setNameFormat("max-rate-provider-%d").build()
+        ).scheduleAtFixedRate(this, selfUpdateInterval, selfUpdateInterval, TimeUnit.SECONDS);
     }
 
     public void shutdown() throws InterruptedException {
