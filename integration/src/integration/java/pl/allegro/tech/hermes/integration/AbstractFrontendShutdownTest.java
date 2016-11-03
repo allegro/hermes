@@ -30,6 +30,7 @@ public abstract class AbstractFrontendShutdownTest extends IntegrationTest {
         hermesFrontend = HermesFrontend.frontend()
                 .withBinding(configFactory, ConfigFactory.class)
                 .withDisabledGlobalShutdownHook()
+                .withDisabledFlushLogsShutdownHook()
                 .build();
 
         hermesFrontend.start();
