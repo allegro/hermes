@@ -3,6 +3,9 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 import io.undertow.server.DefaultResponseListener;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.StatusCodes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
@@ -138,11 +141,21 @@ class MessageReadHandler implements HttpHandler {
 
     private final static class ResponseListener implements DefaultResponseListener {
 
+        private static final Logger logger = LoggerFactory.getLogger(ResponseListener.class);
+
         private static final boolean END_WITHOUT_RESPONSE = true;
         private final AtomicBoolean returnResponseOnlyOnce = new AtomicBoolean();
 
         @Override
         public boolean handleDefaultResponse(HttpServerExchange exchange) {
+            if (exchange.getAttachment(EXCEPTION) != null) {
+                logger.error("Exception caught while running response listener", exchange.getAttachment(EXCEPTION));
+                if (!exchange.isResponseStarted()) {
+                    exchange.setStatusCode(StatusCodes.INTERNAL_SERVER_ERROR);
+                    return false;
+                }
+            }
+
             if (exchange.getAttachment(AttachmentContent.KEY).isResponseReady()) {
                 return !returnResponseOnlyOnce.compareAndSet(false, true);
             } else {
