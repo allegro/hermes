@@ -14,15 +14,15 @@ final class ConsumerRateInfo {
         this.history = history;
     }
 
-    public Optional<MaxRate> getMaxRate() {
+    Optional<MaxRate> getMaxRate() {
         return maxRate;
     }
 
-    public RateHistory getHistory() {
+    RateHistory getHistory() {
         return history;
     }
 
-    public String getConsumerId() {
+    String getConsumerId() {
         return consumerId;
     }
 

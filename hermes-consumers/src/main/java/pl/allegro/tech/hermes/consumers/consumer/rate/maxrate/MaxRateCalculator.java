@@ -54,20 +54,23 @@ class MaxRateCalculator {
             subscriptionConsumers.entrySet().forEach(entry -> {
                 try {
                     Subscription subscription = subscriptionsCache.getSubscription(entry.getKey());
-                    Set<String> consumerIds = entry.getValue();
+                    if (!subscription.isBatchSubscription()) {
+                        Set<String> consumerIds = entry.getValue();
 
-                    Set<ConsumerRateInfo> rateInfos =
-                            maxRateRegistry.ensureCorrectAssignments(subscription, consumerIds);
+                        Set<ConsumerRateInfo> rateInfos =
+                                maxRateRegistry.ensureCorrectAssignments(subscription, consumerIds);
 
-                    Optional<Map<String, MaxRate>> newRates
-                            = balancer.balance(subscription.getSerialSubscriptionPolicy().getRate(), rateInfos);
+                        Optional<Map<String, MaxRate>> newRates
+                                = balancer.balance(subscription.getSerialSubscriptionPolicy().getRate(), rateInfos);
 
-                    newRates.ifPresent(rates -> {
-                        logger.info("Calculated new max rates for {}: {}", subscription.getQualifiedName(), rates);
+                        newRates.ifPresent(rates -> {
+                            logger.info("Calculated new max rates for {}: {}",
+                                    subscription.getQualifiedName(), rates);
 
-                        maxRateRegistry.update(subscription, rates);
-                        metrics.maxRateUpdatesCounter(subscription).inc();
-                    });
+                            maxRateRegistry.update(subscription, rates);
+                            metrics.maxRateUpdatesCounter(subscription).inc();
+                        });
+                    }
                 } catch (Exception e) {
                     logger.error("Problem calculating max rates for subscription {}", entry.getKey(), e);
                 }

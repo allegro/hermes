@@ -36,12 +36,12 @@ public class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
                                 SubscriptionsCache subscriptionsCache,
                                 HermesMetrics metrics,
                                 Clock clock) {
+        String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
         this.curator = curator;
         this.intervalSeconds = configFactory.getIntProperty(CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS);
         this.executorService = executorService;
-        this.maxRateCalculator = new MaxRateCalculator(subscriptionConsumersCache, subscriptionsCache, balancer,
-                maxRateRegistry, metrics, clock);
-        String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
+        this.maxRateCalculator = new MaxRateCalculator(
+                subscriptionConsumersCache, subscriptionsCache, balancer, maxRateRegistry, metrics, clock);
         this.leaderLatch = new LeaderLatch(curator, leaderPath, consumerId);
     }
 

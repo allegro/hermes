@@ -203,7 +203,7 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     void kill(SelectiveSupervisorController node) {
-        consumerZookeeperConnections.get(node.watchedConsumerId().get()).close();
+        consumerZookeeperConnections.get(node.consumerId()).close();
     }
 
     void killAll() {
@@ -213,7 +213,7 @@ class ConsumerTestRuntimeEnvironment {
     private SelectiveSupervisorController startNode(SelectiveSupervisorController supervisorController) {
         try {
             supervisorController.start();
-            waitForRegistration(supervisorController.watchedConsumerId().get());
+            waitForRegistration(supervisorController.consumerId());
             return supervisorController;
         } catch (Exception e) {
             throw new InternalProcessingException(e);
@@ -229,7 +229,7 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     void awaitUntilAssignmentExists(SubscriptionName subscription, SelectiveSupervisorController node) {
-        awaitUntilAssignmentExists(subscription.toString(), node.watchedConsumerId().get());
+        awaitUntilAssignmentExists(subscription.toString(), node.consumerId());
     }
 
     void awaitUntilAssignmentExists(String subscription, String supervisorId) {

@@ -10,7 +10,7 @@ class ConsumerMaxRateStrategy {
     static final String NEGOTIATED = "negotiated";
 
     static class UnknownMaxRateStrategyException extends InternalProcessingException {
-        public UnknownMaxRateStrategyException() {
+        UnknownMaxRateStrategyException() {
             super("Unknown max rate strategy. Use one of: " + join(", ", STRICT, NEGOTIATED));
         }
     }

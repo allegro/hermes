@@ -95,7 +95,7 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void onSubscriptionChanged(Subscription subscription) {
-        if (workTracker.isAssignedTo(subscription.getQualifiedName(), watchedConsumerId().get())) {
+        if (workTracker.isAssignedTo(subscription.getQualifiedName(), consumerId())) {
             logger.info("Updating subscription {}", subscription.getName());
             supervisor.updateSubscription(subscription);
         }
@@ -104,7 +104,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     @Override
     public void onTopicChanged(Topic topic) {
         for (Subscription subscription : subscriptionsCache.subscriptionsOfTopic(topic.getName())) {
-            if(workTracker.isAssignedTo(subscription.getQualifiedName(), watchedConsumerId().get())) {
+            if(workTracker.isAssignedTo(subscription.getQualifiedName(), consumerId())) {
                 supervisor.updateTopic(subscription, topic);
             }
         }
@@ -143,7 +143,7 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public Set<SubscriptionName> assignedSubscriptions() {
-        return registry.createSnapshot().getSubscriptionsForConsumerNode(watchedConsumerId().get());
+        return registry.createSnapshot().getSubscriptionsForConsumerNode(consumerId());
     }
 
     @Override
@@ -155,7 +155,11 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public Optional<String> watchedConsumerId() {
-        return Optional.of(consumersRegistry.getId());
+        return Optional.of(consumerId());
+    }
+
+    public String consumerId() {
+        return consumersRegistry.getId();
     }
 
     public boolean isLeader() {
@@ -165,14 +169,14 @@ public class SelectiveSupervisorController implements SupervisorController {
     @Override
     public void onRetransmissionStarts(SubscriptionName subscription) throws Exception {
         logger.info("Triggering retransmission for subscription {}", subscription);
-        if (workTracker.isAssignedTo(subscription, watchedConsumerId().get())) {
+        if (workTracker.isAssignedTo(subscription, consumerId())) {
             supervisor.retransmit(subscription);
         }
     }
 
     @Override
     public void restartConsumer(SubscriptionName subscription) throws Exception {
-        if (workTracker.isAssignedTo(subscription, watchedConsumerId().get())) {
+        if (workTracker.isAssignedTo(subscription, consumerId())) {
             supervisor.restartConsumer(subscription);
         }
     }
