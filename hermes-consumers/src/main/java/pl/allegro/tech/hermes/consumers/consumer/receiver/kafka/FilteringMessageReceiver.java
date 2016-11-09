@@ -13,8 +13,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.Collections.singleton;
-
 public class FilteringMessageReceiver implements MessageReceiver {
     private MessageReceiver receiver;
     private FilteredMessageHandler filteredMessageHandler;
@@ -43,7 +41,7 @@ public class FilteringMessageReceiver implements MessageReceiver {
 
     private boolean allow(Message message) {
         FilterResult result = filterChain.apply(message);
-        filteredMessageHandler.handle(result, message, subscription, (offset) -> receiver.commit(singleton(offset)));
+        filteredMessageHandler.handle(result, message, subscription);
         return !result.isFiltered();
     }
 
