@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.schema;
 
-import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Topic;
 
 public class DirectCompiledSchemaRepository<T> implements CompiledSchemaRepository<T> {
@@ -16,15 +15,8 @@ public class DirectCompiledSchemaRepository<T> implements CompiledSchemaReposito
 
     @Override
     public CompiledSchema<T> getSchema(Topic topic, SchemaVersion version) {
-        try {
-            RawSchema rawSchema = rawSchemaClient.getSchema(topic.getName(), version)
-                    .orElseThrow(() -> new SchemaNotFoundException(topic, version));
-            return new CompiledSchema<>(schemaCompiler.compile(rawSchema), version);
-        } catch (Exception e) {
-            throw new CouldNotLoadSchemaException(
-                    String.format("Could not load schema type of %s for topic %s",
-                            topic.getContentType(), topic.getQualifiedName()), e);
-        }
+        return rawSchemaClient.getSchema(topic.getName(), version)
+                .map(rawSchema -> new CompiledSchema<>(schemaCompiler.compile(rawSchema), version))
+                .orElseThrow(() -> new SchemaNotFoundException(topic, version));
     }
-
 }

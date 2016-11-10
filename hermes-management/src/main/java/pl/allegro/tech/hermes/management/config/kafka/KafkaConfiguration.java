@@ -80,8 +80,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     messageContentWrapper,
                     subscriptionOffsetChangeIndicator,
                     simpleConsumerPool,
-                    kafkaNamesMapper,
-                    schemaRepository
+                    kafkaNamesMapper
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
             return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,

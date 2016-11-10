@@ -81,7 +81,7 @@ class TopicValidatorTest extends Specification {
         given:
         def jsonTopic = topic('group.topic').withContentType(ContentType.JSON).build()
         def migratedTopic = topic('group.topic').withContentType(ContentType.AVRO).migratedFromJsonType().build()
-        schemaRepository.getLatestAvroSchema(migratedTopic) >> { throw new CouldNotLoadSchemaException("", new RuntimeException()) }
+        schemaRepository.getLatestAvroSchema(migratedTopic) >> { throw new CouldNotLoadSchemaException(new RuntimeException()) }
 
         when:
         topicValidator.ensureUpdatedTopicIsValid(migratedTopic, jsonTopic)

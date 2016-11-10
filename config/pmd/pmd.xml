@@ -12,9 +12,6 @@
   <rule ref="rulesets/java/strictexception.xml/AvoidCatchingNPE">
     <priority>3</priority>
   </rule>
-  <rule ref="rulesets/java/strictexception.xml/AvoidRethrowingException">
-    <priority>3</priority>
-  </rule>
   <rule ref="rulesets/java/migrating.xml/ReplaceEnumerationWithIterator">
     <priority>3</priority>
   </rule>
