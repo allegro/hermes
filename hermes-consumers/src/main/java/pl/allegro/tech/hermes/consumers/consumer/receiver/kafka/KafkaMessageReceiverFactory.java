@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -28,6 +29,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final ConfigFactory configs;
     private final MessageContentWrapper messageContentWrapper;
     private final HermesMetrics hermesMetrics;
+    private OffsetQueue offsetQueue;
     private final Clock clock;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final SchemaRepository schemaRepository;
@@ -38,6 +40,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     public KafkaMessageReceiverFactory(ConfigFactory configs,
                                        MessageContentWrapper messageContentWrapper,
                                        HermesMetrics hermesMetrics,
+                                       OffsetQueue offsetQueue,
                                        Clock clock,
                                        KafkaNamesMapper kafkaNamesMapper,
                                        SchemaRepository schemaRepository,
@@ -46,6 +49,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         this.configs = configs;
         this.messageContentWrapper = messageContentWrapper;
         this.hermesMetrics = hermesMetrics;
+        this.offsetQueue = offsetQueue;
         this.clock = clock;
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.schemaRepository = schemaRepository;
@@ -72,6 +76,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
         if (configs.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
             FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
+                    offsetQueue,
                     consumerRateLimiter,
                     trackers,
                     hermesMetrics);
