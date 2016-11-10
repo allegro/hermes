@@ -64,7 +64,7 @@ public class SubscriptionAssignmentView {
     }
 
     public Set<SubscriptionAssignment> getAssignmentsForSubscription(SubscriptionName subscriptionName) {
-        return Collections.unmodifiableSet(subscriptionAssignments.get(subscriptionName));
+        return Collections.unmodifiableSet(subscriptionAssignments.getOrDefault(subscriptionName, Collections.emptySet()));
     }
 
     public Set<SubscriptionName> getSubscriptionsForConsumerNode(String nodeId) {
@@ -72,7 +72,7 @@ public class SubscriptionAssignmentView {
     }
 
     public Set<SubscriptionAssignment> getAssignmentsForConsumerNode(String nodeId) {
-        return Collections.unmodifiableSet(consumerNodeAssignments.get(nodeId));
+        return Collections.unmodifiableSet(consumerNodeAssignments.getOrDefault(nodeId, Collections.emptySet()));
     }
 
     private void removeSubscription(SubscriptionName subscription) {
