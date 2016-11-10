@@ -1,0 +1,10 @@
+{
+    "namespace": "pl.allegro",
+    "type": "record",
+    "name": "User",
+    "fields": [
+        {"name": "name", "type": "string"},
+        {"name": "age",  "type": "int"},
+        {"name": "favoriteColor", "type": ["null", "string"]}
+    ]
+}
