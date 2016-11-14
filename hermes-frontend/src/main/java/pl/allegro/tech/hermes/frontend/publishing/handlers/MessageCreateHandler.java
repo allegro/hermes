@@ -2,12 +2,12 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaMissingException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
+import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
@@ -42,7 +42,7 @@ class MessageCreateHandler implements HttpHandler {
                     attachment.getMessageId(),
                     error("Invalid message", VALIDATION_ERROR),
                     exception);
-        } catch (CouldNotLoadSchemaException | SchemaMissingException exception) {
+        } catch (CouldNotLoadSchemaException | SchemaNotFoundException exception) {
             attachment.removeTimeout();
             messageErrorProcessor.sendAndLog(
                     exchange,

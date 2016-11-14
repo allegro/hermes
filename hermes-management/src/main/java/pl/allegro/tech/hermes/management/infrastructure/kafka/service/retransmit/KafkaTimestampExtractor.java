@@ -5,7 +5,6 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 
 class KafkaTimestampExtractor {
@@ -15,17 +14,15 @@ class KafkaTimestampExtractor {
     private final int partition;
     private final KafkaRawMessageReader kafkaRawMessageReader;
     private final MessageContentWrapper messageContentWrapper;
-    private final SchemaRepository schemaRepository;
 
     KafkaTimestampExtractor(Topic topic, KafkaTopic kafkaTopic, int partition, KafkaRawMessageReader kafkaRawMessageReader,
-                            MessageContentWrapper messageContentWrapper, SchemaRepository schemaRepository) {
+                            MessageContentWrapper messageContentWrapper) {
 
         this.topic = topic;
         this.kafkaTopic = kafkaTopic;
         this.partition = partition;
         this.kafkaRawMessageReader = kafkaRawMessageReader;
         this.messageContentWrapper = messageContentWrapper;
-        this.schemaRepository = schemaRepository;
     }
 
     public long extract(Long offset) {

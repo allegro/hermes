@@ -56,14 +56,19 @@ public enum Configs {
     KAFKA_SIMPLE_CONSUMER_ID_PREFIX("kafka.simple.consumer.id.prefix", "offsetChecker"),
     KAFKA_SIMPLE_CONSUMER_CACHE_EXPIRATION_IN_SECONDS("kafka.simple.consumer.cache.expiration.in.seconds", 60),
 
-    KAFKA_PRODUCER_METADATA_FETCH_TIMEOUT_MS("kafka.producer.metadata.fetch.timeout.ms", 500),
+    KAFKA_PRODUCER_MAX_BLOCK_MS("kafka.producer.max.block.ms", 500),
     KAFKA_PRODUCER_METADATA_MAX_AGE("kafka.producer.metadata.max.age.ms", 5 * 60 * 1000),
     KAFKA_PRODUCER_COMPRESSION_CODEC("kafka.producer.compression.codec", "none"),
     KAFKA_PRODUCER_RETRIES("kafka.producer.retries", Integer.MAX_VALUE),
     KAFKA_PRODUCER_BUFFER_MEMORY("kafka.producer.buffer.memory", 256 * 1024 * 1024L),
     KAFKA_PRODUCER_RETRY_BACKOFF_MS("kafka.producer.retry.backoff.ms", 256),
-    KAFKA_PRODUCER_BLOCK_ON_BUFFER_FULL("kafka.producer.block.on.buffer.full", false),
-    KAFKA_PRODUCER_ACK_TIMEOUT("kafka.producer.ack.timeout", 1000),
+    // In the current version of kafka-producer (0.10.1) request.timeout.ms parameter is also used as a timeout
+    // for dropping batches from internal accumulator. Therefore, it is better to increase this timeout to very high value,
+    // because when kafka is unreachable we don't want to drop messages but buffer them in accumulator until is full.
+    // This behavior will change in future version of kafka-producer.
+    // More information about this issue:
+    // http://mail-archives.apache.org/mod_mbox/kafka-users/201611.mbox/%3C81613078-5734-46FD-82E2-140280758BC6@gmail.com%3E
+    KAFKA_PRODUCER_REQUEST_TIMEOUT_MS("kafka.producer.request.timeout.ms", 30 * 60 * 1000),
     KAFKA_PRODUCER_BATCH_SIZE("kafka.producer.batch.size", 16 * 1024),
     KAFKA_PRODUCER_TCP_SEND_BUFFER("kafka.producer.tcp.send.buffer", 128 * 1024),
     KAFKA_PRODUCER_MAX_REQUEST_SIZE("kafka.producer.max.request.size", 1024 * 1024),
@@ -112,6 +117,7 @@ public enum Configs {
     MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS("frontend.messages.local.storage.max.age.hours", 72),
     MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES("frontend.messages.local.storage.max.resend.retries", 5),
     MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE("frontend.messages.loading.wait.for.topics.cache", 10),
+    MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS("frontend.messages.loading.pause.between.resend", 30),
     MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO("frontend.messages.loading.wait.for.broker.topic.info", 5),
 
     CONSUMER_RECEIVER_POOL_TIMEOUT("consumer.receiver.pool.timeout", 100),
