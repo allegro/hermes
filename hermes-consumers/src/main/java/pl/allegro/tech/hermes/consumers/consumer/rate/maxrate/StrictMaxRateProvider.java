@@ -17,6 +17,7 @@ class StrictMaxRateProvider implements MaxRateProvider {
     @Override
     public double get() {
         int consumersCount = activeConsumerCounter.countActiveConsumers(subscription);
-        return subscription.getSerialSubscriptionPolicy().getRate().doubleValue() / Math.max(consumersCount, 1);
+        double subscriptionRate = subscription.getSerialSubscriptionPolicy().getRate().doubleValue();
+        return subscriptionRate / Math.max(consumersCount, 1);
     }
 }
