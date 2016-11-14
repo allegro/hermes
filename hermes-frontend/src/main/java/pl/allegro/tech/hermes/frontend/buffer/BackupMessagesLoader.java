@@ -72,7 +72,7 @@ public class BackupMessagesLoader {
         this.trackers = trackers;
         this.secondsToWaitForTopicsCache = config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE);
         this.messageMaxAgeHours = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS);
-        this.resendSleep = config.getIntProperty(KAFKA_PRODUCER_ACK_TIMEOUT) + secondsToWaitForTopicsCache * 1000;
+        this.resendSleep = config.getIntProperty(MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS);
         this.readTopicInfoSleep = TimeUnit.SECONDS.toMillis(config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO));
         this.maxResendRetries = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES);
     }
