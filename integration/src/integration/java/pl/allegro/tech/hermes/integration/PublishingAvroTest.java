@@ -29,6 +29,7 @@ import java.util.concurrent.TimeoutException;
 import static com.google.common.collect.ImmutableMap.of;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
@@ -178,6 +179,32 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void shouldReturnServerInternalErrorResponseOnMissingSchema() {
+        Topic topic = topic("avro.topicWithoutSchema")
+                .withContentType(AVRO).build();
+        operations.buildTopic(topic);
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), user.asJson());
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.getStatusCode());
+    }
+
+    @Test
+    public void shouldReturnServerInternalErrorResponseOnMissingSchemaAtSpecifiedVersion() {
+        Topic topic = topic("avro.topicWithoutSchema")
+                .withContentType(AVRO).build();
+        operations.buildTopic(topic);
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), user.asJson(), of(SCHEMA_VERSION.getName(), "1"));
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.getStatusCode());
     }
 
     @Test

@@ -71,7 +71,7 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
                 return Optional.empty();
             case SERVER_ERROR:
             default:
-                throw new CouldNotFetchSchemaVersionException(subject, version, response);
+                throw new CouldNotFetchSchemaVersionException(subject, version, response.getStatus(), response.readEntity(String.class));
         }
     }
 

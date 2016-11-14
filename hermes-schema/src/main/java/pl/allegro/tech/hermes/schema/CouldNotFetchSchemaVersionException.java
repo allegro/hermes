@@ -2,13 +2,11 @@ package pl.allegro.tech.hermes.schema;
 
 import pl.allegro.tech.hermes.api.ErrorCode;
 
-import javax.ws.rs.core.Response;
-
 public class CouldNotFetchSchemaVersionException extends SchemaException {
 
-    public CouldNotFetchSchemaVersionException(String subject, String version, Response response) {
+    public CouldNotFetchSchemaVersionException(String subject, String version, int responseStatus, String responseBody) {
         super(String.format("Could not fetch schema for subject %s at version %s, reason: %d %s",
-                subject, version, response.getStatus(), response.readEntity(String.class)));
+                subject, version, responseStatus, responseBody));
     }
 
     @Override

@@ -22,14 +22,14 @@ public class SchemaRepository {
         if (!schemaVersionsRepository.schemaVersionExists(topic, latestVersion)) {
             throw new SchemaNotFoundException(topic, latestVersion);
         }
-        return compiledAvroSchemaRepository.getSchema(topic, latestVersion);
+        return getCompiledSchemaAtVersion(topic, latestVersion);
     }
 
     public CompiledSchema<Schema> getAvroSchema(Topic topic, SchemaVersion version) {
         if (!schemaVersionsRepository.schemaVersionExists(topic, version)) {
             throw new SchemaNotFoundException(topic, version);
         }
-        return compiledAvroSchemaRepository.getSchema(topic, version);
+        return getCompiledSchemaAtVersion(topic, version);
     }
 
     /**
@@ -39,7 +39,17 @@ public class SchemaRepository {
      * from underlying schema repository.
      */
     public CompiledSchema<Schema> getKnownAvroSchemaVersion(Topic topic, SchemaVersion version) {
-        return compiledAvroSchemaRepository.getSchema(topic, version);
+        return getCompiledSchemaAtVersion(topic, version);
+    }
+
+    private CompiledSchema<Schema> getCompiledSchemaAtVersion(Topic topic, SchemaVersion latestVersion) {
+        try {
+            return compiledAvroSchemaRepository.getSchema(topic, latestVersion);
+        } catch (CouldNotLoadSchemaException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CouldNotLoadSchemaException(topic, latestVersion, e);
+        }
     }
 
     public List<SchemaVersion> getVersions(Topic topic, boolean online) {

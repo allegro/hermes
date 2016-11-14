@@ -9,14 +9,18 @@ import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeExcep
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
-import pl.allegro.tech.hermes.frontend.publishing.callbacks.*;
+import pl.allegro.tech.hermes.frontend.publishing.callbacks.AsyncContextExecutionCallback;
+import pl.allegro.tech.hermes.frontend.publishing.callbacks.BrokerListenersPublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.callbacks.HttpPublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.callbacks.MessageStatePublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaMissingException;
+import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
@@ -114,7 +118,7 @@ public class PublishingServlet extends HttpServlet {
 
                     } catch (InvalidMessageException | AvroConversionException | UnsupportedContentTypeException exception) {
                         httpResponder.badRequest(exception);
-                    } catch (CouldNotLoadSchemaException | SchemaMissingException e) {
+                    } catch (CouldNotLoadSchemaException | SchemaNotFoundException e) {
                         httpResponder.internalError(e, "Could not load schema for published message");
                     } finally {
                         if (previewEnabled) {
