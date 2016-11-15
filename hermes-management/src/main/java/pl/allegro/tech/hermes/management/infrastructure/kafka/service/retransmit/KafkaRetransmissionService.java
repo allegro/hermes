@@ -32,7 +32,6 @@ public class KafkaRetransmissionService implements RetransmissionService {
     private final SubscriptionOffsetChangeIndicator subscriptionOffsetChange;
     private final SimpleConsumerPool simpleConsumerPool;
     private final KafkaNamesMapper kafkaNamesMapper;
-    private final SchemaRepository schemaRepository;
 
     public KafkaRetransmissionService(
             BrokerStorage brokerStorage,
@@ -40,8 +39,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
             MessageContentWrapper messageContentWrapper,
             SubscriptionOffsetChangeIndicator subscriptionOffsetChange,
             SimpleConsumerPool simpleConsumerPool,
-            KafkaNamesMapper kafkaNamesMapper,
-            SchemaRepository schemaRepository) {
+            KafkaNamesMapper kafkaNamesMapper) {
 
         this.brokerStorage = brokerStorage;
         this.kafkaRawMessageReader = kafkaRawMessageReader;
@@ -49,7 +47,6 @@ public class KafkaRetransmissionService implements RetransmissionService {
         this.subscriptionOffsetChange = subscriptionOffsetChange;
         this.simpleConsumerPool = simpleConsumerPool;
         this.kafkaNamesMapper = kafkaNamesMapper;
-        this.schemaRepository = schemaRepository;
     }
 
     @Override
@@ -87,7 +84,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
 
     private long search(Topic topic, KafkaTopic kafkaTopic, int partition, Range<Long> offsetRange, long timestamp) {
         OffsetSearcher searcher = new OffsetSearcher(
-                new KafkaTimestampExtractor(topic, kafkaTopic, partition, kafkaRawMessageReader, messageContentWrapper, schemaRepository)
+                new KafkaTimestampExtractor(topic, kafkaTopic, partition, kafkaRawMessageReader, messageContentWrapper)
         );
         return searcher.search(offsetRange, timestamp);
     }

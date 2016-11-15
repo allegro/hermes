@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class MessageFilterSpecification {
     private final String type;
@@ -39,5 +40,23 @@ public class MessageFilterSpecification {
     @JsonValue
     public Object getJsonValue() {
         return spec;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        MessageFilterSpecification that = (MessageFilterSpecification) o;
+        return Objects.equals(type, that.type) &&
+                Objects.equals(spec, that.spec);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, spec);
     }
 }

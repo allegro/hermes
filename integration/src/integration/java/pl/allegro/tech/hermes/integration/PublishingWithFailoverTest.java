@@ -5,7 +5,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
-import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
@@ -30,8 +29,7 @@ public class PublishingWithFailoverTest extends IntegrationTest {
         this.remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
     }
 
-    @Unreliable
-    @Test(enabled = false)
+    @Test
     public void shouldReturn202IfKafkaFailedToRespondButMessageCanBeBufferedInMemory() throws Exception {
         //given
         TestMessage message = TestMessage.of("hello", "world");

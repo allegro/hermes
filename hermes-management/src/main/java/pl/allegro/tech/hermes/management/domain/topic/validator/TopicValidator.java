@@ -4,8 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
+import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 @Component
 public class TopicValidator {
@@ -31,7 +32,7 @@ public class TopicValidator {
 
             try {
                 schemaRepository.getLatestAvroSchema(updated);
-            } catch (CouldNotLoadSchemaException e) {
+            } catch (CouldNotLoadSchemaException | SchemaNotFoundException e) {
                 throw new TopicValidationException("Avro schema not available, migration not permitted", e);
             }
         } else if (contentTypeChanged(updated, previous)) {

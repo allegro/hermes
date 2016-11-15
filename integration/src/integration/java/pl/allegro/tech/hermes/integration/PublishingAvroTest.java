@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration;
 
 import net.javacrumbs.jsonunit.core.Option;
+import org.apache.avro.Schema;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -10,6 +11,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeoutException;
 import static com.google.common.collect.ImmutableMap.of;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
@@ -179,6 +182,32 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldReturnServerInternalErrorResponseOnMissingSchema() {
+        Topic topic = topic("avro.topicWithoutSchema")
+                .withContentType(AVRO).build();
+        operations.buildTopic(topic);
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), user.asJson());
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.getStatusCode());
+    }
+
+    @Test
+    public void shouldReturnServerInternalErrorResponseOnMissingSchemaAtSpecifiedVersion() {
+        Topic topic = topic("avro.topicWithoutSchema")
+                .withContentType(AVRO).build();
+        operations.buildTopic(topic);
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), user.asJson(), of(SCHEMA_VERSION.getName(), "1"));
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.getStatusCode());
+    }
+
+    @Test
     public void shouldPublishJsonIncompatibleWithSchemaWhileJsonToAvroDryRunModeIsEnabled() {
         // given
         Topic topic = topic("jsonToAvroDryRun.topic")
@@ -194,6 +223,28 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), message.body());
+        assertThat(response).hasStatus(CREATED);
+
+        // then
+        remoteService.waitUntilReceived();
+    }
+
+    @Test
+    public void shouldPublishJsonCompatibleWithSchemaWithoutMetadataWhileJsonToAvroDryRunModeIsEnabled() {
+        // given
+        Topic topic = topic("jsonToAvroDryRun.topic2")
+                .withJsonToAvroDryRun(true)
+                .withContentType(JSON)
+                .build();
+        operations.buildTopic(topic);
+        Schema schema = AvroUserSchemaLoader.load("/schema/user_no_metadata.avsc");
+        operations.saveSchema(topic, schema.toString());
+
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        remoteService.expectMessages(user.asJson());
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), user.asJson());
         assertThat(response).hasStatus(CREATED);
 
         // then

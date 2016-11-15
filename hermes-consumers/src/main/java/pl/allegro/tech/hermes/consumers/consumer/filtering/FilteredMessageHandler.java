@@ -8,37 +8,39 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
-
-import java.util.function.Consumer;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class FilteredMessageHandler {
 
+    private final OffsetQueue offsetQueue;
     private final ConsumerRateLimiter consumerRateLimiter;
     private final Trackers trackers;
     private final HermesMetrics metrics;
 
     private static final Logger logger = LoggerFactory.getLogger(FilteredMessageHandler.class);
 
-    public FilteredMessageHandler(ConsumerRateLimiter consumerRateLimiter,
+    public FilteredMessageHandler(OffsetQueue offsetQueue,
+                                  ConsumerRateLimiter consumerRateLimiter,
                                   Trackers trackers,
                                   HermesMetrics metrics) {
+        this.offsetQueue = offsetQueue;
         this.consumerRateLimiter = consumerRateLimiter;
         this.trackers = trackers;
         this.metrics = metrics;
     }
 
-    public void handle(FilterResult result, Message message, Subscription subscription, Consumer<SubscriptionPartitionOffset> committer) {
+    public void handle(FilterResult result, Message message, Subscription subscription) {
         if (result.isFiltered()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Message filtered for subscription {} {}", subscription.getQualifiedName(), result);
             }
 
-            committer.accept(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
+            offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
 
             updateMetrics(message, subscription);
 
