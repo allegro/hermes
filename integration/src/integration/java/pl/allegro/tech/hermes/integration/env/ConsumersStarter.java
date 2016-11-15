@@ -45,7 +45,7 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
         configFactory.overrideProperty(KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG, 50);
 
         consumers = HermesConsumers.consumers()
-            .withKafkaTopicsNamesMapper(serviceLocator ->
+            .withKafkaTopicsNamesMapper(
                     new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())
             .withBinding(configFactory, ConfigFactory.class)
             .withBinding(new MultiUrlEndpointAddressResolver(), EndpointAddressResolver.class)

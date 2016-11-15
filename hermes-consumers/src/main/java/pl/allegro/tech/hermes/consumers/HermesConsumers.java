@@ -7,8 +7,6 @@ import org.jvnet.hk2.component.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperHolder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
@@ -18,7 +16,6 @@ import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -30,7 +27,6 @@ public class HermesConsumers {
     private final ConsumerHttpServer consumerHttpServer;
     private final Trackers trackers;
     private final List<Function<ServiceLocator, LogRepository>> logRepositories;
-    private final Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper;
     private final MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers;
     private final MessageSenderFactory messageSenderFactory;
     private final ServiceLocator serviceLocator;
@@ -44,13 +40,11 @@ public class HermesConsumers {
     HermesConsumers(HooksHandler hooksHandler,
                     List<Binder> binders,
                     MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers,
-                    List<Function<ServiceLocator, LogRepository>> logRepositories,
-                    Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper) {
+                    List<Function<ServiceLocator, LogRepository>> logRepositories) {
 
         this.hooksHandler = hooksHandler;
         this.messageSenderProvidersSuppliers = messageSenderProvidersSuppliers;
         this.logRepositories = logRepositories;
-        this.kafkaNamesMapper = kafkaNamesMapper;
 
         serviceLocator = createDIContainer(binders);
 
@@ -76,13 +70,10 @@ public class HermesConsumers {
             logRepositories.forEach(serviceLocatorLogRepositoryFunction ->
                     trackers.add(serviceLocatorLogRepositoryFunction.apply(serviceLocator)));
 
-            messageSenderProvidersSuppliers.entrySet().stream().forEach(entry -> {
-                entry.getValue().stream().forEach(supplier ->
-                        messageSenderFactory.addSupportedProtocol(entry.getKey(), supplier.apply(serviceLocator))
-                );
-            });
-
-            kafkaNamesMapper.ifPresent(it -> ((KafkaNamesMapperHolder) serviceLocator.getService(KafkaNamesMapper.class)).setKafkaNamespaceMapper(it.apply(serviceLocator)));
+            messageSenderProvidersSuppliers.entrySet().stream().forEach(entry ->
+                    entry.getValue().stream().forEach(supplier ->
+                            messageSenderFactory.addSupportedProtocol(entry.getKey(), supplier.apply(serviceLocator))
+                    ));
 
             supervisorController.start();
             serviceLocator.getService(ConsumersRuntimeMonitor.class).start();
