@@ -11,11 +11,11 @@ import java.util.function.BiConsumer;
  */
 public class HermesMessage {
 
-    static final String APPLICATION_JSON = "application/json;charset=UTF-8";
-    private static final String AVRO_BINARY = "avro/binary";
+    public static final String SCHEMA_VERSION_HEADER = "Schema-Version";
 
-    static final String SCHEMA_VERSION_HEADER = "Schema-Version";
+    static final String APPLICATION_JSON = "application/json;charset=UTF-8";
     static final String CONTENT_TYPE_HEADER = "Content-Type";
+    static final String AVRO_BINARY = "avro/binary";
 
     private final String topic;
     private final byte[] body;
