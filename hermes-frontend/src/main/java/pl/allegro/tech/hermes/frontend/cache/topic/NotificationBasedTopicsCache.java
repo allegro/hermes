@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.frontend.cache.topic;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -17,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache, TopicBlacklistCallback {
+
+    private static final Logger logger = LoggerFactory.getLogger(NotificationBasedTopicsCache.class);
 
     private final ConcurrentMap<String, CachedTopic> topicCache = new ConcurrentHashMap<>();
 
@@ -46,7 +50,15 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
 
     @Override
     public void onTopicRemoved(Topic topic) {
-        topicCache.remove(topic.getName().qualifiedName(), topic);
+        if (topicCache.containsKey(topic.getName().qualifiedName())) {
+            Topic cachedTopic = topicCache.get(topic.getName().qualifiedName()).getTopic();
+            if (cachedTopic.equals(topic)) {
+                topicCache.remove(topic.getName().qualifiedName());
+            } else {
+                logger.warn("Received event about removed topic but cache contains different topic under the same name." +
+                        "Cached topic {}, removed topic {}", cachedTopic, topic);
+            }
+        }
     }
 
     @Override
