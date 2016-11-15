@@ -14,7 +14,6 @@ import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperHolder;
 import pl.allegro.tech.hermes.frontend.di.FrontendBinder;
 import pl.allegro.tech.hermes.frontend.di.PersistentBufferExtension;
 import pl.allegro.tech.hermes.frontend.di.TrackersBinder;
@@ -32,7 +31,6 @@ import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -45,7 +43,6 @@ public final class HermesFrontend {
     private final ServiceLocator serviceLocator;
     private final HooksHandler hooksHandler;
     private final List<Function<ServiceLocator, LogRepository>> logRepositories;
-    private final Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper;
     private final HermesServer hermesServer;
     private final Trackers trackers;
 
@@ -56,11 +53,9 @@ public final class HermesFrontend {
     private HermesFrontend(HooksHandler hooksHandler,
                            List<Binder> binders,
                            List<Function<ServiceLocator, LogRepository>> logRepositories,
-                           Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper,
                            boolean flushLogsShutdownHookEnabled) {
         this.hooksHandler = hooksHandler;
         this.logRepositories = logRepositories;
-        this.kafkaNamesMapper = kafkaNamesMapper;
 
         serviceLocator = createDIContainer(binders);
 
@@ -100,10 +95,6 @@ public final class HermesFrontend {
     public void start() {
         logRepositories.forEach(serviceLocatorLogRepositoryFunction ->
                 trackers.add(serviceLocatorLogRepositoryFunction.apply(serviceLocator)));
-
-        kafkaNamesMapper.ifPresent(it -> {
-            ((KafkaNamesMapperHolder)serviceLocator.getService(KafkaNamesMapper.class)).setKafkaNamespaceMapper(it.apply(serviceLocator));
-        });
 
         serviceLocator.getService(PersistentBufferExtension.class).extend();
         startCaches(serviceLocator);
@@ -153,13 +144,12 @@ public final class HermesFrontend {
         );
         private final BrokerListeners listeners = new BrokerListeners();
         private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();
-        private Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper = Optional.empty();
         private boolean flushLogsShutdownHookEnabled = true;
 
         public HermesFrontend build() {
             withDefaultRankBinding(listeners, BrokerListeners.class);
             binders.add(new TrackersBinder(new ArrayList<>()));
-            return new HermesFrontend(hooksHandler, binders, logRepositories, kafkaNamesMapper, flushLogsShutdownHookEnabled);
+            return new HermesFrontend(hooksHandler, binders, logRepositories, flushLogsShutdownHookEnabled);
         }
 
         public Builder withStartupHook(ServiceAwareHook hook) {
@@ -215,9 +205,8 @@ public final class HermesFrontend {
             return withBinding(headersPropagator, HeadersPropagator.class);
         }
 
-        public Builder withKafkaTopicsNamesMapper(Function<ServiceLocator, KafkaNamesMapper> kafkaNamesMapper) {
-            this.kafkaNamesMapper = Optional.of(kafkaNamesMapper);
-            return this;
+        public Builder withKafkaTopicsNamesMapper(KafkaNamesMapper kafkaNamesMapper) {
+            return withBinding(kafkaNamesMapper, KafkaNamesMapper.class);
         }
 
         public <T> Builder withBinding(T instance, Class<T> clazz) {

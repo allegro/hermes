@@ -53,7 +53,7 @@ Full workflow from creating an issue to releasing it:
 * i create branch *feature/change_subscription_endpoint*
 * i code the feature
 * i test the code create pull request from feature branch to **develop**
-* after pul lrequest is accepted, i squash commits, merge it and delete unused feature branch
+* after pull request is accepted, i squash commits, merge it and delete unused feature branch
 * i schedule the change for 0.1.1 version
 * i create **release-0.1.1** branch from **develop** branch
 * i test **release-0.1.1** branch, add changelog etc

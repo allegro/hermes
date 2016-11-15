@@ -1,3 +1,29 @@
+## 0.9.2 (15.11.2016)
+
+### Features
+
+#### ([#612](https://github.com/allegro/hermes/pull/612)) Added explicit CORS allowed domain configuration option
+
+### Enhancements
+
+#### ([#619](https://github.com/allegro/hermes/pull/619)) Updated kafka-producer configuration
+
+In the current version of kafka-producer (0.10.1) `request.timeout.ms` parameter is also used as a timeout for dropping batches from internal accumulator. 
+Therefore, it is better to increase this timeout to very high value, because when kafka is unreachable we don't want to drop messages but buffer them in accumulator until is full.
+This behavior will change in future version of kafka-producer.
+
+More information on this issue:
+http://mail-archives.apache.org/mod_mbox/kafka-users/201611.mbox/%3C81613078-5734-46FD-82E2-140280758BC6@gmail.com%3E
+
+### Bugfixes
+
+#### ([#614](https://github.com/allegro/hermes/pull/614)) JSON-to-Avro dry run fix for Hermes-incompatible schemas 
+#### ([#621](https://github.com/allegro/hermes/pull/621)) Schema-related frontend HTTP responses fix 
+#### ([#622](https://github.com/allegro/hermes/pull/622)) Fixing occasional null pointer when reading consumer assignments
+#### ([#624](https://github.com/allegro/hermes/pull/624)) Catching unchecked exceptions in schema-versions cache that previously weren't logged
+#### ([#616](https://github.com/allegro/hermes/pull/616)) Fixing bug with sync commit after each filtered message
+
+
 ## 0.9.1 (02.11.2016)
 
 This patch version was released mostly because of **Schema version cache fix [#608](https://github.com/allegro/hermes/issues/608)**
@@ -29,7 +55,7 @@ The change is transparent for the end users.
 
 **Upgrading note**
 
-Before upgraing, make sure that offsets are committed and stored in Kafka (option: `kafka.consumer.dual.commit.enabled` is set to `true` or 
+Before upgrading, make sure that offsets are committed and stored in Kafka (option: `kafka.consumer.dual.commit.enabled` is set to `true` or
 `kafka.consumer.offsets.storage` is set to `kafka` (default) in Consumers module).
 
 When upgrading, all Consumers should be stopped at once and started with new version.
@@ -108,7 +134,7 @@ Tracking information now contains additional fields: `hostname` and `remote_host
 Improving the stability of new internal Consumers process model by adding consumer process graceful shutdown
 and filtering unwatned signals (i.e. sequential START & STOP) which might cause instability.
 
-For monitoring purposes two new metrics (counters) were created in Consumers that compare the assignments state vs 
+For monitoring purposes two new metrics (counters) were created in Consumers that compare the assignments state vs
 the actual consumers running:
 
 * `consumers-workload.monitor.missing.count` - how many processes are missing compared to assigned amount
