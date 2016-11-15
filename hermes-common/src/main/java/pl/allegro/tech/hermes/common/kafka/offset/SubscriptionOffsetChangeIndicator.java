@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.kafka.offset;
 
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 
 public interface SubscriptionOffsetChangeIndicator {
