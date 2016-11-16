@@ -90,27 +90,34 @@ public class ConsumerProcess implements Runnable {
     }
 
     private void process(Signal signal) {
-        switch (signal.getType()) {
-            case RESTART:
-                restart();
-                break;
-            case STOP:
-                this.running = false;
-                break;
-            case RETRANSMIT:
-                retransmit();
-                break;
-            case UPDATE_SUBSCRIPTION:
-                consumer.updateSubscription(signal.getPayload());
-                break;
-            case UPDATE_TOPIC:
-                consumer.updateTopic(signal.getPayload());
-                break;
-            case COMMIT:
-                consumer.commit(signal.getPayload());
-                break;
+        try {
+            switch (signal.getType()) {
+                case RESTART:
+                    restart();
+                    break;
+                case STOP:
+                    this.running = false;
+                    break;
+                case RETRANSMIT:
+                    retransmit();
+                    break;
+                case UPDATE_SUBSCRIPTION:
+                    consumer.updateSubscription(signal.getPayload());
+                    break;
+                case UPDATE_TOPIC:
+                    consumer.updateTopic(signal.getPayload());
+                    break;
+                case COMMIT:
+                    consumer.commit(signal.getPayload());
+                    break;
+                default:
+                    logger.warn("Unhandled signal found {}", signal);
+                    break;
+            }
+            signalTimesheet.put(signal.getType(), clock.millis());
+        } catch (Exception ex) {
+            logger.error("Failed to process signal {} for subscription {}", signal.getType(), subscriptionName);
         }
-        signalTimesheet.put(signal.getType(), clock.millis());
     }
 
     private void start() {
@@ -136,8 +143,13 @@ public class ConsumerProcess implements Runnable {
     private void retransmit() {
         long startTime = clock.millis();
         logger.info("Starting retransmission for consumer of subscription {}", subscriptionName);
-        retransmitter.reloadOffsets(subscriptionName, consumer);
-        logger.info("Done retransmission for consumer of subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
+        try {
+            retransmitter.reloadOffsets(subscriptionName, consumer);
+            logger.info("Done retransmission for consumer of subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
+        } catch (Exception ex) {
+            logger.error("Failed retransmission for consumer of subscription {} in {}ms",
+                    subscriptionName, clock.millis() - startTime, ex);
+        }
     }
 
     private void restart() {

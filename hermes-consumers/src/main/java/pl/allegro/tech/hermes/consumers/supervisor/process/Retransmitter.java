@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 
 import javax.inject.Inject;
-import java.util.List;
 
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
@@ -42,10 +41,21 @@ public class Retransmitter {
                         new SubscriptionPartition(partitionOffset.getTopic(), subscriptionName, partitionOffset.getPartition()),
                         partitionOffset.getOffset()
                 );
-                consumer.moveOffset(subscriptionPartitionOffset);
+                moveOffset(subscriptionName, consumer, subscriptionPartitionOffset);
             }
         } catch (Exception ex) {
             throw new RetransmissionException(ex);
+        }
+    }
+
+    private void moveOffset(SubscriptionName subscriptionName,
+                            Consumer consumer,
+                            SubscriptionPartitionOffset subscriptionPartitionOffset) {
+        try {
+            consumer.moveOffset(subscriptionPartitionOffset);
+        } catch (IllegalStateException ex) {
+            logger.warn("Cannot move offset for partition {} for subscription {}, possibly owned by different node",
+                    subscriptionPartitionOffset.getPartition(), subscriptionName, ex);
         }
     }
 }
