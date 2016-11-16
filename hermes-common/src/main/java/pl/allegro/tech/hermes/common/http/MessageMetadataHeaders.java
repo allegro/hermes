@@ -6,7 +6,7 @@ public enum MessageMetadataHeaders {
     BATCH_ID("Hermes-Batch-Id"),
     TOPIC_NAME("Hermes-Topic-Name"),
     RETRY_COUNT("Hermes-Retry-Count"),
-    SCHEMA_VERSION("Hermes-Schema-Version");
+    SCHEMA_VERSION("Schema-Version");
 
     private final String headerName;
 
