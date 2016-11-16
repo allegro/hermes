@@ -17,7 +17,7 @@ public class KafkaNamesMapperFactory implements Factory<KafkaNamesMapper> {
 
     @Override
     public KafkaNamesMapper provide() {
-        return new KafkaNamesMapperHolder(new NamespaceKafkaNamesMapper(namespace));
+        return new NamespaceKafkaNamesMapper(namespace);
     }
 
     @Override

@@ -144,6 +144,7 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void onRetransmissionStarts(SubscriptionName subscription) throws Exception {
+        logger.info("Triggering retransmission for subscription {}", subscription);
         if (workTracker.isAssignedTo(subscription, getId())) {
             supervisor.retransmit(subscription);
         }

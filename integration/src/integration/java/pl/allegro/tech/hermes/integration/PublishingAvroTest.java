@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
@@ -26,7 +27,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import static com.google.common.collect.ImmutableMap.of;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -35,7 +35,6 @@ import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SCHEMA_VERSION;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader.load;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -195,13 +194,17 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnServerInternalErrorResponseOnMissingSchemaAtSpecifiedVersion() {
+    public void shouldReturnServerInternalErrorResponseOnMissingSchemaAtSpecifiedVersion() throws Exception {
         Topic topic = topic("avro.topicWithoutSchema")
                 .withContentType(AVRO).build();
         operations.buildTopic(topic);
 
         // when
-        Response response = publisher.publish(topic.getQualifiedName(), user.asJson(), of(SCHEMA_VERSION.getName(), "1"));
+        HermesMessage message = HermesMessage.hermesMessage(topic.getQualifiedName(), user.asBytes())
+                .avro(1)
+                .build();
+
+        Response response = publisher.publishAvro(topic.getQualifiedName(), message.getBody(), message.getHeaders());
 
         // then
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.getStatusCode());
@@ -325,12 +328,15 @@ public class PublishingAvroTest extends IntegrationTest {
         operations.saveSchema(topic, load("/schema/user_v2.avsc").toString());
 
         // when
-        assertThat(publisher.publishAvro(topic.getQualifiedName(), user.asBytes(), of(SCHEMA_VERSION.getName(), "1")))
-                .hasStatus(CREATED);
+        HermesMessage message = HermesMessage.hermesMessage(topic.getQualifiedName(), user.asBytes())
+                .avro(1)
+                .build();
+
+        assertThat(publisher.publishAvro(topic.getQualifiedName(), message.getBody(), message.getHeaders())).hasStatus(CREATED);
 
         // then
         remoteService.waitUntilRequestReceived(request -> {
-            assertThat(request.getHeaders().getHeader(SCHEMA_VERSION.getName()).firstValue()).isEqualTo("1");
+            assertThat(request.getHeaders().getHeader(HermesMessage.SCHEMA_VERSION_HEADER).firstValue()).isEqualTo("1");
             assertBodyDeserializesIntoUser(request.getBodyAsString(), user);
         });
     }
