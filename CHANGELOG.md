@@ -1,3 +1,11 @@
+## 0.9.3 (16.11.2016)
+
+### Bugfixes
+
+#### ([#626](https://github.com/allegro/hermes/pull/626)) Custom KafkaNamesMapper can be used too late
+#### ([#628](https://github.com/allegro/hermes/pull/628)) Hermes should operates on "Schema-Version" header instead of "Hermes-Schema-Version"
+#### ([#630](https://github.com/allegro/hermes/pull/630)) Retransmission is unstable
+
 ## 0.9.2 (15.11.2016)
 
 ### Features
