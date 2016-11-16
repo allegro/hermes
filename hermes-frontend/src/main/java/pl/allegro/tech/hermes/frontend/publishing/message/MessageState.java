@@ -1,15 +1,17 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.*;
 
 public class MessageState {
 
     enum State {
+        INIT,
+        PREMATURE_TIMEOUT,
         READING,
         READING_TIMEOUT,
+        READING_ERROR,
         FULLY_READ,
         SENDING_TO_KAFKA_PRODUCER_QUEUE,
         ERROR_IN_SENDING_TO_KAFKA,
@@ -20,7 +22,15 @@ public class MessageState {
     }
 
     private volatile boolean timeoutHasPassed = false;
-    private AtomicReference<State> state = new AtomicReference<>(State.READING);
+    private AtomicReference<State> state = new AtomicReference<>(State.INIT);
+
+    public boolean setReading() {
+        return state.compareAndSet(INIT, READING);
+    }
+
+    public void setPrematureTimeout() {
+        state.compareAndSet(INIT, PREMATURE_TIMEOUT);
+    }
 
     public boolean setFullyRead() {
         return state.compareAndSet(READING, FULLY_READ);
@@ -48,6 +58,10 @@ public class MessageState {
 
     public boolean setReadingTimeout() {
         return state.compareAndSet(READING, READING_TIMEOUT);
+    }
+
+    public boolean setReadingError() {
+        return state.compareAndSet(READING, READING_ERROR);
     }
 
     public void setErrorInSendingToKafka() {

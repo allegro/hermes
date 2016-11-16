@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
+import io.undertow.io.Receiver;
 import io.undertow.server.DefaultResponseListener;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -60,44 +61,71 @@ class MessageReadHandler implements HttpHandler {
             timeoutHandler.handleRequest(exchange);
         } catch (Exception e) {
             messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
-                    error("Error while handling timeout task.", INTERNAL_ERROR), e);
+                    error("Error while handling timeout task", INTERNAL_ERROR), e);
         }
     }
 
     private void readMessage(HttpServerExchange exchange, AttachmentContent attachment) {
         ByteArrayOutputStream messageContent = new ByteArrayOutputStream();
+        MessageState state = attachment.getMessageState();
 
-        StartedTimersPair startedTimersPair = attachment.getCachedTopic().startRequestReadTimers();
+        StartedTimersPair readingTimers = attachment.getCachedTopic().startRequestReadTimers();
 
         attachment.getTimeoutHolder().onTimeout((Void) -> {
-            startedTimersPair.close();
+            readingTimers.close();
             exchange.getRequestReceiver().pause();
         });
 
-        MessageState state = attachment.getMessageState();
+        Receiver receiver = exchange.getRequestReceiver();
 
-        exchange.getRequestReceiver().receivePartialBytes(
-                (exchange1, message, last) -> {
-                    if (state.isReadingTimeout()) {
-                        endWithoutDefaultResponse(exchange);
-                        return;
-                    }
-                    messageContent.write(message, 0, message.length);
+        if (state.setReading()) {
+            receiver.receivePartialBytes(
+                    partialMessageRead(state, messageContent, readingTimers, attachment),
+                    readingError(state, readingTimers, attachment));
+        } else {
+            readingTimers.close();
+            messageErrorProcessor.sendAndLog(
+                    exchange,
+                    attachment.getTopic(),
+                    attachment.getMessageId(),
+                    error("Probably context switching problem as timeout elapsed before message reading was started", INTERNAL_ERROR));
+        }
+    }
 
-                    if (last) {
-                        if (state.setFullyRead()) {
-                            startedTimersPair.close();
-                            messageRead(exchange1, messageContent.toByteArray(), attachment);
-                        } else {
-                            endWithoutDefaultResponse(exchange);
-                        }
-                    }
-                },
-                (exchange1, e) -> {
-                    startedTimersPair.close();
-                    messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
-                            error("Error while reading message. " + getRootCauseMessage(e), INTERNAL_ERROR), e);
-                });
+    private Receiver.PartialBytesCallback partialMessageRead(MessageState state, ByteArrayOutputStream messageContent,
+                                                             StartedTimersPair readingTimers, AttachmentContent attachment) {
+        return (exchange, message, last) -> {
+            if (state.isReadingTimeout()) {
+                endWithoutDefaultResponse(exchange);
+                return;
+            }
+            messageContent.write(message, 0, message.length);
+
+            if (last) {
+                if (state.setFullyRead()) {
+                    readingTimers.close();
+                    messageRead(exchange, messageContent.toByteArray(), attachment);
+                } else {
+                    endWithoutDefaultResponse(exchange);
+                }
+            }
+        };
+    }
+
+    private Receiver.ErrorCallback readingError(MessageState state, StartedTimersPair readingTimers, AttachmentContent attachment) {
+        return (exchange, exception) -> {
+            if (state.setReadingError()) {
+                readingTimers.close();
+                attachment.removeTimeout();
+                messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
+                        error("Error while reading message. " + getRootCauseMessage(exception), INTERNAL_ERROR), exception);
+            } else {
+                messageErrorProcessor.log(
+                        exchange,
+                        "Error while reading message after timeout execution. " + getRootCauseMessage(exception),
+                        exception);
+            }
+        };
     }
 
     private void messageRead(HttpServerExchange exchange, byte[] messageContent, AttachmentContent attachment) {
@@ -111,9 +139,11 @@ class MessageReadHandler implements HttpHandler {
                 next.handleRequest(exchange);
             }
         } catch (ContentLengthChecker.InvalidContentLengthException e) {
+            attachment.removeTimeout();
             messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(),
                     attachment.getMessageId(), error(e.getMessage(), VALIDATION_ERROR));
         } catch (Exception e) {
+            attachment.removeTimeout();
             messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(), e);
         }
     }
@@ -125,8 +155,9 @@ class MessageReadHandler implements HttpHandler {
             try {
                 next.handleRequest(exchange);
             } catch (Exception e) {
+                attachment.removeTimeout();
                 messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
-                        error("Error while executing handler next to read handler.", INTERNAL_ERROR), e);
+                        error("Error while executing next handler after read handler", INTERNAL_ERROR), e);
             }
         });
         endWithoutDefaultResponse(exchange);

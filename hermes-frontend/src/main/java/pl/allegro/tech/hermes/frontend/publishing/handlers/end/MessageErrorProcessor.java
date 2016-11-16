@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.inject.Inject;
@@ -33,29 +34,46 @@ public class MessageErrorProcessor {
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error) {
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error, topic, messageId, readHostAndPort(exchange));
+        log(error.getMessage(), topic, messageId, readHostAndPort(exchange));
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error, Exception exception) {
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error, topic, messageId, readHostAndPort(exchange), exception);
+        log(error.getMessage(), topic, messageId, readHostAndPort(exchange), exception);
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, Exception e) {
         ErrorDescription error = error("Error while handling request.", INTERNAL_ERROR);
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error, topic, messageId, readHostAndPort(exchange), e);
+        log(error.getMessage(), topic, messageId, readHostAndPort(exchange), e);
     }
 
     public void sendQuietly(HttpServerExchange exchange, ErrorDescription error, String messageId, String topicName) {
         try {
             if (exchange.getConnection().isOpen()) {
-                send(exchange, error, messageId);
+                if (!exchange.isResponseStarted()) {
+                    send(exchange, error, messageId);
+                } else {
+                    logger.warn(
+                            "Not sending error message to a client as response has already been started. " +
+                            "Error message: {} Topic: {} MessageId: {} Host: {}",
+                            error.getMessage(), topicName, messageId, readHostAndPort(exchange));
+                }
             }
         } catch (Exception e) {
             logger.warn("Exception in sending error response to a client. {} Topic: {} MessageId: {} Host: {}",
                     error.getMessage(), topicName, messageId, readHostAndPort(exchange), e);
         }
+    }
+
+    public void log(HttpServerExchange exchange, String errorMessage, Exception exception) {
+        AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
+        log(errorMessage, attachment.getTopic(), attachment.getMessageId(), readHostAndPort(exchange), exception);
+    }
+
+    public void log(HttpServerExchange exchange, String errorMessage) {
+        AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
+        log(errorMessage, attachment.getTopic(), attachment.getMessageId(), readHostAndPort(exchange));
     }
 
     private void send(HttpServerExchange exchange, ErrorDescription error, String messageId) throws IOException {
@@ -65,9 +83,9 @@ public class MessageErrorProcessor {
         exchange.getResponseSender().send(objectMapper.writeValueAsString(error));
     }
 
-    private void log(ErrorDescription error, Topic topic, String messageId, String hostAndPort) {
+    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort) {
         logger.error(new StringBuilder()
-                .append(error.getMessage())
+                .append(errorMessage)
                 .append("; publishing on topic: ")
                 .append(topic.getQualifiedName())
                 .append("; message id: ")
@@ -75,12 +93,12 @@ public class MessageErrorProcessor {
                 .append("; remote host: ")
                 .append(hostAndPort)
                 .toString());
-        trackers.get(topic).logError(messageId, topic.getName(), error.getMessage(), hostAndPort);
+        trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort);
     }
 
-    private void log(ErrorDescription error, Topic topic, String messageId, String hostAndPort, Exception exception) {
+    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort, Exception exception) {
         logger.error(new StringBuilder()
-                        .append(error.getMessage())
+                        .append(errorMessage)
                         .append("; publishing on topic: ")
                         .append(topic.getQualifiedName())
                         .append("; message id: ")
@@ -89,6 +107,6 @@ public class MessageErrorProcessor {
                         .append(hostAndPort)
                         .toString(),
                 exception);
-        trackers.get(topic).logError(messageId, topic.getName(), error.getMessage(), hostAndPort);
+        trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort);
     }
 }
