@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.benchmark.environment;
 
 import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.io.IOUtils;
-import org.apache.curator.framework.CuratorFramework;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
@@ -11,21 +10,19 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Group;
-import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 import pl.allegro.tech.hermes.test.helper.environment.ZookeeperStarter;
 
 import java.io.IOException;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
-import static pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperDataSaver.save;
 
 @State(Scope.Benchmark)
 public class FrontendEnvironment {
@@ -52,7 +49,13 @@ public class FrontendEnvironment {
         kafkaStarter = new KafkaStarter("/kafka.properties");
         kafkaStarter.start();
 
-        hermesFrontend = HermesFrontend.frontend().withDisabledGlobalShutdownHook().build();
+        hermesFrontend = HermesFrontend.frontend()
+                .withDisabledGlobalShutdownHook()
+                .withDisabledFlushLogsShutdownHook()
+                .withBinding(
+                        new InMemorySchemaClient(fromQualifiedName("bench.topic"), loadMessageResource("schema")),
+                        RawSchemaClient.class)
+                .build();
         hermesFrontend.start();
 
         GroupRepository groupRepository = hermesFrontend.getService(GroupRepository.class);
@@ -60,11 +63,6 @@ public class FrontendEnvironment {
         groupRepository.createGroup(Group.from("bench"));
         Topic topic = topic("bench.topic").withContentType(AVRO).build();
         topicRepository.createTopic(topic);
-        saveSchema(
-                hermesFrontend.getService(CuratorFramework.class, CuratorType.HERMES),
-                hermesFrontend.getService(ZookeeperPaths.class),
-                topic,
-                loadMessageResource("schema"));
     }
 
     @Setup(Level.Trial)
@@ -98,9 +96,5 @@ public class FrontendEnvironment {
 
     private void reportMetrics() {
         metricRegistry.getCounters().entrySet().forEach(e -> logger.info(e.getKey() + ": " + e.getValue().getCount()));
-    }
-
-    private void saveSchema(CuratorFramework curatorFramework, ZookeeperPaths zkPaths, Topic topic, String schemaSource) {
-        save(curatorFramework, zkPaths.topicPath(topic.getName(), "schema"), RawSchema.valueOf(schemaSource).value().getBytes());
     }
 }
