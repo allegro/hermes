@@ -85,6 +85,10 @@ public class HermesMetrics {
         return metricRegistry.counter(metricRegistryName(metric, topicName, name));
     }
 
+    public void registerProducerInflightRequest(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.INFLIGHT_REQUESTS), gauge);
+    }
+
     public void registerConsumersThreadGauge(Gauge<Integer> gauge) {
         metricRegistry.register(metricRegistryName(Gauges.THREADS), gauge);
     }
