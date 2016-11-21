@@ -141,7 +141,7 @@ public class ConsumerProcessSupervisor implements Runnable {
     }
 
     private void kill(SubscriptionName subscriptionName) {
-        if (runningProcesses.hasProcess(subscriptionName)) {
+        if (!runningProcesses.hasProcess(subscriptionName)) {
             logger.info("Process for subscription {} no longer exists", subscriptionName);
         } else {
             logger.info("Interrupting consumer process for subscription {}", subscriptionName);
