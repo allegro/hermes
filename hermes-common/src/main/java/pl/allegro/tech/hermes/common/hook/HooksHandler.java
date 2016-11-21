@@ -27,7 +27,7 @@ public class HooksHandler {
         if (!disabledGlobalShutdownHook) {
             registerGlobalShutdownHook(serviceLocator);
         }
-        startupHooks.forEach(c -> c.accept(serviceLocator));
+        runHooksInOrder(startupHooks, serviceLocator);
     }
 
     public void disableGlobalShutdownHook() {
@@ -35,7 +35,13 @@ public class HooksHandler {
     }
 
     private void runShutdownHooks(ServiceLocator serviceLocator) {
-        shutdownHooks.forEach(c -> c.accept(serviceLocator));
+        runHooksInOrder(shutdownHooks, serviceLocator);
+    }
+
+    private void runHooksInOrder(List<ServiceAwareHook> hooks, ServiceLocator serviceLocator) {
+        hooks.stream()
+                .sorted((h1, h2) -> h2.getPriority() - h1.getPriority())
+                .forEach(c -> c.accept(serviceLocator));
     }
 
     private void registerGlobalShutdownHook(ServiceLocator serviceLocator) {

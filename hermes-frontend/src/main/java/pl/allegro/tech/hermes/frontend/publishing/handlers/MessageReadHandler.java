@@ -71,12 +71,12 @@ class MessageReadHandler implements HttpHandler {
 
         StartedTimersPair readingTimers = attachment.getCachedTopic().startRequestReadTimers();
 
+        Receiver receiver = exchange.getRequestReceiver();
+
         attachment.getTimeoutHolder().onTimeout((Void) -> {
             readingTimers.close();
-            exchange.getRequestReceiver().pause();
+            receiver.pause();
         });
-
-        Receiver receiver = exchange.getRequestReceiver();
 
         if (state.setReading()) {
             receiver.receivePartialBytes(

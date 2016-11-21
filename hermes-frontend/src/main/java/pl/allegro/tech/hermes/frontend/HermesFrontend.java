@@ -79,6 +79,11 @@ public final class HermesFrontend {
             public void shutdown() throws InterruptedException {
                 hermesServer.gracefulShutdown();
             }
+
+            @Override
+            public int getPriority() {
+                return Hook.HIGHER_PRIORITY;
+            }
         };
     }
 
