@@ -38,10 +38,10 @@ public class MaxRateProviderFactory {
                 providerCreator = (subscription, sendCounters) -> {
                     String consumerId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
                     int historyLimit = configFactory.getIntProperty(CONSUMER_MAXRATE_HISTORY_SIZE);
-                    double fallbackMaxRate = configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_MAX_RATE);
+                    double initialMaxRate = configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_MAX_RATE);
 
                     return new NegotiatedMaxRateProvider(consumerId, maxRateRegistry, maxRateSupervisor,
-                            subscription, sendCounters, metrics, fallbackMaxRate, historyLimit);
+                            subscription, sendCounters, metrics, initialMaxRate, historyLimit);
                 };
                 break;
             case STRICT:

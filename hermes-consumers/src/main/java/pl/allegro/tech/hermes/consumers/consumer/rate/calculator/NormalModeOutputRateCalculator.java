@@ -36,9 +36,6 @@ class NormalModeOutputRateCalculator implements ModeOutputRateCalculator {
             calculatedRate = Math.max(slowModeRate, currentRate * (1 - rateConvergenceFactor));
         }
 
-        if (calculatedRate <= slowModeRate) {
-            calculatedMode = OutputRateCalculator.Mode.SLOW;
-        }
         return new OutputRateCalculationResult(calculatedRate, calculatedMode);
     }
 

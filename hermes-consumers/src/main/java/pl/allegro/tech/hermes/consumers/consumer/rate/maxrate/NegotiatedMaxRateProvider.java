@@ -20,7 +20,6 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
     private final SendCounters sendCounters;
     private final HermesMetrics metrics;
     private final int historyLimit;
-    private final MaxRate fallbackMaxRate;
     private volatile double maxRate;
 
     NegotiatedMaxRateProvider(String consumerId,
@@ -29,7 +28,7 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
                               Subscription subscription,
                               SendCounters sendCounters,
                               HermesMetrics metrics,
-                              double fallbackMaxRate,
+                              double initialMaxRate,
                               int historyLimit) {
         this.consumerId = consumerId;
         this.registry = registry;
@@ -38,8 +37,7 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
         this.sendCounters = sendCounters;
         this.metrics = metrics;
         this.historyLimit = historyLimit;
-        this.fallbackMaxRate = new MaxRate(fallbackMaxRate);
-        maxRate = fallbackMaxRate;
+        maxRate = initialMaxRate;
     }
 
     @Override
@@ -49,7 +47,7 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
 
     void tickForHistory() {
         recordCurrentRate(sendCounters.getRate());
-        maxRate = fetchOrDefaultMaxRate();
+        fetchCurrentMaxRate().ifPresent(currentMaxRate -> maxRate = currentMaxRate.getMaxRate());
     }
 
     private void recordCurrentRate(double actualRate) {
@@ -65,19 +63,13 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
         }
     }
 
-    private double fetchOrDefaultMaxRate() {
-        // if I can't fetch max rate, I need to temporarily slow down so I don't abuse the subscriber
-        return fetchCurrentMaxRate().orElse(fallbackMaxRate).getMaxRate();
-    }
-
     private Optional<MaxRate> fetchCurrentMaxRate() {
         try {
             return registry.readMaxRate(subscription, consumerId);
         } catch (Exception e) {
             metrics.maxRateFetchFailuresCounter(subscription).inc();
-            logger.warn("Encountered problem fetching max rate for subscription: {}, consumer: {}." +
-                            " Will use default max rate: {}",
-                    subscription.getQualifiedName(), consumerId, fallbackMaxRate.getMaxRate());
+            logger.warn("Encountered problem fetching max rate for subscription: {}, consumer: {}.",
+                    subscription.getQualifiedName(), consumerId);
             return Optional.empty();
         }
     }
