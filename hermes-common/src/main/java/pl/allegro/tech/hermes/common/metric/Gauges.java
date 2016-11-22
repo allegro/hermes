@@ -17,5 +17,6 @@ public class Gauges {
             JMX_PREFIX = "jmx",
 
             THREADS = "threads",
+            INFLIGHT_REQUESTS = "inflight-requests",
             OUTPUT_RATE = "output-rate." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
 }

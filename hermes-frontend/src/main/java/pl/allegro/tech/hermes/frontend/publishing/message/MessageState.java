@@ -1,33 +1,82 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
-import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.SENDING_TO_KAFKA;
-import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.SENT_TO_KAFKA;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.*;
 
 public class MessageState {
 
-    public enum State {
-        WAITING_FOR_FIRST_PORTION_OF_DATA,
-        PARSING,
-        PARSED,
+    enum State {
+        INIT,
+        PREMATURE_TIMEOUT,
+        READING,
+        READING_TIMEOUT,
+        READING_ERROR,
+        FULLY_READ,
         SENDING_TO_KAFKA_PRODUCER_QUEUE,
+        ERROR_IN_SENDING_TO_KAFKA,
         SENDING_TO_KAFKA,
-        SENT_TO_KAFKA
+        SENT_TO_KAFKA,
+        DELAYED_SENDING,
+        DELAYED_PROCESSING
     }
 
-    private volatile State state = State.WAITING_FOR_FIRST_PORTION_OF_DATA;
+    private volatile boolean timeoutHasPassed = false;
+    private AtomicReference<State> state = new AtomicReference<>(State.INIT);
 
-    public MessageState() {
+    public boolean setReading() {
+        return state.compareAndSet(INIT, READING);
     }
 
-    public synchronized void setState(State state) {
-        this.state = state;
+    public void setPrematureTimeout() {
+        state.compareAndSet(INIT, PREMATURE_TIMEOUT);
     }
 
-    public synchronized State getState() {
-        return state;
+    public boolean setFullyRead() {
+        return state.compareAndSet(READING, FULLY_READ);
     }
 
-    public synchronized boolean wasDelegatedToKafka() {
-        return state == SENDING_TO_KAFKA || state == SENT_TO_KAFKA;
+    public boolean isReadingTimeout() {
+        return state.get() == READING_TIMEOUT;
+    }
+
+    public void setSendingToKafkaProducerQueue() {
+        state.set(SENDING_TO_KAFKA_PRODUCER_QUEUE);
+    }
+
+    public boolean setSentToKafka() {
+        return state.compareAndSet(SENDING_TO_KAFKA, SENT_TO_KAFKA) || state.compareAndSet(SENDING_TO_KAFKA_PRODUCER_QUEUE, SENT_TO_KAFKA);
+    }
+
+    public boolean isDelayed() {
+        return timeoutHasPassed || state.get() == DELAYED_SENDING || state.get() == DELAYED_PROCESSING;
+    }
+
+    public boolean setDelayedSending() {
+        return state.compareAndSet(SENDING_TO_KAFKA, DELAYED_SENDING);
+    }
+
+    public boolean setReadingTimeout() {
+        return state.compareAndSet(READING, READING_TIMEOUT);
+    }
+
+    public boolean setReadingError() {
+        return state.compareAndSet(READING, READING_ERROR);
+    }
+
+    public void setErrorInSendingToKafka() {
+        state.set(ERROR_IN_SENDING_TO_KAFKA);
+    }
+
+    public boolean setSendingToKafka() {
+        return state.compareAndSet(SENDING_TO_KAFKA_PRODUCER_QUEUE, SENDING_TO_KAFKA);
+    }
+
+    public boolean setDelayedProcessing() {
+        return timeoutHasPassed && state.compareAndSet(SENDING_TO_KAFKA, DELAYED_PROCESSING);
+    }
+
+    public void setTimeoutHasPassed() {
+        this.timeoutHasPassed = true;
     }
 }

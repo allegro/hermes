@@ -12,5 +12,6 @@ include 'hermes-common',
         'hermes-tracker-mongo',
         'hermes-metrics',
         'hermes-tracker-elasticsearch',
-        'hermes-schema'
+        'hermes-schema',
+        'hermes-benchmark'
 

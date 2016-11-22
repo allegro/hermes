@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
@@ -46,9 +47,12 @@ public class KafkaBrokerMessageProducerTest {
     @Mock
     private HermesMetrics hermesMetrics;
 
+    private CachedTopic cachedTopic;
+
     @Before
     public void before() {
-        producer = new KafkaBrokerMessageProducer(producers, hermesMetrics, kafkaNamesMapper);
+        cachedTopic = new CachedTopic(TOPIC, hermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
+        producer = new KafkaBrokerMessageProducer(producers, hermesMetrics);
     }
 
     @After
@@ -60,7 +64,7 @@ public class KafkaBrokerMessageProducerTest {
     @Test
     public void shouldPublishOnTopicUsingKafkaTopicName() throws InterruptedException {
         //when
-        producer.send(MESSAGE, TOPIC, new DoNothing());
+        producer.send(MESSAGE, cachedTopic, new DoNothing());
 
         //then
         List<ProducerRecord<byte[], byte[]>> records = leaderConfirmsProducer.history();
@@ -74,7 +78,7 @@ public class KafkaBrokerMessageProducerTest {
         final AtomicBoolean callbackCalled = new AtomicBoolean(false);
 
         //when
-        producer.send(MESSAGE, TOPIC, new PublishingCallback() {
+        producer.send(MESSAGE, cachedTopic, new PublishingCallback() {
             @Override
             public void onUnpublished(Message message, Topic topic, Exception exception) {
                 callbackCalled.set(true);
@@ -94,9 +98,10 @@ public class KafkaBrokerMessageProducerTest {
     public void shouldUseEveryoneConfirmProducerForTopicWithAckAll() {
         //given
         Topic topic = topic("group.all").withAck(Topic.Ack.ALL).build();
+        CachedTopic cachedTopic = new CachedTopic(topic, hermesMetrics, kafkaNamesMapper.toKafkaTopics(topic));
 
         //when
-        producer.send(MESSAGE, topic, new DoNothing());
+        producer.send(MESSAGE, cachedTopic, new DoNothing());
 
         //then
         List<ProducerRecord<byte[], byte[]>> records = everyoneConfirmProducer.history();

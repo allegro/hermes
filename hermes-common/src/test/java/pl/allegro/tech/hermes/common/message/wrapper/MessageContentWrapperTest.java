@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,9 +33,17 @@ public class MessageContentWrapperTest {
     static CompiledSchema<Schema> schema2 = new CompiledSchema<>(load("/schema/user_v2.avsc"), SchemaVersion.valueOf(2));
     static CompiledSchema<Schema> schema3 = new CompiledSchema<>(load("/schema/user_v3.avsc"), SchemaVersion.valueOf(3));
 
-    static SchemaVersionsRepository schemaVersionsRepository = (topic, online) ->
-            online? asList(schema3.getVersion(), schema2.getVersion(), schema1.getVersion())
-            : asList(schema2.getVersion(), schema1.getVersion());
+    static SchemaVersionsRepository schemaVersionsRepository = new SchemaVersionsRepository() {
+        @Override
+        public List<SchemaVersion> versions(Topic topic, boolean online) {
+            return online? asList(schema3.getVersion(), schema2.getVersion(), schema1.getVersion())
+                    : asList(schema2.getVersion(), schema1.getVersion());
+        }
+
+        @Override
+        public void close() {
+        }
+    };
 
     static CompiledSchemaRepository<Schema> compiledSchemaRepository = (topic, version) -> {
         switch (version.value()) {

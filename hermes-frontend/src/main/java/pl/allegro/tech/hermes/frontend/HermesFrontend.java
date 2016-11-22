@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
+import pl.allegro.tech.hermes.common.hook.FlushLogsShutdownHook;
 import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
@@ -51,7 +52,8 @@ public final class HermesFrontend {
 
     private HermesFrontend(HooksHandler hooksHandler,
                            List<Binder> binders,
-                           List<Function<ServiceLocator, LogRepository>> logRepositories) {
+                           List<Function<ServiceLocator, LogRepository>> logRepositories,
+                           boolean flushLogsShutdownHookEnabled) {
         this.hooksHandler = hooksHandler;
         this.logRepositories = logRepositories;
 
@@ -66,6 +68,9 @@ public final class HermesFrontend {
 
         hooksHandler.addStartupHook((s) -> s.getService(HealthCheckService.class).startup());
         hooksHandler.addShutdownHook(defaultShutdownHook());
+        if (flushLogsShutdownHookEnabled) {
+            hooksHandler.addShutdownHook(new FlushLogsShutdownHook());
+        }
     }
 
     private ServiceAwareHook gracefulShutdownHook() {
@@ -73,6 +78,11 @@ public final class HermesFrontend {
             @Override
             public void shutdown() throws InterruptedException {
                 hermesServer.gracefulShutdown();
+            }
+
+            @Override
+            public int getPriority() {
+                return Hook.HIGHER_PRIORITY;
             }
         };
     }
@@ -139,11 +149,12 @@ public final class HermesFrontend {
         );
         private final BrokerListeners listeners = new BrokerListeners();
         private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();
+        private boolean flushLogsShutdownHookEnabled = true;
 
         public HermesFrontend build() {
             withDefaultRankBinding(listeners, BrokerListeners.class);
             binders.add(new TrackersBinder(new ArrayList<>()));
-            return new HermesFrontend(hooksHandler, binders, logRepositories);
+            return new HermesFrontend(hooksHandler, binders, logRepositories, flushLogsShutdownHookEnabled);
         }
 
         public Builder withStartupHook(ServiceAwareHook hook) {
@@ -162,6 +173,17 @@ public final class HermesFrontend {
 
         public Builder withShutdownHook(Hook hook) {
             return withShutdownHook(s -> hook.apply());
+        }
+
+
+        public Builder withDisabledGlobalShutdownHook() {
+            hooksHandler.disableGlobalShutdownHook();
+            return this;
+        }
+
+        public Builder withDisabledFlushLogsShutdownHook() {
+            flushLogsShutdownHookEnabled = false;
+            return this;
         }
 
         public Builder withBrokerTimeoutListener(BrokerTimeoutListener brokerTimeoutListener) {
