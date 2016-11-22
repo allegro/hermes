@@ -1,10 +1,33 @@
+## 0.10.0 (22.11.2016)
+
+This release introduces a lot of performance optimizations related to publishing messages to Hermes.
+
+### Features
+
+#### ([#518](https://github.com/allegro/hermes/pull/518)) Frontend performance
+
+- implemented hermes-benchmarks module with frontend benchmark tests written in jmh
+- servlet layer was removed, publishing is done on raw undertow handlers
+- timeouts mechanism (202, 408) was redesigned, locks were elminated
+- sped up metrics invocation during message publishing, from now on they are kept in topics cache
+
+#### ([#559](https://github.com/allegro/hermes/issues/559)) Topic ban button
+
+Thanks to topic ban button events published on a topic can be cheaply discarded.
+This feature can be used when some misbehaving publisher is detected,
+i.e. starts to push enormous events or all his events have invalid schema.
+
+### Bugfixes
+
+#### ([#636](https://github.com/allegro/hermes/issues/636)) ConsumersProcessSupervisor is not killing any consumer process 
+
 ## 0.9.3 (16.11.2016)
 
 ### Bugfixes
 
-#### ([#626](https://github.com/allegro/hermes/pull/626)) Custom KafkaNamesMapper can be used too late
-#### ([#628](https://github.com/allegro/hermes/pull/628)) Hermes should operates on "Schema-Version" header instead of "Hermes-Schema-Version"
-#### ([#630](https://github.com/allegro/hermes/pull/630)) Retransmission is unstable
+- **([#626](https://github.com/allegro/hermes/pull/626)) Custom KafkaNamesMapper can be used too late**
+- **([#628](https://github.com/allegro/hermes/pull/628)) Hermes should operates on "Schema-Version" header instead of "Hermes-Schema-Version"**
+- **([#630](https://github.com/allegro/hermes/pull/630)) Retransmission is unstable**
 
 ## 0.9.2 (15.11.2016)
 
@@ -20,16 +43,16 @@ In the current version of kafka-producer (0.10.1) `request.timeout.ms` parameter
 Therefore, it is better to increase this timeout to very high value, because when kafka is unreachable we don't want to drop messages but buffer them in accumulator until is full.
 This behavior will change in future version of kafka-producer.
 
-More information on this issue:
-http://mail-archives.apache.org/mod_mbox/kafka-users/201611.mbox/%3C81613078-5734-46FD-82E2-140280758BC6@gmail.com%3E
+More information on this issue can be found in
+[kafka-users group archives](http://mail-archives.apache.org/mod_mbox/kafka-users/201611.mbox/%3C81613078-5734-46FD-82E2-140280758BC6@gmail.com%3E)
 
 ### Bugfixes
 
-#### ([#614](https://github.com/allegro/hermes/pull/614)) JSON-to-Avro dry run fix for Hermes-incompatible schemas 
-#### ([#621](https://github.com/allegro/hermes/pull/621)) Schema-related frontend HTTP responses fix 
-#### ([#622](https://github.com/allegro/hermes/pull/622)) Fixing occasional null pointer when reading consumer assignments
-#### ([#624](https://github.com/allegro/hermes/pull/624)) Catching unchecked exceptions in schema-versions cache that previously weren't logged
-#### ([#616](https://github.com/allegro/hermes/pull/616)) Fixing bug with sync commit after each filtered message
+- **([#614](https://github.com/allegro/hermes/pull/614)) JSON-to-Avro dry run fix for Hermes-incompatible schemas** 
+- **([#621](https://github.com/allegro/hermes/pull/621)) Schema-related frontend HTTP responses fix**
+- **([#622](https://github.com/allegro/hermes/pull/622)) Fixing occasional null pointer when reading consumer assignments**
+- **([#624](https://github.com/allegro/hermes/pull/624)) Catching unchecked exceptions in schema-versions cache that previously weren't logged**
+- **([#616](https://github.com/allegro/hermes/pull/616)) Fixing bug with sync commit after each filtered message**
 
 
 ## 0.9.1 (02.11.2016)
