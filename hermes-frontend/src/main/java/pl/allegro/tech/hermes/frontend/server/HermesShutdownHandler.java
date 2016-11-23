@@ -37,8 +37,8 @@ public class HermesShutdownHandler implements HttpHandler {
             exchange.endExchange();
             return;
         }
-        inflightRequests.incrementAndGet();
         exchange.addExchangeCompleteListener(completionListener);
+        inflightRequests.incrementAndGet();
         next.handleRequest(exchange);
     }
 

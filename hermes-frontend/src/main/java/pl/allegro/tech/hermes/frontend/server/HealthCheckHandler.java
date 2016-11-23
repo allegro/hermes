@@ -35,7 +35,6 @@ public class HealthCheckHandler implements HttpHandler {
     private void response(HttpServerExchange exchange, int status, String data) {
         exchange.setStatusCode(status);
         exchange.getResponseSender().send(data);
-        exchange.endExchange();
     }
 
 }

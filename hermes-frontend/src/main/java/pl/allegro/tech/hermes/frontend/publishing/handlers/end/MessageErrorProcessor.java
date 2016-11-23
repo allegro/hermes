@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
@@ -54,11 +55,15 @@ public class MessageErrorProcessor {
                 if (!exchange.isResponseStarted()) {
                     send(exchange, error, messageId);
                 } else {
-                    logger.warn(
-                            "Not sending error message to a client as response has already been started. " +
-                            "Error message: {} Topic: {} MessageId: {} Host: {}",
+                    logger.warn("Not sending error message to a client as response has already been started. " +
+                                    "Error message: {} Topic: {} MessageId: {} Host: {}",
                             error.getMessage(), topicName, messageId, readHostAndPort(exchange));
                 }
+            } else {
+                logger.warn("Connection to a client closed. Can't send error response. " +
+                                "Error message: {} Topic: {} MessageId: {} Host: {}",
+                        error.getMessage(), topicName, messageId, readHostAndPort(exchange));
+                exchange.endExchange();
             }
         } catch (Exception e) {
             logger.warn("Exception in sending error response to a client. {} Topic: {} MessageId: {} Host: {}",
@@ -71,16 +76,12 @@ public class MessageErrorProcessor {
         log(errorMessage, attachment.getTopic(), attachment.getMessageId(), readHostAndPort(exchange), exception);
     }
 
-    public void log(HttpServerExchange exchange, String errorMessage) {
-        AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
-        log(errorMessage, attachment.getTopic(), attachment.getMessageId(), readHostAndPort(exchange));
-    }
-
     private void send(HttpServerExchange exchange, ErrorDescription error, String messageId) throws IOException {
         exchange.setStatusCode(error.getCode().getHttpCode());
         exchange.getResponseHeaders().add(Headers.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         exchange.getResponseHeaders().add(messageIdHeader, messageId);
-        exchange.getResponseSender().send(objectMapper.writeValueAsString(error));
+        exchange.getResponseSender().send(objectMapper.writeValueAsString(error), Charset.forName("UTF-8"),
+                ResponseReadyIoCallback.INSTANCE);
     }
 
     private void log(String errorMessage, Topic topic, String messageId, String hostAndPort) {

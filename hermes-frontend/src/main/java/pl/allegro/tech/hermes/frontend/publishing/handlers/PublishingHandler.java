@@ -46,7 +46,7 @@ class PublishingHandler implements HttpHandler {
             // called from kafka producer thread
             @Override
             public void onPublished(Message message, Topic topic) {
-                exchange.dispatch(() -> {
+                exchange.getConnection().getWorker().execute(() -> {
                     brokerLatencyTimers.close();
                     if (messageState.setSentToKafka()) {
                         attachment.removeTimeout();
