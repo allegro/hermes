@@ -22,6 +22,7 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
     private static final Logger logger = LoggerFactory.getLogger(CachedSchemaVersionsRepository.class);
 
     private final RawSchemaClient rawSchemaClient;
+    private final ExecutorService versionsReloader;
     private final LoadingCache<Topic, List<SchemaVersion>> versionsCache;
 
     public CachedSchemaVersionsRepository(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader,
@@ -32,6 +33,7 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
     CachedSchemaVersionsRepository(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader,
                                    int refreshAfterWriteMinutes, int expireAfterWriteMinutes, Ticker ticker) {
         this.rawSchemaClient = rawSchemaClient;
+        this.versionsReloader = versionsReloader;
         this.versionsCache = CacheBuilder
                 .newBuilder()
                 .ticker(ticker)
@@ -47,6 +49,14 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
         } catch (Exception e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
             return emptyList();
+        }
+    }
+
+    @Override
+    public void close() {
+        if (!versionsReloader.isShutdown()) {
+            logger.info("Shutdown of schema-source-reloader executor");
+            versionsReloader.shutdownNow();
         }
     }
 

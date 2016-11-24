@@ -2,10 +2,14 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
     }
     dependencies {
         classpath group: 'io.codearte.gradle.nexus', name: 'gradle-nexus-staging-plugin', version: '0.5.1'
-        classpath group:  'com.bmuschko', name: 'gradle-nexus-plugin', version: '2.3.1'
+        classpath group: 'com.bmuschko', name: 'gradle-nexus-plugin', version: '2.3.1'
+        classpath group: 'gradle.plugin.me.champeau.gradle', name: 'jmh-gradle-plugin', version: '0.3.0'
     }
 }
 

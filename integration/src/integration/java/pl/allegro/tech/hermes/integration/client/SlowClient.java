@@ -19,10 +19,16 @@ public class SlowClient {
     public static final int PORT = 18080;
     public static final String MSG_BODY = "{\"field\": \"value\"}";
 
-    public static final String msgHead(String topicName) {
+    public static final String msgHeadWithContentLenght(String topicName) {
         return "POST /topics/" + topicName + " HTTP/1.1\n"
              + "Content-Type: application/json\n"
              + "Content-Length: " + MSG_BODY.length() + "\r\n\r\n";
+    }
+
+    private static final String msgHeadWithChunkedEncoding(String topicName) {
+        return "POST /topics/" + topicName + " HTTP/1.1\n"
+                + "Content-Type: application/json\n"
+                + "Transfer-Encoding: chunked \r\n\r\n";
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SlowClient.class);
@@ -30,6 +36,12 @@ public class SlowClient {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public String slowEvent(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData, String topicName)
+            throws IOException, InterruptedException {
+        return slowEvent(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, false);
+    }
+
+    public String slowEvent(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData,
+                            String topicName, boolean chunkedEncoding)
             throws IOException, InterruptedException {
 
         Socket clientSocket = new Socket(HOST, PORT);
@@ -41,10 +53,14 @@ public class SlowClient {
 
         clientSocket.setSoTimeout(clientTimeout);
 
-        outToServer.writeBytes(msgHead(topicName));
-        outToServer.flush();
-
-        sendBodyInChunks(outToServer, MSG_BODY, pauseTimeBetweenChunks);
+        if (chunkedEncoding) {
+            outToServer.writeBytes(msgHeadWithChunkedEncoding(topicName));
+            outToServer.flush();
+        } else {
+            outToServer.writeBytes(msgHeadWithContentLenght(topicName));
+            outToServer.flush();
+        }
+        sendBodyInChunks(outToServer, MSG_BODY, pauseTimeBetweenChunks, chunkedEncoding);
 
         String response;
         try {
@@ -61,16 +77,21 @@ public class SlowClient {
         return response;
     }
 
-    private void sendBodyInChunks(final DataOutputStream outToServer, final String msgBody, final int pauseTime) {
+    private void sendBodyInChunks(DataOutputStream outToServer, String msgBody, int pauseTime, boolean encoded) {
         executor.execute(() -> {
             try {
                 for (int index = 0; index < msgBody.length(); index++) {
-                    outToServer.writeBytes(String.valueOf(msgBody.charAt(index)));
+                    outToServer.writeBytes(prepareChunk(msgBody, index, encoded));
                     outToServer.flush();
                     LOGGER.info("Sent chunk");
                     if (pauseTime > 0) {
                         Thread.sleep(pauseTime);
                     }
+                }
+                if (encoded) {
+                    outToServer.writeBytes("0\r\n\r\n");
+                    outToServer.flush();
+                    LOGGER.info("Finished chunked encoding");
                 }
             } catch (SocketException e) {
                 LOGGER.warn("Socket closed");
@@ -78,6 +99,10 @@ public class SlowClient {
                 LOGGER.error("Something went wrong while sending data", e);
             }
         });
+    }
+
+    private String prepareChunk(String msg, int index, boolean encoded) {
+        return encoded ? String.format("1\n%c\r\n", msg.charAt(index)) : String.valueOf(msg.charAt(index));
     }
 
     private String readResponse(BufferedReader bufferedReader) throws IOException {

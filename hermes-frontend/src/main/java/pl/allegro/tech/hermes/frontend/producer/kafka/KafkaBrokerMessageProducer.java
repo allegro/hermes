@@ -5,8 +5,8 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
@@ -19,30 +19,33 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaBrokerMessageProducer.class);
     private final Producers producers;
-    private final KafkaNamesMapper kafkaNamesMapper;
     private final HermesMetrics metrics;
 
     @Inject
-    public KafkaBrokerMessageProducer(Producers producers, HermesMetrics metrics, KafkaNamesMapper kafkaNamesMapper) {
-        this.kafkaNamesMapper = kafkaNamesMapper;
+    public KafkaBrokerMessageProducer(Producers producers, HermesMetrics metrics) {
         this.producers = producers;
         this.metrics = metrics;
         producers.registerGauges(metrics);
     }
 
     @Override
-    public void send(Message message, Topic topic, final PublishingCallback callback) {
-            String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
-            ProducerRecord<byte[], byte[]> producerRecord = new ProducerRecord<>(kafkaTopicName, message.getData());
-            producers.get(topic).send(producerRecord, new SendCallback(message, topic, callback));
+    public void send(Message message, CachedTopic cachedTopic, final PublishingCallback callback) {
+        String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
+        ProducerRecord<byte[], byte[]> producerRecord = new ProducerRecord<>(kafkaTopicName, message.getData());
+        try {
+            producers.get(cachedTopic.getTopic()).send(producerRecord, new SendCallback(message, cachedTopic.getTopic(), callback));
+        } catch (Exception e) {
+            // message didn't get to internal producer buffer and it will not be send to a broker
+            callback.onUnpublished(message, cachedTopic.getTopic(), e);
+        }
     }
 
     @Override
-    public boolean isTopicAvailable(Topic topic) {
-        String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
+    public boolean isTopicAvailable(CachedTopic cachedTopic) {
+        String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
 
         try {
-            if (producers.get(topic).partitionsFor(kafkaTopicName).size() > 0) {
+            if (producers.get(cachedTopic.getTopic()).partitionsFor(kafkaTopicName).size() > 0) {
                 return true;
             }
         } catch (Exception e) {
@@ -67,11 +70,11 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
         @Override
         public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-            if (e != null) {
-                callback.onUnpublished(message, topic, e);
-            } else {
+            if (e == null) {
                 callback.onPublished(message, topic);
                 producers.maybeRegisterNodeMetricsGauges(metrics);
+            } else {
+                callback.onUnpublished(message, topic, e);
             }
         }
     }

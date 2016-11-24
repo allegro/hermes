@@ -92,6 +92,10 @@ public class Hermes {
         return createProxy(url, SupportTeamsEndpoint.class, managementConfig);
     }
 
+    public BlacklistEndpoint createBlacklistEndpoint() {
+        return createProxy(url, BlacklistEndpoint.class, managementConfig);
+    }
+
     public AsyncMessagePublisher createAsyncMessagePublisher() {
         String resource = TopicEndpoint.class.getAnnotation(Path.class).value();
         return new AsyncMessagePublisher(getClientBuilder(publisherConfig).build().target(url).path(resource));

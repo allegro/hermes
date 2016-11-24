@@ -24,14 +24,20 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
 
     private final KafkaConfig kafkaConfig;
     private KafkaServerStartable kafka;
+    private boolean running;
 
     public KafkaStarter() {
-        kafkaConfig = new KafkaConfig(loadDefaultProperties());
+        kafkaConfig = new KafkaConfig(loadProperties("/kafkalocal.properties"));
         cleanLogs();
     }
 
     public KafkaStarter(Properties kafkaProperties) {
         kafkaConfig = new KafkaConfig(kafkaProperties);
+        cleanLogs();
+    }
+
+    public KafkaStarter(String configPath) {
+        kafkaConfig = new KafkaConfig(loadProperties(configPath));
         cleanLogs();
     }
 
@@ -45,13 +51,14 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
         kafka.startup();
 
         waitForStartup(kafkaConfig.port());
+        running = true;
     }
 
-    private Properties loadDefaultProperties() {
+    private Properties loadProperties(String resourcesPath) {
         Properties properties = new Properties();
         try {
-            logger.info("Loading default kafka properties file");
-            properties.load(this.getClass().getResourceAsStream("/kafkalocal.properties"));
+            logger.info("Loading kafka properties file: ", resourcesPath);
+            properties.load(this.getClass().getResourceAsStream(resourcesPath));
         } catch (IOException e) {
             throw new IllegalStateException("Error while loading kafka properties", e);
         }
@@ -74,9 +81,14 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
 
     @Override
     public void stop() throws Exception {
-        logger.info("Stopping in-memory Kafka");
-        kafka.shutdown();
-        kafka.awaitShutdown();
+        if (running) {
+            logger.info("Stopping in-memory Kafka");
+            kafka.shutdown();
+            kafka.awaitShutdown();
+            running = false;
+        } else {
+            logger.info("In-memory Kafka is not running");
+        }
     }
 
     @Override

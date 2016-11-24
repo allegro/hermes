@@ -16,7 +16,7 @@
 
     <!-- Suppressions for unit (test|integration)ing code -->
     <suppress checks="MagicNumber"
-              files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
+              files="[/\\]src[/\\](test|integration|jmh)[/\\]java[/\\]"
             />
     <suppress checks="JavadocMethod"
               files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"

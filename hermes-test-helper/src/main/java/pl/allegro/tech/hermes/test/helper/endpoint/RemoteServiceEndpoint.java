@@ -109,7 +109,9 @@ public class RemoteServiceEndpoint {
         logger.info("Expecting to receive {} messages", expectedMessages.size());
         await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() ->
                 assertThat(receivedRequests.size()).isGreaterThanOrEqualTo(expectedMessages.size()));
-        assertThat(receivedRequests.stream().map(LoggedRequest::getBodyAsString).collect(toList())).containsAll(expectedMessages);
+        synchronized (receivedRequests) {
+            assertThat(receivedRequests.stream().map(LoggedRequest::getBodyAsString).collect(toList())).containsAll(expectedMessages);
+        }
     }
 
     public void waitUntilReceived(long seconds, int numberOfExpectedMessages) {
@@ -128,13 +130,17 @@ public class RemoteServiceEndpoint {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
         await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() ->
                 assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
-        receivedRequests.stream().forEach(requestBodyConsumer::accept);
+        synchronized (receivedRequests) {
+            receivedRequests.stream().forEach(requestBodyConsumer::accept);
+        }
     }
 
     public void waitUntilReceived(Duration duration, int numberOfExpectedMessages, Consumer<LoggedRequest> requestBodyConsumer) {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
         await().atMost(duration).until(() -> assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
-        receivedRequests.stream().forEach(requestBodyConsumer::accept);
+        synchronized (receivedRequests) {
+            receivedRequests.stream().forEach(requestBodyConsumer::accept);
+        }
     }
 
     public void waitUntilReceived() {
@@ -147,7 +153,9 @@ public class RemoteServiceEndpoint {
     }
 
     public LoggedRequest getLastReceivedRequest() {
-        return Iterables.getLast(receivedRequests);
+        synchronized (receivedRequests) {
+            return Iterables.getLast(receivedRequests);
+        }
     }
 
     public LoggedRequest getFirstReceivedRequest() {
@@ -159,7 +167,9 @@ public class RemoteServiceEndpoint {
     }
 
     public boolean receivedMessageWithHeader(String header, String value) {
-        return receivedRequests.stream().anyMatch(r -> r.header(header).containsValue(value));
+        synchronized (receivedRequests) {
+            return receivedRequests.stream().anyMatch(r -> r.header(header).containsValue(value));
+        }
     }
 
     public java.time.Duration durationBetweenFirstAndLastRequest() {
@@ -179,10 +189,6 @@ public class RemoteServiceEndpoint {
         receivedRequests.clear();
         listener.resetMappings();
         service.resetMappings();
-    }
-
-    public List<LoggedRequest> getReceivedRequests() {
-        return receivedRequests;
     }
 
     public RemoteServiceEndpoint setDelay(int delay) {

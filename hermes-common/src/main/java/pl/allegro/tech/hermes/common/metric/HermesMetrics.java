@@ -85,6 +85,10 @@ public class HermesMetrics {
         return metricRegistry.counter(metricRegistryName(metric, topicName, name));
     }
 
+    public void registerProducerInflightRequest(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.INFLIGHT_REQUESTS), gauge);
+    }
+
     public void registerConsumersThreadGauge(Gauge<Integer> gauge) {
         metricRegistry.register(metricRegistryName(Gauges.THREADS), gauge);
     }
@@ -190,6 +194,10 @@ public class HermesMetrics {
         return metricRegistry.counter(pathCompiler.compile(Counters.SCHEDULED_EXECUTOR_OVERRUN, pathContext().withExecutorName(executorName).build()));
     }
 
+    public Histogram messageContentSizeHistogram() {
+        return metricRegistry.histogram(pathCompiler.compile(Histograms.GLOBAL_MESSAGE_SIZE));
+    }
+
     public Histogram messageContentSizeHistogram(TopicName topic) {
         return metricRegistry.histogram(pathCompiler.compile(Histograms.MESSAGE_SIZE, pathContext()
                 .withGroup(escapeDots(topic.getGroupName()))
@@ -203,11 +211,6 @@ public class HermesMetrics {
                 .withTopic(escapeDots(subscription.getTopicName().getName()))
                 .withSubscription(escapeDots(subscription.getName()))
                 .build()));
-    }
-
-    public void reportContentSize(int size, TopicName topicName) {
-        messageContentSizeHistogram(topicName).update(size);
-        metricRegistry.histogram(pathCompiler.compile(Histograms.GLOBAL_MESSAGE_SIZE)).update(size);
     }
 
     public void registerConsumerHttpAnswer(Subscription subscription, int statusCode) {

@@ -25,12 +25,15 @@ public class HermesEndpoints {
 
     private final SupportTeamsEndpoint supportTeamsEndpoint;
 
+    private final BlacklistEndpoint blacklistEndpoint;
+
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
         this.subscriptionEndpoint = hermes.createSubscriptionEndpoint();
         this.schemaEndpoint = hermes.createSchemaEndpoint();
         this.queryEndpoint = hermes.createQueryEndpoint();
+        this.blacklistEndpoint = hermes.createBlacklistEndpoint();
         this.oAuthProviderEndpoint = hermes.createOAuthProviderEndpoint();
         this.consumerEndpoint = hermes.createConsumerEndpoint();
         this.supportTeamsEndpoint = hermes.createSupportTeamsEndpoint();
@@ -68,6 +71,10 @@ public class HermesEndpoints {
 
     public SupportTeamsEndpoint supportTeams() {
         return supportTeamsEndpoint;
+    }
+
+    public BlacklistEndpoint blacklist() {
+        return blacklistEndpoint;
     }
 
     public List<String> findTopics(Topic topic, boolean tracking) {

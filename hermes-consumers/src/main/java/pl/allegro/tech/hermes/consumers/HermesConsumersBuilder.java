@@ -36,6 +36,8 @@ public final class HermesConsumersBuilder {
     private final List<SubscriptionMessageFilterCompiler> filters = new ArrayList<>();
     private final List<MessageFilter> globalFilters = new ArrayList<>();
 
+    private boolean flushLogsShutdownHookEnabled = true;
+
     private final List<Binder> binders = Lists.newArrayList(
             new CommonBinder(),
             new ConsumersBinder());
@@ -56,6 +58,16 @@ public final class HermesConsumersBuilder {
 
     public HermesConsumersBuilder withShutdownHook(Hook hook) {
         return withShutdownHook(s -> hook.apply());
+    }
+
+    public HermesConsumersBuilder withDisabledGlobalShutdownHook() {
+        hooksHandler.disableGlobalShutdownHook();
+        return this;
+    }
+
+    public HermesConsumersBuilder withDisabledFlushLogsShutdownHook() {
+        flushLogsShutdownHookEnabled = false;
+        return this;
     }
 
     public HermesConsumersBuilder withMessageSenderProvider(String protocol, Supplier<ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
@@ -114,7 +126,7 @@ public final class HermesConsumersBuilder {
         messageSenderProviders.add(
                 "jms", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultJmsMessageSenderProvider")
         );
-        return new HermesConsumers(hooksHandler, binders, messageSenderProviders, logRepositories);
+        return new HermesConsumers(hooksHandler, binders, messageSenderProviders, logRepositories, flushLogsShutdownHookEnabled);
     }
 
     private MessageFilters buildFilters() {

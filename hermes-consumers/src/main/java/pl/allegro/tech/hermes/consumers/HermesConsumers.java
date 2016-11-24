@@ -6,6 +6,7 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.component.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.common.hook.FlushLogsShutdownHook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
@@ -40,7 +41,7 @@ public class HermesConsumers {
     HermesConsumers(HooksHandler hooksHandler,
                     List<Binder> binders,
                     MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProvidersSuppliers,
-                    List<Function<ServiceLocator, LogRepository>> logRepositories) {
+                    List<Function<ServiceLocator, LogRepository>> logRepositories, boolean flushLogsShutdownHookEnabled) {
 
         this.hooksHandler = hooksHandler;
         this.messageSenderProvidersSuppliers = messageSenderProvidersSuppliers;
@@ -63,6 +64,9 @@ public class HermesConsumers {
                 logger.error("Exception while shutdown Hermes Consumers", e);
             }
         });
+        if (flushLogsShutdownHookEnabled) {
+            hooksHandler.addShutdownHook(new FlushLogsShutdownHook());
+        }
     }
 
     public void start() {

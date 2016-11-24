@@ -18,8 +18,12 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 
-    @Inject
     private ConfigFactory configFactory;
+
+    @Inject
+    public KafkaMessageProducerFactory(ConfigFactory configFactory) {
+        this.configFactory = configFactory;
+    }
 
     @Override
     public Producers provide() {
