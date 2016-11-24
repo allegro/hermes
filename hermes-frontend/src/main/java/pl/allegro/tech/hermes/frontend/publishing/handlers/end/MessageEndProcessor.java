@@ -56,7 +56,7 @@ public class MessageEndProcessor {
     private void sendResponse(HttpServerExchange exchange, AttachmentContent attachment, int statusCode) {
         exchange.setStatusCode(statusCode);
         exchange.getResponseHeaders().add(messageIdHeader, attachment.getMessageId());
-        attachment.setResponseReady();
+        attachment.markResponseAsReady();
         exchange.endExchange();
     }
 }

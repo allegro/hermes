@@ -72,7 +72,7 @@ public class AttachmentContent {
         return responseReady;
     }
 
-    public void setResponseReady() {
+    public void markResponseAsReady() {
         responseReady = true;
     }
 }
