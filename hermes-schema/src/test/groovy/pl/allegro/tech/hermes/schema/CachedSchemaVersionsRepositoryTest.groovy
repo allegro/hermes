@@ -103,4 +103,18 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         versionsRepository.schemaVersionExists(topic, v1)
         versionsRepository.latestSchemaVersion(topic).get() == v1
     }
+
+    def "should respond with stale data if reload returned empty list"() {
+        given:
+        def failing = false
+        rawSchemaClient.getVersions(topic.getName()) >> { failing? [] : [v1, v0] }
+        versionsRepository.latestSchemaVersion(topic)
+
+        ticker.advance(REFRESH_TIME.plusMinutes(1))
+        failing = true
+
+        expect:
+        versionsRepository.schemaVersionExists(topic, v1)
+        versionsRepository.latestSchemaVersion(topic).get() == v1
+    }
 }

@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -81,7 +80,7 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
             ListenableFutureTask<List<SchemaVersion>> task = ListenableFutureTask.create(() -> {
                 logger.info("Reloading schema versions for topic {}", topic.getQualifiedName());
                 try {
-                    return rawSchemaClient.getVersions(topic.getName());
+                    return checkSchemaVersionsAreAvailable(topic, rawSchemaClient.getVersions(topic.getName()));
                 } catch (Exception e) {
                     logger.error("Could not reload schema versions for topic {}, will use stale data", topic.getQualifiedName(), e);
                     return oldVersions;
@@ -89,6 +88,13 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
             });
             versionsReloader.execute(task);
             return task;
+        }
+
+        private List<SchemaVersion> checkSchemaVersionsAreAvailable(Topic topic, List<SchemaVersion> versions) {
+            if (versions.isEmpty()) {
+                throw new NoSchemaVersionsFound(topic);
+            }
+            return versions;
         }
     }
 }
