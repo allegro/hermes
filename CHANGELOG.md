@@ -1,3 +1,12 @@
+## 0.10.1 (29.11.2016)
+
+This is a bugfix release improving `schema-registry` integration and retransmission on large clusters.
+
+### Bugfixes
+
+- **([#630](https://github.com/allegro/hermes/pull/630)) Retransmission is unstable**
+- **([#640](https://github.com/allegro/hermes/pull/640)) Schema cache reload 404-proof**
+
 ## 0.10.0 (22.11.2016)
 
 This release introduces a lot of performance optimizations related to publishing messages to Hermes.
