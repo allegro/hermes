@@ -148,6 +148,7 @@ public class StorageConfiguration {
         if (storageZookeeper().checkExists().forPath(zookeeperPaths().groupsPath()) == null) {
             storageZookeeper().create().creatingParentsIfNeeded().forPath(zookeeperPaths().groupsPath());
         }
+        adminTool().start();
     }
 
 }
