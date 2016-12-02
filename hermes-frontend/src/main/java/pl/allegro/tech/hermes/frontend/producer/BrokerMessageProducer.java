@@ -7,6 +7,6 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 public interface BrokerMessageProducer {
 
     void send(Message message, CachedTopic topic, PublishingCallback callback);
-    boolean isTopicAvailable(CachedTopic topic);
 
+    boolean isTopicAvailable(CachedTopic topic);
 }

@@ -30,7 +30,11 @@ import static java.time.LocalDateTime.now;
 import static java.time.ZoneOffset.UTC;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class BackupMessagesLoaderTest {
 
@@ -68,7 +72,6 @@ public class BackupMessagesLoaderTest {
     @Test
     public void shouldNotSendOldMessages() {
         //given
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE)).thenReturn(5);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(8);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(2);
 
@@ -90,7 +93,6 @@ public class BackupMessagesLoaderTest {
     public void shouldSendAndResendMessages() {
         //given
         int noOfSentCalls = 2;
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE)).thenReturn(5);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(8);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(noOfSentCalls - 1);
         when(trackers.get(eq(topic))).thenReturn(new NoOperationPublishingTracker());
@@ -118,7 +120,6 @@ public class BackupMessagesLoaderTest {
     @Test
     public void shouldSendOnlyWhenBrokerTopicIsAvailable() {
         // given
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE)).thenReturn(1);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(10);
 
         when(producer.isTopicAvailable(cachedTopic)).thenReturn(false).thenReturn(false).thenReturn(true);

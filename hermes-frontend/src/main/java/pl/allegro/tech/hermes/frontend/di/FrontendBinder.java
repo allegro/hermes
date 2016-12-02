@@ -21,6 +21,8 @@ import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
+import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.AvroTopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
@@ -48,6 +50,8 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageValidators.class);
 
         bind(hooksHandler).to(HooksHandler.class);
+        bindSingleton(TopicMetadataLoadingStartupHook.class);
+        bindSingleton(TopicSchemaLoadingStartupHook.class);
 
         bind("producer").named("moduleName").to(String.class);
 
