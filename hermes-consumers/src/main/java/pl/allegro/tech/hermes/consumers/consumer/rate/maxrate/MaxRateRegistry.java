@@ -6,7 +6,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
@@ -33,14 +33,14 @@ public class MaxRateRegistry {
         this.zookeeperPaths = zookeeperPaths;
     }
 
-    Set<ConsumerRateInfo> ensureCorrectAssignments(Subscription subscription, Set<String> currentConsumers) {
+    Set<ConsumerRateInfo> ensureCorrectAssignments(SubscriptionName subscriptionName, Set<String> currentConsumers) {
         Set<ConsumerRateInfo> rateInfos = new HashSet<>();
         try {
-            cleanupRegistry(subscription, new ArrayList<>(currentConsumers));
+            cleanupRegistry(subscriptionName, new ArrayList<>(currentConsumers));
 
             for (String consumerId : currentConsumers) {
-                RateHistory history = readOrCreateRateHistory(subscription, consumerId);
-                Optional<MaxRate> maxRate = readMaxRate(subscription, consumerId);
+                RateHistory history = readOrCreateRateHistory(subscriptionName, consumerId);
+                Optional<MaxRate> maxRate = readMaxRate(subscriptionName, consumerId);
                 rateInfos.add(new ConsumerRateInfo(consumerId, maxRate, history));
             }
         } catch (Exception e) {
@@ -49,11 +49,10 @@ public class MaxRateRegistry {
         return rateInfos;
     }
 
-    void update(Subscription subscription, Map<String, MaxRate> newMaxRates) {
+    void update(SubscriptionName subscriptionName, Map<String, MaxRate> newMaxRates) {
         try {
             for (Map.Entry<String, MaxRate> entry : newMaxRates.entrySet()) {
-                String maxRatePath = zookeeperPaths.consumersMaxRatePath(
-                        subscription.getQualifiedName(), entry.getKey());
+                String maxRatePath = zookeeperPaths.consumersMaxRatePath(subscriptionName, entry.getKey());
                 writeOrCreate(maxRatePath, objectMapper.writeValueAsBytes(entry.getValue()));
             }
         } catch (Exception e) {
@@ -61,8 +60,8 @@ public class MaxRateRegistry {
         }
     }
 
-    Optional<MaxRate> readMaxRate(Subscription subscription, String consumerId) {
-        String path = zookeeperPaths.consumersMaxRatePath(subscription.getQualifiedName(), consumerId);
+    Optional<MaxRate> readMaxRate(SubscriptionName subscriptionName, String consumerId) {
+        String path = zookeeperPaths.consumersMaxRatePath(subscriptionName, consumerId);
         try {
             byte[] serialized = curator.getData().forPath(path);
             return Optional.of(objectMapper.readValue(serialized, MaxRate.class));
@@ -73,22 +72,22 @@ public class MaxRateRegistry {
         }
     }
 
-    RateHistory readOrCreateRateHistory(Subscription subscription, String consumerId) {
-        String path = zookeeperPaths.consumersRateHistoryPath(subscription.getQualifiedName(), consumerId);
+    RateHistory readOrCreateRateHistory(SubscriptionName subscriptionName, String consumerId) {
+        String path = zookeeperPaths.consumersRateHistoryPath(subscriptionName, consumerId);
         try {
             byte[] serialized = curator.getData().forPath(path);
             return objectMapper.readValue(serialized, RateHistory.class);
         } catch (KeeperException.NoNodeException e) {
             RateHistory empty = RateHistory.empty();
-            writeRateHistory(subscription, consumerId, empty);
+            writeRateHistory(subscriptionName, consumerId, empty);
             return empty;
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
     }
 
-    void writeRateHistory(Subscription subscription, String consumerId, RateHistory rateHistory) {
-        String path = zookeeperPaths.consumersRateHistoryPath(subscription.getQualifiedName(), consumerId);
+    void writeRateHistory(SubscriptionName subscriptionName, String consumerId, RateHistory rateHistory) {
+        String path = zookeeperPaths.consumersRateHistoryPath(subscriptionName, consumerId);
         try {
             byte[] serialized = objectMapper.writeValueAsBytes(rateHistory);
             writeOrCreate(path, serialized);
@@ -97,8 +96,8 @@ public class MaxRateRegistry {
         }
     }
 
-    private void cleanupRegistry(Subscription subscription, List<String> currentConsumers) throws Exception {
-        String basePath = zookeeperPaths.consumersRateRuntimePath(subscription.getQualifiedName());
+    private void cleanupRegistry(SubscriptionName subscriptionName, List<String> currentConsumers) throws Exception {
+        String basePath = zookeeperPaths.consumersRateRuntimePath(subscriptionName);
 
         try {
             curator.create().creatingParentContainersIfNeeded().forPath(basePath);
@@ -112,22 +111,20 @@ public class MaxRateRegistry {
         List<String> toAdd = ListUtils.subtract(currentConsumers, previousConsumers);
 
         if (!toRemove.isEmpty()) {
-            logger.info("Removing consumers for max rates for subscription {}: {}",
-                    subscription.getQualifiedName(), toRemove);
+            logger.info("Removing consumers for max rates for subscription {}: {}", subscriptionName, toRemove);
         }
         if (!toAdd.isEmpty()) {
-            logger.info("Adding consumers for max rates for subscription {}: {}",
-                    subscription.getQualifiedName(), toAdd);
+            logger.info("Adding consumers for max rates for subscription {}: {}", subscriptionName, toAdd);
         }
 
-        toRemove.forEach(removedConsumer -> removeConsumerEntries(subscription, removedConsumer));
-        toAdd.forEach(addedConsumer -> createEmptyHistory(subscription, addedConsumer));
+        toRemove.forEach(removedConsumer -> removeConsumerEntries(subscriptionName, removedConsumer));
+        toAdd.forEach(addedConsumer -> createEmptyHistory(subscriptionName, addedConsumer));
     }
 
-    private void removeConsumerEntries(Subscription subscription, String consumerId) {
+    private void removeConsumerEntries(SubscriptionName subscriptionName, String consumerId) {
         try {
             curator.delete().deletingChildrenIfNeeded()
-                    .forPath(zookeeperPaths.consumersRatePath(subscription.getQualifiedName(), consumerId));
+                    .forPath(zookeeperPaths.consumersRatePath(subscriptionName, consumerId));
         } catch (KeeperException.NoNodeException e) {
             // ignore
         } catch (Exception e) {
@@ -135,8 +132,8 @@ public class MaxRateRegistry {
         }
     }
 
-    private void createEmptyHistory(Subscription subscription, String consumerId) {
-        writeRateHistory(subscription, consumerId, RateHistory.empty());
+    private void createEmptyHistory(SubscriptionName subscriptionName, String consumerId) {
+        writeRateHistory(subscriptionName, consumerId, RateHistory.empty());
     }
 
     private void writeOrCreate(String path, byte[] serializedData) throws Exception {

@@ -57,8 +57,8 @@ class MaxRateCalculator {
                     if (!subscription.isBatchSubscription()) {
                         Set<String> consumerIds = entry.getValue();
 
-                        Set<ConsumerRateInfo> rateInfos =
-                                maxRateRegistry.ensureCorrectAssignments(subscription, consumerIds);
+                        Set<ConsumerRateInfo> rateInfos = maxRateRegistry.ensureCorrectAssignments(
+                                subscription.getQualifiedName(), consumerIds);
 
                         Optional<Map<String, MaxRate>> newRates
                                 = balancer.balance(subscription.getSerialSubscriptionPolicy().getRate(), rateInfos);
@@ -67,7 +67,7 @@ class MaxRateCalculator {
                             logger.info("Calculated new max rates for {}: {}",
                                     subscription.getQualifiedName(), rates);
 
-                            maxRateRegistry.update(subscription, rates);
+                            maxRateRegistry.update(subscription.getQualifiedName(), rates);
                             metrics.maxRateUpdatesCounter(subscription).inc();
                         });
                     }

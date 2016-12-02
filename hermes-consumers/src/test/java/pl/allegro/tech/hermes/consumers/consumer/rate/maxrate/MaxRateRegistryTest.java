@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.junit.After;
 import org.junit.Test;
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
@@ -13,12 +12,11 @@ import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class MaxRateRegistryTest extends ZookeeperBaseTest {
 
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
-    private final Subscription subscription = createSubscription("subscription");
+    private final SubscriptionName subscription = qualifiedName("subscription");
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(
             zookeeperClient, objectMapper, zookeeperPaths);
@@ -87,9 +85,7 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
         assertEquals(Optional.empty(), maxRate);
     }
 
-    private static Subscription createSubscription(String name) {
-        SubscriptionName subscriptionName = SubscriptionName.fromString("com.test.topic$" + name);
-        Subscription subscription = subscription(subscriptionName).build();
-        return subscription;
+    private static SubscriptionName qualifiedName(String name) {
+        return SubscriptionName.fromString("com.test.topic$" + name);
     }
 }

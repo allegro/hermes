@@ -8,13 +8,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MaxRateBalancer {
+class MaxRateBalancer {
 
     private final double busyTolerance;
     private final double minMax;
     private final double minAllowedChangePercent;
 
-    public MaxRateBalancer(double busyTolerance, double minMax, double minAllowedChangePercent) {
+    MaxRateBalancer(double busyTolerance, double minMax, double minAllowedChangePercent) {
         this.busyTolerance = busyTolerance;
         this.minMax = minMax;
         this.minAllowedChangePercent = minAllowedChangePercent;
@@ -82,6 +82,7 @@ public class MaxRateBalancer {
     }
 
     private static class ConsumerInfo {
+
         private final String consumerId;
         private final RateHistory rateHistory;
         private final Double max;
@@ -125,9 +126,11 @@ public class MaxRateBalancer {
         }
 
         Result balance() {
-            List<ConsumerRateChange> changes = infos.stream().map(ri -> {
-                double currentMax = ri.getMax();
-                return new ConsumerRateChange(ri.getConsumerId(), currentMax, takeAwayFromNotBusy(ri.getRateHistory(), currentMax));
+            List<ConsumerRateChange> changes = infos.stream()
+                    .map(ri -> {
+                        double currentMax = ri.getMax();
+                        double toDistribute = takeAwayFromNotBusy(ri.getRateHistory(), currentMax);
+                        return new ConsumerRateChange(ri.getConsumerId(), currentMax, toDistribute);
             }).collect(Collectors.toList());
 
             return new Result(changes);
@@ -146,6 +149,7 @@ public class MaxRateBalancer {
         }
 
         private static class Result {
+
             private final List<ConsumerRateChange> changes;
             private final double releasedRate;
 
@@ -168,6 +172,7 @@ public class MaxRateBalancer {
     }
 
     private static class BusyBalancer {
+
         private final List<ConsumerInfo> infos;
         private final double freedByNotBusy;
         private final double minChange;
@@ -246,6 +251,7 @@ public class MaxRateBalancer {
         }
 
         private static class Result {
+
             private final List<ConsumerRateChange> changes;
 
             Result(List<ConsumerRateChange> changes) {
@@ -261,6 +267,7 @@ public class MaxRateBalancer {
         }
 
         private static class ConsumerMaxShare {
+
             private final String consumerId;
             private final double currentMax;
             private final double share;
@@ -286,6 +293,7 @@ public class MaxRateBalancer {
     }
 
     private static class ConsumerRateChange {
+
         private String consumerId;
         private double currentMax;
         private double rateChange;

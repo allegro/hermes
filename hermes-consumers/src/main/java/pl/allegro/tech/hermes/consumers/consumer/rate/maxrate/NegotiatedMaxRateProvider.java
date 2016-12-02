@@ -15,7 +15,6 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
     private final String consumerId;
     private final MaxRateRegistry registry;
     private final MaxRateSupervisor maxRateSupervisor;
-    // TODO: need only subscription qualified name - the other details could be updated during runtime, and we don't need to handle that
     private final Subscription subscription;
     private final SendCounters sendCounters;
     private final HermesMetrics metrics;
@@ -53,9 +52,9 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
     private void recordCurrentRate(double actualRate) {
         try {
             double usedRate = Math.min(actualRate / Math.max(maxRate, 1), 1.0);
-            RateHistory rateHistory = registry.readOrCreateRateHistory(subscription, consumerId);
+            RateHistory rateHistory = registry.readOrCreateRateHistory(subscription.getQualifiedName(), consumerId);
             RateHistory updatedHistory = RateHistory.updatedRates(rateHistory, usedRate, historyLimit);
-            registry.writeRateHistory(subscription, consumerId, updatedHistory);
+            registry.writeRateHistory(subscription.getQualifiedName(), consumerId, updatedHistory);
         } catch (Exception e) {
             metrics.rateHistoryFailuresCounter(subscription).inc();
             logger.warn("Encountered problem updating max rate for subscription {}, consumer {}",
@@ -65,7 +64,7 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
 
     private Optional<MaxRate> fetchCurrentMaxRate() {
         try {
-            return registry.readMaxRate(subscription, consumerId);
+            return registry.readMaxRate(subscription.getQualifiedName(), consumerId);
         } catch (Exception e) {
             metrics.maxRateFetchFailuresCounter(subscription).inc();
             logger.warn("Encountered problem fetching max rate for subscription: {}, consumer: {}.",

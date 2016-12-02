@@ -28,8 +28,12 @@ final class ConsumerRateInfo {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ConsumerRateInfo that = (ConsumerRateInfo) o;
         return Objects.equals(consumerId, that.consumerId) &&
                 Objects.equals(maxRate, that.maxRate) &&
