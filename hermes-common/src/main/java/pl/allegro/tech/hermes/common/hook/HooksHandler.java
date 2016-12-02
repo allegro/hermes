@@ -7,9 +7,14 @@ import java.util.List;
 
 public class HooksHandler {
 
+    private final List<ServiceAwareHook> beforeStartHooks = new ArrayList<>();
     private final List<ServiceAwareHook> startupHooks = new ArrayList<>();
     private final List<ServiceAwareHook> shutdownHooks = new ArrayList<>();
     private boolean disabledGlobalShutdownHook = false;
+
+    public void addBeforeStartHook(ServiceAwareHook hook) {
+        beforeStartHooks.add(hook);
+    }
 
     public void addStartupHook(ServiceAwareHook hook) {
         startupHooks.add(hook);
@@ -17,6 +22,10 @@ public class HooksHandler {
 
     public void addShutdownHook(ServiceAwareHook hook) {
         shutdownHooks.add(hook);
+    }
+
+    public void runBeforeStartHooks(ServiceLocator serviceLocator) {
+        runHooksInOrder(beforeStartHooks, serviceLocator);
     }
 
     public void shutdown(ServiceLocator serviceLocator) {

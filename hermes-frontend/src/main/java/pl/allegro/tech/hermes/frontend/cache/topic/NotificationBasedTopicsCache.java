@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.cache.topic;
 
+import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -14,6 +15,7 @@ import pl.allegro.tech.hermes.frontend.blacklist.BlacklistZookeeperNotifyingCach
 import pl.allegro.tech.hermes.frontend.blacklist.TopicBlacklistCallback;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -89,6 +91,11 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
     @Override
     public Optional<CachedTopic> getTopic(String qualifiedTopicName) {
         return Optional.ofNullable(topicCache.get(qualifiedTopicName));
+    }
+
+    @Override
+    public List<CachedTopic> getTopics() {
+        return ImmutableList.copyOf(topicCache.values());
     }
 
     @Override

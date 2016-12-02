@@ -1,0 +1,118 @@
+package pl.allegro.tech.hermes.frontend.server;
+
+import org.glassfish.hk2.api.ServiceLocator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.hook.Hook;
+import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
+import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
+import pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
+
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE;
+import static pl.allegro.tech.hermes.frontend.server.CompletableFuturesHelper.allComplete;
+import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.FAILURE;
+import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.MISSING;
+import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.SUCCESS;
+
+public class TopicSchemaLoadingStartupHook implements ServiceAwareHook {
+
+    private static final Logger logger = LoggerFactory.getLogger(TopicSchemaLoadingStartupHook.class);
+
+    private final TopicsCache topicsCache;
+
+    private final SchemaRepository schemaRepository;
+
+    private final int retryCount;
+
+    private final int threadPoolSize;
+
+    @Inject
+    public TopicSchemaLoadingStartupHook(TopicsCache topicsCache,
+                                         SchemaRepository schemaRepository,
+                                         ConfigFactory config) {
+
+        this(topicsCache, schemaRepository,
+                config.getIntProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT),
+                config.getIntProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE));
+    }
+
+    TopicSchemaLoadingStartupHook(TopicsCache topicsCache,
+                                         SchemaRepository schemaRepository,
+                                         int retryCount,
+                                         int threadPoolSize) {
+        this.topicsCache = topicsCache;
+        this.schemaRepository = schemaRepository;
+        this.retryCount = retryCount;
+        this.threadPoolSize = threadPoolSize;
+    }
+
+    @Override
+    public void accept(ServiceLocator serviceLocator) {
+
+        long start = System.currentTimeMillis();
+        logger.info("Loading topic schemas");
+        List<Topic> topics = getAvroTopics();
+        List<SchemaLoadingResult> allResults = loadSchemasForTopics(topics);
+        logResultInfo(allResults, System.currentTimeMillis() - start);
+    }
+
+    private List<Topic> getAvroTopics() {
+        return topicsCache.getTopics().stream()
+                .map(CachedTopic::getTopic)
+                .filter(topic -> ContentType.AVRO == topic.getContentType())
+                .collect(toList());
+    }
+
+    private List<SchemaLoadingResult> loadSchemasForTopics(List<Topic> topics) {
+        try (TopicSchemaLoader loader = new TopicSchemaLoader(schemaRepository, retryCount, threadPoolSize)) {
+            return allComplete(topics.stream().map(loader::loadTopicSchema).collect(toList())).join();
+        } catch (Exception e) {
+            logger.error("An error occurred while loading schema topics", e);
+            return Collections.emptyList();
+        }
+    }
+
+    private void logResultInfo(List<SchemaLoadingResult> allResults, long elapsed) {
+        Map<Type, List<SchemaLoadingResult>> groupedResults = getGroupedResults(allResults);
+        Optional<List<SchemaLoadingResult>> successes = Optional.ofNullable(groupedResults.get(SUCCESS));
+        Optional<List<SchemaLoadingResult>> missing = Optional.ofNullable(groupedResults.get(MISSING));
+        Optional<List<SchemaLoadingResult>> failures = Optional.ofNullable(groupedResults.get(FAILURE));
+
+        logger.info("Finished loading schemas for {} topics in {}ms [successful: {}, missing: {}, failed: {}]. {}{}",
+                allResults.size(), elapsed, successes.map(List::size).orElse(0),
+                missing.map(List::size).orElse(0), failures.map(List::size).orElse(0),
+                missing.map(results -> String.format("Missing schema for: [%s]", topicsOfResults(results))).orElse(""),
+                failures.map(results -> String.format("Failed for: [%s]. ", topicsOfResults(results))).orElse(""));
+    }
+
+    private String topicsOfResults(List<SchemaLoadingResult> results) {
+        return results.stream()
+                .map(SchemaLoadingResult::getTopic)
+                .map(Topic::getQualifiedName)
+                .collect(joining(", "));
+    }
+
+    private Map<Type, List<SchemaLoadingResult>> getGroupedResults(List<SchemaLoadingResult> allResults) {
+        return allResults.stream().collect(Collectors.groupingBy(SchemaLoadingResult::getType, Collectors.toList()));
+    }
+
+    @Override
+    public int getPriority() {
+        return Hook.HIGHER_PRIORITY;
+    }
+}
