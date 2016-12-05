@@ -141,7 +141,7 @@ class MaxRateBalancer {
                     .map(ri -> {
                         double currentMax = ri.getMax();
                         double toDistribute = takeAwayFromNotBusy(ri.getRateHistory(), currentMax);
-                        return new ConsumerRateChange(ri.getConsumerId(), currentMax, toDistribute);
+                        return new ConsumerRateChange(ri.getConsumerId(), currentMax, -toDistribute);
             }).collect(Collectors.toList());
 
             return new Result(changes);
@@ -149,14 +149,12 @@ class MaxRateBalancer {
 
         private double takeAwayFromNotBusy(RateHistory history, double currentMax) {
             double usedRatio = history.getRates().get(0);
-            double usedRate = currentMax * usedRatio;
-
             double scalingFactor = 2 / (usedRatio + 1.0) - 1;
 
-            double proposedChange = scalingFactor * usedRate;
-            double actualChange = proposedChange > minChange ? -proposedChange : 0.0d;
+            double proposedChange = scalingFactor * currentMax;
+            double actualChange = proposedChange > minChange ? proposedChange : 0.0d;
 
-            return currentMax - actualChange > minMax ? actualChange : minMax;
+            return currentMax - actualChange > minMax ? actualChange : currentMax - minMax;
         }
 
         private static class Result {
@@ -216,7 +214,11 @@ class MaxRateBalancer {
             List<ConsumerMaxShare> notGreedy = greedyOrNot.get(false);
 
             List<ConsumerRateChange> greedySubtracts = greedy.stream()
-                    .map(share -> takeAwayFromGreedy(share, equalShare))
+                    .map(share -> {
+                        double toDistribute =
+                                takeAwayFromGreedy(share.getCurrentMax(), share.getShare(), equalShare);
+                        return new ConsumerRateChange(share.getConsumerId(), share.currentMax, -toDistribute);
+                    })
                     .collect(Collectors.toList());
 
             double toDistribute = freedByNotBusy - greedySubtracts.stream()
@@ -232,14 +234,11 @@ class MaxRateBalancer {
             );
         }
 
-        private ConsumerRateChange takeAwayFromGreedy(ConsumerMaxShare consumerMaxShare, double equalShare) {
-            double share = consumerMaxShare.getShare();
-            double currentMax = consumerMaxShare.getCurrentMax();
+        private double takeAwayFromGreedy(double currentMax, double share, double equalShare) {
             double scale = 2 / (share + 1.0) - 1;
             double changeProposal = (currentMax / 2) * scale;
-            double actualChange = -Math.max(changeProposal, minChange);
-            actualChange = (currentMax + actualChange) > equalShare ? actualChange : -(currentMax - equalShare);
-            return new ConsumerRateChange(consumerMaxShare.getConsumerId(), currentMax, actualChange);
+            double actualChange = Math.max(changeProposal, minChange);
+            return (currentMax - actualChange) > equalShare ? actualChange : currentMax - equalShare;
         }
 
         private List<ConsumerMaxShare> recalculateShare(List<ConsumerMaxShare> shares) {
