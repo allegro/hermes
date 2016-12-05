@@ -40,4 +40,5 @@ public class ConfigFactory {
     private String getProperty(Configs opt) {
         return propertyFactory.getContextualProperty(opt.getName(), opt.getDefaultValue()).getValue().toString();
     }
+
 }

@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -44,6 +46,7 @@ public class BatchConsumer implements Consumer {
     private final MessageBatchSender sender;
     private final MessageBatchFactory batchFactory;
     private final HermesMetrics hermesMetrics;
+    private final ConfigFactory configs;
     private final MessageConverterResolver messageConverterResolver;
     private final MessageContentWrapper messageContentWrapper;
     private final Trackers trackers;
@@ -66,13 +69,15 @@ public class BatchConsumer implements Consumer {
                          HermesMetrics hermesMetrics,
                          Trackers trackers,
                          Subscription subscription,
-                         Topic topic) {
+                         Topic topic,
+                         ConfigFactory configs) {
         this.messageReceiverFactory = messageReceiverFactory;
         this.sender = sender;
         this.batchFactory = batchFactory;
         this.offsetQueue = offsetQueue;
         this.subscription = subscription;
         this.hermesMetrics = hermesMetrics;
+        this.configs = configs;
         this.monitoring = new BatchMonitoring(hermesMetrics, trackers);
         this.messageConverterResolver = messageConverterResolver;
         this.messageContentWrapper = messageContentWrapper;
@@ -144,12 +149,17 @@ public class BatchConsumer implements Consumer {
 
     @Override
     public void updateTopic(Topic newTopic) {
-        if (this.topic.getContentType() != newTopic.getContentType()) {
-            logger.info("Topic content type changed from {} to {}, reinitializing", this.topic.getContentType(), newTopic.getContentType());
+        if (this.topic.getContentType() != newTopic.getContentType() || messageSizeChanged(newTopic)) {
+            logger.info("Reinitializing message receiver, contentType or messageSize changed.");
             this.topic = newTopic;
             tearDown();
             initialize();
         }
+    }
+
+    private boolean messageSizeChanged(Topic newTopic) {
+        return this.topic.getMaxMessageSize() != newTopic.getMaxMessageSize()
+                && configs.getBooleanProperty(Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE);
     }
 
     @Override

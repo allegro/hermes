@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.config;
 
 import com.google.common.io.Files;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
 
 import static java.lang.Math.abs;
@@ -38,7 +39,9 @@ public enum Configs {
     KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG("kafka.consumer.session.timeout.ms", 200_000),
     KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG("kafka.consumer.heartbeat.interval.ms", 3000),
     KAFKA_CONSUMER_METADATA_MAX_AGE_CONFIG("kafka.consumer.metadata.max.age.ms", 5 * 60 * 1000),
-    KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES_CONFIG("kafka.consumer.max.partition.fetch.bytes", 10 * 1024 * 1024),
+    KAFKA_CONSUMER_MAX_PARTITION_FETCH_MIN_BYTES_CONFIG("kafka.consumer.max.partition.fetch.min", Topic.MIN_MESSAGE_SIZE),
+    KAFKA_CONSUMER_MAX_PARTITION_FETCH_MAX_BYTES_CONFIG("kafka.consumer.max.partition.fetch.max", Topic.MAX_MESSAGE_SIZE),
+
     KAFKA_CONSUMER_SEND_BUFFER_CONFIG("kafka.consumer.send.buffer.bytes", 256 * 1024),
     KAFKA_CONSUMER_RECEIVE_BUFFER_CONFIG("kafka.consumer.receive.buffer.bytes", 256 * 1024),
     KAFKA_CONSUMER_FETCH_MIN_BYTES_CONFIG("kafka.consumer.fetch.min.bytes", 1),
@@ -50,7 +53,7 @@ public enum Configs {
     KAFKA_CONSUMER_METRICS_NUM_SAMPLES_CONFIG("kafka.consumer.metrics.num.samples", 2),
     KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG("kafka.consumer.request.timeout.ms", 250_000),
     KAFKA_CONSUMER_CONNECTIONS_MAX_IDLE_MS_CONFIG("kafka.consumer.connections.max.idle.ms", 9 * 60 * 1000),
-    KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG("kafka.consumer.max.poll.records", 10),
+    KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG("kafka.consumer.max.poll.records", 1),
 
     KAFKA_SIMPLE_CONSUMER_TIMEOUT_MS("kafka.simple.consumer.timeout.ms", 5000),
     KAFKA_SIMPLE_CONSUMER_BUFFER_SIZE("kafka.simple.consumer.buffer.size", 64 * 1024),
@@ -98,6 +101,7 @@ public enum Configs {
     FRONTEND_GRACEFUL_SHUTDOWN_ENABLED("frontend.graceful.shutdown.enabled", true),
     FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
     FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
+    FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE("frontend.force.topic.max.message.size", false),
 
     FRONTEND_SSL_ENABLED("frontend.ssl.enabled", false),
     FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
@@ -165,6 +169,8 @@ public enum Configs {
     CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER("consumer.supervisor.background.kill.after", 300_000),
     CONSUMER_SIGNAL_PROCESSING_INTERVAL("consumer.supervisor.signal.processing.interval.ms", 5_000),
     CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE("consumer.supervisor.signal.queue.size", 5_000),
+
+    CONSUMER_USE_TOPIC_MESSAGE_SIZE("consumer.use.topic.message.size", false),
 
     CONSUMER_CLIENT_ID("consumer.clientId", new InetAddressHostnameResolver().resolve()),
 

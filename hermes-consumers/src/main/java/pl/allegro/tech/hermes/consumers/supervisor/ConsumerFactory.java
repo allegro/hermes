@@ -84,7 +84,8 @@ public class ConsumerFactory {
                     hermesMetrics,
                     trackers,
                     subscription,
-                    topic);
+                    topic,
+                    configFactory);
         } else {
             SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription, outputRateCalculator, hermesMetrics,
                     consumerRateLimitSupervisor);
