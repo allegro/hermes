@@ -17,10 +17,7 @@ class MaxRateBalancerTest extends Specification {
             ] as Set)
 
         then:
-            maxRates.get() == [
-                    "consumer1": new MaxRate(50),
-                    "consumer2": new MaxRate(50)
-            ] as Map
+            maxRates.get() == ["consumer1": new MaxRate(50), "consumer2": new MaxRate(50)] as Map
     }
 
     def "should not change max rates if no busy consumer"() {
@@ -39,11 +36,11 @@ class MaxRateBalancerTest extends Specification {
     }
 
     @Unroll
-    def "should evenly distribute rate for all busy consumers"() {
+    def "should evenly distribute rate for all busy consumers starting with max rates: #initial1 and #initial2"() {
         given:
             def consumerHistory = new RateHistory([1.0d, 1.0d, 1.0d] as List)
-            def maxRate1 = Optional.of(new MaxRate(initial1))
-            def maxRate2 = Optional.of(new MaxRate(initial2))
+            def maxRate1 = Optional.of(new MaxRate(initial1 as double))
+            def maxRate2 = Optional.of(new MaxRate(initial2 as double))
 
         expect:
             conditions.eventually {
@@ -57,7 +54,6 @@ class MaxRateBalancerTest extends Specification {
                 maxRate1 = Optional.of(maxRates["consumer1"])
                 maxRate2 = Optional.of(maxRates["consumer2"])
 
-                println maxRates["consumer1"].getMaxRate() + maxRates["consumer2"].getMaxRate()
                 assert Math.abs(maxRates["consumer1"].getMaxRate() - maxRates["consumer2"].getMaxRate()) <= 1d;
             }
 
@@ -89,5 +85,16 @@ class MaxRateBalancerTest extends Specification {
         then:
         maxRates['notBusy'].getMaxRate() < 29.0
         maxRates['busy'].getMaxRate() > 71.0
+    }
+
+    def "should restart distribution on subscription rate change"() {
+        when:
+        def maxRates = balancer.balance(200, [
+                new ConsumerRateInfo("consumer1", Optional.of(new MaxRate(50d)), RateHistory.create(0.7d)),
+                new ConsumerRateInfo("consumer2", Optional.of(new MaxRate(50d)), RateHistory.create(0.99d))
+        ] as Set)
+
+        then:
+        maxRates.get() == ["consumer1": new MaxRate(100d), "consumer2": new MaxRate(100d)] as Map
     }
 }

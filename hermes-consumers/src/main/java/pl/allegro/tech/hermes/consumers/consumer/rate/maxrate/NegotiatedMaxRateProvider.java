@@ -15,10 +15,10 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
     private final String consumerId;
     private final MaxRateRegistry registry;
     private final MaxRateSupervisor maxRateSupervisor;
-    private final Subscription subscription;
     private final SendCounters sendCounters;
     private final HermesMetrics metrics;
     private final int historyLimit;
+    private volatile Subscription subscription;
     private volatile double maxRate;
 
     NegotiatedMaxRateProvider(String consumerId,
@@ -73,6 +73,10 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
         }
     }
 
+    @Override
+    public void updateSubscription(Subscription newSubscription) {
+        this.subscription = newSubscription;
+    }
 
     public void start() {
         maxRateSupervisor.register(this);

@@ -7,7 +7,7 @@ class StrictMaxRateProvider implements MaxRateProvider {
 
     private final ActiveConsumerCounter activeConsumerCounter;
 
-    private final Subscription subscription;
+    private volatile Subscription subscription;
 
     StrictMaxRateProvider(ActiveConsumerCounter activeConsumerCounter, Subscription subscription) {
         this.activeConsumerCounter = activeConsumerCounter;
@@ -19,5 +19,10 @@ class StrictMaxRateProvider implements MaxRateProvider {
         int consumersCount = activeConsumerCounter.countActiveConsumers(subscription);
         double subscriptionRate = subscription.getSerialSubscriptionPolicy().getRate().doubleValue();
         return subscriptionRate / Math.max(consumersCount, 1);
+    }
+
+    @Override
+    public void updateSubscription(Subscription newSubscription) {
+        this.subscription = newSubscription;
     }
 }

@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 
 class MaxRateBalancer {
 
+    private static final double ALLOWED_DISTRIBUTION_ERROR = 1.0d;
+
     private final double busyTolerance;
     private final double minMax;
     private final double minAllowedChangePercent;
@@ -30,6 +32,10 @@ class MaxRateBalancer {
 
         List<ConsumerInfo> consumerInfos =
                 rateInfos.stream().map(ConsumerInfo::convert).collect(Collectors.toList());
+
+        if (subscriptionRateChanged(consumerInfos, subscriptionMax)) {
+            return Optional.of(balanceDefault(defaultRate, rateInfos));
+        }
 
         Map<Boolean, List<ConsumerInfo>> busyOrNot = busyOrNot(consumerInfos);
         List<ConsumerInfo> notBusy = busyOrNot.get(false);
@@ -58,6 +64,11 @@ class MaxRateBalancer {
 
     private boolean anyNewConsumers(Set<ConsumerRateInfo> rateInfos) {
         return rateInfos.stream().anyMatch(this::isUnassigned);
+    }
+
+    private boolean subscriptionRateChanged(List<ConsumerInfo> consumerInfos, double subscriptionMax) {
+        double sum = consumerInfos.stream().mapToDouble(ConsumerInfo::getMax).sum();
+        return Math.abs(sum - subscriptionMax) > ALLOWED_DISTRIBUTION_ERROR;
     }
 
     private boolean isUnassigned(ConsumerRateInfo rateInfo) {
