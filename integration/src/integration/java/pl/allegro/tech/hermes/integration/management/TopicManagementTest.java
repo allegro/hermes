@@ -3,14 +3,17 @@ package pl.allegro.tech.hermes.integration.management;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorCode;
+import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
+import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -227,5 +230,19 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(brokerOperations.topicExists(qualifiedTopicName, PRIMARY_KAFKA_CLUSTER_NAME)).isTrue();
         assertThat(brokerOperations.topicExists(qualifiedTopicName, SECONDARY_KAFKA_CLUSTER_NAME)).isFalse();
+    }
+
+    @Test
+    public void shouldCreateTopicWithMaxMessageSize() {
+        // given
+        Topic topic = TopicBuilder.topic("messageSize", "topic").withMaxMessageSize(2048).build();
+        assertThat(management.group().create(new Group(topic.getName().getGroupName(), "a", "a", "a"))).hasStatus(CREATED);
+
+        // when
+        Response response = management.topic().create(topic);
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+        assertThat(management.topic().get(topic.getQualifiedName()).getMaxMessageSize()).isEqualTo(2048);
     }
 }

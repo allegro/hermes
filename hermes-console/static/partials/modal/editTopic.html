@@ -58,6 +58,15 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group {{topicForm.topicMaxMessageSize.$valid ? '' : 'has-error'}}">
+                <label for="topicMaxMessageSize" class="col-md-3 control-label">Max message size</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" required class="form-control" id="topicMaxMessageSize" name="topicMaxMessageSize" ng-model="topic.maxMessageSize" placeholder="how large messages are for this topic?"/>
+                        <span class="input-group-addon">bytes</span>
+                    </div>
+                </div>
+            </div>
             <div class="form-group {{topicForm.messageSchema.$valid ? '' : 'has-error'}}" ng-show="topic.contentType === 'AVRO'">
                 <label for="messageSchema" class="col-md-3 control-label">
                     <a href="http://hermes-pubsub.rtfd.org/en/latest/user/publishing-avro/" target="_blank">AVRO schema</a>

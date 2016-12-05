@@ -127,7 +127,7 @@ class MessageReadHandler implements HttpHandler {
 
     private void messageRead(HttpServerExchange exchange, byte[] messageContent, AttachmentContent attachment) {
         try {
-            checkContentLength(exchange, messageContent.length);
+            checkContentLength(exchange, messageContent.length, attachment.getCachedTopic().getTopic().getMaxMessageSize());
             attachment.getCachedTopic().reportMessageContentSize(messageContent.length);
             attachment.setMessageContent(messageContent);
             endWithoutDefaultResponse(exchange);
@@ -136,7 +136,7 @@ class MessageReadHandler implements HttpHandler {
             } else {
                 next.handleRequest(exchange);
             }
-        } catch (ContentLengthChecker.InvalidContentLengthException e) {
+        } catch (ContentLengthChecker.InvalidContentLengthException | ContentLengthChecker.ContentTooLargeException e) {
             attachment.removeTimeout();
             messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(),
                     attachment.getMessageId(), error(e.getMessage(), VALIDATION_ERROR));
