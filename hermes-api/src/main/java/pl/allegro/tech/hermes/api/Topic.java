@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
@@ -25,6 +27,14 @@ public class Topic {
     @NotNull
     private ContentType contentType;
 
+    @Min(MIN_MESSAGE_SIZE)
+    @Max(MAX_MESSAGE_SIZE)
+    private int maxMessageSize;
+
+    public static final int MIN_MESSAGE_SIZE = 1024;
+    public static final int MAX_MESSAGE_SIZE = 2 * 1024 * 1024;
+    private static final int DEFAULT_MAX_MESSAGE_SIZE = 50 * 1024;
+
     public enum Ack {
         NONE, LEADER, ALL
     }
@@ -41,7 +51,8 @@ public class Topic {
 
     public Topic(TopicName name, String description, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
-                 boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled) {
+                 boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
+                 int maxMessageSize) {
         this.name = name;
         this.description = description;
         this.retentionTime = retentionTime;
@@ -51,6 +62,7 @@ public class Topic {
         this.contentType = contentType;
         this.jsonToAvroDryRunEnabled = jsonToAvroDryRunEnabled;
         this.schemaVersionAwareSerializationEnabled = schemaVersionAwareSerializationEnabled;
+        this.maxMessageSize = maxMessageSize;
     }
 
     @JsonCreator
@@ -63,9 +75,11 @@ public class Topic {
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
             @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
-            @JsonProperty("contentType") ContentType contentType) {
+            @JsonProperty("contentType") ContentType contentType,
+            @JsonProperty("maxMessageSize") Integer maxMessageSize) {
         this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, migratedFromJsonType, ack,
-                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled);
+                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
+                maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize);
     }
 
     public RetentionTime getRetentionTime() {
@@ -150,5 +164,9 @@ public class Topic {
 
     public boolean isSchemaVersionAwareSerializationEnabled() {
         return schemaVersionAwareSerializationEnabled;
+    }
+
+    public int getMaxMessageSize() {
+        return maxMessageSize;
     }
 }
