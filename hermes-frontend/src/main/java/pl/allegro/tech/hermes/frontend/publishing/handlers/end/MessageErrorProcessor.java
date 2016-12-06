@@ -49,6 +49,11 @@ public class MessageErrorProcessor {
         log(error.getMessage(), topic, messageId, readHostAndPort(exchange), e);
     }
 
+    public void sendAndLog(HttpServerExchange exchange, String errorMessage, Exception e) {
+        AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
+        sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(), error(errorMessage, INTERNAL_ERROR), e);
+    }
+
     public void sendQuietly(HttpServerExchange exchange, ErrorDescription error, String messageId, String topicName) {
         try {
             if (exchange.getConnection().isOpen()) {

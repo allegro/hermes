@@ -32,7 +32,13 @@ class PublishingHandler implements HttpHandler {
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         // change state of exchange to dispatched,
         // thanks to this call, default response with 200 status code is not returned after handlerRequest() finishes its execution
-        exchange.dispatch(() -> handle(exchange));
+        exchange.dispatch(() -> {
+            try {
+                handle(exchange);
+            } catch (RuntimeException e) {
+                messageErrorProcessor.sendAndLog(exchange, "Exception while publishing message to a broker.", e);
+            }
+        });
     }
 
     private void handle(HttpServerExchange exchange) {

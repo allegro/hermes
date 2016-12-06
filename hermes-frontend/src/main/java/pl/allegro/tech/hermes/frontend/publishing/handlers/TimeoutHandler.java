@@ -36,8 +36,13 @@ class TimeoutHandler implements HttpHandler {
     }
 
     private void delayedSending(HttpServerExchange exchange, AttachmentContent attachment) {
-        exchange.getConnection().getWorker().execute(() ->
-                messageEndProcessor.bufferedButDelayed(exchange, attachment));
+        exchange.getConnection().getWorker().execute(() -> {
+                try {
+                    messageEndProcessor.bufferedButDelayed(exchange, attachment);
+                } catch (RuntimeException exception) {
+                    messageErrorProcessor.sendAndLog(exchange, "Exception while handling delayed message sending.", exception);
+                }
+            });
     }
 
     private void readingTimeout(HttpServerExchange exchange, AttachmentContent attachment) {
