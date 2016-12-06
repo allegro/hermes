@@ -11,6 +11,7 @@ public enum Configs {
 
     ZOOKEEPER_CONNECT_STRING("zookeeper.connect.string", "localhost:2181"),
     ZOOKEEPER_BASE_SLEEP_TIME("zookeeper.base.sleep.time", 1000),
+    ZOOKEEPER_MAX_SLEEP_TIME("zookeeper.max.sleep.time.seconds", 30),
     ZOOKEEPER_CONNECTION_TIMEOUT("zookeeper.connection.timeout", 10000),
     ZOOKEEPER_SESSION_TIMEOUT("zookeeper.session.timeout", 10000),
 
@@ -19,7 +20,7 @@ public enum Configs {
     ZOOKEEPER_AUTHORIZATION_USER("zookeeper.authorization.user", "user"),
     ZOOKEEPER_AUTHORIZATION_PASSWORD("zookeeper.authorization.password", "password"),
 
-    ZOOKEEPER_MAX_RETRIES("zookeeper.max.retries", 2),
+    ZOOKEEPER_MAX_RETRIES("zookeeper.max.retries", 100),
     ZOOKEEPER_ROOT("zookeeper.root", "/hermes"),
     ZOOKEEPER_CACHE_THREAD_POOL_SIZE("zookeeper.cache.thread.pool.size", 5),
     ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE("zookeeper.cache.processing.thread.pool.size", 5),

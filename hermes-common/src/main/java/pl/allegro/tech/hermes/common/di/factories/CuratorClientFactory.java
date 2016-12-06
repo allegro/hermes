@@ -45,11 +45,12 @@ public class CuratorClientFactory {
     public CuratorFramework provide(String connectString, Optional<ZookeeperAuthorization> zookeeperAuthorization) {
         int baseSleepTime = configFactory.getIntProperty(Configs.ZOOKEEPER_BASE_SLEEP_TIME);
         int maxRetries = configFactory.getIntProperty(Configs.ZOOKEEPER_MAX_RETRIES);
+        int maxSleepTime = configFactory.getIntProperty(Configs.ZOOKEEPER_MAX_SLEEP_TIME);
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                 .connectString(connectString)
                 .sessionTimeoutMs(configFactory.getIntProperty(Configs.ZOOKEEPER_SESSION_TIMEOUT))
                 .connectionTimeoutMs(configFactory.getIntProperty(Configs.ZOOKEEPER_CONNECTION_TIMEOUT))
-                .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries));
+                .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries, maxSleepTime));
 
         zookeeperAuthorization.ifPresent(it -> builder.authorization(it.scheme, it.getAuth()));
 
