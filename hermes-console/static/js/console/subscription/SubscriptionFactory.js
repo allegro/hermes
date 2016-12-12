@@ -8,6 +8,10 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     name: '',
                     endpoint: '',
                     description: '',
+                    maintainer: {
+                        source: 'ZK',
+                        id: ''
+                    },
                     supportTeam: '',
                     contact: '',
                     deliveryType: 'SERIAL',

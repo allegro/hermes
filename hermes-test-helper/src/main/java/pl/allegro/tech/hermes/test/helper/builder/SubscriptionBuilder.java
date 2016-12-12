@@ -25,6 +25,8 @@ public class SubscriptionBuilder {
 
     private boolean trackingEnabled = false;
 
+    private Maintainer maintainer = new Maintainer("ZK", "team");
+
     private String supportTeam = "team";
 
     private String contact = "contact";
@@ -87,14 +89,14 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType,
+                    trackingEnabled, maintainer, supportTeam, contact, monitoringDetails, contentType,
                     filters, mode, headers, metadata, oAuthPolicy
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType,
+                    trackingEnabled, maintainer, supportTeam, contact, monitoringDetails, contentType,
                     filters, headers, metadata, oAuthPolicy
             );
         }

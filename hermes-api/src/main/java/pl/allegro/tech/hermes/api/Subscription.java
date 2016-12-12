@@ -48,6 +48,9 @@ public class Subscription implements Anonymizable {
     private boolean trackingEnabled = false;
 
     @NotNull
+    private Maintainer maintainer;
+
+    @NotNull
     private String supportTeam;
 
     private String contact;
@@ -75,6 +78,7 @@ public class Subscription implements Anonymizable {
     public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
+
     private Subscription(TopicName topicName,
                          String name,
                          EndpointAddress endpoint,
@@ -82,6 +86,7 @@ public class Subscription implements Anonymizable {
                          String description,
                          Object subscriptionPolicy,
                          boolean trackingEnabled,
+                         Maintainer maintainer,
                          String supportTeam,
                          String contact,
                          MonitoringDetails monitoringDetails,
@@ -98,6 +103,7 @@ public class Subscription implements Anonymizable {
         this.state = state != null ? state : State.PENDING;
         this.description = description;
         this.trackingEnabled = trackingEnabled;
+        this.maintainer = maintainer;
         this.supportTeam = supportTeam;
         this.contact = contact;
         this.monitoringDetails = monitoringDetails == null ? MonitoringDetails.EMPTY : monitoringDetails;
@@ -120,6 +126,7 @@ public class Subscription implements Anonymizable {
                                                         String description,
                                                         SubscriptionPolicy subscriptionPolicy,
                                                         boolean trackingEnabled,
+                                                        Maintainer maintainer,
                                                         String supportTeam,
                                                         String contact,
                                                         MonitoringDetails monitoringDetails,
@@ -129,8 +136,8 @@ public class Subscription implements Anonymizable {
                                                         List<Header> headers,
                                                         EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                         SubscriptionOAuthPolicy oAuthPolicy) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, maintainer,
+                supportTeam, contact, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
                 endpointAddressResolverMetadata, oAuthPolicy);
     }
 
@@ -141,6 +148,7 @@ public class Subscription implements Anonymizable {
                                                        String description,
                                                        BatchSubscriptionPolicy subscriptionPolicy,
                                                        boolean trackingEnabled,
+                                                       Maintainer maintainer,
                                                        String supportTeam,
                                                        String contact,
                                                        MonitoringDetails monitoringDetails,
@@ -149,8 +157,8 @@ public class Subscription implements Anonymizable {
                                                        List<Header> headers,
                                                        EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                        SubscriptionOAuthPolicy oAuthPolicy) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, supportTeam,
-                contact, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, maintainer,
+                supportTeam, contact, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
                 endpointAddressResolverMetadata, oAuthPolicy);
     }
 
@@ -163,6 +171,7 @@ public class Subscription implements Anonymizable {
             @JsonProperty("description") String description,
             @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
+            @JsonProperty("maintainer") Maintainer maintainer,
             @JsonProperty("supportTeam") String supportTeam,
             @JsonProperty("contact") String contact,
             @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
@@ -187,6 +196,7 @@ public class Subscription implements Anonymizable {
                 validDeliveryType == DeliveryType.SERIAL ?
                         SubscriptionPolicy.create(validSubscriptionPolicy) : BatchSubscriptionPolicy.create(validSubscriptionPolicy),
                 trackingEnabled,
+                maintainer,
                 supportTeam,
                 contact,
                 monitoringDetails,
@@ -203,7 +213,7 @@ public class Subscription implements Anonymizable {
     @Override
     public int hashCode() {
         return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy,
-                trackingEnabled, supportTeam, contact, monitoringDetails, contentType, filters, mode, headers,
+                trackingEnabled, maintainer, supportTeam, contact, monitoringDetails, contentType, filters, mode, headers,
                 endpointAddressResolverMetadata, oAuthPolicy);
     }
 
@@ -224,6 +234,7 @@ public class Subscription implements Anonymizable {
                 && Objects.equals(this.serialSubscriptionPolicy, other.serialSubscriptionPolicy)
                 && Objects.equals(this.batchSubscriptionPolicy, other.batchSubscriptionPolicy)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
+                && Objects.equals(this.maintainer, other.maintainer)
                 && Objects.equals(this.supportTeam, other.supportTeam)
                 && Objects.equals(this.contact, other.contact)
                 && Objects.equals(this.monitoringDetails, other.monitoringDetails)
@@ -281,6 +292,10 @@ public class Subscription implements Anonymizable {
 
     public boolean isTrackingEnabled() {
         return trackingEnabled;
+    }
+
+    public Maintainer getMaintainer() {
+        return maintainer;
     }
 
     public String getSupportTeam() {
@@ -349,6 +364,7 @@ public class Subscription implements Anonymizable {
         return oAuthPolicy != null;
     }
 
+    @Override
     public Subscription anonymize() {
         if (getEndpoint().containsCredentials() || hasOAuthPolicy()) {
             return new Subscription(
@@ -359,6 +375,7 @@ public class Subscription implements Anonymizable {
                     description,
                     deliveryType == DeliveryType.BATCH ? batchSubscriptionPolicy : serialSubscriptionPolicy,
                     trackingEnabled,
+                    maintainer,
                     supportTeam,
                     contact,
                     monitoringDetails,

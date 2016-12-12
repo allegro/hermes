@@ -31,6 +31,12 @@
                     <input class="form-control" id="subscriptionDescription" name="subscriptionDescription" required placeholder="who and why subscribes?" ng-model="subscription.description"/>
                 </div>
             </div>
+            <div class="form-group {{subscriptionForm.subscriptionMaintainer.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionMaintainer" class="col-md-3 control-label">Maintainer</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="subscriptionMaintainer" name="subscriptionMaintainer" required placeholder="who maintains this subscription?" ng-model="subscription.maintainer.id" />
+                </div>
+            </div>
             <div class="form-group {{subscriptionForm.subscriptionSupportTeam.$valid ? '' : 'has-error'}}">
                 <label for="subscriptionSupportTeam" class="col-md-3 control-label">Team</label>
                 <div class="col-md-9">
