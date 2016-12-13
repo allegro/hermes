@@ -1,0 +1,28 @@
+{
+  "console": {
+    "title": "hermes console"
+  },
+  "dashboard": {
+    "docs": "http://hermes-pubsub.rtfd.org"
+  },
+  "auth": {
+    "oauth": {
+      "enabled": false
+    },
+    "headers": {
+      "enabled": false
+    }
+  },
+  "topic": {
+    "messagePreviewEnabled": false,
+    "contentTypes": [
+      {"value": "AVRO", "label": "AVRO"},
+      {"value": "JSON", "label": "JSON"}
+    ],
+    "defaults": {
+      "contentType": "AVRO"
+    }
+  },
+  "subscription": {
+  }
+}

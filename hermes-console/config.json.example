@@ -47,6 +47,10 @@
                 "duration": 1
             }
         },
+        "contentTypes": {
+            {"value": "AVRO", "label": "AVRO"},
+            {"value": "JSON", "label": "JSON"}
+        },
         "removeSchema": false
     },
     "subscription": {
