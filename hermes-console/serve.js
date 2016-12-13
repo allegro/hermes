@@ -5,6 +5,8 @@ var static = require('node-static');
 var request = require('request');
 var fs = require('fs');
 
+var DEFAULT_CONFIG = './config_default.json';
+
 var yargs = require('yargs')
     .env('HERMES_CONSOLE')
     .option('p', {
@@ -44,13 +46,16 @@ function startServer(config) {
 }
 
 function readConfiguration(source, callback) {
+    console.log('Reading default configuration from file: ' + DEFAULT_CONFIG);
+    var defaultConfig = JSON.parse(fs.readFileSync(DEFAULT_CONFIG, 'utf8'));
+
     if (source.indexOf('htt') == 0) {
         console.log('Reading configuration from remote source: ' + source);
-        request.get(source, (error, res, body) => { callback(JSON.parse(body)); });
+        request.get(source, (error, res, body) => { callback(Object.assign(defaultConfig, JSON.parse(body))); });
     }
     else {
         console.log('Reading configuration from file: ' + source);
         var config = JSON.parse(fs.readFileSync(source, 'utf8'));
-        callback(config);
+        callback(Object.assign(defaultConfig, config));
     }
 }
