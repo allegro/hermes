@@ -49,7 +49,8 @@ function GraphiteUrlResolver(config) {
             rate: url(compile('sumSeries({}.producer.*.meter.{}.m1_rate)', [prefix, topicPath(group, topic)])),
             deliveryRate: url(compile('sumSeries({}.consumer.*.meter.{}.m1_rate)', [prefix, topicPath(group, topic)])),
             published: url(compile('sumSeries({}.producer.*.published.{}.count)', [prefix, topicPath(group, topic)])),
-            latency: url(compile('{}.producer.*.ack-*.latency.{}.p99', [prefix, topicPath(group, topic)]))
+            latency: url(compile('{}.producer.*.ack-*.latency.{}.p99', [prefix, topicPath(group, topic)])),
+            messageSize: url(compile('{}.producer.*.message-size.{}.max', [prefix, topicPath(group, topic)]))
         };
     };
 
@@ -58,6 +59,7 @@ function GraphiteUrlResolver(config) {
             delivered: url(compile('sumSeries({}.consumer.*.delivered.{}.count)', [prefix, subscriptionPath(group, topic, subscription)])),
             discarded: url(compile('sumSeries({}.consumer.*.discarded.{}.count)', [prefix, subscriptionPath(group, topic, subscription)])),
             outputRate: url(compile('sumSeries({}.consumer.*.output-rate.{})', [prefix, subscriptionPath(group, topic, subscription)])),
+            latency: url(compile('{}.consumer.*.latency.{}.p99)', [prefix, subscriptionPath(group, topic, subscription)])),
             timeouts: url(compile('sumSeries({}.consumer.*.status.{}.errors.timeout.m1_rate)', [prefix, subscriptionPath(group, topic, subscription)])),
             networkErrors: url(compile('sumSeries({}.consumer.*.status.{}.errors.other.m1_rate)', [prefix, subscriptionPath(group, topic, subscription)])),
             '2xx': url(compile('sumSeries({}.consumer.*.status.{}.2xx.m1_rate)', [prefix, subscriptionPath(group, topic, subscription)])),

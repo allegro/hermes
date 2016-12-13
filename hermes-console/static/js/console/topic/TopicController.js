@@ -159,8 +159,11 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         };
     }]);
 
-topics.controller('TopicEditController', ['TopicRepository', '$scope', '$uibModalInstance', 'PasswordService', 'toaster', 'topic', 'messageSchema', 'groupName', 'operation',
-    function (topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation) {
+topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$scope', '$uibModalInstance', 'PasswordService',
+    'toaster', 'topic', 'messageSchema', 'groupName', 'operation',
+    function (topicConfig, topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation) {
+        $scope.config = topicConfig;
+
         $scope.topic = _(topic).clone();
         $scope.messageSchema = messageSchema;
         $scope.groupName = groupName;
