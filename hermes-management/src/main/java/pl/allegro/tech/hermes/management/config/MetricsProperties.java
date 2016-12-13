@@ -9,7 +9,7 @@ public class MetricsProperties {
 
     private String prefix = "stats.tech.hermes";
     
-    private int cacheTtlInSeconds = 30;
+    private int cacheTtlInSeconds = 55;
 
     private int cacheSize = 100_000;
 
