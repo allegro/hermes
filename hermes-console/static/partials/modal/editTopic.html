@@ -53,8 +53,7 @@
                 <label for="topicType" class="col-md-3 control-label">Content type</label>
                 <div class="col-md-9">
                     <select id="topicType" class="form-control" ng-disabled="operation === 'EDIT'" ng-model="topic.contentType">
-                        <option>AVRO</option>
-                        <option>JSON</option>
+                        <option ng-repeat="contentType in config.contentTypes" value="{{contentType.value}}">{{contentType.label}}</option>
                     </select>
                 </div>
             </div>
