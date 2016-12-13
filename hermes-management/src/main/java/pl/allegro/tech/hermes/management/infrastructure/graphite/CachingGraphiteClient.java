@@ -17,6 +17,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
 public class CachingGraphiteClient implements GraphiteClient {
+
     private final GraphiteClient underlyingGraphiteClient;
     private final LoadingCache<String, String> graphiteMetricsCache;
 
