@@ -145,7 +145,10 @@ public class HermesMetrics {
     }
 
     public void registerGauge(String name, Gauge<?> gauge) {
-        metricRegistry.register(pathCompiler.compile(name), gauge);
+        String path = pathCompiler.compile(name);
+        if (!metricRegistry.getGauges().containsKey(name)) {
+            metricRegistry.register(path, gauge);
+        }
     }
 
     private String metricRegistryName(String metricDisplayName, TopicName topicName, String subscription) {
@@ -250,13 +253,6 @@ public class HermesMetrics {
     public Timer consumersWorkloadRebalanceDurationTimer(String kafkaCluster) {
         PathContext pathContext = pathContext().withKafkaCluster(kafkaCluster).build();
         return metricRegistry.timer(pathCompiler.compile(Timers.CONSUMER_WORKLOAD_REBALANCE_DURATION, pathContext));
-    }
-
-    public void reportConsumersWorkloadStats(String kafkaCluster, int missingResources, int deletedAssignmentsCount, int createdAssignmentsCount) {
-        PathContext pathContext = pathContext().withKafkaCluster(kafkaCluster).build();
-        metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_MISSING_RESOURCES, pathContext)).update(missingResources);
-        metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_CREATED_ASSIGNMENTS, pathContext)).update(createdAssignmentsCount);
-        metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_DELETED_ASSIGNMENTS, pathContext)).update(deletedAssignmentsCount);
     }
 
     public Timer subscriptionLatencyTimer(Subscription subscription) {
