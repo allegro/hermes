@@ -29,6 +29,8 @@ public class BalancingJob implements LeaderLatchListener, Runnable {
 
     private ScheduledFuture job;
 
+    private final BalancingJobMetrics balancingMetrics = new BalancingJobMetrics();
+
     public BalancingJob(ConsumerNodesRegistry consumersRegistry,
                         SubscriptionsCache subscriptionsCache,
                         SelectiveWorkBalancer workBalancer,
@@ -44,6 +46,19 @@ public class BalancingJob implements LeaderLatchListener, Runnable {
         this.kafkaCluster = kafkaCluster;
         this.executorService = Executors.newSingleThreadScheduledExecutor();
         this.intervalSeconds = intervalSeconds;
+
+        metrics.registerGauge(
+                "consumers-workload." + kafkaCluster + ".selective.missing-resources",
+                () -> balancingMetrics.missingResources
+        );
+        metrics.registerGauge(
+                "consumers-workload." + kafkaCluster + ".selective.deleted-assignments",
+                () -> balancingMetrics.deletedAssignments
+        );
+        metrics.registerGauge(
+                "consumers-workload." + kafkaCluster + ".selective.created-assignments",
+                () -> balancingMetrics.createdAssignments
+        );
     }
 
     @Override
@@ -52,16 +67,20 @@ public class BalancingJob implements LeaderLatchListener, Runnable {
             if (consumersRegistry.isLeader()) {
                 try (Timer.Context ctx = metrics.consumersWorkloadRebalanceDurationTimer(kafkaCluster).time()) {
                     logger.info("Initializing workload balance.");
+
                     WorkBalancingResult work = workBalancer.balance(subscriptionsCache.listActiveSubscriptionNames(),
                             consumersRegistry.list(),
                             workTracker.getAssignments());
                     WorkTracker.WorkDistributionChanges changes = workTracker.apply(work.getAssignmentsView());
+
                     logger.info("Finished workload balance {}, {}", work.toString(), changes.toString());
-                    metrics.reportConsumersWorkloadStats(kafkaCluster, work.getMissingResources(), changes.getDeletedAssignmentsCount(), changes.getCreatedAssignmentsCount());
+
+                    updateMetrics(work, changes);
                 }
+            } else {
+                balancingMetrics.reset();
             }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             logger.error("Caught exception when running balancing job", e);
         }
     }
@@ -74,5 +93,26 @@ public class BalancingJob implements LeaderLatchListener, Runnable {
     @Override
     public void notLeader() {
         job.cancel(false);
+    }
+
+    private void updateMetrics(WorkBalancingResult balancingResult, WorkTracker.WorkDistributionChanges changes) {
+        this.balancingMetrics.missingResources = balancingResult.getMissingResources();
+        this.balancingMetrics.createdAssignments = changes.getCreatedAssignmentsCount();
+        this.balancingMetrics.deletedAssignments = changes.getDeletedAssignmentsCount();
+    }
+
+    private static class BalancingJobMetrics {
+
+        volatile int missingResources;
+
+        volatile int deletedAssignments;
+
+        volatile int createdAssignments;
+
+        void reset() {
+            this.missingResources = 0;
+            this.deletedAssignments = 0;
+            this.createdAssignments = 0;
+        }
     }
 }

@@ -30,7 +30,7 @@ public class ConsumersRuntimeMonitor implements Runnable {
 
     private final SupervisorController workloadSupervisor;
 
-    private final HermesMetrics hermesMetrics;
+    private final MonitorMetrics monitorMetrics = new MonitorMetrics();
 
     public ConsumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
                                    SupervisorController workloadSupervisor,
@@ -38,33 +38,40 @@ public class ConsumersRuntimeMonitor implements Runnable {
                                    ConfigFactory configFactory) {
         this.consumerSupervisor = consumerSupervisor;
         this.workloadSupervisor = workloadSupervisor;
-        this.hermesMetrics = hermesMetrics;
         this.scanIntervalSeconds = configFactory.getIntProperty(Configs.CONSUMER_WORKLOAD_MONITOR_SCAN_INTERVAL);
+
+        hermesMetrics.registerGauge("consumers-workload.monitor.running", () -> monitorMetrics.running);
+        hermesMetrics.registerGauge("consumers-workload.monitor.assigned", () -> monitorMetrics.assigned);
+        hermesMetrics.registerGauge("consumers-workload.monitor.missing", () -> monitorMetrics.missing);
+        hermesMetrics.registerGauge("consumers-workload.monitor.oversubscribed", () -> monitorMetrics.oversubscribed);
     }
 
     public void checkCorrectness() {
         Set<SubscriptionName> assignedSubscriptions = workloadSupervisor.assignedSubscriptions();
-        Set<SubscriptionName> existingSubscriptions = consumerSupervisor.runningConsumers();
+        Set<SubscriptionName> runningSubscriptions = consumerSupervisor.runningConsumers();
 
-        Set<SubscriptionName> missingSubscriptions = missing(assignedSubscriptions, existingSubscriptions);
-        hermesMetrics.counter("consumers-workload.monitor.missing").inc(missingSubscriptions.size());
+        monitorMetrics.assigned = assignedSubscriptions.size();
+        monitorMetrics.running = runningSubscriptions.size();
+
+        Set<SubscriptionName> missingSubscriptions = missing(assignedSubscriptions, runningSubscriptions);
+        monitorMetrics.missing = missingSubscriptions.size();
         for (SubscriptionName subscriptionName : missingSubscriptions) {
             logger.warn("Missing consumer process for subscription: {}", subscriptionName);
         }
 
 
-        Set<SubscriptionName> oversusbcribedSubscriptions = oversubscribed(assignedSubscriptions, existingSubscriptions);
-        hermesMetrics.counter("consumers-workload.monitor.oversubscribed").inc(oversusbcribedSubscriptions.size());
-        for (SubscriptionName subscriptionName : oversusbcribedSubscriptions) {
+        Set<SubscriptionName> oversubscribedSubscriptions = oversubscribed(assignedSubscriptions, runningSubscriptions);
+        monitorMetrics.oversubscribed = oversubscribedSubscriptions.size();
+        for (SubscriptionName subscriptionName : oversubscribedSubscriptions) {
             logger.warn("Unwanted consumer process for subscription: {}", subscriptionName);
         }
 
         logger.info(
-                "Subscriptions assigned: {}, existing subscriptions: {}, missing: {}, oversusbcribed: {}",
+                "Subscriptions assigned: {}, existing subscriptions: {}, missing: {}, oversubscribed: {}",
                 assignedSubscriptions.size(),
-                existingSubscriptions.size(),
+                runningSubscriptions.size(),
                 missingSubscriptions.size(),
-                oversusbcribedSubscriptions.size()
+                oversubscribedSubscriptions.size()
         );
     }
 
@@ -73,18 +80,18 @@ public class ConsumersRuntimeMonitor implements Runnable {
         try {
             checkCorrectness();
         } catch (Exception exception) {
-            logger.error("Could not check correctnes of assignments", exception);
+            logger.error("Could not check correctness of assignments", exception);
         }
     }
 
     private Set<SubscriptionName> missing(Set<SubscriptionName> assignedSubscriptions,
-                                          Set<SubscriptionName> existingSubscriptions) {
-        return Sets.difference(assignedSubscriptions, existingSubscriptions).immutableCopy();
+                                          Set<SubscriptionName> runningSubscriptions) {
+        return Sets.difference(assignedSubscriptions, runningSubscriptions).immutableCopy();
     }
 
     private Set<SubscriptionName> oversubscribed(Set<SubscriptionName> assignedSubscriptions,
-                                                 Set<SubscriptionName> existingSubscriptions) {
-        return Sets.difference(existingSubscriptions, assignedSubscriptions).immutableCopy();
+                                                 Set<SubscriptionName> runningSubscriptions) {
+        return Sets.difference(runningSubscriptions, assignedSubscriptions).immutableCopy();
     }
 
     public void start() {
@@ -94,5 +101,17 @@ public class ConsumersRuntimeMonitor implements Runnable {
     public void shutdown() throws InterruptedException {
         executor.shutdown();
         executor.awaitTermination(1, TimeUnit.MINUTES);
+    }
+
+    private static class MonitorMetrics {
+
+        volatile int assigned;
+
+        volatile int running;
+
+        volatile int missing;
+
+        volatile int oversubscribed;
+
     }
 }
