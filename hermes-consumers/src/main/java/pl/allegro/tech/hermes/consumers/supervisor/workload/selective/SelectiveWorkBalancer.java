@@ -10,6 +10,7 @@ import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.toList;
 
 public class SelectiveWorkBalancer {
+
     private final int consumersPerSubscription;
     private final int maxSubscriptionsPerConsumer;
 
@@ -19,8 +20,8 @@ public class SelectiveWorkBalancer {
     }
 
     public WorkBalancingResult balance(List<SubscriptionName> subscriptions,
-                                List<String> activeConsumerNodes,
-                                SubscriptionAssignmentView currentState) {
+                                       List<String> activeConsumerNodes,
+                                       SubscriptionAssignmentView currentState) {
 
         List<SubscriptionName> removedSubscriptions = findRemovedSubscriptions(currentState, subscriptions);
         List<String> inactiveConsumers = findInactiveConsumers(currentState, activeConsumerNodes);
@@ -57,7 +58,7 @@ public class SelectiveWorkBalancer {
     }
 
     private void equalizeWorkload(SubscriptionAssignmentView state, SubscriptionAssignmentView.Transformer transformer) {
-        if (state.getSubscriptionsCount() > 1) {
+        if (state.getSubscriptionsCount() > 1 && !state.getConsumerNodes().isEmpty()) {
             boolean transferred;
             do {
                 transferred = false;
@@ -76,7 +77,7 @@ public class SelectiveWorkBalancer {
                     maxLoad--;
                     minLoad++;
                 }
-            } while(transferred);
+            } while (transferred);
         }
     }
 
