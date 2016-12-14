@@ -14,10 +14,7 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 
 import static java.util.stream.Collectors.joining;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class HttpClientFactory implements Factory<HttpClient> {
 
@@ -29,7 +26,7 @@ public class HttpClientFactory implements Factory<HttpClient> {
     public HttpClientFactory(ConfigFactory configFactory, InstrumentedExecutorServiceFactory executorFactory) {
         this.configFactory = configFactory;
         this.executorFactory = executorFactory;
-        this.sslContextFactory = sslContextFactory();
+        this.sslContextFactory = sslContextFactory(configFactory);
     }
 
     @Override
@@ -52,13 +49,12 @@ public class HttpClientFactory implements Factory<HttpClient> {
     public void dispose(HttpClient instance) {
     }
 
-    private SslContextFactory sslContextFactory() {
+    private SslContextFactory sslContextFactory(ConfigFactory configFactory) {
         SslContextFactory sslContextFactory = new SslContextFactory();
 
-        sslContextFactory.setValidateCerts(true);
-        sslContextFactory.setValidatePeerCerts(true);
-        sslContextFactory.setEnableOCSP(true);
-        sslContextFactory.setEnableCRLDP(true);
+        sslContextFactory.setValidateCerts(configFactory.getBooleanProperty(CONSUMER_HTTP_CLIENT_VALIDATE_CERTS));
+        sslContextFactory.setValidatePeerCerts(configFactory.getBooleanProperty(CONSUMER_HTTP_CLIENT_VALIDATE_PEER_CERTS));
+        sslContextFactory.setEnableCRLDP(configFactory.getBooleanProperty(CONSUMER_HTTP_CLIENT_ENABLE_CRLDP));
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
 
         sslContextFactory.setTrustStorePath(System.getProperty("javax.net.ssl.trustStore", defaultTrustStorePath()));
