@@ -47,6 +47,14 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             $scope.preview = preview;
         });
 
+        $scope.humanReadableSize = function (size) {
+            if (size) {
+                var i = Math.floor(Math.log(size)/Math.log(1024));
+                return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+            }
+            return ""
+        };
+
         $scope.edit = function () {
             $modal.open({
                 templateUrl: 'partials/modal/editTopic.html',

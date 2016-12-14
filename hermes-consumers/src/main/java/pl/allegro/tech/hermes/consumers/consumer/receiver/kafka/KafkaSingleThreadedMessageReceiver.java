@@ -41,7 +41,6 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
     private KafkaConsumer<byte[], byte[]> consumer;
     private final MessageContentWrapper messageContentWrapper;
-    private final SchemaRepository schemaRepository;
     private final Clock clock;
 
     private final BlockingQueue<Message> readQueue;
@@ -57,7 +56,6 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     public KafkaSingleThreadedMessageReceiver(KafkaConsumer<byte[], byte[]> consumer,
                                               MessageContentWrapper messageContentWrapper,
                                               HermesMetrics metrics,
-                                              SchemaRepository schemaRepository,
                                               KafkaNamesMapper kafkaNamesMapper,
                                               Topic topic,
                                               Subscription subscription,
@@ -72,7 +70,6 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                 .collect(Collectors.toMap(t -> t.name().asString(), Function.identity()));
         this.consumer = consumer;
         this.messageContentWrapper = messageContentWrapper;
-        this.schemaRepository = schemaRepository;
         this.clock = clock;
         this.readQueue = new ArrayBlockingQueue<Message>(readQueueCapacity);
         this.consumer.subscribe(topics.keySet());

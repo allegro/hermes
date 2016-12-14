@@ -11,10 +11,14 @@ import static java.lang.String.format;
 
 final class ContentLengthChecker {
 
-    static void checkContentLength(HttpServerExchange exchange, int contentLength) throws InvalidContentLengthException {
+    static void checkContentLength(HttpServerExchange exchange, int contentLength, int max)
+            throws InvalidContentLengthException, ContentTooLargeException {
+
         long expected = exchange.getRequestContentLength();
         if (expected != contentLength && !isChunked(exchange.getRequestHeaders(), expected)) {
             throw new InvalidContentLengthException(expected, contentLength);
+        } else if (contentLength > max) {
+            throw new ContentTooLargeException(expected, max);
         }
     }
 
@@ -27,6 +31,13 @@ final class ContentLengthChecker {
         InvalidContentLengthException(long expected, int contentLength) {
             super(format("Content-Length does not match the header [header:%s, actual:%s].",
                     expected, contentLength));
+        }
+    }
+
+    public static final class ContentTooLargeException extends IOException {
+        ContentTooLargeException(long contentLength, int max) {
+            super(format("Content-Length is larger than max on this topic [length:%s, max:%s].",
+                    contentLength, max));
         }
     }
 }
