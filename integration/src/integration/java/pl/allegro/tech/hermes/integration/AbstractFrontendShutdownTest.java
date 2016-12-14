@@ -25,6 +25,7 @@ public abstract class AbstractFrontendShutdownTest extends IntegrationTest {
         ConfigFactory configFactory = new MutableConfigFactory()
                 .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
                 .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
+                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_ENABLED, false)
                 .overrideProperty(Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
 
         hermesFrontend = HermesFrontend.frontend()

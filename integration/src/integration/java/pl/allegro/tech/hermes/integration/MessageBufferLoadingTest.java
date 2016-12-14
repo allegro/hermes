@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
 import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
@@ -33,7 +34,6 @@ import java.util.Properties;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.time.Instant.now;
-import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -51,6 +51,9 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     private static final String FRONTEND_URL = "http://localhost:" + FRONTEND_PORT + "/";
     private static final String KAFKA_ZK_CONNECT_STRING = ZOOKEEPER_CONNECT_STRING + "/backupKafka";
     private static final String KAFKA_BROKERS_LIST = "localhost:" + KAFKA_PORT;
+
+    private static final int ENTRIES = 100;
+    private static final int AVERAGE_MESSAGE_SIZE = 600;
 
     private final HermesEndpoints management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL);
     private final HermesAPIOperations operations = new HermesAPIOperations(management, new Waiter(management));
@@ -72,9 +75,10 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     }
 
 
-    @Test(enabled = false)
+    @Test
     public void shouldBackupMessage() throws Exception {
         // given
+        String tempDirPath = Files.createTempDir().getAbsolutePath();
         KafkaStarter kafka = new KafkaStarter(kafkaProperties());
         kafka.start();
 
@@ -83,12 +87,11 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         FrontendStarter frontend = new FrontendStarter(FRONTEND_PORT, false);
         frontend.overrideProperty(KAFKA_BROKER_LIST, KAFKA_BROKERS_LIST);
         frontend.overrideProperty(KAFKA_ZOOKEEPER_CONNECT_STRING, KAFKA_ZK_CONNECT_STRING);
+        frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
         frontend.start();
 
         try {
-            ChronicleMapMessageRepository backupRepository = createBackupRepository(
-                    frontend.config().getStringProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY)
-            );
+            ChronicleMapMessageRepository backupRepository = createBackupRepository(tempDirPath);
 
             await().atMost(5, SECONDS).until(() ->
                     assertThat(publisher.publish("backupGroup.uniqueTopic", "message").getStatus())
@@ -135,10 +138,11 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     private File backupFileWithOneMessage(Topic topic) {
         File backup = new File(tempDir.getAbsoluteFile(), "hermes-buffer.dat");
 
-        MessageRepository messageRepository = new ChronicleMapMessageRepository(backup);
-        MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null, null);
+        MessageRepository messageRepository = ChronicleMapMessageRepository.create(backup, ENTRIES, AVERAGE_MESSAGE_SIZE);
+        MessageContentWrapper wrapper = new MessageContentWrapper(
+                new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null, null);
 
-        String messageId = randomUUID().toString();
+        String messageId = MessageIdGenerator.generate();
         long timestamp = now().toEpochMilli();
         byte[] content = wrapper.wrapJson("message".getBytes(defaultCharset()),
                 messageId, timestamp, Collections.emptyMap());
@@ -160,9 +164,10 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     }
 
     private ChronicleMapMessageRepository createBackupRepository(String storageDirPath) {
-        return new ChronicleMapMessageRepository(
-                new BackupFilesManager(storageDirPath, Clock.systemUTC()).getCurrentBackupFile()
-        );
+        return ChronicleMapMessageRepository.create(
+                new BackupFilesManager(storageDirPath, Clock.systemUTC()).getCurrentBackupFile(),
+                ENTRIES,
+                AVERAGE_MESSAGE_SIZE);
     }
 }
 
