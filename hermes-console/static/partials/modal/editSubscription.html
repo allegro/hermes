@@ -34,23 +34,10 @@
             <div class="form-group {{subscriptionForm.subscriptionMaintainer.$valid ? '' : 'has-error'}}">
                 <label for="subscriptionMaintainer" class="col-md-3 control-label">Maintainer</label>
                 <div class="col-md-9">
-                    <input class="form-control" id="subscriptionMaintainer" name="subscriptionMaintainer" required placeholder="who maintains this subscription?" ng-model="subscription.maintainer.id" />
+                    <input class="form-control" id="subscriptionMaintainer" name="subscriptionMaintainer" required uib-typeahead="id for id in maintainers($viewValue)" typeahead-min-length="3"
+                           typeahead-wait-ms="500" placeholder="who maintains this subscription?" ng-model="subscription.maintainer.id" autocomplete="off" />
                 </div>
             </div>
-            <div class="form-group {{subscriptionForm.subscriptionSupportTeam.$valid ? '' : 'has-error'}}">
-                <label for="subscriptionSupportTeam" class="col-md-3 control-label">Team</label>
-                <div class="col-md-9">
-                    <input class="form-control" id="subscriptionSupportTeam" name="subscriptionSupportTeam" required uib-typeahead="group.name for group in groups($viewValue)" typeahead-min-length="3"
-                           typeahead-wait-ms="500" placeholder="comma delimited names of groups that will have rights to manage this subscription" ng-model="subscription.supportTeam" autocomplete="off"/>
-                </div>
-            </div>
-            <div class="form-group {{subscriptionForm.subscriptionContact.$valid ? '' : 'has-error'}}">
-                <label for="subscriptionContact" class="col-md-3 control-label">Contact</label>
-                <div class="col-md-9">
-                    <input class="form-control" id="subscriptionContact" name="subscriptionContact" required placeholder="contact email" ng-model="subscription.contact"/>
-                </div>
-            </div>
-
             <div class="form-group">
                 <label for="subscriptionType" class="col-md-3 control-label">Content type</label>
                 <div class="col-md-9">

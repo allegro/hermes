@@ -9,11 +9,9 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     endpoint: '',
                     description: '',
                     maintainer: {
-                        source: 'ZK',
+                        source: 'simple',
                         id: ''
                     },
-                    supportTeam: '',
-                    contact: '',
                     deliveryType: 'SERIAL',
                     mode: 'ANYCAST',
                     contentType: 'JSON',

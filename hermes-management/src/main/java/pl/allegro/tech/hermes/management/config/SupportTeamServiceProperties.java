@@ -59,7 +59,7 @@ public class SupportTeamServiceProperties {
     }
 
     public enum SupportTeamServiceType {
-        CROWD
+        CROWD, FAKE
     }
 
     public static class CrowdProperties {

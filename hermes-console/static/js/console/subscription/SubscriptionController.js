@@ -195,9 +195,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
-    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'SupportTeamService',
+    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'MaintainerService',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
-              endpointAddressResolverMetadataConfig, supportTeamService) {
+              endpointAddressResolverMetadataConfig, maintainerService) {
         $scope.topicName = topicName;
         $scope.subscription = subscription;
         $scope.operation = operation;
@@ -233,8 +233,8 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
                     });
         };
 
-        $scope.groups = function(groupName) {
-            return supportTeamService.getGroups(groupName);
+        $scope.maintainers = function(searchString) {
+            return maintainerService.getMaintainers(subscription.maintainer.source, searchString);
         };
 
     }]);

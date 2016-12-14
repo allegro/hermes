@@ -29,3 +29,7 @@ management:
 schema.repository.type: schema_registry
 
 audit.enabled: false
+
+supportTeam:
+  enabled: true
+  type: FAKE

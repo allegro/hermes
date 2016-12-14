@@ -39,6 +39,8 @@ public class SupportTeamServiceFactory extends AbstractFactoryBean<SupportTeamSe
         switch (type) {
             case CROWD:
                 return new CrowdSupportTeamService(restTemplate, supportTeamServiceProperties);
+            case FAKE:
+                return new FakeSupportTeamService();
             default:
                 return new NoOperationSupportTeamService();
         }

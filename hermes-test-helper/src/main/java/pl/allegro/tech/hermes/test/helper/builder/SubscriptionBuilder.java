@@ -29,8 +29,6 @@ public class SubscriptionBuilder {
 
     private String supportTeam = "team";
 
-    private String contact = "contact";
-
     private MonitoringDetails monitoringDetails = MonitoringDetails.EMPTY;
 
     private DeliveryType deliveryType = DeliveryType.SERIAL;
@@ -89,14 +87,14 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, maintainer, supportTeam, contact, monitoringDetails, contentType,
+                    trackingEnabled, maintainer, supportTeam, monitoringDetails, contentType,
                     filters, mode, headers, metadata, oAuthPolicy
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
-                    trackingEnabled, maintainer, supportTeam, contact, monitoringDetails, contentType,
+                    trackingEnabled, maintainer, supportTeam, monitoringDetails, contentType,
                     filters, headers, metadata, oAuthPolicy
             );
         }
@@ -149,11 +147,6 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withSupportTeam(String supportTeam) {
         this.supportTeam = supportTeam;
-        return this;
-    }
-
-    public SubscriptionBuilder withContact(String contact) {
-        this.contact = contact;
         return this;
     }
 
