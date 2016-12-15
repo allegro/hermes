@@ -25,6 +25,8 @@ public class TopicBuilder {
 
     private boolean schemaVersionAwareSerialization = false;
 
+    private int maxMessageSize = 1024 * 1024;
+
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
     }
@@ -44,7 +46,7 @@ public class TopicBuilder {
     public Topic build() {
         return new Topic(
                 name, description, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerialization
+                jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize
         );
     }
 
@@ -90,6 +92,11 @@ public class TopicBuilder {
 
     public TopicBuilder withSchemaVersionAwareSerialization() {
         this.schemaVersionAwareSerialization = true;
+        return this;
+    }
+
+    public TopicBuilder withMaxMessageSize(int size) {
+        this.maxMessageSize = size;
         return this;
     }
 }

@@ -37,6 +37,7 @@ public class FrontendStarter implements Starter<HermesFrontend> {
         configFactory.overrideProperty(FRONTEND_PORT, port);
         configFactory.overrideProperty(SCHEMA_REPOSITORY_TYPE, SCHEMA_REGISTRY.name());
         configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, false);
+        configFactory.overrideProperty(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
     }
 
     public FrontendStarter(int port, boolean sslEnabled) {

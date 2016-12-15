@@ -18,13 +18,13 @@ import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMess
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
-import static pl.allegro.tech.hermes.frontend.publishing.handlers.ContentLengthChecker.checkContentLength;
 
 class MessageReadHandler implements HttpHandler {
 
     private final HttpHandler next;
     private final HttpHandler timeoutHandler;
     private final MessageErrorProcessor messageErrorProcessor;
+    private final ContentLengthChecker contentLengthChecker;
     private final int defaultAsyncTimeout;
     private final int longAsyncTimeout;
 
@@ -33,6 +33,7 @@ class MessageReadHandler implements HttpHandler {
         this.next = next;
         this.timeoutHandler = timeoutHandler;
         this.messageErrorProcessor = messageErrorProcessor;
+        this.contentLengthChecker = new ContentLengthChecker(configFactory);
         this.defaultAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_IDLE_TIMEOUT);
         this.longAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_LONG_IDLE_TIMEOUT);
     }
@@ -127,7 +128,7 @@ class MessageReadHandler implements HttpHandler {
 
     private void messageRead(HttpServerExchange exchange, byte[] messageContent, AttachmentContent attachment) {
         try {
-            checkContentLength(exchange, messageContent.length);
+            contentLengthChecker.check(exchange, messageContent.length, attachment);
             attachment.getCachedTopic().reportMessageContentSize(messageContent.length);
             attachment.setMessageContent(messageContent);
             endWithoutDefaultResponse(exchange);
@@ -136,7 +137,7 @@ class MessageReadHandler implements HttpHandler {
             } else {
                 next.handleRequest(exchange);
             }
-        } catch (ContentLengthChecker.InvalidContentLengthException e) {
+        } catch (ContentLengthChecker.InvalidContentLengthException | ContentLengthChecker.ContentTooLargeException e) {
             attachment.removeTimeout();
             messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(),
                     attachment.getMessageId(), error(e.getMessage(), VALIDATION_ERROR));
