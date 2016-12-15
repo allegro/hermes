@@ -56,3 +56,22 @@ kafka.producer.retires           | RETRIES_CONFIG          | how many times shou
 kafka.producer.retry.backoff.ms  | RETRY_BACKOFF_MS_CONFIG | backoff between retries                | 256 ms
 kafka.producer.batch.size        | BATCH_SIZE_CONFIG       | size of sent message batch in bytes    | 16 kB
 kafka.producer.tcp.send.buffer   | SEND_BUFFER_CONFIG      | size of TCP buffer                     | 128 kB
+
+## Graceful startup
+
+Processing time for first event arriving on each topic may be longer than expected from Hermes frontend. 
+This is because topic metadata has to be fetched from Kafka. What is more, Avro topics need schema in order to validate incoming messages.
+
+To get rid of this issue and reduce event processing latency, all the required data can be fetched during Hermes frontend's startup, 
+just before it's healthcheck goes green.
+Note, enabling startup data loading will make frontend boot a little longer.
+
+Option                                                   | Description                                             | Default value
+-------------------------------------------------------- | ------------------------------------------------------- | -------------
+frontend.startup.topic.metadata.loading.enabled          | should the startup topic metadata loading be enabled    | false
+frontend.startup.topic.metadata.loading.retry.interval   | retry interval between retry loops                      | 1s
+frontend.startup.topic.metadata.loading.retry.count      | number of retries between topic metadata fetch loops    | 5
+frontend.startup.topic.metadata.loading.thread.pool.size | number of worker threads loading metadata concurrently  | 16
+frontend.startup.topic.schema.loading.enabled            | should the startup topic schema loading be enabled      | false
+frontend.startup.topic.schema.loading.retry.count        | number of retries between topic schema fetch loops      | 5
+frontend.startup.topic.schema.loading.thread.pool.size   | number of worker threads loading schemas concurrently   | 16

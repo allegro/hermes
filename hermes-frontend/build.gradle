@@ -9,6 +9,7 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
     compile group: 'net.openhft', name: 'chronicle-map', version: '2.4.13'
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    compile group: 'net.jodah', name: 'failsafe', version: '1.0.0'
 
     provided group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 

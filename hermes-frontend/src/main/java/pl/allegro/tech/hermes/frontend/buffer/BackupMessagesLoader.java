@@ -42,13 +42,11 @@ import static pl.allegro.tech.hermes.common.config.Configs.*;
 public class BackupMessagesLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(BackupMessagesLoader.class);
-    private static final int THREAD_POOL_SIZE = 16;
 
     private final BrokerMessageProducer brokerMessageProducer;
     private final BrokerListeners brokerListeners;
     private final TopicsCache topicsCache;
     private final Trackers trackers;
-    private final int secondsToWaitForTopicsCache;
     private final int messageMaxAgeHours;
     private final int maxResendRetries;
     private final long resendSleep;
@@ -67,7 +65,6 @@ public class BackupMessagesLoader {
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
         this.trackers = trackers;
-        this.secondsToWaitForTopicsCache = config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE);
         this.messageMaxAgeHours = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS);
         this.resendSleep = config.getIntProperty(MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS);
         this.readTopicInfoSleep = TimeUnit.SECONDS.toMillis(config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO));
@@ -109,39 +106,19 @@ public class BackupMessagesLoader {
 
     private void sendMessages(List<BackupMessage> messages) {
         logger.info("Sending {} messages from backup storage.", messages.size());
-        ExecutorService executor = createExecutor();
-        try {
-            int sentCounter = 0;
-            int discardedCounter = 0;
-            for (BackupMessage backupMessage : messages) {
-                Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
-                String topicQualifiedName = backupMessage.getQualifiedTopicName();
-                Optional<CachedTopic> optionalCachedTopic = loadCachedTopic(topicQualifiedName, executor);
-                if (sendMessageIfNeeded(message, topicQualifiedName, optionalCachedTopic, "sending")) {
-                    sentCounter++;
-                } else {
-                    discardedCounter++;
-                }
-            }
-            logger.info("Loaded and sent {} messages and discarded {} messages from the backup storage.", sentCounter, discardedCounter);
-        } finally {
-            shutdownExecutor(executor);
-        }
-    }
-
-    private ExecutorService createExecutor() {
-        return Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-    }
-
-    private void shutdownExecutor(ExecutorService executor) {
-        if (executor != null) {
-            executor.shutdownNow();
-            try {
-                executor.awaitTermination(1, TimeUnit.MINUTES);
-            } catch (InterruptedException e) {
-                logger.error("Termination of load topics executor service interrupted.", e);
+        int sentCounter = 0;
+        int discardedCounter = 0;
+        for (BackupMessage backupMessage : messages) {
+            Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
+            String topicQualifiedName = backupMessage.getQualifiedTopicName();
+            Optional<CachedTopic> optionalCachedTopic = topicsCache.getTopic(topicQualifiedName);
+            if (sendMessageIfNeeded(message, topicQualifiedName, optionalCachedTopic, "sending")) {
+                sentCounter++;
+            } else {
+                discardedCounter++;
             }
         }
+        logger.info("Loaded and sent {} messages and discarded {} messages from the backup storage.", sentCounter, discardedCounter);
     }
 
     private void resendMessages(List<Pair<Message, CachedTopic>> messageAndTopicList, int retry) {
@@ -230,15 +207,4 @@ public class BackupMessagesLoader {
             }
         });
     }
-
-    private Optional<CachedTopic> loadCachedTopic(String topicQualifiedName, Executor executor) {
-        try {
-            return CompletableFuture.supplyAsync(() -> topicsCache.getTopic(topicQualifiedName), executor)
-                    .get(secondsToWaitForTopicsCache, SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error("Could not read topic {} from topics cache after {} seconds", topicQualifiedName, secondsToWaitForTopicsCache);
-            return Optional.empty();
-        }
-    }
-
 }

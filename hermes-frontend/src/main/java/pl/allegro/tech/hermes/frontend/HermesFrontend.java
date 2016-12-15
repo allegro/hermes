@@ -24,6 +24,8 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
+import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
@@ -35,6 +37,8 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED;
 
 public final class HermesFrontend {
 
@@ -62,10 +66,16 @@ public final class HermesFrontend {
         hermesServer = serviceLocator.getService(HermesServer.class);
         trackers = serviceLocator.getService(Trackers.class);
 
-        if (serviceLocator.getService(ConfigFactory.class).getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED)) {
+        ConfigFactory config = serviceLocator.getService(ConfigFactory.class);
+        if (config.getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED)) {
             hooksHandler.addShutdownHook(gracefulShutdownHook());
         }
-
+        if (config.getBooleanProperty(FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED)) {
+            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicMetadataLoadingStartupHook.class));
+        }
+        if (config.getBooleanProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED)) {
+            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicSchemaLoadingStartupHook.class));
+        }
         hooksHandler.addStartupHook((s) -> s.getService(HealthCheckService.class).startup());
         hooksHandler.addShutdownHook(defaultShutdownHook());
         if (flushLogsShutdownHookEnabled) {
@@ -104,6 +114,7 @@ public final class HermesFrontend {
         serviceLocator.getService(PersistentBufferExtension.class).extend();
         startCaches(serviceLocator);
 
+        hooksHandler.runBeforeStartHooks(serviceLocator);
         hermesServer.start();
         hooksHandler.startup(serviceLocator);
     }
@@ -155,6 +166,16 @@ public final class HermesFrontend {
             withDefaultRankBinding(listeners, BrokerListeners.class);
             binders.add(new TrackersBinder(new ArrayList<>()));
             return new HermesFrontend(hooksHandler, binders, logRepositories, flushLogsShutdownHookEnabled);
+        }
+
+        public Builder withBeforeStartHook(ServiceAwareHook hook) {
+            hooksHandler.addBeforeStartHook(hook);
+            return this;
+        }
+
+        public Builder withBeforeStartHook(Hook hook) {
+            withBeforeStartHook(s -> hook.apply());
+            return this;
         }
 
         public Builder withStartupHook(ServiceAwareHook hook) {
