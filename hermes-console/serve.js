@@ -5,6 +5,8 @@ var static = require('node-static');
 var request = require('request');
 var fs = require('fs');
 
+var _ = require('lodash');
+
 var DEFAULT_CONFIG = './config_default.json';
 
 var yargs = require('yargs')
@@ -27,6 +29,7 @@ readConfiguration(yargs.config, startServer);
 
 function startServer(config) {
     console.log('Starting Hermes Console at port: ' + port);
+    console.log('Config: ' + JSON.stringify(config, null, 2));
 
     var file = new static.Server('./static');
     require('http').createServer((request, response) => {
@@ -51,11 +54,11 @@ function readConfiguration(source, callback) {
 
     if (source.indexOf('htt') == 0) {
         console.log('Reading configuration from remote source: ' + source);
-        request.get(source, (error, res, body) => { callback(Object.assign(defaultConfig, JSON.parse(body))); });
+        request.get(source, (error, res, body) => { callback(_.merge(defaultConfig, JSON.parse(body))); });
     }
     else {
         console.log('Reading configuration from file: ' + source);
         var config = JSON.parse(fs.readFileSync(source, 'utf8'));
-        callback(Object.assign(defaultConfig, config));
+        callback(_.merge(defaultConfig, config));
     }
 }

@@ -7,6 +7,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "bower": "^1.7.2",
+    "lodash": "^4.17.2",
     "node-static": "^0.7.6",
     "request": "^2.67.0",
     "yargs": "^3.32.0"
