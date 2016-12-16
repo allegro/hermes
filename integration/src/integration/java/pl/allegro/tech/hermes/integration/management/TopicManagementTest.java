@@ -95,6 +95,19 @@ public class TopicManagementTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldNotCreateInvalidTopic() {
+        // given
+        operations.createGroup("invalidTopicGroup");
+
+        // when
+        Response response = management.topic().create(topic("invalidTopicGroup", "topic").withRetentionTime(-1).build());
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST).hasErrorCode(ErrorCode.VALIDATION_ERROR);
+        Assertions.assertThat(management.topic().list("invalidTopicGroup", false)).isEmpty();
+    }
+
+    @Test
     public void shouldNotAllowOnCreatingSameTopicTwice() {
         // given
         operations.createGroup("overrideTopicGroup");
