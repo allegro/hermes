@@ -4,7 +4,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.management.domain.maintainer.MaintainerSource;
+import pl.allegro.tech.hermes.management.domain.maintainer.MaintainerSources;
 
 import javax.ws.rs.*;
 import java.util.List;
@@ -13,21 +13,30 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Component
 @Path("/maintainers")
-@Api(value = "/maintainers", description = "Provides basic maintainers information")
+@Api(value = "/maintainers", description = "Provides maintainers information")
 public class MaintainersEndpoint {
 
-    private MaintainerSource maintainerSource;
+    private MaintainerSources maintainerSources;
 
     @Autowired
-    public MaintainersEndpoint(MaintainerSource maintainerSource) {
-        this.maintainerSource = maintainerSource;
+    public MaintainersEndpoint(MaintainerSources maintainerSources) {
+        this.maintainerSources = maintainerSources;
     }
 
     @GET
-    @Path("/{source}/{searchString}")
+    @Path("/sources/{source}/{searchString}")
     @Produces(APPLICATION_JSON)
-    @ApiOperation(value = "Lists maintainers matching search string", response = List.class, httpMethod = HttpMethod.GET)
+    @ApiOperation(value = "Lists maintainers from the given source matching the search string", response = List.class, httpMethod = HttpMethod.GET)
     public List<String> get(@PathParam("source") String source, @PathParam("searchString") String searchString) {
-        return maintainerSource.maintainersMatching(searchString);
+        return maintainerSources.getByName(source).maintainersMatching(searchString);
     }
+
+    @GET
+    @Path("/sources")
+    @Produces(APPLICATION_JSON)
+    @ApiOperation(value = "Lists maintainer sources", response = List.class, httpMethod = HttpMethod.GET)
+    public List<String> get() {
+        return maintainerSources.names();
+    }
+
 }

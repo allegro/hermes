@@ -9,7 +9,7 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     endpoint: '',
                     description: '',
                     maintainer: {
-                        source: 'simple',
+                        source: '',
                         id: ''
                     },
                     deliveryType: 'SERIAL',
