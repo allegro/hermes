@@ -162,8 +162,10 @@ public class SubscriptionsEndpoint {
     @ApiOperation(value = "Update subscription state", httpMethod = HttpMethod.PUT)
     public Response updateState(@PathParam("topicName") String qualifiedTopicName,
                                 @PathParam("subscriptionName") String subscriptionName,
-                                Subscription.State state) {
-        subscriptionService.updateSubscriptionState(fromQualifiedName(qualifiedTopicName), subscriptionName, state);
+                                Subscription.State state,
+                                @Context SecurityContext securityContext) {
+        subscriptionService.updateSubscriptionState(fromQualifiedName(qualifiedTopicName),
+                subscriptionName, state, securityContext.getUserPrincipal().getName());
         return responseStatus(OK);
     }
 

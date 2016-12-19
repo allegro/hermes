@@ -2,16 +2,7 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.MessageTrace;
-import pl.allegro.tech.hermes.api.PatchData;
-import pl.allegro.tech.hermes.api.Query;
-import pl.allegro.tech.hermes.api.SentMessageTrace;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
-import pl.allegro.tech.hermes.api.SubscriptionMetrics;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicMetrics;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
@@ -108,8 +99,13 @@ public class SubscriptionService {
         }
     }
 
-    public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state) {
-        subscriptionRepository.updateSubscriptionState(topicName, subscriptionName, state);
+    public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state, String modifiedBy) {
+        Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+        if (!retrieved.getState().equals(state)) {
+            Subscription updated = Patch.apply(retrieved, PatchData.patchData().set("state", state).build());
+            subscriptionRepository.updateSubscription(updated);
+            auditor.objectUpdated(modifiedBy, retrieved, updated);
+        }
     }
 
     public Subscription.State getSubscriptionState(TopicName topicName, String subscriptionName) {
