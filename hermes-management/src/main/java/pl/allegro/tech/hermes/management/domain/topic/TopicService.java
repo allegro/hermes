@@ -72,8 +72,8 @@ public class TopicService {
 
     public void createTopic(Topic topic, String createdBy) {
         topicValidator.ensureCreatedTopicIsValid(topic);
-        topicRepository.createTopic(topic);
         preconditions.checkConstraints(topic);
+        topicRepository.createTopic(topic);
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
