@@ -12,6 +12,7 @@ import javax.inject.Inject;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_HISTORY_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_MIN_MAX_RATE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_STRATEGY;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 import static pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.ConsumerMaxRateStrategy.NEGOTIATED;
@@ -39,9 +40,11 @@ public class MaxRateProviderFactory {
                     String consumerId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
                     int historyLimit = configFactory.getIntProperty(CONSUMER_MAXRATE_HISTORY_SIZE);
                     double initialMaxRate = configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_MAX_RATE);
+                    double minSignificantChange =
+                            configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT) / 100;
 
                     return new NegotiatedMaxRateProvider(consumerId, maxRateRegistry, maxRateSupervisor,
-                            subscription, sendCounters, metrics, initialMaxRate, historyLimit);
+                            subscription, sendCounters, metrics, initialMaxRate, minSignificantChange, historyLimit);
                 };
                 break;
             case STRICT:

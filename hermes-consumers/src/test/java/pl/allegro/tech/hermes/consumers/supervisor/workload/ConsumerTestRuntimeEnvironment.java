@@ -137,8 +137,18 @@ class ConsumerTestRuntimeEnvironment {
                 notificationsBus, groupRepository, topicRepository, subscriptionRepository
         );
         subscriptionsCaches.add(subscriptionsCache);
+
+        SubscriptionAssignmentCaches subscriptionAssignmentCaches = new SubscriptionAssignmentCaches(
+                curator, configFactory, paths, subscriptionsCache);
+
+        try {
+            subscriptionAssignmentCaches.start();
+        } catch(Exception e) {
+            throw new InternalProcessingException(e);
+        }
+
         SubscriptionAssignmentRegistry assignmentRegistry = new SubscriptionAssignmentRegistryFactory(
-                curator, configFactory, subscriptionsCache).provide(consumerId);
+                curator, configFactory, subscriptionAssignmentCaches).provide();
 
         WorkTracker workTracker = new WorkTracker(consumerId, assignmentRegistry);
 

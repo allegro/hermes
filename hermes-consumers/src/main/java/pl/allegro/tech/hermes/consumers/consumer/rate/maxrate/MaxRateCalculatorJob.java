@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS;
 
-public class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
+class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
 
     private final int intervalSeconds;
     private final ScheduledExecutorService executorService;
@@ -26,7 +26,7 @@ public class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
 
     private ScheduledFuture job;
 
-    public MaxRateCalculatorJob(CuratorFramework curator,
+    MaxRateCalculatorJob(CuratorFramework curator,
                                 ConfigFactory configFactory,
                                 ScheduledExecutorService executorService,
                                 SubscriptionConsumersCache subscriptionConsumersCache,

@@ -62,7 +62,6 @@ public class HermesConsumers {
             try {
                 consumerHttpServer.stop();
                 supervisorController.shutdown();
-                maxRateSupervisor.shutdown();
                 s.shutdown();
             } catch (Exception e) {
                 logger.error("Exception while shutdown Hermes Consumers", e);

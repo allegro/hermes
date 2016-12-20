@@ -21,6 +21,8 @@ public class ZookeeperPaths {
     public static final String PREVIEW_PATH = "preview";
     public static final String OAUTH_PROVIDERS_PATH = "oauth-providers";
     public static final String BLACKLIST_PATH = "blacklist";
+    public static final String MAX_RATE_PATH = "max-rate";
+    public static final String MAX_RATE_HISTORY_PATH = "history";
 
     private final String basePath;
 
@@ -112,31 +114,20 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "runtime");
     }
 
-    public String consumersRateRuntimePath(SubscriptionName subscription) {
-        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription);
-    }
-
     public String consumersRatePath(SubscriptionName subscription, String consumerId) {
         return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId);
     }
 
     public String consumersRateHistoryPath(SubscriptionName subscription, String consumerId) {
-        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, "history");
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, MAX_RATE_HISTORY_PATH);
     }
 
     public String consumersMaxRatePath(SubscriptionName subscription, String consumerId) {
-        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, "max-rate");
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, MAX_RATE_PATH);
     }
 
     public String maxRateLeaderPath() {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "leader");
-    }
-
-    public String inflightPath(String hostname, TopicName topicName, String subscriptionName, String metricName) {
-        return Joiner.on(URL_SEPARATOR).join(
-                consumersPath(),
-                hostname + subscriptionMetricPathWithoutBasePath(topicName, subscriptionName, metricName)
-        );
     }
 
     public String topicsBlacklistPath() {

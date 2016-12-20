@@ -16,8 +16,8 @@ class MaxRateBalancerTest extends Specification {
     def "should assign equal rates initially"() {
         when:
             def maxRates = balancer.balance(100d, [
-                    new ConsumerRateInfo("consumer1", Optional.empty(), RateHistory.empty()),
-                    new ConsumerRateInfo("consumer2", Optional.empty(), RateHistory.empty())
+                    new ConsumerRateInfo("consumer1", RateInfo.empty()),
+                    new ConsumerRateInfo("consumer2", RateInfo.empty())
             ] as Set)
 
         then:
@@ -31,8 +31,8 @@ class MaxRateBalancerTest extends Specification {
 
         when:
             def maxRates = balancer.balance(100d, [
-                    new ConsumerRateInfo("consumer1", Optional.of(new MaxRate(50d)), consumer1History),
-                    new ConsumerRateInfo("consumer2", Optional.of(new MaxRate(50d)), consumer2History)
+                    new ConsumerRateInfo("consumer1", new RateInfo(Optional.of(new MaxRate(50d)), consumer1History)),
+                    new ConsumerRateInfo("consumer2", new RateInfo(Optional.of(new MaxRate(50d)), consumer2History))
             ] as Set)
 
         then:
@@ -50,8 +50,8 @@ class MaxRateBalancerTest extends Specification {
             conditions.eventually {
                 def subscriptionRate = 100d
                 def maxRates = balancer.balance(subscriptionRate, [
-                        new ConsumerRateInfo("consumer1", maxRate1, consumerHistory),
-                        new ConsumerRateInfo("consumer2", maxRate2, consumerHistory)
+                        new ConsumerRateInfo("consumer1", new RateInfo(maxRate1, consumerHistory)),
+                        new ConsumerRateInfo("consumer2", new RateInfo(maxRate2, consumerHistory))
                 ] as Set).get()
 
                 println maxRates
@@ -84,8 +84,8 @@ class MaxRateBalancerTest extends Specification {
 
         when:
             def maxRates = balancer.balance(100d, [
-                    new ConsumerRateInfo("busy", busyMax, busyHistory),
-                    new ConsumerRateInfo("notBusy", notBusyMax, notBusyHistory)
+                    new ConsumerRateInfo("busy", new RateInfo(busyMax, busyHistory)),
+                    new ConsumerRateInfo("notBusy", new RateInfo(notBusyMax, notBusyHistory))
             ] as Set).get()
 
         then:
@@ -94,10 +94,14 @@ class MaxRateBalancerTest extends Specification {
     }
 
     def "should restart distribution on subscription rate change"() {
+        given:
+            def consumer1Rate = new RateInfo(Optional.of(new MaxRate(50d)), RateHistory.create(0.7d))
+            def consumer2Rate = new RateInfo(Optional.of(new MaxRate(50d)), RateHistory.create(0.99d))
+
         when:
             def maxRates = balancer.balance(200d, [
-                    new ConsumerRateInfo("consumer1", Optional.of(new MaxRate(50d)), RateHistory.create(0.7d)),
-                    new ConsumerRateInfo("consumer2", Optional.of(new MaxRate(50d)), RateHistory.create(0.99d))
+                    new ConsumerRateInfo("consumer1", consumer1Rate),
+                    new ConsumerRateInfo("consumer2", consumer2Rate)
             ] as Set)
 
         then:
@@ -105,10 +109,14 @@ class MaxRateBalancerTest extends Specification {
     }
 
     def "should take everything from unoccupied consumer"() {
+        given:
+            def unoccupiedRate = new RateInfo(Optional.of(new MaxRate(100d)), RateHistory.create(0.0d))
+            def occupiedRate = new RateInfo(Optional.of(new MaxRate(100d)), RateHistory.create(1.0d))
+
         when:
             def maxRates = balancer.balance(200d, [
-                    new ConsumerRateInfo("consumer1", Optional.of(new MaxRate(100d)), RateHistory.create(0.0d)),
-                    new ConsumerRateInfo("consumer2", Optional.of(new MaxRate(100d)), RateHistory.create(1.0d))
+                    new ConsumerRateInfo("consumer1", unoccupiedRate),
+                    new ConsumerRateInfo("consumer2", occupiedRate)
             ] as Set).get()
 
         then:
@@ -117,16 +125,16 @@ class MaxRateBalancerTest extends Specification {
     }
 
     def "should preserve min max rate"() {
+        given:
+            def unoccupiedRate = new RateInfo(Optional.of(new MaxRate(MIN_MAX_RATE)), RateHistory.create(0.0d))
+            def occupiedRate = new RateInfo(Optional.of(new MaxRate(100d - MIN_MAX_RATE)), RateHistory.create(1.0d))
+
         when:
             def maxRates = balancer.balance(200d, [
-                    new ConsumerRateInfo("unoccupied1",
-                            Optional.of(new MaxRate(MIN_MAX_RATE)), RateHistory.create(0.0d)),
-                    new ConsumerRateInfo("unoccupied2",
-                            Optional.of(new MaxRate(MIN_MAX_RATE)), RateHistory.create(0.0d)),
-                    new ConsumerRateInfo("busy1",
-                            Optional.of(new MaxRate(100d - MIN_MAX_RATE)), RateHistory.create(1.0d)),
-                    new ConsumerRateInfo("busy2",
-                            Optional.of(new MaxRate(100d - MIN_MAX_RATE)), RateHistory.create(1.0d))
+                    new ConsumerRateInfo("unoccupied1", unoccupiedRate),
+                    new ConsumerRateInfo("unoccupied2", unoccupiedRate),
+                    new ConsumerRateInfo("busy1", occupiedRate),
+                    new ConsumerRateInfo("busy2", occupiedRate)
             ] as Set).get()
 
         then:
@@ -137,12 +145,16 @@ class MaxRateBalancerTest extends Specification {
     }
 
     def "should move away from min max rate"() {
+        given:
+            def minConsumerRate = new RateInfo(Optional.of(new MaxRate(MIN_MAX_RATE)), RateHistory.create(1.0d))
+            def greedyConsumerRate =
+                    new RateInfo(Optional.of(new MaxRate(200d - MIN_MAX_RATE)), RateHistory.create(0.8d))
+
         when:
             def maxRates = balancer.balance(200d, [
-                    new ConsumerRateInfo("minConsumer",
-                            Optional.of(new MaxRate(MIN_MAX_RATE)), RateHistory.create(1.0d)),
+                    new ConsumerRateInfo("minConsumer", minConsumerRate),
                     new ConsumerRateInfo("greedyConsumer",
-                            Optional.of(new MaxRate(200d - MIN_MAX_RATE)), RateHistory.create(0.8d))
+                            greedyConsumerRate)
             ] as Set).get()
 
         print maxRates

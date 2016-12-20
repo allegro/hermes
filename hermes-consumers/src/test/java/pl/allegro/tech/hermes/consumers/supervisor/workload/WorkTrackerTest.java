@@ -23,6 +23,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class WorkTrackerTest extends ZookeeperBaseTest {
@@ -41,24 +42,28 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
             groupRepository, topicRepository, subscriptionRepository
     );
 
+    private final SubscriptionAssignmentPathSerializer serializer =
+            new SubscriptionAssignmentPathSerializer(basePath, AUTO_ASSIGNED_MARKER);
+
+    private final SubscriptionAssignmentCache subscriptionAssignmentCache =
+            new SubscriptionAssignmentCache(zookeeperClient, basePath, cache, serializer);
+
     private final SubscriptionAssignmentRegistry subscriptionAssignmentRegistry =
-            new SubscriptionAssignmentRegistry(zookeeperClient,
-                    basePath,
-                    cache,
-                    new SubscriptionAssignmentPathSerializer(basePath, "AUTO".getBytes()));
+            new SubscriptionAssignmentRegistry(zookeeperClient, subscriptionAssignmentCache, serializer);
 
     private final WorkTracker workTracker = new WorkTracker(supervisorId, subscriptionAssignmentRegistry);
 
     @Before
     public void before() throws Exception {
         notifyingCache.start();
+        subscriptionAssignmentCache.start();
         subscriptionAssignmentRegistry.start();
     }
 
     @After
     public void cleanup() throws Exception {
         notifyingCache.stop();
-        subscriptionAssignmentRegistry.stop();
+        subscriptionAssignmentCache.stop();
         deleteAllNodes();
     }
 

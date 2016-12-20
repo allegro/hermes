@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 
 class MaxRateCalculator {
+
     private static final Logger logger = LoggerFactory.getLogger(MaxRateCalculator.class);
 
     private final SubscriptionConsumersCache subscriptionConsumersCache;

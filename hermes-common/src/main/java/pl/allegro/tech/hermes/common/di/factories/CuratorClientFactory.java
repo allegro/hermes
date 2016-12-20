@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
 import com.google.common.primitives.Ints;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -11,6 +12,7 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import javax.inject.Inject;
 import java.util.Optional;
+import java.util.concurrent.ThreadFactory;
 
 import static java.time.Duration.ofSeconds;
 import static pl.allegro.tech.hermes.common.config.Configs.*;
@@ -49,7 +51,12 @@ public class CuratorClientFactory {
         int baseSleepTime = configFactory.getIntProperty(ZOOKEEPER_BASE_SLEEP_TIME);
         int maxRetries = configFactory.getIntProperty(ZOOKEEPER_MAX_RETRIES);
         int maxSleepTime = Ints.saturatedCast(ofSeconds(configFactory.getIntProperty(ZOOKEEPER_MAX_SLEEP_TIME_IN_SECONDS)).toMillis());
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("hermes-curator-%d")
+                .setUncaughtExceptionHandler((t, e) ->
+                        logger.error("Exception from curator with name {}", t.getName(), e)).build();
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
+                .threadFactory(threadFactory)
                 .connectString(connectString)
                 .sessionTimeoutMs(configFactory.getIntProperty(ZOOKEEPER_SESSION_TIMEOUT))
                 .connectionTimeoutMs(configFactory.getIntProperty(ZOOKEEPER_CONNECTION_TIMEOUT))

@@ -12,14 +12,16 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(NegotiatedMaxRateProvider.class);
 
-    private final String consumerId;
+    private final ConsumerInstance consumer;
     private final MaxRateRegistry registry;
     private final MaxRateSupervisor maxRateSupervisor;
     private final SendCounters sendCounters;
     private final HermesMetrics metrics;
+    private final double minSignificantChange;
     private final int historyLimit;
     private volatile Subscription subscription;
     private volatile double maxRate;
+    private volatile double previousRecordedRate = 0.0d;
 
     NegotiatedMaxRateProvider(String consumerId,
                               MaxRateRegistry registry,
@@ -28,15 +30,17 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
                               SendCounters sendCounters,
                               HermesMetrics metrics,
                               double initialMaxRate,
+                              double minSignificantChange,
                               int historyLimit) {
-        this.consumerId = consumerId;
+        this.consumer = new ConsumerInstance(consumerId, subscription.getQualifiedName());
         this.registry = registry;
         this.maxRateSupervisor = maxRateSupervisor;
         this.subscription = subscription;
         this.sendCounters = sendCounters;
         this.metrics = metrics;
+        this.minSignificantChange = minSignificantChange;
         this.historyLimit = historyLimit;
-        maxRate = initialMaxRate;
+        this.maxRate = initialMaxRate;
     }
 
     @Override
@@ -50,25 +54,26 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
     }
 
     private void recordCurrentRate(double actualRate) {
-        try {
-            double usedRate = Math.min(actualRate / Math.max(maxRate, 1), 1.0);
-            RateHistory rateHistory = registry.readOrCreateRateHistory(subscription.getQualifiedName(), consumerId);
-            RateHistory updatedHistory = RateHistory.updatedRates(rateHistory, usedRate, historyLimit);
-            registry.writeRateHistory(subscription.getQualifiedName(), consumerId, updatedHistory);
-        } catch (Exception e) {
-            metrics.rateHistoryFailuresCounter(subscription).inc();
-            logger.warn("Encountered problem updating max rate for subscription {}, consumer {}",
-                    subscription.getQualifiedName(), consumerId, e);
+        double usedRate = Math.min(actualRate / Math.max(maxRate, 1), 1.0d);
+        if (Math.abs(previousRecordedRate - usedRate) > minSignificantChange) {
+            try {
+                RateHistory rateHistory = registry.getRateHistory(consumer);
+                RateHistory updatedHistory = RateHistory.updatedRates(rateHistory, usedRate, historyLimit);
+                registry.writeRateHistory(consumer, updatedHistory);
+                previousRecordedRate = usedRate;
+            } catch (Exception e) {
+                metrics.rateHistoryFailuresCounter(subscription).inc();
+                logger.warn("Encountered problem updating max rate for {}", consumer, e);
+            }
         }
     }
 
     private Optional<MaxRate> fetchCurrentMaxRate() {
         try {
-            return registry.readMaxRate(subscription.getQualifiedName(), consumerId);
+            return registry.getMaxRate(consumer);
         } catch (Exception e) {
             metrics.maxRateFetchFailuresCounter(subscription).inc();
-            logger.warn("Encountered problem fetching max rate for subscription: {}, consumer: {}.",
-                    subscription.getQualifiedName(), consumerId);
+            logger.warn("Encountered problem fetching max rate for {}", consumer);
             return Optional.empty();
         }
     }

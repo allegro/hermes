@@ -4,14 +4,15 @@ import java.util.Objects;
 import java.util.Optional;
 
 final class ConsumerRateInfo {
+
     private final String consumerId;
     private final Optional<MaxRate> maxRate;
     private final RateHistory history;
 
-    ConsumerRateInfo(String consumerId, Optional<MaxRate> maxRate, RateHistory history) {
+    ConsumerRateInfo(String consumerId, RateInfo rateInfo) {
         this.consumerId = consumerId;
-        this.maxRate = maxRate;
-        this.history = history;
+        this.maxRate = rateInfo.getMaxRate();
+        this.history = rateInfo.getRateHistory();
     }
 
     Optional<MaxRate> getMaxRate() {

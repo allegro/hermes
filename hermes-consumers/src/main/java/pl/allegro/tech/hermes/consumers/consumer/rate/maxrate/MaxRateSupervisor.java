@@ -49,7 +49,6 @@ public class MaxRateSupervisor implements Runnable {
     }
 
     public void start() throws Exception {
-        subscriptionConsumersCache.start();
         startCalculator();
         startSelfUpdate();
     }
@@ -61,7 +60,7 @@ public class MaxRateSupervisor implements Runnable {
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_ALLOWED_CHANGE_PERCENT));
 
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setNameFormat("max-rate-balancer-%d").build());
+                new ThreadFactoryBuilder().setNameFormat("max-rate-calculator-%d").build());
 
         new MaxRateCalculatorJob(
                 curator,
@@ -82,10 +81,6 @@ public class MaxRateSupervisor implements Runnable {
         Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder().setNameFormat("max-rate-provider-%d").build()
         ).scheduleAtFixedRate(this, selfUpdateInterval, selfUpdateInterval, TimeUnit.SECONDS);
-    }
-
-    public void shutdown() throws InterruptedException {
-        subscriptionConsumersCache.stop();
     }
 
     @Override

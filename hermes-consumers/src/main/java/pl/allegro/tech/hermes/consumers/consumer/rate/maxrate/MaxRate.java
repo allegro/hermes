@@ -4,6 +4,7 @@ import java.beans.ConstructorProperties;
 import java.util.Objects;
 
 final class MaxRate {
+
     private final double maxRate;
 
     @ConstructorProperties({"maxRate"})

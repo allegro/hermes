@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -18,8 +19,14 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
     private final SubscriptionName subscription = qualifiedName("subscription");
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final MaxRatePathSerializer pathSerializer = new MaxRatePathSerializer();
     private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(
-            zookeeperClient, objectMapper, zookeeperPaths);
+            zookeeperClient, objectMapper, zookeeperPaths, pathSerializer);
+
+    @Before
+    public void setUp() throws Exception {
+        maxRateRegistry.start();
+    }
 
     @After
     public void cleanup() throws Exception {
@@ -27,27 +34,36 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
     }
 
     @Test
-    public void shouldCreatePathsInZookeeperOnInit() throws Exception {
+    public void shouldReturnEmptyHistoryOnInit() throws Exception {
         // when
         maxRateRegistry.ensureCorrectAssignments(subscription, Sets.newHashSet("consumer1", "consumer2"));
 
         // then
-        assertEquals(RateHistory.empty(), maxRateRegistry.readOrCreateRateHistory(subscription, "consumer1"));
-        assertEquals(RateHistory.empty(), maxRateRegistry.readOrCreateRateHistory(subscription, "consumer2"));
+        assertEquals(RateHistory.empty(), maxRateRegistry.getRateHistory(consumer("consumer1")));
+        assertEquals(RateHistory.empty(), maxRateRegistry.getRateHistory(consumer("consumer2")));
     }
 
     @Test
     public void shouldWriteAndReadRateHistoryProperly() throws Exception {
-        // when
+        // given
+        ConsumerInstance consumer = consumer("consumer1");
         RateHistory rateHistory = RateHistory.create(0.5);
-        maxRateRegistry.writeRateHistory(subscription, "consumer1", rateHistory);
+
+        // when
+        maxRateRegistry.writeRateHistory(consumer, rateHistory);
+        wait.untilZookeeperPathIsCreated(
+                zookeeperPaths.consumersRateHistoryPath(consumer.getSubscription(), consumer.getConsumerId()));
 
         // then
-        assertEquals(rateHistory, maxRateRegistry.readOrCreateRateHistory(subscription, "consumer1"));
+        assertEquals(rateHistory, maxRateRegistry.getRateHistory(consumer));
     }
 
     @Test
     public void shouldWriteAndReadMaxRateProperly() throws Exception {
+        // given
+        ConsumerInstance consumer1 = consumer("consumer1");
+        ConsumerInstance consumer2 = consumer("consumer2");
+
         // when
         maxRateRegistry.update(subscription,
                 ImmutableMap.of(
@@ -55,34 +71,54 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
                         "consumer2", new MaxRate(0.5)
                 ));
 
+        wait.untilZookeeperPathIsCreated(
+                zookeeperPaths.consumersMaxRatePath(consumer1.getSubscription(), consumer1.getConsumerId()));
+        wait.untilZookeeperPathIsCreated(
+                zookeeperPaths.consumersMaxRatePath(consumer2.getSubscription(), consumer2.getConsumerId()));
+
         // then
-        assertEquals(new MaxRate(350.0), maxRateRegistry.readMaxRate(subscription, "consumer1").get());
-        assertEquals(new MaxRate(0.5), maxRateRegistry.readMaxRate(subscription, "consumer2").get());
+        assertEquals(new MaxRate(350.0), maxRateRegistry.getMaxRate(consumer1).get());
+        assertEquals(new MaxRate(0.5), maxRateRegistry.getMaxRate(consumer2).get());
     }
 
     @Test
     public void shouldRemoveInactiveConsumerEntries() throws Exception {
         // given
+        ConsumerInstance consumer1 = consumer("consumer1");
+        ConsumerInstance consumer2 = consumer("consumer2");
         maxRateRegistry.ensureCorrectAssignments(subscription, Sets.newHashSet("consumer1", "consumer2"));
+        maxRateRegistry.update(subscription, ImmutableMap.of(
+                "consumer1", new MaxRate(350.0),
+                "consumer2", new MaxRate(0.5)
+        ));
+
+        wait.untilZookeeperPathIsCreated(
+                zookeeperPaths.consumersMaxRatePath(consumer1.getSubscription(), consumer1.getConsumerId()));
+        wait.untilZookeeperPathIsCreated(
+                zookeeperPaths.consumersMaxRatePath(consumer2.getSubscription(), consumer2.getConsumerId()));
 
         // when
         maxRateRegistry.ensureCorrectAssignments(subscription, Sets.newHashSet("consumer1", "consumer3"));
+        wait.untilZookeeperPathNotExists(
+                zookeeperPaths.consumersRatePath(consumer2.getSubscription(), consumer2.getConsumerId()));
 
         // then
-        assertEquals(Optional.empty(), maxRateRegistry.readMaxRate(subscription, "consumer2"));
-        assertEquals(RateHistory.empty(), maxRateRegistry.readOrCreateRateHistory(subscription, "consumer1"));
-        assertEquals(RateHistory.empty(), maxRateRegistry.readOrCreateRateHistory(subscription, "consumer3"));
+        assertEquals(Optional.empty(), maxRateRegistry.getMaxRate(consumer2));
     }
 
     @Test
     public void shouldProvideConsumerWithSensibleDefaults() throws Exception {
         // when
-        RateHistory rateHistory = maxRateRegistry.readOrCreateRateHistory(subscription, "consumer1");
-        Optional<MaxRate> maxRate = maxRateRegistry.readMaxRate(subscription, "consumer1");
+        RateHistory rateHistory = maxRateRegistry.getRateHistory(consumer("consumer1"));
+        Optional<MaxRate> maxRate = maxRateRegistry.getMaxRate(consumer("consumer1"));
 
         // then
         assertEquals(RateHistory.empty(), rateHistory);
         assertEquals(Optional.empty(), maxRate);
+    }
+
+    private ConsumerInstance consumer(String consumerId) {
+        return new ConsumerInstance(consumerId, subscription);
     }
 
     private static SubscriptionName qualifiedName(String name) {

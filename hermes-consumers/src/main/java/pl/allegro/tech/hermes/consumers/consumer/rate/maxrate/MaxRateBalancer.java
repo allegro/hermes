@@ -30,16 +30,16 @@ class MaxRateBalancer {
             return Optional.of(balanceDefault(defaultRate, rateInfos));
         }
 
-        List<ConsumerInfo> consumerInfos =
-                rateInfos.stream().map(ConsumerInfo::convert).collect(Collectors.toList());
+        List<ActiveConsumerInfo> activeConsumerInfos =
+                rateInfos.stream().map(ActiveConsumerInfo::convert).collect(Collectors.toList());
 
-        if (subscriptionRateChanged(consumerInfos, subscriptionMax)) {
+        if (subscriptionRateChanged(activeConsumerInfos, subscriptionMax)) {
             return Optional.of(balanceDefault(defaultRate, rateInfos));
         }
 
-        Map<Boolean, List<ConsumerInfo>> busyOrNot = busyOrNot(consumerInfos);
-        List<ConsumerInfo> notBusy = busyOrNot.get(false);
-        List<ConsumerInfo> busy = busyOrNot.get(true);
+        Map<Boolean, List<ActiveConsumerInfo>> busyOrNot = busyOrNot(activeConsumerInfos);
+        List<ActiveConsumerInfo> notBusy = busyOrNot.get(false);
+        List<ActiveConsumerInfo> busy = busyOrNot.get(true);
 
         if (busy.isEmpty()) {
             return Optional.empty();
@@ -66,46 +66,46 @@ class MaxRateBalancer {
         return rateInfos.stream().anyMatch(this::isUnassigned);
     }
 
-    private boolean subscriptionRateChanged(List<ConsumerInfo> consumerInfos, double subscriptionMax) {
-        double sum = consumerInfos.stream().mapToDouble(ConsumerInfo::getMax).sum();
+    private boolean subscriptionRateChanged(List<ActiveConsumerInfo> activeConsumerInfos, double subscriptionMax) {
+        double sum = activeConsumerInfos.stream().mapToDouble(ActiveConsumerInfo::getMax).sum();
         return Math.abs(sum - subscriptionMax) > ALLOWED_DISTRIBUTION_ERROR;
     }
 
     private boolean isUnassigned(ConsumerRateInfo rateInfo) {
-        return !rateInfo.getMaxRate().isPresent() || rateInfo.getHistory().getRates().isEmpty();
+        return !rateInfo.getMaxRate().isPresent();
     }
 
-    private Map<Boolean, List<ConsumerInfo>> busyOrNot(List<ConsumerInfo> infos) {
+    private Map<Boolean, List<ActiveConsumerInfo>> busyOrNot(List<ActiveConsumerInfo> infos) {
         return infos.stream().collect(Collectors.partitioningBy(this::isBusy));
     }
 
-    private boolean isBusy(ConsumerInfo info) {
+    private boolean isBusy(ActiveConsumerInfo info) {
         return info.getRateHistory().getRates().stream()
-                .mapToDouble(Double::doubleValue).average().getAsDouble() > 1.0 - busyTolerance;
+                .mapToDouble(Double::doubleValue).average().orElse(0) > 1.0 - busyTolerance;
     }
 
-    private NotBusyBalancer.Result handleNotBusy(List<ConsumerInfo> notBusy, double minChange) {
+    private NotBusyBalancer.Result handleNotBusy(List<ActiveConsumerInfo> notBusy, double minChange) {
         return new NotBusyBalancer(notBusy, minChange, minMax).balance();
     }
 
-    private BusyBalancer.Result handleBusy(double minChange, List<ConsumerInfo> busy, double freedByNotBusy) {
+    private BusyBalancer.Result handleBusy(double minChange, List<ActiveConsumerInfo> busy, double freedByNotBusy) {
         return new BusyBalancer(busy, freedByNotBusy, minChange).balance();
     }
 
-    private static class ConsumerInfo {
+    private static class ActiveConsumerInfo {
 
         private final String consumerId;
         private final RateHistory rateHistory;
         private final Double max;
 
-        ConsumerInfo(String consumerId, RateHistory rateHistory, Double max) {
+        ActiveConsumerInfo(String consumerId, RateHistory rateHistory, Double max) {
             this.consumerId = consumerId;
             this.rateHistory = rateHistory;
             this.max = max;
         }
 
-        static ConsumerInfo convert(ConsumerRateInfo rateInfo) {
-            return new ConsumerInfo(
+        static ActiveConsumerInfo convert(ConsumerRateInfo rateInfo) {
+            return new ActiveConsumerInfo(
                     rateInfo.getConsumerId(),
                     rateInfo.getHistory(),
                     rateInfo.getMaxRate().get().getMaxRate());
@@ -126,18 +126,18 @@ class MaxRateBalancer {
 
     private static class NotBusyBalancer {
 
-        private final List<ConsumerInfo> infos;
+        private final List<ActiveConsumerInfo> consumerInfos;
         private final double minChange;
         private final double minMax;
 
-        NotBusyBalancer(List<ConsumerInfo> infos, double minChange, double minMax) {
-            this.infos = infos;
+        NotBusyBalancer(List<ActiveConsumerInfo> consumerInfos, double minChange, double minMax) {
+            this.consumerInfos = consumerInfos;
             this.minChange = minChange;
             this.minMax = minMax;
         }
 
         Result balance() {
-            List<ConsumerRateChange> changes = infos.stream()
+            List<ConsumerRateChange> changes = consumerInfos.stream()
                     .map(ri -> {
                         double currentMax = ri.getMax();
                         double toDistribute = takeAwayFromNotBusy(ri.getRateHistory(), currentMax);
@@ -164,7 +164,7 @@ class MaxRateBalancer {
 
             Result(List<ConsumerRateChange> changes) {
                 this.changes = changes;
-                releasedRate = -changes.stream().mapToDouble(ConsumerRateChange::getRateChange).sum();
+                this.releasedRate = -changes.stream().mapToDouble(ConsumerRateChange::getRateChange).sum();
             }
 
             double getReleasedRate() {
@@ -182,20 +182,20 @@ class MaxRateBalancer {
 
     private static class BusyBalancer {
 
-        private final List<ConsumerInfo> infos;
+        private final List<ActiveConsumerInfo> consumerInfos;
         private final double freedByNotBusy;
         private final double minChange;
 
-        BusyBalancer(List<ConsumerInfo> infos, double freedByNotBusy, double minChange) {
-            this.infos = infos;
+        BusyBalancer(List<ActiveConsumerInfo> consumerInfos, double freedByNotBusy, double minChange) {
+            this.consumerInfos = consumerInfos;
             this.freedByNotBusy = freedByNotBusy;
             this.minChange = minChange;
         }
 
         Result balance() {
-            double busyMaxSum = infos.stream().mapToDouble(ConsumerInfo::getMax).sum();
+            double busyMaxSum = consumerInfos.stream().mapToDouble(ActiveConsumerInfo::getMax).sum();
 
-            List<ConsumerMaxShare> shares = infos.stream()
+            List<ConsumerMaxShare> shares = consumerInfos.stream()
                     .map(info ->
                             new ConsumerMaxShare(info.getConsumerId(), info.getMax(), info.getMax() / busyMaxSum))
                     .collect(Collectors.toList());
@@ -204,7 +204,7 @@ class MaxRateBalancer {
                 return new Result(distribute(freedByNotBusy, shares));
             }
 
-            double equalShare = busyMaxSum / infos.size();
+            double equalShare = busyMaxSum / consumerInfos.size();
 
             Map<Boolean, List<ConsumerMaxShare>> greedyOrNot =
                     shares.stream().collect(
