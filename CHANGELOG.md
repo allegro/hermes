@@ -1,3 +1,47 @@
+## 0.10.2 (19.12.2016)
+
+This release introduces a crucial warming-up phase when starting Hermes Frontend.
+
+### Features
+
+#### ([591](https://github.com/allegro/hermes/issues/591)) Frontend graceful startup
+
+Frontend tries to load and cache all Avro schemas and Kafka topic metadata before accepting any traffic.
+Before this change large clusters were throwing 5xx and had very big latencies during warmup phase.
+Currently startup moment is barely noticable for clients (and in metrics).
+
+#### ([667](https://github.com/allegro/hermes/pull/667)) Declare max message size on topic
+
+With this change users are asked to specify the maximum size of message on a topic during topic creation.
+This size is then used to calculate the size of Kafka buffers in Hermes Consumers. Prior to this change
+Consumer Kafka buffers were set to the same size for every topic (default: 10Mb per partition), which could
+cause crashes when starting Consumers with large number of subscriptions with lags.
+
+By default message size is a soft limit, `warn` log is emitted when message larger than declared size is received.
+`frontend.force.topic.max.message.size` flag can be switched to make it a hard limit (Frontend will return 
+http `413 Payload Too Large` status).
+
+Also calculation based on message size os disabled by default (will be enabled by default in next versions). To use this
+feature set `consumer.use.topic.message.size` flag.
+
+#### ([666](https://github.com/allegro/hermes/pull/666)) Options to configure Consumer HTTP client SSL Context
+
+New options to configure Consumers HTTP client:
+
+* `consumer.http.client.validate.certs`
+* `consumer.http.client.validate.peer.certs`
+* `consumer.http.client.enable.crldp`
+
+#### ([665](https://github.com/allegro/hermes/pull/665)) Allow to specify allowed topic content types in Hermes Console
+
+### Bugfixes
+
+#### ([663](https://github.com/allegro/hermes/pull/663)) Fetch -2min of data from Graphite and take first non-empty value
+
+#### ([664](https://github.com/allegro/hermes/pull/663)) Use proper type of metrics in Consumer workload metrics
+
+#### ([652](https://github.com/allegro/hermes/issues/652)) Proper configuration for Zookeeper retries
+
 ## 0.10.1 (29.11.2016)
 
 This is a bugfix release improving `schema-registry` integration and retransmission on large clusters.
