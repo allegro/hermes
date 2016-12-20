@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import com.google.common.collect.ImmutableMap;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -257,5 +260,19 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(CREATED);
         assertThat(management.topic().get(topic.getQualifiedName()).getMaxMessageSize()).isEqualTo(2048);
+    }
+
+    @Test
+    public void shouldUpdateTopicWithMaxMessageSize() {
+        // given
+        Topic topic = TopicBuilder.topic("updateMessageSize", "topic").withMaxMessageSize(2048).build();
+        operations.buildTopic(topic);
+        PatchData maxMessageSize = PatchData.from(ImmutableMap.of("maxMessageSize", 1024));
+
+        // when
+        assertThat(management.topic().update(topic.getQualifiedName(), maxMessageSize)).hasStatus(OK);
+
+        // then
+        assertThat(management.topic().get(topic.getQualifiedName()).getMaxMessageSize()).isEqualTo(1024);
     }
 }
