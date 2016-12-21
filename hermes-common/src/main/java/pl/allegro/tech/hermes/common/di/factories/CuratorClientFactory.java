@@ -1,16 +1,19 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
+import com.google.common.primitives.Ints;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import javax.inject.Inject;
 import java.util.Optional;
+
+import static java.time.Duration.ofSeconds;
+import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class CuratorClientFactory {
 
@@ -43,13 +46,13 @@ public class CuratorClientFactory {
     }
 
     public CuratorFramework provide(String connectString, Optional<ZookeeperAuthorization> zookeeperAuthorization) {
-        int baseSleepTime = configFactory.getIntProperty(Configs.ZOOKEEPER_BASE_SLEEP_TIME);
-        int maxRetries = configFactory.getIntProperty(Configs.ZOOKEEPER_MAX_RETRIES);
-        int maxSleepTime = configFactory.getIntProperty(Configs.ZOOKEEPER_MAX_SLEEP_TIME);
+        int baseSleepTime = configFactory.getIntProperty(ZOOKEEPER_BASE_SLEEP_TIME);
+        int maxRetries = configFactory.getIntProperty(ZOOKEEPER_MAX_RETRIES);
+        int maxSleepTime = Ints.saturatedCast(ofSeconds(configFactory.getIntProperty(ZOOKEEPER_MAX_SLEEP_TIME_IN_SECONDS)).toMillis());
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                 .connectString(connectString)
-                .sessionTimeoutMs(configFactory.getIntProperty(Configs.ZOOKEEPER_SESSION_TIMEOUT))
-                .connectionTimeoutMs(configFactory.getIntProperty(Configs.ZOOKEEPER_CONNECTION_TIMEOUT))
+                .sessionTimeoutMs(configFactory.getIntProperty(ZOOKEEPER_SESSION_TIMEOUT))
+                .connectionTimeoutMs(configFactory.getIntProperty(ZOOKEEPER_CONNECTION_TIMEOUT))
                 .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries, maxSleepTime));
 
         zookeeperAuthorization.ifPresent(it -> builder.authorization(it.scheme, it.getAuth()));
