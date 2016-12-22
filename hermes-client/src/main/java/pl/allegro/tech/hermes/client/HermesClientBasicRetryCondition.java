@@ -7,7 +7,7 @@ import static java.net.HttpURLConnection.HTTP_CLIENT_TIMEOUT;
 public class HermesClientBasicRetryCondition implements Predicate<HermesResponse> {
     @Override
     public boolean test(HermesResponse response) {
-        return (response != null) && (isClientTimeoutOrServerError(response) || isFailedExceptionally(response));
+        return response == null || (isClientTimeoutOrServerError(response) || isFailedExceptionally(response));
     }
 
     private boolean isClientTimeoutOrServerError(HermesResponse response) {
