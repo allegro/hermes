@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.client
 import spock.lang.Specification
 
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -64,12 +65,12 @@ class HermesClientTest extends Specification {
                 .withRetrySleep(0)
                 .build()
 
-         when:
-         HermesResponse response = client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
+        when:
+        HermesResponse response = client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
 
-         then:
-         !response.success
-         response.failure
+        then:
+        !response.success
+        response.failure
 
         where:
         status << [203, 204, 400, 401, 404, 500]
@@ -229,10 +230,26 @@ class HermesClientTest extends Specification {
                     .build()
 
         when:
-            client.publish(HermesMessage.hermesMessage(TOPIC, CONTENT).build()).join()
+        client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
 
         then:
             latch.count == 0
+    }
+
+    def "should retry when sender throws exception"() {
+        given:
+        CountDownLatch latch = new CountDownLatch(2)
+        HermesClient client = hermesClient(getThrowingCountDownSender(latch))
+                .withRetries(2)
+                .withRetrySleep(10)
+                .build()
+
+        when:
+        client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
+
+        then:
+        thrown(CompletionException)
+        latch.count == 0
     }
 
     private HermesSender getExceptionallyFailingCountDownSender(CountDownLatch latch, long delay) {
@@ -253,6 +270,13 @@ class HermesClientTest extends Specification {
         { uri, msg ->
             latch.countDown()
             failingFuture(new RuntimeException("Sending failed"))
+        }
+    }
+
+    private HermesSender getThrowingCountDownSender(CountDownLatch latch) {
+        { uri, msg ->
+            latch.countDown()
+            throw new RuntimeException("Sending failed")
         }
     }
 
