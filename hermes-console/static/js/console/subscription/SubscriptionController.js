@@ -61,7 +61,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
               }
           });
           return filtered;
-        }
+        };
 
         $scope.edit = function () {
             $modal.open({
@@ -202,6 +202,10 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
         $scope.subscription = subscription;
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
+        maintainerService.getSourceNames().then(function(sources) {
+            $scope.maintainerSources = sources;
+            $scope.subscription.maintainer.source = $scope.subscription.maintainer.source || $scope.maintainerSources[0];
+        });
 
         var subscriptionBeforeChanges = _.cloneDeep(subscription);
 
@@ -234,7 +238,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
         };
 
         $scope.maintainers = function(searchString) {
-            return maintainerService.getMaintainers(subscription.maintainer.source, searchString);
+            return maintainerService.getMaintainers($scope.subscription.maintainer.source, searchString);
         };
 
     }]);
