@@ -11,18 +11,19 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
+import static pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 
 public class SubscriptionAssignmentCaches extends PathChildrenCache implements PathChildrenCacheListener {
 
@@ -43,6 +44,7 @@ public class SubscriptionAssignmentCaches extends PathChildrenCache implements P
         this.localCluster = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
         this.zookeeperPaths = zookeeperPaths;
         this.subscriptionsCache = subscriptionsCache;
+        createCacheIfNeeded(localCluster);
     }
 
     private static ExecutorService createExecutor() {
@@ -58,10 +60,9 @@ public class SubscriptionAssignmentCaches extends PathChildrenCache implements P
         return new ArrayList<>(caches.values());
     }
 
-    @PostConstruct
     public void start() throws Exception {
         getListenable().addListener(this);
-        addCache(localCluster);
+        localClusterCache().start();
         super.start();
     }
 
@@ -78,10 +79,10 @@ public class SubscriptionAssignmentCaches extends PathChildrenCache implements P
             String cluster = substringAfterLast(path, "/");
             switch (event.getType()) {
                 case CHILD_ADDED:
-                    addCache(cluster);
+                    createCacheIfNeeded(cluster).ifPresent(this::startCache);
                     break;
                 case CHILD_REMOVED:
-                    removeCache(cluster);
+                    removeCache(cluster).ifPresent(this::stopCache);
                     break;
             }
         } catch (Exception e) {
@@ -96,23 +97,41 @@ public class SubscriptionAssignmentCaches extends PathChildrenCache implements P
         }
     }
 
-    private void addCache(String cluster) throws Exception {
+    private Optional<SubscriptionAssignmentCache> createCacheIfNeeded(String cluster) {
         if (!caches.containsKey(cluster)) {
-            String runtimePath = zookeeperPaths.consumersRuntimePath(cluster);
-            SubscriptionAssignmentCache cache = new SubscriptionAssignmentCache(
-                    curator,
-                    runtimePath,
-                    subscriptionsCache,
-                    new SubscriptionAssignmentPathSerializer(runtimePath));
+            SubscriptionAssignmentCache cache = createCache(cluster);
             caches.put(cluster, cache);
+            return Optional.of(cache);
+        }
+        return Optional.empty();
+    }
+
+    private SubscriptionAssignmentCache createCache(String cluster) {
+        String runtimePath = zookeeperPaths.consumersRuntimePath(cluster);
+        return new SubscriptionAssignmentCache(
+                curator,
+                runtimePath,
+                subscriptionsCache,
+                new SubscriptionAssignmentPathSerializer(runtimePath, AUTO_ASSIGNED_MARKER));
+    }
+
+    private Optional<SubscriptionAssignmentCache> removeCache(String cluster) throws Exception {
+        return Optional.ofNullable(caches.remove(cluster));
+    }
+
+    private void startCache(SubscriptionAssignmentCache cache) {
+        try {
             cache.start();
+        } catch (Exception e) {
+            logger.error("Failed to start cache", e);
         }
     }
 
-    private void removeCache(String cluster) throws Exception {
-        SubscriptionAssignmentCache cache = caches.remove(cluster);
-        if (cache != null) {
+    private void stopCache(SubscriptionAssignmentCache cache) {
+        try {
             cache.stop();
+        } catch (Exception e) {
+            logger.error("Failed to stop cache", e);
         }
     }
 }

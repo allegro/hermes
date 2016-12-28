@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCaches;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -35,6 +36,7 @@ public class HermesConsumers {
 
     private final SupervisorController supervisorController;
     private final MaxRateSupervisor maxRateSupervisor;
+    private final SubscriptionAssignmentCaches assignmentCaches;
 
     public static void main(String... args) {
         consumers().build().start();
@@ -57,6 +59,7 @@ public class HermesConsumers {
 
         supervisorController = serviceLocator.getService(SupervisorController.class);
         maxRateSupervisor = serviceLocator.getService(MaxRateSupervisor.class);
+        assignmentCaches = serviceLocator.getService(SubscriptionAssignmentCaches.class);
 
         hooksHandler.addShutdownHook((s) -> {
             try {
@@ -84,6 +87,7 @@ public class HermesConsumers {
 
             supervisorController.start();
             maxRateSupervisor.start();
+            assignmentCaches.start();
             serviceLocator.getService(ConsumersRuntimeMonitor.class).start();
             consumerHttpServer.start();
             hooksHandler.startup(serviceLocator);

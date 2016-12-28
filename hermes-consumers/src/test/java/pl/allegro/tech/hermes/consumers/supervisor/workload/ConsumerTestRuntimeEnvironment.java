@@ -51,6 +51,7 @@ import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_SECOND;
 import static org.mockito.Mockito.mock;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
+import static org.mockito.Mockito.verify;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -140,12 +141,6 @@ class ConsumerTestRuntimeEnvironment {
 
         SubscriptionAssignmentCaches subscriptionAssignmentCaches = new SubscriptionAssignmentCaches(
                 curator, configFactory, paths, subscriptionsCache);
-
-        try {
-            subscriptionAssignmentCaches.start();
-        } catch(Exception e) {
-            throw new InternalProcessingException(e);
-        }
 
         SubscriptionAssignmentRegistry assignmentRegistry = new SubscriptionAssignmentRegistryFactory(
                 curator, configFactory, subscriptionAssignmentCaches).provide();
@@ -248,6 +243,14 @@ class ConsumerTestRuntimeEnvironment {
         );
     }
 
+    void createAssignment(SubscriptionName subscription, String consumerId) {
+        try {
+            curator.create().creatingParentsIfNeeded().forPath(assignmentPath(subscription.toString(), consumerId));
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
+    }
+
     private String assignmentPath(String subscription, String supervisorId) {
         return paths.consumersRuntimePath(CLUSTER_NAME) + "/" + subscription + "/" + supervisorId;
     }
@@ -259,6 +262,10 @@ class ConsumerTestRuntimeEnvironment {
 
     SubscriptionName createSubscription() {
         return createSubscription(1).get(0);
+    }
+
+    Subscription getSubscription(SubscriptionName subscriptionName) {
+        return subscriptionRepository.getSubscriptionDetails(subscriptionName);
     }
 
     private SubscriptionName createSubscription(SubscriptionName subscriptionName) {
@@ -287,5 +294,11 @@ class ConsumerTestRuntimeEnvironment {
 
     private SubscriptionName nextSubscriptionName() {
         return SubscriptionName.fromString("com.example.topic$test" + subscriptionIdSequence++);
+    }
+
+    void verifyConsumerWouldBeCreated(ConsumersSupervisor supervisor, Subscription subscription) {
+        await().atMost(adjust(ONE_SECOND)).until(
+                () -> verify(supervisor).assignConsumerForSubscription(subscription));
+
     }
 }
