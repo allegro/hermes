@@ -25,7 +25,7 @@ public class SubscriptionBuilder {
 
     private boolean trackingEnabled = false;
 
-    private Maintainer maintainer = new Maintainer("ZK", "team");
+    private Maintainer maintainer = new Maintainer("simple", "some team");
 
     private String supportTeam = "team";
 
@@ -142,6 +142,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withTrackingEnabled(boolean trackingEnabled) {
         this.trackingEnabled = trackingEnabled;
+        return this;
+    }
+
+    public SubscriptionBuilder withMaintainer(Maintainer maintainer) {
+        this.maintainer = maintainer;
         return this;
     }
 

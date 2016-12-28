@@ -16,8 +16,8 @@ public class FakeMaintainerSource implements MaintainerSource {
     }
 
     @Override
-    public String nameForId(String maintainerId) {
-        return maintainerId;
+    public boolean exists(String maintainerId) {
+        return maintainerId.equals("Fake");
     }
 
     @Override

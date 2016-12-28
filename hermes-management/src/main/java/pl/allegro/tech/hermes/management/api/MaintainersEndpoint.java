@@ -4,6 +4,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.management.domain.maintainer.MaintainerSourceNotFound;
 import pl.allegro.tech.hermes.management.domain.maintainer.MaintainerSources;
 
 import javax.ws.rs.*;
@@ -28,7 +29,9 @@ public class MaintainersEndpoint {
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Lists maintainers from the given source matching the search string", response = List.class, httpMethod = HttpMethod.GET)
     public List<String> get(@PathParam("source") String source, @PathParam("searchString") String searchString) {
-        return maintainerSources.getByName(source).maintainersMatching(searchString);
+        return maintainerSources.getByName(source)
+                .map(s -> s.maintainersMatching(searchString))
+                .orElseThrow(() -> new MaintainerSourceNotFound(source));
     }
 
     @GET

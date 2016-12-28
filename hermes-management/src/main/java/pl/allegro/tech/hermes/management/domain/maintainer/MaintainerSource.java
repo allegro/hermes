@@ -6,8 +6,12 @@ public interface MaintainerSource {
 
     String sourceName();
 
-    String nameForId(String maintainerId);
+    boolean exists(String maintainerId);
 
     List<String> maintainersMatching(String searchString);
+
+    default String nameForId(String maintainerId) {
+        return maintainerId;
+    }
 
 }

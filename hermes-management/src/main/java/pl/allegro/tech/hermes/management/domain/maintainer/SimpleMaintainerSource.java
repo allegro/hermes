@@ -26,6 +26,11 @@ public class SimpleMaintainerSource implements MaintainerSource {
     }
 
     @Override
+    public boolean exists(String maintainerId) {
+        return true;
+    }
+
+    @Override
     public String nameForId(String maintainerId) {
         return maintainerId;
     }

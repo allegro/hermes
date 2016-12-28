@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
+import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
@@ -28,6 +29,7 @@ public class SubscriptionService {
     private final UndeliveredMessageLog undeliveredMessageLog;
     private final LogRepository logRepository;
     private final ApiPreconditions preconditions;
+    private final SubscriptionValidator subscriptionValidator;
     private final Auditor auditor;
 
     @Autowired
@@ -38,6 +40,7 @@ public class SubscriptionService {
                                UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
                                ApiPreconditions apiPreconditions,
+                               SubscriptionValidator subscriptionValidator,
                                Auditor auditor) {
         this.subscriptionRepository = subscriptionRepository;
         this.topicService = topicService;
@@ -46,6 +49,7 @@ public class SubscriptionService {
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
         this.preconditions = apiPreconditions;
+        this.subscriptionValidator = subscriptionValidator;
         this.auditor = auditor;
     }
 
@@ -72,6 +76,7 @@ public class SubscriptionService {
 
     public void createSubscription(Subscription subscription, String createdBy) {
         preconditions.checkConstraints(subscription);
+        subscriptionValidator.check(subscription);
         subscriptionRepository.createSubscription(subscription);
         auditor.objectCreated(createdBy, subscription);
     }
@@ -92,6 +97,7 @@ public class SubscriptionService {
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         Subscription updated = Patch.apply(retrieved, patch);
         preconditions.checkConstraints(updated);
+        subscriptionValidator.check(updated);
 
         if (!retrieved.equals(updated)) {
             subscriptionRepository.updateSubscription(updated);
