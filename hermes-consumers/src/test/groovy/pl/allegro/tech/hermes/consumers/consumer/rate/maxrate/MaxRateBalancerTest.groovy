@@ -162,4 +162,32 @@ class MaxRateBalancerTest extends Specification {
             maxRates["minConsumer"].getMaxRate() > MIN_MAX_RATE
             maxRates["greedyConsumer"].getMaxRate() < 200d - MIN_MAX_RATE
     }
+
+    def "should not update consumer not reporting history with busy consumer"() {
+        given:
+            def maxButNoHistory = RateInfo.withNoHistory(new MaxRate(100d))
+            def busy = new RateInfo(Optional.of(new MaxRate(100d)), RateHistory.create(1.0d))
+
+        when:
+            def maxRates = balancer.balance(200d, [
+                    new ConsumerRateInfo("notReporting", maxButNoHistory),
+                    new ConsumerRateInfo("reporting", busy)
+            ] as Set).get()
+
+        then:
+            maxRates.containsKey("reporting")
+            !maxRates.containsKey("notReporting")
+    }
+
+    def "should not update consumer not reporting history with not busy consumer"() {
+        given:
+            def maxButNoHistory = RateInfo.withNoHistory(new MaxRate(100d))
+            def notBusy = new RateInfo(Optional.of(new MaxRate(100d)), RateHistory.create(0.1d))
+
+        expect:
+            !balancer.balance(200d, [
+                    new ConsumerRateInfo("notReporting", maxButNoHistory),
+                    new ConsumerRateInfo("reporting", notBusy)
+            ] as Set).isPresent()
+    }
 }

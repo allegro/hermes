@@ -38,8 +38,11 @@ class MaxRateBalancer {
         }
 
         Map<Boolean, List<ActiveConsumerInfo>> busyOrNot = busyOrNot(activeConsumerInfos);
-        List<ActiveConsumerInfo> notBusy = busyOrNot.get(false);
         List<ActiveConsumerInfo> busy = busyOrNot.get(true);
+        List<ActiveConsumerInfo> notBusy = busyOrNot.get(false)
+                .stream()
+                .filter(consumer -> !consumer.getRateHistory().getRates().isEmpty())
+                .collect(Collectors.toList());
 
         if (busy.isEmpty()) {
             return Optional.empty();
@@ -148,7 +151,7 @@ class MaxRateBalancer {
         }
 
         private double takeAwayFromNotBusy(RateHistory history, double currentMax) {
-            double usedRatio = history.getRates().get(0);
+            double usedRatio = history.getRates().get(0); // rate history must be present
             double scalingFactor = 2 / (usedRatio + 1.0) - 1;
 
             double proposedChange = scalingFactor * currentMax;
