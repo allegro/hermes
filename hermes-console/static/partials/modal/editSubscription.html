@@ -41,8 +41,8 @@
             <div class="form-group {{subscriptionForm.subscriptionMaintainer.$valid ? '' : 'has-error'}}">
                 <label for="subscriptionMaintainer" class="col-md-3 control-label">Maintainer</label>
                 <div class="col-md-9">
-                    <input class="form-control" id="subscriptionMaintainer" name="subscriptionMaintainer" required uib-typeahead="id for id in maintainers($viewValue)" typeahead-min-length="3"
-                           typeahead-wait-ms="500" placeholder="who maintains this subscription?" ng-model="subscription.maintainer.id" autocomplete="off" />
+                    <input class="form-control" id="subscriptionMaintainer" name="subscriptionMaintainer" required uib-typeahead="maintainer as maintainer.name for maintainer in maintainers($viewValue)" typeahead-min-length="3"
+                           typeahead-wait-ms="500" placeholder="who maintains this subscription?" ng-model="selectedMaintainer" autocomplete="off" />
                 </div>
             </div>
             <div class="form-group">

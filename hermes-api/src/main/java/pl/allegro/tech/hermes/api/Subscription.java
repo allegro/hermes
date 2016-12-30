@@ -48,7 +48,7 @@ public class Subscription implements Anonymizable {
     private boolean trackingEnabled = false;
 
     @NotNull
-    private Maintainer maintainer;
+    private MaintainerDescriptor maintainer;
 
     /**
      * Use maintainer field instead. This field remains deprecated
@@ -88,7 +88,7 @@ public class Subscription implements Anonymizable {
                          String description,
                          Object subscriptionPolicy,
                          boolean trackingEnabled,
-                         Maintainer maintainer,
+                         MaintainerDescriptor maintainer,
                          String supportTeam,
                          MonitoringDetails monitoringDetails,
                          ContentType contentType,
@@ -126,7 +126,7 @@ public class Subscription implements Anonymizable {
                                                         String description,
                                                         SubscriptionPolicy subscriptionPolicy,
                                                         boolean trackingEnabled,
-                                                        Maintainer maintainer,
+                                                        MaintainerDescriptor maintainer,
                                                         String supportTeam,
                                                         MonitoringDetails monitoringDetails,
                                                         ContentType contentType,
@@ -147,7 +147,7 @@ public class Subscription implements Anonymizable {
                                                        String description,
                                                        BatchSubscriptionPolicy subscriptionPolicy,
                                                        boolean trackingEnabled,
-                                                       Maintainer maintainer,
+                                                       MaintainerDescriptor maintainer,
                                                        String supportTeam,
                                                        MonitoringDetails monitoringDetails,
                                                        ContentType contentType,
@@ -169,7 +169,7 @@ public class Subscription implements Anonymizable {
             @JsonProperty("description") String description,
             @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
-            @JsonProperty("maintainer") Maintainer maintainer,
+            @JsonProperty("maintainer") MaintainerDescriptor maintainer,
             @JsonProperty("supportTeam") String supportTeam,
             @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
             @JsonProperty("contentType") ContentType contentType,
@@ -289,7 +289,7 @@ public class Subscription implements Anonymizable {
         return trackingEnabled;
     }
 
-    public Maintainer getMaintainer() {
+    public MaintainerDescriptor getMaintainer() {
         return maintainer;
     }
 

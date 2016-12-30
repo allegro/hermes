@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.management.domain.maintainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.SupportTeam;
+import pl.allegro.tech.hermes.api.Maintainer;
 import pl.allegro.tech.hermes.management.domain.supportTeam.SupportTeamService;
 
 import java.util.List;
@@ -36,10 +36,10 @@ public class SimpleMaintainerSource implements MaintainerSource {
     }
 
     @Override
-    public List<String> maintainersMatching(String searchString) {
+    public List<Maintainer> maintainersMatching(String searchString) {
         return supportTeamService.getSupportTeams(searchString)
                 .stream()
-                .map(SupportTeam::getName)
+                .map(st -> new Maintainer(st.getName(), st.getName()))
                 .collect(Collectors.toList());
     }
 

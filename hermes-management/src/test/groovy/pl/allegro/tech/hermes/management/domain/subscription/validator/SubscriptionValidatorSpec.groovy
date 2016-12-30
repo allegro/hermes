@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.subscription.validator
 
 import pl.allegro.tech.hermes.api.Maintainer
+import pl.allegro.tech.hermes.api.MaintainerDescriptor
 import pl.allegro.tech.hermes.management.domain.maintainer.MaintainerSource
 import pl.allegro.tech.hermes.management.domain.maintainer.MaintainerSources
 import spock.lang.Specification
@@ -14,7 +15,7 @@ class SubscriptionValidatorSpec extends Specification {
 
     def "should pass when maintainer exists"() {
         given:
-        def toCheck = subscription("group.topic", "sub").withMaintainer(new Maintainer("fake", "Some Team")).build()
+        def toCheck = subscription("group.topic", "sub").withMaintainer(new MaintainerDescriptor("fake", "Some Team")).build()
 
         when:
         validator.check(toCheck)
@@ -25,7 +26,7 @@ class SubscriptionValidatorSpec extends Specification {
 
     def "should fail when maintainer source doesn't exist"() {
         given:
-        def toCheck = subscription("group.topic", "sub").withMaintainer(new Maintainer("non-existing", "Some Team")).build()
+        def toCheck = subscription("group.topic", "sub").withMaintainer(new MaintainerDescriptor("non-existing", "Some Team")).build()
 
         when:
         validator.check(toCheck)
@@ -36,7 +37,7 @@ class SubscriptionValidatorSpec extends Specification {
 
     def "should fail when maintainer doesn't exist"() {
         given:
-        def toCheck = subscription("group.topic", "sub").withMaintainer(new Maintainer("fake", "non-existing")).build()
+        def toCheck = subscription("group.topic", "sub").withMaintainer(new MaintainerDescriptor("fake", "non-existing")).build()
 
         when:
         validator.check(toCheck)
@@ -58,9 +59,9 @@ class SubscriptionValidatorSpec extends Specification {
         }
 
         @Override
-        List<String> maintainersMatching(String searchString) {
+        List<Maintainer> maintainersMatching(String searchString) {
             if ('Some Team'.contains(searchString)) {
-                return ['Some Team']
+                return [new Maintainer('id-some-team', 'Some Team')]
             }
             return []
         }

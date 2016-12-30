@@ -3,8 +3,10 @@ package pl.allegro.tech.hermes.management.domain.maintainer;
 import com.google.common.collect.ImmutableList;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.Maintainer;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Order(-1)
@@ -17,12 +19,17 @@ public class FakeMaintainerSource implements MaintainerSource {
 
     @Override
     public boolean exists(String maintainerId) {
-        return maintainerId.equals("Fake");
+        return maintainerId.equals("id-fake");
     }
 
     @Override
-    public List<String> maintainersMatching(String searchString) {
-        return ImmutableList.of("Fake");
+    public List<Maintainer> maintainersMatching(String searchString) {
+        return ImmutableList.of(new Maintainer("id-fake", "Fake"));
+    }
+
+    @Override
+    public Optional<Maintainer> get(String id) {
+        return Optional.of(new Maintainer("id-fake", "Fake"));
     }
 
 }

@@ -14,6 +14,7 @@ public class FakeSupportTeamService implements SupportTeamService {
         teams.add("Scrum Team Alpha");
         teams.add("Scrum Team Beta");
         teams.add("Scrum Team Gamma");
+        teams.add("Scrum Team A,Scrum Team B");
         teams.add("Team Red");
         teams.add("Team Blue");
         teams.add("_hadoop");

@@ -206,12 +206,18 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
             $scope.maintainerSources = sources;
             $scope.subscription.maintainer.source = $scope.subscription.maintainer.source || $scope.maintainerSources[0];
         });
+        if ($scope.subscription.maintainer.id) {
+            maintainerService.getMaintainer($scope.subscription.maintainer.source, $scope.subscription.maintainer.id).then(function(maintainer) {
+                $scope.selectedMaintainer = maintainer;
+            });
+        }
 
         var subscriptionBeforeChanges = _.cloneDeep(subscription);
 
         $scope.save = function () {
             var promise;
             passwordService.set($scope.groupPassword);
+            $scope.subscription.maintainer.id = $scope.selectedMaintainer.id;
 
             if (operation === 'ADD') {
                 promise = subscriptionRepository.add(topicName, $scope.subscription).$promise;
