@@ -21,7 +21,7 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
     private final int historyLimit;
     private volatile Subscription subscription;
     private volatile double maxRate;
-    private volatile double previousRecordedRate = 0.0d;
+    private volatile double previousRecordedRate = -1;
 
     NegotiatedMaxRateProvider(String consumerId,
                               MaxRateRegistry registry,
@@ -55,25 +55,29 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
 
     private void recordCurrentRate(double actualRate) {
         double usedRate = Math.min(actualRate / Math.max(maxRate, 1), 1.0d);
-        if (Math.abs(previousRecordedRate - usedRate) > minSignificantChange) {
+        if (shouldRecordHistory(usedRate)) {
             try {
                 RateHistory rateHistory = registry.getRateHistory(consumer);
                 RateHistory updatedHistory = RateHistory.updatedRates(rateHistory, usedRate, historyLimit);
                 registry.writeRateHistory(consumer, updatedHistory);
                 previousRecordedRate = usedRate;
             } catch (Exception e) {
-                metrics.rateHistoryFailuresCounter(subscription).inc();
                 logger.warn("Encountered problem updating max rate for {}", consumer, e);
+                metrics.rateHistoryFailuresCounter(subscription).inc();
             }
         }
+    }
+
+    private boolean shouldRecordHistory(double usedRate) {
+        return previousRecordedRate < 0 || Math.abs(previousRecordedRate - usedRate) > minSignificantChange;
     }
 
     private Optional<MaxRate> fetchCurrentMaxRate() {
         try {
             return registry.getMaxRate(consumer);
         } catch (Exception e) {
-            metrics.maxRateFetchFailuresCounter(subscription).inc();
             logger.warn("Encountered problem fetching max rate for {}", consumer);
+            metrics.maxRateFetchFailuresCounter(subscription).inc();
             return Optional.empty();
         }
     }
