@@ -1,3 +1,15 @@
+## 0.10.3 (02.01.2017)
+
+### Bugfixes
+
+#### ([675](https://github.com/allegro/hermes/pull/675)) Audit of subscription status changes
+
+#### ([674](https://github.com/allegro/hermes/pull/674)) Validate topic before saving
+
+#### ([679](https://github.com/allegro/hermes/issues/679)) hermes-client handles sender errors
+
+#### ([676](https://github.com/allegro/hermes/pull/676)) Fix saving changes in topic maxMessageSize attribute
+
 ## 0.10.2 (19.12.2016)
 
 This release introduces a crucial warming-up phase when starting Hermes Frontend.

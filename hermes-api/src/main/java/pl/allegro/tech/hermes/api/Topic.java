@@ -89,7 +89,7 @@ public class Topic {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled);
+                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize);
     }
 
     @Override
@@ -110,7 +110,8 @@ public class Topic {
                 && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
                 && Objects.equals(this.schemaVersionAwareSerializationEnabled, other.schemaVersionAwareSerializationEnabled)
                 && Objects.equals(this.ack, other.ack)
-                && Objects.equals(this.contentType, other.contentType);
+                && Objects.equals(this.contentType, other.contentType)
+                && Objects.equals(this.maxMessageSize, other.maxMessageSize);
     }
 
     @JsonProperty("name")
