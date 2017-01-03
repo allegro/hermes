@@ -45,7 +45,6 @@ public class FilteringJsonTest extends IntegrationTest {
         final Subscription subscription = subscription(topic.getName(), "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)
                 .withContentType(ContentType.JSON)
-                .withSupportTeam("team")
                 .withSubscriptionPolicy(SUBSCRIPTION_POLICY)
                 .withFilter(MESSAGE_NAME_FILTER)
                 .build();
@@ -68,7 +67,6 @@ public class FilteringJsonTest extends IntegrationTest {
         final Subscription subscription = subscription(topic.getName(), "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)
                 .withContentType(ContentType.JSON)
-                .withSupportTeam("team")
                 .withSubscriptionPolicy(SUBSCRIPTION_POLICY)
                 .withFilter(MESSAGE_NAME_FILTER)
                 .withFilter(MESSAGE_COLOR_FILTER)
@@ -94,7 +92,6 @@ public class FilteringJsonTest extends IntegrationTest {
         final Subscription subscription = subscription(topic.getName(), "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)
                 .withContentType(ContentType.JSON)
-                .withSupportTeam("team")
                 .withSubscriptionPolicy(SUBSCRIPTION_POLICY)
                 .withFilter(MESSAGE_NAME_FILTER)
                 .withHeader("MY-HEADER", "myHeaderValue")

@@ -21,15 +21,15 @@ public class MaintainerSources {
 
         this.maintainerSourcesByNames = maintainerSources.stream().collect(
                 Collectors.toMap(
-                        MaintainerSource::sourceName,
+                        MaintainerSource::name,
                         Function.identity(),
                         (a, b) -> {
-                            throw new IllegalArgumentException("Duplicate maintainer source " + a.sourceName());
+                            throw new IllegalArgumentException("Duplicate maintainer source " + a.name());
                         }
                 )
         );
 
-        this.maintainerSourceNames = ImmutableList.copyOf(maintainerSources.stream().map(MaintainerSource::sourceName).iterator());
+        this.maintainerSourceNames = ImmutableList.copyOf(maintainerSources.stream().map(MaintainerSource::name).iterator());
     }
 
     public Optional<MaintainerSource> getByName(String searchedName) {

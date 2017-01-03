@@ -25,9 +25,7 @@ public class SubscriptionBuilder {
 
     private boolean trackingEnabled = false;
 
-    private MaintainerDescriptor maintainer = new MaintainerDescriptor("simple", "some team");
-
-    private String supportTeam = "team";
+    private MaintainerDescriptor maintainer = new MaintainerDescriptor("Simple", "some team");
 
     private MonitoringDetails monitoringDetails = MonitoringDetails.EMPTY;
 
@@ -87,14 +85,14 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, maintainer, supportTeam, monitoringDetails, contentType,
+                    trackingEnabled, maintainer, "", monitoringDetails, contentType,
                     filters, mode, headers, metadata, oAuthPolicy
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
-                    trackingEnabled, maintainer, supportTeam, monitoringDetails, contentType,
+                    trackingEnabled, maintainer, "", monitoringDetails, contentType,
                     filters, headers, metadata, oAuthPolicy
             );
         }
@@ -147,11 +145,6 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withMaintainer(MaintainerDescriptor maintainer) {
         this.maintainer = maintainer;
-        return this;
-    }
-
-    public SubscriptionBuilder withSupportTeam(String supportTeam) {
-        this.supportTeam = supportTeam;
         return this;
     }
 

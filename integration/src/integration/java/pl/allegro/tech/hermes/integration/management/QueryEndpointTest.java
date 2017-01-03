@@ -121,7 +121,6 @@ public class QueryEndpointTest extends IntegrationTest {
         return subscription
                 .withTrackingEnabled(true)
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
-                .withSupportTeam("team")
                 .withEndpoint(EndpointAddress.of(endpoint))
                 .build();
     }

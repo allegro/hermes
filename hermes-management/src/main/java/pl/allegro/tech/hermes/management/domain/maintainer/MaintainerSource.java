@@ -1,24 +1,31 @@
 package pl.allegro.tech.hermes.management.domain.maintainer;
 
+import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Maintainer;
+import pl.allegro.tech.hermes.management.domain.ManagementException;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface MaintainerSource {
 
-    String sourceName();
+    String name();
 
     boolean exists(String maintainerId);
 
+    Maintainer get(String id) throws MaintainerNotFound;
+
     List<Maintainer> maintainersMatching(String searchString);
 
-    default Optional<Maintainer> get(String id) {
-        return Optional.of(new Maintainer(id, nameForId(id)));
-    }
+    class MaintainerNotFound extends ManagementException {
 
-    default String nameForId(String maintainerId) {
-        return maintainerId;
+        public MaintainerNotFound(String source, String id) {
+            super("Maintainer of id '" + id + "' not found in source " + source);
+        }
+
+        @Override
+        public ErrorCode getCode() {
+            return ErrorCode.MAINTAINER_NOT_FOUND;
+        }
     }
 
 }

@@ -43,7 +43,7 @@ public class MaintainersEndpoint {
     public Maintainer get(@PathParam("source") String source,
                           @PathParam("id") String id) {
         return maintainerSources.getByName(source)
-                .flatMap(s -> s.get(id)) // TODO different exception when source is found but id isn't
+                .map(s -> s.get(id))
                 .orElseThrow(() -> new MaintainerSourceNotFound(source));
     }
 

@@ -6,14 +6,13 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Maintainer;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @Order(-1)
 public class FakeMaintainerSource implements MaintainerSource {
 
     @Override
-    public String sourceName() {
+    public String name() {
         return "fake";
     }
 
@@ -28,8 +27,8 @@ public class FakeMaintainerSource implements MaintainerSource {
     }
 
     @Override
-    public Optional<Maintainer> get(String id) {
-        return Optional.of(new Maintainer("id-fake", "Fake"));
+    public Maintainer get(String id) {
+        return new Maintainer("id-fake", "Fake");
     }
 
 }

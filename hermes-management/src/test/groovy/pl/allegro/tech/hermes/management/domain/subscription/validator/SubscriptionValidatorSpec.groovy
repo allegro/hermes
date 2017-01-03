@@ -49,13 +49,18 @@ class SubscriptionValidatorSpec extends Specification {
     class FakeMaintainerSource implements MaintainerSource {
 
         @Override
-        String sourceName() {
+        String name() {
             return 'fake'
         }
 
         @Override
         boolean exists(String maintainerId) {
             return maintainerId == 'Some Team'
+        }
+
+        @Override
+        Maintainer get(String id) {
+            return new Maintainer(id, id)
         }
 
         @Override

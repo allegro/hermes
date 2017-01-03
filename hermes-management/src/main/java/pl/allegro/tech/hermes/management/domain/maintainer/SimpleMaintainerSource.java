@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 @Order(0)
 public class SimpleMaintainerSource implements MaintainerSource {
 
+    public static final String NAME = "Simple";
+
     private final SupportTeamService supportTeamService;
 
     @Autowired
@@ -21,8 +23,8 @@ public class SimpleMaintainerSource implements MaintainerSource {
     }
 
     @Override
-    public String sourceName() {
-        return "simple";
+    public String name() {
+        return NAME;
     }
 
     @Override
@@ -31,8 +33,8 @@ public class SimpleMaintainerSource implements MaintainerSource {
     }
 
     @Override
-    public String nameForId(String maintainerId) {
-        return maintainerId;
+    public Maintainer get(String id) {
+        return new Maintainer(id, id);
     }
 
     @Override
