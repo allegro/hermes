@@ -37,7 +37,7 @@ public class HermesAPIOperations {
         if (endpoints.group().list().contains(group)) {
             return;
         }
-        assertThat(endpoints.group().create(new Group(group, "owner", "team", "contact")).getStatus()).isEqualTo(CREATED.getStatusCode());
+        assertThat(endpoints.group().create(new Group(group, "team")).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilGroupCreated(group);
     }

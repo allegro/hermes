@@ -38,10 +38,10 @@ public class QueryEndpointTest extends IntegrationTest {
     @Test(dataProvider = "groupData")
     public void shouldQueryGroup(String query, List<Integer> positions) {
         // given
-        Group group1 = new Group("testGroup1", "Owner1", "Support3", "Contact1");
-        Group group2 = new Group("testNot1", "Owner2", "Support3", "Contact1");
-        Group group3 = new Group("testGroup2", "Owner2", "Support4", "Contact2");
-        Group group4 = new Group("testGroup3", "Owner1", "Support2", "Contact1");
+        Group group1 = new Group("testGroup1", "Support3");
+        Group group2 = new Group("testNot1", "Support3");
+        Group group3 = new Group("testGroup2", "Support4");
+        Group group4 = new Group("testGroup3", "Support2");
 
         List<Group> groups = asList(group1, group2, group3, group4);
 

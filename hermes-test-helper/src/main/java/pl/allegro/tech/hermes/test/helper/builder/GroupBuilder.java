@@ -6,11 +6,7 @@ public class GroupBuilder {
 
     private final String groupName;
 
-    private String technicalOwner = "owner";
-
     private String supportTeam = "team";
-
-    private String contact = "contact@example.com";
 
     private GroupBuilder(String name) {
         this.groupName = name;
@@ -21,12 +17,7 @@ public class GroupBuilder {
     }
 
     public Group build() {
-        return new Group(groupName, technicalOwner, supportTeam, contact);
-    }
-
-    public GroupBuilder withTechnicalOwner(String technicalOwner) {
-        this.technicalOwner = technicalOwner;
-        return this;
+        return new Group(groupName, supportTeam);
     }
 
     public GroupBuilder withSupportTeam(String supportTeam) {
@@ -34,8 +25,4 @@ public class GroupBuilder {
         return this;
     }
 
-    public GroupBuilder withContact(String contact) {
-        this.contact = contact;
-        return this;
-    }
 }

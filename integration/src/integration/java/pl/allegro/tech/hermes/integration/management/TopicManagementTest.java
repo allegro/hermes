@@ -252,7 +252,7 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldCreateTopicWithMaxMessageSize() {
         // given
         Topic topic = TopicBuilder.topic("messageSize", "topic").withMaxMessageSize(2048).build();
-        assertThat(management.group().create(new Group(topic.getName().getGroupName(), "a", "a", "a"))).hasStatus(CREATED);
+        assertThat(management.group().create(new Group(topic.getName().getGroupName(), "a"))).hasStatus(CREATED);
 
         // when
         Response response = management.topic().create(topic);

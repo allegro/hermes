@@ -17,24 +17,11 @@
                     <input class="form-control" id="groupName" required name="groupName" placeholder="group name" ng-model="group.groupName" ng-disabled="operation === 'EDIT'"/>
                 </div>
             </div>
-
-            <div class="form-group {{groupForm.technicalOwner.$valid ? '' : 'has-error'}}">
-                <label for="technicalOwner" class="col-md-3 control-label">Technical owner</label>
-                <div class="col-md-9">
-                    <input class="form-control" required id="technicalOwner" name="technicalOwner" placeholder="who requested and owns this group" ng-model="group.technicalOwner"/>
-                </div>
-            </div>
             <div class="form-group {{groupForm.supportTeam.$valid ? '' : 'has-error'}}">
                 <label for="supportTeam" class="col-md-3 control-label">Support team</label>
                 <div class="col-md-9">
                     <input class="form-control" required id="supportTeam" name="supportTeam" uib-typeahead="group.name for group in groups($viewValue)" typeahead-min-length="3"
                            typeahead-wait-ms="500" placeholder="comma delimited names of groups that will have rights to manage this group" ng-model="group.supportTeam"  autocomplete="off"/>
-                </div>
-            </div>
-            <div class="form-group {{groupForm.contact.$valid ? '' : 'has-error'}}">
-                <label for="contact" class="col-md-3 control-label">Contact</label>
-                <div class="col-md-9">
-                    <input class="form-control" required id="contact" name="contact" placeholder="team contact" ng-model="group.contact"/>
                 </div>
             </div>
         </form>

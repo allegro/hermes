@@ -38,7 +38,7 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
 
     def "should return group details"() {
         given:
-        Group group = group('groupDetails').withSupportTeam('team').withTechnicalOwner('owner').build()
+        Group group = group('groupDetails').withSupportTeam('team').build()
         repository.createGroup(group)
         wait.untilGroupCreated('groupDetails')
 
@@ -47,7 +47,6 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
 
         then:
         retrievedGroup.supportTeam == 'team'
-        retrievedGroup.technicalOwner == 'owner'
     }
 
     def "should update group"() {

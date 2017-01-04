@@ -19,14 +19,12 @@ describe("GroupEditController", function() {
         $httpBackend.verifyNoOutstandingRequest();
     });
 
-    it("should create group with contact", function() {
+    it("should create group", function() {
         // given
         var group = {
             "groupName": "groupWithContact",
             "groupPassword": "*****",
-            "technicalOwner": "Owner",
-            "supportTeam": "Example Team",
-            "contact": "fake-contact-xyz@zyz.allegro.pl"
+            "supportTeam": "Example Team"
         };
 
         $httpBackend.when('POST', hermesUrl('/groups'), group).respond(201, true);
