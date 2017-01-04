@@ -78,7 +78,7 @@ class MaxRateCalculator {
             });
 
             lastUpdateDurationMillis = clock.millis() - start;
-            logger.info("Max rate calculation done in {}", Duration.ofMillis(lastUpdateDurationMillis));
+            logger.info("Max rate calculation done in {} ms", lastUpdateDurationMillis);
         } catch (Exception e) {
             logger.error("Problem calculating max rate", e);
         }
