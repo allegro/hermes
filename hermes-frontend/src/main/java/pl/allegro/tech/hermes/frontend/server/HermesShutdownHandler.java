@@ -15,6 +15,7 @@ public class HermesShutdownHandler implements HttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(HermesShutdownHandler.class);
 
     private static final int MILLIS = 1000;
+    private static final int MAX_INFLIGHT_RETRIES = 20;
     private static final int TOLERANCE_BYTES = 5;
 
     private final HttpHandler next;
@@ -52,8 +53,10 @@ public class HermesShutdownHandler implements HttpHandler {
     }
 
     private void awaitRequestsComplete() throws InterruptedException {
-        while (inflightRequests.get() > 0) {
-            logger.info("Inflight requests: {}", inflightRequests.get());
+        int retries = MAX_INFLIGHT_RETRIES;
+        while (inflightRequests.get() > 0 && retries > 0) {
+            logger.info("Inflight requests: {}, timing out in {} ms", inflightRequests.get(), retries * MILLIS);
+            retries--;
             Thread.sleep(MILLIS);
         }
     }
