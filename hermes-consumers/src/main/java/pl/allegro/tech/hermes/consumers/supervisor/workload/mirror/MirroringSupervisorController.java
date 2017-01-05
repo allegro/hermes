@@ -11,9 +11,9 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 
 import java.util.Set;
@@ -115,7 +115,7 @@ public class MirroringSupervisorController implements SupervisorController {
 
         notificationsBus.registerSubscriptionCallback(this);
         notificationsBus.registerTopicCallback(this);
-        assignementRegistry.registerAssignementCallback(this);
+        assignementRegistry.registerAssignmentCallback(this);
 
         supervisor.start();
         assignementRegistry.start();

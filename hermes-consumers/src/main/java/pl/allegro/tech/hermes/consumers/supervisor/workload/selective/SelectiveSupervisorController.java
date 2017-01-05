@@ -18,7 +18,13 @@ import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_AUTO_REBALANCE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class SelectiveSupervisorController implements SupervisorController {
 
@@ -102,7 +108,7 @@ public class SelectiveSupervisorController implements SupervisorController {
 
         notificationsBus.registerSubscriptionCallback(this);
         notificationsBus.registerTopicCallback(this);
-        registry.registerAssignementCallback(this);
+        registry.registerAssignmentCallback(this);
 
         supervisor.start();
         consumersRegistry.start();
