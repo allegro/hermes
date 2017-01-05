@@ -9,6 +9,7 @@ public class TopicMetrics {
     private String rate = "0.0";
     private String deliveryRate = "0.0";
     private int subscriptions;
+    private String throughput = "0.0";
 
     public long getPublished() {
         return published;
@@ -26,9 +27,13 @@ public class TopicMetrics {
         return subscriptions;
     }
 
+    public String getThroughput() {
+        return throughput;
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(published, rate, deliveryRate, subscriptions);
+        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput);
     }
 
     @Override
@@ -43,7 +48,8 @@ public class TopicMetrics {
         return Objects.equals(this.published, other.published)
             && Objects.equals(this.rate, other.rate)
             && Objects.equals(this.deliveryRate, other.deliveryRate)
-            && Objects.equals(this.subscriptions, other.subscriptions);
+            && Objects.equals(this.subscriptions, other.subscriptions)
+            && Objects.equals(this.throughput, other.throughput);
     }
 
     public static TopicMetrics unavailable() {
@@ -51,6 +57,7 @@ public class TopicMetrics {
                                      .withDeliveryRate(UNAVAILABLE_RATE)
                                      .withPublished(0)
                                      .withSubscriptions(0)
+                                     .withThroughput(UNAVAILABLE_RATE)
                                      .build();
     }
 
@@ -78,6 +85,11 @@ public class TopicMetrics {
 
         public Builder withSubscriptions(int subscriptions) {
             topicMetrics.subscriptions = subscriptions;
+            return this;
+        }
+
+        public Builder withThroughput(String throughput) {
+            topicMetrics.throughput = throughput;
             return this;
         }
 

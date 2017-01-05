@@ -15,6 +15,7 @@ public class SubscriptionMetrics {
     private long lag;
     private Subscription.State state;
     private String rate;
+    private String throughput;
 
     private SubscriptionMetrics() {
     }
@@ -24,7 +25,8 @@ public class SubscriptionMetrics {
                                @JsonProperty("inflight") long inflight, @JsonProperty("timeouts") String timeouts,
                                @JsonProperty("otherErrors") String otherErrors, @JsonProperty("codes2xx") String codes2xx,
                                @JsonProperty("codes4xx") String codes4xx, @JsonProperty("codes5xx") String codes5xx,
-                               @JsonProperty("Subscription") Subscription.State state, @JsonProperty("rate") String rate) {
+                               @JsonProperty("Subscription") Subscription.State state, @JsonProperty("rate") String rate,
+                               @JsonProperty("throughput") String throughput) {
         this.delivered = delivered;
         this.discarded = discarded;
         this.inflight = inflight;
@@ -35,6 +37,7 @@ public class SubscriptionMetrics {
         this.codes5xx = codes5xx;
         this.state = state;
         this.rate = rate;
+        this.throughput = throughput;
     }
 
     public long getDelivered() {
@@ -79,6 +82,10 @@ public class SubscriptionMetrics {
 
     public Subscription.State getState() {
         return state;
+    }
+
+    public String getThroughput() {
+        return throughput;
     }
 
     public static class Builder {
@@ -140,6 +147,11 @@ public class SubscriptionMetrics {
 
         public Builder withLag(long lag) {
             subscriptionMetrics.lag = lag;
+            return this;
+        }
+
+        public Builder withThroughput(String throughput) {
+            subscriptionMetrics.throughput = throughput;
             return this;
         }
 

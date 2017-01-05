@@ -13,6 +13,10 @@ public class Meters {
         FAILED_METER = "failed-meter",
         FAILED_TOPIC_METER = FAILED_METER + "." + GROUP + "." + TOPIC,
 
+        THROUGHPUT_BYTES = "throughput",
+        TOPIC_THROUGHPUT_BYTES = THROUGHPUT_BYTES + "." + GROUP + "." + TOPIC,
+        SUBSCRIPTION_THROUGHPUT_BYTES = TOPIC_THROUGHPUT_BYTES + "." + SUBSCRIPTION,
+
         FILTERED_METER = SUBSCRIPTION_METER + ".filtered",
 
         STATUS_CODES = "http-status-codes.code" + HTTP_CODE,
