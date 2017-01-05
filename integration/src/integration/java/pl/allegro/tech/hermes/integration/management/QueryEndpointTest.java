@@ -29,9 +29,6 @@ public class QueryEndpointTest extends IntegrationTest {
                 {"{\"query\": {\"groupName\": \"testGroup1\"}}", asList(1)},
                 {"{\"query\": {\"groupName\": {\"like\": \".*Group2\"}}}", asList(3)},
                 {"{\"query\": {\"groupName\": {\"like\": \".*Group.*\"}}}", asList(1, 3, 4)},
-                {"{\"query\": {\"technicalOwner\": \"Owner2\", \"supportTeam\": \"Support3\"}}", asList(2)},
-                {"{\"query\": {\"and\": [{\"technicalOwner\": \"Owner2\"}, {\"supportTeam\": \"Support3\"}]}}", asList(2)},
-                {"{\"query\": {\"or\": [{\"technicalOwner\": \"Owner2\"}, {\"supportTeam\": \"Support3\"}]}}", asList(1, 2, 3)},
         };
     }
 

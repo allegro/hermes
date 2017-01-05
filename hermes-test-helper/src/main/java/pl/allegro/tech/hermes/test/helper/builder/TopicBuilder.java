@@ -1,15 +1,14 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
-import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.RetentionTime;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 
 public class TopicBuilder {
 
     private final TopicName name;
 
     private String description = "description";
+
+    private MaintainerDescriptor maintainer = new MaintainerDescriptor("Simple", "some team");
 
     private boolean jsonToAvroDryRunEnabled = false;
 
@@ -45,13 +44,18 @@ public class TopicBuilder {
 
     public Topic build() {
         return new Topic(
-                name, description, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
+                name, description, maintainer, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
                 jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize
         );
     }
 
     public TopicBuilder withDescription(String description) {
         this.description = description;
+        return this;
+    }
+
+    public TopicBuilder withMaintainer(MaintainerDescriptor maintainer) {
+        this.maintainer = maintainer;
         return this;
     }
 

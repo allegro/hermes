@@ -19,6 +19,10 @@ public class Topic {
     @NotNull
     private String description;
 
+    @Valid
+    @NotNull
+    private MaintainerDescriptor maintainer;
+
     private boolean jsonToAvroDryRunEnabled = false;
 
     @NotNull
@@ -49,12 +53,13 @@ public class Topic {
 
     private boolean schemaVersionAwareSerializationEnabled = false;
 
-    public Topic(TopicName name, String description, RetentionTime retentionTime,
+    public Topic(TopicName name, String description, MaintainerDescriptor maintainer, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
                  boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
                  int maxMessageSize) {
         this.name = name;
         this.description = description;
+        this.maintainer = maintainer;
         this.retentionTime = retentionTime;
         this.ack = (ack == null ? Ack.LEADER : ack);
         this.trackingEnabled = trackingEnabled;
@@ -69,6 +74,7 @@ public class Topic {
     public Topic(
             @JsonProperty("name") String qualifiedName,
             @JsonProperty("description") String description,
+            @JsonProperty("maintainer") MaintainerDescriptor maintainer,
             @JsonProperty("retentionTime") RetentionTime retentionTime,
             @JsonProperty("jsonToAvroDryRun") boolean jsonToAvroDryRunEnabled,
             @JsonProperty("ack") Ack ack,
@@ -77,7 +83,7 @@ public class Topic {
             @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType,
             @JsonProperty("maxMessageSize") Integer maxMessageSize) {
-        this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, migratedFromJsonType, ack,
+        this(TopicName.fromQualifiedName(qualifiedName), description, maintainer, retentionTime, migratedFromJsonType, ack,
                 trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
                 maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize);
     }
@@ -88,7 +94,7 @@ public class Topic {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
+        return Objects.hash(name, description, maintainer, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
                 jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize);
     }
 
@@ -104,6 +110,7 @@ public class Topic {
 
         return Objects.equals(this.name, other.name)
                 && Objects.equals(this.description, other.description)
+                && Objects.equals(this.maintainer, other.maintainer)
                 && Objects.equals(this.retentionTime, other.retentionTime)
                 && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
@@ -128,12 +135,8 @@ public class Topic {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setRetentionTime(RetentionTime retentionTime) {
-        this.retentionTime = retentionTime;
+    public MaintainerDescriptor getMaintainer() {
+        return maintainer;
     }
 
     @JsonProperty("jsonToAvroDryRun")

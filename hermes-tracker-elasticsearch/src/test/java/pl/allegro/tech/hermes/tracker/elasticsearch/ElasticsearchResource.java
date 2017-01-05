@@ -25,7 +25,9 @@ public class ElasticsearchResource implements LogSchemaAware {
         dataDir = Files.createTempDirectory("elasticsearch_data_").toFile();
         Settings settings = ImmutableSettings.settingsBuilder()
                 .put("path.data", dataDir)
-                .put("cluster.name", "hermes").build();
+                .put("cluster.name", "hermes")
+                .put("cluster.routing.allocation.disk.threshold_enabled", false)
+                .build();
         elastic = NodeBuilder.nodeBuilder().local(true).settings(settings).build();
         elastic.start();
         client = elastic.client();

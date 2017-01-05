@@ -47,6 +47,7 @@ public class Subscription implements Anonymizable {
 
     private boolean trackingEnabled = false;
 
+    @Valid
     @NotNull
     private MaintainerDescriptor maintainer;
 

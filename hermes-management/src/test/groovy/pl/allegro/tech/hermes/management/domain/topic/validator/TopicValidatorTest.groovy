@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.management.domain.topic.validator
 import org.apache.avro.Schema
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.management.domain.maintainer.validator.MaintainerDescriptorValidationException
+import pl.allegro.tech.hermes.management.domain.maintainer.validator.MaintainerDescriptorValidator
 import pl.allegro.tech.hermes.schema.CompiledSchema
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException
 import pl.allegro.tech.hermes.schema.SchemaRepository
@@ -15,7 +17,8 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 class TopicValidatorTest extends Specification {
 
     def schemaRepository = Stub(SchemaRepository)
-    def topicValidator = new TopicValidator(schemaRepository)
+    def maintainerDescriptorValidator = Stub(MaintainerDescriptorValidator)
+    def topicValidator = new TopicValidator(maintainerDescriptorValidator, schemaRepository)
 
     def "should not fail when creating valid topic"() {
         when:
@@ -36,9 +39,20 @@ class TopicValidatorTest extends Specification {
         thrown TopicValidationException
     }
 
+    def "should fail to create when maintainer is invalid"() {
+        given:
+        maintainerDescriptorValidator.check(_) >> { throw new MaintainerDescriptorValidationException("failed") }
+
+        when:
+        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build())
+
+        then:
+        thrown MaintainerDescriptorValidationException
+    }
+
     def "should not fail when updating valid topic"() {
         given:
-        Topic validTopic = topic('group.topic').withTrackingEnabled(false).build();
+        Topic validTopic = topic('group.topic').withTrackingEnabled(false).build()
         Topic updatedValidTopic = topic('group.topic').withTrackingEnabled(true).build()
 
         when:
@@ -102,5 +116,17 @@ class TopicValidatorTest extends Specification {
         then:
         noExceptionThrown()
     }
+
+    def "should fail to update when maintainer is invalid"() {
+        given:
+        maintainerDescriptorValidator.check(_) >> { throw new MaintainerDescriptorValidationException("failed") }
+
+        when:
+        topicValidator.ensureUpdatedTopicIsValid(topic('group.topic').build(), topic('group.topic').withDescription("updated").build())
+
+        then:
+        thrown MaintainerDescriptorValidationException
+    }
+
 
 }

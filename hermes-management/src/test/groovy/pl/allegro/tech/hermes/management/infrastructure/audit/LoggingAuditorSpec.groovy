@@ -9,8 +9,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.api.OAuthProvider
+import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.management.utils.MockAppender
 import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
+import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 
 import static org.slf4j.Logger.ROOT_LOGGER_NAME
@@ -33,7 +35,7 @@ class LoggingAuditorSpec extends Specification {
 
     def "should log new object creation"() {
         given:
-            Group toBeCreated = GroupBuilder.group("test-group").build()
+            Topic toBeCreated = TopicBuilder.topic("group.topic").build()
 
         when:
             auditor.objectCreated(TEST_USER, toBeCreated)
@@ -41,39 +43,39 @@ class LoggingAuditorSpec extends Specification {
         then:
             with(mockAppender.list.last().toString()) {
                 it.contains(TEST_USER)
-                it.contains(Group.class.getSimpleName())
-                it.contains(toBeCreated.groupName)
+                it.contains(Topic.class.getSimpleName())
+                it.contains(toBeCreated.qualifiedName)
             }
     }
 
     def "should log object removal"() {
         given:
-            Group toBeRemoved = GroupBuilder.group("testGroup").build()
+            Topic toBeRemoved = TopicBuilder.topic("group.topic").build()
 
         when:
-            auditor.objectRemoved(TEST_USER, Group.class.getSimpleName(), toBeRemoved.getGroupName())
+            auditor.objectRemoved(TEST_USER, Topic.class.getSimpleName(), toBeRemoved.qualifiedName)
 
         then:
             with(mockAppender.list.last().toString()) {
                 it.contains(TEST_USER)
-                it.contains(toBeRemoved.groupName)
+                it.contains(toBeRemoved.qualifiedName)
             }
     }
 
     def "should log object update"() {
         given:
-            Group toBeUpdated = GroupBuilder.group("testGroup").build()
-            Group updatedGroup = GroupBuilder.group(toBeUpdated.groupName).withContact("updatedContact").build()
+            Topic toBeUpdated = TopicBuilder.topic("group.topic").withDescription("some").build()
+            Topic updatedTopic = TopicBuilder.topic(toBeUpdated.qualifiedName).withDescription("other").build()
 
         when:
-            auditor.objectUpdated(TEST_USER, toBeUpdated, updatedGroup)
+            auditor.objectUpdated(TEST_USER, toBeUpdated, updatedTopic)
 
         then:
             with(mockAppender.list.last().toString()) {
                 it.contains(TEST_USER)
-                it.contains(toBeUpdated.groupName)
-                it.contains(toBeUpdated.contact)
-                it.contains(updatedGroup.contact)
+                it.contains(toBeUpdated.qualifiedName)
+                it.contains(toBeUpdated.description)
+                it.contains(updatedTopic.description)
             }
     }
 

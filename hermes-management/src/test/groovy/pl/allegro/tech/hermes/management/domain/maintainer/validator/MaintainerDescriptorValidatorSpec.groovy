@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.domain.subscription.validator
+package pl.allegro.tech.hermes.management.domain.maintainer.validator
 
 import pl.allegro.tech.hermes.api.Maintainer
 import pl.allegro.tech.hermes.api.MaintainerDescriptor
@@ -6,44 +6,33 @@ import pl.allegro.tech.hermes.management.domain.maintainer.MaintainerSource
 import pl.allegro.tech.hermes.management.domain.maintainer.MaintainerSources
 import spock.lang.Specification
 
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
-
-class SubscriptionValidatorSpec extends Specification {
+class MaintainerDescriptorValidatorSpec extends Specification {
 
     def maintainerSources = new MaintainerSources([new FakeMaintainerSource()])
-    def validator = new SubscriptionValidator(maintainerSources)
+    def validator = new MaintainerDescriptorValidator(maintainerSources)
 
     def "should pass when maintainer exists"() {
-        given:
-        def toCheck = subscription("group.topic", "sub").withMaintainer(new MaintainerDescriptor("fake", "Some Team")).build()
-
         when:
-        validator.check(toCheck)
+        validator.check(new MaintainerDescriptor("fake", "Some Team"))
 
         then:
         noExceptionThrown()
     }
 
     def "should fail when maintainer source doesn't exist"() {
-        given:
-        def toCheck = subscription("group.topic", "sub").withMaintainer(new MaintainerDescriptor("non-existing", "Some Team")).build()
-
         when:
-        validator.check(toCheck)
+        validator.check(new MaintainerDescriptor("non-existing", "Some Team"))
 
         then:
-        thrown SubscriptionValidationException
+        thrown MaintainerDescriptorValidationException
     }
 
     def "should fail when maintainer doesn't exist"() {
-        given:
-        def toCheck = subscription("group.topic", "sub").withMaintainer(new MaintainerDescriptor("fake", "non-existing")).build()
-
         when:
-        validator.check(toCheck)
+        validator.check(new MaintainerDescriptor("fake", "non-existing"))
 
         then:
-        thrown SubscriptionValidationException
+        thrown MaintainerDescriptorValidationException
     }
 
     class FakeMaintainerSource implements MaintainerSource {
