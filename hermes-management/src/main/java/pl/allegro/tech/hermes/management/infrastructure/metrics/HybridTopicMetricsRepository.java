@@ -21,6 +21,8 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
 
     private static final String DELIVERY_RATE_PATTERN = "sumSeries(%s.consumer.*.meter.%s.%s.m1_rate)";
 
+    private static final String THROUGHPUT_PATTERN = "sumSeries(%s.producer.*.throughput.%s.%s.m1_rate)";
+
     private final GraphiteClient graphiteClient;
 
     private final MetricsPaths metricsPaths;
@@ -46,6 +48,7 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
     public TopicMetrics loadMetrics(TopicName topicName) {
         String rateMetric = metricPath(RATE_PATTERN, topicName);
         String deliveryRateMetric = metricPath(DELIVERY_RATE_PATTERN, topicName);
+        String throughputMetric = metricPath(THROUGHPUT_PATTERN, topicName);
 
         GraphiteMetrics metrics = graphiteClient.readMetrics(rateMetric, deliveryRateMetric);
 
@@ -54,6 +57,7 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
                 .withDeliveryRate(metrics.metricValue(deliveryRateMetric))
                 .withPublished(sharedCounter.getValue(zookeeperPaths.topicMetricPath(topicName, "published")))
                 .withSubscriptions(subscriptionRepository.listSubscriptionNames(topicName).size())
+                .withThroughput(metrics.metricValue(throughputMetric))
                 .build();
     }
 

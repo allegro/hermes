@@ -80,6 +80,11 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     public void handleFailed(Message message, Subscription subscription, MessageSendingResult result) {
         hermesMetrics.meter(Meters.FAILED_METER_SUBSCRIPTION, subscription.getTopicName(), subscription.getName()).mark();
         registerFailureMetrics(subscription, result);
+        hermesMetrics.meter(
+                Meters.SUBSCRIPTION_THROUGHPUT_BYTES,
+                subscription.getTopicName(),
+                subscription.getName())
+                .mark(message.getSize());
         trackers.get(subscription).logFailed(toMessageMetadata(message, subscription), result.getRootCause(), result.getHostname());
     }
 
