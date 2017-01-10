@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -17,13 +19,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 public class SubscriptionAssignmentRegistry {
 
     private static final int SUBSCRIPTION_LEVEL = 0;
 
     private static final int ASSIGNMENT_LEVEL = 1;
+
+    private static final Logger logger = LoggerFactory.getLogger(SubscriptionAssignmentRegistry.class);
 
     private final Set<SubscriptionAssignment> assignments = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
@@ -103,7 +106,7 @@ public class SubscriptionAssignmentRegistry {
                 List<String> nodes = curator.getChildren().forPath(path);
                 nodes.forEach(node -> assignments.add(new SubscriptionAssignment(node, subscriptionName)));
             } catch (Exception e) {
-                // ignore - should be fixed by the cache
+                logger.info("Exception occurred when initializing cache with subscription {}", subscriptionName, e);
             }
         }
         return assignments;
