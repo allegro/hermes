@@ -50,7 +50,43 @@ public class ConsumersRuntimeMonitor implements Runnable {
         hermesMetrics.registerGauge("consumers-workload.monitor.oversubscribed", () -> monitorMetrics.oversubscribed);
     }
 
-    public void log(Set<SubscriptionName> assigned,
+    @Override
+    public void run() {
+        try {
+            Set<SubscriptionName> assigned = workloadSupervisor.assignedSubscriptions();
+            Set<SubscriptionName> running = consumerSupervisor.runningConsumers();
+            Set<SubscriptionName> missing = missing(assigned, running);
+            Set<SubscriptionName> oversubscribed = oversubscribed(assigned, running);
+
+            log(assigned, running, missing, oversubscribed);
+            updateMetrics(assigned, running, missing, oversubscribed);
+
+            ensureCorrectness(missing, oversubscribed);
+        } catch (Exception exception) {
+            logger.error("Could not check correctness of assignments", exception);
+        }
+    }
+
+    public void start() {
+        executor.scheduleWithFixedDelay(this, scanIntervalSeconds, scanIntervalSeconds, TimeUnit.SECONDS);
+    }
+
+    public void shutdown() throws InterruptedException {
+        executor.shutdown();
+        executor.awaitTermination(1, TimeUnit.MINUTES);
+    }
+
+    private void ensureCorrectness(Set<SubscriptionName> missing, Set<SubscriptionName> oversubscribed) {
+        if (!missing.isEmpty() || !oversubscribed.isEmpty()) {
+            logger.info("Fixing runtime. Creating {} and killing {} consumers", missing.size(), oversubscribed.size());
+        }
+        missing.stream()
+                .map(subscriptionsCache::getSubscription)
+                .forEach(consumerSupervisor::assignConsumerForSubscription);
+        oversubscribed.forEach(consumerSupervisor::deleteConsumerForSubscriptionName);
+    }
+
+    private void log(Set<SubscriptionName> assigned,
                     Set<SubscriptionName> running,
                     Set<SubscriptionName> missing,
                     Set<SubscriptionName> oversubscribed) {
@@ -71,33 +107,6 @@ public class ConsumersRuntimeMonitor implements Runnable {
         );
     }
 
-    @Override
-    public void run() {
-        try {
-            Set<SubscriptionName> assigned = workloadSupervisor.assignedSubscriptions();
-            Set<SubscriptionName> running = consumerSupervisor.runningConsumers();
-            Set<SubscriptionName> missing = missing(assigned, running);
-            Set<SubscriptionName> oversubscribed = oversubscribed(assigned, running);
-
-            log(assigned, running, missing, oversubscribed);
-            updateMetrics(assigned, running, missing, oversubscribed);
-
-            ensureCorrectness(missing, oversubscribed);
-        } catch (Exception exception) {
-            logger.error("Could not check correctness of assignments", exception);
-        }
-    }
-
-    private void ensureCorrectness(Set<SubscriptionName> missing, Set<SubscriptionName> oversubscribed) {
-        if (!missing.isEmpty() || !oversubscribed.isEmpty()) {
-            logger.info("Fixing runtime. Creating {} and killing {} consumers", missing.size(), oversubscribed.size());
-        }
-        missing.stream()
-                .map(subscriptionsCache::getSubscription)
-                .forEach(consumerSupervisor::assignConsumerForSubscription);
-        oversubscribed.forEach(consumerSupervisor::deleteConsumerForSubscriptionName);
-    }
-
     private void updateMetrics(Set<SubscriptionName> assigned,
                                Set<SubscriptionName> running,
                                Set<SubscriptionName> missing,
@@ -116,15 +125,6 @@ public class ConsumersRuntimeMonitor implements Runnable {
     private Set<SubscriptionName> oversubscribed(Set<SubscriptionName> assignedSubscriptions,
                                                  Set<SubscriptionName> runningSubscriptions) {
         return Sets.difference(runningSubscriptions, assignedSubscriptions).immutableCopy();
-    }
-
-    public void start() {
-        executor.scheduleWithFixedDelay(this, scanIntervalSeconds, scanIntervalSeconds, TimeUnit.SECONDS);
-    }
-
-    public void shutdown() throws InterruptedException {
-        executor.shutdown();
-        executor.awaitTermination(1, TimeUnit.MINUTES);
     }
 
     private static class MonitorMetrics {

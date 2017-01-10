@@ -95,35 +95,39 @@ public class SubscriptionAssignmentRegistry {
     }
 
     private List<SubscriptionAssignment> readExistingAssignments() {
-        return subscriptionsCache.listActiveSubscriptionNames().stream().flatMap(subscriptionName -> {
-            String path = pathSerializer.serialize(subscriptionName);
-            List<String> children = new ArrayList<>();
+        List<SubscriptionAssignment> assignments = new ArrayList<>();
+
+        for (SubscriptionName subscriptionName : subscriptionsCache.listActiveSubscriptionNames()) {
             try {
-                children.addAll(curator.getChildren().forPath(path));
+                String path = pathSerializer.serialize(subscriptionName);
+                List<String> nodes = curator.getChildren().forPath(path);
+                nodes.forEach(node -> assignments.add(new SubscriptionAssignment(node, subscriptionName)));
             } catch (Exception e) {
                 // ignore - should be fixed by the cache
             }
-            return children.stream().map(node -> new SubscriptionAssignment(node, subscriptionName));
-        }).collect(Collectors.toList());
+        }
+        return assignments;
     }
 
     private void onAssignmentAdded(SubscriptionAssignment assignment) {
-        assignments.add(assignment);
-        if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
-            callbacks.forEach(callback ->
-                callback.onSubscriptionAssigned(assignment.getSubscriptionName())
-            );
+        if (assignments.add(assignment)) {
+            if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
+                callbacks.forEach(callback ->
+                        callback.onSubscriptionAssigned(assignment.getSubscriptionName())
+                );
+            }
         }
     }
 
     private void onAssignmentRemoved(SubscriptionAssignment assignment) {
-        assignments.remove(assignment);
-        if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
-            callbacks.forEach(callback ->
-                    callback.onAssignmentRemoved(assignment.getSubscriptionName())
-            );
+        if (assignments.remove(assignment)) {
+            if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
+                callbacks.forEach(callback ->
+                        callback.onAssignmentRemoved(assignment.getSubscriptionName())
+                );
+            }
+            removeSubscriptionEntryIfEmpty(assignment.getSubscriptionName());
         }
-        removeSubscriptionEntryIfEmpty(assignment.getSubscriptionName());
     }
 
     private void removeSubscriptionEntryIfEmpty(SubscriptionName subscriptionName) {
