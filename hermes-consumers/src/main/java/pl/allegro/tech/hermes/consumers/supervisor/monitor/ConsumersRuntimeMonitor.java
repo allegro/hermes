@@ -89,6 +89,9 @@ public class ConsumersRuntimeMonitor implements Runnable {
     }
 
     private void ensureCorrectness(Set<SubscriptionName> missing, Set<SubscriptionName> oversubscribed) {
+        if (!missing.isEmpty() || !oversubscribed.isEmpty()) {
+            logger.info("Fixing runtime. Creating {} and killing {} consumers", missing.size(), oversubscribed.size());
+        }
         missing.stream()
                 .map(subscriptionsCache::getSubscription)
                 .forEach(consumerSupervisor::assignConsumerForSubscription);
