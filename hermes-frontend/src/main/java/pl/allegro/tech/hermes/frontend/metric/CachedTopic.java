@@ -160,4 +160,8 @@ public class CachedTopic {
         topicDelayedProcessingMeter.mark();
         globalDelayedProcessingMeter.mark();
     }
+
+    public double getThroughput() {
+        return topicThroughputMeter.getOneMinuteRate();
+    }
 }

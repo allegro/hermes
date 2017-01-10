@@ -67,6 +67,21 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldReturn429ForQuotaViolation() {
+        // given
+        Topic topic = operations.buildTopic("publishAndConsumeGroup", "topic");
+        TestMessage message = TestMessage.of("content", StringUtils.repeat("X", 10000));
+
+        wait.until(() -> {
+            // when
+            Response response = publisher.publish(topic.getQualifiedName(), message.body());
+
+            // then
+            assertThat(response.getStatus()).isEqualTo(429);
+        });
+    }
+
+    @Test
     public void shouldReturn4xxForTooLargeContent() {
         // given
         Topic topic = operations.buildTopic(topic("largeContent", "topic").withMaxMessageSize(2048).build());

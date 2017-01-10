@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
+import static pl.allegro.tech.hermes.api.ErrorCode.QUOTA_VIOLATION;
 import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
 
@@ -27,6 +28,7 @@ class MessageReadHandler implements HttpHandler {
     private final ContentLengthChecker contentLengthChecker;
     private final int defaultAsyncTimeout;
     private final int longAsyncTimeout;
+    private final ThroughputLimiter throughputLimiter;
 
     MessageReadHandler(HttpHandler next, HttpHandler timeoutHandler, ConfigFactory configFactory,
                        MessageErrorProcessor messageErrorProcessor) {
@@ -36,6 +38,7 @@ class MessageReadHandler implements HttpHandler {
         this.contentLengthChecker = new ContentLengthChecker(configFactory);
         this.defaultAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_IDLE_TIMEOUT);
         this.longAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_LONG_IDLE_TIMEOUT);
+        this.throughputLimiter = new ThroughputLimiter(configFactory.getLongProperty(Configs.FRONTEND_MAX_THROUGHPUT));
     }
 
     @Override
@@ -50,8 +53,12 @@ class MessageReadHandler implements HttpHandler {
                         () -> runTimeoutHandler(exchange, attachment),
                         timeout,
                         MILLISECONDS)));
-
-        readMessage(exchange, attachment);
+        try {
+            throughputLimiter.check(attachment.getCachedTopic());
+            readMessage(exchange, attachment);
+        } catch (ThroughputLimiter.QuotaViolationException ex) {
+            respondWithQuotaViolation(exchange, attachment, ex);
+        }
     }
 
     private void runTimeoutHandler(HttpServerExchange exchange, AttachmentContent attachment) {
@@ -130,6 +137,7 @@ class MessageReadHandler implements HttpHandler {
         try {
             contentLengthChecker.check(exchange, messageContent.length, attachment);
             attachment.getCachedTopic().reportMessageContentSize(messageContent.length);
+            throughputLimiter.check(attachment.getCachedTopic());
             attachment.setMessageContent(messageContent);
             endWithoutDefaultResponse(exchange);
             if (exchange.isInIoThread()) {
@@ -141,10 +149,23 @@ class MessageReadHandler implements HttpHandler {
             attachment.removeTimeout();
             messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(),
                     attachment.getMessageId(), error(e.getMessage(), VALIDATION_ERROR));
+        } catch (ThroughputLimiter.QuotaViolationException e) {
+            respondWithQuotaViolation(exchange, attachment, e);
         } catch (Exception e) {
             attachment.removeTimeout();
             messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(), e);
         }
+    }
+
+    private void respondWithQuotaViolation(HttpServerExchange exchange,
+                                           AttachmentContent attachment,
+                                           ThroughputLimiter.QuotaViolationException ex) {
+        attachment.removeTimeout();
+        messageErrorProcessor.sendAndLog(
+                exchange,
+                attachment.getTopic(),
+                attachment.getMessageId(),
+                error(ex.getMessage(), QUOTA_VIOLATION));
     }
 
     private void dispatchToWorker(HttpServerExchange exchange, AttachmentContent attachment) {
