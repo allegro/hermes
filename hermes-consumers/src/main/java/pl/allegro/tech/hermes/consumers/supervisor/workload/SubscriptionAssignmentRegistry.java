@@ -111,7 +111,7 @@ public class SubscriptionAssignmentRegistry {
         assignments.add(assignment);
         if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
             callbacks.forEach(callback ->
-                callback.onSubscriptionAssigned(subscriptionsCache.getSubscription(assignment.getSubscriptionName()))
+                callback.onSubscriptionAssigned(assignment.getSubscriptionName())
             );
         }
     }

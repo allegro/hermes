@@ -72,7 +72,7 @@ public class ConsumerFactory {
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
     }
 
-    Consumer createConsumer(Subscription subscription) {
+    public Consumer createConsumer(Subscription subscription) {
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
         if (subscription.isBatchSubscription()) {
             return new BatchConsumer(messageReceiverFactory,

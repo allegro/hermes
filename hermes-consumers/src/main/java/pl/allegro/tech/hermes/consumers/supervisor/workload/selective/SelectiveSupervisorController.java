@@ -65,7 +65,8 @@ public class SelectiveSupervisorController implements SupervisorController {
     }
 
     @Override
-    public void onSubscriptionAssigned(Subscription subscription) {
+    public void onSubscriptionAssigned(SubscriptionName subscriptionName) {
+        Subscription subscription = subscriptionsCache.getSubscription(subscriptionName);
         logger.info("Scheduling assignment consumer for {}", subscription.getQualifiedName());
         assignmentExecutor.execute(() -> {
             logger.info("Assigning consumer for {}", subscription.getQualifiedName());

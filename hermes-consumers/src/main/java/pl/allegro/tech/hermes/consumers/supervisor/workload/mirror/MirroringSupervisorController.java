@@ -97,8 +97,9 @@ public class MirroringSupervisorController implements SupervisorController {
     }
 
     @Override
-    public void onSubscriptionAssigned(Subscription subscription) {
-        logger.info("Assigning consumer for {}", subscription.getQualifiedName());
+    public void onSubscriptionAssigned(SubscriptionName subscriptionName) {
+        logger.info("Assigning consumer for {}", subscriptionName.getQualifiedName());
+        Subscription subscription = subscriptionsCache.getSubscription(subscriptionName);
         supervisor.assignConsumerForSubscription(subscription);
     }
 
