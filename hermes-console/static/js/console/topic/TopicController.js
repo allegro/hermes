@@ -161,8 +161,8 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
     }]);
 
 topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$scope', '$uibModalInstance', 'PasswordService',
-    'toaster', 'topic', 'messageSchema', 'groupName', 'operation',
-    function (topicConfig, topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation) {
+    'toaster', 'topic', 'messageSchema', 'groupName', 'operation', 'MaintainerService',
+    function (topicConfig, topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation, maintainerService) {
         $scope.config = topicConfig;
 
         $scope.topic = _(topic).clone();
@@ -170,10 +170,21 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
         $scope.groupName = groupName;
         $scope.operation = operation;
 
+        maintainerService.getSourceNames().then(function(sources) {
+            $scope.maintainerSources = sources;
+            $scope.topic.maintainer.source = $scope.topic.maintainer.source || $scope.maintainerSources[0];
+        });
+        if ($scope.topic.maintainer.id) {
+            maintainerService.getMaintainer($scope.topic.maintainer.source, $scope.topic.maintainer.id).then(function(maintainer) {
+                $scope.selectedMaintainer = maintainer;
+            });
+        }
+
         $scope.save = function () {
             var promise;
             var originalTopicName = $scope.topic.name;
             passwordService.set($scope.groupPassword);
+            $scope.topic.maintainer.id = $scope.selectedMaintainer.id;
 
             var topic = _.cloneDeep($scope.topic);
             delete topic.shortName;
@@ -199,4 +210,9 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
                         passwordService.reset();
                     });
         };
+
+        $scope.maintainers = function(searchString) {
+            return maintainerService.getMaintainers($scope.topic.maintainer.source, searchString);
+        };
+
     }]);

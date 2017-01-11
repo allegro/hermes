@@ -24,7 +24,6 @@ describe("GroupEditController", function() {
         var group = {
             "groupName": "groupWithContact",
             "groupPassword": "*****",
-            "supportTeam": "Example Team"
         };
 
         $httpBackend.when('POST', hermesUrl('/groups'), group).respond(201, true);

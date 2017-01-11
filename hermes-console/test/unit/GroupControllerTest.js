@@ -27,7 +27,6 @@ describe("GroupController", function() {
         var group = {
             "groupName": "groupWithContact",
             "groupPassword": "*****",
-            "supportTeam": "Example Team"
         };
 
         $httpBackend.when('GET', hermesUrl('/groups/groupWithContact')).respond(group);
@@ -38,13 +37,12 @@ describe("GroupController", function() {
 
         // when
         var $scope = {};
-        var $stateParams = {groupName: "groupWithContact"};
+        var $stateParams = {groupName: "group"};
         $controller('GroupController', {$scope: $scope, $stateParams: $stateParams});
         $httpBackend.flush();
 
         // then
         expect($scope.group.groupName).toEqual(group.groupName);
-        expect($scope.group.supportTeam).toEqual(group.supportTeam);
         expect($scope.fetching).toEqual(false);
 
     });
