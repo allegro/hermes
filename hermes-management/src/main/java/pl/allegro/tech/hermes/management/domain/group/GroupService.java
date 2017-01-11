@@ -42,10 +42,9 @@ public class GroupService {
         return groupRepository.getGroupDetails(groupName);
     }
 
-    public String createGroup(Group group, String createdBy) {
+    public void createGroup(Group group, String createdBy) {
         groupRepository.createGroup(group);
         auditor.objectCreated(createdBy, group);
-        return "";
     }
 
     public void removeGroup(String groupName, String removedBy) {
