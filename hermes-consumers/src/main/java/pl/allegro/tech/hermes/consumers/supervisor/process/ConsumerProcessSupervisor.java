@@ -11,9 +11,9 @@ import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.ArrayList;
 import java.util.concurrent.Future;
 
 public class ConsumerProcessSupervisor implements Runnable {
@@ -153,6 +153,7 @@ public class ConsumerProcessSupervisor implements Runnable {
                     logger.error("Failed to interrupt consumer process {}, possible stale consumer", subscriptionName);
                 }
             } else {
+                runningProcesses.remove(subscriptionName);
                 logger.info("Consumer was already dead process {}", subscriptionName);
             }
         }

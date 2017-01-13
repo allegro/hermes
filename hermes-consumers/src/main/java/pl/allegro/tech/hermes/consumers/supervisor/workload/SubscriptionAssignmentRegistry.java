@@ -32,6 +32,8 @@ public class SubscriptionAssignmentRegistry {
 
     private final Set<SubscriptionAssignmentAware> callbacks = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
+    private final Set<Runnable> postInitializationListeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
+
     private final String consumerNodeId;
 
     private final CuratorFramework curator;
@@ -71,6 +73,7 @@ public class SubscriptionAssignmentRegistry {
     public void start() throws Exception {
         readExistingAssignments().forEach(this::onAssignmentAdded);
         cache.start();
+        postInitializationListeners.forEach(Runnable::run);
     }
 
     public void stop() throws Exception {
@@ -79,6 +82,10 @@ public class SubscriptionAssignmentRegistry {
 
     public void registerAssignmentCallback(SubscriptionAssignmentAware callback) {
         callbacks.add(callback);
+    }
+
+    public void registerPostInitializationListener(Runnable task) {
+        postInitializationListeners.add(task);
     }
 
     public boolean isAssignedTo(String nodeId, SubscriptionName subscription) {
@@ -98,18 +105,18 @@ public class SubscriptionAssignmentRegistry {
     }
 
     private List<SubscriptionAssignment> readExistingAssignments() {
-        List<SubscriptionAssignment> assignments = new ArrayList<>();
+        List<SubscriptionAssignment> existingAssignments = new ArrayList<>();
 
         for (SubscriptionName subscriptionName : subscriptionsCache.listActiveSubscriptionNames()) {
             try {
                 String path = pathSerializer.serialize(subscriptionName);
                 List<String> nodes = curator.getChildren().forPath(path);
-                nodes.forEach(node -> assignments.add(new SubscriptionAssignment(node, subscriptionName)));
+                nodes.forEach(node -> existingAssignments.add(new SubscriptionAssignment(node, subscriptionName)));
             } catch (Exception e) {
                 logger.info("Exception occurred when initializing cache with subscription {}", subscriptionName, e);
             }
         }
-        return assignments;
+        return existingAssignments;
     }
 
     private void onAssignmentAdded(SubscriptionAssignment assignment) {
@@ -129,8 +136,8 @@ public class SubscriptionAssignmentRegistry {
                         callback.onAssignmentRemoved(assignment.getSubscriptionName())
                 );
             }
-            removeSubscriptionEntryIfEmpty(assignment.getSubscriptionName());
         }
+        removeSubscriptionEntryIfEmpty(assignment.getSubscriptionName());
     }
 
     private void removeSubscriptionEntryIfEmpty(SubscriptionName subscriptionName) {

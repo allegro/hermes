@@ -32,7 +32,7 @@ public class SelectiveWorkBalancer {
         return new WorkBalancingResult.Builder(balancedState)
                 .withSubscriptionsStats(subscriptions.size(), removedSubscriptions.size(), newSubscriptions.size())
                 .withConsumersStats(activeConsumerNodes.size(), inactiveConsumers.size(), newConsumers.size())
-                .withMissingResources(countMissingResources(balancedState))
+                .withMissingResources(countMissingResources(subscriptions, balancedState))
                 .build();
     }
 
@@ -51,8 +51,8 @@ public class SelectiveWorkBalancer {
         });
     }
 
-    private int countMissingResources(SubscriptionAssignmentView state) {
-        return state.getSubscriptions().stream()
+    private int countMissingResources(List<SubscriptionName> subscriptions, SubscriptionAssignmentView state) {
+        return subscriptions.stream()
                 .mapToInt(s -> consumersPerSubscription - state.getAssignmentsCountForSubscription(s))
                 .sum();
     }

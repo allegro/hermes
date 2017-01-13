@@ -48,6 +48,11 @@ public class BalancingJob implements LeaderLatchListener, Runnable {
         this.intervalSeconds = intervalSeconds;
 
         metrics.registerGauge(
+                "consumers-workload." + kafkaCluster + ".selective.all-assignments",
+                () -> balancingMetrics.allAssignments
+        );
+
+        metrics.registerGauge(
                 "consumers-workload." + kafkaCluster + ".selective.missing-resources",
                 () -> balancingMetrics.missingResources
         );
@@ -71,11 +76,14 @@ public class BalancingJob implements LeaderLatchListener, Runnable {
                     WorkBalancingResult work = workBalancer.balance(subscriptionsCache.listActiveSubscriptionNames(),
                             consumersRegistry.list(),
                             workTracker.getAssignments());
-                    WorkTracker.WorkDistributionChanges changes = workTracker.apply(work.getAssignmentsView());
 
-                    logger.info("Finished workload balance {}, {}", work.toString(), changes.toString());
+                    if (consumersRegistry.isLeader()) {
+                        WorkTracker.WorkDistributionChanges changes = workTracker.apply(work.getAssignmentsView());
 
-                    updateMetrics(work, changes);
+                        logger.info("Finished workload balance {}, {}", work.toString(), changes.toString());
+
+                        updateMetrics(work, changes);
+                    }
                 }
             } else {
                 balancingMetrics.reset();
@@ -96,12 +104,15 @@ public class BalancingJob implements LeaderLatchListener, Runnable {
     }
 
     private void updateMetrics(WorkBalancingResult balancingResult, WorkTracker.WorkDistributionChanges changes) {
+        this.balancingMetrics.allAssignments = balancingResult.getAssignmentsView().getSubscriptionsCount();
         this.balancingMetrics.missingResources = balancingResult.getMissingResources();
         this.balancingMetrics.createdAssignments = changes.getCreatedAssignmentsCount();
         this.balancingMetrics.deletedAssignments = changes.getDeletedAssignmentsCount();
     }
 
     private static class BalancingJobMetrics {
+
+        volatile int allAssignments;
 
         volatile int missingResources;
 
@@ -110,6 +121,7 @@ public class BalancingJob implements LeaderLatchListener, Runnable {
         volatile int createdAssignments;
 
         void reset() {
+            this.allAssignments = 0;
             this.missingResources = 0;
             this.deletedAssignments = 0;
             this.createdAssignments = 0;

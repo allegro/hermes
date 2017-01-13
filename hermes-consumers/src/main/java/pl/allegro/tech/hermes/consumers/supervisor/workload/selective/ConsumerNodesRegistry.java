@@ -74,8 +74,8 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
 
     public void registerLeaderLatchListener(LeaderLatchListener... leaderListener) {
         try {
-            leaderLatch.start();
             Arrays.stream(leaderListener).forEach(leaderLatch::addListener);
+            leaderLatch.start();
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
