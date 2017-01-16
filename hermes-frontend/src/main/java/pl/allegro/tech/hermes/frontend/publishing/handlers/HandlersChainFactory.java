@@ -23,11 +23,13 @@ public class HandlersChainFactory implements Factory<HttpHandler> {
     private final BrokerMessageProducer brokerMessageProducer;
     private final MessagePreviewLog previewLog;
     private final boolean previewEnabled;
+    private final ThroughputLimiter throughputLimiter;
 
     @Inject
     public HandlersChainFactory(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
                                 MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
-                                BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog) {
+                                BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
+                                ThroughputLimiter throughputLimiter) {
         this.topicsCache = topicsCache;
         this.messageErrorProcessor = messageErrorProcessor;
         this.messageEndProcessor = messageEndProcessor;
@@ -36,6 +38,7 @@ public class HandlersChainFactory implements Factory<HttpHandler> {
         this.brokerMessageProducer = brokerMessageProducer;
         this.previewLog = messagePreviewLog;
         this.previewEnabled = configFactory.getBooleanProperty(Configs.FRONTEND_MESSAGE_PREVIEW_ENABLED);
+        this.throughputLimiter = throughputLimiter;
     }
 
     @Override
@@ -44,7 +47,8 @@ public class HandlersChainFactory implements Factory<HttpHandler> {
         HttpHandler messageCreateHandler = new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
         HttpHandler timeoutHandler = new TimeoutHandler(messageEndProcessor, messageErrorProcessor);
         HttpHandler handlerAfterRead = previewEnabled ? new PreviewHandler(messageCreateHandler, previewLog) : messageCreateHandler;
-        HttpHandler readHandler = new MessageReadHandler(handlerAfterRead, timeoutHandler, configFactory, messageErrorProcessor);
+        HttpHandler readHandler = new MessageReadHandler(handlerAfterRead, timeoutHandler, configFactory,
+                                                                messageErrorProcessor, throughputLimiter);
         TopicHandler topicHandler = new TopicHandler(readHandler, topicsCache, messageErrorProcessor);
 
         return topicHandler;

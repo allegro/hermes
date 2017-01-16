@@ -70,7 +70,9 @@ public class PublishingTest extends IntegrationTest {
     public void shouldReturn429ForQuotaViolation() {
         // given
         Topic topic = operations.buildTopic("publishAndConsumeGroup", "topic");
-        TestMessage message = TestMessage.of("content", StringUtils.repeat("X", 10000));
+
+        // Frontend is configured in integration test suite to block publisher after 50_000 kb/sec
+        TestMessage message = TestMessage.of("content", StringUtils.repeat("X", 60_000));
 
         wait.until(() -> {
             // when

@@ -12,6 +12,8 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiterFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnforcer;
@@ -61,6 +63,7 @@ public class FrontendBinder extends AbstractBinder {
         bindFactory(HandlersChainFactory.class).to(HttpHandler.class).in(Singleton.class);
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
         bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);
+        bindFactory(ThroughputLimiterFactory.class).to(ThroughputLimiter.class).in(Singleton.class);
         bindSingleton(PublishingMessageTracker.class);
         bindSingleton(NoOperationPublishingTracker.class);
         bindFactory(TopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);

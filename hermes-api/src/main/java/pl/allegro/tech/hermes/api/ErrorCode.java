@@ -39,7 +39,7 @@ public enum ErrorCode {
     OAUTH_PROVIDER_ALREADY_EXISTS(BAD_REQUEST),
     CROWD_GROUPS_COULD_NOT_BE_LOADED(INTERNAL_SERVER_ERROR),
     TOPIC_BLACKLISTED(FORBIDDEN),
-    QUOTA_VIOLATION(429),
+    THROUGHPUT_QUOTA_VIOLATION(429),
     TOPIC_NOT_UNBLACKLISTED(BAD_REQUEST),
     OWNER_SOURCE_NOT_FOUND(NOT_FOUND),
     OWNER_SOURCE_DOESNT_SUPPORT_AUTOCOMPLETE(BAD_REQUEST),
@@ -48,11 +48,11 @@ public enum ErrorCode {
 
     private final int httpCode;
 
-    private ErrorCode(Response.Status httpCode) {
+    ErrorCode(Response.Status httpCode) {
         this.httpCode = httpCode.getStatusCode();
     }
 
-    private ErrorCode(int httpCode) {
+    ErrorCode(int httpCode) {
         this.httpCode = httpCode;
     }
 

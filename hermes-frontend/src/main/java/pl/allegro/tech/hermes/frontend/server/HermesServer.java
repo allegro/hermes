@@ -7,6 +7,7 @@ import io.undertow.server.handlers.RequestDumpingHandler;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
@@ -30,6 +31,7 @@ public class HermesServer {
     private final int port;
     private final int sslPort;
     private final String host;
+    private ThroughputLimiter throughputLimiter;
 
     @Inject
     public HermesServer(
@@ -37,7 +39,8 @@ public class HermesServer {
             HermesMetrics hermesMetrics,
             HttpHandler publishingHandler,
             HealthCheckService healthCheckService,
-            MessagePreviewPersister messagePreviewPersister) {
+            MessagePreviewPersister messagePreviewPersister,
+            ThroughputLimiter throughputLimiter) {
 
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
@@ -48,11 +51,14 @@ public class HermesServer {
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
         this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
         this.host = configFactory.getStringProperty(FRONTEND_HOST);
+        this.throughputLimiter = throughputLimiter;
     }
 
     public void start() {
         configureServer().start();
         messagePreviewPersister.start();
+        throughputLimiter.start();
+
     }
 
     public void gracefulShutdown() throws InterruptedException {
@@ -66,6 +72,7 @@ public class HermesServer {
     public void shutdown() throws InterruptedException {
         undertow.stop();
         messagePreviewPersister.shutdown();
+        throughputLimiter.stop();
     }
 
     private Undertow configureServer() {
