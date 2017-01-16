@@ -71,8 +71,13 @@ public class SubscriptionAssignmentRegistry {
     }
 
     public void start() throws Exception {
-        readExistingAssignments().forEach(this::onAssignmentAdded);
+        logger.info("Starting assignment registry");
+        List<SubscriptionAssignment> currentAssignments = readExistingAssignments();
+        currentAssignments.forEach(this::onAssignmentAdded);
+        logger.info("Initialized registry with {} assignments", currentAssignments.size());
+        logger.info("Starting assignment cache");
         cache.start();
+        logger.info("Assignment cache started");
         postInitializationListeners.forEach(Runnable::run);
     }
 
@@ -120,24 +125,32 @@ public class SubscriptionAssignmentRegistry {
     }
 
     private void onAssignmentAdded(SubscriptionAssignment assignment) {
-        if (assignments.add(assignment)) {
-            if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
-                callbacks.forEach(callback ->
-                        callback.onSubscriptionAssigned(assignment.getSubscriptionName())
-                );
+        try {
+            if (assignments.add(assignment)) {
+                if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
+                    callbacks.forEach(callback ->
+                            callback.onSubscriptionAssigned(assignment.getSubscriptionName())
+                    );
+                }
             }
+        } catch (Exception e) {
+            logger.error("Exception while adding assignment {}", assignment, e);
         }
     }
 
     private void onAssignmentRemoved(SubscriptionAssignment assignment) {
-        if (assignments.remove(assignment)) {
-            if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
-                callbacks.forEach(callback ->
-                        callback.onAssignmentRemoved(assignment.getSubscriptionName())
-                );
+        try {
+            if (assignments.remove(assignment)) {
+                if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
+                    callbacks.forEach(callback ->
+                            callback.onAssignmentRemoved(assignment.getSubscriptionName())
+                    );
+                }
             }
+            removeSubscriptionEntryIfEmpty(assignment.getSubscriptionName());
+        } catch (Exception e) {
+            logger.error("Exception while removing assignment {}", assignment, e);
         }
-        removeSubscriptionEntryIfEmpty(assignment.getSubscriptionName());
     }
 
     private void removeSubscriptionEntryIfEmpty(SubscriptionName subscriptionName) {

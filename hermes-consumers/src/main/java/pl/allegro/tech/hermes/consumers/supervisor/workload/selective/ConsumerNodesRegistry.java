@@ -62,6 +62,16 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
         }
     }
 
+    private boolean ensureRegistered() {
+        if (curatorClient.getZookeeperClient().isConnected()) {
+            if (!isRegistered(consumerNodeId)) {
+                registerConsumerNode();
+            }
+            return true;
+        }
+        return false;
+    }
+
     private void registerConsumerNode() {
         try {
             curatorClient.create().creatingParentsIfNeeded()
@@ -94,7 +104,7 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
     }
 
     public boolean isLeader() {
-        return curatorClient.getZookeeperClient().isConnected() && leaderLatch.hasLeadership();
+        return ensureRegistered() && leaderLatch.hasLeadership();
     }
 
     public List<String> list() {
