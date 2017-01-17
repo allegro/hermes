@@ -32,6 +32,7 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_DEAD_AFTER_SECONDS;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.MIRROR;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.SELECTIVE;
 
@@ -69,10 +70,13 @@ public class SupervisorControllerFactory implements Factory<SupervisorController
     }
 
     private static ConsumerNodesRegistry createConsumersRegistry(ConfigFactory configs, CuratorFramework curator) {
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("ConsumerRegistryExecutor-%d").build();
         return new ConsumerNodesRegistry(curator,
-                newSingleThreadExecutor(),
+                newSingleThreadExecutor(threadFactory),
                 new ZookeeperPaths(configs.getStringProperty(Configs.ZOOKEEPER_ROOT)).consumersRegistryPath(configs.getStringProperty(Configs.KAFKA_CLUSTER_NAME)),
-                configs.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID));
+                configs.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID),
+                configs.getIntProperty(CONSUMER_WORKLOAD_DEAD_AFTER_SECONDS));
     }
 
     @Override

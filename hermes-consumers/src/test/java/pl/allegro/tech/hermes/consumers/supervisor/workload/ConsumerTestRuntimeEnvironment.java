@@ -38,6 +38,7 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +50,7 @@ import java.util.stream.IntStream;
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_SECOND;
 import static org.mockito.Mockito.mock;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -56,6 +58,7 @@ import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 
 class ConsumerTestRuntimeEnvironment {
 
+    private static final int DEATH_OF_CONSUMER_AFTER_SECONDS = 300;
     private final static String CLUSTER_NAME = "primary";
 
     private int consumerIdSequence = 0;
@@ -76,6 +79,7 @@ class ConsumerTestRuntimeEnvironment {
     private CuratorFramework curator;
 
     private Map<String, CuratorFramework> consumerZookeeperConnections = Maps.newHashMap();
+    private List<SubscriptionsCache> subscriptionsCaches = new ArrayList<>();
 
     ConsumerTestRuntimeEnvironment(Supplier<CuratorFramework> curatorSupplier) {
         this.paths = new ZookeeperPaths("/hermes");
@@ -87,11 +91,13 @@ class ConsumerTestRuntimeEnvironment {
                 curator, objectMapper, paths, topicRepository
         );
 
-        this.configFactory = new MutableConfigFactory().overrideProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL, 1);
+        this.configFactory = new MutableConfigFactory()
+                .overrideProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL, 1)
+                .overrideProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION, 2);
 
         this.consumersRegistry = new ConsumerNodesRegistry(
-                curator, executorService, paths.consumersRegistryPath(CLUSTER_NAME), "id"
-        );
+                curator, executorService, paths.consumersRegistryPath(CLUSTER_NAME), "id",
+                DEATH_OF_CONSUMER_AFTER_SECONDS);
 
         this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
 
@@ -118,8 +124,8 @@ class ConsumerTestRuntimeEnvironment {
                 curator,
                 executorService,
                 paths.consumersRegistryPath(CLUSTER_NAME),
-                consumerId
-        );
+                consumerId,
+                DEATH_OF_CONSUMER_AFTER_SECONDS);
 
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(
                 curator, configFactory
@@ -129,6 +135,7 @@ class ConsumerTestRuntimeEnvironment {
         SubscriptionsCache subscriptionsCache = new NotificationsBasedSubscriptionCache(
                 notificationsBus, groupRepository, topicRepository, subscriptionRepository
         );
+        subscriptionsCaches.add(subscriptionsCache);
         SubscriptionAssignmentRegistry assignmentRegistry = new SubscriptionAssignmentRegistryFactory(
                 curator, configFactory, subscriptionsCache).provide(consumerId);
 
@@ -168,6 +175,7 @@ class ConsumerTestRuntimeEnvironment {
                 new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);
         SubscriptionsCache subscriptionsCache = new NotificationsBasedSubscriptionCache(
                 notificationsBus, groupRepository, topicRepository, subscriptionRepository);
+        subscriptionsCaches.add(subscriptionsCache);
         subscriptionsCache.start();
         return new ConsumersRuntimeMonitor(
                 consumersSupervisor,
@@ -253,7 +261,10 @@ class ConsumerTestRuntimeEnvironment {
         }
         subscriptionRepository.createSubscription(subscription);
         await().atMost(adjust(ONE_SECOND)).until(
-                () -> subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName())
+                () -> {
+                    subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName());
+                    subscriptionsCaches.forEach(subscriptionsCache -> subscriptionsCache.listActiveSubscriptionNames().contains(subscriptionName));
+                }
         );
         return subscription.getQualifiedName();
     }

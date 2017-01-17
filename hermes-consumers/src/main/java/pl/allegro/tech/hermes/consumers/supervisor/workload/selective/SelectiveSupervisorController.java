@@ -36,9 +36,9 @@ public class SelectiveSupervisorController implements SupervisorController {
     private final SubscriptionAssignmentRegistry registry;
     private final WorkTracker workTracker;
     private final ConsumerNodesRegistry consumersRegistry;
+    private final BalancingJob balancingJob;
     private final ZookeeperAdminCache adminCache;
     private final ConfigFactory configFactory;
-    private final HermesMetrics metrics;
 
     private final ExecutorService assignmentExecutor;
 
@@ -61,7 +61,14 @@ public class SelectiveSupervisorController implements SupervisorController {
         this.adminCache = adminCache;
         this.assignmentExecutor = assignmentExecutor;
         this.configFactory = configFactory;
-        this.metrics = metrics;
+        this.balancingJob = new BalancingJob(
+                consumersRegistry,
+                subscriptionsCache,
+                new SelectiveWorkBalancer(configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION),
+                        configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER)),
+                workTracker, metrics,
+                configFactory.getIntProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL),
+                configFactory.getStringProperty(KAFKA_CLUSTER_NAME));
     }
 
     @Override
@@ -104,6 +111,8 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void start() throws Exception {
+        long startTime = System.currentTimeMillis();
+
         adminCache.start();
         adminCache.addCallback(this);
 
@@ -113,28 +122,22 @@ public class SelectiveSupervisorController implements SupervisorController {
 
         supervisor.start();
         consumersRegistry.start();
+        registry.start();
         if (configFactory.getBooleanProperty(CONSUMER_WORKLOAD_AUTO_REBALANCE)) {
-            registry.registerPostInitializationListener(() ->
-                consumersRegistry.registerLeaderLatchListener(new BalancingJob(
-                        consumersRegistry,
-                        subscriptionsCache,
-                        new SelectiveWorkBalancer(configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION),
-                                configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER)),
-                        workTracker, metrics,
-                        configFactory.getIntProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL),
-                        configFactory.getStringProperty(KAFKA_CLUSTER_NAME)))
-            );
+            balancingJob.start();
+            consumersRegistry.startLeaderLatch();
         } else {
             logger.info("Automatic workload rebalancing is disabled.");
         }
-        logger.info("Consumer boot complete. Workload config: [{}]",
+
+        logger.info("Consumer boot complete in {} ms. Workload config: [{}]",
+                System.currentTimeMillis() - startTime,
                 configFactory.print(
                         CONSUMER_WORKLOAD_NODE_ID,
                         CONSUMER_WORKLOAD_ALGORITHM,
                         CONSUMER_WORKLOAD_REBALANCE_INTERVAL,
                         CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION,
                         CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER));
-        registry.start();
     }
 
     @Override
@@ -144,6 +147,8 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void shutdown() throws InterruptedException {
+        balancingJob.stop();
+        consumersRegistry.stopLeaderLatch();
         supervisor.shutdown();
     }
 

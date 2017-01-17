@@ -5,13 +5,14 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
-import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import static java.util.stream.Collectors.toList;
@@ -26,14 +27,18 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
     private final String consumerNodeId;
     private final String prefix;
     private final LeaderLatch leaderLatch;
+    private final Map<String, Long> consumersLastSeen = new HashMap<>();
+    private final long deathOfConsumerAfterMillis;
 
-    public ConsumerNodesRegistry(CuratorFramework curatorClient, ExecutorService executorService, String prefix, String consumerNodeId) {
+    public ConsumerNodesRegistry(CuratorFramework curatorClient, ExecutorService executorService, String prefix,
+                                 String consumerNodeId, int deathOfConsumerAfterSeconds) {
         super(curatorClient, getNodesPath(prefix), true, false, executorService);
 
         this.curatorClient = curatorClient;
         this.consumerNodeId = consumerNodeId;
         this.prefix = prefix;
         this.leaderLatch = new LeaderLatch(curatorClient, getLeaderPath(), consumerNodeId);
+        this.deathOfConsumerAfterMillis = deathOfConsumerAfterSeconds * 1000L;
     }
 
     @Override
@@ -62,6 +67,45 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
         }
     }
 
+    void startLeaderLatch() {
+        try {
+            leaderLatch.start();
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
+    }
+
+    void stopLeaderLatch() {
+        try {
+            leaderLatch.close();
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
+    }
+
+    boolean isLeader() {
+        return ensureRegistered() && leaderLatch.hasLeadership();
+    }
+
+    List<String> list() {
+        return new ArrayList<>(consumersLastSeen.keySet());
+    }
+
+    void refresh() {
+        logger.info("Refreshing current consumers registry");
+
+        long currentTime = System.currentTimeMillis();
+        readCurrentNodes().forEach(node -> consumersLastSeen.put(node, currentTime));
+
+        List<String> deadConsumers = findDeadConsumers(currentTime);
+
+        if (!deadConsumers.isEmpty()) {
+            logger.info("Considering following consumers dead: {}", deadConsumers);
+        }
+
+        deadConsumers.forEach(consumersLastSeen::remove);
+    }
+
     private boolean ensureRegistered() {
         if (curatorClient.getZookeeperClient().isConnected()) {
             if (!isRegistered(consumerNodeId)) {
@@ -82,15 +126,6 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
         }
     }
 
-    public void registerLeaderLatchListener(LeaderLatchListener... leaderListener) {
-        try {
-            Arrays.stream(leaderListener).forEach(leaderLatch::addListener);
-            leaderLatch.start();
-        } catch (Exception e) {
-            throw new InternalProcessingException(e);
-        }
-    }
-
     private String getNodePath(String consumerNodeId) {
         return getNodesPath(prefix) + "/" + consumerNodeId;
     }
@@ -103,12 +138,21 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
         return prefix + "/leader";
     }
 
-    public boolean isLeader() {
-        return ensureRegistered() && leaderLatch.hasLeadership();
+    private List<String> findDeadConsumers(long currentTime) {
+        long tooOld = currentTime - deathOfConsumerAfterMillis;
+        return consumersLastSeen.entrySet().stream()
+                .filter(entry -> {
+                    long lastSeen = entry.getValue();
+                    return lastSeen < tooOld;
+                })
+                .map(Map.Entry::getKey)
+                .collect(toList());
     }
 
-    public List<String> list() {
-        return getCurrentData().stream().map(data -> substringAfterLast(data.getPath(), "/")).collect(toList());
+    private List<String> readCurrentNodes() {
+        return getCurrentData().stream()
+                .map(data -> substringAfterLast(data.getPath(), "/"))
+                .collect(toList());
     }
 
     public String getId() {

@@ -32,8 +32,6 @@ public class SubscriptionAssignmentRegistry {
 
     private final Set<SubscriptionAssignmentAware> callbacks = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    private final Set<Runnable> postInitializationListeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
     private final String consumerNodeId;
 
     private final CuratorFramework curator;
@@ -72,13 +70,13 @@ public class SubscriptionAssignmentRegistry {
 
     public void start() throws Exception {
         logger.info("Starting assignment registry");
+
         List<SubscriptionAssignment> currentAssignments = readExistingAssignments();
         currentAssignments.forEach(this::onAssignmentAdded);
-        logger.info("Initialized registry with {} assignments", currentAssignments.size());
-        logger.info("Starting assignment cache");
+
         cache.start();
-        logger.info("Assignment cache started");
-        postInitializationListeners.forEach(Runnable::run);
+
+        logger.info("Started assignment registry. Read {} assignments", currentAssignments.size());
     }
 
     public void stop() throws Exception {
@@ -87,10 +85,6 @@ public class SubscriptionAssignmentRegistry {
 
     public void registerAssignmentCallback(SubscriptionAssignmentAware callback) {
         callbacks.add(callback);
-    }
-
-    public void registerPostInitializationListener(Runnable task) {
-        postInitializationListeners.add(task);
     }
 
     public boolean isAssignedTo(String nodeId, SubscriptionName subscription) {

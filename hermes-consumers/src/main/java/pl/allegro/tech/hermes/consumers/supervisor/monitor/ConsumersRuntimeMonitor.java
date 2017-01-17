@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class ConsumersRuntimeMonitor implements Runnable {
@@ -34,6 +35,8 @@ public class ConsumersRuntimeMonitor implements Runnable {
     private final SubscriptionsCache subscriptionsCache;
 
     private final MonitorMetrics monitorMetrics = new MonitorMetrics();
+
+    private ScheduledFuture job;
 
     public ConsumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
                                    SupervisorController workloadSupervisor,
@@ -68,10 +71,11 @@ public class ConsumersRuntimeMonitor implements Runnable {
     }
 
     public void start() {
-        executor.scheduleWithFixedDelay(this, scanIntervalSeconds, scanIntervalSeconds, TimeUnit.SECONDS);
+        this.job = executor.scheduleWithFixedDelay(this, scanIntervalSeconds, scanIntervalSeconds, TimeUnit.SECONDS);
     }
 
     public void shutdown() throws InterruptedException {
+        job.cancel(false);
         executor.shutdown();
         executor.awaitTermination(1, TimeUnit.MINUTES);
     }
