@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 
 import java.util.concurrent.Executors;
@@ -77,12 +78,16 @@ public class BalancingJob implements Runnable {
                 try (Timer.Context ctx = metrics.consumersWorkloadRebalanceDurationTimer(kafkaCluster).time()) {
                     logger.info("Initializing workload balance.");
 
-                    WorkBalancingResult work = workBalancer.balance(subscriptionsCache.listActiveSubscriptionNames(),
+                    SubscriptionAssignmentView initialState = workTracker.getAssignments();
+
+                    WorkBalancingResult work = workBalancer.balance(
+                            subscriptionsCache.listActiveSubscriptionNames(),
                             consumersRegistry.list(),
-                            workTracker.getAssignments());
+                            initialState);
 
                     if (consumersRegistry.isLeader()) {
-                        WorkTracker.WorkDistributionChanges changes = workTracker.apply(work.getAssignmentsView());
+                        WorkTracker.WorkDistributionChanges changes =
+                                workTracker.apply(initialState, work.getAssignmentsView());
 
                         logger.info("Finished workload balance {}, {}", work.toString(), changes.toString());
 
