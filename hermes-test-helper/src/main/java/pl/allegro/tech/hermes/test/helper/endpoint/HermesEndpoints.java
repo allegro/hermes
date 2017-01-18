@@ -23,7 +23,7 @@ public class HermesEndpoints {
 
     private final ConsumerEndpoint consumerEndpoint;
 
-    private final SupportTeamsEndpoint supportTeamsEndpoint;
+    private final MaintainerEndpoint maintainerEndpoint;
 
     private final BlacklistEndpoint blacklistEndpoint;
 
@@ -36,7 +36,7 @@ public class HermesEndpoints {
         this.blacklistEndpoint = hermes.createBlacklistEndpoint();
         this.oAuthProviderEndpoint = hermes.createOAuthProviderEndpoint();
         this.consumerEndpoint = hermes.createConsumerEndpoint();
-        this.supportTeamsEndpoint = hermes.createSupportTeamsEndpoint();
+        this.maintainerEndpoint = hermes.createMaintainerEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
@@ -69,8 +69,8 @@ public class HermesEndpoints {
         return queryEndpoint;
     }
 
-    public SupportTeamsEndpoint supportTeams() {
-        return supportTeamsEndpoint;
+    public MaintainerEndpoint maintainerEndpoint() {
+        return maintainerEndpoint;
     }
 
     public BlacklistEndpoint blacklist() {

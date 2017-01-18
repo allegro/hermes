@@ -6,25 +6,19 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorCode;
-import pl.allegro.tech.hermes.api.SupportTeam;
+import pl.allegro.tech.hermes.api.Maintainer;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.management.domain.maintainer.CrowdMaintainerSource;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
-
-
-public class SupportTeamsEndpointForCrowdTest extends IntegrationTest {
+public class CrowdMaintainerSourceIntegrationTest extends IntegrationTest {
 
     private static final int SERVICE_PORT = 18222;
 
@@ -64,7 +58,7 @@ public class SupportTeamsEndpointForCrowdTest extends IntegrationTest {
 
 
         //when
-        management.supportTeams().get("Scrum");
+        management.maintainerEndpoint().search(CrowdMaintainerSource.NAME, "Scrum");
 
         //then
         wireMock.verifyThat(1, getRequestedFor(urlMatching(BASE_API_PATH + ".*")));
@@ -84,12 +78,10 @@ public class SupportTeamsEndpointForCrowdTest extends IntegrationTest {
 
 
         //when
-        List<SupportTeam> supportTeams = management.supportTeams().get("Scrum");
+        List<Maintainer> groups = management.maintainerEndpoint().search(CrowdMaintainerSource.NAME, "Scrum");
 
         //then
-        List<String> supportTeamNames = supportTeams.stream().map(SupportTeam::getName).collect(Collectors.toList());
-        assertThat(supportTeams).hasSize(2);
-        assertThat(supportTeamNames).contains(firstTeam, secondTeam);
+        assertThat(groups.stream().map(Maintainer::getId)).containsExactly(firstTeam, secondTeam);
     }
 
     @Test
@@ -104,10 +96,10 @@ public class SupportTeamsEndpointForCrowdTest extends IntegrationTest {
 
 
         //when
-        List<SupportTeam> supportTeams = management.supportTeams().get("Non Matching");
+        List<Maintainer> groups = management.maintainerEndpoint().search(CrowdMaintainerSource.NAME, "Non Matching");
 
         //then
-        assertThat(supportTeams).isEmpty();
+        assertThat(groups).isEmpty();
     }
 
     @Test
@@ -123,13 +115,11 @@ public class SupportTeamsEndpointForCrowdTest extends IntegrationTest {
 
 
         //when
-        Response response = management.supportTeams().getAsResponse("Non Matching");
+        Response response = management.maintainerEndpoint().searchAsResponse(CrowdMaintainerSource.NAME, "Non Matching");
 
         //then
-        assertThat(response).hasErrorCode(ErrorCode.SUPPORT_TEAMS_COULD_NOT_BE_LOADED);
+        assertThat(response).hasErrorCode(ErrorCode.CROWD_GROUPS_COULD_NOT_BE_LOADED);
     }
-
-
 
     private String groupResponse(String path, String name) {
         return String.format("{ \"link\": { \"href\": \"%s\", \"rel\": \"self\" }, \"name\": \"%s\"}", path, name);

@@ -1,23 +1,21 @@
-package pl.allegro.tech.hermes.management.domain.supportTeam.crowd;
+package pl.allegro.tech.hermes.management.infrastructure.crowd;
 
 import com.google.common.io.BaseEncoding;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
+import pl.allegro.tech.hermes.api.CrowdGroupDescription;
 import pl.allegro.tech.hermes.api.CrowdGroups;
-import pl.allegro.tech.hermes.api.SupportTeam;
-import pl.allegro.tech.hermes.management.config.SupportTeamServiceProperties;
-import pl.allegro.tech.hermes.management.domain.supportTeam.SupportTeamService;
+import pl.allegro.tech.hermes.management.config.CrowdProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CrowdSupportTeamService implements SupportTeamService {
+public class RestCrowdClient implements CrowdClient {
 
     private static final String CROWD_API_SUFFIX = "/rest/usermanagement/1";
 
@@ -25,17 +23,16 @@ public class CrowdSupportTeamService implements SupportTeamService {
 
     private final RestTemplate restTemplate;
 
-    private final SupportTeamServiceProperties.CrowdProperties crowdProperties;
+    private final CrowdProperties crowdProperties;
 
     private final HttpEntity<Void> entity;
 
     private final String groupSearchUrl;
 
-    @Autowired
-    public CrowdSupportTeamService(RestTemplate restTemplate, SupportTeamServiceProperties supportTeamServiceProperties) {
+    public RestCrowdClient(RestTemplate restTemplate, CrowdProperties crowdProperties) {
         this.restTemplate = restTemplate;
-        this.crowdProperties = supportTeamServiceProperties.getCrowd();
-        this.groupSearchUrl = crowdProperties.getPath() + CROWD_API_SUFFIX + GROUP_SEARCH_SUFFIX;
+        this.crowdProperties = crowdProperties;
+        this.groupSearchUrl = this.crowdProperties.getPath() + CROWD_API_SUFFIX + GROUP_SEARCH_SUFFIX;
         this.entity = configureEntity();
     }
 
@@ -52,11 +49,11 @@ public class CrowdSupportTeamService implements SupportTeamService {
     }
 
     @Override
-    public List<SupportTeam> getSupportTeams(String searchString) {
+    public List<String> getGroups(String searchString) {
         CrowdGroups crowdGroups = restTemplate.exchange(this.groupSearchUrl, HttpMethod.GET, this.entity, CrowdGroups.class, searchString)
                 .getBody();
         return crowdGroups.getCrowdGroupDescriptions().stream()
-                .map(description -> new SupportTeam(description.getName()))
+                .map(CrowdGroupDescription::getName)
                 .collect(Collectors.toList());
     }
 }

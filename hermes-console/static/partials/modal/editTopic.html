@@ -33,7 +33,7 @@
             <div class="form-group {{topicForm.topicMaintainer.$valid ? '' : 'has-error'}}">
                 <label for="topicMaintainer" class="col-md-3 control-label">Maintainer</label>
                 <div class="col-md-9">
-                    <input class="form-control" id="topicMaintainer" name="topicMaintainer" required uib-typeahead="maintainer as maintainer.name for maintainer in maintainers($viewValue)" typeahead-min-length="3"
+                    <input class="form-control" id="topicMaintainer" name="topicMaintainer" required uib-typeahead="maintainer as maintainer.name for maintainer in maintainers($viewValue)" typeahead-min-length="1"
                            typeahead-wait-ms="500" placeholder="who maintains this topic?" ng-model="selectedMaintainer" autocomplete="off" />
                 </div>
             </div>

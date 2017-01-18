@@ -2,10 +2,7 @@ package pl.allegro.tech.hermes.api.endpoints;
 
 import pl.allegro.tech.hermes.api.Maintainer;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -16,13 +13,13 @@ public interface MaintainerEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
-    @Path("/sources/{source}/{searchString}")
-    List<String> search(@PathParam("source") String source, @PathParam("searchString") String searchString);
+    @Path("/sources/{source}")
+    List<Maintainer> search(@PathParam("source") String source, @QueryParam("search") String searchString);
 
     @GET
     @Produces(APPLICATION_JSON)
-    @Path("/sources/{source}/{searchString}")
-    Response searchAsResponse(@PathParam("source") String source, @PathParam("searchString") String searchString);
+    @Path("/sources/{source}")
+    Response searchAsResponse(@PathParam("source") String source, @QueryParam("search") String searchString);
 
     @GET
     @Produces(APPLICATION_JSON)
