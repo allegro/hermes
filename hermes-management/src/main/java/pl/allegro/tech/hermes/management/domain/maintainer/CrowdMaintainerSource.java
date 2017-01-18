@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CrowdMaintainerSource implements MaintainerSource {
+public class CrowdMaintainerSource implements HintingMaintainerSource {
 
     public static final String NAME = "Crowd";
 

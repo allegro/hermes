@@ -27,14 +27,18 @@
                 <label for="topicMaintainerSource" class="col-md-3 control-label">Maintainer source</label>
                 <div class="col-md-9">
                     <select required class="form-control" id="topicMaintainerSource" name="topicMaintainerSource"
-                            ng-model="topic.maintainer.source" ng-options="s for s in maintainerSources"></select>
+                            ng-model="selectedMaintainerSource" ng-options="s.name for s in maintainerSources"></select>
                 </div>
             </div>
             <div class="form-group {{topicForm.topicMaintainer.$valid ? '' : 'has-error'}}">
-                <label for="topicMaintainer" class="col-md-3 control-label">Maintainer</label>
+                <label ng-if="selectedMaintainerSource.hinting" for="topicMaintainerWithHinting" class="col-md-3 control-label">Maintainer</label>
+                <label ng-if="!selectedMaintainerSource.hinting" for="topicMaintainerWithoutHinting" class="col-md-3 control-label">Maintainer</label>
                 <div class="col-md-9">
-                    <input class="form-control" id="topicMaintainer" name="topicMaintainer" required uib-typeahead="maintainer as maintainer.name for maintainer in maintainers($viewValue)" typeahead-min-length="1"
-                           typeahead-wait-ms="500" placeholder="who maintains this topic?" ng-model="selectedMaintainer" autocomplete="off" />
+                    <input ng-if="selectedMaintainerSource.hinting" class="form-control" id="topicMaintainerWithHinting" name="topicMaintainer" required
+                           uib-typeahead="maintainer as maintainer.name for maintainer in maintainers($viewValue)" typeahead-min-length="1"
+                           typeahead-wait-ms="500" placeholder="who maintains this topic?" ng-model="$parent.selectedMaintainer" autocomplete="off" />
+                    <input ng-if="!selectedMaintainerSource.hinting" class="form-control" id="topicMaintainerWithoutHinting" name="topicMaintainer" required
+                           placeholder="who maintains this topic?" ng-model="$parent.selectedMaintainer.id" />
                 </div>
             </div>
             <div class="form-group {{topicForm.topicRetention.$valid ? '' : 'has-error'}}">

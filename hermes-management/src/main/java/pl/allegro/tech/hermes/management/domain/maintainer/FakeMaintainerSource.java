@@ -9,7 +9,7 @@ import java.util.List;
 
 @Component
 @Order(-1)
-public class FakeMaintainerSource implements MaintainerSource {
+public class FakeMaintainerSource implements HintingMaintainerSource {
 
     @Override
     public String name() {
@@ -22,13 +22,12 @@ public class FakeMaintainerSource implements MaintainerSource {
     }
 
     @Override
-    public List<Maintainer> maintainersMatching(String searchString) {
-        return ImmutableList.of(new Maintainer("id-fake", "Fake"));
-    }
-
-    @Override
     public Maintainer get(String id) {
         return new Maintainer("id-fake", "Fake");
     }
 
+    @Override
+    public List<Maintainer> maintainersMatching(String searchString) {
+        return ImmutableList.of(get(""));
+    }
 }

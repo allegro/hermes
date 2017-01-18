@@ -172,19 +172,20 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
 
         maintainerService.getSourceNames().then(function(sources) {
             $scope.maintainerSources = sources;
-            $scope.topic.maintainer.source = $scope.topic.maintainer.source || $scope.maintainerSources[0];
+            $scope.selectedMaintainerSource = _.find(sources, function(s) { return s.name == $scope.topic.maintainer.source }) || sources[0];
+            if ($scope.topic.maintainer.id) {
+                maintainerService.getMaintainer($scope.selectedMaintainerSource.name, $scope.topic.maintainer.id).then(function(maintainer) {
+                    $scope.selectedMaintainer = maintainer;
+                });
+            }
         });
-        if ($scope.topic.maintainer.id) {
-            maintainerService.getMaintainer($scope.topic.maintainer.source, $scope.topic.maintainer.id).then(function(maintainer) {
-                $scope.selectedMaintainer = maintainer;
-            });
-        }
 
         $scope.save = function () {
             var promise;
             var originalTopicName = $scope.topic.name;
             passwordService.set($scope.groupPassword);
             $scope.topic.maintainer.id = $scope.selectedMaintainer.id;
+            $scope.topic.maintainer.source = $scope.selectedMaintainerSource.name;
 
             var topic = _.cloneDeep($scope.topic);
             delete topic.shortName;
@@ -212,7 +213,7 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
         };
 
         $scope.maintainers = function(searchString) {
-            return maintainerService.getMaintainers($scope.topic.maintainer.source, searchString);
+            return maintainerService.getMaintainers($scope.selectedMaintainerSource.name, searchString);
         };
 
     }]);

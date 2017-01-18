@@ -204,13 +204,13 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
         maintainerService.getSourceNames().then(function(sources) {
             $scope.maintainerSources = sources;
-            $scope.subscription.maintainer.source = $scope.subscription.maintainer.source || $scope.maintainerSources[0];
+            $scope.selectedMaintainerSource = _.find(sources, function(s) { return s.name == $scope.subscription.maintainer.source }) || sources[0];
+            if ($scope.subscription.maintainer.id) {
+                maintainerService.getMaintainer($scope.selectedMaintainerSource.name, $scope.subscription.maintainer.id).then(function(maintainer) {
+                    $scope.selectedMaintainer = maintainer;
+                });
+            }
         });
-        if ($scope.subscription.maintainer.id) {
-            maintainerService.getMaintainer($scope.subscription.maintainer.source, $scope.subscription.maintainer.id).then(function(maintainer) {
-                $scope.selectedMaintainer = maintainer;
-            });
-        }
 
         var subscriptionBeforeChanges = _.cloneDeep(subscription);
 
@@ -218,6 +218,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
             var promise;
             passwordService.set($scope.groupPassword);
             $scope.subscription.maintainer.id = $scope.selectedMaintainer.id;
+            $scope.subscription.maintainer.source = $scope.selectedMaintainerSource.name;
 
             if (operation === 'ADD') {
                 promise = subscriptionRepository.add(topicName, $scope.subscription).$promise;
@@ -244,7 +245,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
         };
 
         $scope.maintainers = function(searchString) {
-            return maintainerService.getMaintainers($scope.subscription.maintainer.source, searchString);
+            return maintainerService.getMaintainers($scope.selectedMaintainerSource.name, searchString);
         };
 
     }]);

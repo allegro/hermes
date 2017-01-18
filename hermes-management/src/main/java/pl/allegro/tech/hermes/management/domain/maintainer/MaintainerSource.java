@@ -4,8 +4,6 @@ import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Maintainer;
 import pl.allegro.tech.hermes.management.domain.ManagementException;
 
-import java.util.List;
-
 public interface MaintainerSource {
 
     String name();
@@ -13,8 +11,6 @@ public interface MaintainerSource {
     boolean exists(String maintainerId);
 
     Maintainer get(String id) throws MaintainerNotFound;
-
-    List<Maintainer> maintainersMatching(String searchString);
 
     class MaintainerNotFound extends ManagementException {
 

@@ -35,14 +35,18 @@
                 <label for="subscriptionMaintainerSource" class="col-md-3 control-label">Maintainer source</label>
                 <div class="col-md-9">
                     <select required class="form-control" id="subscriptionMaintainerSource" name="subscriptionMaintainerSource"
-                            ng-model="subscription.maintainer.source" ng-options="s for s in maintainerSources"></select>
+                            ng-model="selectedMaintainerSource" ng-options="s.name for s in maintainerSources"></select>
                 </div>
             </div>
             <div class="form-group {{subscriptionForm.subscriptionMaintainer.$valid ? '' : 'has-error'}}">
-                <label for="subscriptionMaintainer" class="col-md-3 control-label">Maintainer</label>
+                <label ng-if="selectedMaintainerSource.hinting" for="subscriptionMaintainerWithHinting" class="col-md-3 control-label">Maintainer</label>
+                <label ng-if="!selectedMaintainerSource.hinting" for="subscriptionMaintainerWithoutHinting" class="col-md-3 control-label">Maintainer</label>
                 <div class="col-md-9">
-                    <input class="form-control" id="subscriptionMaintainer" name="subscriptionMaintainer" required uib-typeahead="maintainer as maintainer.name for maintainer in maintainers($viewValue)" typeahead-min-length="1"
-                           typeahead-wait-ms="500" placeholder="who maintains this subscription?" ng-model="selectedMaintainer" autocomplete="off" />
+                    <input ng-if="selectedMaintainerSource.hinting" class="form-control" id="subscriptionMaintainerWithHinting" name="subscriptionMaintainer" required
+                           uib-typeahead="maintainer as maintainer.name for maintainer in maintainers($viewValue)" typeahead-min-length="1"
+                           typeahead-wait-ms="500" placeholder="who maintains this subscription (hint)?" ng-model="$parent.selectedMaintainer" autocomplete="off" />
+                    <input ng-if="!selectedMaintainerSource.hinting" class="form-control" id="subscriptionMaintainerWithoutHinting" name="subscriptionMaintainer" required
+                           placeholder="who maintains this subscription (no hint5)?" ng-model="$parent.selectedMaintainer.id" />
                 </div>
             </div>
             <div class="form-group">

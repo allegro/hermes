@@ -2,17 +2,18 @@ package pl.allegro.tech.hermes.management.domain.maintainer;
 
 import com.google.common.collect.ImmutableList;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class MaintainerSources {
+public class MaintainerSources implements Iterable<MaintainerSource> {
 
     private final Map<String, MaintainerSource> maintainerSourcesByNames;
 
-    private final List<String> maintainerSourceNames;
+    private final List<MaintainerSource> maintainerSources;
 
     public MaintainerSources(List<MaintainerSource> maintainerSources) {
         if (maintainerSources.isEmpty()) {
@@ -29,15 +30,15 @@ public class MaintainerSources {
                 )
         );
 
-        this.maintainerSourceNames = ImmutableList.copyOf(maintainerSources.stream().map(MaintainerSource::name).iterator());
+        this.maintainerSources = ImmutableList.copyOf(maintainerSources);
     }
 
-    public Optional<MaintainerSource> getByName(String searchedName) {
-        return Optional.ofNullable(maintainerSourcesByNames.get(searchedName));
+    public Optional<MaintainerSource> getByName(String name) {
+        return Optional.ofNullable(maintainerSourcesByNames.get(name));
     }
 
-    public List<String> names() {
-        return maintainerSourceNames;
+    public Iterator<MaintainerSource> iterator() {
+        return maintainerSources.iterator();
     }
 
 }

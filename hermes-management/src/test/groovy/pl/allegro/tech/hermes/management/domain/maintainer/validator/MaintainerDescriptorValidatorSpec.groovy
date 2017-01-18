@@ -51,14 +51,6 @@ class MaintainerDescriptorValidatorSpec extends Specification {
         Maintainer get(String id) {
             return new Maintainer(id, id)
         }
-
-        @Override
-        List<Maintainer> maintainersMatching(String searchString) {
-            if ('Some Team'.contains(searchString)) {
-                return [new Maintainer('id-some-team', 'Some Team')]
-            }
-            return []
-        }
     }
 
 }
