@@ -121,6 +121,7 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
             curatorClient.create().creatingParentsIfNeeded()
                     .withMode(EPHEMERAL).forPath(getNodePath(consumerNodeId));
             logger.info("Registered in consumer nodes registry as {}", consumerNodeId);
+            refresh();
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
