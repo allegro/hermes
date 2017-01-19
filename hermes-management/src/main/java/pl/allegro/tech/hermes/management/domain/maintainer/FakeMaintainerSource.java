@@ -7,6 +7,11 @@ import pl.allegro.tech.hermes.api.Maintainer;
 
 import java.util.List;
 
+/**
+ * Temporary implementation for human-testing.
+ *
+ * TODO: remove before merging the feature branch.
+ */
 @Component
 @Order(-1)
 public class FakeMaintainerSource implements HintingMaintainerSource {

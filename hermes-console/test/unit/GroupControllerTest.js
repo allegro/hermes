@@ -25,13 +25,12 @@ describe("GroupController", function() {
 
         // given
         var group = {
-            "groupName": "groupWithContact",
-            "groupPassword": "*****",
+            "groupName": "someGroup"
         };
 
-        $httpBackend.when('GET', hermesUrl('/groups/groupWithContact')).respond(group);
+        $httpBackend.when('GET', hermesUrl('/groups/someGroup')).respond(group);
 
-        $httpBackend.when('GET', hermesUrl('/groups')).respond(['groupWithContact']);
+        $httpBackend.when('GET', hermesUrl('/groups')).respond(['someGroup']);
         $httpBackend.when('GET', hermesUrl('/topics')).respond([]);
 
 

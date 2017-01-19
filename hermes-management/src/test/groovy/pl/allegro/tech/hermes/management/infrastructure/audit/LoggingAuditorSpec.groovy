@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.api.OAuthProvider
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.management.utils.MockAppender
-import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 
