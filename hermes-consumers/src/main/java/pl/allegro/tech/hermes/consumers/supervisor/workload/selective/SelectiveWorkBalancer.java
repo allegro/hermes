@@ -62,7 +62,15 @@ public class SelectiveWorkBalancer {
 
     private int countMissingResources(List<SubscriptionName> subscriptions, SubscriptionAssignmentView state) {
         return subscriptions.stream()
-                .mapToInt(s -> consumersPerSubscription - state.getAssignmentsCountForSubscription(s))
+                .mapToInt(s -> {
+                    int subscriptionAssignments = state.getAssignmentsCountForSubscription(s);
+                    int missing = consumersPerSubscription - subscriptionAssignments;
+                    if (missing != 0) {
+                        logger.info("Subscription {} has {} != {} (default) assignments",
+                                s, subscriptionAssignments, consumersPerSubscription);
+                    }
+                    return missing;
+                })
                 .sum();
     }
 
