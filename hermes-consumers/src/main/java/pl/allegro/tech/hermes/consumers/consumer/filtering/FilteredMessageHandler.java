@@ -48,7 +48,7 @@ public class FilteredMessageHandler {
                 trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
             }
 
-            consumerRateLimiter.acquire();
+            consumerRateLimiter.acquireFiltered();
         }
     }
 
