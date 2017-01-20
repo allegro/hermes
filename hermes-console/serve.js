@@ -54,11 +54,21 @@ function readConfiguration(source, callback) {
 
     if (source.indexOf('htt') == 0) {
         console.log('Reading configuration from remote source: ' + source);
-        request.get(source, (error, res, body) => { callback(_.merge(defaultConfig, JSON.parse(body))); });
+        request.get(source, (error, res, body) => { callback(mergeConfig(defaultConfig, JSON.parse(body))); });
     }
     else {
         console.log('Reading configuration from file: ' + source);
         var config = JSON.parse(fs.readFileSync(source, 'utf8'));
-        callback(_.merge(defaultConfig, config));
+        callback(mergeConfig(defaultConfig, config));
+    }
+}
+
+function mergeConfig(defaultConfig, config) {
+    return _.mergeWith(defaultConfig, config, customizer)
+}
+
+function customizer(objValue, srcValue) {
+    if (_.isArray(objValue)) {
+        return srcValue
     }
 }
