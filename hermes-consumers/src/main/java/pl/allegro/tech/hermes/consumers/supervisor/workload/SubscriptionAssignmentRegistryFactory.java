@@ -48,8 +48,7 @@ public class SubscriptionAssignmentRegistryFactory implements Factory<Subscripti
                 consumerId,
                 curatorClient,
                 paths.consumersRuntimePath(cluster),
-                cache,
-                new SubscriptionAssignmentPathSerializer(paths.consumersRuntimePath(cluster))
+                cache
         );
 
         return registry;

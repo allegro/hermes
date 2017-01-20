@@ -7,10 +7,16 @@ import java.util.Objects;
 public class SubscriptionAssignment {
     private final String consumerNodeId;
     private final SubscriptionName subscriptionName;
+    private boolean auto = true;
 
     public SubscriptionAssignment(String consumerNodeId, SubscriptionName subscriptionName) {
+        this(consumerNodeId, subscriptionName, true);
+    }
+
+    public SubscriptionAssignment(String consumerNodeId, SubscriptionName subscriptionName, boolean auto) {
         this.consumerNodeId = consumerNodeId;
         this.subscriptionName = subscriptionName;
+        this.auto = auto;
     }
 
     public String getConsumerNodeId() {
@@ -33,5 +39,9 @@ public class SubscriptionAssignment {
     @Override
     public int hashCode() {
         return Objects.hash(consumerNodeId, subscriptionName);
+    }
+
+    public boolean isAuto() {
+        return auto;
     }
 }

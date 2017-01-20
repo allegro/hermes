@@ -42,7 +42,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
     );
 
     private final SubscriptionAssignmentRegistry subscriptionAssignmentRegistry = new SubscriptionAssignmentRegistry(
-            supervisorId, zookeeperClient, basePath, cache, new SubscriptionAssignmentPathSerializer(basePath));
+            supervisorId, zookeeperClient, basePath, cache);
 
     private final WorkTracker workTracker = new WorkTracker(supervisorId, subscriptionAssignmentRegistry);
 

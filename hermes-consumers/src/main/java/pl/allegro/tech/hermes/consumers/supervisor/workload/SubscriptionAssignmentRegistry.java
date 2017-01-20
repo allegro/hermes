@@ -42,21 +42,22 @@ public class SubscriptionAssignmentRegistry {
 
     private final SubscriptionAssignmentPathSerializer pathSerializer;
 
+    private static final byte[] AUTO_MARKER = "AUTO".getBytes();
+
     public SubscriptionAssignmentRegistry(String consumerNodeId,
                                           CuratorFramework curator,
                                           String basePath,
-                                          SubscriptionsCache subscriptionsCache,
-                                          SubscriptionAssignmentPathSerializer pathSerializer) {
+                                          SubscriptionsCache subscriptionsCache) {
         this.consumerNodeId = consumerNodeId;
         this.curator = curator;
         this.subscriptionsCache = subscriptionsCache;
-        this.pathSerializer = pathSerializer;
+        this.pathSerializer = new SubscriptionAssignmentPathSerializer(basePath, AUTO_MARKER);
         this.cache = new HierarchicalCache(
                 curator, Executors.newSingleThreadScheduledExecutor(), basePath, 2, Collections.emptyList()
         );
 
         cache.registerCallback(ASSIGNMENT_LEVEL, (e) -> {
-            SubscriptionAssignment assignment = pathSerializer.deserialize(e.getData().getPath());
+            SubscriptionAssignment assignment = pathSerializer.deserialize(e.getData().getPath(), e.getData().getData());
             switch (e.getType()) {
                 case CHILD_ADDED:
                     onAssignmentAdded(assignment);
@@ -110,7 +111,10 @@ public class SubscriptionAssignmentRegistry {
             try {
                 String path = pathSerializer.serialize(subscriptionName);
                 List<String> nodes = curator.getChildren().forPath(path);
-                nodes.forEach(node -> existingAssignments.add(new SubscriptionAssignment(node, subscriptionName)));
+                for (String node : nodes) {
+                    String fullPath = path + "/" + node;
+                    existingAssignments.add(pathSerializer.deserialize(fullPath, curator.getData().forPath(fullPath)));
+                }
             } catch (Exception e) {
                 logger.info("Exception occurred when initializing cache with subscription {}", subscriptionName, e);
             }
@@ -170,7 +174,7 @@ public class SubscriptionAssignmentRegistry {
 
     private void addAssignment(SubscriptionAssignment assignment, CreateMode createMode) {
         askCuratorPolitely(() -> curator.create().creatingParentsIfNeeded().withMode(createMode)
-                .forPath(pathSerializer.serialize(assignment.getSubscriptionName(), assignment.getConsumerNodeId())));
+                .forPath(pathSerializer.serialize(assignment.getSubscriptionName(), assignment.getConsumerNodeId()), AUTO_MARKER));
     }
 
     interface CuratorTask {

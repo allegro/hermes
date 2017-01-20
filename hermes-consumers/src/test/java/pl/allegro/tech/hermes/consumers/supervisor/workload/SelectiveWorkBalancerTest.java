@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.WorkBalancingResult;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
@@ -170,6 +171,46 @@ public class SelectiveWorkBalancerTest {
 
         // then
         assertThat(stateAfterRebalance.getAssignmentsForConsumerNode("c5")).hasSize(2);
+    }
+
+    @Test
+    public void shouldRemoveRedundantWorkAssignmentsToKeepWorkloadMinimal() {
+        // given
+        SelectiveWorkBalancer workBalancer = new SelectiveWorkBalancer(3, 100);
+        List<String> supervisors = ImmutableList.of("c1", "c2", "c3");
+        List<SubscriptionName> subscriptions = someSubscriptions(10);
+        SubscriptionAssignmentView currentState = initialState(subscriptions, supervisors, workBalancer);
+
+        // when
+        SubscriptionAssignmentView stateAfterRebalance = new SelectiveWorkBalancer(1, 100)
+                .balance(subscriptions, supervisors, currentState)
+                .getAssignmentsView();
+
+        // then
+        assertThat(stateAfterRebalance.getAssignmentsCountForSubscription(subscriptions.get(0))).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldNotRemoveAssignmentsThatAreMadeByAdmin() {
+        // given
+        SelectiveWorkBalancer workBalancer = new SelectiveWorkBalancer(1, 100);
+        SubscriptionName subscriptionName = SubscriptionName.fromString("a.a$a");
+        SubscriptionAssignmentView currentState = initialState(ImmutableList.of(subscriptionName), ImmutableList.of("c1"), workBalancer)
+                .transform((view, transformer) -> {
+                    transformer.addAssignment(new SubscriptionAssignment("c1", subscriptionName, true));
+                    transformer.addAssignment(new SubscriptionAssignment("c2", subscriptionName, false));
+                    transformer.addAssignment(new SubscriptionAssignment("c3", subscriptionName, false));
+                    transformer.addAssignment(new SubscriptionAssignment("c4", subscriptionName, false));
+                });
+
+        // when
+        SubscriptionAssignmentView stateAfterRebalance = workBalancer
+                .balance(ImmutableList.of(subscriptionName), ImmutableList.of("c1", "c2", "c3", "c4"), currentState)
+                .getAssignmentsView();
+
+        // then
+        assertThat(stateAfterRebalance.getAssignmentsForSubscription(subscriptionName)
+                .stream().map(SubscriptionAssignment::getConsumerNodeId).collect(toList())).containsOnly("c2", "c3", "c4");
     }
 
     private SubscriptionAssignmentView initialState(List<SubscriptionName> subscriptions, List<String> supervisors) {

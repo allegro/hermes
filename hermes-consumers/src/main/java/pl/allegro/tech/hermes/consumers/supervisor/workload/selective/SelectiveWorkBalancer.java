@@ -3,10 +3,14 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload.selective;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignment;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.toList;
@@ -54,10 +58,29 @@ public class SelectiveWorkBalancer {
             inactiveConsumers.forEach(transformer::removeConsumerNode);
             newSubscriptions.forEach(transformer::addSubscription);
             newConsumers.forEach(transformer::addConsumerNode);
+            minimizeWorkload(state, transformer);
             AvailableWork.stream(state, consumersPerSubscription, maxSubscriptionsPerConsumer)
                     .forEach(transformer::addAssignment);
             equalizeWorkload(state, transformer);
         });
+    }
+
+    private void minimizeWorkload(SubscriptionAssignmentView state, SubscriptionAssignmentView.Transformer transformer) {
+        Set<SubscriptionAssignment> redundant = new HashSet<>();
+        for (SubscriptionName subscriptionName : state.getSubscriptions()) {
+            int diff = state.getAssignmentsCountForSubscription(subscriptionName) - consumersPerSubscription;
+            if (diff > 0) {
+                Iterator<SubscriptionAssignment> iterator = state.getAssignmentsForSubscription(subscriptionName).iterator();
+                while (diff > 0 && iterator.hasNext()) {
+                    SubscriptionAssignment sa = iterator.next();
+                    if (sa.isAuto()) {
+                        redundant.add(sa);
+                        diff--;
+                    }
+                }
+            }
+        }
+        redundant.forEach(transformer::removeAssignment);
     }
 
     private int countMissingResources(List<SubscriptionName> subscriptions, SubscriptionAssignmentView state) {
