@@ -17,6 +17,10 @@ public class BatchConsumerRateLimiter implements ConsumerRateLimiter {
     }
 
     @Override
+    public void acquireFiltered() {
+    }
+
+    @Override
     public void adjustConsumerRate() {
     }
 
