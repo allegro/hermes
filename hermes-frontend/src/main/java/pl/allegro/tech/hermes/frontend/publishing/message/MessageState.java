@@ -18,7 +18,8 @@ public class MessageState {
         SENDING_TO_KAFKA,
         SENT_TO_KAFKA,
         DELAYED_SENDING,
-        DELAYED_PROCESSING
+        DELAYED_PROCESSING,
+        DELAYED_SENT_TO_KAFKA
     }
 
     private volatile boolean timeoutHasPassed = false;
@@ -48,8 +49,8 @@ public class MessageState {
         return state.compareAndSet(SENDING_TO_KAFKA, SENT_TO_KAFKA) || state.compareAndSet(SENDING_TO_KAFKA_PRODUCER_QUEUE, SENT_TO_KAFKA);
     }
 
-    public boolean isDelayed() {
-        return timeoutHasPassed || state.get() == DELAYED_SENDING || state.get() == DELAYED_PROCESSING;
+    public boolean isDelayedSentToKafka() {
+        return state.get() == DELAYED_SENT_TO_KAFKA;
     }
 
     public boolean setDelayedSending() {
@@ -76,7 +77,11 @@ public class MessageState {
         return timeoutHasPassed && state.compareAndSet(SENDING_TO_KAFKA, DELAYED_PROCESSING);
     }
 
+    public boolean setDelayedSentToKafka() {
+        return state.compareAndSet(DELAYED_SENDING, DELAYED_SENT_TO_KAFKA) || state.compareAndSet(DELAYED_PROCESSING, DELAYED_SENT_TO_KAFKA);
+    }
+
     public void setTimeoutHasPassed() {
-        this.timeoutHasPassed = true;
+        timeoutHasPassed = true;
     }
 }

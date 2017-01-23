@@ -53,7 +53,14 @@ public class MessageEndProcessor {
         Topic topic = attachment.getTopic();
         brokerListeners.onTimeout(attachment.getMessage(), topic);
         trackers.get(topic).logInflight(attachment.getMessageId(), topic.getName(), readHostAndPort(exchange));
+        handleRaceConditionBetweenAckAndTimeout(attachment, topic);
         sendResponse(exchange, attachment, StatusCodes.ACCEPTED);
+    }
+
+    private void handleRaceConditionBetweenAckAndTimeout(AttachmentContent attachment, Topic topic) {
+        if (attachment.getMessageState().isDelayedSentToKafka()) {
+            brokerListeners.onAcknowledge(attachment.getMessage(), topic);
+        }
     }
 
     private void sendResponse(HttpServerExchange exchange, AttachmentContent attachment, int statusCode) {

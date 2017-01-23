@@ -70,7 +70,6 @@ class MessageStateTest extends Specification {
         state.setSendingToKafkaProducerQueue()
         state.setSendingToKafka()
         state.setDelayedProcessing()
-        state.delayed
     }
 
     def "should not set 'delayed processing' state"() {
@@ -78,7 +77,6 @@ class MessageStateTest extends Specification {
         state.setSendingToKafkaProducerQueue()
         state.setSendingToKafka()
         !state.setDelayedProcessing()
-        !state.delayed
     }
 
     def "should set 'delayed sending' state from 'sending to kafka' state"() {
@@ -86,7 +84,6 @@ class MessageStateTest extends Specification {
         state.setSendingToKafkaProducerQueue()
         state.setSendingToKafka()
         state.setDelayedSending()
-        state.delayed
     }
 
     def "should not set 'delayed sending' state from 'sent to kafka'"() {
@@ -95,6 +92,30 @@ class MessageStateTest extends Specification {
         state.setSendingToKafka()
         state.setSentToKafka()
         !state.setDelayedSending()
-        !state.delayed
+    }
+
+    def "should set 'delayed sent' state from 'delayed processing'"() {
+        expect:
+        state.setSendingToKafkaProducerQueue()
+        state.setSendingToKafka()
+        state.setTimeoutHasPassed()
+        state.setDelayedProcessing()
+        state.setDelayedSentToKafka()
+    }
+
+    def "should set 'delayed sent' state from 'delayed sending'"() {
+        expect:
+        state.setSendingToKafkaProducerQueue()
+        state.setSendingToKafka()
+        state.setDelayedSending()
+        state.setDelayedSentToKafka()
+    }
+
+    def "should not set 'delayed sent' state from 'sent to kafka'"() {
+        expect:
+        state.setSendingToKafkaProducerQueue()
+        state.setSendingToKafka()
+        state.setSentToKafka()
+        !state.setDelayedSentToKafka()
     }
 }

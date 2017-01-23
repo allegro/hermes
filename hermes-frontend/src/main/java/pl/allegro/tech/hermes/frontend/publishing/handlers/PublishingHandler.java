@@ -57,7 +57,7 @@ class PublishingHandler implements HttpHandler {
                     if (messageState.setSentToKafka()) {
                         attachment.removeTimeout();
                         messageEndProcessor.sent(exchange, attachment);
-                    } else if (messageState.isDelayed()) {
+                    } else if (messageState.setDelayedSentToKafka()) {
                         messageEndProcessor.delayedSent(exchange, attachment.getCachedTopic(), message);
                     }
                 });
