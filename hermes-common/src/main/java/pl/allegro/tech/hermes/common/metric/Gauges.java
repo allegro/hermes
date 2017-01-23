@@ -18,5 +18,6 @@ public class Gauges {
 
             THREADS = "threads",
             INFLIGHT_REQUESTS = "inflight-requests",
-            OUTPUT_RATE = "output-rate." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
+            OUTPUT_RATE = "output-rate." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
+            BACKUP_STORAGE_SIZE = "backup-storage.size";
 }

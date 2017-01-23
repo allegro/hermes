@@ -93,6 +93,10 @@ public class HermesMetrics {
         metricRegistry.register(metricRegistryName(Gauges.THREADS), gauge);
     }
 
+    public void registerMessageRepositorySizeGauge(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.BACKUP_STORAGE_SIZE), gauge);
+    }
+
     public <T> void registerOutputRateGauge(TopicName topicName, String name, Gauge<T> gauge) {
         metricRegistry.register(metricRegistryName(Gauges.OUTPUT_RATE, topicName, name), gauge);
     }
