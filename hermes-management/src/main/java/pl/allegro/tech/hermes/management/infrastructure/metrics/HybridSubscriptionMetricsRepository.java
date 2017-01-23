@@ -19,6 +19,7 @@ import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsRepository {
 
     private static final String SUBSCRIPTION_RATE_PATTERN = "sumSeries(%s.consumer.*.meter.%s.%s.%s.m1_rate)";
+    private static final String SUBSCRIPTION_THROUGHPUT_PATTERN = "sumSeries(%s.consumer.*.throughput.%s.%s.%s.m1_rate)";
     private static final String SUBSCRIPTION_HTTP_STATUSES_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.%s.m1_rate)";
     private static final String SUBSCRIPTION_ERROR_TIMEOUT_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.errors.timeout.m1_rate)";
     private static final String SUBSCRIPTION_ERROR_OTHER_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.errors.other.m1_rate)";
@@ -51,6 +52,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
     public SubscriptionMetrics loadMetrics(TopicName topicName, String subscriptionName) {
         String rateMetric = metricPath(topicName, subscriptionName);
         String timeouts = metricPathTimeouts(topicName, subscriptionName);
+        String throughput = metricPathThroughput(topicName, subscriptionName);
         String otherErrors = metricPathOtherErrors(topicName, subscriptionName);
         String codes2xxPath = metricPathHttpStatuses(topicName, subscriptionName, "2xx");
         String codes4xxPath = metricPathHttpStatuses(topicName, subscriptionName, "4xx");
@@ -72,11 +74,18 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
                 .withTimeouts(metrics.metricValue(timeouts))
                 .withOtherErrors(metrics.metricValue(otherErrors))
                 .withLag(lagSource.getLag(topicName, subscriptionName))
+                .withThroughput(throughput)
                 .build();
     }
 
     private String metricPath(TopicName topicName, String subscriptionName) {
         return String.format(SUBSCRIPTION_RATE_PATTERN,
+                metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
+        );
+    }
+
+    private String metricPathThroughput(TopicName topicName, String subscriptionName) {
+        return String.format(SUBSCRIPTION_THROUGHPUT_PATTERN,
                 metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
         );
     }

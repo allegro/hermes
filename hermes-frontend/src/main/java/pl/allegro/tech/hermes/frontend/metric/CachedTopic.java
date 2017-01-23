@@ -43,6 +43,9 @@ public class CachedTopic {
     private final Histogram topicMessageContentSize;
     private final Histogram globalMessageContentSize;
 
+    private final Meter topicThroughputMeter;
+    private final Meter globalThroughputMeter;
+
     private final Counter published;
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
@@ -73,6 +76,9 @@ public class CachedTopic {
         globalMessageContentSize = hermesMetrics.messageContentSizeHistogram();
 
         published = hermesMetrics.counter(Counters.PUBLISHED, topic.getName());
+
+        globalThroughputMeter = hermesMetrics.meter(Meters.THROUGHPUT_BYTES);
+        topicThroughputMeter = hermesMetrics.meter(Meters.TOPIC_THROUGHPUT_BYTES, topic.getName());
 
         if (Topic.Ack.ALL.equals(topic.getAck())) {
             topicProducerLatencyTimer = hermesMetrics.timer(Timers.ACK_ALL_LATENCY);
@@ -146,6 +152,8 @@ public class CachedTopic {
     public void reportMessageContentSize(int size) {
         topicMessageContentSize.update(size);
         globalMessageContentSize.update(size);
+        topicThroughputMeter.mark(size);
+        globalThroughputMeter.mark(size);
     }
 
     public void markDelayedProcessing() {

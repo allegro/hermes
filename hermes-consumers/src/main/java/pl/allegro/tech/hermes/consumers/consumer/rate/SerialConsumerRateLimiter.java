@@ -18,6 +18,8 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
 
     private final RateLimiter rateLimiter;
 
+    private final RateLimiter filterRateLimiter;
+
     private final OutputRateCalculator outputRateCalculator;
 
     private final DeliveryCounters deliveryCounters = new DeliveryCounters();
@@ -33,6 +35,7 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
         this.outputRateCalculator = outputRateCalculator;
         this.currentMode = OutputRateCalculator.Mode.NORMAL;
         this.rateLimiter = RateLimiter.create(calculateInitialRate().rate());
+        this.filterRateLimiter = RateLimiter.create(subscription.getSerialSubscriptionPolicy().getRate());
     }
 
     @Override
@@ -54,6 +57,11 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
     }
 
     @Override
+    public void acquireFiltered() {
+        filterRateLimiter.acquire();
+    }
+
+    @Override
     public void adjustConsumerRate() {
         OutputRateCalculationResult result = recalculate();
         rateLimiter.setRate(result.rate());
@@ -72,6 +80,7 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
     @Override
     public void updateSubscription(Subscription newSubscription) {
         this.subscription = newSubscription;
+        this.filterRateLimiter.setRate(newSubscription.getSerialSubscriptionPolicy().getRate());
     }
 
     @Override
