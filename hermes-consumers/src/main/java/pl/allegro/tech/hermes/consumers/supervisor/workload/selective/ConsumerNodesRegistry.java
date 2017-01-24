@@ -9,11 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
@@ -29,16 +31,18 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
     private final LeaderLatch leaderLatch;
     private final Map<String, Long> consumersLastSeen = new HashMap<>();
     private final long deathOfConsumerAfterMillis;
+    private final Clock clock;
 
     public ConsumerNodesRegistry(CuratorFramework curatorClient, ExecutorService executorService, String prefix,
-                                 String consumerNodeId, int deathOfConsumerAfterSeconds) {
+                                 String consumerNodeId, int deathOfConsumerAfterSeconds, Clock clock) {
         super(curatorClient, getNodesPath(prefix), true, false, executorService);
 
         this.curatorClient = curatorClient;
         this.consumerNodeId = consumerNodeId;
         this.prefix = prefix;
+        this.clock = clock;
         this.leaderLatch = new LeaderLatch(curatorClient, getLeaderPath(), consumerNodeId);
-        this.deathOfConsumerAfterMillis = deathOfConsumerAfterSeconds * 1000L;
+        this.deathOfConsumerAfterMillis = TimeUnit.SECONDS.toMillis(deathOfConsumerAfterSeconds);
     }
 
     @Override
@@ -94,15 +98,13 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
     void refresh() {
         logger.info("Refreshing current consumers registry");
 
-        long currentTime = System.currentTimeMillis();
+        long currentTime = clock.millis();
         readCurrentNodes().forEach(node -> consumersLastSeen.put(node, currentTime));
 
         List<String> deadConsumers = findDeadConsumers(currentTime);
-
         if (!deadConsumers.isEmpty()) {
             logger.info("Considering following consumers dead: {}", deadConsumers);
         }
-
         deadConsumers.forEach(consumersLastSeen::remove);
     }
 

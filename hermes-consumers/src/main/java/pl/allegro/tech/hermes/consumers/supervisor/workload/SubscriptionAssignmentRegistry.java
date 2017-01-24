@@ -42,7 +42,7 @@ public class SubscriptionAssignmentRegistry {
 
     private final SubscriptionAssignmentPathSerializer pathSerializer;
 
-    private static final byte[] AUTO_MARKER = "AUTO".getBytes();
+    private static final byte[] AUTO_ASSIGNED_MARKER = "AUTO_ASSIGNED".getBytes();
 
     public SubscriptionAssignmentRegistry(String consumerNodeId,
                                           CuratorFramework curator,
@@ -51,7 +51,7 @@ public class SubscriptionAssignmentRegistry {
         this.consumerNodeId = consumerNodeId;
         this.curator = curator;
         this.subscriptionsCache = subscriptionsCache;
-        this.pathSerializer = new SubscriptionAssignmentPathSerializer(basePath, AUTO_MARKER);
+        this.pathSerializer = new SubscriptionAssignmentPathSerializer(basePath, AUTO_ASSIGNED_MARKER);
         this.cache = new HierarchicalCache(
                 curator, Executors.newSingleThreadScheduledExecutor(), basePath, 2, Collections.emptyList()
         );
@@ -124,12 +124,8 @@ public class SubscriptionAssignmentRegistry {
 
     private void onAssignmentAdded(SubscriptionAssignment assignment) {
         try {
-            if (assignments.add(assignment)) {
-                if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
-                    callbacks.forEach(callback ->
-                            callback.onSubscriptionAssigned(assignment.getSubscriptionName())
-                    );
-                }
+            if (assignments.add(assignment) && consumerNodeId.equals(assignment.getConsumerNodeId())) {
+                callbacks.forEach(callback -> callback.onSubscriptionAssigned(assignment.getSubscriptionName()));
             }
         } catch (Exception e) {
             logger.error("Exception while adding assignment {}", assignment, e);
@@ -138,12 +134,8 @@ public class SubscriptionAssignmentRegistry {
 
     private void onAssignmentRemoved(SubscriptionAssignment assignment) {
         try {
-            if (assignments.remove(assignment)) {
-                if (consumerNodeId.equals(assignment.getConsumerNodeId())) {
-                    callbacks.forEach(callback ->
-                            callback.onAssignmentRemoved(assignment.getSubscriptionName())
-                    );
-                }
+            if (assignments.remove(assignment) && consumerNodeId.equals(assignment.getConsumerNodeId())) {
+                callbacks.forEach(callback -> callback.onAssignmentRemoved(assignment.getSubscriptionName()));
             }
             removeSubscriptionEntryIfEmpty(assignment.getSubscriptionName());
         } catch (Exception e) {
@@ -174,7 +166,7 @@ public class SubscriptionAssignmentRegistry {
 
     private void addAssignment(SubscriptionAssignment assignment, CreateMode createMode) {
         askCuratorPolitely(() -> curator.create().creatingParentsIfNeeded().withMode(createMode)
-                .forPath(pathSerializer.serialize(assignment.getSubscriptionName(), assignment.getConsumerNodeId()), AUTO_MARKER));
+                .forPath(pathSerializer.serialize(assignment.getSubscriptionName(), assignment.getConsumerNodeId()), AUTO_ASSIGNED_MARKER));
     }
 
     interface CuratorTask {

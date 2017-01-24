@@ -10,11 +10,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class SubscriptionAssignmentPathSerializer {
 
     private final String prefix;
-    private final byte[] autoMarker;
+    private final byte[] autoAssignedMarker;
 
-    public SubscriptionAssignmentPathSerializer(String prefix, byte[] autoMarker) {
+    public SubscriptionAssignmentPathSerializer(String prefix, byte[] autoAssignedMarker) {
         this.prefix = prefix;
-        this.autoMarker = autoMarker;
+        this.autoAssignedMarker = Arrays.copyOf(autoAssignedMarker, autoAssignedMarker.length);
     }
 
     public String serialize(SubscriptionName subscriptionName, String supervisorId) {
@@ -28,9 +28,9 @@ public class SubscriptionAssignmentPathSerializer {
     public SubscriptionAssignment deserialize(String path, byte[] data) {
         String[] paths = path.split("/");
         checkArgument(paths.length > 1, "Incorrect path format. Expected:'/base/subscription/supervisorId'. Found:'%s'", path);
-        boolean auto = data != null && Arrays.equals(data, autoMarker);
+        boolean autoAssigned = data != null && Arrays.equals(data, autoAssignedMarker);
         return new SubscriptionAssignment(paths[paths.length - 1],
                 SubscriptionName.fromString(paths[paths.length - 2]),
-                auto);
+                autoAssigned);
     }
 }

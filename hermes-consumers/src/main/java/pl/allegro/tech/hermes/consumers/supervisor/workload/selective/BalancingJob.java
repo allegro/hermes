@@ -52,22 +52,26 @@ public class BalancingJob implements Runnable {
         this.intervalSeconds = intervalSeconds;
 
         metrics.registerGauge(
-                "consumers-workload." + kafkaCluster + ".selective.all-assignments",
+                gaugeName(kafkaCluster, "selective.all-assignments"),
                 () -> balancingMetrics.allAssignments
         );
 
         metrics.registerGauge(
-                "consumers-workload." + kafkaCluster + ".selective.missing-resources",
+                gaugeName(kafkaCluster, "selective.missing-resources"),
                 () -> balancingMetrics.missingResources
         );
         metrics.registerGauge(
-                "consumers-workload." + kafkaCluster + ".selective.deleted-assignments",
+                gaugeName(kafkaCluster, ".selective.deleted-assignments"),
                 () -> balancingMetrics.deletedAssignments
         );
         metrics.registerGauge(
-                "consumers-workload." + kafkaCluster + ".selective.created-assignments",
+                gaugeName(kafkaCluster, ".selective.created-assignments"),
                 () -> balancingMetrics.createdAssignments
         );
+    }
+
+    private String gaugeName(String kafkaCluster, String name) {
+        return "consumers-workload." + kafkaCluster + "." + name;
     }
 
     @Override

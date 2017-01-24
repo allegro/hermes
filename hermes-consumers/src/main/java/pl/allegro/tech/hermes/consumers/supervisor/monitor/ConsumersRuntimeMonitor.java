@@ -36,7 +36,7 @@ public class ConsumersRuntimeMonitor implements Runnable {
 
     private final MonitorMetrics monitorMetrics = new MonitorMetrics();
 
-    private ScheduledFuture job;
+    private ScheduledFuture monitoringTask;
 
     public ConsumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
                                    SupervisorController workloadSupervisor,
@@ -71,11 +71,11 @@ public class ConsumersRuntimeMonitor implements Runnable {
     }
 
     public void start() {
-        this.job = executor.scheduleWithFixedDelay(this, scanIntervalSeconds, scanIntervalSeconds, TimeUnit.SECONDS);
+        this.monitoringTask = executor.scheduleWithFixedDelay(this, scanIntervalSeconds, scanIntervalSeconds, TimeUnit.SECONDS);
     }
 
     public void shutdown() throws InterruptedException {
-        job.cancel(false);
+        monitoringTask.cancel(false);
         executor.shutdown();
         executor.awaitTermination(1, TimeUnit.MINUTES);
     }

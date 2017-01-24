@@ -7,16 +7,16 @@ import java.util.Objects;
 public class SubscriptionAssignment {
     private final String consumerNodeId;
     private final SubscriptionName subscriptionName;
-    private boolean auto = true;
+    private boolean autoAssigned = true;
 
     public SubscriptionAssignment(String consumerNodeId, SubscriptionName subscriptionName) {
         this(consumerNodeId, subscriptionName, true);
     }
 
-    public SubscriptionAssignment(String consumerNodeId, SubscriptionName subscriptionName, boolean auto) {
+    public SubscriptionAssignment(String consumerNodeId, SubscriptionName subscriptionName, boolean autoAssigned) {
         this.consumerNodeId = consumerNodeId;
         this.subscriptionName = subscriptionName;
-        this.auto = auto;
+        this.autoAssigned = autoAssigned;
     }
 
     public String getConsumerNodeId() {
@@ -41,7 +41,7 @@ public class SubscriptionAssignment {
         return Objects.hash(consumerNodeId, subscriptionName);
     }
 
-    public boolean isAuto() {
-        return auto;
+    public boolean isAutoAssigned() {
+        return autoAssigned;
     }
 }

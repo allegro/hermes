@@ -6,11 +6,10 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignment;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.toList;
@@ -66,21 +65,27 @@ public class SelectiveWorkBalancer {
     }
 
     private void minimizeWorkload(SubscriptionAssignmentView state, SubscriptionAssignmentView.Transformer transformer) {
-        Set<SubscriptionAssignment> redundant = new HashSet<>();
-        for (SubscriptionName subscriptionName : state.getSubscriptions()) {
-            int diff = state.getAssignmentsCountForSubscription(subscriptionName) - consumersPerSubscription;
-            if (diff > 0) {
-                Iterator<SubscriptionAssignment> iterator = state.getAssignmentsForSubscription(subscriptionName).iterator();
-                while (diff > 0 && iterator.hasNext()) {
-                    SubscriptionAssignment sa = iterator.next();
-                    if (sa.isAuto()) {
-                        redundant.add(sa);
-                        diff--;
-                    }
+        state.getSubscriptions()
+                .stream()
+                .flatMap(subscriptionName -> findRedundantAssignments(state, subscriptionName))
+                .forEach(transformer::removeAssignment);
+    }
+
+    private Stream<SubscriptionAssignment> findRedundantAssignments(SubscriptionAssignmentView state, SubscriptionName subscriptionName) {
+        int diff = state.getAssignmentsCountForSubscription(subscriptionName) - consumersPerSubscription;
+        if (diff > 0) {
+            Stream.Builder<SubscriptionAssignment> redundant = Stream.builder();
+            Iterator<SubscriptionAssignment> iterator = state.getAssignmentsForSubscription(subscriptionName).iterator();
+            while (diff > 0 && iterator.hasNext()) {
+                SubscriptionAssignment assignment = iterator.next();
+                if (assignment.isAutoAssigned()) {
+                    redundant.add(assignment);
+                    diff--;
                 }
             }
+            return redundant.build();
         }
-        redundant.forEach(transformer::removeAssignment);
+        return Stream.empty();
     }
 
     private int countMissingResources(List<SubscriptionName> subscriptions, SubscriptionAssignmentView state) {

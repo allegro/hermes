@@ -97,7 +97,7 @@ class ConsumerTestRuntimeEnvironment {
 
         this.consumersRegistry = new ConsumerNodesRegistry(
                 curator, executorService, paths.consumersRegistryPath(CLUSTER_NAME), "id",
-                DEATH_OF_CONSUMER_AFTER_SECONDS);
+                DEATH_OF_CONSUMER_AFTER_SECONDS, Clock.systemDefaultZone());
 
         this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
 
@@ -125,7 +125,8 @@ class ConsumerTestRuntimeEnvironment {
                 executorService,
                 paths.consumersRegistryPath(CLUSTER_NAME),
                 consumerId,
-                DEATH_OF_CONSUMER_AFTER_SECONDS);
+                DEATH_OF_CONSUMER_AFTER_SECONDS,
+                Clock.systemDefaultZone());
 
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(
                 curator, configFactory
@@ -263,7 +264,8 @@ class ConsumerTestRuntimeEnvironment {
         await().atMost(adjust(ONE_SECOND)).until(
                 () -> {
                     subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName());
-                    subscriptionsCaches.forEach(subscriptionsCache -> subscriptionsCache.listActiveSubscriptionNames().contains(subscriptionName));
+                    subscriptionsCaches.forEach(subscriptionsCache ->
+                            subscriptionsCache.listActiveSubscriptionNames().contains(subscriptionName));
                 }
         );
         return subscription.getQualifiedName();
