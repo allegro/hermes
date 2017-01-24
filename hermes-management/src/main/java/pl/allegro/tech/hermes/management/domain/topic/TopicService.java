@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
-import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
@@ -36,7 +35,6 @@ public class TopicService {
     private final TopicRepository topicRepository;
     private final GroupService groupService;
 
-    private final ApiPreconditions preconditions;
     private final TopicMetricsRepository metricRepository;
     private final MessagePreviewRepository messagePreviewRepository;
     private final MultiDCAwareService multiDCAwareService;
@@ -50,7 +48,6 @@ public class TopicService {
                         TopicRepository topicRepository,
                         GroupService groupService,
                         TopicProperties topicProperties,
-                        ApiPreconditions preconditions,
                         TopicMetricsRepository metricRepository,
                         TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
@@ -58,7 +55,6 @@ public class TopicService {
                         Clock clock,
                         Auditor auditor) {
         this.multiDCAwareService = multiDCAwareService;
-        this.preconditions = preconditions;
         this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
         this.groupService = groupService;
@@ -71,7 +67,6 @@ public class TopicService {
     }
 
     public void createTopic(Topic topic, String createdBy) {
-        preconditions.checkConstraints(topic);
         topicValidator.ensureCreatedTopicIsValid(topic);
         topicRepository.createTopic(topic);
 

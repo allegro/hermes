@@ -27,6 +27,8 @@ public class HermesEndpoints {
 
     private final BlacklistEndpoint blacklistEndpoint;
 
+    private final MigrationEndpoint migrationEndpoint;
+
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
@@ -37,6 +39,7 @@ public class HermesEndpoints {
         this.oAuthProviderEndpoint = hermes.createOAuthProviderEndpoint();
         this.consumerEndpoint = hermes.createConsumerEndpoint();
         this.maintainerEndpoint = hermes.createMaintainerEndpoint();
+        this.migrationEndpoint = hermes.createMigrationEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
@@ -69,8 +72,12 @@ public class HermesEndpoints {
         return queryEndpoint;
     }
 
-    public MaintainerEndpoint maintainerEndpoint() {
+    public MaintainerEndpoint maintainer() {
         return maintainerEndpoint;
+    }
+
+    public MigrationEndpoint migration() {
+        return migrationEndpoint;
     }
 
     public BlacklistEndpoint blacklist() {

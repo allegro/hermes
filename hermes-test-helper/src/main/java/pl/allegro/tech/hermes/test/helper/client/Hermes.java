@@ -92,6 +92,10 @@ public class Hermes {
         return createProxy(url, MaintainerEndpoint.class, managementConfig);
     }
 
+    public MigrationEndpoint createMigrationEndpoint() {
+        return createProxy(url, MigrationEndpoint.class, managementConfig);
+    }
+
     public BlacklistEndpoint createBlacklistEndpoint() {
         return createProxy(url, BlacklistEndpoint.class, managementConfig);
     }

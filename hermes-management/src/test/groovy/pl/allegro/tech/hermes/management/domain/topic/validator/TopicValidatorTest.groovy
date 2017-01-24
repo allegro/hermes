@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.topic.validator
 import org.apache.avro.Schema
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
 import pl.allegro.tech.hermes.management.domain.maintainer.validator.MaintainerDescriptorValidationException
 import pl.allegro.tech.hermes.management.domain.maintainer.validator.MaintainerDescriptorValidator
 import pl.allegro.tech.hermes.schema.CompiledSchema
@@ -12,13 +13,16 @@ import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import spock.lang.Specification
 
+import javax.validation.ConstraintViolationException
+
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class TopicValidatorTest extends Specification {
 
     def schemaRepository = Stub(SchemaRepository)
     def maintainerDescriptorValidator = Stub(MaintainerDescriptorValidator)
-    def topicValidator = new TopicValidator(maintainerDescriptorValidator, schemaRepository)
+    def apiPreconditions = Stub(ApiPreconditions)
+    def topicValidator = new TopicValidator(maintainerDescriptorValidator, schemaRepository, apiPreconditions)
 
     def "should not fail when creating valid topic"() {
         when:
@@ -26,6 +30,17 @@ class TopicValidatorTest extends Specification {
 
         then:
         noExceptionThrown()
+    }
+
+    def "should fail to create when topic doesn't meet preconditions"() {
+        given:
+        apiPreconditions.checkConstraints(_) >> { throw new ConstraintViolationException("failed", Collections.emptySet()) }
+
+        when:
+        topicValidator.ensureCreatedTopicIsValid(topic('group.invalid').build())
+
+        then:
+        thrown ConstraintViolationException
     }
 
     def "should fail when creating topic with migratedFromJsonType flag set"() {

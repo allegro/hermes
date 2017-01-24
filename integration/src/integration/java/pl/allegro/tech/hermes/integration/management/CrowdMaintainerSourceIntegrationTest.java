@@ -58,7 +58,7 @@ public class CrowdMaintainerSourceIntegrationTest extends IntegrationTest {
 
 
         //when
-        management.maintainerEndpoint().search(CrowdMaintainerSource.NAME, "Scrum");
+        management.maintainer().search(CrowdMaintainerSource.NAME, "Scrum");
 
         //then
         wireMock.verifyThat(1, getRequestedFor(urlMatching(BASE_API_PATH + ".*")));
@@ -78,7 +78,7 @@ public class CrowdMaintainerSourceIntegrationTest extends IntegrationTest {
 
 
         //when
-        List<Maintainer> groups = management.maintainerEndpoint().search(CrowdMaintainerSource.NAME, "Scrum");
+        List<Maintainer> groups = management.maintainer().search(CrowdMaintainerSource.NAME, "Scrum");
 
         //then
         assertThat(groups.stream().map(Maintainer::getId)).containsExactly(firstTeam, secondTeam);
@@ -96,7 +96,7 @@ public class CrowdMaintainerSourceIntegrationTest extends IntegrationTest {
 
 
         //when
-        List<Maintainer> groups = management.maintainerEndpoint().search(CrowdMaintainerSource.NAME, "Non Matching");
+        List<Maintainer> groups = management.maintainer().search(CrowdMaintainerSource.NAME, "Non Matching");
 
         //then
         assertThat(groups).isEmpty();
@@ -115,7 +115,7 @@ public class CrowdMaintainerSourceIntegrationTest extends IntegrationTest {
 
 
         //when
-        Response response = management.maintainerEndpoint().searchAsResponse(CrowdMaintainerSource.NAME, "Non Matching");
+        Response response = management.maintainer().searchAsResponse(CrowdMaintainerSource.NAME, "Non Matching");
 
         //then
         assertThat(response).hasErrorCode(ErrorCode.CROWD_GROUPS_COULD_NOT_BE_LOADED);

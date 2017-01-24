@@ -27,6 +27,8 @@ public class SubscriptionBuilder {
 
     private MaintainerDescriptor maintainer = new MaintainerDescriptor("Simple", "some team");
 
+    private String supportTeam = "team";
+
     private MonitoringDetails monitoringDetails = MonitoringDetails.EMPTY;
 
     private DeliveryType deliveryType = DeliveryType.SERIAL;
@@ -38,7 +40,6 @@ public class SubscriptionBuilder {
     private List<Header> headers = new ArrayList<>();
 
     private EndpointAddressResolverMetadata metadata = EndpointAddressResolverMetadata.empty();
-
     private SubscriptionOAuthPolicy oAuthPolicy;
 
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
@@ -85,14 +86,14 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, maintainer, "", monitoringDetails, contentType,
+                    trackingEnabled, maintainer, supportTeam, monitoringDetails, contentType,
                     filters, mode, headers, metadata, oAuthPolicy
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
-                    trackingEnabled, maintainer, "", monitoringDetails, contentType,
+                    trackingEnabled, maintainer, supportTeam, monitoringDetails, contentType,
                     filters, headers, metadata, oAuthPolicy
             );
         }
@@ -145,6 +146,12 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withMaintainer(MaintainerDescriptor maintainer) {
         this.maintainer = maintainer;
+        return this;
+    }
+
+    @Deprecated
+    public SubscriptionBuilder withSupportTeam(String supportTeam) {
+        this.supportTeam = supportTeam;
         return this;
     }
 

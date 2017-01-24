@@ -20,6 +20,7 @@ public class GroupBuilder {
         return new Group(groupName, supportTeam);
     }
 
+    @Deprecated
     public GroupBuilder withSupportTeam(String supportTeam) {
         this.supportTeam = supportTeam;
         return this;
