@@ -6,7 +6,8 @@ var topics = angular.module('hermes.topic', [
     'hermes.topic.metrics',
     'hermes.topic.factory',
     'hermes.services',
-    'hermes.filters'
+    'hermes.filters',
+    'hermes.maintainer'
 ]);
 
 topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal',
@@ -161,8 +162,8 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
     }]);
 
 topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$scope', '$uibModalInstance', 'PasswordService',
-    'toaster', 'topic', 'messageSchema', 'groupName', 'operation', 'MaintainerService',
-    function (topicConfig, topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation, maintainerService) {
+    'toaster', 'topic', 'messageSchema', 'groupName', 'operation',
+    function (topicConfig, topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation) {
         $scope.config = topicConfig;
 
         $scope.topic = _(topic).clone();
@@ -170,22 +171,10 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
         $scope.groupName = groupName;
         $scope.operation = operation;
 
-        maintainerService.getSourceNames().then(function(sources) {
-            $scope.maintainerSources = sources;
-            $scope.selectedMaintainerSource = _.find(sources, function(s) { return s.name == $scope.topic.maintainer.source }) || sources[0];
-            if ($scope.topic.maintainer.id) {
-                maintainerService.getMaintainer($scope.selectedMaintainerSource.name, $scope.topic.maintainer.id).then(function(maintainer) {
-                    $scope.selectedMaintainer = maintainer;
-                });
-            }
-        });
-
         $scope.save = function () {
             var promise;
             var originalTopicName = $scope.topic.name;
             passwordService.set($scope.groupPassword);
-            $scope.topic.maintainer.id = $scope.selectedMaintainer.id;
-            $scope.topic.maintainer.source = $scope.selectedMaintainerSource.name;
 
             var topic = _.cloneDeep($scope.topic);
             delete topic.shortName;
@@ -210,10 +199,6 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
                     .finally(function () {
                         passwordService.reset();
                     });
-        };
-
-        $scope.maintainers = function(searchString) {
-            return maintainerService.getMaintainers($scope.selectedMaintainerSource.name, searchString);
         };
 
     }]);

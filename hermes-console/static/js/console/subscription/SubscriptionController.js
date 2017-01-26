@@ -5,7 +5,8 @@ var subscriptions = angular.module('hermes.subscription', [
     'hermes.subscription.health',
     'hermes.subscription.metrics',
     'hermes.subscription.factory',
-    'hermes.topic.metrics'
+    'hermes.topic.metrics',
+    'hermes.maintainer'
 ]);
 
 subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'SubscriptionHealth', 'SubscriptionMetrics',
@@ -195,30 +196,19 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
-    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'MaintainerService',
+    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
-              endpointAddressResolverMetadataConfig, maintainerService) {
+              endpointAddressResolverMetadataConfig) {
         $scope.topicName = topicName;
         $scope.subscription = subscription;
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
-        maintainerService.getSourceNames().then(function(sources) {
-            $scope.maintainerSources = sources;
-            $scope.selectedMaintainerSource = _.find(sources, function(s) { return s.name == $scope.subscription.maintainer.source }) || sources[0];
-            if ($scope.subscription.maintainer.id) {
-                maintainerService.getMaintainer($scope.selectedMaintainerSource.name, $scope.subscription.maintainer.id).then(function(maintainer) {
-                    $scope.selectedMaintainer = maintainer;
-                });
-            }
-        });
 
         var subscriptionBeforeChanges = _.cloneDeep(subscription);
 
         $scope.save = function () {
             var promise;
             passwordService.set($scope.groupPassword);
-            $scope.subscription.maintainer.id = $scope.selectedMaintainer.id;
-            $scope.subscription.maintainer.source = $scope.selectedMaintainerSource.name;
 
             if (operation === 'ADD') {
                 promise = subscriptionRepository.add(topicName, $scope.subscription).$promise;
@@ -242,10 +232,6 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
                     .finally(function () {
                         passwordService.reset();
                     });
-        };
-
-        $scope.maintainers = function(searchString) {
-            return maintainerService.getMaintainers($scope.selectedMaintainerSource.name, searchString);
         };
 
     }]);

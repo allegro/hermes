@@ -1,0 +1,19 @@
+<div class="form-group">
+    <label for="sourceSelect" class="col-md-3 control-label">Maintainer source</label>
+    <div class="col-md-9">
+        <select required class="form-control" id="sourceSelect" name="sourceSelect"
+                ng-model="sourceSelectModel" ng-options="s.name for s in possibleSources"
+                ng-change="onSourceChanged()"></select>
+    </div>
+</div>
+<div class="form-group {{form.maintainer.$valid ? '' : 'has-error'}}">
+    <label ng-if="sourceSelectModel.hinting" for="maintainerWithHinting" class="col-md-3 control-label">Maintainer</label>
+    <label ng-if="!sourceSelectModel.hinting" for="maintainerWithoutHinting" class="col-md-3 control-label">Maintainer</label>
+    <div class="col-md-9">
+        <input required ng-if="sourceSelectModel.hinting" class="form-control" id="maintainerWithHinting" name="maintainer"
+               uib-typeahead="maintainer as maintainer.name for maintainer in maintainers($viewValue)" typeahead-min-length="1"
+               typeahead-wait-ms="500" placeholder="who maintains this?" ng-model="$parent.maintainerInputModel" autocomplete="off" />
+        <input required ng-if="!sourceSelectModel.hinting" class="form-control" id="maintainerWithoutHinting" name="maintainer"
+               placeholder="who maintains this?" ng-model="$parent.maintainerInputModel" />
+    </div>
+</div>
