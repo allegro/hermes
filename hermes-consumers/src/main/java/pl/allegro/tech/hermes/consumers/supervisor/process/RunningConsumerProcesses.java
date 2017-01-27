@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
+import com.google.common.collect.ImmutableSet;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.List;
@@ -40,7 +41,7 @@ class RunningConsumerProcesses {
     }
 
     Set<SubscriptionName> existingConsumers() {
-        return processes.keySet();
+        return ImmutableSet.copyOf(processes.keySet());
     }
 
     List<RunningSubscriptionStatus> listRunningSubscriptions() {
