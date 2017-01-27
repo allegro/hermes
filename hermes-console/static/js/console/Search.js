@@ -42,7 +42,7 @@ search.controller('SearchController', ['$scope', '$stateParams', 'SearchReposito
                 var fullName = decomposeTopicName(item.name);
                 return {
                     name: item.name,
-                    data: [],
+                    data: [{label: 'maintainer', value: item.maintainer.id}],
                     url: '#/groups/' + fullName.group + '/topics/' + item.name
                 };
             });
@@ -52,7 +52,7 @@ search.controller('SearchController', ['$scope', '$stateParams', 'SearchReposito
                 var fullName = decomposeTopicName(item.topicName);
                 return {
                     name: item.topicName + '.' + item.name,
-                    data: [{label: 'endpoint', value: item.endpoint}, {label: 'support team', value: item.supportTeam}, {label: 'status', value: item.state}],
+                    data: [{label: 'endpoint', value: item.endpoint}, {label: 'maintainer', value: item.maintainer.id}, {label: 'status', value: item.state}],
                     url: '#/groups/' + fullName.group + '/topics/' + item.topicName + '/subscriptions/' + item.name
                 };
             });
@@ -71,15 +71,6 @@ search.factory('SearchRepository', ['$resource', 'DiscoveryService',
     function ($resource, discovery) {
         var querySubscriptions = $resource(discovery.resolve('/query/subscriptions'), null, {query: {method: 'POST', isArray: true}});
         var queryTopics = $resource(discovery.resolve('/query/topics'), null, {query: {method: 'POST', isArray: true}});
-
-        var endpointQuery = function(endpoint) {
-            return { query: {
-                    endpoint: {
-                        like: endpoint
-                    }
-                }
-            }
-        };
 
         return {
             search: function (entity, query) {

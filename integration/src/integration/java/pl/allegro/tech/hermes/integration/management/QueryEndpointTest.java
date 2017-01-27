@@ -2,10 +2,7 @@ package pl.allegro.tech.hermes.integration.management;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.Group;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
@@ -24,7 +21,7 @@ public class QueryEndpointTest extends IntegrationTest {
 
     @DataProvider(name = "groupData")
     public static Object[][] groupData() {
-        return new Object[][] {
+        return new Object[][]{
                 {"{\"query\": {}}", asList(1, 2, 3, 4)},
                 {"{\"query\": {\"groupName\": \"testGroup1\"}}", asList(1)},
                 {"{\"query\": {\"groupName\": {\"like\": \".*Group2\"}}}", asList(3)},
@@ -54,14 +51,17 @@ public class QueryEndpointTest extends IntegrationTest {
 
     @DataProvider(name = "topicData")
     public static Object[][] topicData() {
-        return new Object[][] {
+        return new Object[][]{
                 {"{\"query\": {}}", asList(1, 2, 3, 4)},
                 {"{\"query\": {\"name\": \"testGroup1.testTopic1\"}}", asList(1)},
                 {"{\"query\": {\"name\": {\"like\": \".*testTopic1\"}}}", asList(1)},
                 {"{\"query\": {\"name\": {\"like\": \".*testTopic.*\"}}}", asList(1, 2, 3)},
                 {"{\"query\": {\"trackingEnabled\": \"true\", \"contentType\": \"AVRO\"}}", asList(3)},
-                {"{\"query\": {\"and\": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(3)},
+                {"{\"query\": {\"and\"" +
+                        ": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(3)},
                 {"{\"query\": {\"or\": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(1, 3, 4)},
+                {"{\"query\": {\"maintainer.id\": \"Team Alpha\"}}", asList(4)},
+                {"{\"query\": {\"maintainer.id\": {\"like\": \".*Alph.*\"}}}", asList(4)},
         };
     }
 
@@ -71,7 +71,9 @@ public class QueryEndpointTest extends IntegrationTest {
         Topic topic1 = operations.buildTopic(topic("testGroup1", "testTopic1").withContentType(AVRO).withTrackingEnabled(false).build());
         Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build());
         Topic topic3 = operations.buildTopic(topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).build());
-        Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true).build());
+        Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true)
+                .withMaintainer(new MaintainerDescriptor("Simple", "Team Alpha")).build()
+        );
 
         List<Topic> topics = asList(topic1, topic2, topic3, topic4);
 
@@ -84,7 +86,7 @@ public class QueryEndpointTest extends IntegrationTest {
 
     @DataProvider(name = "subscriptionData")
     public static Object[][] subscriptionData() {
-        return new Object[][] {
+        return new Object[][]{
                 {"{\"query\": {}}", asList(1, 2, 3, 4)},
                 {"{\"query\": {\"name\": \"subscription1\"}}", asList(1)},
                 {"{\"query\": {\"name\": {\"like\": \".*cription1\"}}}", asList(1)},
@@ -92,6 +94,8 @@ public class QueryEndpointTest extends IntegrationTest {
                 {"{\"query\": {\"name\": \"subscription1\", \"endpoint\": \"http://endpoint1\"}}", asList(1)},
                 {"{\"query\": {\"and\": [{\"name\": \"subscription1\"}, {\"endpoint\": \"http://endpoint1\"}]}}", asList(1)},
                 {"{\"query\": {\"or\": [{\"name\": \"subscription1\"}, {\"endpoint\": \"http://endpoint1\"}]}}", asList(1, 3)},
+                {"{\"query\": {\"maintainer.id\": \"Team Alpha\"}}", asList(4)},
+                {"{\"query\": {\"maintainer.id\": {\"like\": \".*Alph.*\"}}}", asList(4)},
         };
     }
 
@@ -103,7 +107,9 @@ public class QueryEndpointTest extends IntegrationTest {
         Subscription subscription1 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription1"), "http://endpoint1"));
         Subscription subscription2 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription2"), "http://endpoint2"));
         Subscription subscription3 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subTestScription3"), "http://endpoint1"));
-        Subscription subscription4 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription4"), "http://endpoint2"));
+        Subscription subscription4 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription4")
+                .withMaintainer(new MaintainerDescriptor("Simple", "Team Alpha")), "http://endpoint2")
+        );
 
         List<Subscription> subscriptions = asList(subscription1, subscription2, subscription3, subscription4);
 
