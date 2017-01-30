@@ -8,7 +8,7 @@ angular.module('hermes.owner')
                     $scope.name = owner.name;
                 });
             }
-        });
+        }, true);
     }])
     .directive('ownerName', function () {
         return {
