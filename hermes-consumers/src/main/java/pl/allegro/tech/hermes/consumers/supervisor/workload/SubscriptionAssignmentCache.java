@@ -22,6 +22,8 @@ public class SubscriptionAssignmentCache {
 
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionAssignmentCache.class);
 
+    private final String basePath;
+
     private final CuratorFramework curator;
 
     private final Set<SubscriptionAssignment> assignments = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -34,17 +36,23 @@ public class SubscriptionAssignmentCache {
 
     private final SubscriptionAssignmentPathSerializer pathSerializer;
 
-    public SubscriptionAssignmentCache(CuratorFramework curator, String path, SubscriptionsCache subscriptionsCache,
+    private volatile boolean started = false;
+
+    public SubscriptionAssignmentCache(CuratorFramework curator,
+                                       String basePath,
+                                       SubscriptionsCache subscriptionsCache,
                                        SubscriptionAssignmentPathSerializer pathSerializer) {
         this.curator = curator;
+        this.basePath = basePath;
         this.subscriptionsCache = subscriptionsCache;
         this.pathSerializer = pathSerializer;
         this.cache = new HierarchicalCache(
-                curator, Executors.newSingleThreadScheduledExecutor(), path, 2, Collections.emptyList()
+                curator, Executors.newSingleThreadScheduledExecutor(), basePath, 2, Collections.emptyList()
         );
 
         cache.registerCallback(ASSIGNMENT_LEVEL, (e) -> {
-            SubscriptionAssignment assignment = pathSerializer.deserialize(e.getData().getPath(), e.getData().getData());
+            SubscriptionAssignment assignment =
+                    pathSerializer.deserialize(e.getData().getPath(), e.getData().getData());
             switch (e.getType()) {
                 case CHILD_ADDED:
                     onAssignmentAdded(assignment);
@@ -57,18 +65,28 @@ public class SubscriptionAssignmentCache {
     }
 
     public void start() throws Exception {
-        logger.info("Starting assignment cache");
+        logger.info("Starting assignment cache for {}", basePath);
 
         List<SubscriptionAssignment> currentAssignments = readExistingAssignments();
         currentAssignments.forEach(this::onAssignmentAdded);
 
         cache.start();
 
-        logger.info("Started assignment cache. Read {} assignments", currentAssignments.size());
+        started = true;
+
+        logger.info("Started assignment cache for {}. Read {} assignments", basePath, currentAssignments.size());
     }
 
     public void stop() throws Exception {
+        logger.info("Stopping assignment cache for {}", basePath);
+
         cache.stop();
+
+        logger.info("Stopped assignment cache for {}", basePath);
+    }
+
+    public boolean isStarted() {
+        return started;
     }
 
     public SubscriptionAssignmentView createSnapshot() {
@@ -94,7 +112,8 @@ public class SubscriptionAssignmentCache {
                 List<String> nodes = curator.getChildren().forPath(path);
                 for (String node : nodes) {
                     String fullPath = path + "/" + node;
-                    existingAssignments.add(pathSerializer.deserialize(fullPath, curator.getData().forPath(fullPath)));
+                    existingAssignments.add(
+                            pathSerializer.deserialize(fullPath, curator.getData().forPath(fullPath)));
                 }
             } catch (Exception e) {
                 logger.info("Exception occurred when initializing cache with subscription {}", subscriptionName, e);

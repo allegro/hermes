@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 
 import java.time.Clock;
-import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -45,6 +44,9 @@ class MaxRateCalculator {
 
     void calculate() {
         try {
+            if (!subscriptionConsumersCache.isStarted()) {
+                return;
+            }
             logger.info("Max rate calculation started");
 
             long start = clock.millis();

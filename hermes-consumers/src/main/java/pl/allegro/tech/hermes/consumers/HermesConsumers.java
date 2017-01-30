@@ -64,6 +64,8 @@ public class HermesConsumers {
         hooksHandler.addShutdownHook((s) -> {
             try {
                 consumerHttpServer.stop();
+                maxRateSupervisor.stop();
+                assignmentCaches.stop();
                 supervisorController.shutdown();
                 s.shutdown();
             } catch (Exception e) {
@@ -86,8 +88,8 @@ public class HermesConsumers {
                     ));
 
             supervisorController.start();
-            maxRateSupervisor.start();
             assignmentCaches.start();
+            maxRateSupervisor.start();
             serviceLocator.getService(ConsumersRuntimeMonitor.class).start();
             consumerHttpServer.start();
             hooksHandler.startup(serviceLocator);

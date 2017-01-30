@@ -11,7 +11,7 @@ class MaxRateBalancerTest extends Specification {
     static final double BUSY_TOLERANCE = 0.1d
 
     def balancer = new MaxRateBalancer(BUSY_TOLERANCE, MIN_MAX_RATE, MIN_CHANGE_PERCENT)
-    def conditions = new PollingConditions(timeout: 5)
+    def conditions = new PollingConditions(timeout: 5, delay: 0.001)
 
     def "should assign equal rates initially"() {
         when:
@@ -53,8 +53,6 @@ class MaxRateBalancerTest extends Specification {
                         new ConsumerRateInfo("consumer1", new RateInfo(maxRate1, consumerHistory)),
                         new ConsumerRateInfo("consumer2", new RateInfo(maxRate2, consumerHistory))
                 ] as Set).get()
-
-                println maxRates
 
                 maxRate1 = Optional.of(maxRates["consumer1"])
                 maxRate2 = Optional.of(maxRates["consumer2"])
@@ -157,7 +155,6 @@ class MaxRateBalancerTest extends Specification {
                             greedyConsumerRate)
             ] as Set).get()
 
-        print maxRates
         then:
             maxRates["minConsumer"].getMaxRate() > MIN_MAX_RATE
             maxRates["greedyConsumer"].getMaxRate() < 200d - MIN_MAX_RATE

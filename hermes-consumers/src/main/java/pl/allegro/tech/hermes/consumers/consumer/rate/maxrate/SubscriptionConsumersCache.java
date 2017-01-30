@@ -32,4 +32,8 @@ public class SubscriptionConsumersCache {
                         SubscriptionAssignment::getSubscriptionName,
                         Collectors.mapping(SubscriptionAssignment::getConsumerNodeId, Collectors.toSet())));
     }
+
+    boolean isStarted() {
+        return caches.isStarted();
+    }
 }

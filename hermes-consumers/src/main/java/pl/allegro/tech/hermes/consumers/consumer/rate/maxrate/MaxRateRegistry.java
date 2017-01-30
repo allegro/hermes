@@ -12,8 +12,6 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCache;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,12 +59,10 @@ public class MaxRateRegistry {
         handleConsumerUpdates();
     }
 
-    @PostConstruct
     public void start() throws Exception {
         cache.start();
     }
 
-    @PreDestroy
     public void stop() throws Exception {
         cache.stop();
     }
@@ -156,10 +152,6 @@ public class MaxRateRegistry {
 
     private void handleConsumerUpdates() {
         cache.registerCallback(LEVEL_CONSUMER, event -> {
-            if (event.getData() == null) {
-                return;
-            }
-
             String path = event.getData().getPath();
             ConsumerInstance consumer = pathSerializer.consumerInstanceFromConsumerPath(path);
             switch (event.getType()) {
@@ -172,10 +164,6 @@ public class MaxRateRegistry {
 
     private void handleContentUpdates() {
         cache.registerCallback(LEVEL_CONTENT, event -> {
-            if (event.getData() == null) {
-                return;
-            }
-
             String path = event.getData().getPath();
             byte[] bytes = event.getData().getData();
 
@@ -204,7 +192,7 @@ public class MaxRateRegistry {
             rateInfos.compute(consumer, (key, oldValue) -> oldValue == null ?
                     RateInfo.withNoHistory(maxRate) : oldValue.copyWithNewMaxRate(maxRate));
         } catch (Exception e) {
-            logger.warn("Problem updating max rate for consumer {}", consumer);
+            logger.warn("Problem updating max rate for consumer {}", consumer, e);
         }
     }
 
@@ -214,7 +202,7 @@ public class MaxRateRegistry {
             rateInfos.compute(consumer, (key, oldValue) -> oldValue == null ?
                     RateInfo.withNoMaxRate(rateHistory) : oldValue.copyWithNewRateHistory(rateHistory));
         } catch (Exception e) {
-            logger.warn("Problem updating rate history for consumer {}", consumer);
+            logger.warn("Problem updating rate history for consumer {}", consumer, e);
         }
     }
 }

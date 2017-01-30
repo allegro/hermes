@@ -29,6 +29,10 @@ public class SubscriptionAssignmentRegistry implements SubscriptionAssignmentAwa
         subscriptionAssignmentCache.registerAssignmentCallback(this);
     }
 
+    public boolean isStarted() {
+        return subscriptionAssignmentCache.isStarted();
+    }
+
     @Override
     public void onSubscriptionAssigned(SubscriptionName subscriptionName) {}
 

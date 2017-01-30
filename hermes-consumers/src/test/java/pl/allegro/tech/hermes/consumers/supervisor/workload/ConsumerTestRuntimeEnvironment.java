@@ -44,11 +44,11 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_SECOND;
+import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.mock;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
 import static org.mockito.Mockito.verify;
@@ -113,11 +113,11 @@ class ConsumerTestRuntimeEnvironment {
         return supervisors.stream().filter(SelectiveSupervisorController::isLeader).findAny().get();
     }
 
-    private SelectiveSupervisorController createConsumer(String consumerId) {
+    private ConsumerControllers createConsumer(String consumerId) {
         return createConsumer(consumerId, consumersSupervisor(mock(ConsumerFactory.class)));
     }
 
-    private SelectiveSupervisorController createConsumer(String consumerId,
+    private ConsumerControllers createConsumer(String consumerId,
                                                          ConsumersSupervisor consumersSupervisor) {
         CuratorFramework curator = curatorSupplier.get();
         consumerZookeeperConnections.put(consumerId, curator);
@@ -147,14 +147,17 @@ class ConsumerTestRuntimeEnvironment {
 
         WorkTracker workTracker = new WorkTracker(consumerId, assignmentRegistry);
 
-        return new SelectiveSupervisorController(
+        SelectiveSupervisorController supervisor = new SelectiveSupervisorController(
                 consumersSupervisor, notificationsBus, subscriptionsCache, assignmentRegistry, workTracker, registry,
                 mock(ZookeeperAdminCache.class), executorService, configFactory, metricsSupplier.get()
         );
+
+        return new ConsumerControllers(subscriptionAssignmentCaches, supervisor);
     }
 
     SelectiveSupervisorController spawnConsumer(String consumerId, ConsumersSupervisor consumersSupervisor) {
-        return startNode(createConsumer(consumerId, consumersSupervisor));
+        ConsumerControllers consumerControllers = createConsumer(consumerId, consumersSupervisor);
+        return startNode(consumerControllers).supervisorController;
     }
 
     ConsumersSupervisor consumersSupervisor(ConsumerFactory consumerFactory) {
@@ -191,16 +194,16 @@ class ConsumerTestRuntimeEnvironment {
                 configFactory);
     }
 
-    private List<SelectiveSupervisorController> createConsumers(int howMany) {
+    private List<ConsumerControllers> createConsumers(int howMany) {
         return IntStream.range(0, howMany).mapToObj(
                 i -> createConsumer(nextConsumerId())
-        ).collect(Collectors.toList());
+        ).collect(toList());
     }
 
     List<SelectiveSupervisorController> spawnConsumers(int howMany) {
-        List<SelectiveSupervisorController> nodes = createConsumers(howMany);
+        List<ConsumerControllers> nodes = createConsumers(howMany);
         nodes.forEach(this::startNode);
-        return nodes;
+        return nodes.stream().map(ConsumerControllers::getSupervisorController).collect(toList());
     }
 
     SelectiveSupervisorController spawnConsumer() {
@@ -215,11 +218,12 @@ class ConsumerTestRuntimeEnvironment {
         consumerZookeeperConnections.values().stream().forEach(CuratorFramework::close);
     }
 
-    private SelectiveSupervisorController startNode(SelectiveSupervisorController supervisorController) {
+    private ConsumerControllers startNode(ConsumerControllers consumerControllers) {
         try {
-            supervisorController.start();
-            waitForRegistration(supervisorController.consumerId());
-            return supervisorController;
+            consumerControllers.supervisorController.start();
+            waitForRegistration(consumerControllers.supervisorController.consumerId());
+            consumerControllers.assignmentCaches.start();
+            return consumerControllers;
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
@@ -257,7 +261,7 @@ class ConsumerTestRuntimeEnvironment {
 
     List<SubscriptionName> createSubscription(int howMany) {
         return IntStream.range(0, howMany).mapToObj(i ->
-                createSubscription(nextSubscriptionName())).collect(Collectors.toList());
+                createSubscription(nextSubscriptionName())).collect(toList());
     }
 
     SubscriptionName createSubscription() {
@@ -300,5 +304,24 @@ class ConsumerTestRuntimeEnvironment {
         await().atMost(adjust(ONE_SECOND)).until(
                 () -> verify(supervisor).assignConsumerForSubscription(subscription));
 
+    }
+
+    static class ConsumerControllers {
+        SubscriptionAssignmentCaches assignmentCaches;
+        SelectiveSupervisorController supervisorController;
+
+        public ConsumerControllers(SubscriptionAssignmentCaches assignmentCaches,
+                                   SelectiveSupervisorController supervisorController) {
+            this.assignmentCaches = assignmentCaches;
+            this.supervisorController = supervisorController;
+        }
+
+        public SubscriptionAssignmentCaches getAssignmentCaches() {
+            return assignmentCaches;
+        }
+
+        public SelectiveSupervisorController getSupervisorController() {
+            return supervisorController;
+        }
     }
 }

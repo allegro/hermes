@@ -15,19 +15,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class MaxRateSupervisor implements Runnable {
 
     private final Set<NegotiatedMaxRateProvider> providers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final ConfigFactory configFactory;
-    private final CuratorFramework curator;
-    private final SubscriptionConsumersCache subscriptionConsumersCache;
+    private final ScheduledExecutorService selfUpdateExecutor;
+    private final MaxRateCalculatorJob calculatorJob;
     private final MaxRateRegistry maxRateRegistry;
-    private final SubscriptionsCache subscriptionsCache;
-    private final ZookeeperPaths zookeeperPaths;
-    private final HermesMetrics metrics;
-    private final Clock clock;
+    private ScheduledFuture<?> updateJob;
 
     @Inject
     public MaxRateSupervisor(ConfigFactory configFactory,
@@ -39,33 +37,20 @@ public class MaxRateSupervisor implements Runnable {
                              HermesMetrics metrics,
                              Clock clock) {
         this.configFactory = configFactory;
-        this.curator = curator;
-        this.subscriptionConsumersCache = subscriptionConsumersCache;
         this.maxRateRegistry = maxRateRegistry;
-        this.subscriptionsCache = subscriptionsCache;
-        this.zookeeperPaths = zookeeperPaths;
-        this.metrics = metrics;
-        this.clock = clock;
-    }
 
-    public void start() throws Exception {
-        startCalculator();
-        startSelfUpdate();
-    }
+        this.selfUpdateExecutor = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder().setNameFormat("max-rate-provider-%d").build()
+        );
 
-    private void startCalculator() {
         MaxRateBalancer balancer = new MaxRateBalancer(
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_BUSY_TOLERANCE),
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_MAX_RATE),
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_ALLOWED_CHANGE_PERCENT));
 
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setNameFormat("max-rate-calculator-%d").build());
-
-        new MaxRateCalculatorJob(
+        this.calculatorJob = new MaxRateCalculatorJob(
                 curator,
                 configFactory,
-                executor,
                 subscriptionConsumersCache,
                 balancer,
                 maxRateRegistry,
@@ -73,14 +58,29 @@ public class MaxRateSupervisor implements Runnable {
                 subscriptionsCache,
                 metrics,
                 clock
-        ).start();
+        );
     }
 
-    private void startSelfUpdate() {
+    public void start() throws Exception {
+        maxRateRegistry.start();
+        calculatorJob.start();
+        updateJob = startSelfUpdate();
+    }
+
+    public void stop() throws Exception {
+        maxRateRegistry.stop();
+        calculatorJob.stop();
+        if (updateJob != null) {
+            updateJob.cancel(false);
+        }
+        selfUpdateExecutor.shutdown();
+        selfUpdateExecutor.awaitTermination(10, TimeUnit.SECONDS);
+    }
+
+    private ScheduledFuture<?> startSelfUpdate() {
         int selfUpdateInterval = configFactory.getIntProperty(Configs.CONSUMER_MAXRATE_UPDATE_INTERVAL_SECONDS);
-        Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setNameFormat("max-rate-provider-%d").build()
-        ).scheduleAtFixedRate(this, selfUpdateInterval, selfUpdateInterval, TimeUnit.SECONDS);
+        return selfUpdateExecutor.scheduleAtFixedRate(
+                this, 0, selfUpdateInterval, TimeUnit.SECONDS);
     }
 
     @Override

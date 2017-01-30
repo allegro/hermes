@@ -97,6 +97,10 @@ public class SubscriptionAssignmentCaches extends PathChildrenCache implements P
         }
     }
 
+    public boolean isStarted() {
+        return localClusterCache().isStarted();
+    }
+
     private Optional<SubscriptionAssignmentCache> createCacheIfNeeded(String cluster) {
         if (!caches.containsKey(cluster)) {
             SubscriptionAssignmentCache cache = createCache(cluster);

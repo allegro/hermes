@@ -134,12 +134,11 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     @Test
     public void shouldCreateConsumerForExistingAssignment() {
         // given
-        ConsumerFactory consumerFactory = mock(ConsumerFactory.class);
         SubscriptionName subscription = runtime.createSubscription();
         runtime.createAssignment(subscription, "consumer");
 
         // when
-        ConsumersSupervisor supervisor = runtime.consumersSupervisor(consumerFactory);
+        ConsumersSupervisor supervisor = mock(ConsumersSupervisor.class);
         runtime.spawnConsumer("consumer", supervisor);
 
         // then
