@@ -1,5 +1,5 @@
 angular.module('hermes.owner', ['hermes.services'])
-    .service('OwnerService', ['$resource', 'DiscoveryService',
+    .service('OwnerRepository', ['$resource', 'DiscoveryService',
         function ($resource, discovery) {
 
             var searchOwnersResource = $resource(discovery.resolve('/owners/sources/:source'));

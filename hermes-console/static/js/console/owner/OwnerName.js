@@ -1,10 +1,10 @@
 angular.module('hermes.owner')
-    .controller('nameCtrl', ['$scope', 'OwnerService', function ($scope, ownerService) {
+    .controller('nameCtrl', ['$scope', 'OwnerRepository', function ($scope, ownerRepository) {
         $scope.$watch('owner', function (newOwner) {
             if (newOwner === undefined) {
                 $scope.name = "";
             } else {
-                ownerService.getOwner(newOwner.source, newOwner.id).then(function (owner) {
+                ownerRepository.getOwner(newOwner.source, newOwner.id).then(function (owner) {
                     $scope.name = owner.name;
                 });
             }

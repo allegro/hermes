@@ -1,11 +1,11 @@
 angular.module('hermes.owner')
-    .controller('ctrl', ['$scope', 'OwnerService', function ($scope, ownerService) {
+    .controller('ctrl', ['$scope', 'OwnerRepository', function ($scope, ownerRepository) {
 
-        ownerService.getSourceNames().then(function (sources) {
+        ownerRepository.getSourceNames().then(function (sources) {
             $scope.possibleSources = sources;
             $scope.sourceSelectModel = _.find(sources, function(s) { return s.name == $scope.sourceName}) || sources[0];
             if ($scope.ownerId) {
-                ownerService.getOwner($scope.sourceSelectModel.name, $scope.ownerId).then(function(owner) {
+                ownerRepository.getOwner($scope.sourceSelectModel.name, $scope.ownerId).then(function(owner) {
                     if ($scope.sourceSelectModel.autocomplete) {
                         $scope.ownerInputModel = {id: owner.id, name: owner.name};
                     } else {
@@ -40,7 +40,7 @@ angular.module('hermes.owner')
         });
 
         $scope.owners = function(searchString) {
-            return ownerService.getOwners($scope.sourceSelectModel.name, searchString);
+            return ownerRepository.getOwners($scope.sourceSelectModel.name, searchString);
         };
     }])
     .directive('ownerSelector', function () {
