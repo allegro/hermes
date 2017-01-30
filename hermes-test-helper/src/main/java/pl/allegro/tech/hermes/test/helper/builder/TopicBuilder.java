@@ -8,7 +8,7 @@ public class TopicBuilder {
 
     private String description = "description";
 
-    private OwnerId owner = new OwnerId("Simple", "some team");
+    private OwnerId owner = new OwnerId("Plaintext", "some team");
 
     private boolean jsonToAvroDryRunEnabled = false;
 

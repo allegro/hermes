@@ -50,7 +50,7 @@ public class SupportTeamToOwnerMigratorIntegrationTest extends IntegrationTest {
         Topic noTeamTopic = operations.createTopic("migrationGroupNoTeam", "noTeamTopic");
 
         // when
-        Response response = management.migration().execute("support-team-to-owner", "Simple", true);
+        Response response = management.migration().execute("support-team-to-owner", "Plaintext", true);
 
         // then
         assertThat(response.getStatus()).isEqualTo(200);
@@ -58,22 +58,22 @@ public class SupportTeamToOwnerMigratorIntegrationTest extends IntegrationTest {
         assertThat(stats.topics().migrated()).isEqualTo(4);
         assertThat(stats.subscriptions().migrated()).isEqualTo(3);
         assertThat(management.topic().get(firstSingleTeamTopic.getQualifiedName()).getOwner())
-                .isEqualTo(new OwnerId("Simple", "Team A"));
+                .isEqualTo(new OwnerId("Plaintext", "Team A"));
         assertThat(management.subscription().get(firstSingleTeamTopicSubAlpha.getQualifiedTopicName(), firstSingleTeamTopicSubAlpha.getName()).getOwner())
-                .isEqualTo(new OwnerId("Simple", "Team Alpha"));
+                .isEqualTo(new OwnerId("Plaintext", "Team Alpha"));
         assertThat(management.subscription().get(firstSingleTeamTopicSubBeta.getQualifiedTopicName(), firstSingleTeamTopicSubBeta.getName()).getOwner())
-                .isEqualTo(new OwnerId("Simple", "Team Beta"));
+                .isEqualTo(new OwnerId("Plaintext", "Team Beta"));
 
         assertThat(management.topic().get(secondSingleTeamTopic.getQualifiedName()).getOwner())
-                .isEqualTo(new OwnerId("Simple", "Team A"));
+                .isEqualTo(new OwnerId("Plaintext", "Team A"));
 
         assertThat(management.topic().get(twoTeamsTopic.getQualifiedName()).getOwner())
-                .isEqualTo(new OwnerId("Simple", "Team B, Team C"));
+                .isEqualTo(new OwnerId("Plaintext", "Team B, Team C"));
         assertThat(management.subscription().get(twoTeamsTopicSub.getQualifiedTopicName(), twoTeamsTopicSub.getName()).getOwner())
-                .isEqualTo(new OwnerId("Simple", "Team Gamma, Team Delta"));
+                .isEqualTo(new OwnerId("Plaintext", "Team Gamma, Team Delta"));
 
         assertThat(management.topic().get(noTeamTopic.getQualifiedName()).getOwner())
-                .isEqualTo(new OwnerId("Simple", ""));
+                .isEqualTo(new OwnerId("Plaintext", ""));
     }
 
     @Test

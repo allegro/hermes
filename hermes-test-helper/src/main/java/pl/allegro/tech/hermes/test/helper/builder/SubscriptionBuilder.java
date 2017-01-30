@@ -25,7 +25,7 @@ public class SubscriptionBuilder {
 
     private boolean trackingEnabled = false;
 
-    private OwnerId owner = new OwnerId("Simple", "some team");
+    private OwnerId owner = new OwnerId("Plaintext", "some team");
 
     private String supportTeam = "team";
 

@@ -72,7 +72,7 @@ public class QueryEndpointTest extends IntegrationTest {
         Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build());
         Topic topic3 = operations.buildTopic(topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).build());
         Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true)
-                .withOwner(new OwnerId("Simple", "Team Alpha")).build()
+                .withOwner(new OwnerId("Plaintext", "Team Alpha")).build()
         );
 
         List<Topic> topics = asList(topic1, topic2, topic3, topic4);
@@ -108,7 +108,7 @@ public class QueryEndpointTest extends IntegrationTest {
         Subscription subscription2 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription2"), "http://endpoint2"));
         Subscription subscription3 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subTestScription3"), "http://endpoint1"));
         Subscription subscription4 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription4")
-                .withOwner(new OwnerId("Simple", "Team Alpha")), "http://endpoint2")
+                .withOwner(new OwnerId("Plaintext", "Team Alpha")), "http://endpoint2")
         );
 
         List<Subscription> subscriptions = asList(subscription1, subscription2, subscription3, subscription4);
