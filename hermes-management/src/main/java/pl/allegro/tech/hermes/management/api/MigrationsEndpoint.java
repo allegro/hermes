@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.common.exception.HermesException;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.domain.maintainer.MaintainerSourceNotFound;
-import pl.allegro.tech.hermes.management.domain.maintainer.MaintainerSources;
-import pl.allegro.tech.hermes.management.migration.maintainer.SupportTeamToMaintainerMigrator;
+import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
+import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
+import pl.allegro.tech.hermes.management.migration.owner.SupportTeamToOwnerMigrator;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
@@ -29,38 +29,38 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public class MigrationsEndpoint {
 
     private static final Logger logger = LoggerFactory.getLogger(MigrationsEndpoint.class);
-    private static final String SUPPORT_TEAM_TO_MAINTAINER_MIGRATION_NAME = "support-team-to-maintainer";
+    private static final String SUPPORT_TEAM_TO_OWNER_MIGRATION_NAME = "support-team-to-owner";
 
-    private final SupportTeamToMaintainerMigrator supportTeamToMaintainerMigrator;
-    private final MaintainerSources maintainerSources;
+    private final SupportTeamToOwnerMigrator supportTeamToOwnerMigrator;
+    private final OwnerSources ownerSources;
 
     @Autowired
-    public MigrationsEndpoint(SupportTeamToMaintainerMigrator supportTeamToMaintainerMigrator,
-                              MaintainerSources maintainerSources) {
-        this.supportTeamToMaintainerMigrator = supportTeamToMaintainerMigrator;
-        this.maintainerSources = maintainerSources;
+    public MigrationsEndpoint(SupportTeamToOwnerMigrator supportTeamToOwnerMigrator,
+                              OwnerSources ownerSources) {
+        this.supportTeamToOwnerMigrator = supportTeamToOwnerMigrator;
+        this.ownerSources = ownerSources;
     }
 
     @GET
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "List possible migrations", response = List.class, httpMethod = HttpMethod.GET)
     public List<String> list() {
-        return ImmutableList.of(SUPPORT_TEAM_TO_MAINTAINER_MIGRATION_NAME);
+        return ImmutableList.of(SUPPORT_TEAM_TO_OWNER_MIGRATION_NAME);
     }
 
     @POST
     @Produces(APPLICATION_JSON)
     @Path("/{name}")
     @ApiOperation(value = "Execute migration", httpMethod = HttpMethod.POST)
-    public SupportTeamToMaintainerMigrator.ExecutionStats execute(@PathParam("name") String name,
-                                                                  @QueryParam("source") String sourceName,
-                                                                  @DefaultValue("false") @QueryParam("override") boolean overrideMaintainers,
-                                                                  @Context SecurityContext securityContext) {
-        if (SUPPORT_TEAM_TO_MAINTAINER_MIGRATION_NAME.equals(name)) {
-            maintainerSources.getByName(sourceName).orElseThrow(() -> new MaintainerSourceNotFound(sourceName));
-            logger.info("{} migration triggered by user {}", SUPPORT_TEAM_TO_MAINTAINER_MIGRATION_NAME, securityContext.getUserPrincipal().getName());
-            return supportTeamToMaintainerMigrator.execute(sourceName,
-                    overrideMaintainers ? SupportTeamToMaintainerMigrator.MaintainerExistsStrategy.OVERRIDE : SupportTeamToMaintainerMigrator.MaintainerExistsStrategy.SKIP
+    public SupportTeamToOwnerMigrator.ExecutionStats execute(@PathParam("name") String name,
+                                                             @QueryParam("source") String sourceName,
+                                                             @DefaultValue("false") @QueryParam("override") boolean overrideOwners,
+                                                             @Context SecurityContext securityContext) {
+        if (SUPPORT_TEAM_TO_OWNER_MIGRATION_NAME.equals(name)) {
+            ownerSources.getByName(sourceName).orElseThrow(() -> new OwnerSourceNotFound(sourceName));
+            logger.info("{} migration triggered by user {}", SUPPORT_TEAM_TO_OWNER_MIGRATION_NAME, securityContext.getUserPrincipal().getName());
+            return supportTeamToOwnerMigrator.execute(sourceName,
+                    overrideOwners ? SupportTeamToOwnerMigrator.OwnerExistsStrategy.OVERRIDE : SupportTeamToOwnerMigrator.OwnerExistsStrategy.SKIP
             );
         }
 

@@ -18,6 +18,6 @@ public interface MigrationEndpoint {
     @Path("/{name}")
     Response execute(@PathParam("name") String name,
                      @QueryParam("source") String sourceName,
-                     @QueryParam("override") boolean overrideMaintainers);
+                     @QueryParam("override") boolean overrideOwners);
 
 }

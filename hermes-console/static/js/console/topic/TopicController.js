@@ -7,7 +7,7 @@ var topics = angular.module('hermes.topic', [
     'hermes.topic.factory',
     'hermes.services',
     'hermes.filters',
-    'hermes.maintainer'
+    'hermes.owner'
 ]);
 
 topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal',

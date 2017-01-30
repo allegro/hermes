@@ -10,7 +10,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import pl.allegro.tech.hermes.management.domain.maintainer.CrowdMaintainerSource;
+import pl.allegro.tech.hermes.management.domain.owner.CrowdOwnerSource;
 import pl.allegro.tech.hermes.management.infrastructure.crowd.CachedCrowdClient;
 import pl.allegro.tech.hermes.management.infrastructure.crowd.RestCrowdClient;
 
@@ -32,8 +32,8 @@ public class CrowdConfiguration {
 
     @Bean
     @Order(1)
-    public CrowdMaintainerSource crowdMaintainerSource(CrowdProperties crowdProperties, RestTemplate restTemplate) {
-        return new CrowdMaintainerSource(new CachedCrowdClient(new RestCrowdClient(restTemplate, crowdProperties), crowdProperties));
+    public CrowdOwnerSource crowdOwnerSource(CrowdProperties crowdProperties, RestTemplate restTemplate) {
+        return new CrowdOwnerSource(new CachedCrowdClient(new RestCrowdClient(restTemplate, crowdProperties), crowdProperties));
     }
 
 }

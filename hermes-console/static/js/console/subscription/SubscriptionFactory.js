@@ -8,7 +8,7 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     name: '',
                     endpoint: '',
                     description: '',
-                    maintainer: {
+                    owner: {
                         source: '',
                         id: ''
                     },

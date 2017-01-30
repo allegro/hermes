@@ -15,7 +15,7 @@ public class Group {
     private String groupName;
 
     /**
-     * To be removed after migration to topics' maintainer field
+     * To be removed after migration to topics' owner field
      */
     @Deprecated
     private String supportTeam;

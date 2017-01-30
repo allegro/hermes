@@ -6,7 +6,7 @@ var subscriptions = angular.module('hermes.subscription', [
     'hermes.subscription.metrics',
     'hermes.subscription.factory',
     'hermes.topic.metrics',
-    'hermes.maintainer'
+    'hermes.owner'
 ]);
 
 subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'SubscriptionHealth', 'SubscriptionMetrics',

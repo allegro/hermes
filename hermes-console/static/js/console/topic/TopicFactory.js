@@ -11,7 +11,7 @@ topics.factory('TopicFactory', ['TOPIC_CONFIG',
                     contentType: 'JSON',
                     ack: 'LEADER',
                     maxMessageSize: 10240,
-                    maintainer: {
+                    owner: {
                         id: '',
                         source: ''
                     }

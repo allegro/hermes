@@ -23,7 +23,7 @@ public class HermesEndpoints {
 
     private final ConsumerEndpoint consumerEndpoint;
 
-    private final MaintainerEndpoint maintainerEndpoint;
+    private final OwnerEndpoint ownerEndpoint;
 
     private final BlacklistEndpoint blacklistEndpoint;
 
@@ -38,7 +38,7 @@ public class HermesEndpoints {
         this.blacklistEndpoint = hermes.createBlacklistEndpoint();
         this.oAuthProviderEndpoint = hermes.createOAuthProviderEndpoint();
         this.consumerEndpoint = hermes.createConsumerEndpoint();
-        this.maintainerEndpoint = hermes.createMaintainerEndpoint();
+        this.ownerEndpoint = hermes.createOwnerEndpoint();
         this.migrationEndpoint = hermes.createMigrationEndpoint();
     }
 
@@ -72,8 +72,8 @@ public class HermesEndpoints {
         return queryEndpoint;
     }
 
-    public MaintainerEndpoint maintainer() {
-        return maintainerEndpoint;
+    public OwnerEndpoint owner() {
+        return ownerEndpoint;
     }
 
     public MigrationEndpoint migration() {

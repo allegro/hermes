@@ -8,7 +8,7 @@ public class TopicBuilder {
 
     private String description = "description";
 
-    private MaintainerDescriptor maintainer = new MaintainerDescriptor("Simple", "some team");
+    private OwnerId owner = new OwnerId("Simple", "some team");
 
     private boolean jsonToAvroDryRunEnabled = false;
 
@@ -44,7 +44,7 @@ public class TopicBuilder {
 
     public Topic build() {
         return new Topic(
-                name, description, maintainer, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
+                name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
                 jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize
         );
     }
@@ -54,8 +54,8 @@ public class TopicBuilder {
         return this;
     }
 
-    public TopicBuilder withMaintainer(MaintainerDescriptor maintainer) {
-        this.maintainer = maintainer;
+    public TopicBuilder withOwner(OwnerId owner) {
+        this.owner = owner;
         return this;
     }
 

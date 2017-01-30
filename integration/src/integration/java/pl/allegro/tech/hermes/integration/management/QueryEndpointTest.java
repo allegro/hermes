@@ -60,8 +60,8 @@ public class QueryEndpointTest extends IntegrationTest {
                 {"{\"query\": {\"and\"" +
                         ": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(3)},
                 {"{\"query\": {\"or\": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(1, 3, 4)},
-                {"{\"query\": {\"maintainer.id\": \"Team Alpha\"}}", asList(4)},
-                {"{\"query\": {\"maintainer.id\": {\"like\": \".*Alph.*\"}}}", asList(4)},
+                {"{\"query\": {\"owner.id\": \"Team Alpha\"}}", asList(4)},
+                {"{\"query\": {\"owner.id\": {\"like\": \".*Alph.*\"}}}", asList(4)},
         };
     }
 
@@ -72,7 +72,7 @@ public class QueryEndpointTest extends IntegrationTest {
         Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build());
         Topic topic3 = operations.buildTopic(topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).build());
         Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true)
-                .withMaintainer(new MaintainerDescriptor("Simple", "Team Alpha")).build()
+                .withOwner(new OwnerId("Simple", "Team Alpha")).build()
         );
 
         List<Topic> topics = asList(topic1, topic2, topic3, topic4);
@@ -94,8 +94,8 @@ public class QueryEndpointTest extends IntegrationTest {
                 {"{\"query\": {\"name\": \"subscription1\", \"endpoint\": \"http://endpoint1\"}}", asList(1)},
                 {"{\"query\": {\"and\": [{\"name\": \"subscription1\"}, {\"endpoint\": \"http://endpoint1\"}]}}", asList(1)},
                 {"{\"query\": {\"or\": [{\"name\": \"subscription1\"}, {\"endpoint\": \"http://endpoint1\"}]}}", asList(1, 3)},
-                {"{\"query\": {\"maintainer.id\": \"Team Alpha\"}}", asList(4)},
-                {"{\"query\": {\"maintainer.id\": {\"like\": \".*Alph.*\"}}}", asList(4)},
+                {"{\"query\": {\"owner.id\": \"Team Alpha\"}}", asList(4)},
+                {"{\"query\": {\"owner.id\": {\"like\": \".*Alph.*\"}}}", asList(4)},
         };
     }
 
@@ -108,7 +108,7 @@ public class QueryEndpointTest extends IntegrationTest {
         Subscription subscription2 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription2"), "http://endpoint2"));
         Subscription subscription3 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subTestScription3"), "http://endpoint1"));
         Subscription subscription4 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription4")
-                .withMaintainer(new MaintainerDescriptor("Simple", "Team Alpha")), "http://endpoint2")
+                .withOwner(new OwnerId("Simple", "Team Alpha")), "http://endpoint2")
         );
 
         List<Subscription> subscriptions = asList(subscription1, subscription2, subscription3, subscription4);

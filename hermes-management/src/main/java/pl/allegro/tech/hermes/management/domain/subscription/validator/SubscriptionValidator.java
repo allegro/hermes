@@ -4,24 +4,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
-import pl.allegro.tech.hermes.management.domain.maintainer.validator.MaintainerDescriptorValidator;
+import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
 
 @Component
 public class SubscriptionValidator {
 
-    private final MaintainerDescriptorValidator maintainerDescriptorValidator;
+    private final OwnerIdValidator ownerIdValidator;
     private final ApiPreconditions apiPreconditions;
 
     @Autowired
-    public SubscriptionValidator(MaintainerDescriptorValidator maintainerDescriptorValidator,
+    public SubscriptionValidator(OwnerIdValidator ownerIdValidator,
                                  ApiPreconditions apiPreconditions) {
-        this.maintainerDescriptorValidator = maintainerDescriptorValidator;
+        this.ownerIdValidator = ownerIdValidator;
         this.apiPreconditions = apiPreconditions;
     }
 
     public void check(Subscription toCheck) {
         apiPreconditions.checkConstraints(toCheck);
-        maintainerDescriptorValidator.check(toCheck.getMaintainer());
+        ownerIdValidator.check(toCheck.getOwner());
     }
 
 }

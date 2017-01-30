@@ -4,8 +4,8 @@ import org.apache.avro.Schema
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
-import pl.allegro.tech.hermes.management.domain.maintainer.validator.MaintainerDescriptorValidationException
-import pl.allegro.tech.hermes.management.domain.maintainer.validator.MaintainerDescriptorValidator
+import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidationException
+import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
 import pl.allegro.tech.hermes.schema.CompiledSchema
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException
 import pl.allegro.tech.hermes.schema.SchemaRepository
@@ -20,9 +20,9 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 class TopicValidatorTest extends Specification {
 
     def schemaRepository = Stub(SchemaRepository)
-    def maintainerDescriptorValidator = Stub(MaintainerDescriptorValidator)
+    def ownerDescriptorValidator = Stub(OwnerIdValidator)
     def apiPreconditions = Stub(ApiPreconditions)
-    def topicValidator = new TopicValidator(maintainerDescriptorValidator, schemaRepository, apiPreconditions)
+    def topicValidator = new TopicValidator(ownerDescriptorValidator, schemaRepository, apiPreconditions)
 
     def "should not fail when creating valid topic"() {
         when:
@@ -54,15 +54,15 @@ class TopicValidatorTest extends Specification {
         thrown TopicValidationException
     }
 
-    def "should fail to create when maintainer is invalid"() {
+    def "should fail to create when owner is invalid"() {
         given:
-        maintainerDescriptorValidator.check(_) >> { throw new MaintainerDescriptorValidationException("failed") }
+        ownerDescriptorValidator.check(_) >> { throw new OwnerIdValidationException("failed") }
 
         when:
         topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build())
 
         then:
-        thrown MaintainerDescriptorValidationException
+        thrown OwnerIdValidationException
     }
 
     def "should not fail when updating valid topic"() {
@@ -132,16 +132,15 @@ class TopicValidatorTest extends Specification {
         noExceptionThrown()
     }
 
-    def "should fail to update when maintainer is invalid"() {
+    def "should fail to update when owner is invalid"() {
         given:
-        maintainerDescriptorValidator.check(_) >> { throw new MaintainerDescriptorValidationException("failed") }
+        ownerDescriptorValidator.check(_) >> { throw new OwnerIdValidationException("failed") }
 
         when:
         topicValidator.ensureUpdatedTopicIsValid(topic('group.topic').build(), topic('group.topic').withDescription("updated").build())
 
         then:
-        thrown MaintainerDescriptorValidationException
+        thrown OwnerIdValidationException
     }
-
 
 }

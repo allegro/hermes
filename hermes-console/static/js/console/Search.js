@@ -42,7 +42,7 @@ search.controller('SearchController', ['$scope', '$stateParams', 'SearchReposito
                 var fullName = decomposeTopicName(item.name);
                 return {
                     name: item.name,
-                    data: [{label: 'maintainer', value: item.maintainer.id}],
+                    data: [{label: 'owner', value: item.owner.id}],
                     url: '#/groups/' + fullName.group + '/topics/' + item.name
                 };
             });
@@ -52,7 +52,7 @@ search.controller('SearchController', ['$scope', '$stateParams', 'SearchReposito
                 var fullName = decomposeTopicName(item.topicName);
                 return {
                     name: item.topicName + '.' + item.name,
-                    data: [{label: 'endpoint', value: item.endpoint}, {label: 'maintainer', value: item.maintainer.id}, {label: 'status', value: item.state}],
+                    data: [{label: 'endpoint', value: item.endpoint}, {label: 'owner', value: item.owner.id}, {label: 'status', value: item.state}],
                     url: '#/groups/' + fullName.group + '/topics/' + item.topicName + '/subscriptions/' + item.name
                 };
             });
