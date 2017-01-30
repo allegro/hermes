@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Component
 @Order(-1)
-public class FakeOwnerSource implements HintingOwnerSource {
+public class FakeOwnerSource implements AutocompleteOwnerSource {
 
     @Override
     public String name() {

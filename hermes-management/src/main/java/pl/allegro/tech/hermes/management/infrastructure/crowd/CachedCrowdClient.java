@@ -19,11 +19,11 @@ public class CachedCrowdClient implements CrowdClient {
                 .expireAfterWrite(crowdProperties.getCacheDurationSeconds(), TimeUnit.SECONDS)
                 .maximumSize(crowdProperties.getCacheSize())
                 .build(new CacheLoader<String, List<String>>() {
-            @Override
-            public List<String> load(String searchString) throws Exception {
-                return crowdClient.getGroups(searchString);
-            }
-        });
+                    @Override
+                    public List<String> load(String searchString) throws Exception {
+                        return crowdClient.getGroups(searchString);
+                    }
+                });
     }
 
     @Override

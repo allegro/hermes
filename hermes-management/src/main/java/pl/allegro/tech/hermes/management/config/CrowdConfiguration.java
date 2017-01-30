@@ -11,6 +11,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.management.domain.owner.CrowdOwnerSource;
+import pl.allegro.tech.hermes.management.domain.owner.SimpleOwnerSource;
 import pl.allegro.tech.hermes.management.infrastructure.crowd.CachedCrowdClient;
 import pl.allegro.tech.hermes.management.infrastructure.crowd.RestCrowdClient;
 
@@ -31,7 +32,7 @@ public class CrowdConfiguration {
     }
 
     @Bean
-    @Order(1)
+    @Order(SimpleOwnerSource.ORDER + 1)
     public CrowdOwnerSource crowdOwnerSource(CrowdProperties crowdProperties, RestTemplate restTemplate) {
         return new CrowdOwnerSource(new CachedCrowdClient(new RestCrowdClient(restTemplate, crowdProperties), crowdProperties));
     }

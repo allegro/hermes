@@ -4,7 +4,7 @@ import pl.allegro.tech.hermes.api.Owner;
 
 import java.util.List;
 
-public interface HintingOwnerSource extends OwnerSource {
+public interface AutocompleteOwnerSource extends OwnerSource {
 
     List<Owner> ownersMatching(String searchString);
 

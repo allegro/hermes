@@ -10,12 +10,13 @@ import pl.allegro.tech.hermes.api.Owner;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.management.domain.owner.CrowdOwnerSource;
 
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class CrowdOwnerSourceIntegrationTest extends IntegrationTest {
@@ -115,10 +116,12 @@ public class CrowdOwnerSourceIntegrationTest extends IntegrationTest {
 
 
         //when
-        Response response = management.owner().searchAsResponse(CrowdOwnerSource.NAME, "Non Matching");
+        InternalServerErrorException e = (InternalServerErrorException) catchThrowable(
+                () -> management.owner().search(CrowdOwnerSource.NAME, "Non Matching")
+        );
 
         //then
-        assertThat(response).hasErrorCode(ErrorCode.CROWD_GROUPS_COULD_NOT_BE_LOADED);
+        assertThat(e.getResponse()).hasErrorCode(ErrorCode.CROWD_GROUPS_COULD_NOT_BE_LOADED);
     }
 
     private String groupResponse(String path, String name) {

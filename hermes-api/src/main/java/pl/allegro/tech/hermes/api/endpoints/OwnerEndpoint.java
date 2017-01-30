@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.api.endpoints;
 import pl.allegro.tech.hermes.api.Owner;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -15,11 +14,6 @@ public interface OwnerEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/sources/{source}")
     List<Owner> search(@PathParam("source") String source, @QueryParam("search") String searchString);
-
-    @GET
-    @Produces(APPLICATION_JSON)
-    @Path("/sources/{source}")
-    Response searchAsResponse(@PathParam("source") String source, @QueryParam("search") String searchString);
 
     @GET
     @Produces(APPLICATION_JSON)

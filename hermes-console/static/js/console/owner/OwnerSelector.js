@@ -6,7 +6,7 @@ angular.module('hermes.owner')
             $scope.sourceSelectModel = _.find(sources, function(s) { return s.name == $scope.sourceName}) || sources[0];
             if ($scope.ownerId) {
                 ownerService.getOwner($scope.sourceSelectModel.name, $scope.ownerId).then(function(owner) {
-                    if ($scope.sourceSelectModel.hinting) {
+                    if ($scope.sourceSelectModel.autocomplete) {
                         $scope.ownerInputModel = {id: owner.id, name: owner.name};
                     } else {
                         $scope.ownerInputModel = owner.id;

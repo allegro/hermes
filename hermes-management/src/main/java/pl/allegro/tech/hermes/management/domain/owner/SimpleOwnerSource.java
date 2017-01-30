@@ -5,9 +5,10 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Owner;
 
 @Component
-@Order(0)
+@Order(SimpleOwnerSource.ORDER)
 public class SimpleOwnerSource implements OwnerSource {
 
+    public static final int ORDER = 0;
     public static final String NAME = "Simple";
 
     @Override

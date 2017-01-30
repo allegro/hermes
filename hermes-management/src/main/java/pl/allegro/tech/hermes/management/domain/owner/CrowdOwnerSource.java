@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CrowdOwnerSource implements HintingOwnerSource {
+public class CrowdOwnerSource implements AutocompleteOwnerSource {
 
     public static final String NAME = "Crowd";
 

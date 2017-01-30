@@ -5,10 +5,8 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Owner;
-import pl.allegro.tech.hermes.common.exception.HermesException;
-import pl.allegro.tech.hermes.management.domain.owner.HintingOwnerSource;
+import pl.allegro.tech.hermes.management.domain.owner.AutocompleteOwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
@@ -25,7 +23,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Api(value = "/owners", description = "Provides owners information")
 public class OwnersEndpoint {
 
-    private OwnerSources ownerSources;
+    private final OwnerSources ownerSources;
 
     @Autowired
     public OwnersEndpoint(OwnerSources ownerSources) {
@@ -38,11 +36,9 @@ public class OwnersEndpoint {
     @ApiOperation(value = "Lists owners from the given source matching the search string", response = List.class, httpMethod = HttpMethod.GET)
     public List<Owner> search(@PathParam("source") String source,
                               @QueryParam("search") String searchString) {
-        OwnerSource ownerSource = ownerSources.getByName(source).orElseThrow(() -> new OwnerSourceNotFound(source));
-        if (!(ownerSource instanceof HintingOwnerSource)) {
-            throw new HintingNotSupportedException(ownerSource);
-        }
-        return ((HintingOwnerSource) ownerSource).ownersMatching(searchString);
+        return ownerSources.getAutocompleteByName(source)
+                .map(s -> s.ownersMatching(searchString))
+                .orElseThrow(() -> new OwnerSourceNotFound(source));
     }
 
     @GET
@@ -71,29 +67,16 @@ public class OwnersEndpoint {
         @JsonProperty("name")
         private final String name;
 
-        @JsonProperty("hinting")
-        private final boolean hinting;
+        @JsonProperty("autocomplete")
+        private final boolean autocomplete;
 
-        private SourceDescriptor(String name, boolean hinting) {
+        private SourceDescriptor(String name, boolean autocomplete) {
             this.name = name;
-            this.hinting = hinting;
+            this.autocomplete = autocomplete;
         }
 
         static SourceDescriptor of(OwnerSource source) {
-            return new SourceDescriptor(source.name(), source instanceof HintingOwnerSource);
-        }
-
-    }
-
-    private static class HintingNotSupportedException extends HermesException {
-
-        HintingNotSupportedException(OwnerSource source) {
-            super("Owner source '" + source.name() + "' doesn't support hinting.");
-        }
-
-        @Override
-        public ErrorCode getCode() {
-            return ErrorCode.OWNER_SOURCE_DOESNT_SUPPORT_HINTING;
+            return new SourceDescriptor(source.name(), source instanceof AutocompleteOwnerSource);
         }
 
     }

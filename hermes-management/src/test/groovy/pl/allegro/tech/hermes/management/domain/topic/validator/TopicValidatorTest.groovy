@@ -24,7 +24,7 @@ class TopicValidatorTest extends Specification {
     def apiPreconditions = Stub(ApiPreconditions)
     def topicValidator = new TopicValidator(ownerDescriptorValidator, schemaRepository, apiPreconditions)
 
-    def "should not fail when creating valid topic"() {
+    def "topic with basic properties when creating should be valid"() {
         when:
         topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build())
 
@@ -32,7 +32,7 @@ class TopicValidatorTest extends Specification {
         noExceptionThrown()
     }
 
-    def "should fail to create when topic doesn't meet preconditions"() {
+    def "topic not meeting preconditions when creating should be invalid"() {
         given:
         apiPreconditions.checkConstraints(_) >> { throw new ConstraintViolationException("failed", Collections.emptySet()) }
 
@@ -43,7 +43,7 @@ class TopicValidatorTest extends Specification {
         thrown ConstraintViolationException
     }
 
-    def "should fail when creating topic with migratedFromJsonType flag set"() {
+    def "topic with migratedFromJsonType flag set when creating should be invalid"() {
         given:
         def migratedTopic = topic('group.topic').migratedFromJsonType().build()
 
@@ -54,7 +54,7 @@ class TopicValidatorTest extends Specification {
         thrown TopicValidationException
     }
 
-    def "should fail to create when owner is invalid"() {
+    def "topic with invalid owner when creating should be invalid"() {
         given:
         ownerDescriptorValidator.check(_) >> { throw new OwnerIdValidationException("failed") }
 
@@ -65,7 +65,7 @@ class TopicValidatorTest extends Specification {
         thrown OwnerIdValidationException
     }
 
-    def "should not fail when updating valid topic"() {
+    def "topic when doing a basic update should be valid"() {
         given:
         Topic validTopic = topic('group.topic').withTrackingEnabled(false).build()
         Topic updatedValidTopic = topic('group.topic').withTrackingEnabled(true).build()
@@ -77,7 +77,7 @@ class TopicValidatorTest extends Specification {
         noExceptionThrown()
     }
 
-    def "should fail when changing content type from #previousType to #updatedType without setting migratedToJsonType flag"() {
+    def "topic changing content type from #previousType to #updatedType without setting migratedToJsonType flag should be invalid"() {
         given:
         Topic originalTopic = topic('group.topic').withContentType(previousType).build()
         Topic updatedTopic = topic('group.topic').withContentType(updatedType).build()
@@ -94,7 +94,7 @@ class TopicValidatorTest extends Specification {
         ContentType.AVRO | ContentType.JSON
     }
 
-    def "should fail when changing content type from avro to json and unsetting migratedToJsonType flag"() {
+    def "topic changing content type from avro to json and unsetting migratedToJsonType flag should be invalid"() {
         given:
         def jsonTopic = topic('group.topic').withContentType(ContentType.AVRO).migratedFromJsonType().build()
         def updatedTopic = topic('group.topic').withContentType(ContentType.JSON).build()
@@ -106,7 +106,7 @@ class TopicValidatorTest extends Specification {
         thrown TopicValidationException
     }
 
-    def "should fail when changing content type from json to avro and avro schema not available"() {
+    def "topic changing content type from json to avro when avro schema not available should be invalid"() {
         given:
         def jsonTopic = topic('group.topic').withContentType(ContentType.JSON).build()
         def migratedTopic = topic('group.topic').withContentType(ContentType.AVRO).migratedFromJsonType().build()
@@ -119,7 +119,7 @@ class TopicValidatorTest extends Specification {
         thrown TopicValidationException
     }
 
-    def "should not fail when changing content type from json to avro and avro schema is available"() {
+    def "topic changing content type from json to avro when avro schema is available should be valid"() {
         given:
         def jsonTopic = topic('group.topic').withContentType(ContentType.JSON).build()
         def migratedTopic = topic('group.topic').withContentType(ContentType.AVRO).migratedFromJsonType().build()
@@ -132,12 +132,15 @@ class TopicValidatorTest extends Specification {
         noExceptionThrown()
     }
 
-    def "should fail to update when owner is invalid"() {
+    def "topic with invalid owner when updating should be invalid"() {
         given:
         ownerDescriptorValidator.check(_) >> { throw new OwnerIdValidationException("failed") }
 
         when:
-        topicValidator.ensureUpdatedTopicIsValid(topic('group.topic').build(), topic('group.topic').withDescription("updated").build())
+        topicValidator.ensureUpdatedTopicIsValid(
+                topic('group.topic').build(),
+                topic('group.topic').withDescription("updated").build()
+        )
 
         then:
         thrown OwnerIdValidationException
