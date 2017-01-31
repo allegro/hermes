@@ -1,3 +1,15 @@
+## 0.10.5 (31.01.2017)
+
+### Enhancements
+
+#### ([688](https://github.com/allegro/hermes/pull/688)) Selective algorithm healing
+
+Improved durability of assignments during restarts and zookeeper flaps.
+Reporting of assignments and running consumers has been improved and made consistent.
+More reliable handling of consumer processes.
+
+#### ([698](https://github.com/allegro/hermes/pull/698)) Fix Dockerfile build
+
 ## 0.10.4 (23.01.2017)
 
 ### Enhancements
