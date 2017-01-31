@@ -1,32 +1,3 @@
-## 0.10.4 (23.01.2017)
-
-### Enhancements
-
-#### ([690](https://github.com/allegro/hermes/pull/690)) Update json-avro-converter to 0.2.5
-#### ([687](https://github.com/allegro/hermes/pull/687)) Added throughput metric
-#### ([684](https://github.com/allegro/hermes/pull/684)) Limit number of retries for inflight on Frontend graceful shutdown
-
-### Bugfixes
-
-#### ([694](https://github.com/allegro/hermes/issues/694)) Leaking file descriptors
-
-Handling corner case in a race between ack and timeout task. 
-
-Because of it number of messages in backup storage was growing with a time.
-Eventually, it lead to full backup-storage and further writes ended with an exception which was not caught.
-This exception was the reason of file descriptor leak.
-
-Mentioned corner case was fixed in this issue. Beside that, additional exception handling was added and backup-storage size
-is from now on monitored.
-
-#### ([695](https://github.com/allegro/hermes/pull/695)) Decouple filtering rate limiting from backpressure based rate limiting
-
-Filtered messages do not influence on a sending rate.
-
-#### ([686](https://github.com/allegro/hermes/pull/686)) Do not merge topic.contentType with default value
-
-Fix in hermes-console.
-
 ## 0.10.3 (02.01.2017)
 
 ### Bugfixes
