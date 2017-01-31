@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 
@@ -21,9 +22,11 @@ public class ConsumersRuntimeMonitorFactory implements Factory<ConsumersRuntimeM
             ConsumersSupervisor consumerSupervisor,
             SupervisorController workloadSupervisor,
             HermesMetrics hermesMetrics,
+            SubscriptionsCache subscriptionsCache,
             ConfigFactory configFactory
     ) {
-        monitor = new ConsumersRuntimeMonitor(consumerSupervisor, workloadSupervisor, hermesMetrics, configFactory);
+        monitor = new ConsumersRuntimeMonitor(
+                consumerSupervisor, workloadSupervisor, hermesMetrics, subscriptionsCache, configFactory);
     }
 
     @Override

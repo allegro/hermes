@@ -95,6 +95,9 @@ public class SubscriptionAssignmentView {
 
     private void addAssignment(SubscriptionAssignment assignment) {
         subscriptionAssignments.get(assignment.getSubscriptionName()).add(assignment);
+        if (!consumerNodeAssignments.containsKey(assignment.getConsumerNodeId())) {
+            addConsumerNode(assignment.getConsumerNodeId());
+        }
         consumerNodeAssignments.get(assignment.getConsumerNodeId()).add(assignment);
     }
 
@@ -163,6 +166,7 @@ public class SubscriptionAssignmentView {
         void addSubscription(SubscriptionName subscriptionName);
         void addConsumerNode(String nodeId);
         void addAssignment(SubscriptionAssignment assignment);
+        void removeAssignment(SubscriptionAssignment assignment);
         void transferAssignment(String from, String to, SubscriptionName subscriptionName);
     }
 
@@ -192,6 +196,11 @@ public class SubscriptionAssignmentView {
             @Override
             public void addAssignment(SubscriptionAssignment assignment) {
                 view.addAssignment(assignment);
+            }
+
+            @Override
+            public void removeAssignment(SubscriptionAssignment assignment) {
+                view.removeAssignment(assignment);
             }
 
             @Override
