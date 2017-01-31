@@ -17,7 +17,7 @@ import pl.allegro.tech.hermes.management.infrastructure.crowd.RestCrowdClient;
 
 @Configuration
 @EnableConfigurationProperties(CrowdProperties.class)
-@ConditionalOnProperty("crowd.enabled")
+@ConditionalOnProperty("owner.crowd.enabled")
 public class CrowdConfiguration {
 
     @Bean("managementRequestFactory")

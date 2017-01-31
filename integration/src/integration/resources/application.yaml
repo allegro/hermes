@@ -3,6 +3,7 @@ management:
     connect-timeout: 2000
     read-timeout: 2000
 
-crowd:
-  enabled: true
-  path: http://localhost:18222/crowd
+owner:
+  crowd:
+    enabled: true
+    path: http://localhost:18222/crowd
