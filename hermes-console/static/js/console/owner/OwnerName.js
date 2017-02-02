@@ -1,18 +1,18 @@
 angular.module('hermes.owner')
-    .controller('nameCtrl', ['$scope', 'OwnerRepository', function ($scope, ownerRepository) {
+    .controller('OwnerNameController', ['$scope', 'OwnerRepository', function ($scope, ownerRepository) {
         $scope.$watch('owner', function (newOwner) {
-            if (newOwner === undefined) {
-                $scope.name = "";
-            } else {
+            if (newOwner !== undefined && newOwner.id && newOwner.source) {
                 ownerRepository.getOwner(newOwner.source, newOwner.id).then(function (owner) {
                     $scope.name = owner.name;
                 });
+            } else {
+                $scope.name = "";
             }
         }, true);
     }])
     .directive('ownerName', function () {
         return {
-            controller: 'nameCtrl',
+            controller: 'OwnerNameController',
             restrict: 'E',
             template: '{{name}}',
             scope: {

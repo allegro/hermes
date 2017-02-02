@@ -28,4 +28,14 @@ class CrowdOwnerSourceSpec extends Specification {
         searchString << ["Team A, Tea", "Team A,Tea", " Team A, Tea "]
     }
 
+    def "should return empty matches for empty search string"() {
+        expect:
+        source.ownersMatching("") == []
+    }
+
+    def "should return empty matches for null search string"() {
+        expect:
+        source.ownersMatching(null) == []
+    }
+
 }

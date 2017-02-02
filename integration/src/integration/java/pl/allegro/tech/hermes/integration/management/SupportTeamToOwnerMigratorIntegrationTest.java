@@ -57,32 +57,34 @@ public class SupportTeamToOwnerMigratorIntegrationTest extends IntegrationTest {
         SupportTeamToOwnerMigrator.ExecutionStats stats = response.readEntity(SupportTeamToOwnerMigrator.ExecutionStats.class);
         assertThat(stats.topics().migrated()).isEqualTo(4);
         assertThat(stats.subscriptions().migrated()).isEqualTo(3);
-        assertThat(management.topic().get(firstSingleTeamTopic.getQualifiedName()).getOwner())
-                .isEqualTo(new OwnerId("Plaintext", "Team A"));
-        assertThat(management.subscription().get(firstSingleTeamTopicSubAlpha.getQualifiedTopicName(), firstSingleTeamTopicSubAlpha.getName()).getOwner())
-                .isEqualTo(new OwnerId("Plaintext", "Team Alpha"));
-        assertThat(management.subscription().get(firstSingleTeamTopicSubBeta.getQualifiedTopicName(), firstSingleTeamTopicSubBeta.getName()).getOwner())
-                .isEqualTo(new OwnerId("Plaintext", "Team Beta"));
 
-        assertThat(management.topic().get(secondSingleTeamTopic.getQualifiedName()).getOwner())
-                .isEqualTo(new OwnerId("Plaintext", "Team A"));
+        assertTopicLoadedFromApiHasOwner(firstSingleTeamTopic, new OwnerId("Plaintext", "Team A"));
+        assertSubscriptionLoadedFromApiHasOwner(firstSingleTeamTopicSubAlpha, new OwnerId("Plaintext", "Team Alpha"));
+        assertSubscriptionLoadedFromApiHasOwner(firstSingleTeamTopicSubBeta, new OwnerId("Plaintext", "Team Beta"));
 
-        assertThat(management.topic().get(twoTeamsTopic.getQualifiedName()).getOwner())
-                .isEqualTo(new OwnerId("Plaintext", "Team B, Team C"));
-        assertThat(management.subscription().get(twoTeamsTopicSub.getQualifiedTopicName(), twoTeamsTopicSub.getName()).getOwner())
-                .isEqualTo(new OwnerId("Plaintext", "Team Gamma, Team Delta"));
+        assertTopicLoadedFromApiHasOwner(secondSingleTeamTopic, new OwnerId("Plaintext", "Team A"));
 
-        assertThat(management.topic().get(noTeamTopic.getQualifiedName()).getOwner())
-                .isEqualTo(new OwnerId("Plaintext", ""));
+        assertTopicLoadedFromApiHasOwner(twoTeamsTopic, new OwnerId("Plaintext", "Team B, Team C"));
+        assertSubscriptionLoadedFromApiHasOwner(twoTeamsTopicSub, new OwnerId("Plaintext", "Team Gamma, Team Delta"));
+
+        assertTopicLoadedFromApiHasOwner(noTeamTopic, new OwnerId("Plaintext", ""));
     }
 
     @Test
     public void shouldFailToMigrateIntoUnknownSource() {
         // when
-        Response response = management.migration().execute("support-team-to-owner","unknown", true);
+        Response response = management.migration().execute("support-team-to-owner", "unknown", true);
 
         // then
         assertThat(response.getStatusInfo()).isEqualTo(Response.Status.NOT_FOUND);
+    }
+
+    private void assertTopicLoadedFromApiHasOwner(Topic topic, OwnerId ownerId) {
+        assertThat(management.topic().get(topic.getQualifiedName()).getOwner()).isEqualTo(ownerId);
+    }
+
+    private void assertSubscriptionLoadedFromApiHasOwner(Subscription subscription, OwnerId ownerId) {
+        assertThat(management.subscription().get(subscription.getQualifiedTopicName(), subscription.getName()).getOwner()).isEqualTo(ownerId);
     }
 
 }

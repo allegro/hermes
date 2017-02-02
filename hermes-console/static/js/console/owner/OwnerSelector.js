@@ -1,9 +1,9 @@
 angular.module('hermes.owner')
-    .controller('ctrl', ['$scope', 'OwnerRepository', function ($scope, ownerRepository) {
+    .controller('OwnerSelectorController', ['$scope', 'OwnerRepository', function ($scope, ownerRepository) {
 
         ownerRepository.getSourceNames().then(function (sources) {
             $scope.possibleSources = sources;
-            $scope.sourceSelectModel = _.find(sources, function(s) { return s.name == $scope.sourceName}) || sources[0];
+            $scope.sourceSelectModel = $scope.sourceName ? _.find(sources, function(s) { return s.name == $scope.sourceName}) : sources[0];
             if ($scope.ownerId) {
                 ownerRepository.getOwner($scope.sourceSelectModel.name, $scope.ownerId).then(function(owner) {
                     if ($scope.sourceSelectModel.autocomplete) {
@@ -24,7 +24,7 @@ angular.module('hermes.owner')
                 return;
             }
 
-            $scope.sourceName= model.name;
+            $scope.sourceName = model.name;
         });
 
         $scope.$watch('ownerInputModel', function(model) {
@@ -33,9 +33,9 @@ angular.module('hermes.owner')
             }
 
             if (model instanceof Object && model.id !== undefined) {
-                $scope.ownerId= model.id;
+                $scope.ownerId = model.id;
             } else {
-                $scope.ownerId= model;
+                $scope.ownerId = model;
             }
         });
 
@@ -45,7 +45,7 @@ angular.module('hermes.owner')
     }])
     .directive('ownerSelector', function () {
         return {
-            controller: 'ctrl',
+            controller: 'OwnerSelectorController',
             restrict: 'E',
             templateUrl: 'partials/ownerSelector.html',
             scope: {

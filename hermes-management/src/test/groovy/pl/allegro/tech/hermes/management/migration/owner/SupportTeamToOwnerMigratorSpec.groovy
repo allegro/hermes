@@ -1,10 +1,14 @@
 package pl.allegro.tech.hermes.management.migration.owner
 
 import pl.allegro.tech.hermes.api.OwnerId
+import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.management.domain.group.GroupService
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService
 import pl.allegro.tech.hermes.management.domain.topic.TopicService
+import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder
+import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 
 import javax.validation.ConstraintViolationException
@@ -24,9 +28,9 @@ class SupportTeamToOwnerMigratorSpec extends Specification {
 
     def "should count migrated topics and subcriptions"() {
         given:
-        topicService.listTopics("group") >> [topic("group.topic").withOwner(null).build()]
+        topicService.listTopics("group") >> [createTopic("group.topic")]
         subscriptionService.listSubscriptions(TopicName.fromQualifiedName("group.topic")) >> [
-                subscription(TopicName.fromQualifiedName("group.topic"), "sub").withOwner(null).withSupportTeam("Alpha").build()
+                createSubscription("group.topic", "sub")
         ]
 
         when:
@@ -76,26 +80,34 @@ class SupportTeamToOwnerMigratorSpec extends Specification {
     def "should skip topics and subscriptions that failed to get updated"() {
         given:
         topicService.listTopics("group") >> [
-                topic("group.invalid").withOwner(null).build(),
-                topic("group.error").withOwner(null).build(),
-                topic("group.success").withOwner(null).build()
+                createTopic("group.invalid"),
+                createTopic("group.error"),
+                createTopic("group.success")
         ]
         subscriptionService.listSubscriptions(TopicName.fromQualifiedName("group.invalid")) >> [
-                subscription(TopicName.fromQualifiedName("group.invalid"), "success").withOwner(null).withSupportTeam("Alpha").build()
+                createSubscription("group.invalid", "success")
         ]
         subscriptionService.listSubscriptions(TopicName.fromQualifiedName("group.error")) >> [
-                subscription(TopicName.fromQualifiedName("group.error"), "success").withOwner(null).withSupportTeam("Alpha").build()
+                createSubscription("group.error", "success")
         ]
         subscriptionService.listSubscriptions(TopicName.fromQualifiedName("group.success")) >> [
-                subscription(TopicName.fromQualifiedName("group.success"), "invalid").withOwner(null).withSupportTeam("Alpha").build(),
-                subscription(TopicName.fromQualifiedName("group.success"), "error").withOwner(null).withSupportTeam("Alpha").build(),
-                subscription(TopicName.fromQualifiedName("group.success"), "success").withOwner(null).withSupportTeam("Alpha").build()
+                createSubscription("group.success", "invalid"),
+                createSubscription("group.success", "error"),
+                createSubscription("group.success", "success")
         ]
 
-        topicService.updateTopic({ it.qualifiedName().contains("invalid") }, _, _) >> { throw new ConstraintViolationException("invalid", Collections.emptySet()) }
-        topicService.updateTopic({ it.qualifiedName().contains("error") }, _, _) >> { throw new RuntimeException("error") }
-        subscriptionService.updateSubscription(_, { it.contains("invalid") }, _, _) >> { throw new ConstraintViolationException("invalid", Collections.emptySet()) }
-        subscriptionService.updateSubscription(_, { it.contains("error") }, _, _) >> { throw new RuntimeException("error") }
+        topicService.updateTopic({ it.qualifiedName().contains("invalid") }, _, _) >> {
+            throw new ConstraintViolationException("invalid", Collections.emptySet())
+        }
+        topicService.updateTopic({ it.qualifiedName().contains("error") }, _, _) >> {
+            throw new RuntimeException("error")
+        }
+        subscriptionService.updateSubscription(_, { it.contains("invalid") }, _, _) >> {
+            throw new ConstraintViolationException("invalid", Collections.emptySet())
+        }
+        subscriptionService.updateSubscription(_, { it.contains("error") }, _, _) >> {
+            throw new RuntimeException("error")
+        }
 
         when:
         def stats = migrator.execute("some-source", SupportTeamToOwnerMigrator.OwnerExistsStrategy.SKIP)
@@ -105,6 +117,14 @@ class SupportTeamToOwnerMigratorSpec extends Specification {
         stats.topics().skipped() == ["javax.validation.ConstraintViolationException": 1, "java.lang.RuntimeException": 1]
         stats.subscriptions().migrated() == 3
         stats.subscriptions().skipped() == ["javax.validation.ConstraintViolationException": 1, "java.lang.RuntimeException": 1]
+    }
+
+    private Topic createTopic(String topic) {
+        TopicBuilder.topic(topic).withOwner(null).build()
+    }
+
+    private Subscription createSubscription(String topic, String subscription) {
+        SubscriptionBuilder.subscription(TopicName.fromQualifiedName(topic), subscription).withOwner(null).withSupportTeam("Alpha").build()
     }
 
 }
