@@ -90,10 +90,10 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
             confirmationModal.open({
                 action: 'Remove',
                 actionSubject: 'Subscription ' + $scope.subscription.name,
-                passwordLabel: 'Group password',
-                passwordHint: 'Password for group ' + groupName
+                passwordLabel: 'Root password',
+                passwordHint: 'root password'
             }).result.then(function (result) {
-                passwordService.set(result.password);
+                passwordService.setRoot(result.password);
                 subscriptionRepository.remove(topicName, $scope.subscription.name).$promise
                         .then(function () {
                             toaster.pop('success', 'Success', 'Subscription has been removed');
@@ -112,10 +112,10 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
             confirmationModal.open({
                 action: 'Suspend',
                 actionSubject: 'Subscription '+ $scope.subscription.name,
-                passwordLabel: 'Group password',
-                passwordHint: 'Password for group ' + groupName
+                passwordLabel: 'Root password',
+                passwordHint: 'root password'
             }).result.then(function (result) {
-                passwordService.set(result.password);
+                passwordService.setRoot(result.password);
                 subscriptionRepository.suspend(topicName, $scope.subscription.name).$promise
                         .then(function () {
                             $scope.subscription.state = 'SUSPENDED';
@@ -134,10 +134,10 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
             confirmationModal.open({
                 action: 'Activate',
                 actionSubject: 'Subcription ' + $scope.subscription.name,
-                passwordLabel: 'Group password',
-                passwordHint: 'Password for group ' + groupName
+                passwordLabel: 'Root password',
+                passwordHint: 'root password'
             }).result.then(function (result) {
-                passwordService.set(result.password);
+                passwordService.setRoot(result.password);
                 subscriptionRepository.activate(topicName, $scope.subscription.name).$promise
                         .then(function () {
                             $scope.subscription.state = 'ACTIVE';
@@ -177,10 +177,10 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
             confirmationModal.open({
                 action: 'Retransmit',
                 actionSubject: 'Subscription ' + $scope.subscription.name,
-                passwordLabel: 'Group password',
-                passwordHint: 'Password for group ' + groupName
+                passwordLabel: 'Root password',
+                passwordHint: 'root password'
             }).result.then(function (result) {
-                    passwordService.set(result.password);
+                    passwordService.setRoot(result.password);
                     $scope.retransmissionLoading = true;
                     subscriptionRepository.retransmit(topicName, $scope.subscription.name, retransmitFromDate).$promise
                         .then(function () {
@@ -208,7 +208,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
 
         $scope.save = function () {
             var promise;
-            passwordService.set($scope.groupPassword);
+            passwordService.setRoot($scope.rootPassword);
 
             if (operation === 'ADD') {
                 promise = subscriptionRepository.add(topicName, $scope.subscription).$promise;

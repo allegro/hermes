@@ -78,10 +78,10 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             confirmationModal.open({
                 action: 'Remove',
                 actionSubject: 'Topic ' + $scope.topic.name,
-                passwordLabel: 'Group password',
-                passwordHint: 'Password for group ' + groupName
+                passwordLabel: 'Root password',
+                passwordHint: 'root password'
             }).result.then(function (result) {
-                    passwordService.set(result.password);
+                    passwordService.setRoot(result.password);
                     topicRepository.remove($scope.topic)
                         .then(function () {
                             toaster.pop('success', 'Success', 'Topic has been removed');
@@ -100,8 +100,8 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             confirmationModal.open({
                 action: 'Blacklist',
                 actionSubject: 'Topic ' + $scope.topic.name,
-                passwordLabel: 'Group password',
-                passwordHint: 'Password for group ' + groupName
+                passwordLabel: 'Root password',
+                passwordHint: 'root password'
             }).result.then(function () {
                 topicRepository.blacklist(topicName).$promise
                     .then(function () {
@@ -120,8 +120,8 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             confirmationModal.open({
                 action: 'Unblacklist',
                 actionSubject: 'Topic ' + $scope.topic.name,
-                passwordLabel: 'Group password',
-                passwordHint: 'Password for group ' + groupName
+                passwordLabel: 'Root password',
+                passwordHint: 'root password'
             }).result.then(function () {
                 topicRepository.unblacklist(topicName).$promise
                     .then(function () {
@@ -174,7 +174,7 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
         $scope.save = function () {
             var promise;
             var originalTopicName = $scope.topic.name;
-            passwordService.set($scope.groupPassword);
+            passwordService.setRoot($scope.rootPassword);
 
             var topic = _.cloneDeep($scope.topic);
             delete topic.shortName;

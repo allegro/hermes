@@ -99,7 +99,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                 passwordLabel: 'Root password',
                 passwordHint: 'root password '
             }).result.then(function (result) {
-                    passwordService.set(result.password);
+                    passwordService.setRoot(result.password);
                     groupRepository.remove($scope.group.groupName).$promise
                         .then(function () {
                             toaster.pop('success', 'Success', 'Group has been removed');

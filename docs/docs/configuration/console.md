@@ -65,7 +65,6 @@ auth.oauth.url           | url to OAuth authorization endpoint
 auth.oauth.clientId      | OAuth client id
 auth.oauth.scope         | assigned scope
 auth.headers.enabled     | enable simple authorization support
-auth.headers.groupHeader | name of header to bear group password
 auth.headers.adminHeader | name of header to bear admin password
 
 ## Topic configuration
