@@ -50,3 +50,7 @@ services:
       - kafka
       - graphite
 
+  mockserver:
+    image: hermes-mock
+    ports:
+      - 8888:8090
