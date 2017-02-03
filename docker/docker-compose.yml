@@ -1,48 +1,52 @@
-zookeeper:
-  image: wurstmeister/zookeeper
-  ports:
-    - "2181:2181"
-  volumes:
-    - ./data/zookeeper:/opt/zookeeper-3.4.6/data
+version: '3'
 
-kafka:
-  image: wurstmeister/kafka:0.8.2.1
-  ports:
-    - "9092:9092"
-  links:
-    - zookeeper:zk
-  environment:
-    KAFKA_ADVERTISED_HOST_NAME: 172.17.0.1
-  volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
+services:
+  zk:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
 
-graphite:
-  image: nickstenning/graphite
-  ports:
-    - "80:80"
-    - "2003:2003"
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zk
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_ZOOKEEPER_CONNECT: zk:2181
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
-frontend:
-  image: allegro/hermes-frontend
-  ports:
-    - "8080:8080"
-  links:
-    - zookeeper:zk
-    - kafka
-    - graphite
+  graphite:
+    image: nickstenning/graphite
+    ports:
+      - "80:80"
+      - "2003:2003"
 
-consumers:
-  image: allegro/hermes-consumers
-  links:
-    - zookeeper:zk
-    - kafka
-    - graphite
+  frontend:
+    image: allegro/hermes-frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - zk
+      - kafka
+      - graphite
+      - consumers
 
-management:
-  image: allegro/hermes-management
-  ports:
-    - "8090:8090"
-  links:
-    - zookeeper:zk
-    - kafka
-    - graphite
+  consumers:
+    image: allegro/hermes-consumers
+    depends_on:
+      - zk
+      - kafka
+      - graphite
+
+  management:
+    image: allegro/hermes-management
+    ports:
+      - "8090:8090"
+    depends_on:
+      - zk
+      - kafka
+      - graphite
+
