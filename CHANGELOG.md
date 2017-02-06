@@ -8,6 +8,14 @@ Improved durability of assignments during restarts and zookeeper flaps.
 Reporting of assignments and running consumers has been improved and made consistent.
 More reliable handling of consumer processes.
 
+##### Migration guide:
+
+To utilize these improvements it is required to stop all instances in hermes cluster, remove all nodes from `{zookeeper.root}/consumers-workload/{kafka.cluster.name}/runtime` and restart instances.
+
+This adds a marker in selective algorithm's consumer assignments, which allows rebalancing with removing automatically created assignments.
+
+Alternatively, to avoid switching off your cluster, a script updating assignments' zookeeper nodes' data to `AUTO_ASSIGNED` can be used. It should be also applied after all nodes run the new version, as previous run could shuffle assignments during deployment.
+
 #### ([698](https://github.com/allegro/hermes/pull/698)) Fix Dockerfile build
 
 ## 0.10.4 (23.01.2017)
