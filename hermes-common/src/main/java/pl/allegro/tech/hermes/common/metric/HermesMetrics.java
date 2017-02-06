@@ -290,11 +290,6 @@ public class HermesMetrics {
                 Counters.MAXRATE_FETCH_FAILURES, subscription.getTopicName(), subscription.getName()));
     }
 
-    public Counter maxRateUpdatesCounter(Subscription subscription) {
-        return metricRegistry.counter(metricRegistryName(
-                Counters.MAXRATE_UPDATES, subscription.getTopicName(), subscription.getName()));
-    }
-
     public void registerMaxRateGauge(Subscription subscription, Gauge<Double> gauge) {
         metricRegistry.register(metricRegistryName(
                 Gauges.MAX_RATE_VALUE, subscription.getTopicName(), subscription.getName()), gauge);

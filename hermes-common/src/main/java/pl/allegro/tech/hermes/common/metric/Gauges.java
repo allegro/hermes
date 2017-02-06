@@ -20,8 +20,9 @@ public class Gauges {
             INFLIGHT_REQUESTS = "inflight-requests",
             OUTPUT_RATE = "output-rate." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
             BACKUP_STORAGE_SIZE = "backup-storage.size",
-            MAX_RATE_CALCULATION_DURATION = "consumers-rate.coordinator.calculation.duration",
-            MAX_RATE_VALUE = "consumers-rate.node.max-rate.value." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
+            MAX_RATE_CALCULATION_DURATION = "consumers-rate.max-rate.coordinator.duration",
+            MAX_RATE_VALUE =
+                    "consumers-rate.max-rate.node." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".max-rate",
             MAX_RATE_ACTUAL_RATE_VALUE =
-                    "consumers-rate.node.rate.value." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
+                    "consumers-rate.max-rate.node." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".rate";
 }

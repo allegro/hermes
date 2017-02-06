@@ -71,7 +71,6 @@ class MaxRateCalculator {
                                     subscription.getQualifiedName(), rates);
 
                             maxRateRegistry.update(subscription.getQualifiedName(), rates);
-                            metrics.maxRateUpdatesCounter(subscription).inc();
                         });
                     }
                 } catch (Exception e) {
