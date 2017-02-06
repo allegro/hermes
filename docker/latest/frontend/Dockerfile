@@ -14,7 +14,8 @@ RUN wget -nv "${URL}" -O "/tmp/${ARCHIVE_NAME}" \
   && rm "/tmp/${ARCHIVE_NAME}" \
   && mv /opt/hermes-frontend-* /opt/hermes-frontend
 
-ENV HERMES_FRONTEND_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/hermes/frontend.properties"
+ENV HERMES_FRONTEND_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/hermes/frontend.properties -Dlogback.configurationFile=/etc/hermes/logback.xml"
 ADD frontend.properties /etc/hermes/frontend.properties
+ADD logback.xml /etc/hermes/logback.xml
 
 CMD /opt/hermes-frontend/bin/hermes-frontend
