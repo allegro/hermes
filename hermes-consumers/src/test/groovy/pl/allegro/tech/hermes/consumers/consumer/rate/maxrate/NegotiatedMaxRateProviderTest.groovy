@@ -31,63 +31,63 @@ class NegotiatedMaxRateProviderTest extends Specification {
 
     def "should report history on start"() {
         given:
-            final rate = 0.5
-            sendCounters.getRate() >> rate
-            maxRateRegistry.getRateHistory(consumer) >> RateHistory.empty()
-            maxRateRegistry.getMaxRate(consumer) >> Optional.empty()
+        final rate = 0.5
+        sendCounters.getRate() >> rate
+        maxRateRegistry.getRateHistory(consumer) >> RateHistory.empty()
+        maxRateRegistry.getMaxRate(consumer) >> Optional.empty()
 
         when:
-            freshProvider.tickForHistory()
+        freshProvider.tickForHistory()
 
         then:
-            1 * maxRateRegistry.writeRateHistory(consumer, RateHistory.create(rate))
+        1 * maxRateRegistry.writeRateHistory(consumer, RateHistory.create(rate))
     }
 
     def "should not report insignificant change"() {
         given:
-            final initialRate = 0.5d
-            final insignificantRate = 0.55d
-            sendCounters.getRate() >>> [initialRate, insignificantRate]
+        final initialRate = 0.5d
+        final insignificantRate = 0.55d
+        sendCounters.getRate() >>> [initialRate, insignificantRate]
 
         when:
-            initializedProvider.tickForHistory()
+        initializedProvider.tickForHistory()
 
         then:
-            0 * maxRateRegistry.writeRateHistory(consumer, _ as RateHistory)
+        0 * maxRateRegistry.writeRateHistory(consumer, _ as RateHistory)
     }
 
     def "should update existing history on change"() {
         given:
-            final initialRate = 0.5d
-            final newRate = 0.7d
-            sendCounters.getRate() >> newRate
-            1 * maxRateRegistry.getRateHistory(consumer) >> RateHistory.create(initialRate)
+        final initialRate = 0.5d
+        final newRate = 0.7d
+        sendCounters.getRate() >> newRate
+        1 * maxRateRegistry.getRateHistory(consumer) >> RateHistory.create(initialRate)
 
         when:
-            initializedProvider.tickForHistory()
+        initializedProvider.tickForHistory()
 
         then:
-            1 * maxRateRegistry.writeRateHistory(consumer,
-                    RateHistory.updatedRates(RateHistory.create(initialRate), newRate, HISTORY_SIZE))
+        1 * maxRateRegistry.writeRateHistory(consumer,
+                RateHistory.updatedRates(RateHistory.create(initialRate), newRate, HISTORY_SIZE))
     }
 
     def "should roll history"() {
         given:
-            final initialRate = 0.5d
-            final firstRate = 0.7d
-            final secondRate = 0.9d
-            sendCounters.getRate() >>> [firstRate, secondRate]
-            2 * maxRateRegistry.getRateHistory(consumer) >>> [
-                    RateHistory.create(initialRate),
-                    RateHistory.updatedRates(RateHistory.create(initialRate), firstRate, HISTORY_SIZE)]
-            initializedProvider.tickForHistory()
+        final initialRate = 0.5d
+        final firstRate = 0.7d
+        final secondRate = 0.9d
+        sendCounters.getRate() >>> [firstRate, secondRate]
+        2 * maxRateRegistry.getRateHistory(consumer) >>> [
+                RateHistory.create(initialRate),
+                RateHistory.updatedRates(RateHistory.create(initialRate), firstRate, HISTORY_SIZE)]
+        initializedProvider.tickForHistory()
 
         when:
-            initializedProvider.tickForHistory()
+        initializedProvider.tickForHistory()
 
         then:
-            1 * maxRateRegistry.writeRateHistory(consumer,
-                    RateHistory.updatedRates(RateHistory.create(firstRate), secondRate, HISTORY_SIZE))
+        1 * maxRateRegistry.writeRateHistory(consumer,
+                RateHistory.updatedRates(RateHistory.create(firstRate), secondRate, HISTORY_SIZE))
     }
 
     private NegotiatedMaxRateProvider createProvider() {
