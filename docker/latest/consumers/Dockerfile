@@ -15,7 +15,8 @@ RUN wget -nv "${URL}" -O "/tmp/${ARCHIVE_NAME}" \
   && rm "/tmp/${ARCHIVE_NAME}" \
   && mv /opt/hermes-consumers-* /opt/hermes-consumers
 
-ENV HERMES_CONSUMERS_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/hermes/consumers.properties"
+ENV HERMES_CONSUMERS_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/hermes/consumers.properties -Dlogback.configurationFile=/etc/hermes/logback.xml"
 ADD consumers.properties /etc/hermes/consumers.properties
+ADD logback.xml /etc/hermes/logback.xml
 
 CMD /opt/hermes-consumers/bin/hermes-consumers
