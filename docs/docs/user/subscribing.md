@@ -418,7 +418,7 @@ to start the retransmission.
 
 ## Retransmission
 
-Hermes gives an option to easily retransmit messages that are still available on Kafka. Simply send POST to:
+Hermes gives an option to easily retransmit messages that are still available on Kafka. Simply send a PUT to:
 
 ```
 /topics/{topicName}/subscriptions/{subscriptionName}/retransmission
