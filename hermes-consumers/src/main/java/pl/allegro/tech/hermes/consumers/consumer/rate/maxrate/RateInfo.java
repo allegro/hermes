@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
-import java.util.Objects;
 import java.util.Optional;
 
 class RateInfo {
@@ -42,24 +41,6 @@ class RateInfo {
 
     RateInfo copyWithNewRateHistory(RateHistory rateHistory) {
         return new RateInfo(this.maxRate, rateHistory);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        RateInfo rateInfo = (RateInfo) o;
-        return Objects.equals(maxRate, rateInfo.maxRate) &&
-                Objects.equals(rateHistory, rateInfo.rateHistory);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(maxRate, rateHistory);
     }
 
     @Override

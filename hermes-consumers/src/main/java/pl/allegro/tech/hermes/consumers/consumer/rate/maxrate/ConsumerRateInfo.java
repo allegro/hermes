@@ -36,14 +36,12 @@ final class ConsumerRateInfo {
             return false;
         }
         ConsumerRateInfo that = (ConsumerRateInfo) o;
-        return Objects.equals(consumerId, that.consumerId) &&
-                Objects.equals(maxRate, that.maxRate) &&
-                Objects.equals(history, that.history);
+        return Objects.equals(consumerId, that.consumerId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(consumerId, maxRate, history);
+        return Objects.hash(consumerId);
     }
 
     @Override
