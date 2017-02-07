@@ -78,7 +78,7 @@ public class BalancingJob implements Runnable {
     public void run() {
         try {
             consumersRegistry.refresh();
-            if (consumersRegistry.isLeader()) {
+            if (consumersRegistry.isLeader() && workTracker.isReady()) {
                 try (Timer.Context ctx = metrics.consumersWorkloadRebalanceDurationTimer(kafkaCluster).time()) {
                     logger.info("Initializing workload balance.");
 

@@ -45,7 +45,7 @@ allprojects {
 
     project.ext.versions = [
             guava       : '20.0',
-            jackson     : '2.5.1',
+            jackson     : '2.8.3',
             jersey      : '2.23.2',
             jetty       : '9.3.6.v20151106',
             curator     : '2.11.1',
@@ -117,6 +117,9 @@ subprojects {
         all*.exclude group: "log4j", module: "log4j"
         all*.resolutionStrategy*.force 'org.jboss.logging:jboss-logging:3.2.1.Final'
         all*.resolutionStrategy*.force "com.google.guava:guava:${versions.guava}"
+        all*.resolutionStrategy*.force "com.fasterxml.jackson.core:jackson-databind:${versions.jackson}"
+        all*.resolutionStrategy*.force "com.fasterxml.jackson.core:jackson-annotations:${versions.jackson}"
+        all*.resolutionStrategy*.force "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:${versions.jackson}"
     }
 
     tasks.withType(JavaCompile) {

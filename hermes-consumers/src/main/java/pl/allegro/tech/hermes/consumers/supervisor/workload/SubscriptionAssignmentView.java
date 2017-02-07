@@ -135,6 +135,18 @@ public class SubscriptionAssignmentView {
         return new SubscriptionAssignmentView(result);
     }
 
+    public static SubscriptionAssignmentView of(Set<SubscriptionAssignment> assignments) {
+        Map<SubscriptionName, Set<SubscriptionAssignment>> snapshot = new HashMap<>();
+        for (SubscriptionAssignment assignment : assignments) {
+            snapshot.compute(assignment.getSubscriptionName(), (k, v) -> {
+                v = (v == null ? new HashSet<>() : v);
+                v.add(assignment);
+                return v;
+            });
+        }
+        return new SubscriptionAssignmentView(snapshot);
+    }
+
     public static SubscriptionAssignmentView copyOf(SubscriptionAssignmentView currentState) {
         return new SubscriptionAssignmentView(currentState.subscriptionAssignments);
     }

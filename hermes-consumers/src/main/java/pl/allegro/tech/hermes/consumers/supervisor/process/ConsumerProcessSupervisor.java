@@ -49,7 +49,8 @@ public class ConsumerProcessSupervisor implements Runnable {
         this.metrics = metrics;
         this.unhealthyAfter = configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER);
         this.killAfter = configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER);
-        this.taskQueue = new MonitoredMpscQueue(metrics, "signalQueue", configs.getIntProperty(Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE));
+        this.taskQueue = new MonitoredMpscQueue<>(metrics, "signalQueue",
+                configs.getIntProperty(Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE));
         this.signalsFilter = new SignalsFilter(taskQueue, clock);
     }
 
@@ -70,7 +71,8 @@ public class ConsumerProcessSupervisor implements Runnable {
 
         List<Signal> signalsToProcess = new ArrayList<>();
         taskQueue.drain(signalsToProcess::add);
-        signalsFilter.filterSignals(signalsToProcess, runningProcesses.existingConsumers()).forEach(this::processSignal);
+        signalsFilter.filterSignals(signalsToProcess, runningProcesses.existingConsumers())
+                .forEach(this::processSignal);
 
         logger.debug("Process supervisor loop took {} ms to check all consumers", clock.millis() - currentTime);
     }
@@ -150,7 +152,8 @@ public class ConsumerProcessSupervisor implements Runnable {
                 if (task.cancel(true)) {
                     logger.info("Interrupted consumer process {}", subscriptionName);
                 } else {
-                    logger.error("Failed to interrupt consumer process {}, possible stale consumer", subscriptionName);
+                    logger.error("Failed to interrupt consumer process {}, possible stale consumer",
+                            subscriptionName);
                 }
             } else {
                 runningProcesses.remove(subscriptionName);
@@ -178,7 +181,8 @@ public class ConsumerProcessSupervisor implements Runnable {
             runningProcesses.add(process, future);
             logger.info("Started consumer process {}", process);
         } else {
-            logger.info("Abort consumer process start: process for subscription {} is already running", subscriptionName);
+            logger.info("Abort consumer process start: process for subscription {} is already running",
+                    subscriptionName);
         }
     }
 
@@ -191,7 +195,8 @@ public class ConsumerProcessSupervisor implements Runnable {
     }
 
     public void shutdown() {
-        runningProcesses.stream().forEach(p -> p.accept(Signal.of(Signal.SignalType.STOP, p.getSubscriptionName())));
+        runningProcesses.stream()
+                .forEach(p -> p.accept(Signal.of(Signal.SignalType.STOP, p.getSubscriptionName())));
         executor.shutdown();
     }
 

@@ -8,10 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.hook.FlushLogsShutdownHook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCaches;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -33,6 +35,8 @@ public class HermesConsumers {
     private final ServiceLocator serviceLocator;
 
     private final SupervisorController supervisorController;
+    private final MaxRateSupervisor maxRateSupervisor;
+    private final SubscriptionAssignmentCaches assignmentCaches;
 
     public static void main(String... args) {
         consumers().build().start();
@@ -54,10 +58,14 @@ public class HermesConsumers {
         messageSenderFactory = serviceLocator.getService(MessageSenderFactory.class);
 
         supervisorController = serviceLocator.getService(SupervisorController.class);
+        maxRateSupervisor = serviceLocator.getService(MaxRateSupervisor.class);
+        assignmentCaches = serviceLocator.getService(SubscriptionAssignmentCaches.class);
 
         hooksHandler.addShutdownHook((s) -> {
             try {
                 consumerHttpServer.stop();
+                maxRateSupervisor.stop();
+                assignmentCaches.stop();
                 supervisorController.shutdown();
                 s.shutdown();
             } catch (Exception e) {
@@ -80,6 +88,8 @@ public class HermesConsumers {
                     ));
 
             supervisorController.start();
+            assignmentCaches.start();
+            maxRateSupervisor.start();
             serviceLocator.getService(ConsumersRuntimeMonitor.class).start();
             consumerHttpServer.start();
             hooksHandler.startup(serviceLocator);

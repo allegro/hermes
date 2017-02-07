@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.google.common.base.Joiner;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 
@@ -14,11 +15,14 @@ public class ZookeeperPaths {
     public static final String URL_SEPARATOR = "/";
     public static final String CONSUMERS_PATH = "consumers";
     public static final String CONSUMERS_WORKLOAD_PATH = "consumers-workload";
+    public static final String CONSUMERS_RATE_PATH = "consumers-rate";
     public static final String METRICS_PATH = "metrics";
     public static final String ADMIN_PATH = "admin";
     public static final String PREVIEW_PATH = "preview";
     public static final String OAUTH_PROVIDERS_PATH = "oauth-providers";
     public static final String BLACKLIST_PATH = "blacklist";
+    public static final String MAX_RATE_PATH = "max-rate";
+    public static final String MAX_RATE_HISTORY_PATH = "history";
 
     private final String basePath;
 
@@ -102,11 +106,28 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH, cluster, "registry");
     }
 
-    public String inflightPath(String hostname, TopicName topicName, String subscriptionName, String metricName) {
-        return Joiner.on(URL_SEPARATOR).join(
-                consumersPath(),
-                hostname + subscriptionMetricPathWithoutBasePath(topicName, subscriptionName, metricName)
-        );
+    public String consumersWorkloadPath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH);
+    }
+
+    public String consumersRateRuntimePath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "runtime");
+    }
+
+    public String consumersRatePath(SubscriptionName subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId);
+    }
+
+    public String consumersRateHistoryPath(SubscriptionName subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, MAX_RATE_HISTORY_PATH);
+    }
+
+    public String consumersMaxRatePath(SubscriptionName subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, MAX_RATE_PATH);
+    }
+
+    public String maxRateLeaderPath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "leader");
     }
 
     public String topicsBlacklistPath() {
