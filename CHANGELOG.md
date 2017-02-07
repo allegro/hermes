@@ -1,3 +1,21 @@
+## 0.10.6 (07.02.2017)
+
+### Features
+
+#### ([611](https://github.com/allegro/hermes/pull/611)) Consumers rate negotiation
+
+Max rate negotiation algorithm for balancing maximum delivery rate across subscription consumers.
+
+### Enhancements
+
+#### ([703](https://github.com/allegro/hermes/issues/703)) Update Curator dependency
+#### ([701](https://github.com/allegro/hermes/pull/701)) Updated migration guide for 0.10.5
+#### ([713](https://github.com/allegro/hermes/pull/713)) Admin scripts catalogue with initial migration script for 0.10.5
+
+### Bugfixes
+
+#### ([709](https://github.com/allegro/hermes/pull/709)) Fix docker-compose and docker setup
+
 ## 0.10.5 (31.01.2017)
 
 ### Enhancements
