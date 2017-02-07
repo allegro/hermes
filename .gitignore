@@ -29,4 +29,10 @@ hermes-console/static/components
 hermes-console/node_modules
 hermes-console/config.json
 
+scripts/.Python
+scripts/bin/
+scripts/include/
+scripts/lib/
+scripts/pip-selfcheck.json
+
 .DS_Store
