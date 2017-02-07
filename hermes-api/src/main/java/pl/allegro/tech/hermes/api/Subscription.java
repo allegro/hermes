@@ -373,4 +373,9 @@ public class Subscription implements Anonymizable {
         }
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Subscription(" + getQualifiedName() + ")";
+    }
 }

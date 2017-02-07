@@ -54,7 +54,6 @@ public class QueryEndpointTest extends IntegrationTest {
         assertListMatches(groups, found, positions);
     }
 
-
     @DataProvider(name = "topicData")
     public static Object[][] topicData() {
         return new Object[][] {
@@ -115,6 +114,30 @@ public class QueryEndpointTest extends IntegrationTest {
 
         // then
         assertListMatches(subscriptions, found, positions);
+    }
+
+    @Test
+    public void shouldSkipEntitiesNotContainingQueriedField() {
+        // given
+        management.group().create(new Group("group", "owner", "team", "contact"));
+
+        // when
+        List<Group> found = management.query().queryGroups("{\"query\": {\"missingField\": \"xxx\"}}");
+
+        // then
+        assertThat(found).isEmpty();
+    }
+
+    @Test
+    public void shouldSkipEntitiesNotContainingQueriedNestedField() {
+        // given
+        management.group().create(new Group("group", "owner", "team", "contact"));
+
+        // when
+        List<Group> found = management.query().queryGroups("{\"query\": {\"missing.nested.field\": \"xxx\"}}");
+
+        // then
+        assertThat(found).isEmpty();
     }
 
     private Subscription enrichSubscription(SubscriptionBuilder subscription, String endpoint) {

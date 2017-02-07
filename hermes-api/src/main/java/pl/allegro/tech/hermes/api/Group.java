@@ -74,4 +74,9 @@ public class Group {
     public int hashCode() {
         return Objects.hash(groupName, technicalOwner, supportTeam);
     }
+
+    @Override
+    public String toString() {
+        return "Group(" + groupName + ")";
+    }
 }
