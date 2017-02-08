@@ -1,0 +1,19 @@
+<div class="form-group">
+    <label for="sourceSelect" class="col-md-3 control-label">Owner source</label>
+    <div class="col-md-9">
+        <select required class="form-control" id="sourceSelect" name="sourceSelect"
+                ng-model="sourceSelectModel" ng-options="s.name for s in possibleSources"
+                ng-change="onSourceChanged()"></select>
+    </div>
+</div>
+<div class="form-group {{form.owner.$valid ? '' : 'has-error'}}">
+    <label ng-if="sourceSelectModel.autocomplete" for="ownerWithAutocomplete" class="col-md-3 control-label">Owner</label>
+    <label ng-if="!sourceSelectModel.autocomplete" for="ownerWithoutAutocomplete" class="col-md-3 control-label">Owner</label>
+    <div class="col-md-9">
+        <input required ng-if="sourceSelectModel.autocomplete" class="form-control" id="ownerWithAutocomplete" name="owner"
+               uib-typeahead="owner as owner.name for owner in owners($viewValue)" typeahead-min-length="1"
+               typeahead-wait-ms="500" placeholder="who maintains this?" ng-model="$parent.ownerInputModel" autocomplete="off" />
+        <input required ng-if="!sourceSelectModel.autocomplete" class="form-control" id="ownerWithoutAutocomplete" name="owner"
+               placeholder="who maintains this?" ng-model="$parent.ownerInputModel" />
+    </div>
+</div>

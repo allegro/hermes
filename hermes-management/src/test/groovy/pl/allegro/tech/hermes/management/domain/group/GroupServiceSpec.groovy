@@ -45,9 +45,7 @@ class GroupServiceSpec extends Specification {
             Group toBeUpdated = GroupBuilder.group("testGroup").build()
             groupRepository.getGroupDetails(toBeUpdated.groupName) >> toBeUpdated
             PatchData groupPatch = PatchData.from(["groupName" : toBeUpdated.groupName,
-                                                   "technicalOwner": toBeUpdated.technicalOwner,
-                                                   "supportTeam": toBeUpdated.supportTeam,
-                                                   "contact": "modifiedContact"])
+                                                   "supportTeam": "modifiedSupportTeam"])
         when:
             groupService.updateGroup(toBeUpdated.groupName, groupPatch, TEST_USER)
 
@@ -55,11 +53,11 @@ class GroupServiceSpec extends Specification {
             1 * auditor.objectUpdated(TEST_USER, toBeUpdated, Patch.apply(toBeUpdated, groupPatch))
     }
 
-    def Principal principal() {
+    Principal principal() {
         return new Principal() {
             @Override
             String getName() {
-                return TEST_USER;
+                return TEST_USER
             }
         };
     }

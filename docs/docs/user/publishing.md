@@ -15,21 +15,13 @@ you need to create one by sending POST with `application/json` content type at
 /groups
 ```
 
-Body of request must contain:
-
-* name: group name
-* supportTeam: team that should have administrative access to this group
-* technicalOwner: name of the person responsible for this group
-* contact: team contact, e.g. e-mail
+Request body must contain `groupName` field, which is the name of the group.
 
 Sample request:
 
 ```json
 {
-    "groupName": "my-group",
-    "supportTeam": "My Team",
-    "technicalOwner": "Person Responsible",
-    "contact": "my-team-alias@mycompany.com"
+    "groupName": "my-group"
 }
 ```
 
@@ -43,12 +35,14 @@ on topics resource:
 /topics
 ```
 
-Body of request must contain at least:
+Request body must contain at least:
 
 * name: fully qualified name of topic including group name, separated with a dot (see: [naming convention](/overview/data-model#naming-convention))
 * description: topic description
 * contentType: format of data sent to Kafka, either ``JSON`` or ``AVRO``
 * retentionTime: time to keep data in Kafka in days
+* owner: who's the owner of this topic – `id` is an identifier meaningful in a given `source` implementation. 
+  Default implementation is `Plaintext`, where `id` is simply a label. 
 
 Minimal request:
 
@@ -59,6 +53,10 @@ Minimal request:
     "contentType": "JSON",
     "retentionTime": {
         "duration": 1
+    },
+    "owner": {
+        "source": "Plaintext",
+        "id": "My Team"
     }
 }
 ```

@@ -158,7 +158,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}/state")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription state", httpMethod = HttpMethod.PUT)
     public Response updateState(@PathParam("topicName") String qualifiedTopicName,
                                 @PathParam("subscriptionName") String subscriptionName,
@@ -171,7 +171,7 @@ public class SubscriptionsEndpoint {
 
     @DELETE
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Remove subscription", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionId,
@@ -184,7 +184,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionName,
@@ -199,7 +199,7 @@ public class SubscriptionsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/retransmission")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription offset", httpMethod = HttpMethod.PUT)
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,
