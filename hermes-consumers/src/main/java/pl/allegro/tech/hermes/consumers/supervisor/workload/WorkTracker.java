@@ -19,6 +19,10 @@ public class WorkTracker {
         this.registry = registry;
     }
 
+    public boolean isReady() {
+        return registry.isStarted();
+    }
+
     public void forceAssignment(Subscription subscription) {
         registry.addEphemeralAssignment(new SubscriptionAssignment(
                 consumerNodeId,

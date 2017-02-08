@@ -97,7 +97,7 @@ with new status name in body (quotation marks are important!):
 Hermes treats any response with **2xx** status code as successful delivery (e.g. 200 or 201).
 
 Responses with **5xx** status code or any network issues (e.g. connection timeout) are treated as failures, unless it
-is **503** code, descirbed in [back pressure section](#back-pressure).
+is **503** code, described in [back pressure section](#back-pressure).
 
 Responses with **4xx** status code are treated as failures, but by default they are not retried. This is because
 usually when subscriber responds with *400 Bad Message* it means this message is somehow invalid and will never be parsed,

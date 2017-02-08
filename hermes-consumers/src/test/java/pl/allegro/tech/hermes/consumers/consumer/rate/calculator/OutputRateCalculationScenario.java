@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Offset;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.consumers.consumer.rate.DeliveryCounters;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator.Mode;
+
+import java.time.Clock;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OutputRateCalculationScenario {
 
@@ -15,19 +15,16 @@ public class OutputRateCalculationScenario {
 
     private OutputRateCalculationResult previous;
 
-    private final Subscription subscription;
-
     private final OutputRateCalculator calculator;
 
-    private final DeliveryCounters counters = new DeliveryCounters();
+    private final SendCounters counters = new SendCounters(Clock.systemDefaultZone());
 
-    public OutputRateCalculationScenario(Subscription subscription, OutputRateCalculator calculator) {
-        this.subscription = subscription;
+    public OutputRateCalculationScenario(OutputRateCalculator calculator) {
         this.calculator = calculator;
     }
 
     public OutputRateCalculationScenario start(double initialRate) {
-        previous = calculator.recalculateRate(subscription, counters, OutputRateCalculator.Mode.NORMAL, initialRate);
+        previous = calculator.recalculateRate(counters, OutputRateCalculator.Mode.NORMAL, initialRate);
         results.add(previous);
         return this;
     }
@@ -35,7 +32,7 @@ public class OutputRateCalculationScenario {
     public OutputRateCalculationScenario nextInteration(int successes, int failures) {
         incrementSuccesses(successes);
         incrementFailures(failures);
-        previous = calculator.recalculateRate(subscription, counters, previous.mode(), previous.rate());
+        previous = calculator.recalculateRate(counters, previous.mode(), previous.rate());
         results.add(previous);
         counters.reset();
         return this;

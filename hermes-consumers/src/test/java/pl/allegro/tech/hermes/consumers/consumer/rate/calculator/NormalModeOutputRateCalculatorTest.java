@@ -1,7 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
 import org.junit.Test;
-import pl.allegro.tech.hermes.consumers.consumer.rate.DeliveryCounters;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
+
+import java.time.Clock;
 
 import static pl.allegro.tech.hermes.consumers.test.HermesConsumersAssertions.assertThat;
 
@@ -11,7 +13,7 @@ public class NormalModeOutputRateCalculatorTest {
 
     private final NormalModeOutputRateCalculator calculator = new NormalModeOutputRateCalculator(0.5, SLOW_RATE, 0.1, 0.4);
 
-    private final DeliveryCounters counters = new DeliveryCounters();
+    private final SendCounters counters = new SendCounters(Clock.systemDefaultZone());
 
     @Test
     public void shouldIncreaseRateWhenFailuresBelowToleranceOccuredAndNotAboveMaximumRate() {

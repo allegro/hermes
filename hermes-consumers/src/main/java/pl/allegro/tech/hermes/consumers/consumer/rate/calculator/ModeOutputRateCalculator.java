@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
-import pl.allegro.tech.hermes.consumers.consumer.rate.DeliveryCounters;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 
 interface ModeOutputRateCalculator {
 
-    OutputRateCalculationResult calculateOutputRate(double currentRate, double maximumOutputRate, DeliveryCounters counters);
+    OutputRateCalculationResult calculateOutputRate(double currentRate,
+                                                    double maximumOutputRate,
+                                                    SendCounters counters);
 
 }

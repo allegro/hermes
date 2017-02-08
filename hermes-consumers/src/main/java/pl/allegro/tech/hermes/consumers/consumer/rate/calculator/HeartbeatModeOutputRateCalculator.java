@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
-import pl.allegro.tech.hermes.consumers.consumer.rate.DeliveryCounters;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 
 class HeartbeatModeOutputRateCalculator implements ModeOutputRateCalculator {
 
@@ -11,7 +11,9 @@ class HeartbeatModeOutputRateCalculator implements ModeOutputRateCalculator {
     }
 
     @Override
-    public OutputRateCalculationResult calculateOutputRate(double currentRate, double maximumOutputRate, DeliveryCounters counters) {
+    public OutputRateCalculationResult calculateOutputRate(double currentRate,
+                                                           double maximumOutputRate,
+                                                           SendCounters counters) {
         if (counters.onlySuccessess()) {
             return new OutputRateCalculationResult(slowModeRate, OutputRateCalculator.Mode.SLOW);
         }

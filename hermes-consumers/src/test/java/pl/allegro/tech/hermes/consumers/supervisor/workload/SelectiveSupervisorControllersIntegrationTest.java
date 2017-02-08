@@ -43,7 +43,7 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     @Test
     public void shouldRegisterConsumerInActiveNodesRegistryOnStartup() throws Exception {
         // when
-        String consumerId = runtime.spawnConsumer().getId();
+        String consumerId = runtime.spawnConsumer().consumerId();
 
         // then
         runtime.waitForRegistration(consumerId);
@@ -129,5 +129,19 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
 
         // then
         verify(consumerFactory, times(2)).createConsumer(any());
+    }
+
+    @Test
+    public void shouldCreateConsumerForExistingAssignment() {
+        // given
+        SubscriptionName subscription = runtime.createSubscription();
+        runtime.createAssignment(subscription, "consumer");
+
+        // when
+        ConsumersSupervisor supervisor = mock(ConsumersSupervisor.class);
+        runtime.spawnConsumer("consumer", supervisor);
+
+        // then
+        runtime.verifyConsumerWouldBeCreated(supervisor, runtime.getSubscription(subscription));
     }
 }

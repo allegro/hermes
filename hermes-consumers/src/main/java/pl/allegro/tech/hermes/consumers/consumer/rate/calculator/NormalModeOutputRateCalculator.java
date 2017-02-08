@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
-import pl.allegro.tech.hermes.consumers.consumer.rate.DeliveryCounters;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 
 class NormalModeOutputRateCalculator implements ModeOutputRateCalculator {
 
@@ -20,7 +20,9 @@ class NormalModeOutputRateCalculator implements ModeOutputRateCalculator {
     }
 
     @Override
-    public OutputRateCalculationResult calculateOutputRate(double currentRate, double maximumOutputRate, DeliveryCounters counters) {
+    public OutputRateCalculationResult calculateOutputRate(double currentRate,
+                                                           double maximumOutputRate,
+                                                           SendCounters counters) {
         double calculatedRate = currentRate;
         OutputRateCalculator.Mode calculatedMode = OutputRateCalculator.Mode.NORMAL;
 
@@ -34,9 +36,6 @@ class NormalModeOutputRateCalculator implements ModeOutputRateCalculator {
             calculatedRate = Math.max(slowModeRate, currentRate * (1 - rateConvergenceFactor));
         }
 
-        if (calculatedRate <= slowModeRate) {
-            calculatedMode = OutputRateCalculator.Mode.SLOW;
-        }
         return new OutputRateCalculationResult(calculatedRate, calculatedMode);
     }
 
