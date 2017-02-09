@@ -4,6 +4,9 @@ import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Owner;
 import pl.allegro.tech.hermes.management.domain.ManagementException;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface OwnerSource {
 
     String name();
@@ -11,6 +14,24 @@ public interface OwnerSource {
     boolean exists(String ownerId);
 
     Owner get(String id) throws OwnerNotFound;
+
+    /**
+     * Override if the implemented owner source supports autocompletion.
+     */
+    default Optional<Autocompletion> autocompletion() {
+        return Optional.empty();
+    }
+
+    /**
+     * Override if the implemented owner source should provide specific usage hint on the console.
+     */
+    default Optional<String> usageHint() {
+        return Optional.empty();
+    }
+
+    interface Autocompletion {
+        List<Owner> ownersMatching(String searchString);
+    }
 
     class OwnerNotFound extends ManagementException {
 

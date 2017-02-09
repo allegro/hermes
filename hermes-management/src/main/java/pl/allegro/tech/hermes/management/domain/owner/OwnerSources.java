@@ -39,12 +39,9 @@ public class OwnerSources implements Iterable<OwnerSource> {
         return Optional.ofNullable(ownerSourcesByNames.get(name));
     }
 
-    public Optional<AutocompleteOwnerSource> getAutocompleteByName(String name) {
-        OwnerSource source = ownerSourcesByNames.get(name);
-        if (source != null && !(source instanceof AutocompleteOwnerSource)) {
-            throw new AutocompleteNotSupportedException(source);
-        }
-        return Optional.ofNullable((AutocompleteOwnerSource) source);
+    public OwnerSource.Autocompletion getAutocompletionFor(String name) {
+        OwnerSource source = getByName(name).orElseThrow(() -> new OwnerSourceNotFound(name));
+        return source.autocompletion().orElseThrow(() -> new AutocompleteNotSupportedException(source));
     }
 
     public Iterator<OwnerSource> iterator() {
