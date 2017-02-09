@@ -24,7 +24,7 @@ public class BlacklistZookeeperNotifyingCache extends PathChildrenCache implemen
 
     @Override
     public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) throws Exception {
-        if (event.getData() == null) {
+        if (event == null || event.getData() == null) {
             return;
         }
 
