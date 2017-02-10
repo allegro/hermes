@@ -173,4 +173,9 @@ public class Topic {
     public int getMaxMessageSize() {
         return maxMessageSize;
     }
+
+    @Override
+    public String toString() {
+        return "Topic(" + getQualifiedName() + ")";
+    }
 }
