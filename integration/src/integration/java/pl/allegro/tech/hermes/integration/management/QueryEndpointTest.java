@@ -122,7 +122,7 @@ public class QueryEndpointTest extends IntegrationTest {
     @Test
     public void shouldSkipEntitiesNotContainingQueriedField() {
         // given
-        management.group().create(new Group("group", "owner", "team", "contact"));
+        management.group().create(new Group("group", "owner"));
 
         // when
         List<Group> found = management.query().queryGroups("{\"query\": {\"missingField\": \"xxx\"}}");
@@ -134,7 +134,7 @@ public class QueryEndpointTest extends IntegrationTest {
     @Test
     public void shouldSkipEntitiesNotContainingQueriedNestedField() {
         // given
-        management.group().create(new Group("group", "owner", "team", "contact"));
+        management.group().create(new Group("group", "owner"));
 
         // when
         List<Group> found = management.query().queryGroups("{\"query\": {\"missing.nested.field\": \"xxx\"}}");

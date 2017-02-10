@@ -55,8 +55,4 @@ public class CrowdOwnerSource implements OwnerSource {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public Optional<String> usageHint() {
-        return Optional.of("Crowd group (or groups separated by ',')");
-    }
 }

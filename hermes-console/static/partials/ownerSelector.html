@@ -12,8 +12,8 @@
     <div class="col-md-9">
         <input required ng-if="sourceSelectModel.autocomplete" class="form-control" id="ownerWithAutocomplete" name="owner"
                uib-typeahead="owner as owner.name for owner in owners($viewValue)" typeahead-min-length="1" typeahead-wait-ms="500"
-               placeholder='{{sourceSelectModel.hint || "who&apos;s the owner?"}}' ng-model="$parent.ownerInputModel" autocomplete="off" />
+               placeholder="{{placeholder()}}" ng-model="$parent.ownerInputModel" autocomplete="off" />
         <input required ng-if="!sourceSelectModel.autocomplete" class="form-control" id="ownerWithoutAutocomplete" name="owner"
-               placeholder='{{sourceSelectModel.hint || "who&apos;s the owner?"}}' ng-model="$parent.ownerInputModel" />
+               placeholder="{{placeholder()}}" ng-model="$parent.ownerInputModel" />
     </div>
 </div>

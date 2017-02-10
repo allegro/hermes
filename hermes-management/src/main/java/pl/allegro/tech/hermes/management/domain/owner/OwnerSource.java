@@ -22,13 +22,6 @@ public interface OwnerSource {
         return Optional.empty();
     }
 
-    /**
-     * Override if the implemented owner source should provide specific usage hint on the console.
-     */
-    default Optional<String> usageHint() {
-        return Optional.empty();
-    }
-
     interface Autocompletion {
         List<Owner> ownersMatching(String searchString);
     }

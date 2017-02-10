@@ -67,13 +67,9 @@ public class OwnersEndpoint {
         @JsonProperty("autocomplete")
         private final boolean autocomplete;
 
-        @JsonProperty("hint")
-        private final String hint;
-
         private SourceDescriptor(OwnerSource source) {
             this.name = source.name();
             this.autocomplete = source.autocompletion().isPresent();
-            this.hint = source.usageHint().orElse(null);
         }
 
         static SourceDescriptor of(OwnerSource source) {

@@ -21,6 +21,7 @@ hermes.constant('METRICS_CONFIG', config.metrics);
 hermes.constant('CONSOLE_CONFIG', config.console);
 hermes.constant('TOPIC_CONFIG', config.topic || {});
 hermes.constant('SUBSCRIPTION_CONFIG', config.subscription || {});
+hermes.constant('OWNER_CONFIG', config.owner || {});
 
 hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibTooltipProvider',
     function ($stateProvider, $urlRouterProvider, $httpProvider, $tooltipProvider) {
