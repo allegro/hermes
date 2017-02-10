@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
-import pl.allegro.tech.hermes.management.migration.owner.SupportTeamToOwnerMigrator;
 
 import javax.ws.rs.core.Response;
 
@@ -54,9 +53,6 @@ public class SupportTeamToOwnerMigratorIntegrationTest extends IntegrationTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(200);
-        SupportTeamToOwnerMigrator.ExecutionStats stats = response.readEntity(SupportTeamToOwnerMigrator.ExecutionStats.class);
-        assertThat(stats.topics().migrated()).isEqualTo(4);
-        assertThat(stats.subscriptions().migrated()).isEqualTo(3);
 
         assertTopicLoadedFromApiHasOwner(firstSingleTeamTopic, new OwnerId("Plaintext", "Team A"));
         assertSubscriptionLoadedFromApiHasOwner(firstSingleTeamTopicSubAlpha, new OwnerId("Plaintext", "Team Alpha"));
