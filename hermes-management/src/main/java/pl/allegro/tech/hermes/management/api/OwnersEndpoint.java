@@ -6,7 +6,6 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Owner;
-import pl.allegro.tech.hermes.management.domain.owner.AutocompleteOwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
@@ -36,9 +35,7 @@ public class OwnersEndpoint {
     @ApiOperation(value = "Lists owners from the given source matching the search string", response = List.class, httpMethod = HttpMethod.GET)
     public List<Owner> search(@PathParam("source") String source,
                               @QueryParam("search") String searchString) {
-        return ownerSources.getAutocompleteByName(source)
-                .map(s -> s.ownersMatching(searchString))
-                .orElseThrow(() -> new OwnerSourceNotFound(source));
+        return ownerSources.getAutocompletionFor(source).ownersMatching(searchString);
     }
 
     @GET
@@ -70,13 +67,13 @@ public class OwnersEndpoint {
         @JsonProperty("autocomplete")
         private final boolean autocomplete;
 
-        private SourceDescriptor(String name, boolean autocomplete) {
-            this.name = name;
-            this.autocomplete = autocomplete;
+        private SourceDescriptor(OwnerSource source) {
+            this.name = source.name();
+            this.autocomplete = source.autocompletion().isPresent();
         }
 
         static SourceDescriptor of(OwnerSource source) {
-            return new SourceDescriptor(source.name(), source instanceof AutocompleteOwnerSource);
+            return new SourceDescriptor(source);
         }
 
     }

@@ -1,5 +1,6 @@
 angular.module('hermes.owner')
-    .controller('OwnerSelectorController', ['$scope', 'OwnerRepository', function ($scope, ownerRepository) {
+    .controller('OwnerSelectorController', ['$scope', 'OWNER_CONFIG', 'OwnerRepository',
+        function ($scope, config, ownerRepository) {
 
         ownerRepository.getSourceNames().then(function (sources) {
             $scope.possibleSources = sources;
@@ -42,6 +43,22 @@ angular.module('hermes.owner')
         $scope.owners = function(searchString) {
             return ownerRepository.getOwners($scope.sourceSelectModel.name, searchString);
         };
+
+        $scope.placeholder = function () {
+            if (!$scope.sourceName) {
+                return '';
+            }
+
+            var sourceConfig = _.find(config.sources, function (s) {
+                return s.name == $scope.sourceName
+            });
+
+            if (sourceConfig && sourceConfig.placeholder) {
+                return sourceConfig.placeholder;
+            }
+
+            return "who's the owner?";
+        }
     }])
     .directive('ownerSelector', function () {
         return {

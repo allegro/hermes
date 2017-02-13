@@ -24,5 +24,10 @@
     }
   },
   "subscription": {
+  },
+  "owner": {
+    "sources": [
+      {"name": "Crowd", "placeholder": "Crowd group (or groups separated by ',')"}
+    ]
   }
 }

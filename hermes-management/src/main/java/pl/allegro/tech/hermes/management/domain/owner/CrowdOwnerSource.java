@@ -7,10 +7,11 @@ import pl.allegro.tech.hermes.management.infrastructure.crowd.CrowdClient;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CrowdOwnerSource implements AutocompleteOwnerSource {
+public class CrowdOwnerSource implements OwnerSource {
 
     public static final String NAME = "Crowd";
 
@@ -36,7 +37,11 @@ public class CrowdOwnerSource implements AutocompleteOwnerSource {
     }
 
     @Override
-    public List<Owner> ownersMatching(String searchString) {
+    public Optional<Autocompletion> autocompletion() {
+        return Optional.of(this::ownersMatching);
+    }
+
+    private List<Owner> ownersMatching(String searchString) {
         if (Strings.isNullOrEmpty(searchString)) {
             return Collections.emptyList();
         }

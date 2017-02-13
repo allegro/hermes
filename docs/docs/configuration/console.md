@@ -108,3 +108,19 @@ Example:
 ```
 
 This will add 3 additional fields to subscription configuration, all optional. 
+
+## Owners configuration
+
+Option        | Description
+--------------| --------------------------------------
+owner.sources | a list of owner sources customizations
+
+Example:
+
+```json
+"owner": {
+    "sources": [
+        {"name": "Plaintext", "placeholder": "this will display as placeholder in the owner input"}
+    ]
+}
+```
