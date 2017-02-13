@@ -19,6 +19,9 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class TopicValidatorTest extends Specification {
 
+    static MANAGABLE = { true }
+    static NOT_MANAGABLE = { false }
+
     def schemaRepository = Stub(SchemaRepository)
     def ownerDescriptorValidator = Stub(OwnerIdValidator)
     def apiPreconditions = Stub(ApiPreconditions)
@@ -26,7 +29,7 @@ class TopicValidatorTest extends Specification {
 
     def "topic with basic properties when creating should be valid"() {
         when:
-        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build())
+        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), MANAGABLE)
 
         then:
         noExceptionThrown()
@@ -37,7 +40,7 @@ class TopicValidatorTest extends Specification {
         apiPreconditions.checkConstraints(_) >> { throw new ConstraintViolationException("failed", Collections.emptySet()) }
 
         when:
-        topicValidator.ensureCreatedTopicIsValid(topic('group.invalid').build())
+        topicValidator.ensureCreatedTopicIsValid(topic('group.invalid').build(), MANAGABLE)
 
         then:
         thrown ConstraintViolationException
@@ -48,7 +51,7 @@ class TopicValidatorTest extends Specification {
         def migratedTopic = topic('group.topic').migratedFromJsonType().build()
 
         when:
-        topicValidator.ensureCreatedTopicIsValid(migratedTopic)
+        topicValidator.ensureCreatedTopicIsValid(migratedTopic, MANAGABLE)
 
         then:
         thrown TopicValidationException
@@ -59,10 +62,18 @@ class TopicValidatorTest extends Specification {
         ownerDescriptorValidator.check(_) >> { throw new OwnerIdValidationException("failed") }
 
         when:
-        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build())
+        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), MANAGABLE)
 
         then:
         thrown OwnerIdValidationException
+    }
+
+    def "topic with owner that doesn't include the creator should be invalid"() {
+        when:
+        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), NOT_MANAGABLE)
+
+        then:
+        thrown TopicValidationException
     }
 
     def "topic when doing a basic update should be valid"() {

@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -30,6 +31,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -48,16 +50,19 @@ public class SubscriptionsEndpoint {
     private final TopicService topicService;
     private final MultiDCAwareService multiDCAwareService;
     private final TimeFormatter timeFormatter;
+    private final ManagementRights managementRights;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
                                  TopicService topicService,
                                  MultiDCAwareService multiDCAwareService,
-                                 TimeFormatter timeFormatter) {
+                                 TimeFormatter timeFormatter,
+                                 ManagementRights managementRights) {
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
         this.multiDCAwareService = multiDCAwareService;
         this.timeFormatter = timeFormatter;
+        this.managementRights = managementRights;
     }
 
     @GET
@@ -89,8 +94,9 @@ public class SubscriptionsEndpoint {
     @ApiOperation(value = "Create subscription", httpMethod = HttpMethod.POST)
     public Response create(@PathParam("topicName") String qualifiedTopicName,
                            Subscription subscription,
-                           @Context SecurityContext securityContext) {
-        subscriptionService.createSubscription(subscription, securityContext.getUserPrincipal().getName());
+                           @Context ContainerRequestContext requestContext) {
+        subscriptionService.createSubscription(subscription, requestContext.getSecurityContext().getUserPrincipal().getName(),
+                checkedSubscription -> managementRights.isUserAllowedToManageSubscription(checkedSubscription, requestContext));
         return responseStatus(Response.Status.CREATED);
     }
 

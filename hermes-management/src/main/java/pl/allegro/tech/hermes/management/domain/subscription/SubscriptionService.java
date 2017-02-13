@@ -70,8 +70,8 @@ public class SubscriptionService {
         return subscriptionRepository.listSubscriptions(topicName);
     }
 
-    public void createSubscription(Subscription subscription, String createdBy) {
-        subscriptionValidator.check(subscription);
+    public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights) {
+        subscriptionValidator.checkCreation(subscription, creatorRights);
         subscriptionRepository.createSubscription(subscription);
         auditor.objectCreated(createdBy, subscription);
     }
@@ -91,7 +91,7 @@ public class SubscriptionService {
                                    String modifiedBy) {
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         Subscription updated = Patch.apply(retrieved, patch);
-        subscriptionValidator.check(updated);
+        subscriptionValidator.checkModification(updated);
 
         if (!retrieved.equals(updated)) {
             subscriptionRepository.updateSubscription(updated);
