@@ -8,6 +8,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
 import pl.allegro.tech.hermes.common.hook.FlushLogsShutdownHook;
 import pl.allegro.tech.hermes.common.hook.Hook;
@@ -23,6 +24,7 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
+import pl.allegro.tech.hermes.frontend.server.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
@@ -75,6 +77,9 @@ public final class HermesFrontend {
         }
         if (config.getBooleanProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED)) {
             hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicSchemaLoadingStartupHook.class));
+        }
+        if (config.getBooleanProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED)) {
+            hermesServer.configureAuthentication(serviceLocator.getService(AuthenticationConfiguration.class));
         }
         hooksHandler.addStartupHook((s) -> s.getService(HealthCheckService.class).startup());
         hooksHandler.addShutdownHook(defaultShutdownHook());

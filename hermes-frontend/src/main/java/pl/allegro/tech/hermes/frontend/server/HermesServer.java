@@ -1,6 +1,10 @@
 package pl.allegro.tech.hermes.frontend.server;
 
 import io.undertow.Undertow;
+import io.undertow.security.api.AuthenticationMode;
+import io.undertow.security.handlers.AuthenticationCallHandler;
+import io.undertow.security.handlers.AuthenticationMechanismsHandler;
+import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
@@ -13,15 +17,37 @@ import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
 
-import static io.undertow.UndertowOptions.*;
+import static io.undertow.UndertowOptions.ALWAYS_SET_KEEP_ALIVE;
+import static io.undertow.UndertowOptions.ENABLE_HTTP2;
+import static io.undertow.UndertowOptions.MAX_COOKIES;
+import static io.undertow.UndertowOptions.MAX_HEADERS;
+import static io.undertow.UndertowOptions.MAX_PARAMETERS;
+import static io.undertow.UndertowOptions.REQUEST_PARSE_TIMEOUT;
 import static org.xnio.Options.BACKLOG;
 import static org.xnio.Options.READ_TIMEOUT;
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_AUTHENTICATION_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BACKLOG_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BUFFER_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HOST;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HTTP2_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_IO_THREADS_COUNT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_COOKIES;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_HEADERS;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_PARAMETERS;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READ_TIMEOUT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_DUMPER;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_PARSE_TIMEOUT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SET_KEEP_ALIVE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_PORT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_WORKER_THREADS_COUNT;
 
 public class HermesServer {
 
     private Undertow undertow;
     private HermesShutdownHandler gracefulShutdown;
+    private AuthenticationConfiguration authConfig;
 
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configFactory;
@@ -75,6 +101,10 @@ public class HermesServer {
         throughputLimiter.stop();
     }
 
+    public void configureAuthentication(AuthenticationConfiguration authenticationConfiguration) {
+        this.authConfig = authenticationConfiguration;
+    }
+
     private Undertow configureServer() {
         gracefulShutdown = new HermesShutdownHandler(handlers(), hermesMetrics);
         Undertow.Builder builder = Undertow.builder()
@@ -108,7 +138,21 @@ public class HermesServer {
                 .get("/status/health", healthCheckHandler)
                 .get("/", healthCheckHandler);
 
-        return isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(routingHandler) : routingHandler;
+        return isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(routingHandler) :
+                isEnabled(FRONTEND_AUTHENTICATION_ENABLED) ? withAuthenticationHandlersChain(routingHandler) : routingHandler;
+    }
+
+    private HttpHandler withAuthenticationHandlersChain(HttpHandler next) {
+        AuthenticationCallHandler authenticationCallHandler = new AuthenticationCallHandler(next);
+        AuthenticationPredicateAwareConstraintHandler constraintHandler = new AuthenticationPredicateAwareConstraintHandler(
+                authenticationCallHandler, authConfig.getAuthConstraintPredicate());
+
+        AuthenticationMechanismsHandler mechanismsHandler = new AuthenticationMechanismsHandler(constraintHandler,
+                authConfig.getAuthMechanisms());
+        AuthenticationMode authenticationMode = AuthenticationMode.valueOf(
+                configFactory.getStringProperty(Configs.FRONTEND_AUTHENTICATION_MODE).toUpperCase());
+
+        return new SecurityInitialHandler(authenticationMode, authConfig.getIdentityManager(), mechanismsHandler);
     }
 
     private boolean isEnabled(Configs property) {
