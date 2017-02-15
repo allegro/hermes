@@ -187,4 +187,19 @@ class MaxRateBalancerTest extends Specification {
                 new ConsumerRateInfo("reporting", notBusy)
         ] as Set).isPresent()
     }
+
+    def "should assign min max rate when subscription rate is too low"() {
+        given:
+        def notBusy = RateInfo.withNoMaxRate(RateHistory.create(0.0d));
+        def busy = RateInfo.withNoMaxRate(RateHistory.create(1.0d));
+
+        when:
+        def maxRates = balancer.balance(1d, [
+                new ConsumerRateInfo("notBusy", notBusy),
+                new ConsumerRateInfo("busy", busy)
+        ] as Set).get()
+
+        then:
+        maxRates.values()*.getMaxRate() == [MIN_MAX_RATE, MIN_MAX_RATE]
+    }
 }
