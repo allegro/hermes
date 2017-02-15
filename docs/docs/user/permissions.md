@@ -7,7 +7,7 @@ All GET operations can be done without any form of authorization.
 
 ## Ownership
 
-Each **group** and **subscription** in Hermes is owned by a **Support Team**. Hermes is own and administered by an
+Each **topic** and **subscription** in Hermes is owned by an **owner**. Hermes is owned and administered by an
 **administrator**.
 
 ## Group
@@ -22,15 +22,15 @@ Modify group          | **administrator**
 
 Operation             | Permissions
 --------------------- | -----------
-Add new topic         | **group owner**
-Remove existing topic | **group owner**
-Modify topic          | **group owner**
+Add new topic         | any logged in user
+Remove existing topic | **topic owner**
+Modify topic          | **topic owner**
 
 ## Subscriptions
 
 Operation                    | Permissions
 ---------------------------- | -----------
 Add new subscription         | any logged in user
-Remove existing subscription | **subscription owner** or **group owner**
-Modify subscription          | **subscription owner** or **group owner**
-Retransmit messages          | **subscription owner** or **group owner**
+Remove existing subscription | **subscription owner** or **topic owner**
+Modify subscription          | **subscription owner** or **topic owner**
+Retransmit messages          | **subscription owner** or **topic owner**

@@ -7,19 +7,23 @@ Ownership model is described in [Ownership and permissions](/user/permissions) s
 access to sensitive endpoints, for example:
 
 * simple tokens/passwords generated for each **group** or **subscription**
-* passwords generated for each **Support Team**
-* OAuth tokens validated against **Support Team**
+* passwords generated for each **Owner**
+* OAuth tokens validated against **Owner**
 
-Security rules need to be coded as an implementation of `pl.allegro.tech.hermes.management.api.auth.SecurityContextProvider`
+Security rules need to be coded as an implementation of `pl.allegro.tech.hermes.management.api.auth.SecurityProvider`
 interface, which needs to be present in Management module Spring context (see
 [packaging section](/deployment/packaging#management) for more information on Management customization).
 
 ```java
 @Component
-public class MyCustomSecurityContextProvider implements SecurityContextProvider {
+public class MyCustomSecurityProvider implements SecurityProvider {
 
     @Override
-    public SecurityContext securityContext(ContainerRequestContext requestContext) {
+    public HermesSecurity security(ContainerRequestContext requestContext) {
+        return new HermesSecurity(securityContext(requestContext), ownershipResolver(requestContext));
+    }
+
+    private SecurityContext securityContext(ContainerRequestContext requestContext) {
         Strign username = extractUserFromRequest(requestContext);
 
         return new SecurityContext() {
@@ -48,6 +52,10 @@ public class MyCustomSecurityContextProvider implements SecurityContextProvider 
                 /* ... */
             }
         };
+    }
+    
+    private OwnershipResolver ownershipResolver(ContainerRequestContext requestContext) {
+        /* ... */
     }
 }
 ```
