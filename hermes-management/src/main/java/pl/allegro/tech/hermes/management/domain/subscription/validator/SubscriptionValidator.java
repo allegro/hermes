@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
+import pl.allegro.tech.hermes.management.domain.subscription.CreatorRights;
 
 @Component
 public class SubscriptionValidator {
@@ -19,7 +20,17 @@ public class SubscriptionValidator {
         this.apiPreconditions = apiPreconditions;
     }
 
-    public void check(Subscription toCheck) {
+    public void checkCreation(Subscription toCheck, CreatorRights creatorRights) {
+        apiPreconditions.checkConstraints(toCheck);
+        ownerIdValidator.check(toCheck.getOwner());
+
+        if (!creatorRights.allowedToManage(toCheck)) {
+            throw new SubscriptionValidationException("Provide an owner that includes you, you would not be able to manage this subscription later");
+        }
+
+    }
+
+    public void checkModification(Subscription toCheck) {
         apiPreconditions.checkConstraints(toCheck);
         ownerIdValidator.check(toCheck.getOwner());
     }
