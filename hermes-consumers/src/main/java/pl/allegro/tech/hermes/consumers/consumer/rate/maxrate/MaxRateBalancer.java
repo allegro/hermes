@@ -24,9 +24,9 @@ class MaxRateBalancer {
 
     Optional<Map<String, MaxRate>> balance(double subscriptionMax, Set<ConsumerRateInfo> rateInfos) {
         double minChange = (minAllowedChangePercent / 100) * subscriptionMax;
-        double defaultRate = subscriptionMax / Math.max(1, rateInfos.size());
+        double defaultRate = Math.max(minMax, subscriptionMax / Math.max(1, rateInfos.size()));
 
-        if (anyNewConsumers(rateInfos)) {
+        if (shouldResortToDefaults(subscriptionMax, rateInfos)) {
             return Optional.of(balanceDefault(defaultRate, rateInfos));
         }
 
@@ -59,6 +59,10 @@ class MaxRateBalancer {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
+    private boolean shouldResortToDefaults(double subscriptionMax, Set<ConsumerRateInfo> rateInfos) {
+        return anyNewConsumers(rateInfos) || insufficientSubscriptionRate(subscriptionMax, rateInfos.size());
+    }
+
     private Map<String, MaxRate> balanceDefault(double defaultRate, Set<ConsumerRateInfo> rateInfos) {
         return rateInfos.stream()
                 .collect(Collectors.toMap(ConsumerRateInfo::getConsumerId,
@@ -67,6 +71,10 @@ class MaxRateBalancer {
 
     private boolean anyNewConsumers(Set<ConsumerRateInfo> rateInfos) {
         return rateInfos.stream().anyMatch(this::isUnassigned);
+    }
+
+    private boolean insufficientSubscriptionRate(double subscriptionMax, int consumersCount) {
+        return subscriptionMax / consumersCount <= 1.0d;
     }
 
     private boolean subscriptionRateChanged(List<ActiveConsumerInfo> activeConsumerInfos, double subscriptionMax) {

@@ -30,12 +30,12 @@ public class ConsumerRateLimitSupervisor implements Runnable {
 
     @Override
     public void run() {
-        try {
-            for (ConsumerRateLimiter limiter : consumerRateLimiters) {
-                    limiter.adjustConsumerRate();
+        for (ConsumerRateLimiter limiter : consumerRateLimiters) {
+            try {
+                limiter.adjustConsumerRate();
+            } catch (Exception e) {
+                logger.warn("Issue adjusting consumer rate", e);
             }
-        } catch (Exception e) {
-            logger.warn("Issue adjusting consumer rates", e);
         }
     }
 
