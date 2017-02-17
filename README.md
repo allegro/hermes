@@ -16,11 +16,7 @@ Visit our page: [hermes.allegro.tech](http://hermes.allegro.tech)
 
 See our full documentation: [http://hermes-pubsub.readthedocs.org/en/latest/](http://hermes-pubsub.readthedocs.org/en/latest/)
 
-See how we work: [Waffle Dashboard](https://waffle.io/allegro/hermes)
-
-Questions?
- - [gitter](https://gitter.im/allegro/hermes)
- - [mailing list](https://groups.google.com/forum/#!forum/hermes-pubsub)
+Questions? We are on [gitter](https://gitter.im/allegro/hermes).
 
 ## License
 
