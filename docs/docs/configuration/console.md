@@ -65,7 +65,6 @@ auth.oauth.url           | url to OAuth authorization endpoint
 auth.oauth.clientId      | OAuth client id
 auth.oauth.scope         | assigned scope
 auth.headers.enabled     | enable simple authorization support
-auth.headers.groupHeader | name of header to bear group password
 auth.headers.adminHeader | name of header to bear admin password
 
 ## Topic configuration
@@ -109,3 +108,19 @@ Example:
 ```
 
 This will add 3 additional fields to subscription configuration, all optional. 
+
+## Owners configuration
+
+Option        | Description
+--------------| --------------------------------------
+owner.sources | a list of owner sources customizations
+
+Example:
+
+```json
+"owner": {
+    "sources": [
+        {"name": "Plaintext", "placeholder": "this will display as placeholder in the owner input"}
+    ]
+}
+```

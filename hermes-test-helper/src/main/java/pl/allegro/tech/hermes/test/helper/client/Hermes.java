@@ -88,8 +88,12 @@ public class Hermes {
         return createProxy(consumerUrl, ConsumerEndpoint.class, getDefaultManagementConfig());
     }
 
-    public SupportTeamsEndpoint createSupportTeamsEndpoint() {
-        return createProxy(url, SupportTeamsEndpoint.class, managementConfig);
+    public OwnerEndpoint createOwnerEndpoint() {
+        return createProxy(url, OwnerEndpoint.class, managementConfig);
+    }
+
+    public MigrationEndpoint createMigrationEndpoint() {
+        return createProxy(url, MigrationEndpoint.class, managementConfig);
     }
 
     public BlacklistEndpoint createBlacklistEndpoint() {

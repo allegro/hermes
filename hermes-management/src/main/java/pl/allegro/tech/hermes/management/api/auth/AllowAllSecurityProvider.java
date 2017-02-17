@@ -6,10 +6,14 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
 
-public class AllowAllSecurityContextProvider implements SecurityContextProvider {
-    
+public class AllowAllSecurityProvider implements SecurityProvider {
+
     @Override
-    public SecurityContext securityContext(ContainerRequestContext requestContext) {
+    public HermesSecurity security(ContainerRequestContext requestContext) {
+        return new HermesSecurity(securityContext(requestContext), ownerId -> true);
+    }
+
+    private SecurityContext securityContext(ContainerRequestContext requestContext) {
         return new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {

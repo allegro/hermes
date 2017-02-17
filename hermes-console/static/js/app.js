@@ -21,6 +21,7 @@ hermes.constant('METRICS_CONFIG', config.metrics);
 hermes.constant('CONSOLE_CONFIG', config.console);
 hermes.constant('TOPIC_CONFIG', config.topic || {});
 hermes.constant('SUBSCRIPTION_CONFIG', config.subscription || {});
+hermes.constant('OWNER_CONFIG', config.owner || {});
 
 hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibTooltipProvider',
     function ($stateProvider, $urlRouterProvider, $httpProvider, $tooltipProvider) {
@@ -57,14 +58,13 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
                     templateUrl: 'partials/stats.html'
                 });
 
-        $httpProvider.interceptors.push(['$rootScope', 'AUTH_CONFIG', 'AuthService', function ($rootScope, authConfig, AuthService) {
+        $httpProvider.interceptors.push(['PasswordService', 'AUTH_CONFIG', 'AuthService', function (passwordService, authConfig, AuthService) {
                 return {
                     request: function (config) {
                         if (AuthService.isEnabled() && AuthService.isAuthorized()) {
                             config.headers.Authorization = 'Token ' + AuthService.getAccessToken();
                         } else if (authConfig.headers.enabled) {
-                            config.headers[authConfig.headers.groupHeader] = $rootScope.password;
-                            config.headers[authConfig.headers.adminHeader] = $rootScope.rootPassword;
+                            config.headers[authConfig.headers.adminHeader] = passwordService.getRoot();
                         }
                         return config;
                     }

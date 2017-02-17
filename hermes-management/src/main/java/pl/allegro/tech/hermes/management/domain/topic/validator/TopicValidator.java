@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
+import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -11,20 +14,36 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 @Component
 public class TopicValidator {
 
+    private final OwnerIdValidator ownerIdValidator;
     private final SchemaRepository schemaRepository;
+    private final ApiPreconditions apiPreconditions;
 
     @Autowired
-    public TopicValidator(SchemaRepository schemaRepository) {
+    public TopicValidator(OwnerIdValidator ownerIdValidator,
+                          SchemaRepository schemaRepository,
+                          ApiPreconditions apiPreconditions) {
+        this.ownerIdValidator = ownerIdValidator;
         this.schemaRepository = schemaRepository;
+        this.apiPreconditions = apiPreconditions;
     }
 
-    public void ensureCreatedTopicIsValid(Topic created) {
+    public void ensureCreatedTopicIsValid(Topic created, CreatorRights creatorRights) {
+        apiPreconditions.checkConstraints(created);
+        checkOwner(created);
+
         if (created.wasMigratedFromJsonType()) {
             throw new TopicValidationException("Newly created topic cannot have migratedFromJsonType flag set to true");
+        }
+
+        if (!creatorRights.allowedToManage(created)) {
+            throw new TopicValidationException("Provide an owner that includes you, you would not be able to manage this topic later");
         }
     }
 
     public void ensureUpdatedTopicIsValid(Topic updated, Topic previous) {
+        apiPreconditions.checkConstraints(updated);
+        checkOwner(updated);
+
         if (migrationFromJsonTypeFlagChangedToTrue(updated, previous)) {
             if (updated.getContentType() != ContentType.AVRO) {
                 throw new TopicValidationException("Change content type to AVRO together with setting migratedFromJsonType flag");
@@ -52,6 +71,10 @@ public class TopicValidator {
 
     private boolean migrationFromJsonTypeFlagChangedToFalse(Topic updated, Topic previous) {
         return previous.wasMigratedFromJsonType() && !updated.wasMigratedFromJsonType();
+    }
+
+    private void checkOwner(Topic checked) {
+        ownerIdValidator.check(checked.getOwner());
     }
 
 }

@@ -8,8 +8,10 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     name: '',
                     endpoint: '',
                     description: '',
-                    supportTeam: '',
-                    contact: '',
+                    owner: {
+                        source: '',
+                        id: ''
+                    },
                     deliveryType: 'SERIAL',
                     mode: 'ANYCAST',
                     contentType: 'JSON',

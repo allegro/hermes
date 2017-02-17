@@ -14,16 +14,24 @@ on topics `subscriptions` resource:
 /topics/{topicName}/subscriptions
 ```
 
-Body of request must contain at least:
+Request body must contain at least:
 
 * name: name of subscription
 * endpoint: valid URI
-* supportTeam: name of team that owns the subscription
+* owner: who's the owner of this subscription (refer to
+  [creating topic](/user/publishing/#creating-topic) for more information)
 
 Minimal request:
 
 ```json
-{"name": "mySubscription", "endpoint": "http://my-service", "supportTeam": "My Team"}
+{
+    "name": "mySubscription", 
+    "endpoint": "http://my-service", 
+    "owner": {
+        "source": "Plaintext",
+        "id": "My Team"
+    }
+}
 ```
 
 All options:
@@ -51,7 +59,10 @@ Request that specifies all available options:
     "endpoint": "http://my-service",
     "description": "This is my subscription",
     "trackingEnabled": false,
-    "supportTeam": "My Team",
+    "owner": {
+        "source": "Plaintext",
+        "id": "My Team"
+    },
     "contact": "my-team@my-company.com",
     "subscriptionPolicy": {
         "rate": 100,

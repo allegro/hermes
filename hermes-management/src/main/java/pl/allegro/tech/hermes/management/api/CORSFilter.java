@@ -31,7 +31,8 @@ public class CORSFilter implements ContainerResponseFilter {
                 "Content-Type",
                 "Accept",
                 "Origin",
-                "Authorization"
+                "Authorization",
+                "Hermes-Admin-Password"
         );
     }
 }

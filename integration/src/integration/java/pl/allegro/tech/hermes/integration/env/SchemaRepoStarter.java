@@ -15,6 +15,10 @@ public class SchemaRepoStarter implements Starter<RepositoryServer> {
         this.port = port;
     }
 
+    public static void main(String[] args) throws Exception {
+        new SchemaRepoStarter(8888).start();
+    }
+
     @Override
     public void start() throws Exception {
 

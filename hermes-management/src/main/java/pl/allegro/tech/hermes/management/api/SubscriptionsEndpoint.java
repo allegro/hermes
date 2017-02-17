@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -30,6 +31,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -48,16 +50,19 @@ public class SubscriptionsEndpoint {
     private final TopicService topicService;
     private final MultiDCAwareService multiDCAwareService;
     private final TimeFormatter timeFormatter;
+    private final ManagementRights managementRights;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
                                  TopicService topicService,
                                  MultiDCAwareService multiDCAwareService,
-                                 TimeFormatter timeFormatter) {
+                                 TimeFormatter timeFormatter,
+                                 ManagementRights managementRights) {
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
         this.multiDCAwareService = multiDCAwareService;
         this.timeFormatter = timeFormatter;
+        this.managementRights = managementRights;
     }
 
     @GET
@@ -89,8 +94,9 @@ public class SubscriptionsEndpoint {
     @ApiOperation(value = "Create subscription", httpMethod = HttpMethod.POST)
     public Response create(@PathParam("topicName") String qualifiedTopicName,
                            Subscription subscription,
-                           @Context SecurityContext securityContext) {
-        subscriptionService.createSubscription(subscription, securityContext.getUserPrincipal().getName());
+                           @Context ContainerRequestContext requestContext) {
+        subscriptionService.createSubscription(subscription, requestContext.getSecurityContext().getUserPrincipal().getName(),
+                checkedSubscription -> managementRights.isUserAllowedToManageSubscription(checkedSubscription, requestContext));
         return responseStatus(Response.Status.CREATED);
     }
 
@@ -158,7 +164,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}/state")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription state", httpMethod = HttpMethod.PUT)
     public Response updateState(@PathParam("topicName") String qualifiedTopicName,
                                 @PathParam("subscriptionName") String subscriptionName,
@@ -171,7 +177,7 @@ public class SubscriptionsEndpoint {
 
     @DELETE
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Remove subscription", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionId,
@@ -184,7 +190,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionName,
@@ -199,7 +205,7 @@ public class SubscriptionsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/retransmission")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update subscription offset", httpMethod = HttpMethod.PUT)
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,

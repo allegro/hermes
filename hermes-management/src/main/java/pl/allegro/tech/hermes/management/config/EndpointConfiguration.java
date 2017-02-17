@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.management.api.auth.AllowAllSecurityContextProvider;
-import pl.allegro.tech.hermes.management.api.auth.SecurityContextProvider;
+import pl.allegro.tech.hermes.management.api.auth.AllowAllSecurityProvider;
+import pl.allegro.tech.hermes.management.api.auth.SecurityProvider;
 
 @Configuration
 @EnableConfigurationProperties(JerseyProperties.class)
@@ -21,8 +21,8 @@ public class EndpointConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(SecurityContextProvider.class)
-    SecurityContextProvider authorization() {
-        return new AllowAllSecurityContextProvider();
+    @ConditionalOnMissingBean(SecurityProvider.class)
+    SecurityProvider authorization() {
+        return new AllowAllSecurityProvider();
     }
 }

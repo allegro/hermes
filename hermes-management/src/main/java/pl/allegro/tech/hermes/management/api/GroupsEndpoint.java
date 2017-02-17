@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.api;
 
-import com.google.common.collect.ImmutableMap;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +31,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Path("/groups")
 @Api(value = "/groups", description = "Operations on groups")
 public class GroupsEndpoint {
-
-    public static final String PASSWORD_KEY = "groupPassword";
 
     private final GroupService groupService;
 
@@ -67,7 +64,8 @@ public class GroupsEndpoint {
     @RolesAllowed(Roles.ADMIN)
     public Response create(Group group, @Context SecurityContext securityContext) {
         preconditions.checkConstraints(group);
-        return passwordResponse(groupService.createGroup(group, securityContext.getUserPrincipal().getName()));
+        groupService.createGroup(group, securityContext.getUserPrincipal().getName());
+        return Response.status(Response.Status.CREATED).build();
     }
 
     @PUT
@@ -90,10 +88,6 @@ public class GroupsEndpoint {
     public Response delete(@PathParam("groupName") String groupName, @Context SecurityContext securityContext) {
         groupService.removeGroup(groupName, securityContext.getUserPrincipal().getName());
         return responseStatus(Response.Status.OK);
-    }
-
-    private Response passwordResponse(String password) {
-        return Response.status(Response.Status.CREATED).entity(ImmutableMap.of(PASSWORD_KEY, password)).build();
     }
 
     private Response responseStatus(Response.Status responseStatus) {

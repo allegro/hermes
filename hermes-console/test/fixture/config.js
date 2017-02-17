@@ -25,7 +25,6 @@ var config = {
         },
         "headers": {
             "enabled": false,
-            "groupHeader": "Hermes-Group-Password",
             "adminHeader": "Hermes-Admin-Password"
         }
     }

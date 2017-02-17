@@ -51,7 +51,7 @@ public class SchemaEndpoint {
 
     @POST
     @Consumes(APPLICATION_JSON)
-    @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Save schema", httpMethod = HttpMethod.POST)
     public Response save(@PathParam("topicName") String qualifiedTopicName,
                          @DefaultValue("true") @QueryParam(value = "validate") boolean validate,
@@ -66,7 +66,7 @@ public class SchemaEndpoint {
     }
 
     @DELETE
-    @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Delete schema", httpMethod = HttpMethod.DELETE)
     public Response delete(@PathParam("topicName") String qualifiedTopicName) {
         schemaService.deleteAllSchemaVersions(qualifiedTopicName);
