@@ -40,7 +40,7 @@ class MessageCreateHandler implements HttpHandler {
                     exchange,
                     attachment.getTopic(),
                     attachment.getMessageId(),
-                    error("Invalid message", VALIDATION_ERROR),
+                    error("Invalid message: " + exception.getMessage(), VALIDATION_ERROR),
                     exception);
         } catch (CouldNotLoadSchemaException | SchemaNotFoundException exception) {
             attachment.removeTimeout();
