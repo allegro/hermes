@@ -20,7 +20,7 @@ public class AvroTopicMessageValidator implements TopicMessageValidator {
 
         BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(message.getData(), null);
         try {
-            new GenericDatumReader<>(message.<Schema>getSchema()).read(null, binaryDecoder);
+            new GenericDatumReader<>(message.getSchema()).read(null, binaryDecoder);
         } catch (Exception e) {
             String reason = e.getMessage() == null ? ExceptionUtils.getRootCauseMessage(e) : e.getMessage();
             throw new InvalidMessageException("Could not deserialize avro message with provided schema", ImmutableList.of(reason));
