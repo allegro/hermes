@@ -13,6 +13,9 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
+import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
+import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
+import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationPredicateAwareConstraintHandler;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
@@ -47,7 +50,6 @@ public class HermesServer {
 
     private Undertow undertow;
     private HermesShutdownHandler gracefulShutdown;
-    private AuthenticationConfiguration authConfig;
 
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configFactory;
@@ -58,6 +60,7 @@ public class HermesServer {
     private final int sslPort;
     private final String host;
     private ThroughputLimiter throughputLimiter;
+    private final AuthenticationConfigurationProvider authenticationConfigurationProvider;
 
     @Inject
     public HermesServer(
@@ -66,13 +69,15 @@ public class HermesServer {
             HttpHandler publishingHandler,
             HealthCheckService healthCheckService,
             MessagePreviewPersister messagePreviewPersister,
-            ThroughputLimiter throughputLimiter) {
+            ThroughputLimiter throughputLimiter,
+            AuthenticationConfigurationProvider authenticationConfigurationProvider) {
 
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.publishingHandler = publishingHandler;
         this.healthCheckService = healthCheckService;
         this.messagePreviewPersister = messagePreviewPersister;
+        this.authenticationConfigurationProvider = authenticationConfigurationProvider;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
         this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
@@ -99,10 +104,6 @@ public class HermesServer {
         undertow.stop();
         messagePreviewPersister.shutdown();
         throughputLimiter.stop();
-    }
-
-    public void configureAuthentication(AuthenticationConfiguration authenticationConfiguration) {
-        this.authConfig = authenticationConfiguration;
     }
 
     private Undertow configureServer() {
@@ -143,19 +144,25 @@ public class HermesServer {
     }
 
     private HttpHandler withAuthenticationHandlersChain(HttpHandler next) {
+        AuthenticationConfiguration authConfig = authenticationConfigurationProvider.getAuthenticationConfiguration()
+                .orElseThrow(() -> new IllegalStateException("AuthenticationConfiguration was not provided"));
+
         AuthenticationCallHandler authenticationCallHandler = new AuthenticationCallHandler(next);
         AuthenticationPredicateAwareConstraintHandler constraintHandler = new AuthenticationPredicateAwareConstraintHandler(
                 authenticationCallHandler, authConfig.getAuthConstraintPredicate());
 
         AuthenticationMechanismsHandler mechanismsHandler = new AuthenticationMechanismsHandler(constraintHandler,
                 authConfig.getAuthMechanisms());
-        AuthenticationMode authenticationMode = AuthenticationMode.valueOf(
-                configFactory.getStringProperty(Configs.FRONTEND_AUTHENTICATION_MODE).toUpperCase());
+        AuthenticationMode authenticationMode = getAuthenticationMode();
 
         return new SecurityInitialHandler(authenticationMode, authConfig.getIdentityManager(), mechanismsHandler);
     }
 
     private boolean isEnabled(Configs property) {
         return configFactory.getBooleanProperty(property);
+    }
+
+    private AuthenticationMode getAuthenticationMode() {
+        return AuthenticationMode.valueOf(configFactory.getStringProperty(Configs.FRONTEND_AUTHENTICATION_MODE).toUpperCase());
     }
 }

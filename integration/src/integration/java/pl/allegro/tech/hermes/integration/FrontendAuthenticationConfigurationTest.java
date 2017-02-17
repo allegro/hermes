@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
-import pl.allegro.tech.hermes.frontend.server.AuthenticationConfiguration;
+import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
@@ -59,7 +59,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
 
         hermesFrontend = HermesFrontend.frontend()
                 .withBinding(configFactory, ConfigFactory.class)
-                .withBinding(authConfig, AuthenticationConfiguration.class)
+                .withAuthenticationConfiguration(authConfig)
                 .build();
 
         hermesFrontend.start();

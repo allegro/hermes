@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.server;
+package pl.allegro.tech.hermes.frontend.server.auth;
 
 import com.google.common.base.Preconditions;
 import io.undertow.security.api.AuthenticationMechanism;

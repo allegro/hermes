@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.server;
+package pl.allegro.tech.hermes.frontend.server.auth;
 
 import io.undertow.security.handlers.AuthenticationConstraintHandler;
 import io.undertow.server.HttpHandler;
