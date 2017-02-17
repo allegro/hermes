@@ -150,6 +150,14 @@ public class HermesServer {
         AuthenticationConfiguration authConfig = authenticationConfigurationProvider.getAuthenticationConfiguration()
                 .orElseThrow(() -> new IllegalStateException("AuthenticationConfiguration was not provided"));
 
+        try {
+            return createAuthenticationHandlersChain(next, authConfig);
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not create authentication handlers chain", e);
+        }
+    }
+
+    private HttpHandler createAuthenticationHandlersChain(HttpHandler next, AuthenticationConfiguration authConfig) {
         AuthenticationCallHandler authenticationCallHandler = new AuthenticationCallHandler(next);
         AuthenticationPredicateAwareConstraintHandler constraintHandler = new AuthenticationPredicateAwareConstraintHandler(
                 authenticationCallHandler, authConfig.getAuthConstraintPredicate());
