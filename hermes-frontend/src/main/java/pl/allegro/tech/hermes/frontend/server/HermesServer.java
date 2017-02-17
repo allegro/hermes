@@ -61,6 +61,7 @@ public class HermesServer {
     private final String host;
     private ThroughputLimiter throughputLimiter;
     private final AuthenticationConfigurationProvider authenticationConfigurationProvider;
+    private final SslContextFactoryProvider sslContextFactoryProvider;
 
     @Inject
     public HermesServer(
@@ -70,7 +71,8 @@ public class HermesServer {
             HealthCheckService healthCheckService,
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
-            AuthenticationConfigurationProvider authenticationConfigurationProvider) {
+            AuthenticationConfigurationProvider authenticationConfigurationProvider,
+            SslContextFactoryProvider sslContextFactoryProvider) {
 
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
@@ -78,6 +80,7 @@ public class HermesServer {
         this.healthCheckService = healthCheckService;
         this.messagePreviewPersister = messagePreviewPersister;
         this.authenticationConfigurationProvider = authenticationConfigurationProvider;
+        this.sslContextFactoryProvider = sslContextFactoryProvider;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
         this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
@@ -123,7 +126,7 @@ public class HermesServer {
                 .setHandler(gracefulShutdown);
 
         if (configFactory.getBooleanProperty(FRONTEND_SSL_ENABLED)) {
-            builder.addHttpsListener(sslPort, host, new SSLContextSupplier(configFactory).get())
+            builder.addHttpsListener(sslPort, host, sslContextFactoryProvider.getSslContextFactory().create())
                     .setServerOption(ENABLE_HTTP2, configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED));
         }
         this.undertow = builder.build();
