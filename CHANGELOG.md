@@ -1,3 +1,31 @@
+## 0.11.0 (15.02.2017)
+
+### Features
+
+#### ([693](https://github.com/allegro/hermes/pull/693)) Owners instead of support teams
+
+Replaces group and subscription support team, contact and technical owner with a 
+single notion – owner. Topics and subscriptions have assigned owners, groups no longer
+do, so everyone can create a topic in any group.
+
+##### Migration guide
+
+After deployment to hermes-management you need to run a migration task. 
+It will initialise topic and subscription owners by assigning what used to be related group and subscription support teams.
+Perform with admin credentials:
+
+POST `/migrations/support-team-to-owner?source=Plaintext` (or `source=Crowd` if you used Crowd support teams)
+
+### Enhancements
+
+#### ([721](https://github.com/allegro/hermes/pull/721)) Creator must be an owner of created topic or subscription
+#### ([714](https://github.com/allegro/hermes/pull/714)) Don't match when queried nested field doesn't exist instead of failing 
+#### ([726](https://github.com/allegro/hermes/pull/726)) Pass Avro validation errors to users
+
+### Bugfixes
+
+#### ([717](https://github.com/allegro/hermes/issues/717)) NPE in Hermes frontend related to BlacklistZookeeperNotifyingCache
+ 
 ## 0.10.6 (07.02.2017)
 
 ### Features
