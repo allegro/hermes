@@ -20,6 +20,7 @@ POST `/migrations/support-team-to-owner?source=Plaintext` (or `source=Crowd` if 
 
 #### ([721](https://github.com/allegro/hermes/pull/721)) Creator must be an owner of created topic or subscription
 #### ([714](https://github.com/allegro/hermes/pull/714)) Don't match when queried nested field doesn't exist instead of failing 
+#### ([726](https://github.com/allegro/hermes/pull/726)) Pass Avro validation errors to users
 
 ### Bugfixes
 
