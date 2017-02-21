@@ -74,7 +74,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
                 .withTimeouts(metrics.metricValue(timeouts))
                 .withOtherErrors(metrics.metricValue(otherErrors))
                 .withLag(lagSource.getLag(topicName, subscriptionName))
-                .withThroughput(throughput)
+                .withThroughput(metrics.metricValue(throughput))
                 .build();
     }
 

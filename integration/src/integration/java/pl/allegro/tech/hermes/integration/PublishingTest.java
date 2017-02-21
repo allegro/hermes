@@ -67,6 +67,23 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldReturn429ForQuotaViolation() {
+        // given
+        Topic topic = operations.buildTopic("publishAndConsumeGroup", "topic");
+
+        // Frontend is configured in integration test suite to block publisher after 50_000 kb/sec
+        TestMessage message = TestMessage.of("content", StringUtils.repeat("X", 60_000));
+
+        wait.until(() -> {
+            // when
+            Response response = publisher.publish(topic.getQualifiedName(), message.body());
+
+            // then
+            assertThat(response.getStatus()).isEqualTo(429);
+        });
+    }
+
+    @Test
     public void shouldReturn4xxForTooLargeContent() {
         // given
         Topic topic = operations.buildTopic(topic("largeContent", "topic").withMaxMessageSize(2048).build());
