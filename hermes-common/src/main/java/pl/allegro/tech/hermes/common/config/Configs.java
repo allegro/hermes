@@ -112,6 +112,7 @@ public enum Configs {
 
     FRONTEND_SSL_ENABLED("frontend.ssl.enabled", false),
     FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
+    FRONTEND_SSL_CLIENT_AUTH_MODE("frontend.ssl.client.auth.mode", "not_requested"),
     FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
     FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "classpath:server.keystore"),
     FRONTEND_SSL_KEYSTORE_PASSWORD("frontend.ssl.keystore.password", "password"),

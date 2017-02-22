@@ -8,6 +8,7 @@ import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
+import org.xnio.SslClientAuthMode;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -28,6 +29,7 @@ import static io.undertow.UndertowOptions.MAX_PARAMETERS;
 import static io.undertow.UndertowOptions.REQUEST_PARSE_TIMEOUT;
 import static org.xnio.Options.BACKLOG;
 import static org.xnio.Options.READ_TIMEOUT;
+import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_AUTHENTICATION_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BACKLOG_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BUFFER_SIZE;
@@ -42,6 +44,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READ_TIMEOUT
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_DUMPER;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_PARSE_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SET_KEEP_ALIVE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_CLIENT_AUTH_MODE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_PORT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_WORKER_THREADS_COUNT;
@@ -127,10 +130,19 @@ public class HermesServer {
 
         if (configFactory.getBooleanProperty(FRONTEND_SSL_ENABLED)) {
             builder.addHttpsListener(sslPort, host, sslContextFactoryProvider.getSslContextFactory().create())
+                    .setSocketOption(SSL_CLIENT_AUTH_MODE, getClientAuthMode())
                     .setServerOption(ENABLE_HTTP2, configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED));
         }
         this.undertow = builder.build();
         return undertow;
+    }
+
+    private SslClientAuthMode getClientAuthMode() {
+        try {
+            return SslClientAuthMode.valueOf(configFactory.getStringProperty(FRONTEND_SSL_CLIENT_AUTH_MODE).toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Could not configure client authentication mode", e);
+        }
     }
 
     private HttpHandler handlers() {
