@@ -1,10 +1,6 @@
 package pl.allegro.tech.hermes.frontend.server;
 
 import io.undertow.Undertow;
-import io.undertow.security.api.AuthenticationMode;
-import io.undertow.security.handlers.AuthenticationCallHandler;
-import io.undertow.security.handlers.AuthenticationMechanismsHandler;
-import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
@@ -14,9 +10,6 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationPredicateAwareConstraintHandler;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
@@ -30,7 +23,6 @@ import static io.undertow.UndertowOptions.REQUEST_PARSE_TIMEOUT;
 import static org.xnio.Options.BACKLOG;
 import static org.xnio.Options.READ_TIMEOUT;
 import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_AUTHENTICATION_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BACKLOG_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BUFFER_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HOST;
@@ -63,7 +55,6 @@ public class HermesServer {
     private final int sslPort;
     private final String host;
     private ThroughputLimiter throughputLimiter;
-    private final AuthenticationConfigurationProvider authenticationConfigurationProvider;
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
     @Inject
@@ -74,7 +65,6 @@ public class HermesServer {
             HealthCheckService healthCheckService,
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
-            AuthenticationConfigurationProvider authenticationConfigurationProvider,
             SslContextFactoryProvider sslContextFactoryProvider) {
 
         this.configFactory = configFactory;
@@ -82,7 +72,6 @@ public class HermesServer {
         this.publishingHandler = publishingHandler;
         this.healthCheckService = healthCheckService;
         this.messagePreviewPersister = messagePreviewPersister;
-        this.authenticationConfigurationProvider = authenticationConfigurationProvider;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
@@ -130,19 +119,12 @@ public class HermesServer {
 
         if (configFactory.getBooleanProperty(FRONTEND_SSL_ENABLED)) {
             builder.addHttpsListener(sslPort, host, sslContextFactoryProvider.getSslContextFactory().create())
-                    .setSocketOption(SSL_CLIENT_AUTH_MODE, getClientAuthMode())
+                    .setSocketOption(SSL_CLIENT_AUTH_MODE,
+                            SslClientAuthMode.valueOf(configFactory.getStringProperty(FRONTEND_SSL_CLIENT_AUTH_MODE).toUpperCase()))
                     .setServerOption(ENABLE_HTTP2, configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED));
         }
         this.undertow = builder.build();
         return undertow;
-    }
-
-    private SslClientAuthMode getClientAuthMode() {
-        try {
-            return SslClientAuthMode.valueOf(configFactory.getStringProperty(FRONTEND_SSL_CLIENT_AUTH_MODE).toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Could not configure client authentication mode", e);
-        }
     }
 
     private HttpHandler handlers() {
@@ -154,38 +136,10 @@ public class HermesServer {
                 .get("/status/health", healthCheckHandler)
                 .get("/", healthCheckHandler);
 
-        return isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(routingHandler) :
-                isEnabled(FRONTEND_AUTHENTICATION_ENABLED) ? withAuthenticationHandlersChain(routingHandler) : routingHandler;
-    }
-
-    private HttpHandler withAuthenticationHandlersChain(HttpHandler next) {
-        AuthenticationConfiguration authConfig = authenticationConfigurationProvider.getAuthenticationConfiguration()
-                .orElseThrow(() -> new IllegalStateException("AuthenticationConfiguration was not provided"));
-
-        try {
-            return createAuthenticationHandlersChain(next, authConfig);
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not create authentication handlers chain", e);
-        }
-    }
-
-    private HttpHandler createAuthenticationHandlersChain(HttpHandler next, AuthenticationConfiguration authConfig) {
-        AuthenticationCallHandler authenticationCallHandler = new AuthenticationCallHandler(next);
-        AuthenticationPredicateAwareConstraintHandler constraintHandler = new AuthenticationPredicateAwareConstraintHandler(
-                authenticationCallHandler, authConfig.getAuthConstraintPredicate());
-
-        AuthenticationMechanismsHandler mechanismsHandler = new AuthenticationMechanismsHandler(constraintHandler,
-                authConfig.getAuthMechanisms());
-        AuthenticationMode authenticationMode = getAuthenticationMode();
-
-        return new SecurityInitialHandler(authenticationMode, authConfig.getIdentityManager(), mechanismsHandler);
+        return isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(routingHandler) : routingHandler;
     }
 
     private boolean isEnabled(Configs property) {
         return configFactory.getBooleanProperty(property);
-    }
-
-    private AuthenticationMode getAuthenticationMode() {
-        return AuthenticationMode.valueOf(configFactory.getStringProperty(Configs.FRONTEND_AUTHENTICATION_MODE).toUpperCase());
     }
 }
