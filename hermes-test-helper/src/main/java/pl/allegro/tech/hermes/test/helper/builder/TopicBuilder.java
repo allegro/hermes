@@ -2,6 +2,9 @@ package pl.allegro.tech.hermes.test.helper.builder;
 
 import pl.allegro.tech.hermes.api.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TopicBuilder {
 
     private final TopicName name;
@@ -26,6 +29,12 @@ public class TopicBuilder {
 
     private int maxMessageSize = 1024 * 1024;
 
+    private List<String> publishers = new ArrayList<>();
+
+    private boolean authEnabled = false;
+
+    private boolean unauthorisedAccessEnabled = true;
+
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
     }
@@ -45,7 +54,8 @@ public class TopicBuilder {
     public Topic build() {
         return new Topic(
                 name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize
+                jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize,
+                new PublishingAuth(publishers, authEnabled, unauthorisedAccessEnabled)
         );
     }
 
@@ -101,6 +111,21 @@ public class TopicBuilder {
 
     public TopicBuilder withMaxMessageSize(int size) {
         this.maxMessageSize = size;
+        return this;
+    }
+
+    public TopicBuilder withPublisher(String serviceName) {
+        this.publishers.add(serviceName);
+        return this;
+    }
+
+    public TopicBuilder withAuthEnabled() {
+        this.authEnabled = true;
+        return this;
+    }
+
+    public TopicBuilder withUnauthorisedAccessDisabled() {
+        this.unauthorisedAccessEnabled = false;
         return this;
     }
 }
