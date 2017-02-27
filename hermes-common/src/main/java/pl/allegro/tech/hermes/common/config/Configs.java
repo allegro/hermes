@@ -112,6 +112,7 @@ public enum Configs {
 
     FRONTEND_SSL_ENABLED("frontend.ssl.enabled", false),
     FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
+    FRONTEND_SSL_CLIENT_AUTH_MODE("frontend.ssl.client.auth.mode", "not_requested"),
     FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
     FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "classpath:server.keystore"),
     FRONTEND_SSL_KEYSTORE_PASSWORD("frontend.ssl.keystore.password", "password"),
@@ -119,6 +120,9 @@ public enum Configs {
     FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "classpath:server.truststore"),
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
+
+    FRONTEND_AUTHENTICATION_ENABLED("frontend.authentication.enabled", false),
+    FRONTEND_AUTHENTICATION_MODE("frontend.authentication.mode", "constraint_driven"),
 
     FRONTEND_MESSAGE_PREVIEW_ENABLED("frontend.message.preview.enabled", false),
     FRONTEND_MESSAGE_PREVIEW_SIZE("frontend.message.preview.size", 3),

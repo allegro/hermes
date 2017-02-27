@@ -24,8 +24,10 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.frontend.server.SslContextFactory;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
+import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
@@ -233,6 +235,14 @@ public final class HermesFrontend {
 
         public Builder withKafkaTopicsNamesMapper(KafkaNamesMapper kafkaNamesMapper) {
             return withBinding(kafkaNamesMapper, KafkaNamesMapper.class);
+        }
+
+        public Builder withAuthenticationConfiguration(AuthenticationConfiguration authenticationConfiguration) {
+            return withBinding(authenticationConfiguration, AuthenticationConfiguration.class);
+        }
+
+        public Builder withSslContextFactory(SslContextFactory sslContextFactory) {
+            return withBinding(sslContextFactory, SslContextFactory.class);
         }
 
         public <T> Builder withBinding(T instance, Class<T> clazz) {

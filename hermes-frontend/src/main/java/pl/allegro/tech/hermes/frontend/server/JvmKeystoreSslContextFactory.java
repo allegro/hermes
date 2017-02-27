@@ -18,16 +18,15 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
-import java.util.function.Supplier;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
-public class SSLContextSupplier implements Supplier<SSLContext> {
+public class JvmKeystoreSslContextFactory implements SslContextFactory {
     private final String protocol;
     private final KeystoreProperties keyStoreProperties;
     private final KeystoreProperties trustStoreProperties;
 
-    public SSLContextSupplier(ConfigFactory configFactory) {
+    public JvmKeystoreSslContextFactory(ConfigFactory configFactory) {
         this(configFactory.getStringProperty(Configs.FRONTEND_SSL_PROTOCOL),
                 new KeystoreProperties(
                         configFactory.getStringProperty(Configs.FRONTEND_SSL_KEYSTORE_LOCATION),
@@ -39,14 +38,14 @@ public class SSLContextSupplier implements Supplier<SSLContext> {
                         configFactory.getStringProperty(Configs.FRONTEND_SSL_TRUSTSTORE_PASSWORD)));
     }
 
-    public SSLContextSupplier(String protocol, KeystoreProperties keyStoreProperties, KeystoreProperties trustStoreProperties) {
+    public JvmKeystoreSslContextFactory(String protocol, KeystoreProperties keyStoreProperties, KeystoreProperties trustStoreProperties) {
         this.protocol = protocol;
         this.keyStoreProperties = keyStoreProperties;
         this.trustStoreProperties = trustStoreProperties;
     }
 
     @Override
-    public SSLContext get() {
+    public SSLContext create() {
         try {
             return createSSLContext(loadKeyStore(keyStoreProperties), loadKeyStore(trustStoreProperties));
         } catch (Exception e) {
@@ -64,7 +63,7 @@ public class SSLContextSupplier implements Supplier<SSLContext> {
 
     private InputStream getResourceAsInputStream(URI location) throws FileNotFoundException {
         if ("classpath".equalsIgnoreCase(location.getScheme())) {
-             return SSLContextSupplier.class.getClassLoader().getResourceAsStream(location.getSchemeSpecificPart());
+             return JvmKeystoreSslContextFactory.class.getClassLoader().getResourceAsStream(location.getSchemeSpecificPart());
         }
         return new FileInputStream(isNullOrEmpty(location.getPath()) ? location.getSchemeSpecificPart() : location.getPath());
     }

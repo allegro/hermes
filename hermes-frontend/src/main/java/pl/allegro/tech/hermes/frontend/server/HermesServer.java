@@ -4,6 +4,7 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
+import org.xnio.SslClientAuthMode;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -13,10 +14,32 @@ import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
 
-import static io.undertow.UndertowOptions.*;
+import static io.undertow.UndertowOptions.ALWAYS_SET_KEEP_ALIVE;
+import static io.undertow.UndertowOptions.ENABLE_HTTP2;
+import static io.undertow.UndertowOptions.MAX_COOKIES;
+import static io.undertow.UndertowOptions.MAX_HEADERS;
+import static io.undertow.UndertowOptions.MAX_PARAMETERS;
+import static io.undertow.UndertowOptions.REQUEST_PARSE_TIMEOUT;
 import static org.xnio.Options.BACKLOG;
 import static org.xnio.Options.READ_TIMEOUT;
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BACKLOG_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BUFFER_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HOST;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HTTP2_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_IO_THREADS_COUNT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_COOKIES;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_HEADERS;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_PARAMETERS;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READ_TIMEOUT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_DUMPER;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_PARSE_TIMEOUT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SET_KEEP_ALIVE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_CLIENT_AUTH_MODE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_PORT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_WORKER_THREADS_COUNT;
 
 public class HermesServer {
 
@@ -32,6 +55,7 @@ public class HermesServer {
     private final int sslPort;
     private final String host;
     private ThroughputLimiter throughputLimiter;
+    private final SslContextFactoryProvider sslContextFactoryProvider;
 
     @Inject
     public HermesServer(
@@ -40,13 +64,15 @@ public class HermesServer {
             HttpHandler publishingHandler,
             HealthCheckService healthCheckService,
             MessagePreviewPersister messagePreviewPersister,
-            ThroughputLimiter throughputLimiter) {
+            ThroughputLimiter throughputLimiter,
+            SslContextFactoryProvider sslContextFactoryProvider) {
 
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.publishingHandler = publishingHandler;
         this.healthCheckService = healthCheckService;
         this.messagePreviewPersister = messagePreviewPersister;
+        this.sslContextFactoryProvider = sslContextFactoryProvider;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
         this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
@@ -92,7 +118,9 @@ public class HermesServer {
                 .setHandler(gracefulShutdown);
 
         if (configFactory.getBooleanProperty(FRONTEND_SSL_ENABLED)) {
-            builder.addHttpsListener(sslPort, host, new SSLContextSupplier(configFactory).get())
+            builder.addHttpsListener(sslPort, host, sslContextFactoryProvider.getSslContextFactory().create())
+                    .setSocketOption(SSL_CLIENT_AUTH_MODE,
+                            SslClientAuthMode.valueOf(configFactory.getStringProperty(FRONTEND_SSL_CLIENT_AUTH_MODE).toUpperCase()))
                     .setServerOption(ENABLE_HTTP2, configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED));
         }
         this.undertow = builder.build();
