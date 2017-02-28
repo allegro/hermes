@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.test.helper.cache.FakeTicker
 import spock.lang.Specification
 
+import javax.ws.rs.core.Response
 import java.time.Duration
 
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
@@ -89,7 +90,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         def failing = false
         rawSchemaClient.getVersions(topic.getName()) >> {
             if (failing) {
-                throw new RuntimeException("failing mode on")
+                throw new CouldNotFetchSchemaVersionsException(topic.qualifiedName, Response.serverError().build())
             }
             return [v1, v0]
         }
@@ -103,4 +104,17 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         versionsRepository.latestSchemaVersion(topic).get() == v1
     }
 
+    def "should respond with stale data if reload returned empty list"() {
+        given:
+        def failing = false
+        rawSchemaClient.getVersions(topic.getName()) >> { failing? [] : [v1, v0] }
+        versionsRepository.latestSchemaVersion(topic)
+
+        ticker.advance(REFRESH_TIME.plusMinutes(1))
+        failing = true
+
+        expect:
+        versionsRepository.schemaVersionExists(topic, v1)
+        versionsRepository.latestSchemaVersion(topic).get() == v1
+    }
 }

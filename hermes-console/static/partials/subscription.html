@@ -17,7 +17,7 @@
 
     <h2><small>Subscription:</small> {{subscription.name}}</h2>
     <h3><small>Endpoint:</small> {{subscription.endpoint}}</h3>
-    <h3><small>Team:</small> {{subscription.supportTeam}} <small>Contact:</small> {{subscription.contact}}</h3>
+    <h3><small>Owner:</small> <owner-name owner="subscription.owner"/></h3>
     <p class="lead">{{subscription.description}}</p>
 
     <div class="row text-center">
@@ -73,6 +73,10 @@
                 </div>
                 <div class="panel-body">
                     <p><strong><a ng-href="{{metricsUrls.rate}}">Delivery rate:</a></strong> {{metrics.rate | number:2}}</p>
+                    <p>
+                        <strong><a ng-href="{{metricsUrls.latency}}">Subscriber latency</a></strong>
+                        <span uib-popover='Latency of acknowledging messages by subscribing service as measured by Hermes.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
                     <p><strong><a ng-href="{{metricsUrls.delivered}}">Delivered:</a></strong> {{metrics.delivered}}</p>
                     <p><strong><a ng-href="{{metricsUrls.discarded}}">Discarded:</a></strong> {{metrics.discarded}}</p>
                     <p>

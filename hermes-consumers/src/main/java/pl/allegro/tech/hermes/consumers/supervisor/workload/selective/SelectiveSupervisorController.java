@@ -15,10 +15,17 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_AUTO_REBALANCE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class SelectiveSupervisorController implements SupervisorController {
 
@@ -30,16 +37,17 @@ public class SelectiveSupervisorController implements SupervisorController {
     private final SubscriptionAssignmentRegistry registry;
     private final WorkTracker workTracker;
     private final ConsumerNodesRegistry consumersRegistry;
+    private final BalancingJob balancingJob;
     private final ZookeeperAdminCache adminCache;
     private final ConfigFactory configFactory;
-    private final HermesMetrics metrics;
 
     private final ExecutorService assignmentExecutor;
 
     public SelectiveSupervisorController(ConsumersSupervisor supervisor,
                                          InternalNotificationsBus notificationsBus,
                                          SubscriptionsCache subscriptionsCache,
-                                         SubscriptionAssignmentRegistry registry, WorkTracker workTracker,
+                                         SubscriptionAssignmentRegistry registry,
+                                         WorkTracker workTracker,
                                          ConsumerNodesRegistry consumersRegistry,
                                          ZookeeperAdminCache adminCache,
                                          ExecutorService assignmentExecutor,
@@ -55,11 +63,19 @@ public class SelectiveSupervisorController implements SupervisorController {
         this.adminCache = adminCache;
         this.assignmentExecutor = assignmentExecutor;
         this.configFactory = configFactory;
-        this.metrics = metrics;
+        this.balancingJob = new BalancingJob(
+                consumersRegistry,
+                subscriptionsCache,
+                new SelectiveWorkBalancer(configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION),
+                        configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER)),
+                workTracker, metrics,
+                configFactory.getIntProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL),
+                configFactory.getStringProperty(KAFKA_CLUSTER_NAME));
     }
 
     @Override
-    public void onSubscriptionAssigned(Subscription subscription) {
+    public void onSubscriptionAssigned(SubscriptionName subscriptionName) {
+        Subscription subscription = subscriptionsCache.getSubscription(subscriptionName);
         logger.info("Scheduling assignment consumer for {}", subscription.getQualifiedName());
         assignmentExecutor.execute(() -> {
             logger.info("Assigning consumer for {}", subscription.getQualifiedName());
@@ -80,7 +96,7 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void onSubscriptionChanged(Subscription subscription) {
-        if (workTracker.isAssignedTo(subscription.getQualifiedName(), getId())) {
+        if (workTracker.isAssignedTo(subscription.getQualifiedName(), consumerId())) {
             logger.info("Updating subscription {}", subscription.getName());
             supervisor.updateSubscription(subscription);
         }
@@ -89,7 +105,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     @Override
     public void onTopicChanged(Topic topic) {
         for (Subscription subscription : subscriptionsCache.subscriptionsOfTopic(topic.getName())) {
-            if(workTracker.isAssignedTo(subscription.getQualifiedName(), getId())) {
+            if(workTracker.isAssignedTo(subscription.getQualifiedName(), consumerId())) {
                 supervisor.updateTopic(subscription, topic);
             }
         }
@@ -97,44 +113,53 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void start() throws Exception {
+        long startTime = System.currentTimeMillis();
+
         adminCache.start();
         adminCache.addCallback(this);
 
         notificationsBus.registerSubscriptionCallback(this);
         notificationsBus.registerTopicCallback(this);
-        registry.registerAssignementCallback(this);
+        registry.registerAssignmentCallback(this);
 
         supervisor.start();
         consumersRegistry.start();
-        consumersRegistry.registerLeaderLatchListener(new BalancingJob(
-                consumersRegistry,
-                subscriptionsCache,
-                new SelectiveWorkBalancer(configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION),
-                        configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER)),
-                workTracker, metrics,
-                configFactory.getIntProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL),
-                configFactory.getStringProperty(KAFKA_CLUSTER_NAME)));
-        logger.info("Consumer boot complete. Workload config: [{}]",
+        registry.start();
+        if (configFactory.getBooleanProperty(CONSUMER_WORKLOAD_AUTO_REBALANCE)) {
+            balancingJob.start();
+            consumersRegistry.startLeaderLatch();
+        } else {
+            logger.info("Automatic workload rebalancing is disabled.");
+        }
+
+        logger.info("Consumer boot complete in {} ms. Workload config: [{}]",
+                System.currentTimeMillis() - startTime,
                 configFactory.print(
                         CONSUMER_WORKLOAD_NODE_ID,
                         CONSUMER_WORKLOAD_ALGORITHM,
                         CONSUMER_WORKLOAD_REBALANCE_INTERVAL,
                         CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION,
                         CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER));
-        registry.start();
     }
 
     @Override
     public Set<SubscriptionName> assignedSubscriptions() {
-        return registry.createSnapshot().getSubscriptionsForConsumerNode(getId());
+        return registry.createSnapshot().getSubscriptionsForConsumerNode(consumerId());
     }
 
     @Override
     public void shutdown() throws InterruptedException {
+        balancingJob.stop();
+        consumersRegistry.stopLeaderLatch();
         supervisor.shutdown();
     }
 
-    public String getId() {
+    @Override
+    public Optional<String> watchedConsumerId() {
+        return Optional.of(consumerId());
+    }
+
+    public String consumerId() {
         return consumersRegistry.getId();
     }
 
@@ -144,14 +169,15 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void onRetransmissionStarts(SubscriptionName subscription) throws Exception {
-        if (workTracker.isAssignedTo(subscription, getId())) {
+        logger.info("Triggering retransmission for subscription {}", subscription);
+        if (workTracker.isAssignedTo(subscription, consumerId())) {
             supervisor.retransmit(subscription);
         }
     }
 
     @Override
     public void restartConsumer(SubscriptionName subscription) throws Exception {
-        if (workTracker.isAssignedTo(subscription, getId())) {
+        if (workTracker.isAssignedTo(subscription, consumerId())) {
             supervisor.restartConsumer(subscription);
         }
     }

@@ -13,6 +13,10 @@ public class Meters {
         FAILED_METER = "failed-meter",
         FAILED_TOPIC_METER = FAILED_METER + "." + GROUP + "." + TOPIC,
 
+        THROUGHPUT_BYTES = "throughput",
+        TOPIC_THROUGHPUT_BYTES = THROUGHPUT_BYTES + "." + GROUP + "." + TOPIC,
+        SUBSCRIPTION_THROUGHPUT_BYTES = TOPIC_THROUGHPUT_BYTES + "." + SUBSCRIPTION,
+
         FILTERED_METER = SUBSCRIPTION_METER + ".filtered",
 
         STATUS_CODES = "http-status-codes.code" + HTTP_CODE,
@@ -29,6 +33,9 @@ public class Meters {
         DISCARDED_METER = "discarded-meter",
         DISCARDED_TOPIC_METER = DISCARDED_METER + "." + GROUP + "." + TOPIC,
         DISCARDED_SUBSCRIPTION_METER = DISCARDED_TOPIC_METER + "." + SUBSCRIPTION,
+
+        DELAYED_PROCESSING = "delayed-processing",
+        TOPIC_DELAYED_PROCESSING = DELAYED_PROCESSING + "." + GROUP + "." + TOPIC,
 
         EXECUTOR_SUBMITTED = "executors." + EXECUTOR_NAME + ".submitted",
         EXECUTOR_COMPLETED = "executors." + EXECUTOR_NAME + ".completed",

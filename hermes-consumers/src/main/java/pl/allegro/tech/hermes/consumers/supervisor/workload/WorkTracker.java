@@ -19,6 +19,10 @@ public class WorkTracker {
         this.registry = registry;
     }
 
+    public boolean isReady() {
+        return registry.isStarted();
+    }
+
     public void forceAssignment(Subscription subscription) {
         registry.addEphemeralAssignment(new SubscriptionAssignment(
                 consumerNodeId,
@@ -33,11 +37,10 @@ public class WorkTracker {
         ));
     }
 
-    public WorkDistributionChanges apply(SubscriptionAssignmentView targetView) {
-        SubscriptionAssignmentView currentView = getAssignments();
-
-        List<SubscriptionAssignment> assignmentDeletions = currentView.deletions(targetView).getAllAssignments();
-        List<SubscriptionAssignment> assignmentAdditions = currentView.additions(targetView).getAllAssignments();
+    public WorkDistributionChanges apply(SubscriptionAssignmentView initialState,
+                                         SubscriptionAssignmentView targetView) {
+        List<SubscriptionAssignment> assignmentDeletions = initialState.deletions(targetView).getAllAssignments();
+        List<SubscriptionAssignment> assignmentAdditions = initialState.additions(targetView).getAllAssignments();
 
         assignmentDeletions.forEach(registry::dropAssignment);
         assignmentAdditions.forEach(registry::addPersistentAssignment);

@@ -5,7 +5,9 @@ var topics = angular.module('hermes.topic', [
     'hermes.topic.repository',
     'hermes.topic.metrics',
     'hermes.topic.factory',
-    'hermes.services'
+    'hermes.services',
+    'hermes.filters',
+    'hermes.owner'
 ]);
 
 topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal',
@@ -34,7 +36,14 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             });
         }
 
+        function loadBlacklistStatus() {
+            topicRepository.blacklistStatus(topicName).then(function (blacklistStatus) {
+                $scope.isBlacklisted = blacklistStatus.blacklisted;
+            });
+        }
+
         loadSubscriptions();
+        loadBlacklistStatus();
 
         topicRepository.preview(topicName).then(function(preview) {
             $scope.preview = preview;
@@ -69,10 +78,10 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             confirmationModal.open({
                 action: 'Remove',
                 actionSubject: 'Topic ' + $scope.topic.name,
-                passwordLabel: 'Group password',
-                passwordHint: 'Password for group ' + groupName
+                passwordLabel: 'Root password',
+                passwordHint: 'root password'
             }).result.then(function (result) {
-                    passwordService.set(result.password);
+                    passwordService.setRoot(result.password);
                     topicRepository.remove($scope.topic)
                         .then(function () {
                             toaster.pop('success', 'Success', 'Topic has been removed');
@@ -85,6 +94,46 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                             passwordService.reset();
                         });
                 });
+        };
+
+        $scope.blacklist = function () {
+            confirmationModal.open({
+                action: 'Blacklist',
+                actionSubject: 'Topic ' + $scope.topic.name,
+                passwordLabel: 'Root password',
+                passwordHint: 'root password'
+            }).result.then(function () {
+                topicRepository.blacklist(topicName).$promise
+                    .then(function () {
+                        toaster.pop('success', 'Success', 'Topic has been blacklisted');
+                    })
+                    .catch(function (response) {
+                        toaster.pop('error', 'Error ' + response.status, response.data.message);
+                    })
+                    .finally(function () {
+                        loadBlacklistStatus();
+                    });
+            });
+        };
+
+        $scope.unblacklist = function () {
+            confirmationModal.open({
+                action: 'Unblacklist',
+                actionSubject: 'Topic ' + $scope.topic.name,
+                passwordLabel: 'Root password',
+                passwordHint: 'root password'
+            }).result.then(function () {
+                topicRepository.unblacklist(topicName).$promise
+                    .then(function () {
+                        toaster.pop('success', 'Success', 'Topic has been unblacklisted');
+                    })
+                    .catch(function (response) {
+                        toaster.pop('error', 'Error ' + response.status, response.data.message);
+                    })
+                    .finally(function () {
+                        loadBlacklistStatus();
+                    });
+            });
         };
 
         $scope.addSubscription = function () {
@@ -112,8 +161,11 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         };
     }]);
 
-topics.controller('TopicEditController', ['TopicRepository', '$scope', '$uibModalInstance', 'PasswordService', 'toaster', 'topic', 'messageSchema', 'groupName', 'operation',
-    function (topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation) {
+topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$scope', '$uibModalInstance', 'PasswordService',
+    'toaster', 'topic', 'messageSchema', 'groupName', 'operation',
+    function (topicConfig, topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation) {
+        $scope.config = topicConfig;
+
         $scope.topic = _(topic).clone();
         $scope.messageSchema = messageSchema;
         $scope.groupName = groupName;
@@ -122,7 +174,7 @@ topics.controller('TopicEditController', ['TopicRepository', '$scope', '$uibModa
         $scope.save = function () {
             var promise;
             var originalTopicName = $scope.topic.name;
-            passwordService.set($scope.groupPassword);
+            passwordService.setRoot($scope.rootPassword);
 
             var topic = _.cloneDeep($scope.topic);
             delete topic.shortName;
@@ -148,4 +200,5 @@ topics.controller('TopicEditController', ['TopicRepository', '$scope', '$uibModa
                         passwordService.reset();
                     });
         };
+
     }]);

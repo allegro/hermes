@@ -64,7 +64,7 @@ public class SubscriptionAssignmentView {
     }
 
     public Set<SubscriptionAssignment> getAssignmentsForSubscription(SubscriptionName subscriptionName) {
-        return Collections.unmodifiableSet(subscriptionAssignments.get(subscriptionName));
+        return Collections.unmodifiableSet(subscriptionAssignments.getOrDefault(subscriptionName, Collections.emptySet()));
     }
 
     public Set<SubscriptionName> getSubscriptionsForConsumerNode(String nodeId) {
@@ -72,7 +72,7 @@ public class SubscriptionAssignmentView {
     }
 
     public Set<SubscriptionAssignment> getAssignmentsForConsumerNode(String nodeId) {
-        return Collections.unmodifiableSet(consumerNodeAssignments.get(nodeId));
+        return Collections.unmodifiableSet(consumerNodeAssignments.getOrDefault(nodeId, Collections.emptySet()));
     }
 
     private void removeSubscription(SubscriptionName subscription) {
@@ -95,6 +95,9 @@ public class SubscriptionAssignmentView {
 
     private void addAssignment(SubscriptionAssignment assignment) {
         subscriptionAssignments.get(assignment.getSubscriptionName()).add(assignment);
+        if (!consumerNodeAssignments.containsKey(assignment.getConsumerNodeId())) {
+            addConsumerNode(assignment.getConsumerNodeId());
+        }
         consumerNodeAssignments.get(assignment.getConsumerNodeId()).add(assignment);
     }
 
@@ -132,6 +135,18 @@ public class SubscriptionAssignmentView {
         return new SubscriptionAssignmentView(result);
     }
 
+    public static SubscriptionAssignmentView of(Set<SubscriptionAssignment> assignments) {
+        Map<SubscriptionName, Set<SubscriptionAssignment>> snapshot = new HashMap<>();
+        for (SubscriptionAssignment assignment : assignments) {
+            snapshot.compute(assignment.getSubscriptionName(), (k, v) -> {
+                v = (v == null ? new HashSet<>() : v);
+                v.add(assignment);
+                return v;
+            });
+        }
+        return new SubscriptionAssignmentView(snapshot);
+    }
+
     public static SubscriptionAssignmentView copyOf(SubscriptionAssignmentView currentState) {
         return new SubscriptionAssignmentView(currentState.subscriptionAssignments);
     }
@@ -163,6 +178,7 @@ public class SubscriptionAssignmentView {
         void addSubscription(SubscriptionName subscriptionName);
         void addConsumerNode(String nodeId);
         void addAssignment(SubscriptionAssignment assignment);
+        void removeAssignment(SubscriptionAssignment assignment);
         void transferAssignment(String from, String to, SubscriptionName subscriptionName);
     }
 
@@ -192,6 +208,11 @@ public class SubscriptionAssignmentView {
             @Override
             public void addAssignment(SubscriptionAssignment assignment) {
                 view.addAssignment(assignment);
+            }
+
+            @Override
+            public void removeAssignment(SubscriptionAssignment assignment) {
+                view.removeAssignment(assignment);
             }
 
             @Override

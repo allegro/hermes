@@ -10,6 +10,8 @@ public interface ConsumerRateLimiter {
 
     void acquire();
 
+    void acquireFiltered();
+
     void adjustConsumerRate();
 
     void updateSubscription(Subscription newSubscription);

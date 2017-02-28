@@ -62,6 +62,10 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         untilZookeeperNodeCreation(path, zookeeper);
     }
 
+    public void untilHermesZookeeperNodeDeletion(final String path) {
+        untilZookeeperNodeDeletion(path, zookeeper);
+    }
+
     public void untilSubscriptionMetricsIsCreated(TopicName topicName, String subscriptionName) {
         untilHermesZookeeperNodeCreation(zookeeperPaths.subscriptionMetricsPath(topicName, subscriptionName));
     }
@@ -145,6 +149,14 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
                         untilKafkaZookeeperNodeDeletion(KafkaZookeeperPaths.topicPath(k.name()))
         );
+    }
+
+    public void untilTopicBlacklisted(String qualifiedTopicName) {
+        untilHermesZookeeperNodeCreation(zookeeperPaths.blacklistedTopicPath(qualifiedTopicName));
+    }
+
+    public void untilTopicUnblacklisted(String qualifiedTopicName) {
+        untilHermesZookeeperNodeDeletion(zookeeperPaths.blacklistedTopicPath(qualifiedTopicName));
     }
 
     private void untilZookeeperNodeCreation(final String path, final CuratorFramework zookeeper) {

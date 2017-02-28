@@ -99,7 +99,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                 passwordLabel: 'Root password',
                 passwordHint: 'root password '
             }).result.then(function (result) {
-                    passwordService.set(result.password);
+                    passwordService.setRoot(result.password);
                     groupRepository.remove($scope.group.groupName).$promise
                         .then(function () {
                             toaster.pop('success', 'Success', 'Group has been removed');
@@ -123,14 +123,10 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
         loadTopics();
     }]);
 
-groups.controller('GroupEditController', ['GroupRepository', '$scope', '$uibModalInstance', 'group', 'PasswordService', 'toaster', 'operation', 'SupportTeamService',
-    function (groupRepository, $scope, $modal, group, passwordService, toaster, operation, supportTeamService) {
+groups.controller('GroupEditController', ['GroupRepository', '$scope', '$uibModalInstance', 'group', 'PasswordService', 'toaster', 'operation',
+    function (groupRepository, $scope, $modal, group, passwordService, toaster, operation) {
         $scope.group = group;
         $scope.operation = operation;
-
-        $scope.groups = function(groupName) {
-            return supportTeamService.getGroups(groupName);
-        };
 
         $scope.save = function () {
             passwordService.setRoot($scope.rootPassword);

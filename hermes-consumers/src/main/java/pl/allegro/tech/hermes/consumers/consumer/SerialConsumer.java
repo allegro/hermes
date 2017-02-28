@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
@@ -34,6 +35,7 @@ public class SerialConsumer implements Consumer {
     private final Trackers trackers;
     private final MessageConverterResolver messageConverterResolver;
     private final ConsumerMessageSender sender;
+    private final ConfigFactory configFactory;
     private final OffsetQueue offsetQueue;
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
     private final AdjustableSemaphore inflightSemaphore;
@@ -65,6 +67,7 @@ public class SerialConsumer implements Consumer {
         this.hermesMetrics = hermesMetrics;
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
+        this.configFactory = configFactory;
         this.offsetQueue = offsetQueue;
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
         this.trackers = trackers;
@@ -153,14 +156,18 @@ public class SerialConsumer implements Consumer {
 
     @Override
     public void updateTopic(Topic newTopic) {
-        if (this.topic.getContentType() != newTopic.getContentType()) {
-            logger.info("Topic content type changed from {} to {}, reinitializing message receiver",
-                    this.topic.getContentType(), newTopic.getContentType());
+        if (this.topic.getContentType() != newTopic.getContentType() || messageSizeChanged(newTopic)) {
+            logger.info("Reinitializing message receiver, contentType or messageSize changed.");
             this.topic = newTopic;
 
             messageReceiver.stop();
             initializeMessageReceiver();
         }
+    }
+
+    private boolean messageSizeChanged(Topic newTopic) {
+        return this.topic.getMaxMessageSize() != newTopic.getMaxMessageSize()
+                && configFactory.getBooleanProperty(Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE);
     }
 
     @Override

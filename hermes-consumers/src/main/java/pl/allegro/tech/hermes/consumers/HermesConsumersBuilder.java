@@ -23,7 +23,6 @@ import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -37,7 +36,7 @@ public final class HermesConsumersBuilder {
     private final List<SubscriptionMessageFilterCompiler> filters = new ArrayList<>();
     private final List<MessageFilter> globalFilters = new ArrayList<>();
 
-    private Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper = Optional.empty();
+    private boolean flushLogsShutdownHookEnabled = true;
 
     private final List<Binder> binders = Lists.newArrayList(
             new CommonBinder(),
@@ -59,6 +58,16 @@ public final class HermesConsumersBuilder {
 
     public HermesConsumersBuilder withShutdownHook(Hook hook) {
         return withShutdownHook(s -> hook.apply());
+    }
+
+    public HermesConsumersBuilder withDisabledGlobalShutdownHook() {
+        hooksHandler.disableGlobalShutdownHook();
+        return this;
+    }
+
+    public HermesConsumersBuilder withDisabledFlushLogsShutdownHook() {
+        flushLogsShutdownHookEnabled = false;
+        return this;
     }
 
     public HermesConsumersBuilder withMessageSenderProvider(String protocol, Supplier<ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
@@ -86,9 +95,8 @@ public final class HermesConsumersBuilder {
         return this;
     }
 
-    public HermesConsumersBuilder withKafkaTopicsNamesMapper(Function<ServiceLocator, KafkaNamesMapper> kafkaNamesMapper) {
-        this.kafkaNamesMapper = Optional.of(kafkaNamesMapper);
-        return this;
+    public HermesConsumersBuilder withKafkaTopicsNamesMapper(KafkaNamesMapper kafkaNamesMapper) {
+        return withBinding(kafkaNamesMapper, KafkaNamesMapper.class);
     }
 
     public <T> HermesConsumersBuilder withBinding(T instance, Class<T> clazz) {
@@ -118,7 +126,7 @@ public final class HermesConsumersBuilder {
         messageSenderProviders.add(
                 "jms", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultJmsMessageSenderProvider")
         );
-        return new HermesConsumers(hooksHandler, binders, messageSenderProviders, logRepositories, kafkaNamesMapper);
+        return new HermesConsumers(hooksHandler, binders, messageSenderProviders, logRepositories, flushLogsShutdownHookEnabled);
     }
 
     private MessageFilters buildFilters() {

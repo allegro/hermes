@@ -35,7 +35,7 @@ printf "Creating package: dist/$ARCHIVE_NAME.zip\n"
 
 # first step - create base directory and copy contents
 mkdir -p dist/$ARCHIVE_NAME
-cp -r node_modules package.json serve.js static run.sh dist/$ARCHIVE_NAME
+cp -r node_modules package.json serve.js config_default.json static run.sh dist/$ARCHIVE_NAME
 (cd dist && cp -r node $ARCHIVE_NAME)
 
 # second step - create zip

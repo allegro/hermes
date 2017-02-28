@@ -7,12 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
+import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
+import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
-import pl.allegro.tech.hermes.frontend.publishing.callbacks.MetricsPublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -42,37 +42,31 @@ import static pl.allegro.tech.hermes.common.config.Configs.*;
 public class BackupMessagesLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(BackupMessagesLoader.class);
-    private static final int THREAD_POOL_SIZE = 16;
 
     private final BrokerMessageProducer brokerMessageProducer;
-    private final HermesMetrics hermesMetrics;
     private final BrokerListeners brokerListeners;
     private final TopicsCache topicsCache;
     private final Trackers trackers;
-    private final int secondsToWaitForTopicsCache;
     private final int messageMaxAgeHours;
     private final int maxResendRetries;
     private final long resendSleep;
     private final long readTopicInfoSleep;
 
     private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
-    private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, Topic>>> toResend = new AtomicReference<>();
+    private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, CachedTopic>>> toResend = new AtomicReference<>();
 
     @Inject
     public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
-                                HermesMetrics hermesMetrics,
                                 BrokerListeners brokerListeners,
                                 TopicsCache topicsCache,
                                 Trackers trackers,
                                 ConfigFactory config) {
         this.brokerMessageProducer = brokerMessageProducer;
-        this.hermesMetrics = hermesMetrics;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
         this.trackers = trackers;
-        this.secondsToWaitForTopicsCache = config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_TOPICS_CACHE);
         this.messageMaxAgeHours = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS);
-        this.resendSleep = config.getIntProperty(KAFKA_PRODUCER_ACK_TIMEOUT) + secondsToWaitForTopicsCache * 1000;
+        this.resendSleep = config.getIntProperty(MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS);
         this.readTopicInfoSleep = TimeUnit.SECONDS.toMillis(config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO));
         this.maxResendRetries = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES);
     }
@@ -92,7 +86,7 @@ public class BackupMessagesLoader {
 
         do {
             if (retry > 0) {
-                List<Pair<Message, Topic>> retryMessages = Lists.newArrayList(toResend.getAndSet(new ConcurrentLinkedQueue<>()));
+                List<Pair<Message, CachedTopic>> retryMessages = Lists.newArrayList(toResend.getAndSet(new ConcurrentLinkedQueue<>()));
                 resendMessages(retryMessages, retry);
             }
             try {
@@ -112,49 +106,30 @@ public class BackupMessagesLoader {
 
     private void sendMessages(List<BackupMessage> messages) {
         logger.info("Sending {} messages from backup storage.", messages.size());
-        ExecutorService executor = createExecutor();
-        try {
-            int sentCounter = 0;
-            int discardedCounter = 0;
-            for (BackupMessage backupMessage : messages) {
-                Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
-                Optional<Topic> topic = loadTopic(backupMessage.getQualifiedTopicName(), executor);
-                if (sendMessageIfNeeded(message, topic, "sending")) {
-                    sentCounter++;
-                } else {
-                    discardedCounter++;
-                }
-            }
-            logger.info("Loaded and sent {} messages and discarded {} messages from the backup storage.", sentCounter, discardedCounter);
-        } finally {
-            shutdownExecutor(executor);
-        }
-    }
-
-    private ExecutorService createExecutor() {
-        return Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-    }
-
-    private void shutdownExecutor(ExecutorService executor) {
-        if (executor != null) {
-            executor.shutdownNow();
-            try {
-                executor.awaitTermination(1, TimeUnit.MINUTES);
-            } catch (InterruptedException e) {
-                logger.error("Termination of load topics executor service interrupted.", e);
+        int sentCounter = 0;
+        int discardedCounter = 0;
+        for (BackupMessage backupMessage : messages) {
+            Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
+            String topicQualifiedName = backupMessage.getQualifiedTopicName();
+            Optional<CachedTopic> optionalCachedTopic = topicsCache.getTopic(topicQualifiedName);
+            if (sendMessageIfNeeded(message, topicQualifiedName, optionalCachedTopic, "sending")) {
+                sentCounter++;
+            } else {
+                discardedCounter++;
             }
         }
+        logger.info("Loaded and sent {} messages and discarded {} messages from the backup storage.", sentCounter, discardedCounter);
     }
 
-    private void resendMessages(List<Pair<Message, Topic>> messageAndTopicList, int retry) {
+    private void resendMessages(List<Pair<Message, CachedTopic>> messageAndTopicList, int retry) {
         logger.info("Resending {} messages from backup storage retry {}.", messageAndTopicList.size(), retry);
 
         int sentCounter = 0;
         int discardedCounter = 0;
-        for (Pair<Message, Topic> messageAndTopic : messageAndTopicList) {
+        for (Pair<Message, CachedTopic> messageAndTopic : messageAndTopicList) {
             Message message = messageAndTopic.getKey();
-            Optional<Topic> topic = Optional.of(messageAndTopic.getValue());
-            if (sendMessageIfNeeded(message, topic, "resending")) {
+            Optional<CachedTopic> cachedTopic = Optional.of(messageAndTopic.getValue());
+            if (sendMessageIfNeeded(message, cachedTopic.get().getQualifiedName(), cachedTopic, "resending")) {
                 sentCounter++;
             } else {
                 discardedCounter++;
@@ -164,40 +139,43 @@ public class BackupMessagesLoader {
         logger.info("Resent {}/{} messages and discarded {} messages from the backup storage retry {}.", sentCounter, messageAndTopicList.size(), discardedCounter, retry);
     }
 
-    private boolean sendMessageIfNeeded(Message message, Optional<Topic> topic, String contextName) {
-        if (topic.isPresent() && isNotStale(message)) {
-            waitOnBrokerTopicAvailability(topic.get());
-            sendMessage(message, topic.get());
-            return true;
-        } else {
-            String topicName = topic.map(t -> t.getName().qualifiedName()).orElse("missing-topic-info");
-            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topicName,
-                    new String(message.getData(), Charset.defaultCharset()));
+    private boolean sendMessageIfNeeded(Message message, String topicQualifiedName, Optional<CachedTopic> cachedTopic, String contextName) {
+        if (cachedTopic.isPresent()) {
+            if (isNotStale(message)) {
+                waitOnBrokerTopicAvailability(cachedTopic.get());
+                sendMessage(message, cachedTopic.get());
+                return true;
+            }
+            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(),
+                    topicQualifiedName, new String(message.getData(), Charset.defaultCharset()));
             return false;
         }
+        logger.error("Topic {} not present. Not {} message {} {}", topicQualifiedName, contextName,
+                message.getId(), new String(message.getData(), Charset.defaultCharset()));
+        return false;
     }
 
-    private void waitOnBrokerTopicAvailability(Topic topic) {
+    private void waitOnBrokerTopicAvailability(CachedTopic cachedTopic) {
         int tries = 0;
-        while(!isBrokerTopicAvailable(topic)) {
+        while(!isBrokerTopicAvailable(cachedTopic)) {
             try {
                 tries++;
-                logger.info("Broker topic {} is not available, checked {} times.", topic.getQualifiedName(), tries);
+                logger.info("Broker topic {} is not available, checked {} times.", cachedTopic.getTopic().getQualifiedName(), tries);
                 Thread.sleep(readTopicInfoSleep);
             } catch (InterruptedException e) {
-                logger.warn("Waiting for broker topic availability interrupted. Topic: {}", topic.getQualifiedName());
+                logger.warn("Waiting for broker topic availability interrupted. Topic: {}", cachedTopic.getTopic().getQualifiedName());
             }
         }
     }
 
-    private boolean isBrokerTopicAvailable(Topic topic) {
-        if (topicsAvailabilityCache.contains(topic)) {
+    private boolean isBrokerTopicAvailable(CachedTopic cachedTopic) {
+        if (topicsAvailabilityCache.contains(cachedTopic.getTopic())) {
             return true;
         }
 
-        if (brokerMessageProducer.isTopicAvailable(topic)) {
-            topicsAvailabilityCache.add(topic);
-            logger.info("Broker topic {} is available.", topic.getQualifiedName());
+        if (brokerMessageProducer.isTopicAvailable(cachedTopic)) {
+            topicsAvailabilityCache.add(cachedTopic.getTopic());
+            logger.info("Broker topic {} is available.", cachedTopic.getTopic().getQualifiedName());
             return true;
         }
 
@@ -209,33 +187,24 @@ public class BackupMessagesLoader {
                 .isAfter(LocalDateTime.now().minusHours(messageMaxAgeHours));
     }
 
-    private void sendMessage(Message message, Topic topic) {
-        brokerMessageProducer.send(message, topic, new SimpleExecutionCallback(
-                new MetricsPublishingCallback(hermesMetrics, topic),
-                new PublishingCallback() {
-                    @Override
-                    public void onUnpublished(Message message, Topic topic, Exception exception) {
-                        brokerListeners.onError(message, topic, exception);
-                        trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage(), "");
-                        toResend.get().add(ImmutablePair.of(message, topic));
-                    }
+    private void sendMessage(Message message, CachedTopic cachedTopic) {
+        StartedTimersPair brokerTimers = cachedTopic.startBrokerLatencyTimers();
+        brokerMessageProducer.send(message, cachedTopic, new PublishingCallback() {
+            @Override
+            public void onUnpublished(Message message, Topic topic, Exception exception) {
+                brokerTimers.close();
+                brokerListeners.onError(message, topic, exception);
+                trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage(), "");
+                toResend.get().add(ImmutablePair.of(message, cachedTopic));
+            }
 
-                    @Override
-                    public void onPublished(Message message, Topic topic) {
-                        brokerListeners.onAcknowledge(message, topic);
-                        trackers.get(topic).logPublished(message.getId(), topic.getName(), "");
-                    }
-                }));
+            @Override
+            public void onPublished(Message message, Topic topic) {
+                brokerTimers.close();
+                cachedTopic.incrementPublished();
+                brokerListeners.onAcknowledge(message, topic);
+                trackers.get(topic).logPublished(message.getId(), topic.getName(), "");
+            }
+        });
     }
-
-    private Optional<Topic> loadTopic(String topicName, Executor executor) {
-        try {
-            return CompletableFuture.supplyAsync(() -> topicsCache.getTopic(topicName), executor)
-                    .get(secondsToWaitForTopicsCache, SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error("Could not read topic {} from topics cache after {} seconds", topicName, secondsToWaitForTopicsCache);
-            return Optional.empty();
-        }
-    }
-
 }

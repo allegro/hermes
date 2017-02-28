@@ -27,4 +27,9 @@ public class DirectSchemaVersionsRepository implements SchemaVersionsRepository 
             return emptyList();
         }
     }
+
+    @Override
+    public void close() {
+        // nothing to close
+    }
 }

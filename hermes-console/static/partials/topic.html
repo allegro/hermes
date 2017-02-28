@@ -9,11 +9,20 @@
 
     <div class="pull-right">
         <button class="btn btn-primary" ng-click="edit()">Edit</button>
+        <button class="btn btn-warning" ng-click="blacklist()" ng-show="!isBlacklisted">Blacklist</button>
+        <button class="btn btn-default" ng-click="unblacklist()" ng-show="isBlacklisted">Unblacklist</button>
         <button class="btn btn-danger" ng-click="remove()">Remove</button>
     </div>
 
     <h1><small>Topic:</small> {{topic.name}}</h1>
+    <h3><small>Owner:</small> <owner-name owner="topic.owner"/></h3>
+
     <p class="lead">{{topic.description}}</p>
+
+    <div class="alert alert-danger" role="alert" ng-show="isBlacklisted">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        The topic has been blacklisted - contact Hermes admins why publishing returns 403's.
+    </div>
 
     <div class="row">
         <div class="col-md-6">
@@ -26,6 +35,7 @@
                     <p><strong><a ng-href="{{metricsUrls.deliveryRate}}">Delivery rate:</a></strong> {{metrics.deliveryRate | number:2}}</p>
                     <p><strong><a ng-href="{{metricsUrls.published}}">Published:</a></strong> {{metrics.published}}</p>
                     <p><strong><a ng-href="{{metricsUrls.latency}}">Latency</a></strong></p>
+                    <p><strong><a ng-href="{{metricsUrls.messageSize}}">Message size</a></strong></p>
                 </div>
             </div>
         </div>
@@ -47,6 +57,7 @@
                         <span uib-popover='For how many days message is available for subscribers after being published.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p><strong>Tracking enabled:</strong> {{topic.trackingEnabled}}</p>
+                    <p><strong>Max message size:</strong> {{topic.maxMessageSize | readableSize}}</p>
                 </div>
             </div>
         </div>

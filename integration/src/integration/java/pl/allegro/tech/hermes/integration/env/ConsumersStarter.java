@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.test.helper.endpoint.MultiUrlEndpointAddressResolv
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG;
@@ -43,19 +44,22 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
         configFactory.overrideProperty(KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG, 11000);
         configFactory.overrideProperty(KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG, 10000);
         configFactory.overrideProperty(KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG, 50);
+        configFactory.overrideProperty(CONSUMER_USE_TOPIC_MESSAGE_SIZE, true);
 
         consumers = HermesConsumers.consumers()
-            .withKafkaTopicsNamesMapper(serviceLocator ->
+            .withKafkaTopicsNamesMapper(
                     new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())
             .withBinding(configFactory, ConfigFactory.class)
             .withBinding(new MultiUrlEndpointAddressResolver(), EndpointAddressResolver.class)
-                .withLogRepository(serviceLocator -> new MongoLogRepository(FongoFactory.hermesDB(),
-                        10,
-                        1000,
-                        configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
-                        configFactory.getStringProperty(Configs.HOSTNAME),
-                        serviceLocator.getService(MetricRegistry.class),
-                        serviceLocator.getService(PathsCompiler.class)))
+            .withLogRepository(serviceLocator -> new MongoLogRepository(FongoFactory.hermesDB(),
+                    10,
+                    1000,
+                    configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
+                    configFactory.getStringProperty(Configs.HOSTNAME),
+                    serviceLocator.getService(MetricRegistry.class),
+                    serviceLocator.getService(PathsCompiler.class)))
+            .withDisabledGlobalShutdownHook()
+            .withDisabledFlushLogsShutdownHook()
             .build();
 
         consumers.start();

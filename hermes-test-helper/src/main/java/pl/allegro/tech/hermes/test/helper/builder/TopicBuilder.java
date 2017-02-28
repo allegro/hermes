@@ -1,15 +1,14 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
-import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.RetentionTime;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 
 public class TopicBuilder {
 
     private final TopicName name;
 
     private String description = "description";
+
+    private OwnerId owner = new OwnerId("Plaintext", "some team");
 
     private boolean jsonToAvroDryRunEnabled = false;
 
@@ -24,6 +23,8 @@ public class TopicBuilder {
     private boolean migratedFromJsonType = false;
 
     private boolean schemaVersionAwareSerialization = false;
+
+    private int maxMessageSize = 1024 * 1024;
 
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
@@ -43,13 +44,18 @@ public class TopicBuilder {
 
     public Topic build() {
         return new Topic(
-                name, description, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerialization
+                name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
+                jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize
         );
     }
 
     public TopicBuilder withDescription(String description) {
         this.description = description;
+        return this;
+    }
+
+    public TopicBuilder withOwner(OwnerId owner) {
+        this.owner = owner;
         return this;
     }
 
@@ -90,6 +96,11 @@ public class TopicBuilder {
 
     public TopicBuilder withSchemaVersionAwareSerialization() {
         this.schemaVersionAwareSerialization = true;
+        return this;
+    }
+
+    public TopicBuilder withMaxMessageSize(int size) {
+        this.maxMessageSize = size;
         return this;
     }
 }

@@ -4,17 +4,15 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.message.MessageContent;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.common.filtering.chain.FilterChain;
 import pl.allegro.tech.hermes.common.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.common.filtering.chain.FilterResult;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-
-import static java.util.Collections.singleton;
 
 public class FilteringMessageReceiver implements MessageReceiver {
     private MessageReceiver receiver;
@@ -44,7 +42,7 @@ public class FilteringMessageReceiver implements MessageReceiver {
 
     private boolean allow(Message message) {
         FilterResult result = filterChain.apply(getMessageContent(message));
-        filteredMessageHandler.handle(result, message, subscription, (offset) -> receiver.commit(singleton(offset)));
+        filteredMessageHandler.handle(result, message, subscription);
         return !result.isFiltered();
     }
 

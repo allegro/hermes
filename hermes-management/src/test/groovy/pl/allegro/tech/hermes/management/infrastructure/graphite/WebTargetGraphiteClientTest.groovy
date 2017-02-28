@@ -30,10 +30,10 @@ class WebTargetGraphiteClientTest extends Specification {
 
     def "should get metrics for path"() {
         given:
-        mockGraphite(
-                "target=metric1&target=metric2",
-                arrayJsonResponse("metric1", "metric2", "10", "20")
-        );
+        mockGraphite([
+                [ metric: 'metric1', data: ['10'] ],
+                [ metric: 'metric2', data: ['20'] ]
+        ])
 
         when:
         GraphiteMetrics metrics = client.readMetrics("metric1", "metric2")
@@ -45,10 +45,7 @@ class WebTargetGraphiteClientTest extends Specification {
 
     def "should return default value when metric has no value"() {
         given:
-        mockGraphite(
-                "target=metric",
-                arrayJsonResponse("metric", null)
-        );
+        mockGraphite([[ metric: 'metric', data: [null] ]])
 
         when:
         GraphiteMetrics metrics = client.readMetrics("metric");
@@ -56,25 +53,39 @@ class WebTargetGraphiteClientTest extends Specification {
         then:
         metrics.metricValue("metric1") == "0.0"
     }
-    
+
+    def "should return first notnull value"() {
+        given:
+        mockGraphite([
+                [ metric: 'metric', data: [null, null, '13'] ],
+        ])
+
+        when:
+        GraphiteMetrics metrics = client.readMetrics("metric");
+
+        then:
+        metrics.metricValue("metric") == "13"
+    }
+
+    private void mockGraphite(List queries) {
+        String targetParams = queries.collect({ "target=$it.metric" }).join('&')
+        String response = '[' + queries.collect({ jsonResponse(it.metric, it.data) }).join(',') + ']'
+
+        mockGraphite(targetParams, response)
+    }
+
     private void mockGraphite(String targetParams, String jsonResponse) {
-        WireMock.stubFor(WireMock.get(WireMock.urlEqualTo(String.format("/render?from=-1minutes&until=now&format=json&%s", targetParams)))
+        WireMock.stubFor(WireMock.get(WireMock.urlEqualTo(String.format("/render?from=-5minutes&until=-1minutes&format=json&%s", targetParams)))
                 .willReturn(WireMock.aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", MediaType.APPLICATION_JSON)
                 .withBody(jsonResponse)));
     }
 
-    private String arrayJsonResponse(String query1, String query2, String rate1, String rate2) {
-        return String.format("[%s,%s]", jsonResponse(query1, rate1), jsonResponse(query2, rate2));
-    }
-
-    private String arrayJsonResponse(String query, String rate) {
-        return String.format("[%s]", jsonResponse(query, rate));
-    }
-
-    private String jsonResponse(String query, String rate) {
-        return String.format("{\"target\": \"%s\", \"datapoints\": [[%s, %s]]}", query, rate, new Date().getTime());
+    private String jsonResponse(String query, List datapoints) {
+        long timestamp = System.currentTimeSeconds()
+        String datapointsString = datapoints.collect({ "[$it, $timestamp]" }).join(',')
+        return '{"target": "' + query + '", "datapoints": [' + datapointsString + ']}'
     }
     
 }

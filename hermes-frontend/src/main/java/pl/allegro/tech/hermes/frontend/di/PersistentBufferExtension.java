@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.buffer.BrokerListener;
@@ -19,6 +20,7 @@ import java.util.List;
 import static java.util.stream.Collectors.joining;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED;
 
 public class PersistentBufferExtension {
 
@@ -33,18 +35,21 @@ public class PersistentBufferExtension {
     private final HooksHandler hooksHandler;
 
     private final BackupMessagesLoader backupMessagesLoader;
+    private final HermesMetrics hermesMetrics;
 
     @Inject
     public PersistentBufferExtension(ConfigFactory configFactory,
                                      Clock clock,
                                      BrokerListeners listeners,
                                      HooksHandler hooksHandler,
-                                     BackupMessagesLoader backupMessagesLoader) {
+                                     BackupMessagesLoader backupMessagesLoader,
+                                     HermesMetrics hermesMetrics) {
         this.config = configFactory;
         this.clock = clock;
         this.listeners = listeners;
         this.hooksHandler = hooksHandler;
         this.backupMessagesLoader = backupMessagesLoader;
+        this.hermesMetrics = hermesMetrics;
     }
 
     public void extend() {
@@ -66,7 +71,9 @@ public class PersistentBufferExtension {
         }
 
         if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {
-            MessageRepository repository = new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile());
+            MessageRepository repository = config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED) ?
+                    new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), hermesMetrics) :
+                    new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile());
             BrokerListener brokerListener = new BrokerListener(repository);
 
             listeners.addAcknowledgeListener(brokerListener);

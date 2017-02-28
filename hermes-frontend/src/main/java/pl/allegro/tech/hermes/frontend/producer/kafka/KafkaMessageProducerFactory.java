@@ -11,56 +11,28 @@ import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.kafka.clients.producer.ProducerConfig.ACKS_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.BATCH_SIZE_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.BLOCK_ON_BUFFER_FULL_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.BUFFER_MEMORY_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.COMPRESSION_TYPE_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.LINGER_MS_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION;
-import static org.apache.kafka.clients.producer.ProducerConfig.MAX_REQUEST_SIZE_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.METADATA_MAX_AGE_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.METRICS_SAMPLE_WINDOW_MS_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.RETRIES_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.RETRY_BACKOFF_MS_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.SEND_BUFFER_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.TIMEOUT_CONFIG;
-import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_ACK_TIMEOUT;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_BATCH_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_BLOCK_ON_BUFFER_FULL;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_BUFFER_MEMORY;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_COMPRESSION_CODEC;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_LINGER_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_MAX_REQUEST_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_METADATA_FETCH_TIMEOUT_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_METADATA_MAX_AGE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRIES;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRY_BACKOFF_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_TCP_SEND_BUFFER;
+import static org.apache.kafka.clients.producer.ProducerConfig.*;
+import static pl.allegro.tech.hermes.common.config.Configs.*;
 
 public class KafkaMessageProducerFactory implements Factory<Producers> {
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 
-    @Inject
     private ConfigFactory configFactory;
+
+    @Inject
+    public KafkaMessageProducerFactory(ConfigFactory configFactory) {
+        this.configFactory = configFactory;
+    }
 
     @Override
     public Producers provide() {
         Map<String, Object> common = new HashMap<>();
         common.put(BOOTSTRAP_SERVERS_CONFIG, getString(KAFKA_BROKER_LIST));
-        common.put(METADATA_FETCH_TIMEOUT_CONFIG, getInt(KAFKA_PRODUCER_METADATA_FETCH_TIMEOUT_MS));
+        common.put(MAX_BLOCK_MS_CONFIG, getInt(KAFKA_PRODUCER_MAX_BLOCK_MS));
         common.put(COMPRESSION_TYPE_CONFIG, getString(KAFKA_PRODUCER_COMPRESSION_CODEC));
         common.put(BUFFER_MEMORY_CONFIG, configFactory.getLongProperty(KAFKA_PRODUCER_BUFFER_MEMORY));
-        common.put(BLOCK_ON_BUFFER_FULL_CONFIG, configFactory.getBooleanProperty(KAFKA_PRODUCER_BLOCK_ON_BUFFER_FULL));
-        common.put(TIMEOUT_CONFIG, getInt(KAFKA_PRODUCER_ACK_TIMEOUT));
+        common.put(REQUEST_TIMEOUT_MS_CONFIG, getInt(KAFKA_PRODUCER_REQUEST_TIMEOUT_MS));
         common.put(BATCH_SIZE_CONFIG, getInt(KAFKA_PRODUCER_BATCH_SIZE));
         common.put(SEND_BUFFER_CONFIG, getInt(KAFKA_PRODUCER_TCP_SEND_BUFFER));
         common.put(RETRIES_CONFIG, getInt(KAFKA_PRODUCER_RETRIES));

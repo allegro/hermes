@@ -11,9 +11,17 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
+import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.NotificationsBasedSubscriptionCache;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
+import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
+import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.NonblockingConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
+import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -29,17 +37,21 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperIn
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 
+import java.time.Clock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_SECOND;
+import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.mock;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
+import static org.mockito.Mockito.verify;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -47,6 +59,7 @@ import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 
 class ConsumerTestRuntimeEnvironment {
 
+    private static final int DEATH_OF_CONSUMER_AFTER_SECONDS = 300;
     private final static String CLUSTER_NAME = "primary";
 
     private int consumerIdSequence = 0;
@@ -61,13 +74,13 @@ class ConsumerTestRuntimeEnvironment {
     private SubscriptionRepository subscriptionRepository;
     private MutableConfigFactory configFactory;
     private ObjectMapper objectMapper = new ObjectMapper();
-    private ConsumersSupervisor supervisor = mock(ConsumersSupervisor.class);
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private HermesMetrics metrics;
+    private Supplier<HermesMetrics> metricsSupplier;
     private ConsumerNodesRegistry consumersRegistry;
     private CuratorFramework curator;
 
     private Map<String, CuratorFramework> consumerZookeeperConnections = Maps.newHashMap();
+    private List<SubscriptionsCache> subscriptionsCaches = new ArrayList<>();
 
     ConsumerTestRuntimeEnvironment(Supplier<CuratorFramework> curatorSupplier) {
         this.paths = new ZookeeperPaths("/hermes");
@@ -79,13 +92,15 @@ class ConsumerTestRuntimeEnvironment {
                 curator, objectMapper, paths, topicRepository
         );
 
-        this.configFactory = new MutableConfigFactory().overrideProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL, 1);
+        this.configFactory = new MutableConfigFactory()
+                .overrideProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL, 1)
+                .overrideProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION, 2);
 
         this.consumersRegistry = new ConsumerNodesRegistry(
-                curator, executorService, paths.consumersRegistryPath(CLUSTER_NAME), "id"
-        );
+                curator, executorService, paths.consumersRegistryPath(CLUSTER_NAME), "id",
+                DEATH_OF_CONSUMER_AFTER_SECONDS, Clock.systemDefaultZone());
 
-        this.metrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
+        this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
 
         try {
             consumersRegistry.start();
@@ -98,45 +113,97 @@ class ConsumerTestRuntimeEnvironment {
         return supervisors.stream().filter(SelectiveSupervisorController::isLeader).findAny().get();
     }
 
-    private SelectiveSupervisorController createConsumer(String consumerId) {
+    private ConsumerControllers createConsumer(String consumerId) {
+        return createConsumer(consumerId, consumersSupervisor(mock(ConsumerFactory.class)));
+    }
+
+    private ConsumerControllers createConsumer(String consumerId,
+                                                         ConsumersSupervisor consumersSupervisor) {
         CuratorFramework curator = curatorSupplier.get();
         consumerZookeeperConnections.put(consumerId, curator);
         ConsumerNodesRegistry registry = new ConsumerNodesRegistry(
                 curator,
                 executorService,
                 paths.consumersRegistryPath(CLUSTER_NAME),
-                consumerId
-        );
+                consumerId,
+                DEATH_OF_CONSUMER_AFTER_SECONDS,
+                Clock.systemDefaultZone());
 
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(
                 curator, configFactory
         ).provide();
-        InternalNotificationsBus notificationsBus = new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);
+        InternalNotificationsBus notificationsBus =
+                new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);
         SubscriptionsCache subscriptionsCache = new NotificationsBasedSubscriptionCache(
                 notificationsBus, groupRepository, topicRepository, subscriptionRepository
         );
+        subscriptionsCaches.add(subscriptionsCache);
+
+        SubscriptionAssignmentCaches subscriptionAssignmentCaches = new SubscriptionAssignmentCaches(
+                curator, configFactory, paths, subscriptionsCache);
+
         SubscriptionAssignmentRegistry assignmentRegistry = new SubscriptionAssignmentRegistryFactory(
-                curator, configFactory, subscriptionsCache
-        ).provide();
+                curator, configFactory, subscriptionAssignmentCaches).provide();
 
         WorkTracker workTracker = new WorkTracker(consumerId, assignmentRegistry);
 
-        return new SelectiveSupervisorController(
-                supervisor, notificationsBus, subscriptionsCache, assignmentRegistry, workTracker, registry,
-                mock(ZookeeperAdminCache.class), executorService, configFactory, metrics
+        SelectiveSupervisorController supervisor = new SelectiveSupervisorController(
+                consumersSupervisor, notificationsBus, subscriptionsCache, assignmentRegistry, workTracker, registry,
+                mock(ZookeeperAdminCache.class), executorService, configFactory, metricsSupplier.get()
         );
+
+        return new ConsumerControllers(subscriptionAssignmentCaches, supervisor);
     }
 
-    private List<SelectiveSupervisorController> createConsumers(int howMany) {
+    SelectiveSupervisorController spawnConsumer(String consumerId, ConsumersSupervisor consumersSupervisor) {
+        ConsumerControllers consumerControllers = createConsumer(consumerId, consumersSupervisor);
+        return startNode(consumerControllers).supervisorController;
+    }
+
+    ConsumersSupervisor consumersSupervisor(ConsumerFactory consumerFactory) {
+        HermesMetrics metrics = metricsSupplier.get();
+        return new NonblockingConsumersSupervisor(configFactory,
+                new ConsumersExecutorService(configFactory, metrics),
+                consumerFactory,
+                mock(OffsetQueue.class),
+                mock(Retransmitter.class),
+                mock(UndeliveredMessageLogPersister.class),
+                subscriptionRepository,
+                metrics,
+                mock(ConsumerMonitor.class),
+                Clock.systemDefaultZone());
+    }
+
+    ConsumersRuntimeMonitor monitor(String consumerId,
+                                    ConsumersSupervisor consumersSupervisor,
+                                    SupervisorController supervisorController) {
+        CuratorFramework curator = consumerZookeeperConnections.get(consumerId);
+        ModelAwareZookeeperNotifyingCache modelAwareCache =
+                new ModelAwareZookeeperNotifyingCacheFactory(curator, configFactory).provide();
+        InternalNotificationsBus notificationsBus =
+                new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);
+        SubscriptionsCache subscriptionsCache = new NotificationsBasedSubscriptionCache(
+                notificationsBus, groupRepository, topicRepository, subscriptionRepository);
+        subscriptionsCaches.add(subscriptionsCache);
+        subscriptionsCache.start();
+        return new ConsumersRuntimeMonitor(
+                consumersSupervisor,
+                supervisorController,
+                metricsSupplier.get(),
+                subscriptionsCache,
+                configFactory);
+    }
+
+    private List<ConsumerControllers> createConsumers(int howMany) {
         return IntStream.range(0, howMany).mapToObj(
                 i -> createConsumer(nextConsumerId())
-        ).collect(Collectors.toList());
+        ).collect(toList());
     }
 
     List<SelectiveSupervisorController> spawnConsumers(int howMany) {
-        List<SelectiveSupervisorController> nodes = createConsumers(howMany);
+        List<ConsumerControllers> nodes = createConsumers(howMany);
         nodes.forEach(this::startNode);
-        return nodes;
+        return nodes.stream().map(ConsumerControllers::getSupervisorController).collect(toList());
     }
 
     SelectiveSupervisorController spawnConsumer() {
@@ -144,18 +211,19 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     void kill(SelectiveSupervisorController node) {
-        consumerZookeeperConnections.get(node.getId()).close();
+        consumerZookeeperConnections.get(node.consumerId()).close();
     }
 
     void killAll() {
         consumerZookeeperConnections.values().stream().forEach(CuratorFramework::close);
     }
 
-    private SelectiveSupervisorController startNode(SelectiveSupervisorController supervisorController) {
+    private ConsumerControllers startNode(ConsumerControllers consumerControllers) {
         try {
-            supervisorController.start();
-            waitForRegistration(supervisorController.getId());
-            return supervisorController;
+            consumerControllers.supervisorController.start();
+            waitForRegistration(consumerControllers.supervisorController.consumerId());
+            consumerControllers.assignmentCaches.start();
+            return consumerControllers;
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
@@ -170,7 +238,7 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     void awaitUntilAssignmentExists(SubscriptionName subscription, SelectiveSupervisorController node) {
-        awaitUntilAssignmentExists(subscription.toString(), node.getId());
+        awaitUntilAssignmentExists(subscription.toString(), node.consumerId());
     }
 
     void awaitUntilAssignmentExists(String subscription, String supervisorId) {
@@ -179,17 +247,29 @@ class ConsumerTestRuntimeEnvironment {
         );
     }
 
+    void createAssignment(SubscriptionName subscription, String consumerId) {
+        try {
+            curator.create().creatingParentsIfNeeded().forPath(assignmentPath(subscription.toString(), consumerId));
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
+    }
+
     private String assignmentPath(String subscription, String supervisorId) {
         return paths.consumersRuntimePath(CLUSTER_NAME) + "/" + subscription + "/" + supervisorId;
     }
 
     List<SubscriptionName> createSubscription(int howMany) {
         return IntStream.range(0, howMany).mapToObj(i ->
-                createSubscription(nextSubscriptionName())).collect(Collectors.toList());
+                createSubscription(nextSubscriptionName())).collect(toList());
     }
 
     SubscriptionName createSubscription() {
         return createSubscription(1).get(0);
+    }
+
+    Subscription getSubscription(SubscriptionName subscriptionName) {
+        return subscriptionRepository.getSubscriptionDetails(subscriptionName);
     }
 
     private SubscriptionName createSubscription(SubscriptionName subscriptionName) {
@@ -203,7 +283,11 @@ class ConsumerTestRuntimeEnvironment {
         }
         subscriptionRepository.createSubscription(subscription);
         await().atMost(adjust(ONE_SECOND)).until(
-                () -> subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName())
+                () -> {
+                    subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName());
+                    subscriptionsCaches.forEach(subscriptionsCache ->
+                            subscriptionsCache.listActiveSubscriptionNames().contains(subscriptionName));
+                }
         );
         return subscription.getQualifiedName();
     }
@@ -214,5 +298,30 @@ class ConsumerTestRuntimeEnvironment {
 
     private SubscriptionName nextSubscriptionName() {
         return SubscriptionName.fromString("com.example.topic$test" + subscriptionIdSequence++);
+    }
+
+    void verifyConsumerWouldBeCreated(ConsumersSupervisor supervisor, Subscription subscription) {
+        await().atMost(adjust(ONE_SECOND)).until(
+                () -> verify(supervisor).assignConsumerForSubscription(subscription));
+
+    }
+
+    static class ConsumerControllers {
+        SubscriptionAssignmentCaches assignmentCaches;
+        SelectiveSupervisorController supervisorController;
+
+        public ConsumerControllers(SubscriptionAssignmentCaches assignmentCaches,
+                                   SelectiveSupervisorController supervisorController) {
+            this.assignmentCaches = assignmentCaches;
+            this.supervisorController = supervisorController;
+        }
+
+        public SubscriptionAssignmentCaches getAssignmentCaches() {
+            return assignmentCaches;
+        }
+
+        public SelectiveSupervisorController getSupervisorController() {
+            return supervisorController;
+        }
     }
 }

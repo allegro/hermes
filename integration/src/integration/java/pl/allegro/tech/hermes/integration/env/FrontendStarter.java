@@ -37,6 +37,9 @@ public class FrontendStarter implements Starter<HermesFrontend> {
         configFactory.overrideProperty(FRONTEND_PORT, port);
         configFactory.overrideProperty(SCHEMA_REPOSITORY_TYPE, SCHEMA_REGISTRY.name());
         configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, false);
+        configFactory.overrideProperty(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
+        configFactory.overrideProperty(FRONTEND_THROUGHPUT_TYPE, "fixed");
+        configFactory.overrideProperty(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L);
     }
 
     public FrontendStarter(int port, boolean sslEnabled) {
@@ -57,8 +60,10 @@ public class FrontendStarter implements Starter<HermesFrontend> {
                     configFactory.getStringProperty(Configs.HOSTNAME),
                     serviceLocator.getService(MetricRegistry.class),
                     serviceLocator.getService(PathsCompiler.class)))
-            .withKafkaTopicsNamesMapper(serviceLocator ->
+            .withKafkaTopicsNamesMapper(
                     new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())
+            .withDisabledGlobalShutdownHook()
+            .withDisabledFlushLogsShutdownHook()
             .build();
 
         client = new OkHttpClient();

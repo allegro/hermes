@@ -14,16 +14,24 @@ on topics `subscriptions` resource:
 /topics/{topicName}/subscriptions
 ```
 
-Body of request must contain at least:
+Request body must contain at least:
 
 * name: name of subscription
 * endpoint: valid URI
-* supportTeam: name of team that owns the subscription
+* owner: who's the owner of this subscription (refer to
+  [creating topic](/user/publishing/#creating-topic) for more information)
 
 Minimal request:
 
 ```json
-{"name": "mySubscription", "endpoint": "http://my-service", "supportTeam": "My Team"}
+{
+    "name": "mySubscription", 
+    "endpoint": "http://my-service", 
+    "owner": {
+        "source": "Plaintext",
+        "id": "My Team"
+    }
+}
 ```
 
 All options:
@@ -51,7 +59,10 @@ Request that specifies all available options:
     "endpoint": "http://my-service",
     "description": "This is my subscription",
     "trackingEnabled": false,
-    "supportTeam": "My Team",
+    "owner": {
+        "source": "Plaintext",
+        "id": "My Team"
+    },
     "contact": "my-team@my-company.com",
     "subscriptionPolicy": {
         "rate": 100,
@@ -97,7 +108,7 @@ with new status name in body (quotation marks are important!):
 Hermes treats any response with **2xx** status code as successful delivery (e.g. 200 or 201).
 
 Responses with **5xx** status code or any network issues (e.g. connection timeout) are treated as failures, unless it
-is **503** code, descirbed in [back pressure section](#back-pressure).
+is **503** code, described in [back pressure section](#back-pressure).
 
 Responses with **4xx** status code are treated as failures, but by default they are not retried. This is because
 usually when subscriber responds with *400 Bad Message* it means this message is somehow invalid and will never be parsed,
@@ -418,7 +429,7 @@ to start the retransmission.
 
 ## Retransmission
 
-Hermes gives an option to easily retransmit messages that are still available on Kafka. Simply send POST to:
+Hermes gives an option to easily retransmit messages that are still available on Kafka. Simply send a PUT to:
 
 ```
 /topics/{topicName}/subscriptions/{subscriptionName}/retransmission

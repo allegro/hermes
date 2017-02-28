@@ -9,11 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
+import pl.allegro.tech.hermes.common.hook.FlushLogsShutdownHook;
 import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperHolder;
 import pl.allegro.tech.hermes.frontend.di.FrontendBinder;
 import pl.allegro.tech.hermes.frontend.di.PersistentBufferExtension;
 import pl.allegro.tech.hermes.frontend.di.TrackersBinder;
@@ -24,6 +24,10 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.server.AbstractShutdownHook;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.frontend.server.SslContextFactory;
+import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
+import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
+import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
@@ -31,11 +35,12 @@ import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED;
 
 public final class HermesFrontend {
 
@@ -44,7 +49,6 @@ public final class HermesFrontend {
     private final ServiceLocator serviceLocator;
     private final HooksHandler hooksHandler;
     private final List<Function<ServiceLocator, LogRepository>> logRepositories;
-    private final Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper;
     private final HermesServer hermesServer;
     private final Trackers trackers;
 
@@ -55,22 +59,30 @@ public final class HermesFrontend {
     private HermesFrontend(HooksHandler hooksHandler,
                            List<Binder> binders,
                            List<Function<ServiceLocator, LogRepository>> logRepositories,
-                           Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper) {
+                           boolean flushLogsShutdownHookEnabled) {
         this.hooksHandler = hooksHandler;
         this.logRepositories = logRepositories;
-        this.kafkaNamesMapper = kafkaNamesMapper;
 
         serviceLocator = createDIContainer(binders);
 
         hermesServer = serviceLocator.getService(HermesServer.class);
         trackers = serviceLocator.getService(Trackers.class);
 
-        if (serviceLocator.getService(ConfigFactory.class).getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED)) {
+        ConfigFactory config = serviceLocator.getService(ConfigFactory.class);
+        if (config.getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED)) {
             hooksHandler.addShutdownHook(gracefulShutdownHook());
         }
-
+        if (config.getBooleanProperty(FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED)) {
+            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicMetadataLoadingStartupHook.class));
+        }
+        if (config.getBooleanProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED)) {
+            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicSchemaLoadingStartupHook.class));
+        }
         hooksHandler.addStartupHook((s) -> s.getService(HealthCheckService.class).startup());
         hooksHandler.addShutdownHook(defaultShutdownHook());
+        if (flushLogsShutdownHookEnabled) {
+            hooksHandler.addShutdownHook(new FlushLogsShutdownHook());
+        }
     }
 
     private ServiceAwareHook gracefulShutdownHook() {
@@ -78,6 +90,11 @@ public final class HermesFrontend {
             @Override
             public void shutdown() throws InterruptedException {
                 hermesServer.gracefulShutdown();
+            }
+
+            @Override
+            public int getPriority() {
+                return Hook.HIGHER_PRIORITY;
             }
         };
     }
@@ -96,13 +113,10 @@ public final class HermesFrontend {
         logRepositories.forEach(serviceLocatorLogRepositoryFunction ->
                 trackers.add(serviceLocatorLogRepositoryFunction.apply(serviceLocator)));
 
-        kafkaNamesMapper.ifPresent(it -> {
-            ((KafkaNamesMapperHolder)serviceLocator.getService(KafkaNamesMapper.class)).setKafkaNamespaceMapper(it.apply(serviceLocator));
-        });
-
         serviceLocator.getService(PersistentBufferExtension.class).extend();
         startCaches(serviceLocator);
 
+        hooksHandler.runBeforeStartHooks(serviceLocator);
         hermesServer.start();
         hooksHandler.startup(serviceLocator);
     }
@@ -148,12 +162,22 @@ public final class HermesFrontend {
         );
         private final BrokerListeners listeners = new BrokerListeners();
         private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();
-        private Optional<Function<ServiceLocator, KafkaNamesMapper>> kafkaNamesMapper = Optional.empty();
+        private boolean flushLogsShutdownHookEnabled = true;
 
         public HermesFrontend build() {
             withDefaultRankBinding(listeners, BrokerListeners.class);
             binders.add(new TrackersBinder(new ArrayList<>()));
-            return new HermesFrontend(hooksHandler, binders, logRepositories, kafkaNamesMapper);
+            return new HermesFrontend(hooksHandler, binders, logRepositories, flushLogsShutdownHookEnabled);
+        }
+
+        public Builder withBeforeStartHook(ServiceAwareHook hook) {
+            hooksHandler.addBeforeStartHook(hook);
+            return this;
+        }
+
+        public Builder withBeforeStartHook(Hook hook) {
+            withBeforeStartHook(s -> hook.apply());
+            return this;
         }
 
         public Builder withStartupHook(ServiceAwareHook hook) {
@@ -172,6 +196,17 @@ public final class HermesFrontend {
 
         public Builder withShutdownHook(Hook hook) {
             return withShutdownHook(s -> hook.apply());
+        }
+
+
+        public Builder withDisabledGlobalShutdownHook() {
+            hooksHandler.disableGlobalShutdownHook();
+            return this;
+        }
+
+        public Builder withDisabledFlushLogsShutdownHook() {
+            flushLogsShutdownHookEnabled = false;
+            return this;
         }
 
         public Builder withBrokerTimeoutListener(BrokerTimeoutListener brokerTimeoutListener) {
@@ -198,9 +233,16 @@ public final class HermesFrontend {
             return withBinding(headersPropagator, HeadersPropagator.class);
         }
 
-        public Builder withKafkaTopicsNamesMapper(Function<ServiceLocator, KafkaNamesMapper> kafkaNamesMapper) {
-            this.kafkaNamesMapper = Optional.of(kafkaNamesMapper);
-            return this;
+        public Builder withKafkaTopicsNamesMapper(KafkaNamesMapper kafkaNamesMapper) {
+            return withBinding(kafkaNamesMapper, KafkaNamesMapper.class);
+        }
+
+        public Builder withAuthenticationConfiguration(AuthenticationConfiguration authenticationConfiguration) {
+            return withBinding(authenticationConfiguration, AuthenticationConfiguration.class);
+        }
+
+        public Builder withSslContextFactory(SslContextFactory sslContextFactory) {
+            return withBinding(sslContextFactory, SslContextFactory.class);
         }
 
         public <T> Builder withBinding(T instance, Class<T> clazz) {

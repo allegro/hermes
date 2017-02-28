@@ -1,16 +1,22 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import com.google.common.collect.ImmutableMap;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorCode;
+import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
+import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -89,6 +95,19 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
         Assertions.assertThat(management.topic().get("recreateTopicGroup.topic")).isNotNull();
+    }
+
+    @Test
+    public void shouldNotCreateInvalidTopic() {
+        // given
+        operations.createGroup("invalidTopicGroup");
+
+        // when
+        Response response = management.topic().create(topic("invalidTopicGroup", "topic").withRetentionTime(-1).build());
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST).hasErrorCode(ErrorCode.VALIDATION_ERROR);
+        Assertions.assertThat(management.topic().list("invalidTopicGroup", false)).isEmpty();
     }
 
     @Test
@@ -227,5 +246,33 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(brokerOperations.topicExists(qualifiedTopicName, PRIMARY_KAFKA_CLUSTER_NAME)).isTrue();
         assertThat(brokerOperations.topicExists(qualifiedTopicName, SECONDARY_KAFKA_CLUSTER_NAME)).isFalse();
+    }
+
+    @Test
+    public void shouldCreateTopicWithMaxMessageSize() {
+        // given
+        Topic topic = TopicBuilder.topic("messageSize", "topic").withMaxMessageSize(2048).build();
+        assertThat(management.group().create(new Group(topic.getName().getGroupName(), "a"))).hasStatus(CREATED);
+
+        // when
+        Response response = management.topic().create(topic);
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+        assertThat(management.topic().get(topic.getQualifiedName()).getMaxMessageSize()).isEqualTo(2048);
+    }
+
+    @Test
+    public void shouldUpdateTopicWithMaxMessageSize() {
+        // given
+        Topic topic = TopicBuilder.topic("updateMessageSize", "topic").withMaxMessageSize(2048).build();
+        operations.buildTopic(topic);
+        PatchData maxMessageSize = PatchData.from(ImmutableMap.of("maxMessageSize", 1024));
+
+        // when
+        assertThat(management.topic().update(topic.getQualifiedName(), maxMessageSize)).hasStatus(OK);
+
+        // then
+        assertThat(management.topic().get(topic.getQualifiedName()).getMaxMessageSize()).isEqualTo(1024);
     }
 }

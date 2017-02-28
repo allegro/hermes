@@ -25,9 +25,9 @@ public class SubscriptionBuilder {
 
     private boolean trackingEnabled = false;
 
-    private String supportTeam = "team";
+    private OwnerId owner = new OwnerId("Plaintext", "some team");
 
-    private String contact = "contact";
+    private String supportTeam = "team";
 
     private MonitoringDetails monitoringDetails = MonitoringDetails.EMPTY;
 
@@ -40,7 +40,6 @@ public class SubscriptionBuilder {
     private List<Header> headers = new ArrayList<>();
 
     private EndpointAddressResolverMetadata metadata = EndpointAddressResolverMetadata.empty();
-
     private SubscriptionOAuthPolicy oAuthPolicy;
 
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
@@ -87,14 +86,14 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType,
+                    trackingEnabled, owner, supportTeam, monitoringDetails, contentType,
                     filters, mode, headers, metadata, oAuthPolicy
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
-                    trackingEnabled, supportTeam, contact, monitoringDetails, contentType,
+                    trackingEnabled, owner, supportTeam, monitoringDetails, contentType,
                     filters, headers, metadata, oAuthPolicy
             );
         }
@@ -145,13 +144,14 @@ public class SubscriptionBuilder {
         return this;
     }
 
-    public SubscriptionBuilder withSupportTeam(String supportTeam) {
-        this.supportTeam = supportTeam;
+    public SubscriptionBuilder withOwner(OwnerId owner) {
+        this.owner = owner;
         return this;
     }
 
-    public SubscriptionBuilder withContact(String contact) {
-        this.contact = contact;
+    @Deprecated
+    public SubscriptionBuilder withSupportTeam(String supportTeam) {
+        this.supportTeam = supportTeam;
         return this;
     }
 

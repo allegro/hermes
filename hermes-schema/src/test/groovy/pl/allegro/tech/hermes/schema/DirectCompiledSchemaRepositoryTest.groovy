@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.schema
 import pl.allegro.tech.hermes.api.RawSchema
 import spock.lang.Specification
 
+import javax.ws.rs.core.Response
+
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class DirectCompiledSchemaRepositoryTest extends Specification {
@@ -31,18 +33,21 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
         repository.getSchema(topic, v1)
 
         then:
-        thrown CouldNotLoadSchemaException
+        thrown SchemaNotFoundException
     }
 
     def "should fail to provide schema if loading schema source failed"() {
         given:
-        rawSchemaClient.getSchema(topic.getName(), v1) >> { throw new RuntimeException("loading failed") }
+        rawSchemaClient.getSchema(topic.getName(), v1) >> {
+            throw new CouldNotFetchSchemaVersionException(topic.qualifiedName, Integer.toString(v1.value()), 500, "Unexpected failure")
+        }
 
         when:
         repository.getSchema(topic, v1)
 
         then:
-        thrown CouldNotLoadSchemaException
+        def e = thrown CouldNotFetchSchemaVersionException
+        e.message.contains "500 Unexpected failure"
     }
 
     def "should fail to provide schema if schema compilation failed"() {
@@ -56,6 +61,6 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
         repository.getSchema(topic, v1)
 
         then:
-        thrown CouldNotLoadSchemaException
+        thrown RuntimeException
     }
 }

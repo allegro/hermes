@@ -23,7 +23,11 @@ public class HermesEndpoints {
 
     private final ConsumerEndpoint consumerEndpoint;
 
-    private final SupportTeamsEndpoint supportTeamsEndpoint;
+    private final OwnerEndpoint ownerEndpoint;
+
+    private final BlacklistEndpoint blacklistEndpoint;
+
+    private final MigrationEndpoint migrationEndpoint;
 
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
@@ -31,9 +35,11 @@ public class HermesEndpoints {
         this.subscriptionEndpoint = hermes.createSubscriptionEndpoint();
         this.schemaEndpoint = hermes.createSchemaEndpoint();
         this.queryEndpoint = hermes.createQueryEndpoint();
+        this.blacklistEndpoint = hermes.createBlacklistEndpoint();
         this.oAuthProviderEndpoint = hermes.createOAuthProviderEndpoint();
         this.consumerEndpoint = hermes.createConsumerEndpoint();
-        this.supportTeamsEndpoint = hermes.createSupportTeamsEndpoint();
+        this.ownerEndpoint = hermes.createOwnerEndpoint();
+        this.migrationEndpoint = hermes.createMigrationEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
@@ -66,8 +72,16 @@ public class HermesEndpoints {
         return queryEndpoint;
     }
 
-    public SupportTeamsEndpoint supportTeams() {
-        return supportTeamsEndpoint;
+    public OwnerEndpoint owner() {
+        return ownerEndpoint;
+    }
+
+    public MigrationEndpoint migration() {
+        return migrationEndpoint;
+    }
+
+    public BlacklistEndpoint blacklist() {
+        return blacklistEndpoint;
     }
 
     public List<String> findTopics(Topic topic, boolean tracking) {

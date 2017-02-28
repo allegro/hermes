@@ -15,18 +15,19 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResol
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
-import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
+import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import javax.inject.Inject;
+import java.time.Clock;
 
 public class ConsumerFactory {
 
     private final ConsumerRateLimitSupervisor consumerRateLimitSupervisor;
-    private final OutputRateCalculator outputRateCalculator;
+    private final OutputRateCalculatorFactory outputRateCalculatorFactory;
     private final ReceiverFactory messageReceiverFactory;
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configFactory;
@@ -39,13 +40,14 @@ public class ConsumerFactory {
     private final MessageContentWrapper messageContentWrapper;
     private final MessageBatchSenderFactory batchSenderFactory;
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
+    private final Clock clock;
 
     @Inject
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
                            HermesMetrics hermesMetrics,
                            ConfigFactory configFactory,
                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
-                           OutputRateCalculator outputRateCalculator,
+                           OutputRateCalculatorFactory outputRateCalculatorFactory,
                            Trackers trackers,
                            OffsetQueue offsetQueue,
                            ConsumerMessageSenderFactory consumerMessageSenderFactory,
@@ -54,13 +56,14 @@ public class ConsumerFactory {
                            MessageBatchFactory byteBufferMessageBatchFactory,
                            MessageContentWrapper messageContentWrapper,
                            MessageBatchSenderFactory batchSenderFactory,
-                           ConsumerAuthorizationHandler consumerAuthorizationHandler) {
+                           ConsumerAuthorizationHandler consumerAuthorizationHandler,
+                           Clock clock) {
 
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
         this.configFactory = configFactory;
         this.consumerRateLimitSupervisor = consumerRateLimitSupervisor;
-        this.outputRateCalculator = outputRateCalculator;
+        this.outputRateCalculatorFactory = outputRateCalculatorFactory;
         this.trackers = trackers;
         this.offsetQueue = offsetQueue;
         this.consumerMessageSenderFactory = consumerMessageSenderFactory;
@@ -70,9 +73,10 @@ public class ConsumerFactory {
         this.messageContentWrapper = messageContentWrapper;
         this.batchSenderFactory = batchSenderFactory;
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
+        this.clock = clock;
     }
 
-    Consumer createConsumer(Subscription subscription) {
+    public Consumer createConsumer(Subscription subscription) {
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
         if (subscription.isBatchSubscription()) {
             return new BatchConsumer(messageReceiverFactory,
@@ -84,10 +88,11 @@ public class ConsumerFactory {
                     hermesMetrics,
                     trackers,
                     subscription,
-                    topic);
+                    topic,
+                    configFactory);
         } else {
-            SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription, outputRateCalculator, hermesMetrics,
-                    consumerRateLimitSupervisor);
+            SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription,
+                    outputRateCalculatorFactory, hermesMetrics, consumerRateLimitSupervisor, clock);
 
             return new SerialConsumer(
                     messageReceiverFactory,

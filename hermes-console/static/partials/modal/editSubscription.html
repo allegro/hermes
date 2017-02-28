@@ -5,10 +5,10 @@
     </div>
     <div class="modal-body">
         <form name="subscriptionForm" class="form-horizontal" role="form">
-            <div ng-hide="!authEnabled.headers || isAuthorized" class="form-group {{subscriptionForm.groupPassword.$valid ? '' : 'has-error'}}">
-                <label for="groupPassword" class="col-md-3 control-label">Group password</label>
+            <div ng-hide="!authEnabled.headers || isAuthorized" class="form-group {{subscriptionForm.rootPassword.$valid ? '' : 'has-error'}}">
+                <label for="rootPassword" class="col-md-3 control-label">Root password</label>
                 <div class="col-md-9">
-                    <input class="form-control" type="password" id="groupPassword" name="groupPassword" ng-required="!isAuthorized && authEnabled.headers" placeholder="password for group {{groupName}}" ng-model="groupPassword"/>
+                    <input class="form-control" type="password" id="rootPassword" name="rootPassword" ng-required="!isAuthorized && authEnabled.headers" placeholder="root password" ng-model="rootPassword"/>
                 </div>
             </div>
 
@@ -31,19 +31,8 @@
                     <input class="form-control" id="subscriptionDescription" name="subscriptionDescription" required placeholder="who and why subscribes?" ng-model="subscription.description"/>
                 </div>
             </div>
-            <div class="form-group {{subscriptionForm.subscriptionSupportTeam.$valid ? '' : 'has-error'}}">
-                <label for="subscriptionSupportTeam" class="col-md-3 control-label">Team</label>
-                <div class="col-md-9">
-                    <input class="form-control" id="subscriptionSupportTeam" name="subscriptionSupportTeam" required uib-typeahead="group.name for group in groups($viewValue)" typeahead-min-length="3"
-                           typeahead-wait-ms="500" placeholder="comma delimited names of groups that will have rights to manage this subscription" ng-model="subscription.supportTeam" autocomplete="off"/>
-                </div>
-            </div>
-            <div class="form-group {{subscriptionForm.subscriptionContact.$valid ? '' : 'has-error'}}">
-                <label for="subscriptionContact" class="col-md-3 control-label">Contact</label>
-                <div class="col-md-9">
-                    <input class="form-control" id="subscriptionContact" name="subscriptionContact" required placeholder="contact email" ng-model="subscription.contact"/>
-                </div>
-            </div>
+
+            <owner-selector form="subscriptionForm" source="subscription.owner.source" owner="subscription.owner.id"></owner-selector>
 
             <div class="form-group">
                 <label for="subscriptionType" class="col-md-3 control-label">Content type</label>

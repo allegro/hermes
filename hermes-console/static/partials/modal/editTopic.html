@@ -5,10 +5,10 @@
     </div>
     <div class="modal-body">
         <form name="topicForm" class="form-horizontal" role="form">
-            <div ng-hide="!authEnabled.headers || isAuthorized" class="form-group {{topicForm.groupPassword.$valid ? '' : 'has-error'}}">
-                <label for="groupPassword" class="col-md-3 control-label">Group password</label>
+            <div ng-hide="!authEnabled.headers || isAuthorized" class="form-group {{topicForm.rootPassword.$valid ? '' : 'has-error'}}">
+                <label for="rootPassword" class="col-md-3 control-label">Root password</label>
                 <div class="col-md-9">
-                    <input class="form-control" type="password" ng-required="!isAuthorized && authEnabled.headers" id="groupPassword" name="groupPassword" placeholder="password for group {{groupName}}" ng-model="groupPassword"/>
+                    <input class="form-control" type="password" ng-required="!isAuthorized && authEnabled.headers" id="rootPassword" name="rootPassword" placeholder="root password" ng-model="rootPassword"/>
                 </div>
             </div>
             <div class="form-group {{topicForm.topicName.$valid ? '' : 'has-error'}}" ng-show="operation === 'ADD'">
@@ -23,6 +23,9 @@
                     <input class="form-control" required id="topicDescription" name="topicDescription" placeholder="what type of messages you publish?" ng-model="topic.description"/>
                 </div>
             </div>
+
+            <owner-selector form="topicForm" source="topic.owner.source" owner="topic.owner.id"></owner-selector>
+
             <div class="form-group {{topicForm.topicRetention.$valid ? '' : 'has-error'}}">
                 <label for="topicRetention" class="col-md-3 control-label">Retention time</label>
                 <div class="col-md-9">
@@ -53,9 +56,17 @@
                 <label for="topicType" class="col-md-3 control-label">Content type</label>
                 <div class="col-md-9">
                     <select id="topicType" class="form-control" ng-disabled="operation === 'EDIT'" ng-model="topic.contentType">
-                        <option>AVRO</option>
-                        <option>JSON</option>
+                        <option ng-repeat="contentType in config.contentTypes" value="{{contentType.value}}">{{contentType.label}}</option>
                     </select>
+                </div>
+            </div>
+            <div class="form-group {{topicForm.topicMaxMessageSize.$valid ? '' : 'has-error'}}">
+                <label for="topicMaxMessageSize" class="col-md-3 control-label">Max message size</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" required class="form-control" id="topicMaxMessageSize" name="topicMaxMessageSize" ng-model="topic.maxMessageSize" placeholder="what is the message size limit for this topic?"/>
+                        <span class="input-group-addon">bytes</span>
+                    </div>
                 </div>
             </div>
             <div class="form-group {{topicForm.messageSchema.$valid ? '' : 'has-error'}}" ng-show="topic.contentType === 'AVRO'">

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -30,12 +31,14 @@ import java.net.SocketTimeoutException;
 import java.util.UUID;
 
 import static javax.ws.rs.client.ClientBuilder.newClient;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.glassfish.jersey.client.ClientProperties.REQUEST_ENTITY_PROCESSING;
 import static org.glassfish.jersey.client.RequestEntityProcessing.CHUNKED;
 import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PublishingTest extends IntegrationTest {
 
@@ -61,6 +64,35 @@ public class PublishingTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(CREATED);
         remoteService.waitUntilReceived();
+    }
+
+    @Test
+    public void shouldReturn429ForQuotaViolation() {
+        // given
+        Topic topic = operations.buildTopic("publishAndConsumeGroup", "topic");
+
+        // Frontend is configured in integration test suite to block publisher after 50_000 kb/sec
+        TestMessage message = TestMessage.of("content", StringUtils.repeat("X", 60_000));
+
+        wait.until(() -> {
+            // when
+            Response response = publisher.publish(topic.getQualifiedName(), message.body());
+
+            // then
+            assertThat(response.getStatus()).isEqualTo(429);
+        });
+    }
+
+    @Test
+    public void shouldReturn4xxForTooLargeContent() {
+        // given
+        Topic topic = operations.buildTopic(topic("largeContent", "topic").withMaxMessageSize(2048).build());
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), StringUtils.repeat("X", 2555));
+
+        // then
+        assertThat(response).hasStatus(BAD_REQUEST);
     }
 
     @Test

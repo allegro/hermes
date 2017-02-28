@@ -25,8 +25,8 @@ public class WebTargetGraphiteClient implements GraphiteClient {
     public WebTargetGraphiteClient(WebTarget webTarget) {
         this.webTarget = webTarget
                 .path("render")
-                .queryParam("from", "-1minutes")
-                .queryParam("until", "now")
+                .queryParam("from", "-5minutes")
+                .queryParam("until", "-1minutes")
                 .queryParam("format", "json");
     }
 
@@ -44,9 +44,19 @@ public class WebTargetGraphiteClient implements GraphiteClient {
 
     private String getFirstValue(GraphiteResponse graphiteResponse) {
         checkArgument(hasDatapoints(graphiteResponse), "Graphite format changed. Reexamine implementation.");
-        String value = graphiteResponse.getDatapoints().get(0).get(0);
 
-        return Strings.isNullOrEmpty(value) || "null".equals(value) ? DEFAULT_VALUE : value;
+        String firstNotNullValue = DEFAULT_VALUE;
+        for (List<String> datapoint : graphiteResponse.getDatapoints()) {
+            if (datapointValid(datapoint)) {
+                firstNotNullValue = datapoint.get(0);
+                break;
+            }
+        }
+        return firstNotNullValue;
+    }
+
+    private boolean datapointValid(List<String> value) {
+        return !value.isEmpty() && !Strings.isNullOrEmpty(value.get(0)) && !"null".equals(value.get(0));
     }
 
     private boolean hasDatapoints(GraphiteResponse graphiteResponse) {

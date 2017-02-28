@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import static java.util.Optional.empty;
 import static org.apache.commons.lang.StringUtils.strip;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
+import static pl.allegro.tech.hermes.common.filtering.FilteringException.check;
 
 public class AvroPathPredicate implements Predicate<MessageContent> {
     private List<String> path;
@@ -31,7 +32,7 @@ public class AvroPathPredicate implements Predicate<MessageContent> {
 
     @Override
     public boolean test(final MessageContent message) {
-        FilteringException.check(message.getContentType() == ContentType.AVRO, "This filter supports only AVRO contentType.");
+        check(message.getContentType() == ContentType.AVRO, "This filter supports only AVRO contentType.");
         try {
             return select(message).map(this::matches).orElse(false);
         } catch (Exception exception) {

@@ -6,12 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
+import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -30,10 +32,12 @@ import static javax.ws.rs.core.Response.status;
 public class TopicsEndpoint {
 
     private final TopicService topicService;
+    private final ManagementRights managementRights;
 
     @Autowired
-    public TopicsEndpoint(TopicService topicService) {
+    public TopicsEndpoint(TopicService topicService, ManagementRights managementRights) {
         this.topicService = topicService;
+        this.managementRights = managementRights;
     }
 
     @GET
@@ -63,17 +67,18 @@ public class TopicsEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed(Roles.ANY)
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
-    public Response create(Topic topic, @Context SecurityContext securityContext) {
-        topicService.createTopic(topic, securityContext.getUserPrincipal().getName());
+    public Response create(Topic topic, @Context ContainerRequestContext requestContext) {
+        topicService.createTopic(topic, requestContext.getSecurityContext().getUserPrincipal().getName(),
+                checkedTopic -> managementRights.isUserAllowedToManageTopic(checkedTopic, requestContext));
         return status(Response.Status.CREATED).build();
     }
 
     @DELETE
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
-    @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName, @Context SecurityContext securityContext) {
         topicService.removeTopic(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
@@ -85,7 +90,7 @@ public class TopicsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
-    @RolesAllowed({Roles.GROUP_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Update topic", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch,
                            @Context SecurityContext securityContext) {

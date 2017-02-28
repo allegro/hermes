@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +21,7 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
     private static final Logger logger = LoggerFactory.getLogger(CachedSchemaVersionsRepository.class);
 
     private final RawSchemaClient rawSchemaClient;
+    private final ExecutorService versionsReloader;
     private final LoadingCache<Topic, List<SchemaVersion>> versionsCache;
 
     public CachedSchemaVersionsRepository(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader,
@@ -32,6 +32,7 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
     CachedSchemaVersionsRepository(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader,
                                    int refreshAfterWriteMinutes, int expireAfterWriteMinutes, Ticker ticker) {
         this.rawSchemaClient = rawSchemaClient;
+        this.versionsReloader = versionsReloader;
         this.versionsCache = CacheBuilder
                 .newBuilder()
                 .ticker(ticker)
@@ -44,9 +45,17 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
     public List<SchemaVersion> versions(Topic topic, boolean online) {
         try {
             return online? rawSchemaClient.getVersions(topic.getName()) : versionsCache.get(topic);
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
             return emptyList();
+        }
+    }
+
+    @Override
+    public void close() {
+        if (!versionsReloader.isShutdown()) {
+            logger.info("Shutdown of schema-source-reloader executor");
+            versionsReloader.shutdownNow();
         }
     }
 
@@ -71,14 +80,21 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
             ListenableFutureTask<List<SchemaVersion>> task = ListenableFutureTask.create(() -> {
                 logger.info("Reloading schema versions for topic {}", topic.getQualifiedName());
                 try {
-                    return rawSchemaClient.getVersions(topic.getName());
+                    return checkSchemaVersionsAreAvailable(topic, rawSchemaClient.getVersions(topic.getName()));
                 } catch (Exception e) {
-                    logger.warn("Could not reload schema versions for topic {}", topic.getQualifiedName(), e);
-                    throw e;
+                    logger.error("Could not reload schema versions for topic {}, will use stale data", topic.getQualifiedName(), e);
+                    return oldVersions;
                 }
             });
             versionsReloader.execute(task);
             return task;
+        }
+
+        private List<SchemaVersion> checkSchemaVersionsAreAvailable(Topic topic, List<SchemaVersion> versions) {
+            if (versions.isEmpty()) {
+                throw new NoSchemaVersionsFound(topic);
+            }
+            return versions;
         }
     }
 }

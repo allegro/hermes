@@ -2,10 +2,7 @@ package pl.allegro.tech.hermes.integration.management;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.Group;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
@@ -24,24 +21,21 @@ public class QueryEndpointTest extends IntegrationTest {
 
     @DataProvider(name = "groupData")
     public static Object[][] groupData() {
-        return new Object[][] {
+        return new Object[][]{
                 {"{\"query\": {}}", asList(1, 2, 3, 4)},
                 {"{\"query\": {\"groupName\": \"testGroup1\"}}", asList(1)},
                 {"{\"query\": {\"groupName\": {\"like\": \".*Group2\"}}}", asList(3)},
                 {"{\"query\": {\"groupName\": {\"like\": \".*Group.*\"}}}", asList(1, 3, 4)},
-                {"{\"query\": {\"technicalOwner\": \"Owner2\", \"supportTeam\": \"Support3\"}}", asList(2)},
-                {"{\"query\": {\"and\": [{\"technicalOwner\": \"Owner2\"}, {\"supportTeam\": \"Support3\"}]}}", asList(2)},
-                {"{\"query\": {\"or\": [{\"technicalOwner\": \"Owner2\"}, {\"supportTeam\": \"Support3\"}]}}", asList(1, 2, 3)},
         };
     }
 
     @Test(dataProvider = "groupData")
     public void shouldQueryGroup(String query, List<Integer> positions) {
         // given
-        Group group1 = new Group("testGroup1", "Owner1", "Support3", "Contact1");
-        Group group2 = new Group("testNot1", "Owner2", "Support3", "Contact1");
-        Group group3 = new Group("testGroup2", "Owner2", "Support4", "Contact2");
-        Group group4 = new Group("testGroup3", "Owner1", "Support2", "Contact1");
+        Group group1 = new Group("testGroup1", "Support3");
+        Group group2 = new Group("testNot1", "Support3");
+        Group group3 = new Group("testGroup2", "Support4");
+        Group group4 = new Group("testGroup3", "Support2");
 
         List<Group> groups = asList(group1, group2, group3, group4);
 
@@ -54,17 +48,19 @@ public class QueryEndpointTest extends IntegrationTest {
         assertListMatches(groups, found, positions);
     }
 
-
     @DataProvider(name = "topicData")
     public static Object[][] topicData() {
-        return new Object[][] {
+        return new Object[][]{
                 {"{\"query\": {}}", asList(1, 2, 3, 4)},
                 {"{\"query\": {\"name\": \"testGroup1.testTopic1\"}}", asList(1)},
                 {"{\"query\": {\"name\": {\"like\": \".*testTopic1\"}}}", asList(1)},
                 {"{\"query\": {\"name\": {\"like\": \".*testTopic.*\"}}}", asList(1, 2, 3)},
                 {"{\"query\": {\"trackingEnabled\": \"true\", \"contentType\": \"AVRO\"}}", asList(3)},
-                {"{\"query\": {\"and\": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(3)},
+                {"{\"query\": {\"and\"" +
+                        ": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(3)},
                 {"{\"query\": {\"or\": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(1, 3, 4)},
+                {"{\"query\": {\"owner.id\": \"Team Alpha\"}}", asList(4)},
+                {"{\"query\": {\"owner.id\": {\"like\": \".*Alph.*\"}}}", asList(4)},
         };
     }
 
@@ -74,7 +70,9 @@ public class QueryEndpointTest extends IntegrationTest {
         Topic topic1 = operations.buildTopic(topic("testGroup1", "testTopic1").withContentType(AVRO).withTrackingEnabled(false).build());
         Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build());
         Topic topic3 = operations.buildTopic(topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).build());
-        Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true).build());
+        Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true)
+                .withOwner(new OwnerId("Plaintext", "Team Alpha")).build()
+        );
 
         List<Topic> topics = asList(topic1, topic2, topic3, topic4);
 
@@ -87,7 +85,7 @@ public class QueryEndpointTest extends IntegrationTest {
 
     @DataProvider(name = "subscriptionData")
     public static Object[][] subscriptionData() {
-        return new Object[][] {
+        return new Object[][]{
                 {"{\"query\": {}}", asList(1, 2, 3, 4)},
                 {"{\"query\": {\"name\": \"subscription1\"}}", asList(1)},
                 {"{\"query\": {\"name\": {\"like\": \".*cription1\"}}}", asList(1)},
@@ -95,6 +93,8 @@ public class QueryEndpointTest extends IntegrationTest {
                 {"{\"query\": {\"name\": \"subscription1\", \"endpoint\": \"http://endpoint1\"}}", asList(1)},
                 {"{\"query\": {\"and\": [{\"name\": \"subscription1\"}, {\"endpoint\": \"http://endpoint1\"}]}}", asList(1)},
                 {"{\"query\": {\"or\": [{\"name\": \"subscription1\"}, {\"endpoint\": \"http://endpoint1\"}]}}", asList(1, 3)},
+                {"{\"query\": {\"owner.id\": \"Team Alpha\"}}", asList(4)},
+                {"{\"query\": {\"owner.id\": {\"like\": \".*Alph.*\"}}}", asList(4)},
         };
     }
 
@@ -106,7 +106,9 @@ public class QueryEndpointTest extends IntegrationTest {
         Subscription subscription1 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription1"), "http://endpoint1"));
         Subscription subscription2 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription2"), "http://endpoint2"));
         Subscription subscription3 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subTestScription3"), "http://endpoint1"));
-        Subscription subscription4 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription4"), "http://endpoint2"));
+        Subscription subscription4 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription4")
+                .withOwner(new OwnerId("Plaintext", "Team Alpha")), "http://endpoint2")
+        );
 
         List<Subscription> subscriptions = asList(subscription1, subscription2, subscription3, subscription4);
 
@@ -117,11 +119,34 @@ public class QueryEndpointTest extends IntegrationTest {
         assertListMatches(subscriptions, found, positions);
     }
 
+    @Test
+    public void shouldSkipEntitiesNotContainingQueriedField() {
+        // given
+        management.group().create(new Group("group", "owner"));
+
+        // when
+        List<Group> found = management.query().queryGroups("{\"query\": {\"missingField\": \"xxx\"}}");
+
+        // then
+        assertThat(found).isEmpty();
+    }
+
+    @Test
+    public void shouldSkipEntitiesNotContainingQueriedNestedField() {
+        // given
+        management.group().create(new Group("group", "owner"));
+
+        // when
+        List<Group> found = management.query().queryGroups("{\"query\": {\"missing.nested.field\": \"xxx\"}}");
+
+        // then
+        assertThat(found).isEmpty();
+    }
+
     private Subscription enrichSubscription(SubscriptionBuilder subscription, String endpoint) {
         return subscription
                 .withTrackingEnabled(true)
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
-                .withSupportTeam("team")
                 .withEndpoint(EndpointAddress.of(endpoint))
                 .build();
     }

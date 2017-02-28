@@ -5,6 +5,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
@@ -19,9 +20,10 @@ public class AvroTopicMessageValidator implements TopicMessageValidator {
 
         BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(message.getData(), null);
         try {
-            new GenericDatumReader<>(message.<Schema>getSchema()).read(null, binaryDecoder);
+            new GenericDatumReader<>(message.getSchema()).read(null, binaryDecoder);
         } catch (Exception e) {
-            throw new InvalidMessageException("Could not deserialize avro message with provided schema", ImmutableList.of(e.getMessage()));
+            String reason = e.getMessage() == null ? ExceptionUtils.getRootCauseMessage(e) : e.getMessage();
+            throw new InvalidMessageException("Could not deserialize avro message with provided schema", ImmutableList.of(reason));
         }
     }
 }

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
-
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;

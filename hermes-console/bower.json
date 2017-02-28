@@ -22,6 +22,6 @@
     "angular-deferred-bootstrap": "~0.1.9"
   },
   "resolutions": {
-    "angular": "1.5.0"
+    "angular": "1.4.14"
   }
 }

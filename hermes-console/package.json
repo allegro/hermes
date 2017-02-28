@@ -1,12 +1,13 @@
 {
   "name": "hermes-console",
-  "version": "0.9.0",
+  "version": "0.11.0",
   "description": "Console for Hermes Management",
   "repository": "https://github.com/allegro/hermes",
   "main": "serve.js",
   "license": "Apache-2.0",
   "dependencies": {
     "bower": "^1.7.2",
+    "lodash": "^4.17.4",
     "node-static": "^0.7.6",
     "request": "^2.67.0",
     "yargs": "^3.32.0"
@@ -15,7 +16,7 @@
     "angular-mocks": "~1.4.7",
     "grunt": "^0.4.5",
     "grunt-cli": "~0.1.13",
-    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-contrib-jshint": "0.11.0",
     "grunt-contrib-watch": "~0.6.1",
     "grunt-karma": "~0.12.1",
     "jasmine-core": "~2.1.3",

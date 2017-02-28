@@ -2,7 +2,14 @@ package pl.allegro.tech.hermes.integration.management;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.MessageFilterSpecification;
+import pl.allegro.tech.hermes.api.MessageValidationWrapper;
+import pl.allegro.tech.hermes.api.FilterValidation;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.common.config.Configs;

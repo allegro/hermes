@@ -14,7 +14,6 @@ public class PasswordAuthenticationFeature implements ClientRequestFilter {
 
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
-        requestContext.getHeaders().add("Hermes-Group-Password", password);
         requestContext.getHeaders().add("Hermes-Admin-Password", password);
     }
 }

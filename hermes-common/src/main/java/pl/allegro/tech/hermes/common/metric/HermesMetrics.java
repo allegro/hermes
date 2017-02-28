@@ -85,8 +85,16 @@ public class HermesMetrics {
         return metricRegistry.counter(metricRegistryName(metric, topicName, name));
     }
 
+    public void registerProducerInflightRequest(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.INFLIGHT_REQUESTS), gauge);
+    }
+
     public void registerConsumersThreadGauge(Gauge<Integer> gauge) {
         metricRegistry.register(metricRegistryName(Gauges.THREADS), gauge);
+    }
+
+    public void registerMessageRepositorySizeGauge(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.BACKUP_STORAGE_SIZE), gauge);
     }
 
     public <T> void registerOutputRateGauge(TopicName topicName, String name, Gauge<T> gauge) {
@@ -141,7 +149,10 @@ public class HermesMetrics {
     }
 
     public void registerGauge(String name, Gauge<?> gauge) {
-        metricRegistry.register(pathCompiler.compile(name), gauge);
+        String path = pathCompiler.compile(name);
+        if (!metricRegistry.getGauges().containsKey(name)) {
+            metricRegistry.register(path, gauge);
+        }
     }
 
     private String metricRegistryName(String metricDisplayName, TopicName topicName, String subscription) {
@@ -190,6 +201,10 @@ public class HermesMetrics {
         return metricRegistry.counter(pathCompiler.compile(Counters.SCHEDULED_EXECUTOR_OVERRUN, pathContext().withExecutorName(executorName).build()));
     }
 
+    public Histogram messageContentSizeHistogram() {
+        return metricRegistry.histogram(pathCompiler.compile(Histograms.GLOBAL_MESSAGE_SIZE));
+    }
+
     public Histogram messageContentSizeHistogram(TopicName topic) {
         return metricRegistry.histogram(pathCompiler.compile(Histograms.MESSAGE_SIZE, pathContext()
                 .withGroup(escapeDots(topic.getGroupName()))
@@ -203,11 +218,6 @@ public class HermesMetrics {
                 .withTopic(escapeDots(subscription.getTopicName().getName()))
                 .withSubscription(escapeDots(subscription.getName()))
                 .build()));
-    }
-
-    public void reportContentSize(int size, TopicName topicName) {
-        messageContentSizeHistogram(topicName).update(size);
-        metricRegistry.histogram(pathCompiler.compile(Histograms.GLOBAL_MESSAGE_SIZE)).update(size);
     }
 
     public void registerConsumerHttpAnswer(Subscription subscription, int statusCode) {
@@ -249,13 +259,6 @@ public class HermesMetrics {
         return metricRegistry.timer(pathCompiler.compile(Timers.CONSUMER_WORKLOAD_REBALANCE_DURATION, pathContext));
     }
 
-    public void reportConsumersWorkloadStats(String kafkaCluster, int missingResources, int deletedAssignmentsCount, int createdAssignmentsCount) {
-        PathContext pathContext = pathContext().withKafkaCluster(kafkaCluster).build();
-        metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_MISSING_RESOURCES, pathContext)).update(missingResources);
-        metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_CREATED_ASSIGNMENTS, pathContext)).update(createdAssignmentsCount);
-        metricRegistry.histogram(pathCompiler.compile(Histograms.CONSUMERS_WORKLOAD_SELECTIVE_DELETED_ASSIGNMENTS, pathContext)).update(deletedAssignmentsCount);
-    }
-
     public Timer subscriptionLatencyTimer(Subscription subscription) {
         return timer(SUBSCRIPTION_LATENCY, subscription.getTopicName(), subscription.getName());
     }
@@ -275,6 +278,36 @@ public class HermesMetrics {
                 .withOAuthProvider(escapeDots(oAuthProviderName))
                 .build();
         return metricRegistry.meter(pathCompiler.compile(Meters.OAUTH_SUBSCRIPTION_TOKEN_REQUEST, pathContext));
+    }
+
+    public Counter rateHistoryFailuresCounter(Subscription subscription) {
+        return metricRegistry.counter(metricRegistryName(
+                Counters.MAXRATE_RATE_HISTORY_FAILURES, subscription.getTopicName(), subscription.getName()));
+    }
+
+    public Counter maxRateFetchFailuresCounter(Subscription subscription) {
+        return metricRegistry.counter(metricRegistryName(
+                Counters.MAXRATE_FETCH_FAILURES, subscription.getTopicName(), subscription.getName()));
+    }
+
+    public void registerMaxRateGauge(Subscription subscription, Gauge<Double> gauge) {
+        metricRegistry.register(metricRegistryName(
+                Gauges.MAX_RATE_VALUE, subscription.getTopicName(), subscription.getName()), gauge);
+    }
+
+    public void unregisterMaxRateGauge(Subscription subscription) {
+        metricRegistry.remove(metricRegistryName(
+                Gauges.MAX_RATE_VALUE, subscription.getTopicName(), subscription.getName()));
+    }
+
+    public void registerRateGauge(Subscription subscription, Gauge<Double> gauge) {
+        metricRegistry.register(metricRegistryName(
+                Gauges.MAX_RATE_ACTUAL_RATE_VALUE, subscription.getTopicName(), subscription.getName()), gauge);
+    }
+
+    public void unregisterRateGauge(Subscription subscription) {
+        metricRegistry.remove(metricRegistryName(
+                Gauges.MAX_RATE_ACTUAL_RATE_VALUE, subscription.getTopicName(), subscription.getName()));
     }
 }
 

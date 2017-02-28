@@ -6,6 +6,9 @@ import org.mockito.Mockito;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
+
+import java.util.concurrent.CompletableFuture;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static org.assertj.core.api.Assertions.assertThat;

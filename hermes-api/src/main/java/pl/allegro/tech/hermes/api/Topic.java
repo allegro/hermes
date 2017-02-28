@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
@@ -17,6 +19,10 @@ public class Topic {
     @NotNull
     private String description;
 
+    @Valid
+    @NotNull
+    private OwnerId owner;
+
     private boolean jsonToAvroDryRunEnabled = false;
 
     @NotNull
@@ -24,6 +30,14 @@ public class Topic {
 
     @NotNull
     private ContentType contentType;
+
+    @Min(MIN_MESSAGE_SIZE)
+    @Max(MAX_MESSAGE_SIZE)
+    private int maxMessageSize;
+
+    public static final int MIN_MESSAGE_SIZE = 1024;
+    public static final int MAX_MESSAGE_SIZE = 2 * 1024 * 1024;
+    private static final int DEFAULT_MAX_MESSAGE_SIZE = 50 * 1024;
 
     public enum Ack {
         NONE, LEADER, ALL
@@ -39,11 +53,13 @@ public class Topic {
 
     private boolean schemaVersionAwareSerializationEnabled = false;
 
-    public Topic(TopicName name, String description, RetentionTime retentionTime,
+    public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
-                 boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled) {
+                 boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
+                 int maxMessageSize) {
         this.name = name;
         this.description = description;
+        this.owner = owner;
         this.retentionTime = retentionTime;
         this.ack = (ack == null ? Ack.LEADER : ack);
         this.trackingEnabled = trackingEnabled;
@@ -51,21 +67,25 @@ public class Topic {
         this.contentType = contentType;
         this.jsonToAvroDryRunEnabled = jsonToAvroDryRunEnabled;
         this.schemaVersionAwareSerializationEnabled = schemaVersionAwareSerializationEnabled;
+        this.maxMessageSize = maxMessageSize;
     }
 
     @JsonCreator
     public Topic(
             @JsonProperty("name") String qualifiedName,
             @JsonProperty("description") String description,
+            @JsonProperty("owner") OwnerId owner,
             @JsonProperty("retentionTime") RetentionTime retentionTime,
             @JsonProperty("jsonToAvroDryRun") boolean jsonToAvroDryRunEnabled,
             @JsonProperty("ack") Ack ack,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
             @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
-            @JsonProperty("contentType") ContentType contentType) {
-        this(TopicName.fromQualifiedName(qualifiedName), description, retentionTime, migratedFromJsonType, ack,
-                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled);
+            @JsonProperty("contentType") ContentType contentType,
+            @JsonProperty("maxMessageSize") Integer maxMessageSize) {
+        this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
+                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
+                maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize);
     }
 
     public RetentionTime getRetentionTime() {
@@ -74,8 +94,8 @@ public class Topic {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled);
+        return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
+                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize);
     }
 
     @Override
@@ -90,13 +110,15 @@ public class Topic {
 
         return Objects.equals(this.name, other.name)
                 && Objects.equals(this.description, other.description)
+                && Objects.equals(this.owner, other.owner)
                 && Objects.equals(this.retentionTime, other.retentionTime)
                 && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
                 && Objects.equals(this.schemaVersionAwareSerializationEnabled, other.schemaVersionAwareSerializationEnabled)
                 && Objects.equals(this.ack, other.ack)
-                && Objects.equals(this.contentType, other.contentType);
+                && Objects.equals(this.contentType, other.contentType)
+                && Objects.equals(this.maxMessageSize, other.maxMessageSize);
     }
 
     @JsonProperty("name")
@@ -113,12 +135,8 @@ public class Topic {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setRetentionTime(RetentionTime retentionTime) {
-        this.retentionTime = retentionTime;
+    public OwnerId getOwner() {
+        return owner;
     }
 
     @JsonProperty("jsonToAvroDryRun")
@@ -150,5 +168,14 @@ public class Topic {
 
     public boolean isSchemaVersionAwareSerializationEnabled() {
         return schemaVersionAwareSerializationEnabled;
+    }
+
+    public int getMaxMessageSize() {
+        return maxMessageSize;
+    }
+
+    @Override
+    public String toString() {
+        return "Topic(" + getQualifiedName() + ")";
     }
 }

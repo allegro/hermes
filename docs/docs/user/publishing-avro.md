@@ -1,4 +1,4 @@
-# Publishing Avro [*incubating*]
+# Publishing Avro
 
 [Avro](<https://avro.apache.org/>) is a compact, binary data format widely used in BigData world. It is recommended that
 all topics use this format, as it lowers volume of data sent to Kafka and is easy to analyze when dumping data from
@@ -100,11 +100,20 @@ java -jar validator/build/libs/json2avro-validator.jar -s sample-schema.avcs -i 
 This command will validate given message against the schema, convert the message from JSON to Avro and back from Avro
 to JSON, so you can see if the formatters got everything right.
 
+### Setting topic schema
+
+Please refer to the [schema repository configuration](/configuration/schema-repository) section in order to use Avro schemas in Hermes.
+Having up and running schema repository, send a POST request with topic's schema to Hermes management endpoint:
+
+```bash
+curl -X POST -H "Content-type: application/json" --data {schema} /topics/{topicName}/schema
+```
+
 ## Schema versioning
 
-Very important property of Avro standard is schema backwards compatibility. Each update to schema MUST
-be backwards compatible. There might be multiple versions of schema for given topic defined in schema
-repository (when using [external schema repository](/configuration/schema-repository#schema-repo-store)).
+A very important property of the Avro standard is schema backward compatibility. Each update to schema MUST
+be backward compatible. There might be multiple versions of schema for given topic defined in
+[schema repository](/configuration/schema-repository#schema-repo-store)).
 Hermes always uses the *latest* schema version.
 
 In case you need to break backwards compatibility, you should create new topic which defines new schema

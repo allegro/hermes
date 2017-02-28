@@ -12,15 +12,19 @@ import java.io.IOException;
 @Priority(1999) // fixing equal values reordering issue of Jersey's 2.23.2 RankedComparator (Priorities.AUTHORIZATION=2000)
 public class AuthorizationFilter implements ContainerRequestFilter {
 
-    private final SecurityContextProvider securityContextProvider;
+    public static final String OWNERSHIP_RESOLVER = "ownership-resolver";
+
+    private final SecurityProvider securityProvider;
 
     @Autowired
-    public AuthorizationFilter(SecurityContextProvider securityContextProvider) {
-        this.securityContextProvider = securityContextProvider;
+    public AuthorizationFilter(SecurityProvider securityProvider) {
+        this.securityProvider = securityProvider;
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        requestContext.setSecurityContext(securityContextProvider.securityContext(requestContext));
+        SecurityProvider.HermesSecurity security = securityProvider.security(requestContext);
+        requestContext.setSecurityContext(security.getSecurityContext());
+        requestContext.setProperty(OWNERSHIP_RESOLVER, security.getOwnershipResolver());
     }
 }

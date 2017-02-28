@@ -11,11 +11,12 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -97,8 +98,9 @@ public class MirroringSupervisorController implements SupervisorController {
     }
 
     @Override
-    public void onSubscriptionAssigned(Subscription subscription) {
-        logger.info("Assigning consumer for {}", subscription.getQualifiedName());
+    public void onSubscriptionAssigned(SubscriptionName subscriptionName) {
+        logger.info("Assigning consumer for {}", subscriptionName.getQualifiedName());
+        Subscription subscription = subscriptionsCache.getSubscription(subscriptionName);
         supervisor.assignConsumerForSubscription(subscription);
     }
 
@@ -115,7 +117,7 @@ public class MirroringSupervisorController implements SupervisorController {
 
         notificationsBus.registerSubscriptionCallback(this);
         notificationsBus.registerTopicCallback(this);
-        assignementRegistry.registerAssignementCallback(this);
+        assignementRegistry.registerAssignmentCallback(this);
 
         supervisor.start();
         assignementRegistry.start();
@@ -140,5 +142,10 @@ public class MirroringSupervisorController implements SupervisorController {
     @Override
     public void restartConsumer(SubscriptionName subscription) throws Exception {
         supervisor.restartConsumer(subscription);
+    }
+
+    @Override
+    public Optional<String> watchedConsumerId() {
+        return Optional.of(consumerNodeId);
     }
 }

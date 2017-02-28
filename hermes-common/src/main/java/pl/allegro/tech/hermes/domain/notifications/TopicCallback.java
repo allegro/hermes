@@ -12,6 +12,4 @@ public interface TopicCallback {
 
     default void onTopicChanged(Topic topic) {
     }
-
-
 }

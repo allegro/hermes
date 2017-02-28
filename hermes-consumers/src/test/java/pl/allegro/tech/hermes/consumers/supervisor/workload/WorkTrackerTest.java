@@ -23,6 +23,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class WorkTrackerTest extends ZookeeperBaseTest {
@@ -41,21 +42,28 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
             groupRepository, topicRepository, subscriptionRepository
     );
 
-    private final SubscriptionAssignmentRegistry subscriptionAssignmentRegistry = new SubscriptionAssignmentRegistry(
-            supervisorId, zookeeperClient, basePath, cache, new SubscriptionAssignmentPathSerializer(basePath));
+    private final SubscriptionAssignmentPathSerializer serializer =
+            new SubscriptionAssignmentPathSerializer(basePath, AUTO_ASSIGNED_MARKER);
+
+    private final SubscriptionAssignmentCache subscriptionAssignmentCache =
+            new SubscriptionAssignmentCache(zookeeperClient, basePath, cache, serializer);
+
+    private final SubscriptionAssignmentRegistry subscriptionAssignmentRegistry =
+            new SubscriptionAssignmentRegistry(zookeeperClient, subscriptionAssignmentCache, serializer);
 
     private final WorkTracker workTracker = new WorkTracker(supervisorId, subscriptionAssignmentRegistry);
 
     @Before
     public void before() throws Exception {
         notifyingCache.start();
+        subscriptionAssignmentCache.start();
         subscriptionAssignmentRegistry.start();
     }
 
     @After
     public void cleanup() throws Exception {
         notifyingCache.stop();
-        subscriptionAssignmentRegistry.stop();
+        subscriptionAssignmentCache.stop();
         deleteAllNodes();
     }
 
@@ -106,7 +114,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         SubscriptionAssignmentView view = stateWithSingleAssignment(s1);
 
         // when
-        workTracker.apply(view);
+        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), view);
 
         // then
         wait.untilZookeeperPathIsCreated(basePath, s1.getQualifiedName().toString(), supervisorId);
@@ -118,7 +126,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         Subscription s1 = forceAssignment(anySubscription());
 
         // when
-        workTracker.apply(stateWithNoAssignments());
+        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), stateWithNoAssignments());
 
         // then
         wait.untilZookeeperPathNotExists(basePath, s1.getQualifiedName().toString(), supervisorId);
@@ -130,7 +138,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         Subscription s1 = dropAssignment(forceAssignment(anySubscription()));
 
         // when
-        workTracker.apply(stateWithNoAssignments());
+        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), stateWithNoAssignments());
 
         // then
         wait.untilZookeeperPathNotExists(basePath, s1.getQualifiedName().toString());
@@ -141,11 +149,11 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         // given
         Subscription s1 = anySubscription();
         SubscriptionAssignmentView view = stateWithSingleAssignment(s1);
-        workTracker.apply(view);
+        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), view);
         wait.untilZookeeperPathIsCreated(basePath, s1.getQualifiedName().toString(), supervisorId);
 
         // when
-        workTracker.apply(stateWithNoAssignments());
+        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), stateWithNoAssignments());
 
         // then
         wait.untilZookeeperPathNotExists(basePath, s1.getQualifiedName().toString());
@@ -162,7 +170,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
                         s2.getQualifiedName(), ImmutableSet.of(assignment(supervisorId, s2.getQualifiedName()))));
 
         // when
-        workTracker.apply(view);
+        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), view);
 
         // then
         wait.untilZookeeperPathIsCreated(basePath, s1.getQualifiedName().toString(), supervisorId);

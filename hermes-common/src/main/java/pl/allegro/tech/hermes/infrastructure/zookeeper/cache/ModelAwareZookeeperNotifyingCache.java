@@ -3,20 +3,13 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper.cache;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import pl.allegro.tech.hermes.common.cache.queue.LinkedHashSetBlockingQueue;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
-import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE;
 
 public class ModelAwareZookeeperNotifyingCache {
 
@@ -27,16 +20,18 @@ public class ModelAwareZookeeperNotifyingCache {
     private static final int SUBSCRIPTION_LEVEL = 2;
 
     private final HierarchicalCache cache;
+    private final ThreadPoolExecutor executor;
 
     public ModelAwareZookeeperNotifyingCache(CuratorFramework curator, String rootPath, int processingThreadPoolSize) {
         List<String> levelPrefixes = Arrays.asList(
                 ZookeeperPaths.GROUPS_PATH, ZookeeperPaths.TOPICS_PATH, ZookeeperPaths.SUBSCRIPTIONS_PATH
         );
 
+        executor = new ThreadPoolExecutor(1, processingThreadPoolSize,
+                Integer.MAX_VALUE, TimeUnit.SECONDS, new LinkedHashSetBlockingQueue<>());
         this.cache = new HierarchicalCache(
                 curator,
-                new ThreadPoolExecutor(1, processingThreadPoolSize,
-                        Integer.MAX_VALUE, TimeUnit.SECONDS, new LinkedHashSetBlockingQueue<>()),
+                executor,
                 rootPath,
                 3,
                 levelPrefixes
@@ -49,6 +44,7 @@ public class ModelAwareZookeeperNotifyingCache {
 
     public void stop() throws Exception {
         cache.stop();
+        executor.shutdownNow();
     }
 
     public void registerGroupCallback(Consumer<PathChildrenCacheEvent> callback) {

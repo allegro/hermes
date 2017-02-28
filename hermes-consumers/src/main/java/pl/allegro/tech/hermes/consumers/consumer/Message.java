@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.ArrayUtils;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
@@ -149,6 +150,10 @@ public class Message {
 
     public boolean hasNotBeenSentTo(String uri) {
         return !succeededUris.contains(uri);
+    }
+
+    public long getSize() {
+        return ArrayUtils.getLength(data);
     }
 
     public static class Builder {

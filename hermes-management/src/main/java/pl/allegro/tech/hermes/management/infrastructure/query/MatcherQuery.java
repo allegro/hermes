@@ -1,14 +1,19 @@
 package pl.allegro.tech.hermes.management.infrastructure.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.Matcher;
+import pl.allegro.tech.hermes.management.infrastructure.query.matcher.MatcherException;
 
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class MatcherQuery<T> implements Query<T> {
+
+    private static final Logger logger = LoggerFactory.getLogger(MatcherQuery.class);
 
     private final Matcher matcher;
     private final ObjectMapper objectMapper;
@@ -24,7 +29,14 @@ public class MatcherQuery<T> implements Query<T> {
     }
 
     public Predicate<T> getPredicate() {
-        return (value) -> matcher.match(convertToMap(value));
+        return (value) -> {
+            try {
+                return matcher.match(convertToMap(value));
+            } catch (MatcherException e) {
+                logger.info("Failed to match {}, skipping", value, e);
+                return false;
+            }
+        };
     }
 
     @SuppressWarnings("unchecked")

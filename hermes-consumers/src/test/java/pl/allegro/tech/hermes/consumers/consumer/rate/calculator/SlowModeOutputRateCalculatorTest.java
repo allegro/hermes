@@ -1,7 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
 import org.junit.Test;
-import pl.allegro.tech.hermes.consumers.consumer.rate.DeliveryCounters;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
+
+import java.time.Clock;
 
 import static pl.allegro.tech.hermes.consumers.test.HermesConsumersAssertions.assertThat;
 
@@ -11,7 +13,7 @@ public class SlowModeOutputRateCalculatorTest {
 
     private final SlowModeOutputRateCalculator calculator = new SlowModeOutputRateCalculator(HEARTBEAT_RATE);
 
-    private final DeliveryCounters counters = new DeliveryCounters();
+    private final SendCounters counters = new SendCounters(Clock.systemDefaultZone());
 
     @Test
     public void shouldStayInSlowModeIfThereWereSomeFailures() {

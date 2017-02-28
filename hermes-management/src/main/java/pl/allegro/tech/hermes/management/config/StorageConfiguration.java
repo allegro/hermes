@@ -31,6 +31,8 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepo
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
+import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
 
 import javax.annotation.PostConstruct;
 import java.util.Optional;
@@ -121,6 +123,11 @@ public class StorageConfiguration {
     }
 
     @Bean
+    TopicBlacklistRepository topicBlacklistRepository() {
+        return new ZookeeperTopicBlacklistRepository(storageZookeeper(), objectMapper, zookeeperPaths());
+    }
+
+    @Bean
     SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator() {
         return new ZookeeperSubscriptionOffsetChangeIndicator(storageZookeeper(), zookeeperPaths(), subscriptionRepository());
     }
@@ -141,6 +148,7 @@ public class StorageConfiguration {
         if (storageZookeeper().checkExists().forPath(zookeeperPaths().groupsPath()) == null) {
             storageZookeeper().create().creatingParentsIfNeeded().forPath(zookeeperPaths().groupsPath());
         }
+        adminTool().start();
     }
 
 }

@@ -7,6 +7,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import static java.nio.charset.Charset.defaultCharset
+import static pl.allegro.tech.hermes.common.message.MessageContentBuilder.withTestMessage
 
 class JsonPathMessageFilterSpec extends Specification {
 
@@ -45,9 +46,8 @@ class JsonPathMessageFilterSpec extends Specification {
         def spec = new MessageFilterSpecification([path: path, matcher: matcher])
 
         expect:
-        result == new JsonPathSubscriptionMessageFilterCompiler()
-                .compile(spec)
-                .test(MessageContentBuilder.withTestMessage()
+        result == new JsonPathSubscriptionMessageFilterCompiler().compile(spec)
+                .test(withTestMessage()
                 .withContent(json, defaultCharset())
                 .build())
 

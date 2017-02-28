@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import java.time.Clock;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -32,6 +33,7 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_DEAD_AFTER_SECONDS;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.MIRROR;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.SELECTIVE;
 
@@ -50,12 +52,13 @@ public class SupervisorControllerFactory implements Factory<SupervisorController
                                        ConsumersSupervisor supervisor,
                                        ZookeeperAdminCache adminCache,
                                        HermesMetrics metrics,
-                                       ConfigFactory configs) {
+                                       ConfigFactory configs,
+                                       Clock clock) {
         this.configs = configs;
         this.availableImplementations = ImmutableMap.of(
                 MIRROR, () -> new MirroringSupervisorController(supervisor, notificationsBus, assignmentRegistry, subscriptionsCache, workTracker, adminCache, configs),
                 SELECTIVE, () -> new SelectiveSupervisorController(supervisor, notificationsBus, subscriptionsCache, assignmentRegistry, workTracker,
-                        createConsumersRegistry(configs, curator), adminCache,
+                        createConsumersRegistry(configs, curator, clock), adminCache,
                         getAssignmentExecutor(configs),
                         configs, metrics));
     }
@@ -68,11 +71,15 @@ public class SupervisorControllerFactory implements Factory<SupervisorController
         return newFixedThreadPool(configs.getIntProperty(CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE), threadFactory);
     }
 
-    private static ConsumerNodesRegistry createConsumersRegistry(ConfigFactory configs, CuratorFramework curator) {
+    private static ConsumerNodesRegistry createConsumersRegistry(ConfigFactory configs, CuratorFramework curator, Clock clock) {
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("ConsumerRegistryExecutor-%d").build();
         return new ConsumerNodesRegistry(curator,
-                newSingleThreadExecutor(),
+                newSingleThreadExecutor(threadFactory),
                 new ZookeeperPaths(configs.getStringProperty(Configs.ZOOKEEPER_ROOT)).consumersRegistryPath(configs.getStringProperty(Configs.KAFKA_CLUSTER_NAME)),
-                configs.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID));
+                configs.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID),
+                configs.getIntProperty(CONSUMER_WORKLOAD_DEAD_AFTER_SECONDS),
+                clock);
     }
 
     @Override

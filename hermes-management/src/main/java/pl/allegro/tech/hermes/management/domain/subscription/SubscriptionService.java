@@ -2,22 +2,13 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.MessageTrace;
-import pl.allegro.tech.hermes.api.PatchData;
-import pl.allegro.tech.hermes.api.Query;
-import pl.allegro.tech.hermes.api.SentMessageTrace;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
-import pl.allegro.tech.hermes.api.SubscriptionMetrics;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicMetrics;
-import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
+import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
@@ -36,7 +27,7 @@ public class SubscriptionService {
     private final SubscriptionHealthChecker subscriptionHealthChecker;
     private final UndeliveredMessageLog undeliveredMessageLog;
     private final LogRepository logRepository;
-    private final ApiPreconditions preconditions;
+    private final SubscriptionValidator subscriptionValidator;
     private final Auditor auditor;
 
     @Autowired
@@ -46,7 +37,7 @@ public class SubscriptionService {
                                SubscriptionHealthChecker subscriptionHealthChecker,
                                UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
-                               ApiPreconditions apiPreconditions,
+                               SubscriptionValidator subscriptionValidator,
                                Auditor auditor) {
         this.subscriptionRepository = subscriptionRepository;
         this.topicService = topicService;
@@ -54,7 +45,7 @@ public class SubscriptionService {
         this.subscriptionHealthChecker = subscriptionHealthChecker;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
-        this.preconditions = apiPreconditions;
+        this.subscriptionValidator = subscriptionValidator;
         this.auditor = auditor;
     }
 
@@ -79,8 +70,8 @@ public class SubscriptionService {
         return subscriptionRepository.listSubscriptions(topicName);
     }
 
-    public void createSubscription(Subscription subscription, String createdBy) {
-        preconditions.checkConstraints(subscription);
+    public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights) {
+        subscriptionValidator.checkCreation(subscription, creatorRights);
         subscriptionRepository.createSubscription(subscription);
         auditor.objectCreated(createdBy, subscription);
     }
@@ -100,7 +91,7 @@ public class SubscriptionService {
                                    String modifiedBy) {
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         Subscription updated = Patch.apply(retrieved, patch);
-        preconditions.checkConstraints(updated);
+        subscriptionValidator.checkModification(updated);
 
         if (!retrieved.equals(updated)) {
             subscriptionRepository.updateSubscription(updated);
@@ -108,8 +99,13 @@ public class SubscriptionService {
         }
     }
 
-    public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state) {
-        subscriptionRepository.updateSubscriptionState(topicName, subscriptionName, state);
+    public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state, String modifiedBy) {
+        Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+        if (!retrieved.getState().equals(state)) {
+            Subscription updated = Patch.apply(retrieved, PatchData.patchData().set("state", state).build());
+            subscriptionRepository.updateSubscription(updated);
+            auditor.objectUpdated(modifiedBy, retrieved, updated);
+        }
     }
 
     public Subscription.State getSubscriptionState(TopicName topicName, String subscriptionName) {
