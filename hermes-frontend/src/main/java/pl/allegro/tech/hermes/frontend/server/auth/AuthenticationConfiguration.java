@@ -10,24 +10,24 @@ import java.util.function.Predicate;
 
 public class AuthenticationConfiguration {
 
-    private final Predicate<HttpServerExchange> authConstraintPredicate;
+    private final Predicate<HttpServerExchange> isAuthenticationRequiredPredicate;
     private final List<AuthenticationMechanism> authMechanisms;
     private final IdentityManager identityManager;
 
-    public AuthenticationConfiguration(Predicate<HttpServerExchange> authConstraintPredicate,
+    public AuthenticationConfiguration(Predicate<HttpServerExchange> isAuthenticationRequiredPredicate,
                                 List<AuthenticationMechanism> authMechanisms,
                                 IdentityManager identityManager) {
-        Preconditions.checkNotNull(authConstraintPredicate, "Authentication constraint predicate has to be provided");
+        Preconditions.checkNotNull(isAuthenticationRequiredPredicate, "IsAuthenticationRequired predicate has to be provided");
         Preconditions.checkArgument(!authMechanisms.isEmpty(), "At least one AuthenticationMechanism has to be provided.");
         Preconditions.checkNotNull(identityManager, "IdentityManager has to be provided");
 
-        this.authConstraintPredicate = authConstraintPredicate;
+        this.isAuthenticationRequiredPredicate = isAuthenticationRequiredPredicate;
         this.authMechanisms = authMechanisms;
         this.identityManager = identityManager;
     }
 
-    public Predicate<HttpServerExchange> getAuthConstraintPredicate() {
-        return authConstraintPredicate;
+    public Predicate<HttpServerExchange> getIsAuthenticationRequiredPredicate() {
+        return isAuthenticationRequiredPredicate;
     }
 
     public List<AuthenticationMechanism> getAuthMechanisms() {

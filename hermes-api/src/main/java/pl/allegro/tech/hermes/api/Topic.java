@@ -53,10 +53,12 @@ public class Topic {
 
     private boolean schemaVersionAwareSerializationEnabled = false;
 
+    private PublishingAuth publishingAuth;
+
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
                  boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
-                 int maxMessageSize) {
+                 int maxMessageSize, PublishingAuth publishingAuth) {
         this.name = name;
         this.description = description;
         this.owner = owner;
@@ -68,6 +70,7 @@ public class Topic {
         this.jsonToAvroDryRunEnabled = jsonToAvroDryRunEnabled;
         this.schemaVersionAwareSerializationEnabled = schemaVersionAwareSerializationEnabled;
         this.maxMessageSize = maxMessageSize;
+        this.publishingAuth = publishingAuth;
     }
 
     @JsonCreator
@@ -82,10 +85,13 @@ public class Topic {
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
             @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType,
-            @JsonProperty("maxMessageSize") Integer maxMessageSize) {
+            @JsonProperty("maxMessageSize") Integer maxMessageSize,
+            @JsonProperty("auth") PublishingAuth publishingAuth
+            ) {
         this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
                 trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
-                maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize);
+                maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize,
+                publishingAuth == null ? PublishingAuth.disabled() : publishingAuth);
     }
 
     public RetentionTime getRetentionTime() {
@@ -95,7 +101,7 @@ public class Topic {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize);
+                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize, publishingAuth);
     }
 
     @Override
@@ -118,7 +124,8 @@ public class Topic {
                 && Objects.equals(this.schemaVersionAwareSerializationEnabled, other.schemaVersionAwareSerializationEnabled)
                 && Objects.equals(this.ack, other.ack)
                 && Objects.equals(this.contentType, other.contentType)
-                && Objects.equals(this.maxMessageSize, other.maxMessageSize);
+                && Objects.equals(this.maxMessageSize, other.maxMessageSize)
+                && Objects.equals(this.publishingAuth, other.publishingAuth);
     }
 
     @JsonProperty("name")
@@ -172,6 +179,25 @@ public class Topic {
 
     public int getMaxMessageSize() {
         return maxMessageSize;
+    }
+
+    @JsonProperty("auth")
+    public PublishingAuth getPublishingAuth() {
+        return publishingAuth;
+    }
+
+    @JsonIgnore
+    public boolean isAuthEnabled() {
+        return publishingAuth.isEnabled();
+    }
+
+    @JsonIgnore
+    public boolean isUnauthorisedAccessEnabled() {
+        return publishingAuth.isUnauthorisedAccessEnabled();
+    }
+
+    public boolean hasPermission(String publisher) {
+        return publishingAuth.hasPermission(publisher);
     }
 
     @Override

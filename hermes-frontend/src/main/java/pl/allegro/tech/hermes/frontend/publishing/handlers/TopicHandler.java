@@ -1,17 +1,21 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
+import io.undertow.security.api.SecurityContext;
+import io.undertow.security.idm.Account;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
+import pl.allegro.tech.hermes.frontend.server.auth.Roles;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static pl.allegro.tech.hermes.api.ErrorCode.GROUP_NOT_EXISTS;
+import static pl.allegro.tech.hermes.api.ErrorCode.AUTH_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_BLACKLISTED;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
@@ -40,7 +44,7 @@ class TopicHandler implements HttpHandler {
 
         String messageId = MessageIdGenerator.generate();
 
-        onTopicPresent(exchange, messageId, cachedTopic -> {
+        onRequestValid(exchange, messageId, cachedTopic -> {
             exchange.addExchangeCompleteListener(new ExchangeMetrics(cachedTopic));
             exchange.putAttachment(AttachmentContent.KEY, new AttachmentContent(cachedTopic, new MessageState(), messageId));
             try {
@@ -51,34 +55,45 @@ class TopicHandler implements HttpHandler {
         });
     }
 
-    private void onTopicPresent(HttpServerExchange exchange, String messageId, Consumer<CachedTopic> consumer) {
-        String qualifiedTopicName = exchange.getQueryParameters().get("qualifiedTopicName").getFirst();
-        try {
-            Optional<CachedTopic> cachedTopic = topicsCache.getTopic(qualifiedTopicName);
-            if (cachedTopic.isPresent()) {
-                CachedTopic topic = cachedTopic.get();
-                if (!topic.isBlacklisted()) {
-                    consumer.accept(topic);
-                } else {
-                    topicBlacklisted(exchange, qualifiedTopicName, messageId);
-                }
-            } else {
-                nonExistentTopic(exchange, qualifiedTopicName, messageId);
-            }
-        } catch (IllegalArgumentException exception) {
-            missingTopicGroup(exchange, qualifiedTopicName, messageId);
+    private void onRequestValid(HttpServerExchange exchange, String messageId, Consumer<CachedTopic> consumer) {
+        String topicName = exchange.getQueryParameters().get("qualifiedTopicName").getFirst();
+        Optional<CachedTopic> maybeTopic = topicsCache.getTopic(topicName);
+
+        if (!maybeTopic.isPresent()) {
+            unknownTopic(exchange, topicName, messageId);
+            return;
         }
+
+        CachedTopic cachedTopic = maybeTopic.get();
+        if (cachedTopic.isBlacklisted()) {
+            blacklistedTopic(exchange, topicName, messageId);
+            return;
+        }
+
+        Topic topic = cachedTopic.getTopic();
+        if (topic.isAuthEnabled() && !hasPermission(exchange, topic)) {
+            requestForbidden(exchange, messageId, topicName);
+            return;
+        }
+
+        consumer.accept(cachedTopic);
     }
 
-    private void missingTopicGroup(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
-        messageErrorProcessor.sendQuietly(
-                exchange,
-                error("Missing valid topic group in path. Found " + qualifiedTopicName, GROUP_NOT_EXISTS),
-                messageId,
-                UNKNOWN_TOPIC_NAME);
+    private boolean hasPermission(HttpServerExchange exchange, Topic topic) {
+        Optional<Account> account = extractAccount(exchange);
+        return account.isPresent() ? hasPermission(topic, account.get()) : topic.isUnauthorisedAccessEnabled();
     }
 
-    private void nonExistentTopic(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
+    private boolean hasPermission(Topic topic, Account publisher) {
+        return publisher.getRoles().contains(Roles.PUBLISHER) && topic.hasPermission(publisher.getPrincipal().getName());
+    }
+
+    private Optional<Account> extractAccount(HttpServerExchange exchange) {
+        SecurityContext securityCtx = exchange.getSecurityContext();
+        return Optional.ofNullable(securityCtx != null ? securityCtx.getAuthenticatedAccount() : null);
+    }
+
+    private void unknownTopic(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
         messageErrorProcessor.sendQuietly(
                 exchange,
                 error("Topic not found: " + qualifiedTopicName, TOPIC_NOT_EXISTS),
@@ -86,7 +101,18 @@ class TopicHandler implements HttpHandler {
                 UNKNOWN_TOPIC_NAME);
     }
 
-    private void topicBlacklisted(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
-        messageErrorProcessor.sendQuietly(exchange, error("Topic blacklisted: " + qualifiedTopicName, TOPIC_BLACKLISTED),  messageId, qualifiedTopicName);
+    private void requestForbidden(HttpServerExchange exchange, String messageId, String qualifiedTopicName) {
+        messageErrorProcessor.sendQuietly(
+                exchange,
+                error("Permission denied.", AUTH_ERROR),
+                messageId,
+                qualifiedTopicName);
+    }
+
+    private void blacklistedTopic(HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
+        messageErrorProcessor.sendQuietly(exchange,
+                error("Topic blacklisted: " + qualifiedTopicName, TOPIC_BLACKLISTED),
+                messageId,
+                qualifiedTopicName);
     }
 }

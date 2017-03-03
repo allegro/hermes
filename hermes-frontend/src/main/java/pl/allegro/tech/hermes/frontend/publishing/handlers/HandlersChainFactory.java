@@ -84,7 +84,7 @@ public class HandlersChainFactory implements Factory<HttpHandler> {
     private HttpHandler createAuthenticationHandlersChain(HttpHandler next, AuthenticationConfiguration authConfig) {
         HttpHandler authenticationCallHandler = new AuthenticationCallHandler(next);
         HttpHandler constraintHandler = new AuthenticationPredicateAwareConstraintHandler(
-                authenticationCallHandler, authConfig.getAuthConstraintPredicate());
+                authenticationCallHandler, authConfig.getIsAuthenticationRequiredPredicate());
 
         HttpHandler mechanismsHandler = new AuthenticationMechanismsHandler(constraintHandler,
                 authConfig.getAuthMechanisms());
