@@ -18,6 +18,8 @@ Can be configured to work as simple threshold or dynamically calculated value.
 
 #### ([687](https://github.com/allegro/hermes/pull/687)) Throughput metric
 
+Metric can be found under {producer|consumer}.{hostname}.throughput.{group}.{topic}
+
 ## 0.11.0 (15.02.2017)
 
 ### Features
