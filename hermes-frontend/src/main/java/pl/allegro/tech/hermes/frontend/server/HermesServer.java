@@ -21,8 +21,10 @@ import static io.undertow.UndertowOptions.MAX_HEADERS;
 import static io.undertow.UndertowOptions.MAX_PARAMETERS;
 import static io.undertow.UndertowOptions.REQUEST_PARSE_TIMEOUT;
 import static org.xnio.Options.BACKLOG;
+import static org.xnio.Options.KEEP_ALIVE;
 import static org.xnio.Options.READ_TIMEOUT;
 import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_ALWAYS_SET_KEEP_ALIVE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BACKLOG_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BUFFER_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HOST;
@@ -109,7 +111,8 @@ public class HermesServer {
                 .setServerOption(MAX_HEADERS, configFactory.getIntProperty(FRONTEND_MAX_HEADERS))
                 .setServerOption(MAX_PARAMETERS, configFactory.getIntProperty(FRONTEND_MAX_PARAMETERS))
                 .setServerOption(MAX_COOKIES, configFactory.getIntProperty(FRONTEND_MAX_COOKIES))
-                .setServerOption(ALWAYS_SET_KEEP_ALIVE, configFactory.getBooleanProperty(FRONTEND_SET_KEEP_ALIVE))
+                .setServerOption(ALWAYS_SET_KEEP_ALIVE, configFactory.getBooleanProperty(FRONTEND_ALWAYS_SET_KEEP_ALIVE))
+                .setServerOption(KEEP_ALIVE, configFactory.getBooleanProperty(FRONTEND_SET_KEEP_ALIVE))
                 .setSocketOption(BACKLOG, configFactory.getIntProperty(FRONTEND_BACKLOG_SIZE))
                 .setSocketOption(READ_TIMEOUT, configFactory.getIntProperty(FRONTEND_READ_TIMEOUT))
                 .setIoThreads(configFactory.getIntProperty(FRONTEND_IO_THREADS_COUNT))
