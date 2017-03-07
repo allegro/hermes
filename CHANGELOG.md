@@ -1,3 +1,23 @@
+## 0.11.1 (7.03.2017)
+
+### Features
+
+#### ([733](https://github.com/allegro/hermes/pull/733)) Topic authorization 
+
+Added feature to control which system has permission to publish on particular topic.
+
+#### ([722](https://github.com/allegro/hermes/pull/722)) Frontend security context initialization
+
+Added feature to configure SSL context.
+
+#### ([735](https://github.com/allegro/hermes/pull/735)) Configurable http keep_alive
+#### ([707](https://github.com/allegro/hermes/pull/707)) Throughput limit
+
+Added feature to limit throughput in bytes/sec when publishing to particular topic. 
+Can be configured to work as simple threshold or dynamically calculated value.
+
+#### ([687](https://github.com/allegro/hermes/pull/687)) Throughput metric
+
 ## 0.11.0 (15.02.2017)
 
 ### Features
