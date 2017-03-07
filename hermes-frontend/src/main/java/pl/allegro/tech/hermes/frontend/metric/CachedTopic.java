@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.metric;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
+import com.codahale.metrics.Metered;
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -159,5 +160,9 @@ public class CachedTopic {
     public void markDelayedProcessing() {
         topicDelayedProcessingMeter.mark();
         globalDelayedProcessingMeter.mark();
+    }
+
+    public Metered getThroughput() {
+        return topicThroughputMeter;
     }
 }

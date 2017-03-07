@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender;
 import pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender;
 import pl.allegro.tech.hermes.frontend.server.KeystoreProperties;
-import pl.allegro.tech.hermes.frontend.server.SSLContextSupplier;
+import pl.allegro.tech.hermes.frontend.server.JvmKeystoreSslContextFactory;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.net.ssl.SSLContext;
@@ -117,6 +117,6 @@ public class HermesClientPublishingTest extends IntegrationTest {
     private SSLContext getSslContext() {
         KeystoreProperties keystore = new KeystoreProperties("classpath:client.keystore", "JKS", "password");
         KeystoreProperties truststore = new KeystoreProperties("classpath:client.truststore", "JKS", "password");
-        return new SSLContextSupplier("TLS", keystore, truststore).get();
+        return new JvmKeystoreSslContextFactory("TLS", keystore, truststore).create();
     }
 }
