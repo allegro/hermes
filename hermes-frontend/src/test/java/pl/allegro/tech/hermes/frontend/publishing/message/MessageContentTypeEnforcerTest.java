@@ -2,10 +2,12 @@ package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import org.apache.avro.Schema;
 import org.junit.Test;
+import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +44,12 @@ public class MessageContentTypeEnforcerTest {
 
         // then
         assertThat(enforcedMessage).isEqualTo(avroMessage.asBytes());
+    }
+
+    @Test(expected = UnsupportedContentTypeException.class)
+    public void shouldThrowUnsupportedContentTypeExceptionWhenReceivedWrongContentType() throws IOException {
+        // when
+        enforcer.enforceAvro(MediaType.TEXT_PLAIN, avroMessage.asBytes(), schema.getSchema());
     }
 
 }

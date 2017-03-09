@@ -14,11 +14,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 
 @Path("topics")
 public interface TopicEndpoint {
@@ -69,7 +69,7 @@ public interface TopicEndpoint {
     Response publishMessage(@PathParam("topicName") String qualifiedTopicName, String message);
 
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
+    @Consumes(AVRO_BINARY)
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
     Response publishMessage(@PathParam("topicName") String qualifiedTopicName, byte[] message);
