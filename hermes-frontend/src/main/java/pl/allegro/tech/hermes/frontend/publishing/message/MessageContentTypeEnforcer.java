@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import org.apache.avro.Schema;
+import org.apache.commons.lang.StringUtils;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
@@ -15,9 +16,10 @@ public class MessageContentTypeEnforcer {
     private static final String AVRO_BINARY_WITH_DELIM = AVRO_BINARY + ";";
 
     public byte[] enforceAvro(String payloadContentType, byte[] data, Schema schema) {
-        if (isJSON(payloadContentType)) {
+        String contentTypeLowerCase = StringUtils.lowerCase(payloadContentType);
+        if (isJSON(contentTypeLowerCase)) {
             return converter.convertToAvro(data, schema);
-        } else if (isAvro(payloadContentType)) {
+        } else if (isAvro(contentTypeLowerCase)) {
             return data;
         } else {
             throw new UnsupportedContentTypeException(payloadContentType, schema);

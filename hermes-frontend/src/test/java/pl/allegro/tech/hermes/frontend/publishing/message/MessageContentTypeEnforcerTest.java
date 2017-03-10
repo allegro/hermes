@@ -46,6 +46,15 @@ public class MessageContentTypeEnforcerTest {
         assertThat(enforcedMessage).isEqualTo(avroMessage.asBytes());
     }
 
+    @Test
+    public void shouldBeCaseInsensitiveForPayloadContentType() throws IOException {
+        // when
+        byte[] enforcedMessage = enforcer.enforceAvro("AVRO/Binary", avroMessage.asBytes(), schema.getSchema());
+
+        // then
+        assertThat(enforcedMessage).isEqualTo(avroMessage.asBytes());
+    }
+
     @Test(expected = UnsupportedContentTypeException.class)
     public void shouldThrowUnsupportedContentTypeExceptionWhenReceivedWrongContentType() throws IOException {
         // when
