@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import org.apache.avro.Schema;
 import org.apache.commons.lang.StringUtils;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
@@ -15,14 +16,14 @@ public class MessageContentTypeEnforcer {
     private static final String APPLICATION_JSON_WITH_DELIM = APPLICATION_JSON + ";";
     private static final String AVRO_BINARY_WITH_DELIM = AVRO_BINARY + ";";
 
-    public byte[] enforceAvro(String payloadContentType, byte[] data, Schema schema) {
+    public byte[] enforceAvro(String payloadContentType, byte[] data, Schema schema, Topic topic) {
         String contentTypeLowerCase = StringUtils.lowerCase(payloadContentType);
         if (isJSON(contentTypeLowerCase)) {
             return converter.convertToAvro(data, schema);
         } else if (isAvro(contentTypeLowerCase)) {
             return data;
         } else {
-            throw new UnsupportedContentTypeException(payloadContentType, schema);
+            throw new UnsupportedContentTypeException(payloadContentType, topic);
         }
     }
 
@@ -35,7 +36,6 @@ public class MessageContentTypeEnforcer {
     }
 
     private boolean isOfType(String contentType, String expectedContentType, String expectedWithDelim) {
-        return contentType != null && (contentType.length() > expectedContentType.length() ?
-                contentType.startsWith(expectedWithDelim) : contentType.equals(expectedContentType));
+        return contentType != null && (contentType.equals(expectedContentType) || contentType.startsWith(expectedWithDelim));
     }
 }

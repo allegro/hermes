@@ -101,7 +101,7 @@ public class MessageFactory {
 
         AvroMessage message = new AvroMessage(
                 messageId,
-                enforcer.enforceAvro(headerMap.getFirst(Headers.CONTENT_TYPE_STRING), messageContent, schema.getSchema()),
+                enforcer.enforceAvro(headerMap.getFirst(Headers.CONTENT_TYPE_STRING), messageContent, schema.getSchema(), topic),
                 timestamp,
                 schema);
 

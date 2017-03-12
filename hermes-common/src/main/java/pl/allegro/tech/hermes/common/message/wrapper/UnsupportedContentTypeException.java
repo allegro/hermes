@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -23,11 +22,11 @@ public class UnsupportedContentTypeException extends InternalProcessingException
         ));
     }
 
-    public UnsupportedContentTypeException(String payloadContentType, Schema schema) {
+    public UnsupportedContentTypeException(String payloadContentType, Topic topic) {
         super(String.format(
-                "Unsupported payload content type %s for %s",
+                "Unsupported payload content type header %s for topic %s",
                 payloadContentType,
-                schema.getFullName()
+                topic.getQualifiedName()
         ));
     }
 
