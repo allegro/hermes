@@ -37,23 +37,23 @@ public class ZookeeperCounterReporterTest {
     public static final SortedMap<String, Gauge> EMPTY_GAUGES = null;
     public static final String GROUP_NAME_UNDERSCORE = "pl_allegro_tech_skylab";
     public static final String GROUP_NAME = "pl.allegro.tech.skylab";
-    public static final String TOPIC_NAME = "topic1";
+    public static final String TOPIC_NAME_UNDERSCORE = "topic_1";
     public static final String SUBSCRIPTION_NAME_UNDERSCORE = "subscription_name";
     public static final String SUBSCRIPTION_NAME = "subscription.name";
-    public static final TopicName QUALIFIED_TOPIC_NAME = new TopicName(GROUP_NAME, TOPIC_NAME);
+    public static final TopicName QUALIFIED_TOPIC_NAME = new TopicName(GROUP_NAME, TOPIC_NAME_UNDERSCORE);
     public static final long COUNT = 100L;
     public static final String GRAPHITE_PREFIX = "tech.hermes";
 
     private static PathsCompiler pathsCompiler = new PathsCompiler("localhost.domain");
 
-    public static final String METRIC_NAME_FOR_PUBLISHED = pathsCompiler.compile(PUBLISHED,
-            pathContext().withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME).build());
+    public static final String METRIC_NAME_FOR_PUBLISHED = pathsCompiler.compile(PUBLISHED, pathContext()
+            .withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME_UNDERSCORE).build());
 
-    public static final String METRIC_NAME_FOR_DELIVERED = pathsCompiler.compile(DELIVERED,
-            pathContext().withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME).withSubscription(SUBSCRIPTION_NAME_UNDERSCORE).build());
+    public static final String METRIC_NAME_FOR_DELIVERED = pathsCompiler.compile(DELIVERED, pathContext()
+            .withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME_UNDERSCORE).withSubscription(SUBSCRIPTION_NAME_UNDERSCORE).build());
 
-    public static final String METRIC_NAME_FOR_DISCARDED = pathsCompiler.compile(DISCARDED,
-            pathContext().withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME).withSubscription(SUBSCRIPTION_NAME_UNDERSCORE).build());
+    public static final String METRIC_NAME_FOR_DISCARDED = pathsCompiler.compile(DISCARDED, pathContext()
+            .withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME_UNDERSCORE).withSubscription(SUBSCRIPTION_NAME_UNDERSCORE).build());
 
     @Mock
     private CounterStorage counterStorage;

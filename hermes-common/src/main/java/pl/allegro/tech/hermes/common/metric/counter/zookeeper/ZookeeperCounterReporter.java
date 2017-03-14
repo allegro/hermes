@@ -93,7 +93,7 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
         TopicName topicName = fromQualifiedName(qualifiedTopicName);
         return new TopicName(
                 escapeMetricsReplacementChar(topicName.getGroupName()),
-                escapeMetricsReplacementChar(topicName.getName())
+                topicName.getName()
         );
     }
 

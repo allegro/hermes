@@ -43,18 +43,18 @@ public class MetricsTest extends IntegrationTest {
     @Test
     public void shouldIncreaseTopicMetricsAfterMessageHasBeenPublished() {
         // given
-        Topic topic = operations.buildTopic("topicMetricsGroup", "topic");
+        Topic topic = operations.buildTopic("pl.group", "topic_metrics");
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetricForTopic("topicMetricsGroup", "topic", 10, 15);
+        graphiteEndpoint.returnMetricForTopic("pl_group", "topic_metrics", 10, 15);
 
         remoteService.expectMessages(TestMessage.simple().body());
-        assertThat(publisher.publish("topicMetricsGroup.topic", TestMessage.simple().body()).getStatus())
+        assertThat(publisher.publish("pl.group.topic_metrics", TestMessage.simple().body()).getStatus())
                 .isEqualTo(CREATED.getStatusCode());
         remoteService.waitUntilReceived();
 
         wait.until(() -> {
             // when
-            TopicMetrics metrics = management.topic().getMetrics("topicMetricsGroup.topic");
+            TopicMetrics metrics = management.topic().getMetrics("pl.group.topic_metrics");
 
             // then
             assertThat(metrics.getRate()).isEqualTo("10");
@@ -67,18 +67,18 @@ public class MetricsTest extends IntegrationTest {
     @Test
     public void shouldIncreaseSubscriptionDeliveredMetricsAfterMessageDelivered() {
         // given
-        Topic topic = operations.buildTopic("subscriptionMetricsGroup", "topic");
+        Topic topic = operations.buildTopic("pl.group", "topic");
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetricForSubscription("subscriptionMetricsGroup", "topic", "subscription", 15);
+        graphiteEndpoint.returnMetricForSubscription("pl_group", "topic", "subscription", 15);
 
         remoteService.expectMessages(TestMessage.simple().body());
-        assertThat(publisher.publish("subscriptionMetricsGroup.topic", TestMessage.simple().body()).getStatus())
+        assertThat(publisher.publish("pl.group.topic", TestMessage.simple().body()).getStatus())
                 .isEqualTo(CREATED.getStatusCode());
         remoteService.waitUntilReceived();
 
         wait.until(() -> {
             // when
-            SubscriptionMetrics metrics = management.subscription().getMetrics("subscriptionMetricsGroup.topic", "subscription");
+            SubscriptionMetrics metrics = management.subscription().getMetrics("pl.group.topic", "subscription");
 
             // then
             assertThat(metrics.getRate()).isEqualTo("15");
