@@ -20,7 +20,7 @@ import java.net.URI;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.BATCH_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.RETRY_COUNT;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.http.AvroMediaType.AVRO_BINARY;
+import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 
 public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 

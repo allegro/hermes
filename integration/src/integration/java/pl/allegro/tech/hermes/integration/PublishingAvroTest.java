@@ -23,10 +23,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.time.Clock;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -71,6 +73,23 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         remoteService.waitUntilReceived(json -> assertThatJson(json).isEqualTo(user.asJson()));
+    }
+
+    @Test
+    public void shouldNotPublishAvroWhenMessageIsNotJsonOrAvro() throws InterruptedException, ExecutionException, TimeoutException, IOException {
+        // given
+        Topic topic = operations.buildTopic(topic("publishAvroConsumeAvro.topic")
+                .withContentType(AVRO)
+                .build()
+        );
+        operations.saveSchema(topic, user.getSchemaAsString());
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
+
+        // when
+        Response response = publisher.publish("publishAvroConsumeAvro.topic", user.asJson(), Collections.singletonMap("Content-Type", TEXT_PLAIN));
+
+        // then
+        assertThat(response).hasStatus(BAD_REQUEST);
     }
 
     @Test
