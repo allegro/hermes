@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepos
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
-import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
+import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;

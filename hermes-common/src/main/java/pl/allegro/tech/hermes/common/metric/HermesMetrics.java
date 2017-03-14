@@ -177,6 +177,10 @@ public class HermesMetrics {
         return pathCompiler.compile(metricDisplayName);
     }
 
+    public Timer schemaTimer(String schemaMetric, String schemaRepoType) {
+        return metricRegistry.timer(pathCompiler.compile(schemaMetric, pathContext().withSchemaRepoType(schemaRepoType).build()));
+    }
+
     public Timer executorDurationTimer(String executorName) {
         return metricRegistry.timer(pathCompiler.compile(Timers.EXECUTOR_DURATION, pathContext().withExecutorName(executorName).build()));
     }
