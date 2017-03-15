@@ -6,6 +6,7 @@ import static pl.allegro.tech.hermes.metrics.PathsCompiler.KAFKA_CLUSTER;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.OAUTH_PROVIDER_NAME;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.SCHEMA_REPO_TYPE;
 
 public class Timers {
 
@@ -32,6 +33,10 @@ public class Timers {
             SUBSCRIPTION_LATENCY = LATENCY + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
 
             READ_LATENCY = "read-latency",
+
+            SCHEMA = "schema." + SCHEMA_REPO_TYPE,
+            GET_SCHEMA_LATENCY = SCHEMA + ".get-schema",
+            GET_SCHEMA_VERSIONS_LATENCY = SCHEMA + ".get-schema-versions",
 
             CONSUMER_WORKLOAD_REBALANCE_DURATION = "consumers-workload." + KAFKA_CLUSTER + ".selective.rebalance-duration",
 

@@ -22,4 +22,12 @@ public class UnsupportedContentTypeException extends InternalProcessingException
         ));
     }
 
+    public UnsupportedContentTypeException(String payloadContentType, Topic topic) {
+        super(String.format(
+                "Unsupported payload content type header %s for topic %s",
+                payloadContentType,
+                topic.getQualifiedName()
+        ));
+    }
+
 }

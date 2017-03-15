@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.Timers;
+import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

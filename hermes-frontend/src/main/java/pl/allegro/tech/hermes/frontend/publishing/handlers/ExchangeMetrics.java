@@ -4,7 +4,7 @@ import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpServerExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.frontend.metric.StartedTimersPair;
+import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 
 class ExchangeMetrics implements ExchangeCompletionListener {

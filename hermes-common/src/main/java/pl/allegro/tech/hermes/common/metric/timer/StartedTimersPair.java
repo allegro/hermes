@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.metric;
+package pl.allegro.tech.hermes.common.metric.timer;
 
 import com.codahale.metrics.Timer;
 
