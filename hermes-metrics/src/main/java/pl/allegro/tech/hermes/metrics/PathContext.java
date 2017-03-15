@@ -14,6 +14,7 @@ public class PathContext {
     private final Optional<String> httpCodeFamily;
     private final Optional<String> executorName;
     private final Optional<String> oAuthProviderName;
+    private final Optional<String> schemaRepoType;
 
     private PathContext(Optional<String> group,
                         Optional<String> topic,
@@ -24,7 +25,8 @@ public class PathContext {
                         Optional<Integer> httpCode,
                         Optional<String> httpCodeFamily,
                         Optional<String> executorName,
-                        Optional<String> oAuthProviderName)  {
+                        Optional<String> oAuthProviderName,
+                        Optional<String> schemaRepoType)  {
         this.group = group;
         this.topic = topic;
         this.subscription = subscription;
@@ -35,6 +37,7 @@ public class PathContext {
         this.httpCodeFamily = httpCodeFamily;
         this.executorName = executorName;
         this.oAuthProviderName = oAuthProviderName;
+        this.schemaRepoType = schemaRepoType;
     }
 
     public Optional<String> getGroup() {
@@ -77,6 +80,10 @@ public class PathContext {
         return oAuthProviderName;
     }
 
+    public Optional<String> getSchemaRepoType() {
+        return schemaRepoType;
+    }
+
     public static Builder pathContext() {
         return new Builder();
     }
@@ -93,6 +100,7 @@ public class PathContext {
         private Optional<String> httpCodeFamily = Optional.empty();
         private Optional<String> executorName = Optional.empty();
         private Optional<String> oAuthProviderName = Optional.empty();
+        private Optional<String> schemaRepoType = Optional.empty();
 
         public Builder withGroup(String group) {
             this.group = Optional.of(group);
@@ -143,10 +151,14 @@ public class PathContext {
             this.oAuthProviderName = Optional.of(oAuthProviderName);
             return this;
         }
+        public Builder withSchemaRepoType(String schemaRepoType) {
+            this.schemaRepoType = Optional.of(schemaRepoType);
+            return this;
+        }
 
         public PathContext build() {
             return new PathContext(group, topic, subscription, kafkaTopic, partition, kafkaCluster,
-                    httpCode, httpCodeFamily, executorName, oAuthProviderName);
+                    httpCode, httpCodeFamily, executorName, oAuthProviderName, schemaRepoType);
         }
     }
 }

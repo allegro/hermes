@@ -5,6 +5,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
 import pl.allegro.tech.hermes.schema.schemarepo.SchemaRepoRawSchemaClient;
@@ -17,10 +18,12 @@ import java.net.URI;
 public class RawSchemaClientFactory implements Factory<RawSchemaClient> {
 
     private final ConfigFactory configFactory;
+    private final HermesMetrics hermesMetrics;
 
     @Inject
-    public RawSchemaClientFactory(ConfigFactory configFactory) {
+    public RawSchemaClientFactory(ConfigFactory configFactory, HermesMetrics hermesMetrics) {
         this.configFactory = configFactory;
+        this.hermesMetrics = hermesMetrics;
     }
 
     @Override
@@ -36,14 +39,19 @@ public class RawSchemaClientFactory implements Factory<RawSchemaClient> {
         String schemaRepositoryType = configFactory.getStringProperty(Configs.SCHEMA_REPOSITORY_TYPE).toUpperCase();
         Client client = ClientBuilder.newClient(config);
         URI schemaRepositoryServerUri = URI.create(configFactory.getStringProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL));
-        switch (SchemaRepositoryType.valueOf(schemaRepositoryType)) {
+        SchemaRepositoryType repoType = SchemaRepositoryType.valueOf(schemaRepositoryType);
+        switch (repoType) {
             case SCHEMA_REPO:
-                return new SchemaRepoRawSchemaClient(client, schemaRepositoryServerUri);
+                return createMetricsTrackingClient(new SchemaRepoRawSchemaClient(client, schemaRepositoryServerUri), repoType);
             case SCHEMA_REGISTRY:
-                return new SchemaRegistryRawSchemaClient(client, schemaRepositoryServerUri);
+                return createMetricsTrackingClient(new SchemaRegistryRawSchemaClient(client, schemaRepositoryServerUri), repoType);
             default:
                 throw new IllegalStateException("Unknown schema repository type " + schemaRepositoryType);
         }
+    }
+
+    private RawSchemaClient createMetricsTrackingClient(RawSchemaClient rawSchemaClient, SchemaRepositoryType schemaRepositoryType) {
+        return new ReadMetricsTrackingRawSchemaClient(rawSchemaClient, hermesMetrics, schemaRepositoryType);
     }
 
     @Override
