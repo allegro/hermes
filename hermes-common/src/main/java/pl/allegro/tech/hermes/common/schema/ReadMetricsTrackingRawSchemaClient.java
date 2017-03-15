@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
     private final RawSchemaClient rawSchemaClient;
     private final HermesMetrics hermesMetrics;
-    private SchemaRepositoryType schemaRepoType;
+    private final SchemaRepositoryType schemaRepoType;
 
     public ReadMetricsTrackingRawSchemaClient(
             RawSchemaClient rawSchemaClient,
@@ -52,22 +52,21 @@ public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
     }
 
     private <T> T timedSchema(Supplier<? extends T> callable) {
-        return timed(callable, Timers.SCHEMA_READ_LATENCY);
+        return timed(callable, Timers.GET_SCHEMA_LATENCY);
     }
 
     private <T> T timedVersions(Supplier<? extends T> callable) {
-        return timed(callable, Timers.SCHEMA_VERSIONS_READ_LATENCY);
+        return timed(callable, Timers.GET_SCHEMA_VERSIONS_LATENCY);
     }
 
     private <T> T timed(Supplier<? extends T> callable, String schemaTimer) {
-        Timer.Context time = startLatencyTimer(schemaTimer);
-        T value = callable.get();
-        time.stop();
-        return value;
+        try (Timer.Context time = startLatencyTimer(schemaTimer)) {
+            return callable.get();
+        }
     }
 
     private Timer.Context startLatencyTimer(String schemaReadLatency) {
-        return hermesMetrics.schemaTimer(schemaReadLatency, schemaRepoType.toString()).time();
+        return hermesMetrics.schemaTimer(schemaReadLatency, schemaRepoType).time();
     }
 
 }

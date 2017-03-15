@@ -23,64 +23,54 @@ class ReadMetricsTrackingRawSchemaClientTest extends Specification {
     @Shared
     RawSchema schema = RawSchema.valueOf("some_schema")
 
-    @Shared
-    String REPO_TYPE = SCHEMA_REGISTRY.toString()
-
     HermesMetrics hermesMetrics = Mock()
-    Timer schemaLatencyTimer = Mock()
-    Timer.Context schemaLatencyTime = Mock()
-    Timer schemaVersionsLatencyTimer = Mock()
-    Timer.Context schemaVersionsLatencyTime = Mock()
+    
+    Timer schemaLatencyTimer = new Timer()
+
+    Timer schemaVersionsLatencyTimer = new Timer()
 
     RawSchemaClient rawSchemaClient = Mock()
 
     @Subject
     RawSchemaClient readMetricsTrackingClient = new ReadMetricsTrackingRawSchemaClient(rawSchemaClient, hermesMetrics, SCHEMA_REGISTRY)
 
-
     def "should track latency metrics for schema retrieval"(){
+        expect:
+        schemaLatencyTimer.count == 0
+
         when:
         readMetricsTrackingClient.getSchema(topicName, schemaVersion)
 
         then:
-        1 * hermesMetrics.schemaTimer(Timers.SCHEMA_READ_LATENCY, REPO_TYPE) >> schemaLatencyTimer
-        1 * schemaLatencyTimer.time() >> schemaLatencyTime
-
-        then:
+        1 * hermesMetrics.schemaTimer(Timers.GET_SCHEMA_LATENCY, SCHEMA_REGISTRY) >> schemaLatencyTimer
         1 * rawSchemaClient.getSchema(topicName, schemaVersion)
-
-        then:
-        1 * schemaLatencyTime.stop()
+        schemaLatencyTimer.count == 1
     }
 
     def "should track latency metrics for latest schema retrieval"(){
+        expect:
+        schemaLatencyTimer.count == 0
+
         when:
         readMetricsTrackingClient.getLatestSchema(topicName)
 
         then:
-        1 * hermesMetrics.schemaTimer(Timers.SCHEMA_READ_LATENCY, REPO_TYPE) >> schemaLatencyTimer
-        1 * schemaLatencyTimer.time() >> schemaLatencyTime
-
-        then:
+        1 * hermesMetrics.schemaTimer(Timers.GET_SCHEMA_LATENCY, SCHEMA_REGISTRY) >> schemaLatencyTimer
         1 * rawSchemaClient.getLatestSchema(topicName)
-
-        then:
-        1 * schemaLatencyTime.stop()
+        schemaLatencyTimer.count == 1
     }
 
     def "should track latency metrics for versions retrieval"(){
+        expect:
+        schemaVersionsLatencyTimer.count == 0
+
         when:
         readMetricsTrackingClient.getVersions(topicName)
 
         then:
-        1 * hermesMetrics.schemaTimer(Timers.SCHEMA_VERSIONS_READ_LATENCY, REPO_TYPE) >> schemaVersionsLatencyTimer
-        1 * schemaVersionsLatencyTimer.time() >> schemaVersionsLatencyTime
-
-        then:
+        1 * hermesMetrics.schemaTimer(Timers.GET_SCHEMA_VERSIONS_LATENCY, SCHEMA_REGISTRY) >> schemaVersionsLatencyTimer
         1 * rawSchemaClient.getVersions(topicName)
-
-        then:
-        1 * schemaVersionsLatencyTime.stop()
+        schemaVersionsLatencyTimer.count == 1
     }
 
     def "should call inner client for non-read operations"() {
@@ -89,11 +79,13 @@ class ReadMetricsTrackingRawSchemaClientTest extends Specification {
 
         then:
         1 * rawSchemaClient.deleteAllSchemaVersions(topicName)
+        schemaVersionsLatencyTimer.count == 0
 
         when:
         readMetricsTrackingClient.registerSchema(topicName, schema)
 
         then:
         1 * rawSchemaClient.registerSchema(topicName, schema)
+        schemaLatencyTimer.count == 0
     }
 }

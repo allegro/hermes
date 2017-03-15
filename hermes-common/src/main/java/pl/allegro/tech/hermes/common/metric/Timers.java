@@ -35,8 +35,8 @@ public class Timers {
             READ_LATENCY = "read-latency",
 
             SCHEMA = "schema." + SCHEMA_REPO_TYPE,
-            SCHEMA_READ_LATENCY = SCHEMA + ".read-schema",
-            SCHEMA_VERSIONS_READ_LATENCY = SCHEMA + ".get-schema-versions",
+            GET_SCHEMA_LATENCY = SCHEMA + ".get-schema",
+            GET_SCHEMA_VERSIONS_LATENCY = SCHEMA + ".get-schema-versions",
 
             CONSUMER_WORKLOAD_REBALANCE_DURATION = "consumers-workload." + KAFKA_CLUSTER + ".selective.rebalance-duration",
 
