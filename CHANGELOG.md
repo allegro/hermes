@@ -1,3 +1,23 @@
+## 0.11.2 (15.03.2017)
+
+### Enhancements
+
+#### ([738](https://github.com/allegro/hermes/pull/738)) Payload content-type check and error handling
+
+From now on, clients who send HTTP request without specified `Content-Type` on an Avro topic will receive proper error message.
+
+#### ([739](https://github.com/allegro/hermes/pull/739)) Added latency metrics for schema registry
+
+Metrics are available in the following path:
+
+```
+schema.<schema-repo-type>.latency.read-schema
+```
+
+### Bugfixes
+
+#### ([740](https://github.com/allegro/hermes/issues/740)) Invalid metrics names in zookeeper for topics with underscore in name
+
 ## 0.11.1 (7.03.2017)
 
 ### Features
