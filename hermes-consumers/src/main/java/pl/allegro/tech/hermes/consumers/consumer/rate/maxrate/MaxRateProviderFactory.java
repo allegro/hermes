@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
+import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -10,6 +11,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 
 import javax.inject.Inject;
 
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_BUSY_TOLERANCE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_HISTORY_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_MIN_MAX_RATE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT;
@@ -36,7 +38,9 @@ public class MaxRateProviderFactory {
 
         switch (strategy) {
             case NEGOTIATED:
+                checkNegotiatedSettings(configFactory);
                 providerCreator = (subscription, sendCounters) -> {
+
                     String consumerId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
                     int historyLimit = configFactory.getIntProperty(CONSUMER_MAXRATE_HISTORY_SIZE);
                     double initialMaxRate = configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_MAX_RATE);
@@ -62,5 +66,13 @@ public class MaxRateProviderFactory {
 
     private interface Creator {
         MaxRateProvider create(Subscription subscription, SendCounters sendCounters);
+    }
+
+    private void checkNegotiatedSettings(ConfigFactory configFactory) {
+        double minSignificantChange = configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT) / 100;
+        double busyTolerance = configFactory.getDoubleProperty(CONSUMER_MAXRATE_BUSY_TOLERANCE);
+        Preconditions.checkArgument(busyTolerance > minSignificantChange,
+                "Significant rate change (%s) can't be higher than busy tolerance (%s)",
+                minSignificantChange, busyTolerance);
     }
 }
