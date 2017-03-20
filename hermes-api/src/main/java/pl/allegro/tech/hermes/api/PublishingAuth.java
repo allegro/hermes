@@ -11,24 +11,24 @@ public class PublishingAuth {
 
     private final List<String> publishers;
     private final boolean enabled;
-    private final boolean unauthorisedAccessEnabled;
+    private final boolean unauthenticatedAccessEnabled;
 
     @JsonCreator
     public PublishingAuth(@JsonProperty("publishers") List<String> publishers,
                           @JsonProperty("enabled") boolean enabled,
-                          @JsonProperty("unauthorisedAccessEnabled") boolean unauthorisedAccessEnabled) {
+                          @JsonProperty("unauthenticatedAccessEnabled") boolean unauthenticatedAccessEnabled) {
 
         this.publishers = publishers;
         this.enabled = enabled;
-        this.unauthorisedAccessEnabled = unauthorisedAccessEnabled;
+        this.unauthenticatedAccessEnabled = unauthenticatedAccessEnabled;
     }
 
     public boolean isEnabled() {
         return enabled;
     }
 
-    public boolean isUnauthorisedAccessEnabled() {
-        return unauthorisedAccessEnabled;
+    public boolean isUnauthenticatedAccessEnabled() {
+        return unauthenticatedAccessEnabled;
     }
 
     public boolean hasPermission(String publisher) {
@@ -53,12 +53,12 @@ public class PublishingAuth {
         }
         PublishingAuth that = (PublishingAuth) o;
         return enabled == that.enabled
-                && unauthorisedAccessEnabled == that.unauthorisedAccessEnabled
+                && unauthenticatedAccessEnabled == that.unauthenticatedAccessEnabled
                 && Objects.equals(publishers, that.publishers);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(publishers, enabled, unauthorisedAccessEnabled);
+        return Objects.hash(publishers, enabled, unauthenticatedAccessEnabled);
     }
 }

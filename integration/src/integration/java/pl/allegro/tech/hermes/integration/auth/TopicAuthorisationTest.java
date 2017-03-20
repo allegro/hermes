@@ -92,13 +92,13 @@ public class TopicAuthorisationTest extends IntegrationTest {
                 TopicBuilder.topic("required.authenticated_1Publisher")
                         .withPublisher(USERNAME)
                         .withAuthEnabled()
-                        .withUnauthorisedAccessDisabled()
+                        .withUnauthenticatedAccessDisabled()
                         .build(),
                 TopicBuilder.topic("required.authenticated_2Publishers")
                         .withPublisher(USERNAME)
                         .withPublisher(USERNAME2)
                         .withAuthEnabled()
-                        .withUnauthorisedAccessDisabled()
+                        .withUnauthenticatedAccessDisabled()
                         .build()
         );
 
@@ -147,12 +147,12 @@ public class TopicAuthorisationTest extends IntegrationTest {
         List<Topic> topics = Arrays.asList(
                 TopicBuilder.topic("required.guest_0Publishers")
                         .withAuthEnabled()
-                        .withUnauthorisedAccessDisabled()
+                        .withUnauthenticatedAccessDisabled()
                         .build(),
                 TopicBuilder.topic("required.guest_1Publisher")
                         .withPublisher(USERNAME2)
                         .withAuthEnabled()
-                        .withUnauthorisedAccessDisabled()
+                        .withUnauthenticatedAccessDisabled()
                         .build()
         );
 
@@ -180,12 +180,12 @@ public class TopicAuthorisationTest extends IntegrationTest {
                         .build(),
                 TopicBuilder.topic("required.authenticated_no_permission_0Publishers")
                         .withAuthEnabled()
-                        .withUnauthorisedAccessDisabled()
+                        .withUnauthenticatedAccessDisabled()
                         .build(),
                 TopicBuilder.topic("required.authenticated_no_permission_1Publisher")
                         .withPublisher(USERNAME2)
                         .withAuthEnabled()
-                        .withUnauthorisedAccessDisabled()
+                        .withUnauthenticatedAccessDisabled()
                         .build()
         );
 
