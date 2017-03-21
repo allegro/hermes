@@ -26,6 +26,31 @@
 
             <owner-selector form="topicForm" source="topic.owner.source" owner="topic.owner.id"></owner-selector>
 
+            <div class="ng-hide" ng-show="config.authEnabled">
+                <hr />
+                <div class="form-group">
+                    <label for="topicAuthEnabled" class="col-md-3 control-label">Authorisation enabled</label>
+                    <div class="col-md-9">
+                        <input type="checkbox" id="topicAuthEnabled" name="topicAuthEnabled" ng-model="topic.auth.enabled" />
+                    </div>
+                </div>
+
+                <div class="form-group {{topicForm.topicPublishers.$valid ? '' : 'has-error'}}">
+                    <label for="topicPublishers" class="col-md-3 control-label">Authorised publishers</label>
+                    <div class="col-md-9">
+                        <input ng-model="topic.auth.publishers" ng-list=", " class="form-control" ng-required="topic.auth.enabled" id="topicPublishers" name="topicPublishers" placeholder="who is allowed to publish on this topic? (comma separated)"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="topicUnauthenticatedAccessEnabled" class="col-md-3 control-label">Allow unauthenticated access</label>
+                    <div class="col-md-9">
+                        <input type="checkbox" id="topicUnauthenticatedAccessEnabled" name="topicUnauthenticatedAccessEnabled" ng-model="topic.auth.unauthenticatedAccessEnabled"/>
+                    </div>
+                </div>
+                <hr />
+            </div>
+
             <div class="form-group {{topicForm.topicRetention.$valid ? '' : 'has-error'}}">
                 <label for="topicRetention" class="col-md-3 control-label">Retention time</label>
                 <div class="col-md-9">
