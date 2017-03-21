@@ -41,6 +41,7 @@ pages:
     - 'Kafka and Zookeeper': 'configuration/kafka-and-zookeeper.md'
     - 'Metrics': 'configuration/metrics.md'
     - 'Access security': 'configuration/security.md'
+    - 'Publishing security': 'configuration/publishing-security.md'
     - 'Consumers rate limiter': 'configuration/rate-limiting.md'
     - 'Buffer persistence': 'configuration/buffer-persistence.md'
     - 'Message internal format': 'configuration/internal-format.md'

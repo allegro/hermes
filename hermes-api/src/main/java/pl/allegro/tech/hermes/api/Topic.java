@@ -192,8 +192,8 @@ public class Topic {
     }
 
     @JsonIgnore
-    public boolean isUnauthorisedAccessEnabled() {
-        return publishingAuth.isUnauthorisedAccessEnabled();
+    public boolean isUnauthenticatedAccessEnabled() {
+        return publishingAuth.isUnauthenticatedAccessEnabled();
     }
 
     public boolean hasPermission(String publisher) {
