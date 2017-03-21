@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
+import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
@@ -17,7 +18,7 @@ class AvroEncodedJsonAvroConverter {
     byte[] convertToAvro(byte[] bytes, Schema schema) {
         try {
             return convertToAvro(readJson(bytes, schema), schema);
-        } catch (IOException e) {
+        } catch (IOException | AvroRuntimeException e) {
             throw new AvroConversionException("Failed to convert to AVRO.", e);
         }
     }
