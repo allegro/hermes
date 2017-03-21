@@ -57,6 +57,8 @@ and we always preserve a *MIN_MAX_RATE* for a consumer.
 - Recalculation is done every *BALANCE_INTERVAL* seconds.
 - Consumer updates it's delivery attempt rate history every *UPDATE_INTERVAL*
 if the change from previous recorded value is greater than *MIN_SIGNIFICANT_CHANGE_PERCENT*.
+- *MIN_SIGNIFICANT_CHANGE_PERCENT* / 100 must be lower than *BUSY_TOLERANCE*, as otherwise 
+consumers would (in some cases) not enter busy state
 - At the moment *RATE_HISTORY_SIZE* is ignored, defaulting to 1,
 and might be used in future versions of the algorithm
 
@@ -71,4 +73,4 @@ RATE_HISTORY_SIZE              | consumer.maxrate.history.size                  
 BUSY_TOLERANCE                 | consumer.maxrate.busy.tolerance                 | 0.1
 MIN_MAX_RATE                   | consumer.maxrate.min.value                      | 1.0
 MIN_CHANGE_PERCENT             | consumer.maxrate.min.allowed.change.percent     | 1.0
-MIN_SIGNIFICANT_CHANGE_PERCENT | consumer.maxrate.min.significant.update.percent | 10.0
+MIN_SIGNIFICANT_CHANGE_PERCENT | consumer.maxrate.min.significant.update.percent | 9.0
