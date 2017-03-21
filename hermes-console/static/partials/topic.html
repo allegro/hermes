@@ -15,6 +15,18 @@
     </div>
 
     <h1><small>Topic:</small> {{topic.name}}</h1>
+
+    <div class="pull-right ng-hide" ng-show="config.authEnabled">
+        <div uib-popover="Authorisation is enabled for this topic." popover-trigger="mouseenter"
+             ng-show="topic.auth.enabled && !topic.auth.unauthenticatedAccessEnabled" class="ng-hide badge alert-success">
+            Secured <span class="glyphicon glyphicon-lock"></span>
+        </div>
+        <div uib-popover="Currently anyone is allowed to publish on this topic without authentication. Consider enabling authorisation." popover-trigger="mouseenter"
+             ng-show="topic && !topic.auth.enabled || topic.auth.unauthenticatedAccessEnabled" class="ng-hide badge alert-warning">
+            Unauthenticated access allowed <span class="glyphicon glyphicon-alert"></span>
+        </div>
+    </div>
+
     <h3><small>Owner:</small> <owner-name owner="topic.owner"/></h3>
 
     <p class="lead">{{topic.description}}</p>
@@ -58,6 +70,22 @@
                     </p>
                     <p><strong>Tracking enabled:</strong> {{topic.trackingEnabled}}</p>
                     <p><strong>Max message size:</strong> {{topic.maxMessageSize | readableSize}}</p>
+
+                    <div class="ng-hide" ng-show="config.authEnabled">
+                        <hr />
+                        <p>
+                            <strong>Authorisation enabled:</strong> {{topic.auth.enabled}}
+                        </p>
+                        <p>
+                            <strong>Authorised publishers:</strong> {{topic.auth.publishers.join(', ')}}
+                            <span uib-popover='When authorisation is enabled, only authenticated services are allowed to publish on this topic.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                        </p>
+                        <p>
+                            <strong>Allow unauthenticated access:</strong> {{topic.auth.unauthenticatedAccessEnabled}}
+                            <span uib-popover='Allowing unauthenticated access should be enabled only when migrating topic to authorised, so both authenticated and unauthenticated clients are allowed to publish simultaneously.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                        </p>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -81,7 +109,7 @@
         </div>
     </div>
 
-    <div class="row" ng-show="previewEnabled">
+    <div class="row" ng-show="config.messagePreviewEnabled">
         <div class="col-md-12">
             <div class="panel panel-default">
                 <div style="position: relative">

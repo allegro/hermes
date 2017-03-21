@@ -39,6 +39,7 @@
     },
     "topic": {
         "messagePreviewEnabled": false,
+        "authEnabled": false,
         "defaults": {
             "ack": "LEADER",
             "contentType": "JSON",
