@@ -34,6 +34,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_JSON;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
@@ -180,6 +181,22 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // when
         Response response = publisher.publish("avro.topic2", user.asJson());
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
+    }
+
+    @Test
+    public void shouldPublishAvroEncodedJsonMessageConvertedToAvroForAvroTopics() {
+        // given
+        Topic topic = operations.buildTopic(topic("avro.topic2")
+                .withContentType(AVRO)
+                .build()
+        );
+        operations.saveSchema(topic, user.getSchemaAsString());
+
+        // when
+        Response response = publisher.publish("avro.topic2", user.asAvroEncodedJson(), Collections.singletonMap("Content-Type", AVRO_JSON));
 
         // then
         assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
