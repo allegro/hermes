@@ -5,12 +5,10 @@ import pl.allegro.tech.hermes.test.helper.client.Hermes;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.Response;
 import java.util.Map;
-
-import static javax.ws.rs.client.Entity.text;
-
 
 public class HermesPublisher {
 
@@ -28,7 +26,8 @@ public class HermesPublisher {
     }
 
     public Response publish(String qualifiedTopicName, String message, Map<String, String> headers) {
-        return webTarget.path(qualifiedTopicName).request().headers(new MultivaluedHashMap<>(headers)).post(text(message));
+        String contentType = headers.getOrDefault("Content-Type", MediaType.TEXT_PLAIN);
+        return webTarget.path(qualifiedTopicName).request().headers(new MultivaluedHashMap<>(headers)).post(Entity.entity(message, contentType));
     }
 
     public Response publish(String qualifiedTopicName, byte[] message) {
