@@ -71,14 +71,14 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
 
         @Override
         public List<SchemaVersion> load(Topic topic) throws Exception {
-            logger.info("Loading schema versions for topic {}", topic.getQualifiedName());
+            logger.debug("Loading schema versions for topic {}", topic.getQualifiedName());
             return rawSchemaClient.getVersions(topic.getName());
         }
 
         @Override
         public ListenableFuture<List<SchemaVersion>> reload(Topic topic, List<SchemaVersion> oldVersions) throws Exception {
             ListenableFutureTask<List<SchemaVersion>> task = ListenableFutureTask.create(() -> {
-                logger.info("Reloading schema versions for topic {}", topic.getQualifiedName());
+                logger.debug("Reloading schema versions for topic {}", topic.getQualifiedName());
                 try {
                     return checkSchemaVersionsAreAvailable(topic, rawSchemaClient.getVersions(topic.getName()));
                 } catch (Exception e) {
