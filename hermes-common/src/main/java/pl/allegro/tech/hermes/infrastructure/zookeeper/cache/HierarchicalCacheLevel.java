@@ -52,7 +52,7 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
 
         String path = event.getData().getPath();
         String cacheName = cacheNameFromPath(path);
-        logger.info("Got {} event for path {}", event.getType(), path);
+        logger.debug("Got {} event for path {}", event.getType(), path);
 
         switch (event.getType()) {
             case CHILD_ADDED:
@@ -87,7 +87,7 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
         writeLock.lock();
         try {
             if (subcacheMap.containsKey(cacheName)) {
-                logger.info("Possible duplicate of new entry for {}, ignoring", cacheName);
+                logger.debug("Possible duplicate of new entry for {}, ignoring", cacheName);
                 return;
             }
             nextLevelFactory.ifPresent(f -> subcacheMap.put(cacheName, f.apply(currentDepth + 1, path)));
@@ -103,7 +103,7 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
         try {
             HierarchicalCacheLevel subcache = subcacheMap.remove(cacheName);
             if (subcache == null) {
-                logger.info("Possible duplicate of removed entry for {}, ignoring", cacheName);
+                logger.debug("Possible duplicate of removed entry for {}, ignoring", cacheName);
                 return;
             }
             subcache.close();
