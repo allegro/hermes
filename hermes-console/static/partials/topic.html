@@ -91,9 +91,10 @@
                     <h3 class="panel-title">Topic messages preview</h3>
                 </div>
                 <div class="panel-body" uib-collapse="!showPreview">
-                    <pre class="pre-scrollable" ng-repeat="message in preview track by $index">
-{{message}}
-                    </pre>
+                    <div class="pre-scrollable message-preview" ng-repeat="message in preview track by $index">
+                        <pre class="content">{{message.content}}</pre>
+                        <span class="truncated-info" ng-if="::(message.truncated)">(preview was too large and has been truncated)</span>
+                    </div>
                 </div>
             </div>
         </div>

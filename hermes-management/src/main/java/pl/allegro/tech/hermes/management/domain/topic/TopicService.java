@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
+import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.Auditor;
@@ -17,10 +18,10 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareServic
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Component
 public class TopicService {
@@ -127,7 +128,7 @@ public class TopicService {
     public List<String> listQualifiedTopicNames(String groupName) {
         return topicRepository.listTopicNames(groupName).stream()
                 .map(topicName -> new TopicName(groupName, topicName).qualifiedName())
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public List<Topic> listTopics(String groupName) {
@@ -139,7 +140,7 @@ public class TopicService {
                 .map(this::listQualifiedTopicNames)
                 .flatMap(List::stream)
                 .sorted()
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public Topic getTopicDetails(TopicName topicName) {
@@ -160,33 +161,33 @@ public class TopicService {
                 .flatMap(List::stream)
                 .filter(Topic::isTrackingEnabled)
                 .map(Topic::getQualifiedName)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public List<String> listTrackedTopicNames(String groupName) {
         return listTopics(groupName).stream()
                 .filter(Topic::isTrackingEnabled)
                 .map(Topic::getQualifiedName)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public List<String> listFilteredTopicNames(Query<Topic> query) {
         return queryTopic(query)
                 .stream()
                 .map(Topic::getQualifiedName)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public List<String> listFilteredTopicNames(String groupName, Query<Topic> query) {
         return query.filter(listTopics(groupName))
                 .map(Topic::getQualifiedName)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public List<Topic> queryTopic(Query<Topic> query) {
         return query
                 .filter(getAllTopics())
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public List<Topic> getAllTopics() {
@@ -195,22 +196,23 @@ public class TopicService {
                 .stream()
                 .map(topicRepository::listTopics)
                 .flatMap(List::stream)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public Optional<byte[]> preview(TopicName topicName, int idx) {
-        List<byte[]> result = messagePreviewRepository.loadPreview(topicName);
+        List<byte[]> result = messagePreviewRepository.loadPreview(topicName)
+                .stream()
+                .map(MessagePreview::getContent)
+                .collect(toList());
+
         if (idx >= 0 && idx < result.size()) {
             return Optional.of(result.get(idx));
         } else return Optional.empty();
     }
 
-    public List<String> previewText(TopicName topicName) {
-        List<byte[]> result = messagePreviewRepository.loadPreview(topicName);
-        List<String> response = new ArrayList<>(result.size());
-        for (byte[] r : result) {
-            response.add(new String(r, StandardCharsets.UTF_8));
-        }
-        return response;
+    public List<MessageTextPreview> previewText(TopicName topicName) {
+        return messagePreviewRepository.loadPreview(topicName).stream()
+                .map(p -> new MessageTextPreview(new String(p.getContent(), StandardCharsets.UTF_8), p.isTruncated()))
+                .collect(toList());
     }
 }
