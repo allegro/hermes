@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview
 
+import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
@@ -11,7 +12,11 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName
 
 class MessagePreviewLogTest extends Specification {
 
-    private MessagePreviewLog log = new MessagePreviewLog(2);
+    private MessagePreviewFactory factory = Stub(MessagePreviewFactory) {
+        create(_ as byte[]) >> { args -> new MessagePreview(args[0]) }
+    }
+
+    private MessagePreviewLog log = new MessagePreviewLog(factory, 2)
 
     def "should persist messages for topics"() {
         given:
@@ -35,7 +40,7 @@ class MessagePreviewLogTest extends Specification {
         def messages = log.snapshotAndClean()
 
         then:
-        messages.previewOf(fromQualifiedName('group.topic-1')) == [[1] as byte[], [2] as byte[]]
+        messages.previewOf(fromQualifiedName('group.topic-1'))*.content == [[1] as byte[], [2] as byte[]]
     }
 
     def "should be thread safe when adding messages for same topic from multiple threads"() {

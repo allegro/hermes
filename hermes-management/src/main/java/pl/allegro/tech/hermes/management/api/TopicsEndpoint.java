@@ -119,7 +119,7 @@ public class TopicsEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}/preview")
     @ApiOperation(value = "Topic publisher preview", httpMethod = HttpMethod.GET)
-    public List<String> getPreview(@PathParam("topicName") String qualifiedTopicName) {
+    public List<MessageTextPreview> getPreview(@PathParam("topicName") String qualifiedTopicName) {
         return topicService.previewText(TopicName.fromQualifiedName(qualifiedTopicName));
     }
 

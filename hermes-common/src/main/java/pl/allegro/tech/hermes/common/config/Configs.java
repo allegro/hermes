@@ -126,6 +126,7 @@ public enum Configs {
     FRONTEND_AUTHENTICATION_MODE("frontend.authentication.mode", "constraint_driven"),
 
     FRONTEND_MESSAGE_PREVIEW_ENABLED("frontend.message.preview.enabled", false),
+    FRONTEND_MESSAGE_PREVIEW_MAX_SIZE_KB("frontend.message.preview.max.size.kb", 10),
     FRONTEND_MESSAGE_PREVIEW_SIZE("frontend.message.preview.size", 3),
     FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD("frontend.message.preview.log.persist.period.seconds", 30),
 
