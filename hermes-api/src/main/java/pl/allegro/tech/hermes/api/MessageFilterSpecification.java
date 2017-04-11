@@ -28,6 +28,10 @@ public class MessageFilterSpecification {
         return getStringValue("matcher");
     }
 
+    public String getHeader() {
+        return getStringValue("header");
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T getFieldValue(String key) {
         return (T) spec.get(key);
