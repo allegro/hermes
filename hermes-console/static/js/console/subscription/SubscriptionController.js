@@ -218,6 +218,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
                 if(subscription.endpoint === subscriptionBeforeChanges.endpoint) {
                     delete subscriptionToSave.endpoint;
                 }
+                delete subscriptionToSave['oAuthPolicy']; // prevent from resetting password
                 promise = subscriptionRepository.save(topicName, subscriptionToSave).$promise;
             }
 

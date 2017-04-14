@@ -82,8 +82,8 @@ public abstract class ZookeeperBasedRepository {
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> T readFrom(String path, TypeReference<T> type) {
-        return readFrom(path, b -> (T) mapper.readValue(b, type), false).get();
+    protected <T> Optional<T> readFrom(String path, TypeReference<T> type, boolean quiet) {
+        return readFrom(path, b -> (T) mapper.readValue(b, type), quiet);
     }
 
     private <T> Optional<T> readFrom(String path, ThrowingReader<T> supplier, boolean quiet) {
@@ -129,10 +129,6 @@ public abstract class ZookeeperBasedRepository {
         } catch (Exception ex) {
             throw new InternalProcessingException(ex);
         }
-    }
-
-    interface PostProcessor {
-        Object invoke(byte[] data, Object value);
     }
 
     private interface ThrowingReader<T> {

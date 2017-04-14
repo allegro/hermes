@@ -1,3 +1,57 @@
+## 0.11.3 (13.04.2017)
+
+### Features
+
+#### ([753](https://github.com/allegro/hermes/issues/753)) Filtering by headers
+
+Added new filter type: `header` that allows on filtering messages by HTTP headers. Example of filter definition:
+
+```
+{"type": "header", "header": "My-Propagated-Header", "matcher": "^abc.*"}
+```
+
+Mind that by default no headers are propagated from Frontend to Consumers. To enable headers propagation, define and register 
+own `HeadersPropagator` via `HermesFrontend.Builder#withHeadersPropagator`.
+
+#### ([749](https://github.com/allegro/hermes/pull/749)) Handling `avro/json` content type
+
+When converting messages from JSON to Avro Hermes uses [json-avro-converter](https://github.com/allegro/json-avro-converter)
+to provide smooth experience, that does not require changing already produced JSONs (for instance to to support optional 
+fields).
+
+However in some rare cases it might be desired to send JSON messages that are compatible with
+[standard Avro JSON encoding](https://avro.apache.org/docs/1.8.1/spec.html#json_encoding). To use vanilla JSON -> Avro converter and bypass `json-avro-converter`, send requests with `avro/json` content type.
+
+### Enhancements
+
+#### ([748](https://github.com/allegro/hermes/pull/748)) Topic authorization controls and status in Console
+
+Console now has support for toggling auth on topics. This is an opt-in feature, enable by specifying:
+
+```
+{
+    "topic": {
+        "authEnabled": true,
+    }
+}
+```
+
+In Console `config.json`.
+
+#### ([710](https://github.com/allegro/hermes/issues/710)) Limit size of messages in preview
+
+#### ([751](https://github.com/allegro/hermes/pull/751)) Move Zookeeper cache update logs to DEBUG level
+
+#### ([750](https://github.com/allegro/hermes/pull/750)) Move Schema Registry cache refresh logs to DEBUG level
+
+### Bugfixes
+
+#### ([737](https://github.com/allegro/hermes/issues/737)) Updating subscription in hermes-console resets OAuth password
+
+#### ([734](https://github.com/allegro/hermes/issues/734)) Prevent manual setting of subscription state to PENDING
+
+#### ([743](https://github.com/allegro/hermes/pull/743)) Better defaults for max-rate algorithm
+
 ## 0.11.2 (15.03.2017)
 
 ### Enhancements

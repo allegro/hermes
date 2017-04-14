@@ -33,6 +33,15 @@ public class MessageContentTypeEnforcerTest {
     }
 
     @Test
+    public void shouldConvertToAvroWhenReceivedAvroJSONOnAvroTopic() throws IOException {
+        // when
+        byte[] enforcedMessage = enforcer.enforceAvro("avro/json", avroMessage.asAvroEncodedJson().getBytes(), schema.getSchema(), topic);
+
+        // then
+        assertThat(enforcedMessage).isEqualTo(avroMessage.asBytes());
+    }
+
+    @Test
     public void shouldStringContentTypeOfAdditionalOptionsWhenInterpretingIt() throws IOException {
         // when
         byte[] enforcedMessage = enforcer.enforceAvro("application/json;encoding=utf-8", avroMessage.asJson().getBytes(), schema.getSchema(), topic);

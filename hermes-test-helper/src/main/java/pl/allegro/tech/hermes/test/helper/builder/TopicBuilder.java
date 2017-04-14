@@ -33,7 +33,7 @@ public class TopicBuilder {
 
     private boolean authEnabled = false;
 
-    private boolean unauthorisedAccessEnabled = true;
+    private boolean unauthenticatedAccessEnabled = true;
 
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
@@ -55,7 +55,7 @@ public class TopicBuilder {
         return new Topic(
                 name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
                 jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize,
-                new PublishingAuth(publishers, authEnabled, unauthorisedAccessEnabled)
+                new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled)
         );
     }
 
@@ -124,8 +124,8 @@ public class TopicBuilder {
         return this;
     }
 
-    public TopicBuilder withUnauthorisedAccessDisabled() {
-        this.unauthorisedAccessEnabled = false;
+    public TopicBuilder withUnauthenticatedAccessDisabled() {
+        this.unauthenticatedAccessEnabled = false;
         return this;
     }
 }

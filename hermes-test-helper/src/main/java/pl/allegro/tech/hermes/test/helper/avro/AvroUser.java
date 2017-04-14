@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.test.helper.avro;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -10,10 +11,12 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import static java.util.Optional.ofNullable;
 import static pl.allegro.tech.hermes.test.helper.avro.RecordToBytesConverter.recordToBytes;
 
 public class AvroUser {
 
+    private static final String METADATA_FIELD = "__metadata";
     private static final String NAME_FIELD = "name";
     private static final String AGE_FIELD = "age";
     private static final String FAVORITE_COLOR_FIELD = "favoriteColor";
@@ -68,8 +71,17 @@ public class AvroUser {
         return asTestMessage().toString();
     }
 
+    public String asAvroEncodedJson() {
+        return asAvroEncodedTestMessage().toString();
+    }
+
     public TestMessage asTestMessage() {
         return TestMessage.of(NAME_FIELD, getName()).append(AGE_FIELD, getAge()).append(FAVORITE_COLOR_FIELD, getFavoriteColor());
+    }
+
+    public TestMessage asAvroEncodedTestMessage() {
+        Object favoriteColorType = ofNullable(getFavoriteColor()).map(color -> (Object)ImmutableMap.of("string", color)).orElse("null");
+        return TestMessage.of(METADATA_FIELD, null).append(NAME_FIELD, getName()).append(AGE_FIELD, getAge()).append(FAVORITE_COLOR_FIELD, favoriteColorType);
     }
 
     public static AvroUser create(CompiledSchema<Schema> schema, byte[] bytes) {

@@ -19,7 +19,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
 
         $scope.fetching = true;
         $scope.showMessageSchema = false;
-        $scope.previewEnabled = topicConfig.messagePreviewEnabled;
+        $scope.config = topicConfig;
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema.topic;

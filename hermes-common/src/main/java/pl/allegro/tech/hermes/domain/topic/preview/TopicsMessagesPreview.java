@@ -2,18 +2,14 @@ package pl.allegro.tech.hermes.domain.topic.preview;
 
 import pl.allegro.tech.hermes.api.TopicName;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TopicsMessagesPreview {
 
-    private final Map<TopicName, List<byte[]>> messages = new HashMap<>();
+    private final Map<TopicName, List<MessagePreview>> messages = new HashMap<>();
 
-    public void add(TopicName topicName, byte[] message) {
-        List<byte[]> messageList = messages.computeIfAbsent(topicName, k -> new ArrayList<byte[]>());
+    public void add(TopicName topicName, MessagePreview message) {
+        List<MessagePreview> messageList = messages.computeIfAbsent(topicName, k -> new ArrayList<>());
         messageList.add(message);
     }
 
@@ -21,7 +17,7 @@ public class TopicsMessagesPreview {
         return messages.keySet();
     }
 
-    public List<byte[]> previewOf(TopicName topic) {
+    public List<MessagePreview> previewOf(TopicName topic) {
         return messages.getOrDefault(topic, new ArrayList<>());
     }
 }

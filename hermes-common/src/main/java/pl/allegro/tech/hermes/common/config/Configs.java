@@ -126,6 +126,7 @@ public enum Configs {
     FRONTEND_AUTHENTICATION_MODE("frontend.authentication.mode", "constraint_driven"),
 
     FRONTEND_MESSAGE_PREVIEW_ENABLED("frontend.message.preview.enabled", false),
+    FRONTEND_MESSAGE_PREVIEW_MAX_SIZE_KB("frontend.message.preview.max.size.kb", 10),
     FRONTEND_MESSAGE_PREVIEW_SIZE("frontend.message.preview.size", 3),
     FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD("frontend.message.preview.log.persist.period.seconds", 30),
 
@@ -179,7 +180,7 @@ public enum Configs {
     CONSUMER_MAXRATE_BUSY_TOLERANCE("consumer.maxrate.busy.tolerance", 0.1),
     CONSUMER_MAXRATE_MIN_MAX_RATE("consumer.maxrate.min.value", 1.0),
     CONSUMER_MAXRATE_MIN_ALLOWED_CHANGE_PERCENT("consumer.maxrate.min.allowed.change.percent", 1.0),
-    CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT("consumer.maxrate.min.significant.update.percent", 10.0),
+    CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT("consumer.maxrate.min.significant.update.percent", 9.0),
 
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
     CONSUMER_WORKLOAD_ALGORITHM("consumer.workload.algorithm", "selective"),

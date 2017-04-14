@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilterSource;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilters;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.SubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.avro.AvroPathSubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.header.HeaderSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.json.JsonPathSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
@@ -133,6 +134,7 @@ public final class HermesConsumersBuilder {
         List<SubscriptionMessageFilterCompiler> availableFilters = new ArrayList<>(filters);
         availableFilters.add(new JsonPathSubscriptionMessageFilterCompiler());
         availableFilters.add(new AvroPathSubscriptionMessageFilterCompiler());
+        availableFilters.add(new HeaderSubscriptionMessageFilterCompiler());
         return new MessageFilters(globalFilters, availableFilters);
     }
 }

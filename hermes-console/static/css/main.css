@@ -53,3 +53,11 @@ span.helpme {
 a.navbar-brand.console-title {
     color: #2a6496;
 }
+
+.message-preview > .content {
+    margin: 10px 0 0 0;
+}
+
+.message-preview > .truncated-info {
+    font-style: italic;
+}

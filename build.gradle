@@ -47,7 +47,7 @@ allprojects {
             guava       : '20.0',
             jackson     : '2.8.3',
             jersey      : '2.23.2',
-            jetty       : '9.3.6.v20151106',
+            jetty       : '9.3.18.v20170406',
             curator     : '2.11.1',
             wiremock    : '1.58',
             fongo       : '1.6.1',

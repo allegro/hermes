@@ -90,7 +90,9 @@ public class SubscriptionService {
                                    PatchData patch,
                                    String modifiedBy) {
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+        Subscription.State oldState = retrieved.getState();
         Subscription updated = Patch.apply(retrieved, patch);
+        revertStateIfChangedToPending(updated, oldState);
         subscriptionValidator.checkModification(updated);
 
         if (!retrieved.equals(updated)) {
@@ -99,9 +101,15 @@ public class SubscriptionService {
         }
     }
 
+    private void revertStateIfChangedToPending(Subscription updated, Subscription.State oldState) {
+        if (updated.getState() == Subscription.State.PENDING) {
+            updated.setState(oldState);
+        }
+    }
+
     public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state, String modifiedBy) {
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
-        if (!retrieved.getState().equals(state)) {
+        if (state != Subscription.State.PENDING && !retrieved.getState().equals(state)) {
             Subscription updated = Patch.apply(retrieved, PatchData.patchData().set("state", state).build());
             subscriptionRepository.updateSubscription(updated);
             auditor.objectUpdated(modifiedBy, retrieved, updated);

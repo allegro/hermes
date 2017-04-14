@@ -20,6 +20,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnfo
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
+import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewFactory;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
@@ -80,6 +81,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(PersistentBufferExtension.class);
         bindSingleton(MessagePreviewPersister.class);
         bindSingleton(MessagePreviewLog.class);
+        bindSingleton(MessagePreviewFactory.class);
         bindSingletonFactory(BlacklistZookeeperNotifyingCacheFactory.class);
     }
 
