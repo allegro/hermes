@@ -35,6 +35,17 @@
             <owner-selector form="subscriptionForm" source="subscription.owner.source" owner="subscription.owner.id"></owner-selector>
 
             <div class="form-group">
+                <label for="subscriptionState" class="col-md-3 control-label">Initial state</label>
+                <div class="col-md-9">
+                    <select required class="form-control" id="subscriptionState" name="subscriptionState" ng-model="subscription.state">
+                        <option value="PENDING">PENDING</option>
+                        <option value="SUSPENDED">SUSPENDED</option>
+                        <option value="ACTIVE">ACTIVE</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
                 <label for="subscriptionType" class="col-md-3 control-label">Content type</label>
                 <div class="col-md-9">
                     <select required class="form-control" id="subscriptionType" name="subscriptionType" ng-model="subscription.contentType">
