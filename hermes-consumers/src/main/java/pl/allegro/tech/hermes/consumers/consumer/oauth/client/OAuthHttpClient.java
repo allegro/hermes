@@ -9,6 +9,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessToken;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -23,8 +24,8 @@ public class OAuthHttpClient implements OAuthClient {
     private final ObjectMapper objectMapper;
 
     @Inject
-    public OAuthHttpClient(HttpClient httpClient, ObjectMapper objectMapper) {
-        this.httpClient = httpClient;
+    public OAuthHttpClient(HttpClientFactory httpClientFactory, ObjectMapper objectMapper) {
+        this.httpClient = httpClientFactory.createClientForHttp1("jetty-http-oauthclient");
         this.objectMapper = objectMapper;
     }
 
@@ -76,6 +77,24 @@ public class OAuthHttpClient implements OAuthClient {
             return objectMapper.readValue(response.getContentAsString(), OAuthTokenResponse.class);
         } catch (IOException e) {
             throw new OAuthTokenRequestException("An exception occurred while reading token response", e);
+        }
+    }
+
+    @Override
+    public void start() {
+        try {
+            this.httpClient.start();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void stop() {
+        try {
+            this.httpClient.stop();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 }

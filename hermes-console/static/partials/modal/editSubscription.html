@@ -169,6 +169,17 @@
                 </div>
             </div>
 
+            <div class="form-group {{subscriptionForm.http2Enabled.$valid ? '' : 'has-error'}}">
+                <label for="http2Enabled" class="col-md-3 control-label">Deliver using http/2</label>
+                <div class="col-md-9">
+                    <div class="input-group checkbox">
+                        <label>
+                            <input type="checkbox" id="http2Enabled" name="http2Enabled" ng-model="subscription.http2Enabled"/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-group" ng-repeat="(key, entry) in endpointAddressResolverMetadataConfig">
                 <label for="{{key}}" class="col-md-3 control-label">{{entry.title}}</label>
                 <div class="col-md-9" ng-switch on="entry.type">
