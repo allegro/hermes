@@ -7,6 +7,7 @@ install: ./gradlew assemble
 script:
   - "./gradlew check -Ptests.timeout.multiplier=3"
   - "./gradlew -Ptests.timeout.multiplier=3 integrationTest"
+  - "./gradlew jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0 -Pjmh.jvmArgs=\"-Xmx256m -XX:+UseConcMarkSweepGC\""
 
 jdk:
   - oraclejdk8
