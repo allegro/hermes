@@ -36,7 +36,7 @@ public class MessageConfiguration {
     @Bean
     MessageContentWrapper messageContentWrapper() {
         return new MessageContentWrapper(jsonMessageContentWrapper(), new AvroMessageContentWrapper(clock), schemaRepository,
-                new DeserializationMetrics(metricRegistry));
+                () -> true, new DeserializationMetrics(metricRegistry));
     }
 
     private JsonMessageContentWrapper jsonMessageContentWrapper() {

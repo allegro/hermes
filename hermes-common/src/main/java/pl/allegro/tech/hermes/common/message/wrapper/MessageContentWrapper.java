@@ -20,6 +20,7 @@ public class MessageContentWrapper {
     private final JsonMessageContentWrapper jsonMessageContentWrapper;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
     private final SchemaRepository schemaRepository;
+    private final SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter;
 
     private final Counter deserializationWithMissedSchemaVersionInPayload;
     private final Counter deserializationErrorsForSchemaVersionAwarePayload;
@@ -30,10 +31,12 @@ public class MessageContentWrapper {
     public MessageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
                                  AvroMessageContentWrapper avroMessageContentWrapper,
                                  SchemaRepository schemaRepository,
+                                 SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter,
                                  DeserializationMetrics deserializationMetrics) {
         this.jsonMessageContentWrapper = jsonMessageContentWrapper;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
         this.schemaRepository = schemaRepository;
+        this.schemaOnlineChecksRateLimiter = schemaOnlineChecksRateLimiter;
 
         deserializationErrorsForSchemaVersionAwarePayload = deserializationMetrics.errorsForSchemaVersionAwarePayload();
         deserializationErrorsForAnySchemaVersion = deserializationMetrics.errorsForAnySchemaVersion();
@@ -84,6 +87,9 @@ public class MessageContentWrapper {
     }
 
     private UnwrappedMessageContent tryDeserializingUsingAnySchemaVersion(byte[] data, Topic topic, boolean online) {
+        if (online) {
+            limitSchemaRepositoryOnlineCallsRate(topic);
+        }
         List<SchemaVersion> versions = schemaRepository.getVersions(topic, online);
         for (SchemaVersion version : versions) {
             try {
@@ -95,10 +101,18 @@ public class MessageContentWrapper {
                         topic.getQualifiedName(), version.value());
             }
         }
-        logger.error("Could not match schema from cache for message for topic {} {}",
-                topic.getQualifiedName(), SchemaVersion.toString(versions));
+        logger.error("Could not match schema {} for message of topic {} {}",
+                online ? "online" : "from cache", topic.getQualifiedName(), SchemaVersion.toString(versions));
         deserializationErrorsCounterForAnySchemaVersion(online).inc();
         throw new SchemaMissingException(topic);
+    }
+
+    private void limitSchemaRepositoryOnlineCallsRate(Topic topic) {
+        if (!schemaOnlineChecksRateLimiter.tryAcquireOnlineCheckPermit()) {
+            logger.error("Could not match schema online for message of topic {} " +
+                    "due to too many schema repository requests", topic.getQualifiedName());
+            throw new SchemaMissingException(topic);
+        }
     }
 
     private Counter deserializationErrorsCounterForAnySchemaVersion(boolean online) {
