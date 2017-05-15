@@ -51,7 +51,8 @@
             {"value": "AVRO", "label": "AVRO"},
             {"value": "JSON", "label": "JSON"}
         },
-        "removeSchema": false
+        "removeSchema": false,
+        "buttonsExtension": "<a class=\"btn btn-info {{topic.contentType === 'JSON' ? 'ng-show' : 'ng-hide'}}\" ng-href='http://migrator.example/topics/{{topic.name}}'>Migrate to AVRO</a>"
     },
     "subscription": {
         "endpointAddressResolverMetadata": {

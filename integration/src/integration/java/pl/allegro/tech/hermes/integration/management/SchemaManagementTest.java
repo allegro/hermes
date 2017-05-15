@@ -95,4 +95,16 @@ public class SchemaManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
     }
+
+    @Test
+    public void shouldReturnBadRequestDueToNoSchemaValidatorForJsonTopic() {
+        // given
+        operations.buildTopic("someGroup", "jsonTopic");
+
+        // when
+        Response response = management.schema().save("someGroup.jsonTopic", true, EXAMPLE_SCHEMA);
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+    }
 }
