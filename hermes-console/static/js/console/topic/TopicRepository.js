@@ -39,13 +39,15 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
             list: listing.query,
             get: function (name) {
                 return repository.get({name: name}).$promise.then(function(topic) {
-                    return schemaRepository.get(topic.name).$promise.then(function(schema) {
-                        var schemaStr = JSON.stringify(schema, ngPromiseCleaner, 2);
-
-                        topic.shortName = topic.name.substring(topic.name.lastIndexOf('.') + 1);
-
-                        return {topic: topic, messageSchema: schemaStr != '{}' ? schemaStr : null};
-                    })
+                    topic.shortName = topic.name.substring(topic.name.lastIndexOf('.') + 1);
+                    if (topic.contentType == 'AVRO') {
+                        return schemaRepository.get(topic.name).$promise.then(function(schema) {
+                            var schemaStr = JSON.stringify(schema, ngPromiseCleaner, 2);
+                            return {topic: topic, messageSchema: schemaStr != '{}' ? schemaStr : null};
+                        })
+                    } else {
+                        return {topic: topic, messageSchema: null};
+                    }
                 });
             },
             add: function (topic, schema) {

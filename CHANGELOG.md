@@ -1,3 +1,19 @@
+## 0.11.4 (15.05.2017)
+
+### Features
+
+#### ([764](https://github.com/allegro/hermes/pull/764)) Custom button on UI.
+
+Allows to configure custom view near topic buttons area on hermes-console. Custom view can be set via configuration file, example:
+
+```
+{
+    "topic": {
+        "buttonsExtension": "<a class=\"btn btn-info {{topic.contentType === 'JSON' ? 'ng-show' : 'ng-hide'}}\" ng-href='http://migrator.example/topics/{{topic.name}}'>Migrate to AVRO</a>",
+    }
+}
+```
+
 ## 0.11.3 (13.04.2017)
 
 ### Features
