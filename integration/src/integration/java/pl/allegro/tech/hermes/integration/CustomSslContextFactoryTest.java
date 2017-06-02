@@ -6,7 +6,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
-import pl.allegro.tech.hermes.frontend.server.SslContextFactory;
+import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.util.Ports;

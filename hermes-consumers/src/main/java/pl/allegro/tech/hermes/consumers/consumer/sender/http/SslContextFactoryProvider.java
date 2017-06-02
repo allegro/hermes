@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.server;
+package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -23,15 +23,15 @@ public class SslContextFactoryProvider {
     }
 
     private SslContextFactory getDefault() {
-        String protocol = configFactory.getStringProperty(Configs.FRONTEND_SSL_PROTOCOL);
+        String protocol = configFactory.getStringProperty(Configs.CONSUMER_SSL_PROTOCOL);
         KeystoreProperties keystoreProperties = new KeystoreProperties(
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_KEYSTORE_LOCATION),
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_KEYSTORE_FORMAT),
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_KEYSTORE_PASSWORD));
+                configFactory.getStringProperty(Configs.CONSUMER_SSL_KEYSTORE_LOCATION),
+                configFactory.getStringProperty(Configs.CONSUMER_SSL_KEYSTORE_FORMAT),
+                configFactory.getStringProperty(Configs.CONSUMER_SSL_KEYSTORE_PASSWORD));
         KeystoreProperties truststoreProperties = new KeystoreProperties(
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_TRUSTSTORE_LOCATION),
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_TRUSTSTORE_FORMAT),
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_TRUSTSTORE_PASSWORD));
+                configFactory.getStringProperty(Configs.CONSUMER_SSL_TRUSTSTORE_LOCATION),
+                configFactory.getStringProperty(Configs.CONSUMER_SSL_TRUSTSTORE_FORMAT),
+                configFactory.getStringProperty(Configs.CONSUMER_SSL_TRUSTSTORE_PASSWORD));
         return new JvmKeystoreSslContextFactory(protocol, keystoreProperties, truststoreProperties);
     }
 }

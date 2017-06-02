@@ -1,7 +1,4 @@
-package pl.allegro.tech.hermes.frontend.server;
-
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
+package pl.allegro.tech.hermes.common.ssl;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -25,18 +22,6 @@ public class JvmKeystoreSslContextFactory implements SslContextFactory {
     private final String protocol;
     private final KeystoreProperties keyStoreProperties;
     private final KeystoreProperties trustStoreProperties;
-
-    public JvmKeystoreSslContextFactory(ConfigFactory configFactory) {
-        this(configFactory.getStringProperty(Configs.FRONTEND_SSL_PROTOCOL),
-                new KeystoreProperties(
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_KEYSTORE_LOCATION),
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_KEYSTORE_FORMAT),
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_KEYSTORE_PASSWORD)),
-                new KeystoreProperties(
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_TRUSTSTORE_LOCATION),
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_TRUSTSTORE_FORMAT),
-                        configFactory.getStringProperty(Configs.FRONTEND_SSL_TRUSTSTORE_PASSWORD)));
-    }
 
     public JvmKeystoreSslContextFactory(String protocol, KeystoreProperties keyStoreProperties, KeystoreProperties trustStoreProperties) {
         this.protocol = protocol;

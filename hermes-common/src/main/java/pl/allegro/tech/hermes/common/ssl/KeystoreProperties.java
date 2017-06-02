@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.server;
+package pl.allegro.tech.hermes.common.ssl;
 
 
 import java.net.URI;
