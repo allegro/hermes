@@ -117,6 +117,11 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         return getTopicDetails(topicName, false).get();
     }
 
+    @Override
+    public boolean isSubscribingRestricted(TopicName topicName) {
+        return getTopicDetails(topicName).isSubscribingRestricted();
+    }
+
     private Optional<Topic> getTopicDetails(TopicName topicName, boolean quiet) {
         ensureTopicExists(topicName);
 

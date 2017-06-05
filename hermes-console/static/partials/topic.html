@@ -86,6 +86,11 @@
                             <span uib-popover='Allowing unauthenticated access should be enabled only when migrating topic to authorised, so both authenticated and unauthenticated clients are allowed to publish simultaneously.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                         </p>
                     </div>
+                    <hr />
+                    <p>
+                        <strong>Restrict subscribing:</strong> {{topic.subscribingRestricted}}
+                        <span uib-popover='When subscribing is restricted, only owner of this topic can create new subscriptions.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
 
                 </div>
             </div>
