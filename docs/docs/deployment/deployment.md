@@ -93,11 +93,11 @@ SPRING_CONFIG_LOCATION="file:///opt/hermes/conf/management.properties"
 ### Overwriting configuration using ENV
 
 ```bash
-export HERMES_MANAGEMENT_OPTS="--<configuration-option>=<value>"
+export HERMES_MANAGEMENT_OPTS="-D<configuration-option>=<value>"
 ```
 
 ```bash
-export HERMES_MANAGEMENT_OPTS="--server.port=8070"
+export HERMES_MANAGEMENT_OPTS="-Dserver.port=8070"
 ```
 
 ## Console
