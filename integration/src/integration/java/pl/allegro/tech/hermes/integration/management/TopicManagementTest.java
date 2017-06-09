@@ -275,4 +275,32 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(management.topic().get(topic.getQualifiedName()).getMaxMessageSize()).isEqualTo(1024);
     }
+
+    @Test
+    public void shouldCreateTopicWithRestrictedSubscribing() {
+        // given
+        Topic topic = TopicBuilder.topic("restricted", "topic").withSubscribingRestricted().build();
+        assertThat(management.group().create(new Group(topic.getName().getGroupName(), "a"))).hasStatus(CREATED);
+
+        // when
+        Response response = management.topic().create(topic);
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+        assertThat(management.topic().get(topic.getQualifiedName()).isSubscribingRestricted()).isTrue();
+    }
+
+    @Test
+    public void shouldUpdateTopicWithRestrictedSubscribing() {
+        // given
+        Topic topic = TopicBuilder.topic("updateRestricted", "topic").build();
+        operations.buildTopic(topic);
+        PatchData restricted = PatchData.from(ImmutableMap.of("subscribingRestricted", true));
+
+        // when
+        assertThat(management.topic().update(topic.getQualifiedName(), restricted)).hasStatus(OK);
+
+        // then
+        assertThat(management.topic().get(topic.getQualifiedName()).isSubscribingRestricted()).isTrue();
+    }
 }

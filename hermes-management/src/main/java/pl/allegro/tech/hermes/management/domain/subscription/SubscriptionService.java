@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.Auditor;
+import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -71,9 +72,16 @@ public class SubscriptionService {
     }
 
     public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights) {
+        checkCreatorRights(subscription, creatorRights);
         subscriptionValidator.checkCreation(subscription, creatorRights);
         subscriptionRepository.createSubscription(subscription);
         auditor.objectCreated(createdBy, subscription);
+    }
+
+    private void checkCreatorRights(Subscription subscription, CreatorRights creatorRights) {
+        if (!creatorRights.allowedToCreate(subscription)) {
+            throw new PermissionDeniedException("You are not allowed to create subscriptions for this topic.");
+        }
     }
 
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {

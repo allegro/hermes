@@ -6,4 +6,5 @@ public interface CreatorRights {
 
     boolean allowedToManage(Subscription subscription);
 
+    boolean allowedToCreate(Subscription subscription);
 }

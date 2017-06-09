@@ -53,12 +53,14 @@ public class Topic {
 
     private boolean schemaVersionAwareSerializationEnabled = false;
 
+    private boolean subscribingRestricted = false;
+
     private PublishingAuth publishingAuth;
 
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
                  boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
-                 int maxMessageSize, PublishingAuth publishingAuth) {
+                 int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted) {
         this.name = name;
         this.description = description;
         this.owner = owner;
@@ -71,6 +73,7 @@ public class Topic {
         this.schemaVersionAwareSerializationEnabled = schemaVersionAwareSerializationEnabled;
         this.maxMessageSize = maxMessageSize;
         this.publishingAuth = publishingAuth;
+        this.subscribingRestricted = subscribingRestricted;
     }
 
     @JsonCreator
@@ -86,12 +89,14 @@ public class Topic {
             @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType,
             @JsonProperty("maxMessageSize") Integer maxMessageSize,
-            @JsonProperty("auth") PublishingAuth publishingAuth
+            @JsonProperty("auth") PublishingAuth publishingAuth,
+            @JsonProperty("subscribingRestricted") boolean subscribingRestricted
             ) {
         this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
                 trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
                 maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize,
-                publishingAuth == null ? PublishingAuth.disabled() : publishingAuth);
+                publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
+                subscribingRestricted);
     }
 
     public RetentionTime getRetentionTime() {
@@ -101,7 +106,7 @@ public class Topic {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize, publishingAuth);
+                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize, publishingAuth, subscribingRestricted);
     }
 
     @Override
@@ -125,6 +130,7 @@ public class Topic {
                 && Objects.equals(this.ack, other.ack)
                 && Objects.equals(this.contentType, other.contentType)
                 && Objects.equals(this.maxMessageSize, other.maxMessageSize)
+                && Objects.equals(this.subscribingRestricted, other.subscribingRestricted)
                 && Objects.equals(this.publishingAuth, other.publishingAuth);
     }
 
@@ -198,6 +204,10 @@ public class Topic {
 
     public boolean hasPermission(String publisher) {
         return publishingAuth.hasPermission(publisher);
+    }
+
+    public boolean isSubscribingRestricted() {
+        return subscribingRestricted;
     }
 
     @Override
