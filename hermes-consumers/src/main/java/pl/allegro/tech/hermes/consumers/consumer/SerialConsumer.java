@@ -135,11 +135,14 @@ public class SerialConsumer implements Consumer {
         this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter);
     }
 
+    /**
+     * Try to keep shutdown order the same as initialization so nothing will left to clean up when error occurs during initialization
+     */
     @Override
     public void tearDown() {
         messageReceiver.stop();
-        rateLimiter.shutdown();
         sender.shutdown();
+        rateLimiter.shutdown();
         consumerAuthorizationHandler.removeSubscriptionHandler(subscription.getQualifiedName());
     }
 

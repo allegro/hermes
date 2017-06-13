@@ -23,7 +23,6 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.time.Clock;
 import java.util.Collection;
@@ -153,7 +152,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
         try {
             consumer.commitSync(createOffset(offsets));
         } catch (Exception ex) {
-            logger.error("Error while committing offset for subscription {}, {}", subscription.getQualifiedName(), ex);
+            logger.error("Error while committing offset for subscription {}", subscription.getQualifiedName(), ex);
             metrics.counter("offset-committer.failed").inc();
         }
     }
