@@ -61,3 +61,8 @@ a.navbar-brand.console-title {
 .message-preview > .truncated-info {
     font-style: italic;
 }
+
+#toast-container > div {
+    width: auto;
+    max-width: 800px;
+}
