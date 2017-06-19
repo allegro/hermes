@@ -1,6 +1,15 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.OAuthProvider;
+import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionMode;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.ws.rs.core.Response;
@@ -10,6 +19,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
@@ -36,35 +46,30 @@ public class HermesAPIOperations {
         wait.untilGroupCreated(group);
     }
 
-    public Topic createTopic(String group, String topic) {
+    public TopicWithSchema createTopic(String group, String topic) {
         Topic created = topic(group, topic)
                 .withRetentionTime(1000)
                 .withDescription("Test topic")
                 .build();
-
-        createTopic(created);
-        return created;
+        return createTopic(created);
     }
 
-    public Topic createAvroTopic(String group, String topic) {
-        Topic created = topic(group, topic)
-                .withRetentionTime(1000)
-                .withDescription("Test topic")
-                .withContentType(ContentType.AVRO)
-                .build();
-
-        createTopic(created);
-        return created;
+    public TopicWithSchema createTopic(Topic topic) {
+        return createTopic(topic, null);
     }
 
-    public Topic createTopic(Topic topic) {
-        if (endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName())) {
-            return topic;
+    public TopicWithSchema createTopic(Topic topic, String schema) {
+        return createTopic(topicWithSchema(topic, schema));
+    }
+
+    public TopicWithSchema createTopic(TopicWithSchema topicWithSchema) {
+        if (endpoints.findTopics(topicWithSchema, topicWithSchema.isTrackingEnabled()).contains(topicWithSchema.getQualifiedName())) {
+            return topicWithSchema;
         }
-        assertThat(endpoints.topic().create(topic).getStatus()).isEqualTo(CREATED.getStatusCode());
+        assertThat(endpoints.topic().create(topicWithSchema).getStatus()).isEqualTo(CREATED.getStatusCode());
 
-        wait.untilTopicCreated(topic);
-        return topic;
+        wait.untilTopicCreated(topicWithSchema);
+        return topicWithSchema;
     }
 
     public void saveSchema(Topic topic, String schema) {
@@ -113,12 +118,12 @@ public class HermesAPIOperations {
         return createTopic(group, topic);
     }
 
-    public Topic buildAvroTopic(String group, String topic) {
-        createGroup(group);
-        return createAvroTopic(group, topic);
+    public TopicWithSchema buildTopicWithSchema(TopicWithSchema topic) {
+        createGroup(topic.getName().getGroupName());
+        return createTopic(topic);
     }
 
-    public Topic buildTopic(Topic topic) {
+    public TopicWithSchema buildTopic(Topic topic) {
         createGroup(topic.getName().getGroupName());
         return createTopic(topic);
     }

@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidator;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
@@ -19,27 +18,24 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 @Component
 public class SchemaService {
 
-    private final TopicService topicService;
     private final RawSchemaClient rawSchemaClient;
     private final SchemaValidatorProvider validatorProvider;
     private final TopicProperties topicProperties;
 
     @Autowired
-    public SchemaService(TopicService topicService, RawSchemaClient rawSchemaClient,
-                         SchemaValidatorProvider validatorProvider, TopicProperties topicProperties) {
-        this.topicService = topicService;
+    public SchemaService(RawSchemaClient rawSchemaClient,
+                         SchemaValidatorProvider validatorProvider,
+                         TopicProperties topicProperties) {
         this.rawSchemaClient = rawSchemaClient;
         this.validatorProvider = validatorProvider;
         this.topicProperties = topicProperties;
     }
 
     public Optional<RawSchema> getSchema(String qualifiedTopicName) {
-        Topic topic = findTopic(qualifiedTopicName);
-        return rawSchemaClient.getLatestSchema(topic.getName());
+        return rawSchemaClient.getLatestSchema(fromQualifiedName(qualifiedTopicName));
     }
 
-    public void registerSchema(String qualifiedTopicName, String schema, boolean validate) {
-        Topic topic = findTopic(qualifiedTopicName);
+    public void registerSchema(Topic topic, String schema, boolean validate) {
         if (validate) {
             SchemaValidator validator = validatorProvider.provide(topic.getContentType());
             validator.check(schema);
@@ -48,19 +44,17 @@ public class SchemaService {
     }
 
     public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaVersion version) {
-        Topic topic = findTopic(qualifiedTopicName);
-        return rawSchemaClient.getSchema(topic.getName(), version);
+        return rawSchemaClient.getSchema(fromQualifiedName(qualifiedTopicName), version);
     }
 
     public void deleteAllSchemaVersions(String qualifiedTopicName) {
         if (!topicProperties.isRemoveSchema()) {
             throw new SchemaRemovalDisabledException();
         }
-        TopicName topicName = TopicName.fromQualifiedName(qualifiedTopicName);
-        rawSchemaClient.deleteAllSchemaVersions(topicName);
+        rawSchemaClient.deleteAllSchemaVersions(fromQualifiedName(qualifiedTopicName));
     }
 
-    private Topic findTopic(String qualifiedTopicName) {
-        return topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
+    public void validateSchema(TopicName topic, String schema) {
+        rawSchemaClient.validateSchema(topic, RawSchema.valueOf(schema));
     }
 }

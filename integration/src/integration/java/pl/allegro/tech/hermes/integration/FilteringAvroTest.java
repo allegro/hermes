@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import static com.google.common.collect.ImmutableMap.of;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -41,10 +42,10 @@ public class FilteringAvroTest extends IntegrationTest {
     @Test
     public void shouldFilterIncomingEvents() {
         // given
+        final String schema = AvroUserSchemaLoader.load().toString();
         final Topic topic = topic("filteredTopic.topic")
                 .withContentType(AVRO).build();
-        operations.buildTopic(topic);
-        operations.saveSchema(topic, AvroUserSchemaLoader.load().toString());
+        operations.buildTopicWithSchema(topicWithSchema(topic, schema));
 
         final Subscription subscription = subscription(topic.getName(), "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)
@@ -67,10 +68,10 @@ public class FilteringAvroTest extends IntegrationTest {
     @Test
     public void shouldChainMultipleFilters() {
         // given
+        final String schema = AvroUserSchemaLoader.load().toString();
         final Topic topic = topic("filteredChainTopic.topic")
                 .withContentType(AVRO).build();
-        operations.buildTopic(topic);
-        operations.saveSchema(topic, AvroUserSchemaLoader.load().toString());
+        operations.buildTopicWithSchema(topicWithSchema(topic, schema));
 
         final Subscription subscription = subscription(topic.getName(), "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)

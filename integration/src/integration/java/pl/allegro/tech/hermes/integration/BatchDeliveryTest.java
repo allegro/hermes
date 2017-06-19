@@ -19,7 +19,7 @@ import java.util.Map;
 import static java.util.Arrays.stream;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
-import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -102,11 +102,8 @@ public class BatchDeliveryTest extends IntegrationTest {
     public void shouldDeliverAvroMessagesAsJsonBatch() {
         // given
         AvroUser user = new AvroUser("Bob", 50, "blue");
-
-        Topic topic = topic("batch.avro.topic")
-                .withContentType(AVRO).build();
-        operations.buildTopic(topic);
-        operations.saveSchema(topic, user.getSchemaAsString());
+        Topic topic = topic("batch.avro.topic").build();
+        operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
 
         operations.createBatchSubscription(topic, HTTP_ENDPOINT_URL, buildBatchPolicy()
                 .withBatchSize(2)

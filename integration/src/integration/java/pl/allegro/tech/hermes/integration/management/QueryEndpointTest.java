@@ -2,8 +2,14 @@ package pl.allegro.tech.hermes.integration.management;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.OwnerId;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.util.List;
@@ -13,11 +19,14 @@ import static java.util.Arrays.asList;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class QueryEndpointTest extends IntegrationTest {
+
+    private static final String SCHEMA = AvroUserSchemaLoader.load().toString();
 
     @DataProvider(name = "groupData")
     public static Object[][] groupData() {
@@ -67,12 +76,14 @@ public class QueryEndpointTest extends IntegrationTest {
     @Test(dataProvider = "topicData")
     public void shouldQueryTopic(String query, List<Integer> positions) {
         // given
-        Topic topic1 = operations.buildTopic(topic("testGroup1", "testTopic1").withContentType(AVRO).withTrackingEnabled(false).build());
-        Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build());
-        Topic topic3 = operations.buildTopic(topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).build());
+        Topic topic1 = topic("testGroup1", "testTopic1").withContentType(AVRO).withTrackingEnabled(false).build();
+        operations.buildTopicWithSchema(topicWithSchema(topic1, SCHEMA));
+        Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build()).getTopic();
+        Topic topic3 = topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).build();
+        operations.buildTopicWithSchema(topicWithSchema(topic3, SCHEMA));
         Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true)
                 .withOwner(new OwnerId("Plaintext", "Team Alpha")).build()
-        );
+        ).getTopic();
 
         List<Topic> topics = asList(topic1, topic2, topic3, topic4);
 

@@ -4,16 +4,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.MessageTextPreview;
+import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Query;
+import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
+import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.helpers.Patch;
+import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
-import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
+import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
@@ -24,15 +32,18 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 
 @Component
 public class TopicService {
 
     private static final Logger logger = LoggerFactory.getLogger(TopicService.class);
 
-    private final boolean allowRemoval;
     private final TopicRepository topicRepository;
     private final GroupService groupService;
+    private final TopicProperties topicProperties;
+    private final SchemaService schemaService;
 
     private final TopicMetricsRepository metricRepository;
     private final MessagePreviewRepository messagePreviewRepository;
@@ -47,16 +58,17 @@ public class TopicService {
                         TopicRepository topicRepository,
                         GroupService groupService,
                         TopicProperties topicProperties,
-                        TopicMetricsRepository metricRepository,
+                        SchemaService schemaService, TopicMetricsRepository metricRepository,
                         TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
                         MessagePreviewRepository messagePreviewRepository,
                         Clock clock,
                         Auditor auditor) {
         this.multiDCAwareService = multiDCAwareService;
-        this.allowRemoval = topicProperties.isAllowRemoval();
         this.topicRepository = topicRepository;
         this.groupService = groupService;
+        this.topicProperties = topicProperties;
+        this.schemaService = schemaService;
         this.metricRepository = metricRepository;
         this.topicValidator = topicValidator;
         this.topicContentTypeMigrationService = topicContentTypeMigrationService;
@@ -65,7 +77,48 @@ public class TopicService {
         this.auditor = auditor;
     }
 
-    public void createTopic(Topic topic, String createdBy, CreatorRights creatorRights) {
+    public void createTopicWithSchema(TopicWithSchema topicWithSchema, String createdBy, CreatorRights isAllowedToManage) {
+        Topic topic = topicWithSchema.getTopic();
+        topicValidator.ensureCreatedTopicIsValid(topic, isAllowedToManage);
+        ensureTopicDoesNotExist(topic);
+
+        boolean validateAndRegisterSchema = AVRO.equals(topic.getContentType()) || (topic.isJsonToAvroDryRunEnabled()
+                && topicWithSchema.getSchema() != null);
+
+        validateSchema(validateAndRegisterSchema, topicWithSchema, topic);
+        createTopic(topic, createdBy, isAllowedToManage);
+        registerAvroSchema(validateAndRegisterSchema, topicWithSchema, createdBy);
+    }
+
+    private void ensureTopicDoesNotExist(Topic topic) {
+        if (topicRepository.topicExists(topic.getName())) {
+            throw new TopicAlreadyExistsException(topic.getName());
+        }
+    }
+
+    private void validateSchema(boolean shouldValidate, TopicWithSchema topicWithSchema, Topic topic) {
+        if (shouldValidate) {
+            schemaService.validateSchema(topic.getName(), topicWithSchema.getSchema());
+            boolean schemaAlreadyRegistered = schemaService.getSchema(topic.getQualifiedName()).isPresent();
+            if (schemaAlreadyRegistered) {
+                throw new TopicSchemaExistsException(topic.getQualifiedName());
+            }
+        }
+    }
+
+    private void registerAvroSchema(boolean shouldRegister, TopicWithSchema topicWithSchema, String createdBy) {
+        if (shouldRegister) {
+            try {
+                schemaService.registerSchema(topicWithSchema.getTopic(), topicWithSchema.getSchema(), true);
+            } catch (Exception e) {
+                logger.error("Rolling back topic {} creation due to schema registration error", topicWithSchema.getQualifiedName(), e);
+                removeTopic(topicWithSchema.getTopic(), createdBy);
+                throw e;
+            }
+        }
+    }
+
+    private void createTopic(Topic topic, String createdBy, CreatorRights creatorRights) {
         topicValidator.ensureCreatedTopicIsValid(topic, creatorRights);
         topicRepository.createTopic(topic);
 
@@ -91,13 +144,37 @@ public class TopicService {
         }
     }
 
-    public void removeTopic(Topic topic, String removedBy) {
-        if (!allowRemoval) {
+    public void removeTopicWithSchema(Topic topic, String removedBy) {
+        removeSchema(topic);
+        if (!topicProperties.isAllowRemoval()) {
             throw new TopicRemovalDisabledException(topic);
         }
+        removeTopic(topic, removedBy);
+    }
+
+    private void removeSchema(Topic topic) {
+        if (AVRO.equals(topic.getContentType()) && topicProperties.isRemoveSchema()) {
+            schemaService.getSchema(topic.getQualifiedName()).ifPresent(s ->
+                    schemaService.deleteAllSchemaVersions(topic.getQualifiedName()));
+        }
+    }
+
+    private void removeTopic(Topic topic, String removedBy) {
         topicRepository.removeTopic(topic.getName());
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
         auditor.objectRemoved(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
+    }
+
+    public void updateTopicWithSchema(TopicName topicName, PatchData patch, String modifiedBy) {
+        Topic topic = getTopicDetails(topicName);
+        boolean validateAvroSchema = AVRO.equals(topic.getContentType());
+        extractSchema(patch)
+                .ifPresent(schema -> schemaService.registerSchema(topic, schema, validateAvroSchema));
+        updateTopic(topicName, patch, modifiedBy);
+    }
+
+    private Optional<String> extractSchema(PatchData patch) {
+        return Optional.ofNullable(patch.getPatch().get("schema")).map(o -> (String) o);
     }
 
     public void updateTopic(TopicName topicName, PatchData patch, String modifiedBy) {
@@ -147,6 +224,15 @@ public class TopicService {
 
     public Topic getTopicDetails(TopicName topicName) {
         return topicRepository.getTopicDetails(topicName);
+    }
+
+    public TopicWithSchema getTopicWithSchema(TopicName topicName) {
+        Topic topic = getTopicDetails(topicName);
+        Optional<RawSchema> schema = Optional.empty();
+        if (AVRO.equals(topic.getContentType())) {
+            schema = schemaService.getSchema(topicName.qualifiedName());
+        }
+        return schema.map(s -> topicWithSchema(topic, s.value())).orElse(topicWithSchema(topic));
     }
 
     public TopicMetrics getTopicMetrics(TopicName topicName) {
