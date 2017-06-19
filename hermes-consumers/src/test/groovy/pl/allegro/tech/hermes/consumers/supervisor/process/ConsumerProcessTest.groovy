@@ -25,8 +25,7 @@ class ConsumerProcessTest extends Specification {
     private SubscriptionName subscription = SubscriptionName.fromString('group.topic$sub')
 
     private ConsumerProcess process = new ConsumerProcess(
-            subscription,
-            consumer,
+            Signal.of(Signal.SignalType.START, subscription, consumer),
             retransmitter,
             { a -> shutdownRun = true },
             Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault())
@@ -44,7 +43,7 @@ class ConsumerProcessTest extends Specification {
         processFuture.done
         consumer.consumptionStarted
         consumer.initialized
-        consumer.tornDown
+        consumer.tearDown
     }
 
     def "should run shutdown callback on Consumer stop"() {

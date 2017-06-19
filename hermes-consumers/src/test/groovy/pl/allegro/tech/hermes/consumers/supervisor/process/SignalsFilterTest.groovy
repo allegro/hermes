@@ -91,8 +91,9 @@ class SignalsFilterTest extends Specification {
 
     def "should remove signals that should be executed later and put them back on task queue"() {
         given:
+        Object payload = null
         List<Signal> signals = [
-                Signal.of(SignalType.KILL_UNHEALTHY, subscription('A'), 2048),
+                Signal.of(SignalType.KILL_UNHEALTHY, subscription('A'), payload, 2048),
         ]
 
         Set<SubscriptionName> existingConsumers = [subscription('A')]

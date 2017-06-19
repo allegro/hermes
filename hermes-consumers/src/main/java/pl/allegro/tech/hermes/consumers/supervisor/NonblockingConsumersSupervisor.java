@@ -86,9 +86,10 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
         logger.info("Creating consumer for {}", subscription.getQualifiedName());
         try {
             Consumer consumer = consumerFactory.createConsumer(subscription);
-            logger.info("Created consumer for {}", subscription.getQualifiedName());
+            Signal start = Signal.of(Signal.SignalType.START, subscription.getQualifiedName(), consumer);
+            logger.info("Created consumer for {}. Initialized start signal with id {}", subscription.getQualifiedName(), start.getId());
 
-            backgroundProcess.accept(Signal.of(Signal.SignalType.START, subscription.getQualifiedName(), consumer));
+            backgroundProcess.accept(start);
 
             if (subscription.getState() == PENDING) {
                 subscriptionRepository.updateSubscriptionState(subscription.getTopicName(), subscription.getName(), ACTIVE);
@@ -101,7 +102,9 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
     @Override
     public void deleteConsumerForSubscriptionName(SubscriptionName subscription) {
-        backgroundProcess.accept(Signal.of(Signal.SignalType.STOP, subscription));
+        Signal stop = Signal.of(Signal.SignalType.STOP, subscription);
+        logger.info("Deleting consumer for {} by stop signal with id {}.", subscription, stop.getId());
+        backgroundProcess.accept(stop);
         offsetCommitter.removeUncommittedOffsets(subscription);
     }
 

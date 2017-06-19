@@ -56,7 +56,7 @@ class SignalsFilter {
     private boolean merge(Set<Signal> filteredSignals, Signal signal) {
         SignalType signalTypeToMerge = MERGEABLE_SIGNALS.get(signal.getType());
         if (signalTypeToMerge != null) {
-            return filteredSignals.remove(equalSignal(signalTypeToMerge, signal.getTarget()));
+            return filteredSignals.remove(signal.childOf(signalTypeToMerge));
         }
         return false;
     }
@@ -64,11 +64,8 @@ class SignalsFilter {
     private void negate(Set<Signal> filteredSignals, Signal signal) {
         SignalType signalToRemove = OVERRULING_SIGNALS.get(signal.getType());
         if (signalToRemove != null) {
-            filteredSignals.remove(equalSignal(signalToRemove, signal.getTarget()));
+            filteredSignals.remove(signal.childOf(signalToRemove));
         }
     }
 
-    private Signal equalSignal(SignalType type, SubscriptionName target) {
-        return Signal.of(type, target);
-    }
 }
