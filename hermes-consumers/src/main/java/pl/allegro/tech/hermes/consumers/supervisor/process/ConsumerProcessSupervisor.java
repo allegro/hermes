@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.KILL_UNHEALTHY;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.RESTART;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
+
 public class ConsumerProcessSupervisor implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerProcessSupervisor.class);
@@ -72,7 +76,7 @@ public class ConsumerProcessSupervisor implements Runnable {
         List<Signal> signalsToProcess = new ArrayList<>();
         taskQueue.drain(signalsToProcess::add);
         signalsFilter.filterSignals(signalsToProcess, runningProcesses.existingConsumers())
-                .forEach(this::processSignal);
+                .forEach(this::tryToProcessSignal);
 
         logger.debug("Process supervisor loop took {} ms to check all consumers", clock.millis() - currentTime);
     }
@@ -85,52 +89,56 @@ public class ConsumerProcessSupervisor implements Runnable {
                 ));
     }
 
-    private void processSignal(Signal signal) {
+    private void tryToProcessSignal(Signal signal) {
         try {
-            logger.debug("Processing signal: {}", signal);
-            metrics.counter("supervisor.signal." + signal.getType().name()).inc();
-
-            switch (signal.getType()) {
-                case START:
-                    start(signal.getTarget(), signal.getPayload());
-                    break;
-                case RETRANSMIT:
-                    process(signal).accept(signal);
-                    break;
-                case UPDATE_SUBSCRIPTION:
-                case UPDATE_TOPIC:
-                    process(signal).accept(signal);
-                    break;
-                case RESTART:
-                    process(signal).accept(signal);
-                    break;
-                case STOP:
-                    process(signal).accept(signal);
-                    taskQueue.offer(Signal.of(Signal.SignalType.KILL, signal.getTarget(), killTime()));
-                    break;
-                case KILL:
-                    kill(signal.getTarget());
-                    break;
-                case RESTART_UNHEALTHY:
-                    process(signal).accept(Signal.of(Signal.SignalType.RESTART, signal.getTarget()));
-                    taskQueue.offer(Signal.of(Signal.SignalType.KILL_UNHEALTHY, signal.getTarget(), killTime()));
-                    break;
-                case COMMIT:
-                    process(signal).accept(signal);
-                    break;
-                case KILL_UNHEALTHY:
-                    Consumer consumer = runningProcesses.getProcess(signal.getTarget()).getConsumer();
-                    taskQueue.offer(Signal.of(Signal.SignalType.START, signal.getTarget(), consumer));
-                    kill(signal.getTarget());
-                    break;
-                case CLEANUP:
-                    cleanup(signal.getTarget());
-                    break;
-                default:
-                    break;
-            }
+            processSignal(signal);
         } catch (Exception exception) {
             logger.error("Supervisor failed to process signal {}", signal, exception);
+        }
+    }
+
+    private void processSignal(Signal signal) {
+        logger.debug("Processing signal: {}", signal);
+        metrics.counter("supervisor.signal." + signal.getType().name()).inc();
+
+        switch (signal.getType()) {
+            case START:
+                start(signal.getTarget(), signal.getPayload());
+                break;
+            case RETRANSMIT:
+            case UPDATE_SUBSCRIPTION:
+            case UPDATE_TOPIC:
+            case RESTART:
+            case COMMIT:
+                onConsumerProcess(signal, consumerProcess -> consumerProcess.accept(signal));
+                break;
+            case STOP:
+                onConsumerProcess(signal, consumerProcess -> {
+                    consumerProcess.accept(signal);
+                    taskQueue.offer(Signal.of(Signal.SignalType.KILL, signal.getTarget(), killTime()));
+                });
+                break;
+            case KILL:
+                kill(signal.getTarget());
+                break;
+            case RESTART_UNHEALTHY:
+                onConsumerProcess(signal, consumerProcess -> {
+                    consumerProcess.accept(Signal.of(RESTART, signal.getTarget()));
+                    taskQueue.offer(Signal.of(KILL_UNHEALTHY, signal.getTarget(), killTime()));
+                });
+                break;
+            case KILL_UNHEALTHY:
+                onConsumerProcess(signal, consumerProcess -> {
+                    taskQueue.offer(Signal.of(START, signal.getTarget(), consumerProcess.getConsumer()));
+                    kill(signal.getTarget());
+                });
+                break;
+            case CLEANUP:
+                cleanup(signal.getTarget());
+                break;
+            default:
+                logger.warn("Unknown signal {}", signal);
+                break;
         }
     }
 
@@ -138,8 +146,13 @@ public class ConsumerProcessSupervisor implements Runnable {
         return clock.millis() + killAfter;
     }
 
-    private ConsumerProcess process(Signal signal) {
-        return runningProcesses.getProcess(signal.getTarget());
+    private void onConsumerProcess(Signal signal, java.util.function.Consumer<ConsumerProcess> consumerProcessConsumer) {
+        if (runningProcesses.hasProcess(signal.getTarget())) {
+            consumerProcessConsumer.accept(runningProcesses.getProcess(signal.getTarget()));
+        } else {
+            metrics.counter("supervisor.signal.dropped." + signal.getType().name()).inc();
+            logger.warn("Dropping signal {} as target consumer process does not exist.", signal);
+        }
     }
 
     private void kill(SubscriptionName subscriptionName) {

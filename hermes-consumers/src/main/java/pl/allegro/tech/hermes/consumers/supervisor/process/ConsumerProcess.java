@@ -116,7 +116,7 @@ public class ConsumerProcess implements Runnable {
             }
             signalTimesheet.put(signal.getType(), clock.millis());
         } catch (Exception ex) {
-            logger.error("Failed to process signal {} for subscription {}", signal.getType(), subscriptionName);
+            logger.error("Failed to process signal {} for subscription {}", signal.getType(), subscriptionName, ex);
         }
     }
 
@@ -154,10 +154,14 @@ public class ConsumerProcess implements Runnable {
 
     private void restart() {
         long startTime = clock.millis();
-        logger.info("Restarting consumer for subscription {}", subscriptionName);
-        stop();
-        start();
-        logger.info("Done restarting consumer for subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
+        try {
+            logger.info("Restarting consumer for subscription {}", subscriptionName);
+            stop();
+            start();
+            logger.info("Done restarting consumer for subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
+        } catch (Exception e) {
+            logger.error("Failed restarting consumer for subscription {} in {}ms", subscriptionName, clock.millis() - startTime, e);
+        }
     }
 
     @Override
