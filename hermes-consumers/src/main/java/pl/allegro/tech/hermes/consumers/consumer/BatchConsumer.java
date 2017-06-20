@@ -91,6 +91,8 @@ public class BatchConsumer implements Consumer {
         try {
             logger.debug("Trying to create new batch [subscription={}].", subscription.getQualifiedName());
 
+            signalsInterrupt.run();
+
             MessageBatchingResult result = receiver.next(subscription, signalsInterrupt);
             inflight = of(result.getBatch());
 

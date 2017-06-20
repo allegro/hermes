@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.supervisor.process;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Signal {
 
@@ -13,29 +14,45 @@ public class Signal {
     private final Object payload;
 
     private final long executeAfterTimestamp;
+    private final long id;
 
     public enum SignalType {
         START, STOP, RETRANSMIT, UPDATE_SUBSCRIPTION, UPDATE_TOPIC, KILL,
         RESTART, RESTART_UNHEALTHY, STOP_RESTART, KILL_UNHEALTHY, CLEANUP, COMMIT
     }
 
-    private Signal(SignalType type, SubscriptionName target, Object payload, long executeAfterTimestamp) {
+    private static AtomicLong SIGNALS_COUNTER = new AtomicLong();
+
+    private Signal(SignalType type, SubscriptionName target, Object payload, long executeAfterTimestamp, long id) {
         this.type = type;
         this.target = target;
         this.payload = payload;
         this.executeAfterTimestamp = executeAfterTimestamp;
-    }
-
-    public static Signal of(SignalType type, SubscriptionName target, Object payload) {
-        return new Signal(type, target, payload, -1);
+        this.id = id;
     }
 
     public static Signal of(SignalType type, SubscriptionName target) {
-        return new Signal(type, target, null, -1);
+        return of(type, target, null);
     }
 
-    public static Signal of(SignalType type, SubscriptionName target, long executeAfterTimestamp) {
-        return new Signal(type, target, null, executeAfterTimestamp);
+    public static Signal of(SignalType type, SubscriptionName target, Object payload) {
+        return of(type, target, payload, -1);
+    }
+
+    public static Signal of(SignalType type, SubscriptionName target, Object payload, long executeAfterTimestamp) {
+        return new Signal(type, target, payload, executeAfterTimestamp, SIGNALS_COUNTER.incrementAndGet());
+    }
+
+    Signal createChild(SignalType type) {
+        return new Signal(type, target, payload, executeAfterTimestamp, id);
+    }
+
+    Signal createChild(SignalType type, long executeAfterTimestamp) {
+        return new Signal(type, target, payload, executeAfterTimestamp, id);
+    }
+
+    Signal createChild(SignalType type, long executeAfterTimestamp, Object payload) {
+        return new Signal(type, target, payload, executeAfterTimestamp, id);
     }
 
     SignalType getType() {
@@ -47,7 +64,7 @@ public class Signal {
     }
 
     boolean canExecuteNow(long currentTimestamp) {
-        return currentTimestamp > executeAfterTimestamp;
+        return currentTimestamp >= executeAfterTimestamp;
     }
 
     @SuppressWarnings("unchecked")
@@ -57,10 +74,11 @@ public class Signal {
 
     @Override
     public String toString() {
-        return "Signal{" +
-                "type=" + type +
-                ", target=" + target +
-                '}';
+        return "Signal(" + id + ", " + type +", " + target + ")";
+    }
+
+    public String getLogWithIdAndType() {
+        return "[Signal(" + id + ", " + type + ")]";
     }
 
     @Override
