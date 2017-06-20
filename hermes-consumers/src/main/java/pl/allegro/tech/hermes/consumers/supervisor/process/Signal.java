@@ -43,15 +43,15 @@ public class Signal {
         return new Signal(type, target, payload, executeAfterTimestamp, SIGNALS_COUNTER.incrementAndGet());
     }
 
-    Signal childOf(SignalType type) {
+    Signal createChild(SignalType type) {
         return new Signal(type, target, payload, executeAfterTimestamp, id);
     }
 
-    Signal childOf(SignalType type, long executeAfterTimestamp) {
+    Signal createChild(SignalType type, long executeAfterTimestamp) {
         return new Signal(type, target, payload, executeAfterTimestamp, id);
     }
 
-    Signal childOf(SignalType type, long executeAfterTimestamp, Object payload) {
+    Signal createChild(SignalType type, long executeAfterTimestamp, Object payload) {
         return new Signal(type, target, payload, executeAfterTimestamp, id);
     }
 
@@ -67,10 +67,6 @@ public class Signal {
         return currentTimestamp >= executeAfterTimestamp;
     }
 
-    public long getId() {
-        return id;
-    }
-
     @SuppressWarnings("unchecked")
     <T> T getPayload() {
         return (T) payload;
@@ -78,11 +74,11 @@ public class Signal {
 
     @Override
     public String toString() {
-        return "Signal{" +
-                "type=" + type +
-                ", target=" + target +
-                ", id=" + id +
-                '}';
+        return "Signal(" + id + ", " + type +", " + target + ")";
+    }
+
+    public String getLogWithIdAndType() {
+        return "[Signal(" + id + ", " + type + ")]";
     }
 
     @Override

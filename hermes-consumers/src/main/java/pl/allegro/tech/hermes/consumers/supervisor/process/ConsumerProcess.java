@@ -30,9 +30,11 @@ public class ConsumerProcess implements Runnable {
 
     private final java.util.function.Consumer<Signal> shutdownCallback;
 
-    private boolean running = true;
+    private final long unhealthyAfter;
 
-    private long healtcheckRefreshTime;
+    private volatile boolean running = true;
+
+    private volatile long healthcheckRefreshTime;
 
     private Map<Signal.SignalType, Long> signalTimesheet = new ConcurrentHashMap<>();
     private Signal lastSignal;
@@ -41,14 +43,16 @@ public class ConsumerProcess implements Runnable {
             Signal startSignal,
             Retransmitter retransmitter,
             java.util.function.Consumer<Signal> shutdownCallback,
-            Clock clock
+            Clock clock,
+            long unhealthyAfter
     ) {
         this.subscriptionName = startSignal.getTarget();
         this.consumer = startSignal.getPayload();
         this.retransmitter = retransmitter;
         this.shutdownCallback = shutdownCallback;
         this.clock = clock;
-        this.healtcheckRefreshTime = clock.millis();
+        this.healthcheckRefreshTime = clock.millis();
+        this.unhealthyAfter = unhealthyAfter;
 
         this.signals.add(startSignal);
     }
@@ -78,12 +82,16 @@ public class ConsumerProcess implements Runnable {
         return this;
     }
 
+    public boolean isHealthy() {
+        return unhealthyAfter > lastSeen();
+    }
+
     public long lastSeen() {
-        return clock.millis() - healtcheckRefreshTime;
+        return clock.millis() - healthcheckRefreshTime;
     }
 
     public long healthcheckRefreshTime() {
-        return healtcheckRefreshTime;
+        return healthcheckRefreshTime;
     }
 
     private void processSignals() {
@@ -93,7 +101,7 @@ public class ConsumerProcess implements Runnable {
     }
 
     private void refreshHealthcheck() {
-        this.healtcheckRefreshTime = clock.millis();
+        this.healthcheckRefreshTime = clock.millis();
     }
 
     private void process(Signal signal) {
@@ -101,17 +109,17 @@ public class ConsumerProcess implements Runnable {
         try {
             switch (signal.getType()) {
                 case START:
-                    start(signal.getId());
+                    start(signal);
                     break;
                 case RESTART:
-                    restart(signal.getId());
+                    restart(signal);
                     break;
                 case STOP:
-                    logger.info("Received stop signal {}", signal);
+                    logger.info("Stopping main loop for consumer {}. {}", signal.getTarget(), signal.getLogWithIdAndType());
                     this.running = false;
                     break;
                 case RETRANSMIT:
-                    retransmit(signal.getId());
+                    retransmit(signal);
                     break;
                 case UPDATE_SUBSCRIPTION:
                     consumer.updateSubscription(signal.getPayload());
@@ -132,14 +140,15 @@ public class ConsumerProcess implements Runnable {
         }
     }
 
-    private void start(long signalId) {
+    private void start(Signal signal) {
         long startTime = clock.millis();
-        logger.info("Starting consumer for subscription {}. Signal id {}", subscriptionName, signalId);
+        logger.info("Starting consumer for subscription {}. {}", subscriptionName, signal.getLogWithIdAndType());
 
         consumer.initialize();
 
         long initializationTime = clock.millis();
-        logger.info("Started consumer for subscription {} in {}ms. Signal id {}", subscriptionName, initializationTime - startTime, signalId);
+        logger.info("Started consumer for subscription {} in {}ms. {}",
+                subscriptionName, initializationTime - startTime, signal.getLogWithIdAndType());
         signalTimesheet.put(START, initializationTime);
     }
 
@@ -152,9 +161,9 @@ public class ConsumerProcess implements Runnable {
         logger.info("Stopped consumer for subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
     }
 
-    private void retransmit(long signalId) {
+    private void retransmit(Signal signal) {
         long startTime = clock.millis();
-        logger.info("Starting retransmission for consumer of subscription {}. Signal id {}", subscriptionName, signalId);
+        logger.info("Starting retransmission for consumer of subscription {}. {}", subscriptionName, signal.getLogWithIdAndType());
         try {
             retransmitter.reloadOffsets(subscriptionName, consumer);
             logger.info("Done retransmission for consumer of subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
@@ -164,17 +173,17 @@ public class ConsumerProcess implements Runnable {
         }
     }
 
-    private void restart(long signalId) {
+    private void restart(Signal signal) {
         long startTime = clock.millis();
         try {
-            logger.info("Restarting consumer for subscription {}. Signal id {}", subscriptionName, signalId);
+            logger.info("Restarting consumer for subscription {}. {}", subscriptionName, signal.getLogWithIdAndType());
             stop();
-            start(signalId);
-            logger.info("Done restarting consumer for subscription {} in {}ms. Signal id {}",
-                    subscriptionName, clock.millis() - startTime, signalId);
+            start(signal);
+            logger.info("Done restarting consumer for subscription {} in {}ms. {}",
+                    subscriptionName, clock.millis() - startTime, signal.getLogWithIdAndType());
         } catch (Exception e) {
-            logger.error("Failed restarting consumer for subscription {} in {}ms. Signal id {}",
-                    subscriptionName, clock.millis() - startTime, signalId, e);
+            logger.error("Failed restarting consumer for subscription {} in {}ms. {}",
+                    subscriptionName, clock.millis() - startTime, signal.getLogWithIdAndType(), e);
         }
     }
 

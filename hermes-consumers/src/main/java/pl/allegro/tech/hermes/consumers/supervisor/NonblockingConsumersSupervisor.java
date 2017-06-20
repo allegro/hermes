@@ -87,14 +87,14 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
         try {
             Consumer consumer = consumerFactory.createConsumer(subscription);
             Signal start = Signal.of(Signal.SignalType.START, subscription.getQualifiedName(), consumer);
-            logger.info("Created consumer for {}. Initialized start signal with id {}", subscription.getQualifiedName(), start.getId());
+            logger.info("Created consumer for {}. {}", subscription.getQualifiedName(), start.getLogWithIdAndType());
 
             backgroundProcess.accept(start);
 
             if (subscription.getState() == PENDING) {
                 subscriptionRepository.updateSubscriptionState(subscription.getTopicName(), subscription.getName(), ACTIVE);
             }
-            logger.info("Consumer for {} was added for execution", subscription.getQualifiedName());
+            logger.info("Consumer for {} was added for execution. {}", subscription.getQualifiedName(), start.getLogWithIdAndType());
         } catch (Exception ex) {
             logger.error("Failed to create consumer for subscription {}", subscription.getQualifiedName(), ex);
         }
@@ -103,7 +103,7 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
     @Override
     public void deleteConsumerForSubscriptionName(SubscriptionName subscription) {
         Signal stop = Signal.of(Signal.SignalType.STOP, subscription);
-        logger.info("Deleting consumer for {} by stop signal with id {}.", subscription, stop.getId());
+        logger.info("Deleting consumer for {}. {}", subscription, stop.getLogWithIdAndType());
         backgroundProcess.accept(stop);
         offsetCommitter.removeUncommittedOffsets(subscription);
     }

@@ -14,6 +14,8 @@ import java.util.concurrent.Future
 
 class ConsumerProcessTest extends Specification {
 
+    private static final long UNHEALTHY_AFTER_MS = 2048;
+
     private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private ConsumerProcessWaiter waiter = new ConsumerProcessWaiter()
@@ -28,7 +30,8 @@ class ConsumerProcessTest extends Specification {
             Signal.of(Signal.SignalType.START, subscription, consumer),
             retransmitter,
             { a -> shutdownRun = true },
-            Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault())
+            Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault()),
+            UNHEALTHY_AFTER_MS
     )
 
     private boolean shutdownRun = false
@@ -66,6 +69,27 @@ class ConsumerProcessTest extends Specification {
 
         then:
         process.healthcheckRefreshTime() == 1024
+        process.isHealthy()
+    }
+
+    def "should process be unhealthy when last seen period is greater than unhealthy period"() {
+        given:
+        long unhealthyAfter = -1
+        ConsumerProcess process = new ConsumerProcess(
+                Signal.of(Signal.SignalType.START, subscription, consumer),
+                retransmitter,
+                { a -> shutdownRun = true },
+                Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault()),
+                unhealthyAfter)
+        executor.submit(process)
+
+        when:
+        process.accept(Signal.of(Signal.SignalType.STOP, subscription))
+        waiter.waitForSignalProcessing()
+
+        then:
+        !process.isHealthy()
+        process.lastSeen() > unhealthyAfter
     }
 
     def "should tear down and initialize consumer on restart but not call shutdown hook"() {
