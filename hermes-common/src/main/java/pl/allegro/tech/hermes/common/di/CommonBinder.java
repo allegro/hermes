@@ -27,6 +27,7 @@ import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -64,6 +65,7 @@ public class CommonBinder extends AbstractBinder {
         bindSingleton(HealthCheckRegistry.class);
         bindSingleton(ConfigFactory.class);
         bindSingleton(MessageContentWrapper.class);
+        bindSingleton(DeserializationMetrics.class);
         bindSingleton(JsonMessageContentWrapper.class);
         bindSingleton(AvroMessageContentWrapper.class);
 

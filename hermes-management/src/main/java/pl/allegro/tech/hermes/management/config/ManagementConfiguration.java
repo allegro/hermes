@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.config;
 
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +43,12 @@ public class ManagementConfiguration {
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
         return mapper;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public MetricRegistry metricRegistry() {
+        return new MetricRegistry();
     }
 
     @Bean
