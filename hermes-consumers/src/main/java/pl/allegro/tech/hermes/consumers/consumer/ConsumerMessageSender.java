@@ -127,7 +127,10 @@ public class ConsumerMessageSender {
         this.subscription = newSubscription;
         this.requestTimeoutMs = newSubscription.getSerialSubscriptionPolicy().getRequestTimeout();
 
-        if (endpointUpdated || subscriptionPolicyUpdated || endpointAddressResolverMetadataChanged || oAuthPolicyChanged) {
+        boolean httpClientChanged = this.subscription.isHttp2Enabled() != newSubscription.isHttp2Enabled();
+
+        if (endpointUpdated || subscriptionPolicyUpdated || endpointAddressResolverMetadataChanged
+                || oAuthPolicyChanged || httpClientChanged) {
             this.messageSender = messageSenderFactory.create(newSubscription);
         }
     }

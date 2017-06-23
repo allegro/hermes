@@ -7,7 +7,8 @@ import java.nio.ByteBuffer;
 import static java.lang.String.format;
 
 public class SchemaAwareSerDe {
-    private static final byte MAGIC_BYTE = 0;
+    private static final byte MAGIC_BYTE_VALUE = 0;
+    private static final byte MAGIC_BYTE_INDEX = 0;
     private static final int HEADER_SIZE = 5;
 
     private SchemaAwareSerDe() {
@@ -15,7 +16,7 @@ public class SchemaAwareSerDe {
 
     public static byte[] serialize(SchemaVersion version, byte[] binaryAvro) {
         ByteBuffer buffer = ByteBuffer.allocate(HEADER_SIZE + binaryAvro.length);
-        buffer.put(MAGIC_BYTE);
+        buffer.put(MAGIC_BYTE_VALUE);
         buffer.putInt(version.value());
         buffer.put(binaryAvro);
         return buffer.array();
@@ -30,8 +31,12 @@ public class SchemaAwareSerDe {
         return new SchemaAwarePayload(payload, SchemaVersion.valueOf(schemaVersion));
     }
 
+    public static boolean startsWithMagicByte(byte[] payload) {
+        return payload[MAGIC_BYTE_INDEX] == MAGIC_BYTE_VALUE;
+    }
+
     private static void assertMagicByte(byte magicByte) {
-        if (magicByte != MAGIC_BYTE) {
+        if (magicByte != MAGIC_BYTE_VALUE) {
             throw new DeserializationException(format("Could not deserialize payload, unknown magic byte: \'%s\'.", magicByte));
         }
     }

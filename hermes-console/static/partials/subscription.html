@@ -160,6 +160,10 @@
                         <strong>Monitoring reaction:</strong> {{subscription.monitoringDetails.reaction}}
                         <span uib-popover='Information for monitoring how to react when the subscription becomes unhealthy (e.g. team name or Pager Duty ID).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
+                    <p>
+                        <strong>Deliver using http/2:</strong> {{subscription.http2Enabled}}
+                        <span uib-popover='If true hermes will deliver messages using http/2 protocol.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
                     <p ng-repeat="(key, entry) in endpointAddressResolverMetadataConfig">
                         <strong>{{entry.title}}:</strong>
                         {{entry.options[subscription.endpointAddressResolverMetadata[key]] || subscription.endpointAddressResolverMetadata[key]}}

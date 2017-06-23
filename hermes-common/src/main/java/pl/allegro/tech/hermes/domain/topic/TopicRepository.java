@@ -24,4 +24,6 @@ public interface TopicRepository {
     void touchTopic(TopicName topicName);
 
     Topic getTopicDetails(TopicName topicName);
+
+    boolean isSubscribingRestricted(TopicName topicName);
 }

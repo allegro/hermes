@@ -35,6 +35,8 @@ public class TopicBuilder {
 
     private boolean unauthenticatedAccessEnabled = true;
 
+    private boolean subscribingRestricted = false;
+
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
     }
@@ -55,7 +57,7 @@ public class TopicBuilder {
         return new Topic(
                 name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
                 jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize,
-                new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled)
+                new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted
         );
     }
 
@@ -106,6 +108,11 @@ public class TopicBuilder {
 
     public TopicBuilder withSchemaVersionAwareSerialization() {
         this.schemaVersionAwareSerialization = true;
+        return this;
+    }
+
+    public TopicBuilder withSubscribingRestricted() {
+        this.subscribingRestricted = true;
         return this;
     }
 

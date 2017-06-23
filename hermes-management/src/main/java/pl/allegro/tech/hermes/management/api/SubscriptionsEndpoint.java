@@ -96,7 +96,7 @@ public class SubscriptionsEndpoint {
                            Subscription subscription,
                            @Context ContainerRequestContext requestContext) {
         subscriptionService.createSubscription(subscription, requestContext.getSecurityContext().getUserPrincipal().getName(),
-                checkedSubscription -> managementRights.isUserAllowedToManageSubscription(checkedSubscription, requestContext));
+                managementRights.getSubscriptionCreatorRights(requestContext));
         return responseStatus(Response.Status.CREATED);
     }
 

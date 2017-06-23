@@ -25,6 +25,8 @@ public class SubscriptionBuilder {
 
     private boolean trackingEnabled = false;
 
+    private boolean http2Enabled = false;
+
     private OwnerId owner = new OwnerId("Plaintext", "some team");
 
     private String supportTeam = "team";
@@ -87,14 +89,14 @@ public class SubscriptionBuilder {
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy,
                     trackingEnabled, owner, supportTeam, monitoringDetails, contentType,
-                    filters, mode, headers, metadata, oAuthPolicy
+                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy,
                     trackingEnabled, owner, supportTeam, monitoringDetails, contentType,
-                    filters, headers, metadata, oAuthPolicy
+                    filters, headers, metadata, oAuthPolicy, http2Enabled
             );
         }
     }
@@ -141,6 +143,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withTrackingEnabled(boolean trackingEnabled) {
         this.trackingEnabled = trackingEnabled;
+        return this;
+    }
+
+    public SubscriptionBuilder withHttp2Enabled(boolean http2Enabled) {
+        this.http2Enabled = http2Enabled;
         return this;
     }
 

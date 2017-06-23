@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.hook.FlushLogsShutdownHook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
@@ -37,6 +38,7 @@ public class HermesConsumers {
     private final SupervisorController supervisorController;
     private final MaxRateSupervisor maxRateSupervisor;
     private final SubscriptionAssignmentCaches assignmentCaches;
+    private final OAuthClient oAuthHttpClient;
 
     public static void main(String... args) {
         consumers().build().start();
@@ -60,12 +62,14 @@ public class HermesConsumers {
         supervisorController = serviceLocator.getService(SupervisorController.class);
         maxRateSupervisor = serviceLocator.getService(MaxRateSupervisor.class);
         assignmentCaches = serviceLocator.getService(SubscriptionAssignmentCaches.class);
+        oAuthHttpClient = serviceLocator.getService(OAuthClient.class);
 
         hooksHandler.addShutdownHook((s) -> {
             try {
                 consumerHttpServer.stop();
                 maxRateSupervisor.stop();
                 assignmentCaches.stop();
+                oAuthHttpClient.stop();
                 supervisorController.shutdown();
                 s.shutdown();
             } catch (Exception e) {
@@ -79,6 +83,7 @@ public class HermesConsumers {
 
     public void start() {
         try {
+            oAuthHttpClient.start();
             logRepositories.forEach(serviceLocatorLogRepositoryFunction ->
                     trackers.add(serviceLocatorLogRepositoryFunction.apply(serviceLocator)));
 
@@ -86,7 +91,6 @@ public class HermesConsumers {
                     entry.getValue().stream().forEach(supplier ->
                             messageSenderFactory.addSupportedProtocol(entry.getKey(), supplier.apply(serviceLocator))
                     ));
-
             supervisorController.start();
             assignmentCaches.start();
             maxRateSupervisor.start();
