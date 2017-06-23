@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
@@ -8,6 +9,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
@@ -136,7 +138,8 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         File backup = new File(tempDir.getAbsoluteFile(), "hermes-buffer.dat");
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(backup);
-        MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null, null);
+        MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null, null,
+                new DeserializationMetrics(new MetricRegistry()));
 
         String messageId = randomUUID().toString();
         long timestamp = now().toEpochMilli();

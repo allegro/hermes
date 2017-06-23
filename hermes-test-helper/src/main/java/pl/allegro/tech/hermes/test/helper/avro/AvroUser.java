@@ -63,8 +63,12 @@ public class AvroUser {
         return record.get(FAVORITE_COLOR_FIELD).toString();
     }
 
-    public byte[] asBytes() throws IOException {
-        return recordToBytes(record, schema.getSchema());
+    public byte[] asBytes() {
+        try {
+            return recordToBytes(record, schema.getSchema());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String asJson() {
