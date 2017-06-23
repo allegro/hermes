@@ -1,3 +1,34 @@
+## 0.12.0 (23.06.2017)
+
+### Features
+
+#### ([760](https://github.com/allegro/hermes/pull/760)) Added http2 client to consumers
+
+#### ([770](https://github.com/allegro/hermes/pull/770)) Added feature to restrict subscribing for particular topic
+
+### Enhancements
+
+#### ([775](https://github.com/allegro/hermes/pull/775)) Console notification box UX improvements
+
+Notification box will resize according to body text, also error messages require user interaction in order to disappear.
+
+#### ([778](https://github.com/allegro/hermes/pull/778)) Creating consumer signals chains
+
+From now on, consumers logs contain information about signals like their id or type.
+This simplifies analysis of consumers history.
+
+#### ([781](https://github.com/allegro/hermes/pull/781)) Schema version aware deserialization is backward compatible
+
+Which means that flag `schemaVersionAwareSerializationEnabled` can be set to `true` on the fly.
+When the flag is enabled on a topic then consumed payload without schema version will be deserialized as well - 
+   Hermes will try hard to adjust avro schema starting with the latest version.
+
+### Bugfixes 
+
+#### ([774](https://github.com/allegro/hermes/pull/774)) Ensuring that consumer process exists for processed signal
+
+Fixes NullPointerException which occurred when some signals (e.x. `COMMIT`) were processed for non existing consumer.
+
 ## 0.11.4 (15.05.2017)
 
 ### Features
