@@ -11,14 +11,14 @@ jmh {
     jmhVersion = '1.12'
     zip64 = true
     verbosity = 'EXTRA'
-    iterations = 4
-    timeOnIteration = '80s'
-    fork = 1
-    warmupIterations = 4
-    warmup = '80s'
-    jvmArgs = '-Xmx1g -Xms1g -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode'
-    failOnError = false
-    threads = 4
+    iterations = intProperty('jmh.iterations', 4)
+    timeOnIteration = stringProperty('jmh.timeOnIteration', '80s')
+    fork = intProperty('jmh.fork', 1)
+    warmupIterations = intProperty('jmh.warmupIterations', 4)
+    warmup = stringProperty('jmh.timeOnWarmupIteration', '80s')
+    jvmArgs = stringProperty('jmh.jvmArgs', '-Xmx1g -Xms1g -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode')
+    failOnError = booleanProperty('jmh.failOnError', true)
+    threads = intProperty('jmh.threads', 4)
     synchronizeIterations = false
     forceGC =  false
 }
@@ -42,3 +42,15 @@ idea {
 // Those duplications can prevent from running benchmark tests.
 // More info https://github.com/melix/jmh-gradle-plugin/issues/6
 tasks.getByName('jmhJar').doFirst() {duplicatesStrategy(DuplicatesStrategy.EXCLUDE)}
+
+String stringProperty(String property, String defaultValue) {
+    project.hasProperty(property) ? project.property(property) : defaultValue
+}
+
+int intProperty(String property, int defaultValue) {
+    project.hasProperty(property) ? Integer.valueOf(project.property(property)) : defaultValue
+}
+
+boolean booleanProperty(String property, boolean defaultValue) {
+    project.hasProperty(property) ? Boolean.valueOf(project.property(property)) : defaultValue
+}
