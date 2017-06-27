@@ -121,7 +121,7 @@ task integrationTest(type: Test) {
     group = 'Verification'
     description = 'Runs the integration tests.'
 
-    testClassesDir = project.sourceSets.integration.output.classesDir
+    testClassesDirs = project.sourceSets.integration.output.classesDirs
     classpath = project.sourceSets.integration.runtimeClasspath
 
     useTestNG()
