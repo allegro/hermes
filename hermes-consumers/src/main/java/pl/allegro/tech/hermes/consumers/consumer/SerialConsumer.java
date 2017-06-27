@@ -159,8 +159,10 @@ public class SerialConsumer implements Consumer {
 
     @Override
     public void updateTopic(Topic newTopic) {
-        if (this.topic.getContentType() != newTopic.getContentType() || messageSizeChanged(newTopic)) {
-            logger.info("Reinitializing message receiver, contentType or messageSize changed.");
+        if (this.topic.getContentType() != newTopic.getContentType()
+                || messageSizeChanged(newTopic)
+                || this.topic.isSchemaVersionAwareSerializationEnabled() != newTopic.isSchemaVersionAwareSerializationEnabled()) {
+            logger.info("Reinitializing message receiver, contentType, messageSize or schemaVersionAwareSerialization changed.");
             this.topic = newTopic;
 
             messageReceiver.stop();
