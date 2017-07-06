@@ -143,6 +143,19 @@ public class QueryEndpointTest extends IntegrationTest {
         assertThat(found).isEmpty();
     }
 
+    @Test
+    public void shouldQueryAllTopicsMetrics() {
+        // given
+        operations.buildTopic(topic("testGroup1", "testTopic1").withContentType(JSON).withTrackingEnabled(false).build());
+
+        // when
+        List<TopicNameWithMetrics> found = management.query().queryTopicsMetrics("{\"query\": {}}");
+
+        // then
+        assertThat(found).isNotEmpty();
+    }
+
+
     private Subscription enrichSubscription(SubscriptionBuilder subscription, String endpoint) {
         return subscription
                 .withTrackingEnabled(true)
