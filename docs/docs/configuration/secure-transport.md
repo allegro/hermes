@@ -13,10 +13,10 @@ All Hermes modules support secure transport in their own way:
 ## Consumers SSL
 
 Consumers by default support sending traffic to `https` endpoints. They use JRE trust store to verify the certificates.
-It is possible to change it using standard `javax.net.ssl.*` options:
+It is possible to change it using the custom `consumer.ssl.truststore.*` options:
 
 Option                           | Description
 -------------------------------- | --------------------------
-javax.net.ssl.trustStore         | path to custom trust store
-javax.net.ssl.trustStoreType     | trust store format
-javax.net.ssl.trustStorePassword | password to trust store
+consumer.ssl.truststore.location | path to custom trust store
+consumer.ssl.truststore.format   | trust store format
+consumer.ssl.truststore.password | password to trust store
