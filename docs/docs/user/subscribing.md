@@ -25,7 +25,9 @@ Minimal request:
 
 ```json
 {
+    "topicName": "group.topic",
     "name": "mySubscription", 
+    "description": "This is my subscription"
     "endpoint": "http://my-service", 
     "owner": {
         "source": "Plaintext",
@@ -39,9 +41,8 @@ All options:
 Option                               | Description                          | Default value
 ------------------------------------ | ------------------------------------ | -------------
 trackingEnabled                      | track incoming messages?             | false
-subscriptionPolicy.rate              | maximum sending speed in rps         | 100
+subscriptionPolicy.rate              | maximum sending speed in rps         | 400
 subscriptionPolicy.messageTtl        | inflight Time To Live in seconds     | 3600
-subscriptionPolicy.messageBackoff    | backoff time between retry attempts  | 100
 subscriptionPolicy.messageBackoff    | backoff time between retry attempts  | 100
 subscriptionPolicy.retryClientErrors | retry on receiving 4xx status        | false
 subscriptionPolicy.requestTimeout    | request timeout in millis            | 1000
@@ -55,6 +56,7 @@ Request that specifies all available options:
 
 ```json
 {
+    "topicName": "group.topic",
     "name": "mySubscription",
     "endpoint": "http://my-service",
     "description": "This is my subscription",

@@ -17,6 +17,9 @@ import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -38,6 +41,8 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 public class SubscriptionManagementTest extends IntegrationTest {
 
     public static final TestMessage MESSAGE = TestMessage.of("hello", "world");
+
+    private Client httpClient = ClientBuilder.newClient();
 
     private RemoteServiceEndpoint remoteService;
     private HermesClient client;
@@ -66,6 +71,20 @@ public class SubscriptionManagementTest extends IntegrationTest {
         wait.untilSubscriptionCreated(topic, "subscription", false);
         assertThat(management.subscription().list(topic.getQualifiedName(), false)).containsExactly("subscription");
         wait.untilSubscriptionIsActivated(topic, "subscription");
+    }
+
+    @Test
+    public void shouldNotCreateSubscriptionWithoutTopicName() {
+        // given
+        operations.buildTopic("invalidGroup", "topic");
+
+        // when
+        Response response = httpClient.target(MANAGEMENT_ENDPOINT_URL + "topics/invalidGroup.topic/subscriptions")
+                .request()
+                .post(Entity.json("{\"name\": \"subscription\"}"));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
     }
 
     @Test
