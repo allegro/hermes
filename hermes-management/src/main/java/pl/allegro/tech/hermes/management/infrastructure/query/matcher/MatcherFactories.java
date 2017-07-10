@@ -6,13 +6,7 @@ import pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator;
 import java.util.EnumMap;
 import java.util.Map;
 
-import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.AND;
-import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.EQ;
-import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.LIKE;
-import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.IN;
-import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.NE;
-import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.NOT;
-import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.OR;
+import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.*;
 
 public class MatcherFactories {
 
@@ -48,5 +42,7 @@ public class MatcherFactories {
         FACTORIES.put(NOT, (path, node, parser) -> new NotMatcher(parser.parseNode(node)));
         FACTORIES.put(AND, (path, node, parser) -> new AndMatcher(parser.parseArrayNodes(node)));
         FACTORIES.put(OR, (path, node, parser) -> new OrMatcher(parser.parseArrayNodes(node)));
+        FACTORIES.put(GRATER_THAN, (path, node, parser) -> new GraterThanMatcher(path, parser.parseValue(node)));
+        FACTORIES.put(LOWER_THAN, (path, node, parser) -> new LowerThanMatcher(path, parser.parseValue(node)));
     }
 }

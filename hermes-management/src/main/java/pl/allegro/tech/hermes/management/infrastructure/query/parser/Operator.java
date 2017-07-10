@@ -11,7 +11,10 @@ public enum Operator {
     IN("in"),
     NOT("not"),
     AND("and"),
-    OR("or");
+    OR("or"),
+    GRATER_THAN("gt"),
+    LOWER_THAN("lt");
+
 
     private String name;
 
