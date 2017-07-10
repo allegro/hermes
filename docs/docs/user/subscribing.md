@@ -26,6 +26,8 @@ Minimal request:
 ```json
 {
     "name": "mySubscription", 
+    "topicName": "group.topic",
+    "description": "description for the subscription",
     "endpoint": "http://my-service", 
     "owner": {
         "source": "Plaintext",
