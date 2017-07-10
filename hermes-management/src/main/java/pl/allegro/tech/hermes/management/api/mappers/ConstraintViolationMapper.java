@@ -32,8 +32,8 @@ public class ConstraintViolationMapper extends AbstractExceptionMapper<Constrain
 
     private String prepareMessage(ConstraintViolationException ex) {
         List<String> errors = Lists.transform(
-            ValidationHelper.constraintViolationToValidationErrors(ex),
-            new ValidationErrorConverter()
+                ValidationHelper.constraintViolationToValidationErrors(ex),
+                new ValidationErrorConverter()
         );
 
         return Joiner.on("; ").join(errors);
@@ -42,7 +42,7 @@ public class ConstraintViolationMapper extends AbstractExceptionMapper<Constrain
     private static final class ValidationErrorConverter implements Function<ValidationError, String> {
         @Override
         public String apply(ValidationError input) {
-            return input.getMessageTemplate() + " " + input.getPath() + " " + input.getMessage();
+            return input.getPath() + " " + input.getMessage();
         }
     }
 }
