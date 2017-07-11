@@ -218,15 +218,18 @@ public class TopicService {
                 .collect(toList());
     }
 
-    public List<TopicNameWithMetrics> getTopicsMetrics(Query<TopicNameWithMetrics> query) {
-        return query.filter(
-                getAllTopics()
-                        .stream()
-                        .map(t -> {
-                            TopicMetrics metrics = metricRepository.loadMetrics(t.getName());
-                            return TopicNameWithMetrics.from(metrics, t.getQualifiedName());
-                        })
-                        .collect(toList()))
+    public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
+        return query.filter(getTopicsMetrics())
+                .collect(toList());
+    }
+
+    private List<TopicNameWithMetrics> getTopicsMetrics() {
+        return getAllTopics()
+                .stream()
+                .map(t -> {
+                    TopicMetrics metrics = metricRepository.loadMetrics(t.getName());
+                    return TopicNameWithMetrics.from(metrics, t.getQualifiedName());
+                })
                 .collect(toList());
     }
 }

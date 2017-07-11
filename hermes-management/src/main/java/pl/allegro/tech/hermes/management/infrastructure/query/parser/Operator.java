@@ -12,7 +12,7 @@ public enum Operator {
     NOT("not"),
     AND("and"),
     OR("or"),
-    GRATER_THAN("gt"),
+    GREATER_THAN("gt"),
     LOWER_THAN("lt");
 
 

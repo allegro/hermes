@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Objects;
 
 public class TopicNameWithMetrics {
 
@@ -64,5 +65,29 @@ public class TopicNameWithMetrics {
 
     public String getQualifiedName() {
         return topicName.qualifiedName();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        TopicNameWithMetrics that = (TopicNameWithMetrics) o;
+
+        return Objects.equals(this.published, that.published)
+                && Objects.equals(this.rate, that.rate)
+                && Objects.equals(this.deliveryRate, that.deliveryRate)
+                && Objects.equals(this.subscriptions, that.subscriptions)
+                && Objects.equals(this.throughput, that.throughput)
+                && Objects.equals(this.topicName, that.topicName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput, topicName);
     }
 }
