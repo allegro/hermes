@@ -19,33 +19,34 @@ public class ComparisonMatcher implements Matcher {
 
     @Override
     public boolean match(Object value) {
+        Object leftSideValue = getUserInput(value);
+
+        double leftSideValueAsNumber = parseToNumber(leftSideValue);
+        double rightSideValueAsNumber = parseToNumber(rightSideValue);
+
+        return makeComparison(leftSideValueAsNumber, rightSideValueAsNumber);
+    }
+
+    private Object getUserInput(Object value) {
         try {
-            Object leftSideValue = getUserInput(value);
+            Object userInput = ObjectGraph.from(value).navigate(attribute).value();
 
-            double leftSideValueAsNumber = parseToNumber(leftSideValue);
-            double rightSideValueAsNumber = parseToNumber(rightSideValue);
-
-            return makeComparison(leftSideValueAsNumber, rightSideValueAsNumber);
+            if (userInput == null)
+                throw new MatcherInputException(String.format("Cannot find '%s' attribute", this.attribute));
+            return userInput;
         }
         catch (JXPathException e) {
             throw new MatcherException(String.format("Could not navigate to specific path: '%s'", attribute), e);
         }
+    }
+
+    private Double parseToNumber(Object value){
+        try {
+            return Double.parseDouble(asString(value));
+        }
         catch (NumberFormatException e) {
             throw new MatcherInputException("Comparison operator requires numerical data");
         }
-    }
-
-    private Object getUserInput(Object value) throws MatcherInputException {
-        Object userInput = ObjectGraph.from(value).navigate(attribute).value();
-
-        if (userInput == null) {
-            throw new MatcherInputException(String.format("Cannot find '%s' attribute", this.attribute));
-        }
-        return userInput;
-    }
-
-    private Double parseToNumber(Object value) throws NumberFormatException{
-        return Double.parseDouble(asString(value));
     }
 
     private boolean makeComparison(Double leftSideNumber, Double rightSideNumber) {
