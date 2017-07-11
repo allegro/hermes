@@ -143,6 +143,38 @@ public class QueryEndpointTest extends IntegrationTest {
         assertThat(found).isEmpty();
     }
 
+    @DataProvider(name = "topicsMetricsFilteringData")
+    public static Object[][] topicsMetricsFilteringData() {
+        return new Object[][]{
+                {"testTopic1", "testTopic2", "{\"query\": {}}", asList("testGroup.testTopic1", "testGroup.testTopic2")},
+                {"testTopic3", "testTopic4", "{\"query\": {\"published\": {\"gt\": \"5\"}}}", asList()},
+                {"testTopic5", "testTopic6", "{\"query\": {\"published\": {\"gt\": \"2\"}}}", asList("testGroup.testTopic6")},
+                {"testTopic7", "testTopic8", "{\"query\": {\"published\": {\"lt\": \"2\"}}}", asList("testGroup.testTopic7")},
+        };
+    }
+
+    @Test(dataProvider = "topicsMetricsFilteringData")
+    public void shouldQueryTopicsMetrics(String topicName1, String topicName2, String query, List<String> qualifiedNames) {
+        // given
+        operations.buildTopic(topic("testGroup", topicName1).withContentType(JSON).withTrackingEnabled(false).build());
+        operations.buildTopic(topic("testGroup", topicName2).withContentType(JSON).withTrackingEnabled(false).build());
+
+        publisher.publish("testGroup." + topicName1, "testMessage1");
+        publisher.publish("testGroup." + topicName2, "testMessage2");
+        publisher.publish("testGroup." + topicName2, "testMessage3");
+        publisher.publish("testGroup." + topicName2, "testMessage4");
+
+        wait.until(() -> {
+            // when
+            List<TopicNameWithMetrics> found = management.query().queryTopicsMetrics(query);
+
+            // then
+            assertTopicMetricsMatchesToNames(found, qualifiedNames);
+        });
+
+    }
+
+
     private Subscription enrichSubscription(SubscriptionBuilder subscription, String endpoint) {
         return subscription
                 .withTrackingEnabled(true)
@@ -157,4 +189,11 @@ public class QueryEndpointTest extends IntegrationTest {
         assertThat(found).containsOnlyElementsOf(expected);
     }
 
+    private void assertTopicMetricsMatchesToNames(List<TopicNameWithMetrics> found, List<String> expectedQualifiedNames) {
+        List<String> foundQualifiedNames = found.stream()
+                .map(TopicNameWithMetrics::getQualifiedName)
+                .collect(Collectors.toList());
+
+        assertThat(foundQualifiedNames).containsAll(expectedQualifiedNames);
+    }
 }

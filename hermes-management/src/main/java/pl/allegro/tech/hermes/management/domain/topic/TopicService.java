@@ -5,10 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
+import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
@@ -213,6 +215,21 @@ public class TopicService {
     public List<MessageTextPreview> previewText(TopicName topicName) {
         return messagePreviewRepository.loadPreview(topicName).stream()
                 .map(p -> new MessageTextPreview(new String(p.getContent(), StandardCharsets.UTF_8), p.isTruncated()))
+                .collect(toList());
+    }
+
+    public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
+        return query.filter(getTopicsMetrics())
+                .collect(toList());
+    }
+
+    private List<TopicNameWithMetrics> getTopicsMetrics() {
+        return getAllTopics()
+                .stream()
+                .map(t -> {
+                    TopicMetrics metrics = metricRepository.loadMetrics(t.getName());
+                    return TopicNameWithMetrics.from(metrics, t.getQualifiedName());
+                })
                 .collect(toList());
     }
 }

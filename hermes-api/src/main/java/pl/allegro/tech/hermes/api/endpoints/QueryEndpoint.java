@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.api.endpoints;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -32,6 +33,12 @@ public interface QueryEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/subscriptions")
     List<Subscription> querySubscriptions(String query);
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @Path("/topics/metrics")
+    List<TopicNameWithMetrics> queryTopicsMetrics(String query);
 
 }
 
