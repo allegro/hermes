@@ -16,10 +16,11 @@ on topics `subscriptions` resource:
 
 Request body must contain at least:
 
-* name: name of subscription
-* endpoint: valid URI
-* owner: who's the owner of this subscription (refer to
-  [creating topic](/user/publishing/#creating-topic) for more information)
+- topicName : fully qualified name of topic including group name, separated with a dot (see: [naming convention](/overview/data-model#naming-convention))
+- name: name of subscription
+- description: subscription description
+- endpoint: valid URI
+- owner: who's the owner of this subscription (refer to [creating topic](/user/publishing/#creating-topic) for more information)
 
 Minimal request:
 
@@ -27,7 +28,7 @@ Minimal request:
 {
     "topicName": "group.topic",
     "name": "mySubscription", 
-    "description": "This is my subscription"
+    "description": "This is my subscription",
     "endpoint": "http://my-service", 
     "owner": {
         "source": "Plaintext",
