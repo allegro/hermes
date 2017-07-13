@@ -5,6 +5,7 @@ public interface LogSchemaAware {
     String MESSAGE_ID = "messageId";
     String BATCH_ID = "batchId";
     String TIMESTAMP = "timestamp";
+    String TIMESTAMP_SECONDS = "timestamp_seconds";
     String PUBLISH_TIMESTAMP = "publish_timestamp";
     String STATUS = "status";
     String TOPIC_NAME = "topicName";
