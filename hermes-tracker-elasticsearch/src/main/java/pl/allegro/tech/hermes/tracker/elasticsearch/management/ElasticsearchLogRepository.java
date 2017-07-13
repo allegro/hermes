@@ -99,7 +99,7 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
                 .addFields(MESSAGE_ID, TIMESTAMP, SUBSCRIPTION, TOPIC_NAME, STATUS, REASON, PARTITION, OFFSET, CLUSTER)
                 .setTrackScores(true)
                 .setQuery(query)
-                .addSort(TIMESTAMP, sort)
+                .addSort(TIMESTAMP_SECONDS, sort)
                 .setSize(limit)
                 .execute()
                 .get();
@@ -110,7 +110,7 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
                 .addFields(MESSAGE_ID, TIMESTAMP, TOPIC_NAME, STATUS, REASON, CLUSTER)
                 .setTrackScores(true)
                 .setQuery(query)
-                .addSort(TIMESTAMP, SortOrder.ASC)
+                .addSort(TIMESTAMP_SECONDS, SortOrder.ASC)
                 .setSize(limit)
                 .execute()
                 .get();
