@@ -11,13 +11,14 @@ var topics = angular.module('hermes.topic', [
 ]);
 
 topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal',
-    'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory', 'SUBSCRIPTION_CONFIG',
+    'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory', 'SUBSCRIPTION_CONFIG', 'OfflineReadersRepository',
     function (topicConfig, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, confirmationModal, toaster, passwordService,
-              subscriptionFactory, subscriptionConfig) {
+              subscriptionFactory, subscriptionConfig, offlineReadersRepository) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
 
-        $scope.fetching = true;
+        $scope.subscribtionsFetching = true;
+        $scope.offlineReadersFetching = true;
         $scope.showMessageSchema = false;
         $scope.config = topicConfig;
 
@@ -32,7 +33,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         function loadSubscriptions() {
             topicRepository.listSubscriptionsWithDetails(topicName).then(function (subscriptions) {
                 $scope.subscriptions = subscriptions;
-                $scope.fetching = false;
+                $scope.subscribtionsFetching = false;
             });
         }
 
@@ -42,8 +43,18 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             });
         }
 
+        function loadOfflineReaders() {
+            offlineReadersRepository.get(topicName).then(function (readers) {
+                $scope.readers = readers;
+                $scope.offlineReadersFetching = false;
+            });
+        }
+
         loadSubscriptions();
         loadBlacklistStatus();
+        if ($scope.config.offlineReadersEnabled) {
+            loadOfflineReaders();
+        }
 
         topicRepository.preview(topicName).then(function(preview) {
             $scope.preview = preview;

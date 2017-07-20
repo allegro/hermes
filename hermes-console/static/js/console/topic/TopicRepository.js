@@ -20,7 +20,7 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
         }
 
         function wrapSchemaRemove(topic, promise) {
-            if (topicConfig.removeSchema && topic.contentType == 'AVRO') {
+            if (topicConfig.removeSchema && topic.contentType === 'AVRO') {
                 return promise.then(function () {
                     return schemaRepository.remove(topic.name).$promise;
                 });
@@ -40,7 +40,7 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
             get: function (name) {
                 return repository.get({name: name}).$promise.then(function(topic) {
                     topic.shortName = topic.name.substring(topic.name.lastIndexOf('.') + 1);
-                    if (topic.contentType == 'AVRO') {
+                    if (topic.contentType === 'AVRO') {
                         return schemaRepository.get(topic.name).$promise.then(function(schema) {
                             var schemaStr = JSON.stringify(schema, ngPromiseCleaner, 2);
                             return {topic: topic, messageSchema: schemaStr != '{}' ? schemaStr : null};
@@ -100,6 +100,17 @@ repository.factory('SchemaRepository', ['DiscoveryService', '$resource',
             },
             remove: function(name) {
                 return repository.remove({name: name});
+            }
+        };
+    }]);
+
+repository.factory('OfflineReadersRepository', ['DiscoveryService', '$resource',
+    function (discovery, $resource) {
+        var repository = $resource(discovery.resolve('/readers/:topic'));
+
+        return {
+            get: function (topic) {
+                return repository.query({topic: topic}).$promise;
             }
         };
     }]);

@@ -52,7 +52,8 @@
             {"value": "JSON", "label": "JSON"}
         },
         "removeSchema": false,
-        "buttonsExtension": "<a class=\"btn btn-info {{topic.contentType === 'JSON' ? 'ng-show' : 'ng-hide'}}\" ng-href='http://migrator.example/topics/{{topic.name}}'>Migrate to AVRO</a>"
+        "buttonsExtension": "<a class=\"btn btn-info {{topic.contentType === 'JSON' ? 'ng-show' : 'ng-hide'}}\" ng-href='http://migrator.example/topics/{{topic.name}}'>Migrate to AVRO</a>",
+        "offlineReadersEnabled": false
     },
     "subscription": {
         "endpointAddressResolverMetadata": {

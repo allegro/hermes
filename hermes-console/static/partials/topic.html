@@ -154,7 +154,37 @@
             </a>
         </div>
 
-        <div ng-show="fetching" class="text-center">
+        <div ng-show="subscribtionsFetching" class="text-center">
+            <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
+        </div>
+    </div>
+
+    <div class="row" ng-if="config.offlineReadersEnabled">
+        <div class="list-group">
+            <div class="list-group-item">
+                <h4>
+                    Offline readers
+                </h4>
+            </div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>User</th>
+                        <th>Last access date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="reader in readers">
+                        <td>{{$index + 1}}</td>
+                        <td>{{reader.user}}</td>
+                        <td>{{reader.lastAccess}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-show="offlineReadersFetching" class="text-center">
             <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
         </div>
     </div>
