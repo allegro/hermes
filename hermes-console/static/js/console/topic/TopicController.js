@@ -17,7 +17,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
 
-        $scope.subscribtionsFetching = true;
+        $scope.subscriptionsFetching = true;
         $scope.offlineReadersFetching = true;
         $scope.showMessageSchema = false;
         $scope.config = topicConfig;
@@ -33,7 +33,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         function loadSubscriptions() {
             topicRepository.listSubscriptionsWithDetails(topicName).then(function (subscriptions) {
                 $scope.subscriptions = subscriptions;
-                $scope.subscribtionsFetching = false;
+                $scope.subscriptionsFetching = false;
             });
         }
 

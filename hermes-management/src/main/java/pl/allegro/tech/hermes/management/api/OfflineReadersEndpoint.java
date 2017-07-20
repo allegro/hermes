@@ -4,6 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.ErrorCode;
+import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.management.domain.ManagementException;
 import pl.allegro.tech.hermes.management.domain.readers.OfflineReadersService;
 
 import javax.ws.rs.GET;
@@ -15,7 +18,7 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Component
-@Path("/readers")
+@Path("/topics")
 public class OfflineReadersEndpoint {
 
     private static final Logger logger = LoggerFactory.getLogger(OfflineReadersEndpoint.class);
@@ -31,14 +34,25 @@ public class OfflineReadersEndpoint {
     }
 
     @GET
-    @Path("/{topic}")
+    @Path("/{topic}/offline-readers")
     @Produces(APPLICATION_JSON)
     public Response find(@PathParam("topic") String topic) {
         if (offlineReadersService == null) {
-            logger.warn("Offline readers bean is absent");
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new OfflineReadersServiceAbsentException();
         } else {
-            return Response.ok(offlineReadersService.find(topic)).build();
+            return Response.ok(offlineReadersService.find(TopicName.fromQualifiedName(topic))).build();
+        }
+    }
+
+    private static class OfflineReadersServiceAbsentException extends ManagementException {
+
+        OfflineReadersServiceAbsentException() {
+            super("Offline readers implementation is absent");
+        }
+
+        @Override
+        public ErrorCode getCode() {
+            return ErrorCode.IMPLEMENTATION_ABSENT;
         }
     }
 }
