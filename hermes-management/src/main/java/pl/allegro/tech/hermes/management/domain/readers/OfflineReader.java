@@ -1,19 +1,21 @@
 package pl.allegro.tech.hermes.management.domain.readers;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDate;
 
 public class OfflineReader {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate lastAccess;
-    private String user;
+    private final LocalDate lastAccess;
+    private final String user;
 
-    public OfflineReader() {
-    }
-
-    public OfflineReader(LocalDate lastAccess, String user) {
+    @JsonCreator
+    public OfflineReader(
+            @JsonProperty("lastAccess") LocalDate lastAccess,
+            @JsonProperty("user") String user) {
         this.lastAccess = lastAccess;
         this.user = user;
     }
@@ -22,15 +24,7 @@ public class OfflineReader {
         return lastAccess;
     }
 
-    public void setLastAccess(LocalDate lastAccess) {
-        this.lastAccess = lastAccess;
-    }
-
     public String getUser() {
         return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
     }
 }

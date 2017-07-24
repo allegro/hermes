@@ -7,7 +7,6 @@ dependencies {
     compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
     compile group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: versions.jackson
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
     compile group: 'com.google.guava', name: 'guava', version: versions.guava
     compile group: 'com.damnhandy', name: 'handy-uri-templates', version: '2.0.2'
 
