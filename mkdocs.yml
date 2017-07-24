@@ -53,3 +53,4 @@ pages:
     - 'Topic Preview': 'configuration/topic-preview.md'
     - 'Custom protocol support': 'configuration/custom-protocol.md'
     - 'Console': 'configuration/console.md'
+    - 'Offline Clients': 'configuration/offline-clients.md'

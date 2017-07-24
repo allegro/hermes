@@ -21,7 +21,8 @@
     ],
     "defaults": {
       "contentType": "AVRO"
-    }
+    },
+    "offlineClientsEnabled": false
   },
   "subscription": {
   },
