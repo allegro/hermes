@@ -104,9 +104,9 @@ repository.factory('SchemaRepository', ['DiscoveryService', '$resource',
         };
     }]);
 
-repository.factory('OfflineReadersRepository', ['DiscoveryService', '$resource',
+repository.factory('OfflineClientsRepository', ['DiscoveryService', '$resource',
     function (discovery, $resource) {
-        var repository = $resource(discovery.resolve('/topics/:topic/offline-readers'));
+        var repository = $resource(discovery.resolve('/topics/:topic/offline-clients'));
 
         return {
             get: function (topic) {

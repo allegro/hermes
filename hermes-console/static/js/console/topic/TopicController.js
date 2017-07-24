@@ -11,14 +11,14 @@ var topics = angular.module('hermes.topic', [
 ]);
 
 topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal',
-    'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory', 'SUBSCRIPTION_CONFIG', 'OfflineReadersRepository',
+    'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory', 'SUBSCRIPTION_CONFIG', 'OfflineClientsRepository',
     function (topicConfig, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, confirmationModal, toaster, passwordService,
-              subscriptionFactory, subscriptionConfig, offlineReadersRepository) {
+              subscriptionFactory, subscriptionConfig, offlineClientsRepository) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
 
         $scope.subscriptionsFetching = true;
-        $scope.offlineReadersFetching = true;
+        $scope.offlineClientsFetching = true;
         $scope.showMessageSchema = false;
         $scope.config = topicConfig;
 
@@ -43,17 +43,17 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             });
         }
 
-        function loadOfflineReaders() {
-            offlineReadersRepository.get(topicName).then(function (readers) {
-                $scope.readers = readers;
-                $scope.offlineReadersFetching = false;
+        function loadOfflineClients() {
+            offlineClientsRepository.get(topicName).then(function (clients) {
+                $scope.clients = clients;
+                $scope.offlineClientsFetching = false;
             });
         }
 
         loadSubscriptions();
         loadBlacklistStatus();
-        if ($scope.config.offlineReadersEnabled) {
-            loadOfflineReaders();
+        if ($scope.config.offlineClientsEnabled) {
+            loadOfflineClients();
         }
 
         topicRepository.preview(topicName).then(function(preview) {

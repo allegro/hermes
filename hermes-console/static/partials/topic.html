@@ -159,11 +159,11 @@
         </div>
     </div>
 
-    <div class="row" ng-if="config.offlineReadersEnabled">
+    <div class="row" ng-if="config.offlineClientsEnabled">
         <div class="list-group">
             <div class="list-group-item">
                 <h4>
-                    Offline readers
+                    Offline clients
                 </h4>
             </div>
             <table class="table table-bordered">
@@ -175,16 +175,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="reader in readers">
+                    <tr ng-repeat="client in clients">
                         <td>{{$index + 1}}</td>
-                        <td>{{reader.user}}</td>
-                        <td>{{reader.lastAccess}}</td>
+                        <td>{{client.user}}</td>
+                        <td>{{client.lastAccess}}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div ng-show="offlineReadersFetching" class="text-center">
+        <div ng-show="offlineClientsFetching" class="text-center">
             <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
         </div>
     </div>

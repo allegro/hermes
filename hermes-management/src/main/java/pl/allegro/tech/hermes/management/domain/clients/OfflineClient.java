@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.domain.readers;
+package pl.allegro.tech.hermes.management.domain.clients;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -6,14 +6,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDate;
 
-public class OfflineReader {
+public class OfflineClient {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private final LocalDate lastAccess;
     private final String user;
 
     @JsonCreator
-    public OfflineReader(
+    public OfflineClient(
             @JsonProperty("lastAccess") LocalDate lastAccess,
             @JsonProperty("user") String user) {
         this.lastAccess = lastAccess;

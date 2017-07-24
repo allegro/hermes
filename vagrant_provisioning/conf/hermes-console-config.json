@@ -35,6 +35,6 @@
   },
   "topic": {
     "messagePreviewEnabled": true,
-    "offlineReadersEnabled": false
+    "offlineClientsEnabled": false
   }
 }

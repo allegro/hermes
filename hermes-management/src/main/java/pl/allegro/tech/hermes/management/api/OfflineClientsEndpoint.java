@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.domain.ManagementException;
-import pl.allegro.tech.hermes.management.domain.readers.OfflineReadersService;
+import pl.allegro.tech.hermes.management.domain.clients.OfflineClientsService;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -19,32 +19,32 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Component
 @Path("/topics")
-public class OfflineReadersEndpoint {
+public class OfflineClientsEndpoint {
 
-    private static final Logger logger = LoggerFactory.getLogger(OfflineReadersEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(OfflineClientsEndpoint.class);
 
-    private final Optional<OfflineReadersService> offlineReadersService;
+    private final Optional<OfflineClientsService> offlineClientsService;
 
-    OfflineReadersEndpoint(Optional<OfflineReadersService> offlineReadersService) {
-        if (!offlineReadersService.isPresent()) {
-            logger.info("Offline readers bean is absent");
+    OfflineClientsEndpoint(Optional<OfflineClientsService> offlineClientsService) {
+        if (!offlineClientsService.isPresent()) {
+            logger.info("Offline clients bean is absent");
         }
-        this.offlineReadersService = offlineReadersService;
+        this.offlineClientsService = offlineClientsService;
     }
 
     @GET
-    @Path("/{topic}/offline-readers")
+    @Path("/{topic}/offline-clients")
     @Produces(APPLICATION_JSON)
     public Response find(@PathParam("topic") String topic) {
-        return offlineReadersService
+        return offlineClientsService
                 .map(service -> Response.ok(service.find(TopicName.fromQualifiedName(topic))).build())
-                .orElseThrow(OfflineReadersServiceAbsentException::new);
+                .orElseThrow(OfflineClientsServiceAbsentException::new);
     }
 
-    private static class OfflineReadersServiceAbsentException extends ManagementException {
+    private static class OfflineClientsServiceAbsentException extends ManagementException {
 
-        OfflineReadersServiceAbsentException() {
-            super("Offline readers implementation is absent");
+        OfflineClientsServiceAbsentException() {
+            super("Offline clients implementation is absent");
         }
 
         @Override
