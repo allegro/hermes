@@ -137,4 +137,19 @@ public class ZookeeperCounterStorageTest {
         //then
         verifyZeroInteractions(sharedCounter);
     }
+
+    @Test
+    public void shouldNotIncrementInflightCounterForNonExistingSubscription() {
+        //given
+        TopicName topicName = TopicName.fromQualifiedName("test.topic");
+        String subscriptionName = "sub";
+        doThrow(new SubscriptionNotExistsException(topicName, subscriptionName))
+                .when(subscriptionRepository).ensureSubscriptionExists(topicName, subscriptionName);
+
+        //when
+        storage.setInflightCounter(topicName, subscriptionName, 1L);
+
+        //then
+        verifyZeroInteractions(sharedCounter);
+    }
 }

@@ -131,6 +131,15 @@ public abstract class ZookeeperBasedRepository {
         }
     }
 
+    protected boolean isEmpty(String path) {
+        try {
+            byte[] data = zookeeper.getData().forPath(path);
+            return data.length == 0;
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
+    }
+
     private interface ThrowingReader<T> {
         T read(byte[] data) throws IOException;
     }
