@@ -6,6 +6,7 @@ classes
 *.ipr
 *.iws
 /data
+out
 
 .nb-gradle/
 .nb-gradle*
