@@ -89,10 +89,15 @@ public class ZookeeperCounterStorage implements CounterStorage {
 
     @Override
     public void setInflightCounter(TopicName topicName, String subscriptionName, long count) {
-        distributedCounter.setCounterValue(
-                pathsCompiler.compile(appendRootPath(SUBSCRIPTION_INFLIGHT_FULL_PATH),
-                        subscriptionPathContext(topicName, subscriptionName)),
-                        count);
+        try {
+            subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
+            distributedCounter.setCounterValue(
+                    pathsCompiler.compile(appendRootPath(SUBSCRIPTION_INFLIGHT_FULL_PATH),
+                            subscriptionPathContext(topicName, subscriptionName)),
+                            count);
+        } catch (SubscriptionNotExistsException e) {
+            LOGGER.debug("Trying to report metric on not existing subscription {} {}", topicName, subscriptionName);
+        }
     }
 
     @Override

@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperResource
 import spock.lang.Shared
 import spock.lang.Specification
@@ -23,7 +24,9 @@ abstract class IntegrationTest extends Specification {
         starter.curator().create().creatingParentsIfNeeded().forPath("/hermes/groups")
     } as Consumer)
 
-    protected ZookeeperPaths paths = new ZookeeperPaths("/hermes")
+    static final String BASE_ZOOKEEPER_PATH = "/hermes"
+
+    protected ZookeeperPaths paths = new ZookeeperPaths(BASE_ZOOKEEPER_PATH)
 
     protected RepositoryWaiter wait = new RepositoryWaiter(zookeeperResource.curator(), paths)
 
@@ -36,6 +39,8 @@ abstract class IntegrationTest extends Specification {
     protected ZookeeperSubscriptionRepository subscriptionRepository = new ZookeeperSubscriptionRepository(zookeeper(), mapper, paths, topicRepository)
 
     protected KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("")
+
+    protected PathsCompiler pathsCompiler = new PathsCompiler("")
 
     protected CuratorFramework zookeeper() {
         return zookeeperResource.curator()

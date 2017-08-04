@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper
 import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.TopicName
+import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException
 import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException
@@ -10,6 +11,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
+import static pl.allegro.tech.hermes.metrics.PathContext.pathContext
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
@@ -175,13 +177,35 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
         thrown(TopicNotEmptyException)
     }
 
+    def "should remove topic with metrics but without subscriptions"() {
+        given:
+        def topicName = "topicWithMetrics"
+
+        repository.createTopic(topic(GROUP, topicName).build())
+        wait.untilTopicCreated(GROUP, topicName)
+
+        def path = pathsCompiler.compile(BASE_ZOOKEEPER_PATH + ZookeeperCounterStorage.SUBSCRIPTION_DELIVERED, pathContext()
+                .withGroup(GROUP)
+                .withTopic(topicName)
+                .withSubscription("sample")
+                .build())
+        zookeeper().create().creatingParentsIfNeeded().forPath(path, '1'.bytes)
+        wait.untilZookeeperPathIsCreated(path)
+
+        when:
+        repository.removeTopic(new TopicName(GROUP, topicName))
+
+        then:
+        !repository.topicExists(new TopicName(GROUP, topicName))
+    }
+
     def "should not throw exception on malformed topic when reading list of all topics"() {
         given:
         zookeeper().create().forPath(paths.topicPath(new TopicName(GROUP, 'malformed')), ''.bytes)
         wait.untilTopicCreated(GROUP, 'malformed')
 
         when:
-        List<Topic> topics = repository.listTopics(GROUP)
+        repository.listTopics(GROUP)
 
         then:
         notThrown(MalformedDataException)
