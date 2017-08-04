@@ -6,10 +6,8 @@ import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
-import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionException
-import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionsException
-import pl.allegro.tech.hermes.schema.CouldNotRegisterSchemaException
-import pl.allegro.tech.hermes.schema.CouldNotRegisterSchemaSubjectException
+import pl.allegro.tech.hermes.schema.BadSchemaRequestException
+import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException
 import pl.allegro.tech.hermes.schema.RawSchemaClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.util.Ports
@@ -96,7 +94,7 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         client.registerSchema(topicName, rawSchema)
 
         then:
-        thrown(CouldNotRegisterSchemaSubjectException)
+        thrown(BadSchemaRequestException)
     }
 
     def "should throw exception on invalid schema registration"() {
@@ -108,7 +106,7 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         client.registerSchema(topicName, rawSchema)
 
         then:
-        def e = thrown(CouldNotRegisterSchemaException)
+        def e = thrown(BadSchemaRequestException)
         e.message.contains("some error")
     }
 
@@ -121,7 +119,7 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         client.registerSchema(topicName, rawSchema)
 
         then:
-        thrown(CouldNotRegisterSchemaException)
+        thrown(InternalSchemaRepositoryException)
     }
 
     def "should return empty optional when latest schema does not exist"() {
@@ -140,8 +138,7 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         client.getLatestSchema(topicName)
 
         then:
-        def e = thrown(CouldNotFetchSchemaVersionException)
-        e.message.contains "latest"
+        thrown(InternalSchemaRepositoryException)
     }
 
     def "should return latest schema"() {
@@ -183,7 +180,7 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         client.getVersions(topicName)
 
         then:
-        thrown(CouldNotFetchSchemaVersionsException)
+        thrown(InternalSchemaRepositoryException)
     }
 
     def "should return schema at specified version"() {

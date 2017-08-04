@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
+import java.io.IOException;
 import java.time.Clock;
 import java.util.List;
 
@@ -21,6 +22,10 @@ import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader.load;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
@@ -29,9 +34,10 @@ public class MessageContentWrapperTest {
     private final MetricRegistry metricRegistry = new MetricRegistry();
     private final DeserializationMetrics metrics = new DeserializationMetrics(metricRegistry);
 
-    private final MessageContentWrapper messageContentWrapper = new MessageContentWrapper(
-            new JsonMessageContentWrapper("message", "metadata", new ObjectMapper()),
-            new AvroMessageContentWrapper(Clock.systemDefaultZone()), schemaRepository, metrics);
+    private final JsonMessageContentWrapper jsonWrapper = new JsonMessageContentWrapper("message", "metadata", new ObjectMapper());
+    private final AvroMessageContentWrapper avroWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
+    private final MessageContentWrapper messageContentWrapper = new MessageContentWrapper(jsonWrapper, avroWrapper,
+            schemaRepository, () -> true, metrics);
 
     static CompiledSchema<Schema> schema1 = new CompiledSchema<>(load("/schema/user.avsc"), SchemaVersion.valueOf(1));
     static CompiledSchema<Schema> schema2 = new CompiledSchema<>(load("/schema/user_v2.avsc"), SchemaVersion.valueOf(2));
@@ -79,16 +85,25 @@ public class MessageContentWrapperTest {
                                                               boolean unwrapWithSchemaVersionAwarePayload, int missedSchemaVersionInPayload,
                                                               int errorsForPayloadWithSchemaVersion, int errorsForAnySchemaVersion,
                                                               int errorsForAnyOnlineSchemaVersion) {
+        shouldUnwrapMessageWrappedWithSchemaAtVersion(messageContentWrapper, schemaVersion, wrapWithSchemaVersionAwarePayload,
+                unwrapWithSchemaVersionAwarePayload, missedSchemaVersionInPayload, errorsForPayloadWithSchemaVersion,
+                errorsForAnySchemaVersion, errorsForAnyOnlineSchemaVersion);
+    }
+
+    public void shouldUnwrapMessageWrappedWithSchemaAtVersion(MessageContentWrapper wrapper, int schemaVersion, boolean wrapWithSchemaVersionAwarePayload,
+                                                              boolean unwrapWithSchemaVersionAwarePayload, int missedSchemaVersionInPayload,
+                                                              int errorsForPayloadWithSchemaVersion, int errorsForAnySchemaVersion,
+                                                              int errorsForAnyOnlineSchemaVersion) {
         // given
         SchemaVersion version = SchemaVersion.valueOf(schemaVersion);
         Topic topicToWrap = createTopic("group", "topic", wrapWithSchemaVersionAwarePayload);
         Topic topicToUnwrap = createTopic("group", "topic", unwrapWithSchemaVersionAwarePayload);
         CompiledSchema<Schema> schema = schemaRepository.getKnownAvroSchemaVersion(topicToWrap, version);
         AvroUser user = new AvroUser(schema, "Bob", 15, "blue");
-        byte[] wrapped = messageContentWrapper.wrapAvro(user.asBytes(), "uniqueId", 1234, topicToWrap, schema, new HashedMap<>());
+        byte[] wrapped = wrapper.wrapAvro(user.asBytes(), "uniqueId", 1234, topicToWrap, schema, new HashedMap<>());
 
         // when
-        UnwrappedMessageContent unwrappedMessageContent = messageContentWrapper.unwrapAvro(wrapped, topicToUnwrap);
+        UnwrappedMessageContent unwrappedMessageContent = wrapper.unwrapAvro(wrapped, topicToUnwrap);
 
         // then
         assertThat(unwrappedMessageContent.getContent()).contains(user.asBytes());
@@ -134,5 +149,26 @@ public class MessageContentWrapperTest {
 
     private Topic createTopic(String group, String name, boolean schemaVersionAwarePayload) {
         return schemaVersionAwarePayload ? topic(group, name).withSchemaVersionAwareSerialization().build() : topic(group, name).build();
+    }
+
+    @Test
+    public void shouldUseRateLimiterWhenTryingToOnlineCheckForSchemaVersions() throws IOException {
+        // given
+        SchemaOnlineChecksRateLimiter rateLimiter = mock(SchemaOnlineChecksRateLimiter.class);
+        when(rateLimiter.tryAcquireOnlineCheckPermit()).thenReturn(true);
+        MessageContentWrapper wrapper = new MessageContentWrapper(jsonWrapper,avroWrapper, schemaRepository, rateLimiter, metrics);
+
+        // when forcing offline checks
+        shouldUnwrapMessageWrappedWithSchemaAtVersion(wrapper, 1, false, false, 0, 0, 0, 0);
+        shouldUnwrapMessageWrappedWithSchemaAtVersion(wrapper, 2, false, false, 0, 0, 0, 0);
+
+        // then
+        verify(rateLimiter, never()).tryAcquireOnlineCheckPermit();
+
+        // when forcing online check
+        shouldUnwrapMessageWrappedWithSchemaAtVersion(wrapper, 3, false, false, 0, 0, 1, 0);
+
+        // then
+        verify(rateLimiter).tryAcquireOnlineCheckPermit();
     }
 }

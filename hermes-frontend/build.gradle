@@ -10,7 +10,9 @@ dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
     compile group: 'net.jodah', name: 'failsafe', version: '1.0.0'
 
-    provided group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
+    compileOnly group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
+
+    testCompile group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testCompile (group: 'com.jayway.awaitility', name: 'awaitility-groovy', version: '1.7.0') {

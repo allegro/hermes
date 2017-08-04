@@ -1,44 +1,56 @@
-apply plugin: 'me.champeau.gradle.jmh'
-apply plugin: 'idea'
+plugins {
+    id 'me.champeau.gradle.jmh' version '0.4.2'
+}
 
 configurations {
     jmh
 }
 
 jmh {
-    include = 'pl\\.allegro\\.tech\\.hermes\\.benchmark\\..*'
+    include = ['pl\\.allegro\\.tech\\.hermes\\.benchmark\\..*']
     humanOutputFile = null
     jmhVersion = '1.12'
     zip64 = true
     verbosity = 'EXTRA'
-    iterations = 4
-    timeOnIteration = '80s'
-    fork = 1
-    warmupIterations = 4
-    warmup = '80s'
-    jvmArgs = '-Xmx1g -Xms1g -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode'
-    failOnError = false
-    threads = 4
+    iterations = intProperty('jmh.iterations', 4)
+    timeOnIteration = stringProperty('jmh.timeOnIteration', '80s')
+    fork = intProperty('jmh.fork', 1)
+    warmupIterations = intProperty('jmh.warmupIterations', 4)
+    warmup = stringProperty('jmh.timeOnWarmupIteration', '80s')
+    jvmArgs = listProperty('jmh.jvmArgs', ['-Xmx1g', '-Xms1g', '-XX:+UseConcMarkSweepGC', '-XX:+CMSIncrementalMode'])
+    failOnError = booleanProperty('jmh.failOnError', true)
+    threads = intProperty('jmh.threads', 4)
     synchronizeIterations = false
     forceGC =  false
+    duplicateClassesStrategy = 'exclude'
 }
 
 dependencies {
-    jmh 'org.openjdk.jmh:jmh-core:1.12'
-    jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.12'
-    jmh 'org.apache.httpcomponents:httpasyncclient:4.1.1'
-    jmh 'org.spf4j:spf4j-jmh:8.0.3'
+    jmh group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.12'
+    jmh group: 'org.openjdk.jmh', name: 'jmh-generator-annprocess', version: '1.12'
+    jmh group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.1'
+    jmh group: 'org.spf4j', name: 'spf4j-jmh', version: '8.0.3'
     jmh project(':hermes-frontend')
     jmh project(':hermes-test-helper')
-}
-
-idea {
-    module {
-        scopes.PROVIDED.plus += [ configurations.jmh ]
-    }
 }
 
 // Workaround for duplicated `BenchmarkList` and `CompilerHints` files from META-INF directory in jmh jar.
 // Those duplications can prevent from running benchmark tests.
 // More info https://github.com/melix/jmh-gradle-plugin/issues/6
-tasks.getByName('jmhJar').doFirst() {duplicatesStrategy(DuplicatesStrategy.EXCLUDE)}
+tasks.getByName('jmhJar').doFirst() { duplicatesStrategy(DuplicatesStrategy.EXCLUDE) }
+
+String stringProperty(String property, String defaultValue) {
+    project.hasProperty(property) ? project.property(property) : defaultValue
+}
+
+List listProperty(String property, List defaultValue) {
+    project.hasProperty(property) ? ((String) project.property(property)).split(' ').toList() : defaultValue
+}
+
+int intProperty(String property, int defaultValue) {
+    project.hasProperty(property) ? Integer.valueOf(project.property(property)) : defaultValue
+}
+
+boolean booleanProperty(String property, boolean defaultValue) {
+    project.hasProperty(property) ? Boolean.valueOf(project.property(property)) : defaultValue
+}

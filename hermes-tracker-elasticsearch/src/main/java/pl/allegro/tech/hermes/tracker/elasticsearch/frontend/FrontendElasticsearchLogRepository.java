@@ -82,11 +82,16 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
                 .startObject()
                 .field(MESSAGE_ID, messageId)
                 .field(TIMESTAMP, timestamp)
+                .field(TIMESTAMP_SECONDS, toSeconds(timestamp))
                 .field(TOPIC_NAME, topicName)
                 .field(STATUS, status)
                 .field(CLUSTER, clusterName)
                 .field(SOURCE_HOSTNAME, this.hostname)
                 .field(REMOTE_HOSTNAME, hostname);
+    }
+
+    private long toSeconds(long millis) {
+        return millis / 1000;
     }
 
     public static class Builder {

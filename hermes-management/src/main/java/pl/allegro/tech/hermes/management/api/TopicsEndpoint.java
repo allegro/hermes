@@ -4,15 +4,33 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.MessageTextPreview;
+import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Query;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
+import pl.allegro.tech.hermes.api.TopicMetrics;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -35,7 +53,8 @@ public class TopicsEndpoint {
     private final ManagementRights managementRights;
 
     @Autowired
-    public TopicsEndpoint(TopicService topicService, ManagementRights managementRights) {
+    public TopicsEndpoint(TopicService topicService,
+                          ManagementRights managementRights) {
         this.topicService = topicService;
         this.managementRights = managementRights;
     }
@@ -69,9 +88,10 @@ public class TopicsEndpoint {
     @Produces(APPLICATION_JSON)
     @RolesAllowed(Roles.ANY)
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
-    public Response create(Topic topic, @Context ContainerRequestContext requestContext) {
-        topicService.createTopic(topic, requestContext.getSecurityContext().getUserPrincipal().getName(),
-                checkedTopic -> managementRights.isUserAllowedToManageTopic(checkedTopic, requestContext));
+    public Response create(TopicWithSchema topicWithSchema, @Context ContainerRequestContext requestContext) {
+        String createdBy = requestContext.getSecurityContext().getUserPrincipal().getName();
+        CreatorRights isAllowedToManage = checkedTopic -> managementRights.isUserAllowedToManageTopic(checkedTopic, requestContext);
+        topicService.createTopicWithSchema(topicWithSchema, createdBy, isAllowedToManage);
         return status(Response.Status.CREATED).build();
     }
 
@@ -81,7 +101,7 @@ public class TopicsEndpoint {
     @RolesAllowed({Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName, @Context SecurityContext securityContext) {
-        topicService.removeTopic(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
+        topicService.removeTopicWithSchema(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
                 securityContext.getUserPrincipal().getName());
         return status(Response.Status.OK).build();
     }
@@ -94,8 +114,8 @@ public class TopicsEndpoint {
     @ApiOperation(value = "Update topic", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch,
                            @Context SecurityContext securityContext) {
-        topicService.updateTopic(TopicName.fromQualifiedName(qualifiedTopicName), patch,
-                securityContext.getUserPrincipal().getName());
+        String updatedBy = securityContext.getUserPrincipal().getName();
+        topicService.updateTopicWithSchema(TopicName.fromQualifiedName(qualifiedTopicName), patch, updatedBy);
         return status(Response.Status.OK).build();
     }
 
@@ -103,8 +123,8 @@ public class TopicsEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
     @ApiOperation(value = "Topic details", httpMethod = HttpMethod.GET)
-    public Topic get(@PathParam("topicName") String qualifiedTopicName) {
-        return topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName));
+    public TopicWithSchema get(@PathParam("topicName") String qualifiedTopicName) {
+        return topicService.getTopicWithSchema(TopicName.fromQualifiedName(qualifiedTopicName));
     }
 
     @GET

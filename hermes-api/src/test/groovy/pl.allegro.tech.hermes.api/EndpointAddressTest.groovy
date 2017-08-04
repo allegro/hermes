@@ -16,6 +16,30 @@ class EndpointAddressTest extends Specification {
         endpoint.containsCredentials()
     }
 
+    def "should return decomposed parts of URI when matching URI pattern containing https scheme"() {
+        when:
+        EndpointAddress endpoint = EndpointAddress.of('https://user:password@endpoint.com')
+
+        then:
+        endpoint.endpoint == 'https://endpoint.com'
+        endpoint.username == 'user'
+        endpoint.password == 'password'
+        endpoint.protocol == 'https'
+        endpoint.containsCredentials()
+    }
+
+    def "should return decomposed parts of URI when matching URI pattern with username containing underscores ,dot and dash"() {
+        when:
+        EndpointAddress endpoint = EndpointAddress.of('https://user-_.:password@endpoint.com')
+
+        then:
+        endpoint.endpoint == 'https://endpoint.com'
+        endpoint.username == 'user-_.'
+        endpoint.password == 'password'
+        endpoint.protocol == 'https'
+        endpoint.containsCredentials()
+    }
+
     def "should not mark URI as containing credentials when there are none specified"() {
         when:
         EndpointAddress endpoint = EndpointAddress.of('http://endpoint.com')
@@ -49,9 +73,9 @@ class EndpointAddressTest extends Specification {
 
     def "should append anonymized password to rawEndpoint"() {
         when:
-        EndpointAddress anonymizedEndpoint = EndpointAddress.of('http://user:password@endpoint.com').anonymize()
+        EndpointAddress anonymizedEndpoint = EndpointAddress.of('http://user-_:password@endpoint.com').anonymize()
 
         then:
-        anonymizedEndpoint.rawEndpoint == 'http://user:*****@endpoint.com'
+        anonymizedEndpoint.rawEndpoint == 'http://user-_:*****@endpoint.com'
     }
 }

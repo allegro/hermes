@@ -16,16 +16,19 @@ on topics `subscriptions` resource:
 
 Request body must contain at least:
 
-* name: name of subscription
-* endpoint: valid URI
-* owner: who's the owner of this subscription (refer to
-  [creating topic](/user/publishing/#creating-topic) for more information)
+- topicName : fully qualified name of topic including group name, separated with a dot (see: [naming convention](/overview/data-model#naming-convention))
+- name: name of subscription
+- description: subscription description
+- endpoint: valid URI
+- owner: who's the owner of this subscription (refer to [creating topic](/user/publishing/#creating-topic) for more information)
 
 Minimal request:
 
 ```json
 {
+    "topicName": "group.topic",
     "name": "mySubscription", 
+    "description": "This is my subscription",
     "endpoint": "http://my-service", 
     "owner": {
         "source": "Plaintext",
@@ -39,9 +42,8 @@ All options:
 Option                               | Description                          | Default value
 ------------------------------------ | ------------------------------------ | -------------
 trackingEnabled                      | track incoming messages?             | false
-subscriptionPolicy.rate              | maximum sending speed in rps         | 100
+subscriptionPolicy.rate              | maximum sending speed in rps         | 400
 subscriptionPolicy.messageTtl        | inflight Time To Live in seconds     | 3600
-subscriptionPolicy.messageBackoff    | backoff time between retry attempts  | 100
 subscriptionPolicy.messageBackoff    | backoff time between retry attempts  | 100
 subscriptionPolicy.retryClientErrors | retry on receiving 4xx status        | false
 subscriptionPolicy.requestTimeout    | request timeout in millis            | 1000
@@ -55,6 +57,7 @@ Request that specifies all available options:
 
 ```json
 {
+    "topicName": "group.topic",
     "name": "mySubscription",
     "endpoint": "http://my-service",
     "description": "This is my subscription",

@@ -11,19 +11,26 @@ var topics = angular.module('hermes.topic', [
 ]);
 
 topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal',
-    'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory', 'SUBSCRIPTION_CONFIG',
+    'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory', 'SUBSCRIPTION_CONFIG', 'OfflineClientsRepository',
     function (topicConfig, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, confirmationModal, toaster, passwordService,
-              subscriptionFactory, subscriptionConfig) {
+              subscriptionFactory, subscriptionConfig, offlineClientsRepository) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
 
-        $scope.fetching = true;
+        $scope.subscriptionsFetching = true;
+        $scope.offlineClientsFetching = true;
         $scope.showMessageSchema = false;
         $scope.config = topicConfig;
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
-            $scope.topic = topicWithSchema.topic;
-            $scope.messageSchema = topicWithSchema.messageSchema;
+            $scope.topic = topicWithSchema;
+            $scope.topic.shortName = $scope.topic.name.substring($scope.topic.name.lastIndexOf('.') + 1);
+            try {
+                $scope.messageSchema = topicWithSchema.schema ? JSON.stringify(JSON.parse(topicWithSchema.schema), null, 2) : null;
+            } catch (e) {
+                console.error('Could not parse topic schema: ', e);
+                $scope.messageSchema = '[schema parsing failure]';
+            }
         });
 
         $scope.metricsUrls = topicMetrics.metricsUrls(groupName, topicName);
@@ -32,7 +39,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         function loadSubscriptions() {
             topicRepository.listSubscriptionsWithDetails(topicName).then(function (subscriptions) {
                 $scope.subscriptions = subscriptions;
-                $scope.fetching = false;
+                $scope.subscriptionsFetching = false;
             });
         }
 
@@ -42,8 +49,18 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             });
         }
 
+        function loadOfflineClients() {
+            offlineClientsRepository.get(topicName).then(function (clients) {
+                $scope.clients = clients;
+                $scope.offlineClientsFetching = false;
+            });
+        }
+
         loadSubscriptions();
         loadBlacklistStatus();
+        if ($scope.config.offlineClientsEnabled) {
+            loadOfflineClients();
+        }
 
         topicRepository.preview(topicName).then(function(preview) {
             $scope.preview = preview;
@@ -82,9 +99,16 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 passwordHint: 'root password'
             }).result.then(function (result) {
                     passwordService.setRoot(result.password);
+                    var topic = $scope.topic;
                     topicRepository.remove($scope.topic)
                         .then(function () {
                             toaster.pop('success', 'Success', 'Topic has been removed');
+                            if (!topicConfig.removeSchema && topic.contentType == 'AVRO') {
+                                toaster.pop('warning', 'Topic schema was not removed',
+                                    'Note that schema was not removed for this topic. Schema is persisted in an external registry ' +
+                                    'and its removal is disabled in this environment. Before creating topic with the same name make sure ' +
+                                    'it\'s manually removed by the schema registry operator.')
+                            }
                             $location.path('/groups/' + groupName).replace();
                         })
                         .catch(function (response) {

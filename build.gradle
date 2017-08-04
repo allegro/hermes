@@ -1,21 +1,17 @@
 buildscript {
     repositories {
-        mavenCentral()
         jcenter()
-        maven {
-            url 'https://plugins.gradle.org/m2/'
-        }
+        maven { url 'https://plugins.gradle.org/m2/' }
     }
     dependencies {
-        classpath group: 'io.codearte.gradle.nexus', name: 'gradle-nexus-staging-plugin', version: '0.5.1'
         classpath group: 'com.bmuschko', name: 'gradle-nexus-plugin', version: '2.3.1'
-        classpath group: 'gradle.plugin.me.champeau.gradle', name: 'jmh-gradle-plugin', version: '0.3.0'
     }
 }
 
 plugins {
     id 'java'
-    id 'pl.allegro.tech.build.axion-release' version '1.4.0'
+    id 'pl.allegro.tech.build.axion-release' version '1.7.0'
+    id 'io.codearte.nexus-staging' version '0.9.0'
 }
 
 apply plugin: 'io.codearte.nexus-staging'
@@ -139,32 +135,12 @@ subprojects {
             html.enabled = true
         }
     }
-
-    project.configurations {
-        provided {
-            description = 'Provided dependencies'
-            transitive = true
-        }
-    }
-
-    project.sourceSets {
-        main {
-            compileClasspath += project.configurations.provided
-        }
-        test {
-            compileClasspath += project.configurations.provided
-            runtimeClasspath += project.configurations.provided
-        }
-    }
 }
 
 nexusStaging {
     packageGroup = "pl.allegro"
-
-    numberOfRetries = 15
-    delayBetweenRetriesInMillis = 5000
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.1'
+    gradleVersion = '4.0'
 }

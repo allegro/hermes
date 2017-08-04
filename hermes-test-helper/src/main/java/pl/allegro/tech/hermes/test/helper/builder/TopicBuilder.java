@@ -1,6 +1,11 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.OwnerId;
+import pl.allegro.tech.hermes.api.PublishingAuth;
+import pl.allegro.tech.hermes.api.RetentionTime;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
 
 import java.util.ArrayList;
 import java.util.List;

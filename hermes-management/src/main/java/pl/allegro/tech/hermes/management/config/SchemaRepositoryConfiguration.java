@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.avro.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -43,8 +44,8 @@ public class SchemaRepositoryConfiguration {
     @Bean
     @ConditionalOnMissingBean(RawSchemaClient.class)
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_registry")
-    public RawSchemaClient schemaRegistryRawSchemaClient(Client httpClient) {
-        return new SchemaRegistryRawSchemaClient(httpClient, URI.create(schemaRepositoryProperties.getServerUrl()));
+    public RawSchemaClient schemaRegistryRawSchemaClient(Client httpClient, ObjectMapper objectMapper) {
+        return new SchemaRegistryRawSchemaClient(httpClient, URI.create(schemaRepositoryProperties.getServerUrl()), objectMapper);
     }
 
     @Bean

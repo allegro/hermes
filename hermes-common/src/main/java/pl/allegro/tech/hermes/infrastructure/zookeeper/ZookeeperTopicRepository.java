@@ -91,7 +91,10 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     }
 
     private void ensureTopicIsEmpty(TopicName topicName) {
-        if (!childrenOf(paths.subscriptionsPath(topicName)).isEmpty()) {
+        List<String> children = childrenOf(paths.subscriptionsPath(topicName));
+        boolean anyNodeNotEmpty = children.stream()
+                .anyMatch(sub -> !isEmpty(paths.subscriptionsPath(topicName) + "/" + sub));
+        if (!children.isEmpty() && anyNodeNotEmpty) {
             throw new TopicNotEmptyException(topicName);
         }
     }

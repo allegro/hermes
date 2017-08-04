@@ -20,7 +20,7 @@ public class EndpointAddress implements Anonymizable {
 
     private static final String ANONYMIZED_PASSWORD = "*****";
 
-    private static final Pattern URL_PATTERN = Pattern.compile("([a-zA-Z0-9]*)://(([a-zA-Z0-9_\\.]*):(.*)@)?(.*)");
+    private static final Pattern URL_PATTERN = Pattern.compile("([a-zA-Z0-9]*)://(([a-zA-Z0-9\\.\\~\\-\\_]*):(.*)@)?(.*)");
 
     private static final int PROTOCOL_GROUP = 1;
 

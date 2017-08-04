@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
 import pl.allegro.tech.hermes.api.PatchData;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 
 import javax.ws.rs.Consumes;
@@ -39,7 +39,7 @@ public interface TopicEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    Response create(Topic topic);
+    Response create(TopicWithSchema topic);
 
     @DELETE
     @Produces(APPLICATION_JSON)
@@ -55,7 +55,7 @@ public interface TopicEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
-    Topic get(@PathParam("topicName") String qualifiedTopicName);
+    TopicWithSchema get(@PathParam("topicName") String qualifiedTopicName);
 
     @GET
     @Produces(APPLICATION_JSON)

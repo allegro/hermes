@@ -72,6 +72,7 @@ auth.headers.adminHeader | name of header to bear admin password
 Option                      | Description
 --------------------------- | ------------------------------------------------------------------------------------
 topic.messagePreviewEnabled | show message preview tab on topic view; enable only if message preview is enabled in Frontend
+topic.offlineClientsEnabled | show offline clients section on topic view; enable only if offline readers integration in management module is turned on
 
 ## Subscription configuration
 

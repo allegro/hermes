@@ -43,4 +43,9 @@ public class InMemorySchemaClient implements RawSchemaClient {
     public void deleteAllSchemaVersions(TopicName topic) {
 
     }
+
+    @Override
+    public void validateSchema(TopicName topic, RawSchema rawSchema) {
+
+    }
 }

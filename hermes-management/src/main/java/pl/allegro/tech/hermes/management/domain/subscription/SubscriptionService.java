@@ -2,12 +2,20 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.MessageTrace;
+import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Query;
+import pl.allegro.tech.hermes.api.SentMessageTrace;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicMetrics;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.Auditor;
-import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -72,16 +80,9 @@ public class SubscriptionService {
     }
 
     public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights) {
-        checkCreatorRights(subscription, creatorRights);
         subscriptionValidator.checkCreation(subscription, creatorRights);
         subscriptionRepository.createSubscription(subscription);
         auditor.objectCreated(createdBy, subscription);
-    }
-
-    private void checkCreatorRights(Subscription subscription, CreatorRights creatorRights) {
-        if (!creatorRights.allowedToCreate(subscription)) {
-            throw new PermissionDeniedException("You are not allowed to create subscriptions for this topic.");
-        }
     }
 
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {

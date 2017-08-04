@@ -46,7 +46,7 @@ def getAlpnVersion() {
                 return '8.1.9.v20160720'
             case 112..120:
                 return '8.1.10.v20161026'
-            case 121..131:
+            case 121..144:
                 return '8.1.11.v20170118'
             default:
                 throw new IllegalStateException("ALPN version not defined for Java version: ${javaVersion}; extracted minor version: ${version}")
@@ -121,7 +121,7 @@ task integrationTest(type: Test) {
     group = 'Verification'
     description = 'Runs the integration tests.'
 
-    testClassesDir = project.sourceSets.integration.output.classesDir
+    testClassesDirs = project.sourceSets.integration.output.classesDirs
     classpath = project.sourceSets.integration.runtimeClasspath
 
     useTestNG()

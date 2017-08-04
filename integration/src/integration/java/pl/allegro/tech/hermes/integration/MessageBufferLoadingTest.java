@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
 import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
@@ -138,8 +139,10 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         File backup = new File(tempDir.getAbsoluteFile(), "hermes-buffer.dat");
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(backup);
-        MessageContentWrapper wrapper = new MessageContentWrapper(new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper()), null, null,
-                new DeserializationMetrics(new MetricRegistry()));
+        JsonMessageContentWrapper contentWrapper = new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper());
+        SchemaOnlineChecksRateLimiter schemaOnlineCheckRateLimiter = () -> true;
+        MessageContentWrapper wrapper = new MessageContentWrapper(contentWrapper, null, null,
+                schemaOnlineCheckRateLimiter, new DeserializationMetrics(new MetricRegistry()));
 
         String messageId = randomUUID().toString();
         long timestamp = now().toEpochMilli();
