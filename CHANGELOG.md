@@ -1,3 +1,50 @@
+## 0.12.1 (04.08.2017)
+
+All issues and pull requests: [0.12.1 milestone](https://github.com/allegro/hermes/milestone/37)
+
+### Features
+
+#### ([799](https://github.com/allegro/hermes/pull/799)) Offline clients
+
+Add new endpoint and interface in Management which can be implemented to show
+if data produced on given topic has been accessed recently in any offline storage
+(like Hadoop). Read more in [docs](http://hermes-pubsub.readthedocs.io/en/latest/configuration/offline-clients/).
+
+#### ([692](https://github.com/allegro/hermes/issues/692)) Improved schema management
+
+Avro schemas are now created/deleted in the same transaction as topic creation/deletion,
+meaning that no topic is created if schema validation fails and vice versa.
+
+Also new SchemaRepository interface method has been added which allows on validating
+schema before trying to send it to Schema Registry (fail fast).
+
+#### ([794](https://github.com/allegro/hermes/pull/794)) Query topics by metrics
+
+### Bugfixes
+
+#### ([758](https://github.com/allegro/hermes/issues/758)) Use timestamp in seconds in ElasticSearch message tracking
+
+Added new field in ElasticSearch message trace object which is used to order
+messages in time. This should significantly increase the speed of fetching
+data from ES.
+
+#### ([757](https://github.com/allegro/hermes/issues/757)) Rate limit schema registry calls in Consumers
+
+There was no rate limit when trying to get schema from Schema Registry when
+no cached schema matched the message. This could cause DoS attack on Schema Registry
+for subscriptions with high traffic of malformed events.
+
+#### ([777](https://github.com/allegro/hermes/issues/777)) Subscription URI constraint fix
+
+Fixed subscription URI constraints to match URI spec.
+
+#### ([787](https://github.com/allegro/hermes/issues/787)) Subscription validation fix
+
+Subscriptions were validated at the wrong moment, which in some cases could lead
+to ugly NullPointerException instead of validation message.
+
+#### ([780](https://github.com/allegro/hermes/issues/780)) Metrics block topic removal
+
 ## 0.12.0 (23.06.2017)
 
 ### Features
