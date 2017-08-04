@@ -6,10 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionException;
-import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionsException;
-import pl.allegro.tech.hermes.schema.CouldNotRegisterSchemaException;
-import pl.allegro.tech.hermes.schema.CouldNotRegisterSchemaSubjectException;
+import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
+import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
@@ -25,8 +23,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
 public class SchemaRepoRawSchemaClient implements RawSchemaClient {
 
@@ -71,7 +67,7 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
                 return Optional.empty();
             case SERVER_ERROR:
             default:
-                throw new CouldNotFetchSchemaVersionException(subject, version, response.getStatus(), response.readEntity(String.class));
+                throw new InternalSchemaRepositoryException(subject, response);
         }
     }
 
@@ -99,7 +95,7 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
                 return Collections.emptyList();
             case SERVER_ERROR:
             default:
-                throw new CouldNotFetchSchemaVersionsException(subject, response);
+                throw new InternalSchemaRepositoryException(subject, response);
         }
     }
 
@@ -118,8 +114,19 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
 
     private void registerSubject(String subject) {
         Response response = target.path(subject).request().put(Entity.entity("", MediaType.APPLICATION_FORM_URLENCODED_TYPE));
-        if (SUCCESSFUL != response.getStatusInfo().getFamily()) {
-            throw new CouldNotRegisterSchemaSubjectException(subject, response);
+        checkSubjectRegistration(subject, response);
+    }
+
+    private void checkSubjectRegistration(String subject, Response response) {
+        switch (response.getStatusInfo().getFamily()) {
+            case SUCCESSFUL:
+                logger.info("Successful registered subject {} in schema repo", subject);
+                break;
+            case CLIENT_ERROR:
+                throw new BadSchemaRequestException(subject, response);
+            case SERVER_ERROR:
+            default:
+                throw new InternalSchemaRepositoryException(subject, response);
         }
     }
 
@@ -134,15 +141,21 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
                 logger.info("Successful write to schema repo for subject {}", subject);
                 break;
             case CLIENT_ERROR:
+                throw new BadSchemaRequestException(subject, response);
             case SERVER_ERROR:
             default:
-                throw new CouldNotRegisterSchemaException(subject, response);
+                throw new InternalSchemaRepositoryException(subject, response);
         }
     }
 
     @Override
     public void deleteAllSchemaVersions(TopicName topic) {
         throw new UnsupportedOperationException("Deleting schemas is not supported by this repository type");
+    }
+
+    @Override
+    public void validateSchema(TopicName topic, RawSchema rawSchema) {
+        // not implemented, let pass through
     }
 
     private String parseSchema(String schemaResponse) {

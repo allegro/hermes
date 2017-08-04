@@ -51,6 +51,11 @@ public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
         rawSchemaClient.deleteAllSchemaVersions(topic);
     }
 
+    @Override
+    public void validateSchema(TopicName topic, RawSchema rawSchema) {
+        rawSchemaClient.validateSchema(topic, rawSchema);
+    }
+
     private <T> T timedSchema(Supplier<? extends T> callable) {
         return timed(callable, Timers.GET_SCHEMA_LATENCY);
     }

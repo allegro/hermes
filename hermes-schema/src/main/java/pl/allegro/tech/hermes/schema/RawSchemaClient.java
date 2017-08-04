@@ -17,4 +17,6 @@ public interface RawSchemaClient {
     void registerSchema(TopicName topic, RawSchema rawSchema);
 
     void deleteAllSchemaVersions(TopicName topic);
+
+    void validateSchema(TopicName topic, RawSchema rawSchema);
 }

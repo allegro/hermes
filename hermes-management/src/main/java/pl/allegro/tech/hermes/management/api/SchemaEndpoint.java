@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.management.api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
@@ -56,7 +58,8 @@ public class SchemaEndpoint {
     public Response save(@PathParam("topicName") String qualifiedTopicName,
                          @DefaultValue("true") @QueryParam(value = "validate") boolean validate,
                          String schema) {
-        schemaService.registerSchema(qualifiedTopicName, schema, validate);
+        Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
+        schemaService.registerSchema(topic, schema, validate);
         notifyFrontendSchemaChanged(qualifiedTopicName);
         return Response.status(Response.Status.CREATED).build();
     }

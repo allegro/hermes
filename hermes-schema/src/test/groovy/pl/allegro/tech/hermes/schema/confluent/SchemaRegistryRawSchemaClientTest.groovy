@@ -1,15 +1,14 @@
 package pl.allegro.tech.hermes.schema.confluent
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy
 import com.github.tomakehurst.wiremock.client.WireMock
 import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
-import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionException
-import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionsException
-import pl.allegro.tech.hermes.schema.CouldNotRegisterSchemaException
-import pl.allegro.tech.hermes.schema.CouldNotRemoveSchemaException
+import pl.allegro.tech.hermes.schema.BadSchemaRequestException
+import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException
 import pl.allegro.tech.hermes.schema.RawSchemaClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.util.Ports
@@ -43,7 +42,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         def port = Ports.nextAvailable()
         wireMock = new WireMockServer(port)
         wireMock.start()
-        client = new SchemaRegistryRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
+        client = new SchemaRegistryRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port"), new ObjectMapper())
     }
 
     def cleanupSpec() {
@@ -76,7 +75,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.registerSchema(topicName, rawSchema)
 
         then:
-        def e = thrown(CouldNotRegisterSchemaException)
+        def e = thrown(BadSchemaRequestException)
         e.message.contains("Invalid schema")
     }
 
@@ -88,7 +87,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.registerSchema(topicName, rawSchema)
 
         then:
-        thrown(CouldNotRegisterSchemaException)
+        thrown(InternalSchemaRepositoryException)
     }
 
     def "should fetch schema at specified version"() {
@@ -114,8 +113,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.getSchema(topicName, SchemaVersion.valueOf(version))
 
         then:
-        def e = thrown(CouldNotFetchSchemaVersionException)
-        e.message.contains "3"
+        thrown(InternalSchemaRepositoryException)
     }
 
     def "should fetch latest schema version"() {
@@ -147,8 +145,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.getLatestSchema(topicName)
 
         then:
-        def e = thrown(CouldNotFetchSchemaVersionException)
-        e.message.contains "latest"
+        def e = thrown(InternalSchemaRepositoryException)
     }
 
     def "should return all schema versions"() {
@@ -180,7 +177,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.getVersions(topicName)
 
         then:
-        thrown(CouldNotFetchSchemaVersionsException)
+        thrown(InternalSchemaRepositoryException)
     }
 
     def "should delete all schema versions"() {
@@ -202,7 +199,62 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.deleteAllSchemaVersions(topicName)
 
         then:
-        thrown(CouldNotRemoveSchemaException)
+        thrown(BadSchemaRequestException)
+    }
+
+    def "should validate schema"() {
+        given:
+        wireMock.stubFor(post(schemaValidationUrl(topicName))
+                .willReturn(okResponse()
+                .withHeader("Content-type", "application/json")
+                .withBody("""{"is_compatible":true}""")))
+
+        when:
+        client.validateSchema(topicName, rawSchema)
+
+        then:
+        noExceptionThrown()
+        wireMock.verify(1, postRequestedFor(schemaValidationUrl(topicName))
+                .withHeader("Content-type", equalTo(schemaRegistryContentType))
+                .withRequestBody(equalTo("""{"schema":"{}"}""")))
+    }
+
+    def "should throw exception for incompatible schema"() {
+        given:
+        wireMock.stubFor(post(schemaValidationUrl(topicName))
+                .willReturn(okResponse()
+                .withHeader("Content-type", "application/json")
+                .withBody("""{"is_compatible":false}""")))
+
+        when:
+        client.validateSchema(topicName, rawSchema)
+
+        then:
+        thrown(BadSchemaRequestException)
+    }
+
+    def "should throw exception for 422 unprocessable entity response"() {
+        given:
+        wireMock.stubFor(post(schemaValidationUrl(topicName))
+                .willReturn(unprocessableEntityResponse()))
+
+        when:
+        client.validateSchema(topicName, rawSchema)
+
+        then:
+        thrown(BadSchemaRequestException)
+    }
+
+    def "should accept subject not found response as if schema is valid"() {
+        given:
+        wireMock.stubFor(post(schemaValidationUrl(topicName))
+                .willReturn(notFoundResponse()))
+
+        when:
+        client.validateSchema(topicName, rawSchema)
+
+        then:
+        noExceptionThrown()
     }
 
     private UrlMatchingStrategy versionsUrl(TopicName topic) {
@@ -215,6 +267,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     private UrlMatchingStrategy schemaLatestVersionUrl(TopicName topic) {
         urlEqualTo("/subjects/${topic.qualifiedName()}/versions/latest")
+    }
+
+    private UrlMatchingStrategy schemaValidationUrl(TopicName topic) {
+        urlEqualTo("/compatibility/subjects/${topic.qualifiedName()}/versions/latest")
     }
 
     private ResponseDefinitionBuilder okResponse() {
@@ -231,6 +287,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     private ResponseDefinitionBuilder methodNotAllowedResponse() {
         aResponse().withStatus(405)
+    }
+
+    private ResponseDefinitionBuilder unprocessableEntityResponse() {
+        aResponse().withStatus(422)
     }
 
     private ResponseDefinitionBuilder internalErrorResponse() {

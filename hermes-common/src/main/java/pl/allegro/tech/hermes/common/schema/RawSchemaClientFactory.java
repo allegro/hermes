@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.schema;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -19,11 +20,13 @@ public class RawSchemaClientFactory implements Factory<RawSchemaClient> {
 
     private final ConfigFactory configFactory;
     private final HermesMetrics hermesMetrics;
+    private final ObjectMapper objectMapper;
 
     @Inject
-    public RawSchemaClientFactory(ConfigFactory configFactory, HermesMetrics hermesMetrics) {
+    public RawSchemaClientFactory(ConfigFactory configFactory, HermesMetrics hermesMetrics, ObjectMapper objectMapper) {
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -44,7 +47,7 @@ public class RawSchemaClientFactory implements Factory<RawSchemaClient> {
             case SCHEMA_REPO:
                 return createMetricsTrackingClient(new SchemaRepoRawSchemaClient(client, schemaRepositoryServerUri), repoType);
             case SCHEMA_REGISTRY:
-                return createMetricsTrackingClient(new SchemaRegistryRawSchemaClient(client, schemaRepositoryServerUri), repoType);
+                return createMetricsTrackingClient(new SchemaRegistryRawSchemaClient(client, schemaRepositoryServerUri, objectMapper), repoType);
             default:
                 throw new IllegalStateException("Unknown schema repository type " + schemaRepositoryType);
         }

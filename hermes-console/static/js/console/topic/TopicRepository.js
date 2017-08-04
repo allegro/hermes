@@ -1,8 +1,7 @@
 var repository = angular.module('hermes.topic.repository', ['hermes.subscription.repository']);
 
 repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$location', 'SubscriptionRepository',
-    'SchemaRepository', 'TOPIC_CONFIG',
-    function (discovery, $resource, $location, subscriptionRepository, schemaRepository, topicConfig) {
+    function (discovery, $resource, $location, subscriptionRepository) {
 
         var repository = $resource(discovery.resolve('/topics/:name'), null, {update: {method: 'PUT'}});
         var previewRepository = $resource(discovery.resolve('/topics/:name/preview'), null);
@@ -10,54 +9,19 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
             { blacklist: { method: 'POST', url: discovery.resolve('/blacklist/topics') } });
         var listing = $resource(discovery.resolve('/topics'));
 
-        function wrapSchemaSave(topic, schema, promise) {
-            if (schema && schema.trim()) {
-                return promise.then(function () {
-                    return schemaRepository.save(topic.name, schema).$promise;
-                });
-            }
-            return promise;
-        }
-
-        function wrapSchemaRemove(topic, promise) {
-            if (topicConfig.removeSchema && topic.contentType === 'AVRO') {
-                return promise.then(function () {
-                    return schemaRepository.remove(topic.name).$promise;
-                });
-            }
-            return promise;
-        }
-
-        function ngPromiseCleaner(key, value) {
-            if (_.contains(["$promise", "$resolved"], key)) {
-                return undefined;
-            }
-            return value;
-        }
-
         return {
             list: listing.query,
             get: function (name) {
-                return repository.get({name: name}).$promise.then(function(topic) {
-                    topic.shortName = topic.name.substring(topic.name.lastIndexOf('.') + 1);
-                    if (topic.contentType === 'AVRO') {
-                        return schemaRepository.get(topic.name).$promise.then(function(schema) {
-                            var schemaStr = JSON.stringify(schema, ngPromiseCleaner, 2);
-                            return {topic: topic, messageSchema: schemaStr != '{}' ? schemaStr : null};
-                        })
-                    } else {
-                        return {topic: topic, messageSchema: null};
-                    }
-                });
+                return repository.get({name: name}).$promise;
             },
             add: function (topic, schema) {
-                return wrapSchemaSave(topic, schema, listing.save({}, topic).$promise);
+                return repository.save({}, angular.extend({}, topic, {"schema": schema})).$promise;
             },
             remove: function (topic) {
-                return wrapSchemaRemove(topic, repository.delete({name: topic.name}).$promise);
+                return repository.delete({name: topic.name}).$promise;
             },
             save: function (topic, schema) {
-                return wrapSchemaSave(topic, schema, repository.update({name: topic.name}, topic).$promise);
+                return repository.update({name: topic.name}, angular.extend({}, topic, {"schema": schema})).$promise;
             },
             listSubscriptions: function (topicName) {
                 return subscriptionRepository.list(topicName);
@@ -83,23 +47,6 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
             },
             unblacklist: function (topicName) {
                 return blacklistRepository.delete({name: topicName})
-            }
-        };
-    }]);
-
-repository.factory('SchemaRepository', ['DiscoveryService', '$resource',
-    function (discovery, $resource) {
-        var repository = $resource(discovery.resolve('/topics/:name/schema'));
-
-        return {
-            get: function (name) {
-                return repository.get({name: name});
-            },
-            save: function (name, schema) {
-                return repository.save({name: name}, schema);
-            },
-            remove: function(name) {
-                return repository.remove({name: name});
             }
         };
     }]);

@@ -112,8 +112,8 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         PatchData patch = patchData()
                 .set("contentType", ContentType.AVRO)
                 .set("migratedFromJsonType", true)
+                .set("schema", user.getSchemaAsString())
                 .build();
-        operations.saveSchema(topic, user.getSchemaAsString());
 
         currentTime = clock.millis();
         operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", patch);

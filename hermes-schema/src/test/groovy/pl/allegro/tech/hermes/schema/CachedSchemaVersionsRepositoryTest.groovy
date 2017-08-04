@@ -90,7 +90,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         def failing = false
         rawSchemaClient.getVersions(topic.getName()) >> {
             if (failing) {
-                throw new CouldNotFetchSchemaVersionsException(topic.qualifiedName, Response.serverError().build())
+                throw new InternalSchemaRepositoryException(topic.qualifiedName, Response.serverError().build())
             }
             return [v1, v0]
         }

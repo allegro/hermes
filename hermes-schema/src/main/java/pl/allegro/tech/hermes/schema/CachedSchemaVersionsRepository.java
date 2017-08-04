@@ -92,7 +92,7 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
 
         private List<SchemaVersion> checkSchemaVersionsAreAvailable(Topic topic, List<SchemaVersion> versions) {
             if (versions.isEmpty()) {
-                throw new NoSchemaVersionsFound(topic);
+                throw new NoSchemaVersionsFoundException(topic);
             }
             return versions;
         }

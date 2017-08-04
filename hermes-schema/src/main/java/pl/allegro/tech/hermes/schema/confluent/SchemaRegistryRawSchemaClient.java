@@ -1,13 +1,12 @@
 package pl.allegro.tech.hermes.schema.confluent;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionException;
-import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionsException;
-import pl.allegro.tech.hermes.schema.CouldNotRegisterSchemaException;
-import pl.allegro.tech.hermes.schema.CouldNotRemoveSchemaException;
+import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
+import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
@@ -16,6 +15,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,8 +36,11 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
     private final WebTarget target;
 
-    public SchemaRegistryRawSchemaClient(Client client, URI schemaRegistryUri) {
+    private final ObjectMapper objectMapper;
+
+    public SchemaRegistryRawSchemaClient(Client client, URI schemaRegistryUri, ObjectMapper objectMapper) {
         this.target = client.target(schemaRegistryUri);
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -74,7 +77,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
                 return Optional.empty();
             case SERVER_ERROR:
             default:
-                throw new CouldNotFetchSchemaVersionException(subject, version, response.getStatus(), response.readEntity(String.class));
+                throw new InternalSchemaRepositoryException(subject, response);
         }
     }
 
@@ -101,7 +104,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
                 return Collections.emptyList();
             case SERVER_ERROR:
             default:
-                throw new CouldNotFetchSchemaVersionsException(subject, response);
+                throw new InternalSchemaRepositoryException(subject, response);
         }
     }
 
@@ -122,9 +125,10 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
                 logger.info("Successful write to schema registry for subject {}", subject);
                 break;
             case CLIENT_ERROR:
+                throw new BadSchemaRequestException(subject, response);
             case SERVER_ERROR:
             default:
-                throw new CouldNotRegisterSchemaException(subject, response);
+                throw new InternalSchemaRepositoryException(subject, response);
         }
     }
 
@@ -135,19 +139,72 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
                 .path("versions")
                 .request()
                 .delete();
-        checkSchemaRemoval(response.getStatusInfo(), topic.qualifiedName(), response.readEntity(String.class));
+        checkSchemaRemoval(topic.qualifiedName(), response);
     }
 
-    private void checkSchemaRemoval(Response.StatusType statusType, String topicName, String response) {
-        switch (statusType.getFamily()) {
+    private void checkSchemaRemoval(String subject, Response response) {
+        switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
-                logger.info("Successful removed schema subject {}", topicName);
+                logger.info("Successful removed schema subject {}", subject);
                 break;
             case CLIENT_ERROR:
+                throw new BadSchemaRequestException(subject, response);
             case SERVER_ERROR:
             default:
-                logger.warn("Could not remove schema subject {}. Reason: {}", topicName, response);
-                throw new CouldNotRemoveSchemaException("Could not remove schema subject. Reason: " + response);
+                int statusCode = response.getStatus();
+                String responseBody = response.readEntity(String.class);
+                logger.warn("Could not remove schema of subject {}. Reason: {} {}", subject, statusCode, responseBody);
+                throw new InternalSchemaRepositoryException(subject, statusCode, responseBody);
+        }
+    }
+
+    @Override
+    public void validateSchema(TopicName topic, RawSchema schema) {
+        Response response = target.path("compatibility")
+                .path("subjects")
+                .path(topic.qualifiedName())
+                .path("versions")
+                .path("latest")
+                .request()
+                .accept(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(SchemaRegistryRequest.fromRawSchema(schema), SCHEMA_REPO_CONTENT_TYPE));
+
+        checkSchemaValidationResponse(topic, response);
+    }
+
+    private void checkSchemaValidationResponse(TopicName topic, Response response) {
+        switch (response.getStatusInfo().getFamily()) {
+            case SUCCESSFUL:
+                validateSuccessfulValidationResult(topic, response);
+                break;
+            case CLIENT_ERROR:
+                if (response.getStatus() == 422) { // for other cases we assume the schema was valid
+                    throw new BadSchemaRequestException(topic.qualifiedName(), response);
+                }
+                break;
+            case SERVER_ERROR:
+            default:
+                int statusCode = response.getStatus();
+                String responseBody = response.readEntity(String.class);
+                logger.warn("Could not validate schema of subject {}. Reason: {} {}", topic.qualifiedName(), statusCode, responseBody);
+                throw new InternalSchemaRepositoryException(topic.qualifiedName(), statusCode, responseBody);
+        }
+    }
+
+    private void validateSuccessfulValidationResult(TopicName topic, Response response) {
+        String validationResultStr = response.readEntity(String.class);
+        SchemaRegistryValidationResponse validationResponse = toSchemaRegistryValidationResponse(topic, validationResultStr, response.getStatus());
+        if (!validationResponse.isCompatible()) {
+            throw new BadSchemaRequestException(topic.qualifiedName(), response.getStatus(), validationResultStr);
+        }
+    }
+
+    private SchemaRegistryValidationResponse toSchemaRegistryValidationResponse(TopicName topic, String validationResultStr, int status) {
+        try {
+            return objectMapper.readValue(validationResultStr, SchemaRegistryValidationResponse.class);
+        } catch (IOException e) {
+            logger.error("Could not parse schema validation response from schema registry", e);
+            throw new InternalSchemaRepositoryException(topic.qualifiedName(), status, validationResultStr);
         }
     }
 }

@@ -39,14 +39,14 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
     def "should fail to provide schema if loading schema source failed"() {
         given:
         rawSchemaClient.getSchema(topic.getName(), v1) >> {
-            throw new CouldNotFetchSchemaVersionException(topic.qualifiedName, Integer.toString(v1.value()), 500, "Unexpected failure")
+            throw new InternalSchemaRepositoryException(topic.qualifiedName, 500, "Unexpected failure")
         }
 
         when:
         repository.getSchema(topic, v1)
 
         then:
-        def e = thrown CouldNotFetchSchemaVersionException
+        def e = thrown InternalSchemaRepositoryException
         e.message.contains "500 Unexpected failure"
     }
 
