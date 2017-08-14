@@ -27,7 +27,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         $scope.metricsUrls = subscriptionMetrics.metricsUrls(groupName, topicName, subscriptionName);
 
         topicRepository.get(topicName).then(function(topic) {
-            initRetransmissionCalendar(topic.topic.retentionTime.duration);
+            initRetransmissionCalendar(topic.retentionTime.duration);
         });
 
         subscriptionMetrics.metrics(topicName, subscriptionName).then(function(metrics) {
