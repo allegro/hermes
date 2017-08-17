@@ -32,7 +32,7 @@ class SignalsFilter {
         this.clock = clock;
     }
 
-    Set<Signal> filterSignals(List<Signal> signals, Set<SubscriptionName> exisitingConsumers) {
+    Set<Signal> filterSignals(List<Signal> signals, Set<SubscriptionName> existingConsumers) {
         Set<Signal> filteredSignals = Collections.newSetFromMap(new LinkedHashMap<>(signals.size()));
 
         for (Signal signal : signals) {
@@ -40,7 +40,7 @@ class SignalsFilter {
             if (!merged) {
                 negate(filteredSignals, signal);
 
-                if (signal.getType() == SignalType.START || exisitingConsumers.contains(signal.getTarget())) {
+                if (signal.getType() == SignalType.START || existingConsumers.contains(signal.getTarget())) {
                     if (signal.canExecuteNow(clock.millis())) {
                         filteredSignals.add(signal);
                     } else {
