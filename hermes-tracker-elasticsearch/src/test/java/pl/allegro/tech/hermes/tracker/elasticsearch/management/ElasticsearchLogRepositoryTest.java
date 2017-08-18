@@ -84,7 +84,8 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
         long firstTimestamp = System.currentTimeMillis();
 
         MessageMetadata secondDiscarded = TestMessageMetadata.of("5678", topic, subscription);
-        long secondTimestamp = firstTimestamp + 1;
+        // difference between first and second timestamp must be bigger than 1000ms as query sorts by seconds
+        long secondTimestamp = firstTimestamp + 2000;
 
         // when
         consumersLogRepository.logDiscarded(firstDiscarded, firstTimestamp, REASON_MESSAGE);
