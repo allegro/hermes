@@ -53,7 +53,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     @BeforeSuite
     public void before() throws Throwable {
         elasticsearch.before();
-        SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory);
+        SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, false);
         logRepository = new ElasticsearchLogRepository(elasticsearch.client(), schemaManager);
 
         PathsCompiler pathsCompiler = new PathsCompiler("localhost");
