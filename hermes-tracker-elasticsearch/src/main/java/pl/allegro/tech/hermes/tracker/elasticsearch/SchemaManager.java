@@ -12,15 +12,10 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendDailyIndexF
 import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactory;
 
 import java.io.IOException;
+import java.util.function.Function;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.BATCH_ID;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.CLUSTER;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.MESSAGE_ID;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.REASON;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.STATUS;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.SUBSCRIPTION;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TOPIC_NAME;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.*;
 
 public class SchemaManager {
 
@@ -39,20 +34,28 @@ public class SchemaManager {
     private final Client client;
     private final FrontendIndexFactory frontendIndexFactory;
     private final ConsumersIndexFactory consumersIndexFactory;
+    private final boolean dynamicMappingEnabled;
 
     public static SchemaManager schemaManagerWithDailyIndexes(Client elasticClient) {
         return new SchemaManager(elasticClient, new FrontendDailyIndexFactory(), new ConsumersDailyIndexFactory());
     }
 
     public SchemaManager(Client client, FrontendIndexFactory frontendIndexFactory, ConsumersIndexFactory consumersIndexFactory) {
+        this(client, frontendIndexFactory, consumersIndexFactory, true);
+    }
+
+    public SchemaManager(Client client, FrontendIndexFactory frontendIndexFactory, ConsumersIndexFactory consumersIndexFactory,
+                         boolean dynamicMappingEnabled) {
         this.client = client;
         this.frontendIndexFactory = frontendIndexFactory;
         this.consumersIndexFactory = consumersIndexFactory;
+        this.dynamicMappingEnabled = dynamicMappingEnabled;
     }
 
     public void ensureSchema() {
-        createTemplate(PUBLISHED_TEMPLATE_NAME, PUBLISHED_TYPE, PUBLISHED_INDICES_REG_EXP, PUBLISHED_ALIAS_NAME);
-        createTemplate(SENT_TEMPLATE_NAME, SENT_TYPE, SENT_INDICES_REG_EXP, SENT_ALIAS_NAME);
+        createTemplate(PUBLISHED_TEMPLATE_NAME, PUBLISHED_TYPE, PUBLISHED_INDICES_REG_EXP, PUBLISHED_ALIAS_NAME,
+                preparePublishedMapping());
+        createTemplate(SENT_TEMPLATE_NAME, SENT_TYPE, SENT_INDICES_REG_EXP, SENT_ALIAS_NAME, prepareSentMapping());
 
         createIndexIfNeeded(frontendIndexFactory);
         createIndexIfNeeded(consumersIndexFactory);
@@ -78,30 +81,54 @@ public class SchemaManager {
                 .execute().actionGet();
     }
 
-    private void createTemplate(String templateName, String indexType, String indicesRegExp, String aliasName) {
+    private void createTemplate(String templateName, String indexType, String indicesRegExp, String aliasName,
+                                XContentBuilder templateMapping) {
 
         PutIndexTemplateRequest publishedTemplateRequest = new PutIndexTemplateRequest(templateName)
                 .template(indicesRegExp)
-                .mapping(indexType, prepareMapping(indexType))
+                .mapping(indexType, templateMapping)
                 .alias(new Alias(aliasName));
 
         client.admin().indices().putTemplate(publishedTemplateRequest).actionGet();
     }
 
-    private XContentBuilder prepareMapping(String indexType) {
+    private XContentBuilder preparePublishedMapping() {
+        return prepareMapping(PUBLISHED_TYPE, Function.identity());
+    }
+
+    private XContentBuilder prepareSentMapping() {
+        return prepareMapping(SENT_TYPE, xContentBuilder -> {
+            try {
+                return xContentBuilder
+                        .startObject(SUBSCRIPTION).field("type", "string").field("index", "not_analyzed").endObject()
+                        .startObject(PUBLISH_TIMESTAMP).field("type", "long").endObject()
+                        .startObject(BATCH_ID).field("type", "string").field("index", "not_analyzed").endObject()
+                        .startObject(OFFSET).field("type", "long").endObject()
+                        .startObject(PARTITION).field("type", "integer").endObject();
+            } catch (IOException e) {
+                throw new ElasticsearchRepositoryException(e);
+            }
+        });
+    }
+
+    private XContentBuilder prepareMapping(String indexType, Function<XContentBuilder, XContentBuilder> additionalMapping) {
         try {
-            return jsonBuilder()
+            XContentBuilder jsonBuilder = jsonBuilder()
                     .startObject().startObject(indexType)
+                    .field("dynamic").value(dynamicMappingEnabled)
                     .startObject("_all").field("enabled", false).endObject()
                     .startObject("properties")
                     .startObject(MESSAGE_ID).field("type", "string").field("index", "not_analyzed").endObject()
-                    .startObject(BATCH_ID).field("type", "string").field("index", "not_analyzed").endObject()
-                    .startObject(STATUS).field("type", "string").field("index", "not_analyzed").endObject()
+                    .startObject(TIMESTAMP).field("type", "long").endObject()
+                    .startObject(TIMESTAMP_SECONDS).field("type", "long").endObject()
                     .startObject(TOPIC_NAME).field("type", "string").field("index", "not_analyzed").endObject()
-                    .startObject(SUBSCRIPTION).field("type", "string").field("index", "not_analyzed").endObject()
+                    .startObject(STATUS).field("type", "string").field("index", "not_analyzed").endObject()
                     .startObject(CLUSTER).field("type", "string").field("index", "not_analyzed").endObject()
-                    .startObject(REASON).field("type", "string").field("index", "not_analyzed").endObject()
-                    .endObject().endObject();
+                    .startObject(SOURCE_HOSTNAME).field("type", "string").field("index", "not_analyzed").endObject()
+                    .startObject(REMOTE_HOSTNAME).field("type", "string").field("index", "not_analyzed").endObject()
+                    .startObject(REASON).field("type", "string").field("index", "not_analyzed").endObject();
+
+            return additionalMapping.apply(jsonBuilder).endObject().endObject();
         } catch (IOException ex) {
             throw new ElasticsearchRepositoryException(ex);
         }
