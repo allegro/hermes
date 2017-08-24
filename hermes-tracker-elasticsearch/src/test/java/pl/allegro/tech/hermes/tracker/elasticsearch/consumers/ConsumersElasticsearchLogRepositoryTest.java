@@ -43,7 +43,7 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     @BeforeSuite
     public void before() throws Throwable {
         elasticsearch.before();
-        schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, indexFactory);
+        schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, indexFactory, false);
     }
 
     @AfterSuite
