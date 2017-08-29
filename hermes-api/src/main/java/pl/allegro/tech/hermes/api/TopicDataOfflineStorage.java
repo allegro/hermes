@@ -3,23 +3,51 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class TopicOfflineStorage {
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
-    private final boolean store;
+/**
+ * Topic offline storage metadata - not used in Hermes, but exposed as part of API for other systems to use.
+ */
+public class TopicDataOfflineStorage {
 
-    private final int retention;
+    private final boolean enabled;
+
+    @Valid
+    @NotNull
+    private final OfflineRetentionTime retentionTime;
 
     @JsonCreator
-    public TopicOfflineStorage(@JsonProperty("store") boolean store, @JsonProperty("retention") int retention) {
-        this.store = store;
-        this.retention = retention;
+    public TopicDataOfflineStorage(@JsonProperty("enabled") boolean enabled,
+                                   @JsonProperty("retentionTime") OfflineRetentionTime retentionTime) {
+        this.enabled = enabled;
+        this.retentionTime = retentionTime;
     }
 
-    public boolean isStore() {
-        return store;
+    public static TopicDataOfflineStorage defaultOfflineStorage() {
+        return new TopicDataOfflineStorage(false, OfflineRetentionTime.of(0));
     }
 
-    public int getRetention() {
-        return retention;
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public OfflineRetentionTime getRetentionTime() {
+        return retentionTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TopicDataOfflineStorage)) return false;
+        TopicDataOfflineStorage that = (TopicDataOfflineStorage) o;
+        return enabled == that.enabled &&
+                Objects.equals(retentionTime, that.retentionTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(enabled, retentionTime);
     }
 }

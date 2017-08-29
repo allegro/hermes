@@ -57,10 +57,13 @@ public class Topic {
 
     private PublishingAuth publishingAuth;
 
+    private final TopicDataOfflineStorage offlineStorage;
+
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
                  boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
-                 int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted) {
+                 int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
+                 TopicDataOfflineStorage offlineStorage) {
         this.name = name;
         this.description = description;
         this.owner = owner;
@@ -74,6 +77,7 @@ public class Topic {
         this.maxMessageSize = maxMessageSize;
         this.publishingAuth = publishingAuth;
         this.subscribingRestricted = subscribingRestricted;
+        this.offlineStorage = offlineStorage;
     }
 
     @JsonCreator
@@ -90,13 +94,16 @@ public class Topic {
             @JsonProperty("contentType") ContentType contentType,
             @JsonProperty("maxMessageSize") Integer maxMessageSize,
             @JsonProperty("auth") PublishingAuth publishingAuth,
-            @JsonProperty("subscribingRestricted") boolean subscribingRestricted
+            @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
+            @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage
             ) {
         this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
                 trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
                 maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize,
                 publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
-                subscribingRestricted);
+                subscribingRestricted,
+                offlineStorage == null ? TopicDataOfflineStorage.defaultOfflineStorage() : offlineStorage
+        );
     }
 
     public RetentionTime getRetentionTime() {
@@ -106,7 +113,8 @@ public class Topic {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize, publishingAuth, subscribingRestricted);
+                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize, publishingAuth, subscribingRestricted,
+                offlineStorage);
     }
 
     @Override
@@ -131,7 +139,8 @@ public class Topic {
                 && Objects.equals(this.contentType, other.contentType)
                 && Objects.equals(this.maxMessageSize, other.maxMessageSize)
                 && Objects.equals(this.subscribingRestricted, other.subscribingRestricted)
-                && Objects.equals(this.publishingAuth, other.publishingAuth);
+                && Objects.equals(this.publishingAuth, other.publishingAuth)
+                && Objects.equals(this.offlineStorage, other.offlineStorage);
     }
 
     @JsonProperty("name")
@@ -208,6 +217,10 @@ public class Topic {
 
     public boolean isSubscribingRestricted() {
         return subscribingRestricted;
+    }
+
+    public TopicDataOfflineStorage getOfflineStorage() {
+        return offlineStorage;
     }
 
     @Override

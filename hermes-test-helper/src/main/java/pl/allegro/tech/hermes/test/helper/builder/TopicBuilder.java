@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.OfflineRetentionTime;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PublishingAuth;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicDataOfflineStorage;
 import pl.allegro.tech.hermes.api.TopicName;
 
 import java.util.ArrayList;
@@ -42,6 +44,8 @@ public class TopicBuilder {
 
     private boolean subscribingRestricted = false;
 
+    private TopicDataOfflineStorage offlineStorage = TopicDataOfflineStorage.defaultOfflineStorage();
+
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
     }
@@ -62,7 +66,8 @@ public class TopicBuilder {
         return new Topic(
                 name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
                 jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize,
-                new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted
+                new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
+                offlineStorage
         );
     }
 
@@ -138,6 +143,11 @@ public class TopicBuilder {
 
     public TopicBuilder withUnauthenticatedAccessDisabled() {
         this.unauthenticatedAccessEnabled = false;
+        return this;
+    }
+
+    public TopicBuilder withOfflineStorage(int days) {
+        this.offlineStorage = new TopicDataOfflineStorage(true, OfflineRetentionTime.of(days));
         return this;
     }
 }
