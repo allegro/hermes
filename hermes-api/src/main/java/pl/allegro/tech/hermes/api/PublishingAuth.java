@@ -15,13 +15,13 @@ public class PublishingAuth {
 
     @JsonCreator
     public PublishingAuth(@JsonProperty("publishers") List<String> publishers,
-                          @JsonProperty("enabled") boolean enabled,
-                          @JsonProperty("unauthenticatedAccessEnabled") boolean unauthenticatedAccessEnabled) {
+        @JsonProperty("enabled") boolean enabled,
+        @JsonProperty("unauthenticatedAccessEnabled") boolean unauthenticatedAccessEnabled) {
 
-        this.publishers = publishers;
-        this.enabled = enabled;
-        this.unauthenticatedAccessEnabled = unauthenticatedAccessEnabled;
-    }
+            this.publishers = publishers;
+            this.enabled = enabled;
+            this.unauthenticatedAccessEnabled = unauthenticatedAccessEnabled;
+        }
 
     public boolean isEnabled() {
         return enabled;

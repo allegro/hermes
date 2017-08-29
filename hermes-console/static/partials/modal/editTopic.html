@@ -101,6 +101,31 @@
                     </div>
                 </div>
             </div>
+
+            <hr />
+            <div class="form-group">
+                <label for="topicStoreOffline" class="col-md-3 control-label">Store offline</label>
+                <div class="col-md-9">
+                    <input type="checkbox" id="topicStoreOffline" name="topicStoreOffline" ng-model="topic.offlineStorage.enabled"/>
+                </div>
+            </div>
+            <div class="form-group {{topicForm.topicOfflineRetention.$valid ? '' : 'has-error'}}" ng-show="topic.offlineStorage.enabled && !topic.offlineStorage.retentionTime.infinity">
+                <label for="topicOfflineRetention" class="col-md-3 control-label">Offline retention time</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" min="1" max="120" required class="form-control" id="topicOfflineRetention" name="topicOfflineRetention" ng-model="topic.offlineStorage.retentionTime.duration" placeholder="how long should it be stored in offline storage?"/>
+                        <span class="input-group-addon">days</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="topicOfflineRetentionInfinity" class="col-md-3 control-label">Keep forever</label>
+                <div class="col-md-9">
+                    <input type="checkbox" id="topicOfflineRetentionInfinity" name="topicOfflineRetentionInfinity" ng-model="topic.offlineStorage.retentionTime.infinity"/>
+                </div>
+            </div>
+
+            <hr />
             <div class="form-group {{topicForm.messageSchema.$valid ? '' : 'has-error'}}" ng-show="topic.contentType === 'AVRO'">
                 <label for="messageSchema" class="col-md-3 control-label">
                     <a href="http://hermes-pubsub.rtfd.org/en/latest/user/publishing-avro/" target="_blank">AVRO schema</a>
