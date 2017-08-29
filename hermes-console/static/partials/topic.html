@@ -92,6 +92,16 @@
                         <span uib-popover='When subscribing is restricted, only owner of this topic can create new subscriptions.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
 
+                    <hr />
+                    <p>
+                        <strong>Store offline:</strong> {{topic.offlineStorage.enabled}}
+                        <span uib-popover='Should data from this topic be stored in offline storage (e.g. HDFS).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p ng-show="topic.offlineStorage.enabled">
+                        <strong>Offline retention:</strong> {{topic.offlineStorage.retentionTime.infinite < 1 ? 'infinite' : topic.offlineStorage.retentionTime.duration + ' days'}}
+                        <span uib-popover='For how long should this topic be stored in offline storage.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+
                 </div>
             </div>
         </div>
