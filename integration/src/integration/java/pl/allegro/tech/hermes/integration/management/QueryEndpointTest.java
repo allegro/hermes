@@ -1,18 +1,24 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
+import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -27,6 +33,13 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 public class QueryEndpointTest extends IntegrationTest {
 
     private static final String SCHEMA = AvroUserSchemaLoader.load().toString();
+
+    private RemoteServiceEndpoint remoteService;
+
+    @BeforeMethod
+    public void initializeAlways() {
+        remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
+    }
 
     @DataProvider(name = "groupData")
     public static Object[][] groupData() {
@@ -185,6 +198,35 @@ public class QueryEndpointTest extends IntegrationTest {
 
     }
 
+    @Test
+    public void shouldQuerySubscriptionsMetrics() {
+        // given
+        Topic topic1 = operations.buildTopic("subscriptionsMetricsTestGroup1", "subscriptionsMetricsTestTopic1");
+        Topic topic2 = operations.buildTopic("subscriptionsMetricsTestGroup2", "subscriptionsMetricsTestTopic2");
+
+        String subscriptionName1 = "subscription1";
+        String subscriptionName2 = "subscription2";
+        operations.createSubscription(topic1, subscriptionName1, HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic2, subscriptionName2, HTTP_ENDPOINT_URL);
+
+        String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
+        String queryGetSubscriptionsMetricsWithPositiveDelivered = "{\"query\": {\"delivered\": {\"gt\": 0}}}";
+
+        remoteService.expectMessages("test message");
+
+        // when
+        publisher.publish(topic1.getQualifiedName(), "test message");
+        remoteService.waitUntilReceived();
+
+        // then
+        wait.until(() -> {
+            subscriptionsMatchesToNamesAndTheirTopicsNames(management.query().querySubscriptionsMetrics(queryGetAllSubscriptionsMetrics),
+                    asList(subscriptionName1, subscriptionName2), asList(topic1.getQualifiedName(), topic2.getQualifiedName()));
+
+            subscriptionsMatchesToNamesAndTheirTopicsNames(management.query().querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithPositiveDelivered),
+                    asList(subscriptionName1), asList(topic1.getQualifiedName()));
+        });
+    }
 
     private Subscription enrichSubscription(SubscriptionBuilder subscription, String endpoint) {
         return subscription
@@ -206,5 +248,23 @@ public class QueryEndpointTest extends IntegrationTest {
                 .collect(Collectors.toList());
 
         assertThat(foundQualifiedNames).containsAll(expectedQualifiedNames);
+    }
+
+    private void subscriptionsMatchesToNamesAndTheirTopicsNames(List<SubscriptionNameWithMetrics> found, List<String> expectedNames,
+                                                                List<String> expectedTopicsQualifiedNames) {
+
+        Map<String, String> foundSubscriptionsAndTheirTopicNames = found.stream()
+                .collect(Collectors.toMap(SubscriptionNameWithMetrics::getName, SubscriptionNameWithMetrics::getTopicQualifiedName));
+
+        Iterator<String> expectedNamesIterator = expectedNames.iterator();
+        Iterator<String> expectedTopicQualifiedNamesIterator = expectedTopicsQualifiedNames.iterator();
+
+        while (expectedNamesIterator.hasNext() && expectedTopicQualifiedNamesIterator.hasNext()) {
+            String expectedName = expectedNamesIterator.next();
+            String expectedTopicName = expectedTopicQualifiedNamesIterator.next();
+
+            assertThat(foundSubscriptionsAndTheirTopicNames.containsKey(expectedName)
+                    && foundSubscriptionsAndTheirTopicNames.get(expectedName).equals(expectedTopicName)).isTrue();
+        }
     }
 }
