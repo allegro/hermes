@@ -41,7 +41,7 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     @BeforeSuite
     public void before() throws Throwable {
         elasticsearch.before();
-        schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory);
+        schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, false);
     }
 
     @AfterSuite

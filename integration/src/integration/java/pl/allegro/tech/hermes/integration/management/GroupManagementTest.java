@@ -27,22 +27,6 @@ public class GroupManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldUpdateGroup() {
-        // given
-        final String groupName = "groupToUpdate";
-        final String supportTeam = "Skylab";
-
-        operations.createGroup(groupName);
-        Group modifiedGroup = group(groupName).withSupportTeam(supportTeam).build();
-
-        // when
-        management.group().update(groupName, modifiedGroup);
-
-        // then
-        Assertions.assertThat(management.group().get(groupName).getSupportTeam()).isEqualTo(supportTeam);
-    }
-
-    @Test
     public void shouldListGroups() {
         // given
         operations.createGroup("listGroupsGroup1");

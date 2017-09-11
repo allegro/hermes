@@ -16,7 +16,7 @@ public class TopicWithSchema extends Topic {
         this(schema, topic.getQualifiedName(), topic.getDescription(), topic.getOwner(), topic.getRetentionTime(),
                 topic.isJsonToAvroDryRunEnabled(), topic.getAck(), topic.isTrackingEnabled(), topic.wasMigratedFromJsonType(),
                 topic.isSchemaVersionAwareSerializationEnabled(), topic.getContentType(), topic.getMaxMessageSize(),
-                topic.getPublishingAuth(), topic.isSubscribingRestricted());
+                topic.getPublishingAuth(), topic.isSubscribingRestricted(), topic.getOfflineStorage());
     }
 
     @JsonCreator
@@ -33,9 +33,11 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("contentType") ContentType contentType,
                            @JsonProperty("maxMessageSize") Integer maxMessageSize,
                            @JsonProperty("auth") PublishingAuth publishingAuth,
-                           @JsonProperty("subscribingRestricted") boolean subscribingRestricted) {
+                           @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
+                           @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage) {
         super(qualifiedName, description, owner, retentionTime, jsonToAvroDryRunEnabled, ack, trackingEnabled,
-                migratedFromJsonType, schemaVersionAwareSerializationEnabled, contentType, maxMessageSize, publishingAuth, subscribingRestricted);
+                migratedFromJsonType, schemaVersionAwareSerializationEnabled, contentType, maxMessageSize,
+                publishingAuth, subscribingRestricted, offlineStorage);
         this.topic = convertToTopic();
         this.schema = schema;
     }
@@ -51,7 +53,8 @@ public class TopicWithSchema extends Topic {
     private Topic convertToTopic() {
         return new Topic(this.getQualifiedName(), this.getDescription(), this.getOwner(), this.getRetentionTime(),
                 this.isJsonToAvroDryRunEnabled(), this.getAck(), this.isTrackingEnabled(), this.wasMigratedFromJsonType(),
-                this.isSchemaVersionAwareSerializationEnabled(), this.getContentType(), this.getMaxMessageSize(), this.getPublishingAuth(), this.isSubscribingRestricted());
+                this.isSchemaVersionAwareSerializationEnabled(), this.getContentType(), this.getMaxMessageSize(),
+                this.getPublishingAuth(), this.isSubscribingRestricted(), this.getOfflineStorage());
     }
 
     public String getSchema() {

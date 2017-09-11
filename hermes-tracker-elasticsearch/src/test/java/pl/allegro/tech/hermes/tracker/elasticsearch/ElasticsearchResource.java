@@ -9,6 +9,7 @@ import org.elasticsearch.node.NodeBuilder;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.UUID;
 
 public class ElasticsearchResource implements LogSchemaAware {
 
@@ -25,7 +26,8 @@ public class ElasticsearchResource implements LogSchemaAware {
         dataDir = Files.createTempDirectory("elasticsearch_data_").toFile();
         Settings settings = ImmutableSettings.settingsBuilder()
                 .put("path.data", dataDir)
-                .put("cluster.name", "hermes")
+                .put("cluster.name", "hermes" + UUID.randomUUID())
+                .put("discovery.zen.ping.multicast.enabled", false)
                 .put("cluster.routing.allocation.disk.threshold_enabled", false)
                 .build();
         elastic = NodeBuilder.nodeBuilder().local(true).settings(settings).build();

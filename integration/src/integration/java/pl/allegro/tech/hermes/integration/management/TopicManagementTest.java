@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
@@ -113,7 +112,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         // when
         Response response = management.topic().create(
-                topicWithSchema(topic("invalidTopicGroup", "topic").withRetentionTime(-1).build()));
+                topicWithSchema(topic("invalidTopicGroup", "topic").withMaxMessageSize(Topic.MAX_MESSAGE_SIZE + 1).build()));
 
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST).hasErrorCode(ErrorCode.VALIDATION_ERROR);
@@ -214,7 +213,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         // then
         assertThat(tracked).contains("mixedTrackedGroup.trackedTopic")
-                           .doesNotContain("mixedTrackedGroup.untrackedTopic");
+                .doesNotContain("mixedTrackedGroup.untrackedTopic");
     }
 
     @Test
@@ -349,7 +348,7 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldCreateTopicWithRestrictedSubscribing() {
         // given
         Topic topic = TopicBuilder.topic("restricted", "topic").withSubscribingRestricted().build();
-        assertThat(management.group().create(new Group(topic.getName().getGroupName(), "a"))).hasStatus(CREATED);
+        assertThat(management.group().create(new Group(topic.getName().getGroupName(), "topic"))).hasStatus(CREATED);
 
         // when
         Response response = management.topic().create(topicWithSchema(topic));
@@ -371,5 +370,34 @@ public class TopicManagementTest extends IntegrationTest {
 
         // then
         assertThat(management.topic().get(topic.getQualifiedName()).isSubscribingRestricted()).isTrue();
+    }
+
+    @Test
+    public void shouldCreateTopicWithOfflineStorageSettings() {
+        // given
+        operations.createGroup("offlineStorage");
+
+        // when
+        Topic topic = topic("offlineStorage", "topic").withOfflineStorage(2).build();
+        Response response = management.topic().create(topicWithSchema(topic));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        Assertions.assertThat(management.topic().get("offlineStorage.topic")
+                .getOfflineStorage().getRetentionTime().getDuration()).isEqualTo(2);
+    }
+
+    @Test
+    public void shouldUpdateTopicWithOfflineStorageSettings() {
+        // given
+        Topic topic = TopicBuilder.topic("offlineStorageUpdate", "topic").build();
+        operations.buildTopic(topic);
+        PatchData offlineStorageEnabled = PatchData.from(ImmutableMap.of("offlineStorage", ImmutableMap.of("enabled", true)));
+
+        // when
+        assertThat(management.topic().update(topic.getQualifiedName(), offlineStorageEnabled)).hasStatus(OK);
+
+        // then
+        assertThat(management.topic().get(topic.getQualifiedName()).getTopic().getOfflineStorage().isEnabled()).isTrue();
     }
 }
