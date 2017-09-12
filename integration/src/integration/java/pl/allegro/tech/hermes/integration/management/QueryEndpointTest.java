@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -37,7 +38,12 @@ public class QueryEndpointTest extends IntegrationTest {
 
     @BeforeClass
     public void initialize() {
-        remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/querySubscriptions");
+        remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
+    }
+
+    @AfterClass
+    public void tearDown() {
+        remoteService.reset();
     }
 
     @DataProvider(name = "groupData")
@@ -203,8 +209,8 @@ public class QueryEndpointTest extends IntegrationTest {
         Topic topic1 = operations.buildTopic("subscriptionsMetricsTestGroup1", "subscriptionsMetricsTestTopic1");
         Topic topic2 = operations.buildTopic("subscriptionsMetricsTestGroup2", "subscriptionsMetricsTestTopic2");
 
-        Subscription subscription1 = operations.createSubscription(topic1, "subscription1", HTTP_ENDPOINT_URL + "querySubscriptions");
-        Subscription subscription2 = operations.createSubscription(topic2, "subscription2", HTTP_ENDPOINT_URL + "querySubscriptions");
+        Subscription subscription1 = operations.createSubscription(topic1, "subscription1", HTTP_ENDPOINT_URL);
+        Subscription subscription2 = operations.createSubscription(topic2, "subscription2", HTTP_ENDPOINT_URL);
 
         String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
         String queryGetSubscriptionsMetricsWithPositiveDelivered = "{\"query\": {\"delivered\": {\"gt\": 0}}}";
