@@ -204,27 +204,25 @@ public class QueryEndpointTest extends IntegrationTest {
         Topic topic1 = operations.buildTopic("subscriptionsMetricsTestGroup1", "subscriptionsMetricsTestTopic1");
         Topic topic2 = operations.buildTopic("subscriptionsMetricsTestGroup2", "subscriptionsMetricsTestTopic2");
 
-        String subscriptionName1 = "subscription1";
-        String subscriptionName2 = "subscription2";
-        operations.createSubscription(topic1, subscriptionName1, HTTP_ENDPOINT_URL);
-        operations.createSubscription(topic2, subscriptionName2, HTTP_ENDPOINT_URL);
+        Subscription subscription1 = operations.createSubscription(topic1, "subscription1", HTTP_ENDPOINT_URL);
+        Subscription subscription2 = operations.createSubscription(topic2, "subscription2", HTTP_ENDPOINT_URL);
 
         String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
         String queryGetSubscriptionsMetricsWithPositiveDelivered = "{\"query\": {\"delivered\": {\"gt\": 0}}}";
 
-        remoteService.expectMessages("test message");
+        remoteService.expectMessages("testing subscription metrics");
 
         // when
-        publisher.publish(topic1.getQualifiedName(), "test message");
+        publisher.publish(topic1.getQualifiedName(), "testing subscription metrics");
         remoteService.waitUntilReceived();
 
         // then
         wait.until(() -> {
             subscriptionsMatchesToNamesAndTheirTopicsNames(management.query().querySubscriptionsMetrics(queryGetAllSubscriptionsMetrics),
-                    asList(subscriptionName1, subscriptionName2), asList(topic1.getQualifiedName(), topic2.getQualifiedName()));
+                    asList(subscription1, subscription2));
 
             subscriptionsMatchesToNamesAndTheirTopicsNames(management.query().querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithPositiveDelivered),
-                    asList(subscriptionName1), asList(topic1.getQualifiedName()));
+                    asList(subscription1));
         });
     }
 
@@ -250,21 +248,15 @@ public class QueryEndpointTest extends IntegrationTest {
         assertThat(foundQualifiedNames).containsAll(expectedQualifiedNames);
     }
 
-    private void subscriptionsMatchesToNamesAndTheirTopicsNames(List<SubscriptionNameWithMetrics> found, List<String> expectedNames,
-                                                                List<String> expectedTopicsQualifiedNames) {
+    private void subscriptionsMatchesToNamesAndTheirTopicsNames(List<SubscriptionNameWithMetrics> found,
+                                                                List<Subscription> expectedSubscriptions) {
 
         Map<String, String> foundSubscriptionsAndTheirTopicNames = found.stream()
                 .collect(Collectors.toMap(SubscriptionNameWithMetrics::getName, SubscriptionNameWithMetrics::getTopicQualifiedName));
 
-        Iterator<String> expectedNamesIterator = expectedNames.iterator();
-        Iterator<String> expectedTopicQualifiedNamesIterator = expectedTopicsQualifiedNames.iterator();
-
-        while (expectedNamesIterator.hasNext() && expectedTopicQualifiedNamesIterator.hasNext()) {
-            String expectedName = expectedNamesIterator.next();
-            String expectedTopicName = expectedTopicQualifiedNamesIterator.next();
-
-            assertThat(foundSubscriptionsAndTheirTopicNames.containsKey(expectedName)
-                    && foundSubscriptionsAndTheirTopicNames.get(expectedName).equals(expectedTopicName)).isTrue();
+        for (Subscription subscription: expectedSubscriptions) {
+            assertThat(foundSubscriptionsAndTheirTopicNames).containsKeys(subscription.getName());
+            assertThat(foundSubscriptionsAndTheirTopicNames.get(subscription.getName())).isEqualTo(subscription.getQualifiedTopicName());
         }
     }
 }
