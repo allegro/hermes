@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.integration.management;
 
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,9 +35,9 @@ public class QueryEndpointTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
 
-    @BeforeMethod
-    public void initializeAlways() {
-        remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
+    @BeforeClass
+    public void initialize() {
+        remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/querySubscriptions");
     }
 
     @DataProvider(name = "groupData")
@@ -204,8 +203,8 @@ public class QueryEndpointTest extends IntegrationTest {
         Topic topic1 = operations.buildTopic("subscriptionsMetricsTestGroup1", "subscriptionsMetricsTestTopic1");
         Topic topic2 = operations.buildTopic("subscriptionsMetricsTestGroup2", "subscriptionsMetricsTestTopic2");
 
-        Subscription subscription1 = operations.createSubscription(topic1, "subscription1", HTTP_ENDPOINT_URL);
-        Subscription subscription2 = operations.createSubscription(topic2, "subscription2", HTTP_ENDPOINT_URL);
+        Subscription subscription1 = operations.createSubscription(topic1, "subscription1", HTTP_ENDPOINT_URL + "querySubscriptions");
+        Subscription subscription2 = operations.createSubscription(topic2, "subscription2", HTTP_ENDPOINT_URL + "querySubscriptions");
 
         String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
         String queryGetSubscriptionsMetricsWithPositiveDelivered = "{\"query\": {\"delivered\": {\"gt\": 0}}}";
