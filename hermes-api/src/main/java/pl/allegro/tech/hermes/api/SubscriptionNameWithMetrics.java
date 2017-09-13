@@ -8,13 +8,13 @@ import java.util.Objects;
 public class SubscriptionNameWithMetrics {
     private final String topicQualifiedName;
     private final String name;
-    private long delivered;
-    private long discarded;
-    private long inflight;
-    private String timeouts;
-    private long lag;
-    private String rate;
-    private String throughput;
+    private final long delivered;
+    private final long discarded;
+    private final long inflight;
+    private final String timeouts;
+    private final long lag;
+    private final String rate;
+    private final String throughput;
 
     @JsonCreator
     public SubscriptionNameWithMetrics(
