@@ -232,7 +232,7 @@ public class TopicService {
         if (AVRO.equals(topic.getContentType())) {
             schema = schemaService.getSchema(topicName.qualifiedName());
         }
-        return schema.map(s -> topicWithSchema(topic, s.value())).orElse(topicWithSchema(topic));
+        return schema.map(s -> topicWithSchema(topic, s.value())).orElseGet(() -> topicWithSchema(topic));
     }
 
     public TopicMetrics getTopicMetrics(TopicName topicName) {

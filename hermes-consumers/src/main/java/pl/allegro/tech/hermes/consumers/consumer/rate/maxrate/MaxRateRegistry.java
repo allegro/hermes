@@ -100,7 +100,7 @@ public class MaxRateRegistry {
     }
 
     RateHistory getRateHistory(ConsumerInstance consumer) {
-        return Optional.ofNullable(rateInfos.get(consumer)).map(RateInfo::getRateHistory).orElse(RateHistory.empty());
+        return Optional.ofNullable(rateInfos.get(consumer)).map(RateInfo::getRateHistory).orElseGet(RateHistory::empty);
     }
 
     void writeRateHistory(ConsumerInstance consumer, RateHistory rateHistory) {
