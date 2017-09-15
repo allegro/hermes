@@ -19,7 +19,7 @@ public class SslContextFactoryProvider {
     ConfigFactory configFactory;
 
     public SslContextFactory getSslContextFactory() {
-        return Optional.ofNullable(sslContextFactory).orElseGet(this::getDefault);
+        return Optional.ofNullable(sslContextFactory).orElse(getDefault());
     }
 
     private SslContextFactory getDefault() {
