@@ -49,8 +49,7 @@ class OAuthResourceServlet extends HttpServlet {
     }
 
     private String getResourceOwner(HttpServletRequest req) {
-        return Optional.ofNullable(req.getParameter("username"))
-                .orElseGet(() -> req.getParameter("clientId"));
+        return Optional.ofNullable(req.getParameter("username")).orElse(req.getParameter("clientId"));
     }
 
     private void validateAccessToken(String owner, String token) throws OAuthProblemException {
