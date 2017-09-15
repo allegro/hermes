@@ -37,7 +37,7 @@ public class SchemaEndpoint {
         Optional<RawSchema> rawSchema = schemaService.getSchema(qualifiedTopicName);
         return rawSchema.map(RawSchema::value)
                 .map(v -> Response.ok(v).build())
-                .orElse(Response.noContent().build());
+                .orElseGet(() -> Response.noContent().build());
     }
 
     @GET
@@ -48,7 +48,7 @@ public class SchemaEndpoint {
         Optional<RawSchema> rawSchema = schemaService.getSchema(qualifiedTopicName, SchemaVersion.valueOf(version));
         return rawSchema.map(RawSchema::value)
                 .map(v -> Response.ok(v).build())
-                .orElse(Response.noContent().build());
+                .orElseGet(() -> Response.noContent().build());
     }
 
     @POST

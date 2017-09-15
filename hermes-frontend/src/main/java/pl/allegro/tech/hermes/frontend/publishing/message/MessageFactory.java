@@ -97,7 +97,7 @@ public class MessageFactory {
     private AvroMessage createAvroMessage(HeaderMap headerMap, Topic topic, String messageId, byte[] messageContent, long timestamp) {
         CompiledSchema<Schema> schema = extractSchemaVersion(headerMap)
                 .map(version -> schemaRepository.getAvroSchema(topic, version))
-                .orElse(schemaRepository.getLatestAvroSchema(topic));
+                .orElseGet(() -> schemaRepository.getLatestAvroSchema(topic));
 
         AvroMessage message = new AvroMessage(
                 messageId,
