@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -159,6 +160,11 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
+    public List<SubscriptionNameWithMetrics> querySubscriptionsMetrics(Query<SubscriptionNameWithMetrics> query) {
+        return query.filter(getSubscriptionsMetrics())
+                .collect(Collectors.toList());
+    }
+
     public List<Subscription> getAllSubscriptions() {
         return topicService.getAllTopics()
                 .stream()
@@ -166,5 +172,13 @@ public class SubscriptionService {
                 .map(this::listSubscriptions)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+    }
+
+    private List<SubscriptionNameWithMetrics> getSubscriptionsMetrics() {
+        return getAllSubscriptions().stream()
+                .map(s -> {
+                    SubscriptionMetrics metrics = metricsRepository.loadMetrics(s.getTopicName(), s.getName());
+                    return SubscriptionNameWithMetrics.from(metrics, s.getName(), s.getQualifiedTopicName());
+                }).collect(Collectors.toList());
     }
 }
