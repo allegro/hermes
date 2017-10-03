@@ -15,7 +15,7 @@
                 <label for="groupName" class="col-md-3 control-label">Name</label>
                 <div class="col-md-9">
                     <input class="form-control" id="groupName" required name="groupName" placeholder="group name"
-                           ng-model="group.groupName" ng-disabled="operation === 'EDIT'" ng-pattern="/^[a-zA-Z0-9.-]+$/"/>
+                           ng-model="group.groupName" ng-disabled="operation === 'EDIT'" ng-pattern="/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)*$/"/>
                 </div>
             </div>
         </form>
