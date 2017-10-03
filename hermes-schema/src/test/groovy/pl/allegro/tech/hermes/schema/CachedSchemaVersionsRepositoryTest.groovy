@@ -21,7 +21,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
 
     def rawSchemaClient = Stub(RawSchemaClient)
     def ticker = new FakeTicker()
-    def versionsRepository = new CachedSchemaVersionsRepository(rawSchemaClient, MoreExecutors.sameThreadExecutor(),
+    def versionsRepository = new CachedSchemaVersionsRepository(rawSchemaClient, MoreExecutors.newDirectExecutorService(),
             (int) REFRESH_TIME.toMinutes(), (int) EXPIRE_TIME.toMinutes(), ticker)
 
     def topic = topic("group", "topic").build()

@@ -41,11 +41,11 @@ allprojects {
 
     project.ext.versions = [
             kafka       : '0.10.2.1',
-            guava       : '20.0',
+            guava       : '23.0',
             jackson     : '2.8.3',
             jersey      : '2.23.2',
             jetty       : '9.3.18.v20170406',
-            curator     : '2.11.1',
+            curator     : '2.12.0',
             wiremock    : '1.58',
             fongo       : '1.6.1',
             spock       : '1.0-groovy-2.4',
