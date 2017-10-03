@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
+import pl.allegro.tech.hermes.api.constraints.Names;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -15,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
-
 public class Subscription implements Anonymizable {
 
     @Valid
@@ -24,7 +23,7 @@ public class Subscription implements Anonymizable {
     private TopicName topicName;
 
     @NotEmpty
-    @Pattern(regexp = ALLOWED_NAME_REGEX)
+    @Pattern(regexp = Names.ALLOWED_SUBSCRIPTION_NAME_REGEX)
     private String name;
 
     private State state = State.PENDING;

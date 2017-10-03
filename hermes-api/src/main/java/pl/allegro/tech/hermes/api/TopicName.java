@@ -7,19 +7,19 @@ import com.google.common.base.Strings;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Pattern;
-
 import java.util.Objects;
 
-import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
+import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_GROUP_NAME_REGEX;
+import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_TOPIC_NAME_REGEX;
 
 public class TopicName {
 
     public static final char GROUP_SEPARATOR = '.';
 
-    @NotEmpty @Pattern(regexp = ALLOWED_NAME_REGEX)
+    @NotEmpty @Pattern(regexp = ALLOWED_GROUP_NAME_REGEX)
     private final String groupName;
 
-    @NotEmpty @Pattern(regexp = ALLOWED_NAME_REGEX)
+    @NotEmpty @Pattern(regexp = ALLOWED_TOPIC_NAME_REGEX)
     private final String name;
 
     @JsonCreator
