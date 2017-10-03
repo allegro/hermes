@@ -10,7 +10,7 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'pl.allegro.tech.build.axion-release' version '1.7.0'
+    id 'pl.allegro.tech.build.axion-release' version '1.7.2'
     id 'io.codearte.nexus-staging' version '0.9.0'
 }
 
@@ -143,5 +143,5 @@ nexusStaging {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.0'
+    gradleVersion = '4.2'
 }
