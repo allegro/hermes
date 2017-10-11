@@ -128,7 +128,7 @@ task integrationTest(type: Test) {
 
     testLogging {
         exceptionFormat = 'full'
-        events "passed", "skipped", "failed", "standardError"
+        events "passed", "skipped", "failed", "standardError", "standardOut"
     }
 }
 
