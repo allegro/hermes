@@ -17,10 +17,6 @@ public final class HermesAssertions extends Assertions {
         return new HttpResponseAssertion(response);
     }
 
-    public static ZookeeperAssertion assertThat(CuratorFramework zookeeper, KafkaNamesMapper kafkaNamesMapper) {
-        return new ZookeeperAssertion(zookeeper, ZookeeperAssertion.class, kafkaNamesMapper);
-    }
-
     public static WiremockRequestAssertion assertThat(LoggedRequest request) {
         return new WiremockRequestAssertion(request);
     }
