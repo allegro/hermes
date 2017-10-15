@@ -28,12 +28,12 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
     public void initializeIntegrationTest() {
         this.management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL);
         this.publisher = new HermesPublisher(FRONTEND_URL);
-        this.wait = new Waiter(management, services().zookeeper(), services().kafkaZookeeper(), KAFKA_NAMESPACE);
-        this.operations = new HermesAPIOperations(management, wait);
         this.brokerOperations = new BrokerOperations(
                 ImmutableMap.of(PRIMARY_KAFKA_CLUSTER_NAME, PRIMARY_ZK_KAFKA_CONNECT,
                                 SECONDARY_KAFKA_CLUSTER_NAME, SECONDARY_ZK_KAFKA_CONNECT),
                 CONFIG_FACTORY);
+        this.wait = new Waiter(management, services().zookeeper(), brokerOperations, PRIMARY_KAFKA_CLUSTER_NAME, KAFKA_NAMESPACE);
+        this.operations = new HermesAPIOperations(management, wait);
     }
 
     @AfterMethod

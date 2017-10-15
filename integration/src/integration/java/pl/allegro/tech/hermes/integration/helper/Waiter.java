@@ -17,9 +17,9 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaZookeeperPaths;
 import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionStatus;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 
 import java.time.Clock;
@@ -38,7 +38,9 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private final CuratorFramework zookeeper;
 
-    private final CuratorFramework kafkaZookeeper;
+    private final BrokerOperations brokerOperations;
+
+    private final String clusterName;
 
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue());
 
@@ -46,16 +48,14 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private Clock clock = Clock.systemDefaultZone();
 
-    public Waiter(HermesEndpoints endpoints, CuratorFramework zookeeper, CuratorFramework kafkaZookeeper, String kafkaNamespace) {
+    public Waiter(HermesEndpoints endpoints, CuratorFramework zookeeper, BrokerOperations brokerOperations,
+                  String clusterName, String kafkaNamespace) {
         super(endpoints);
         this.endpoints = endpoints;
         this.zookeeper = zookeeper;
-        this.kafkaZookeeper = kafkaZookeeper;
+        this.brokerOperations = brokerOperations;
+        this.clusterName = clusterName;
         this.kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(kafkaNamespace);
-    }
-
-    public void untilKafkaZookeeperNodeDeletion(final String path) {
-        untilZookeeperNodeDeletion(path, kafkaZookeeper);
     }
 
     public void untilHermesZookeeperNodeCreation(final String path) {
@@ -147,7 +147,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     public void untilTopicRemovedInKafka(Topic topic) {
         kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
-                        untilKafkaZookeeperNodeDeletion(KafkaZookeeperPaths.topicPath(k.name()))
+                brokerOperations.topicExists(k.name().asString(), clusterName)
         );
     }
 
