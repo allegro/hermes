@@ -8,7 +8,7 @@ else
     ARCHIVE_NAME=$1
 fi
 
-NODE_VERSION="v5.1.0"
+NODE_VERSION="v6.11.4"
 NODE_DIST="node-$NODE_VERSION-linux-x64"
 
 printf "Packaging Hermes Console\n"
