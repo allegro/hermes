@@ -18,8 +18,11 @@ class AvroEncodedJsonAvroConverter {
     byte[] convertToAvro(byte[] bytes, Schema schema) {
         try {
             return convertToAvro(readJson(bytes, schema), schema);
-        } catch (IOException | AvroRuntimeException e) {
+        } catch (IOException e) {
             throw new AvroConversionException("Failed to convert to AVRO.", e);
+        } catch (AvroRuntimeException e) {
+                throw new AvroConversionException(
+                        String.format("Failed to convert to AVRO: %s.", e.getMessage()), e);
         }
     }
 

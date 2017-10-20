@@ -192,7 +192,21 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldGetBadRequestForJsonInvalidWithAvroSchema() {
+    public void shouldGetBadRequestForJsonNotMachingWithAvroSchema() {
+        // given
+        Topic topic = topic("avro.topic.forinvalidjson").withContentType(AVRO).build();
+        operations.buildTopicWithSchema(topicWithSchema(topic, "{\"type\" : \"record\",\"name\" : \"testSchema\",\"fields\" : [{\"name\" : \"field_integer\",\"type\" : \"int\"}]}\n"));
+
+        // when
+        Response response = publisher.publish("avro.topic.forinvalidjson", "{\"__metadata\":null,\"field_integer\": \"foobar\"}", Collections.singletonMap("Content-Type", AVRO_JSON));
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+        assertThat(response.readEntity(String.class)).isEqualTo("{\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\",\"code\":\"VALIDATION_ERROR\"}");
+    }
+
+    @Test
+    public void shouldGetBadRequestForInvalidJsonWithAvroSchema() {
         Topic topic = topic("avro.invalidJson").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
 
