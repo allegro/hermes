@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeExcep
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
 import javax.ws.rs.core.MediaType;
@@ -22,6 +23,7 @@ public class MessageContentTypeEnforcerTest {
     private Topic topic = TopicBuilder.topic("test.Topic").withContentType(ContentType.AVRO).build();
     private AvroUser avroMessage = new AvroUser("Bob", 30, "black");
     private CompiledSchema<Schema> schema = new CompiledSchema<>(avroMessage.getSchema(), SchemaVersion.valueOf(0));
+    private CompiledSchema<Schema> testSchema = new CompiledSchema<>(AvroUserSchemaLoader.load(), SchemaVersion.valueOf(1));
 
     @Test
     public void shouldConvertToAvroWhenReceivedJSONOnAvroTopic() throws IOException {
@@ -31,6 +33,16 @@ public class MessageContentTypeEnforcerTest {
         // then
         assertThat(enforcedMessage).isEqualTo(avroMessage.asBytes());
     }
+
+    @Test
+    public void sh1ouldConvertToAvroWhenReceivedJSONOnAvroTopic() throws IOException {
+        // when
+        byte[] enforcedMessage = enforcer.enforceAvro("application/json", avroMessage.asJson().getBytes(), testSchema.getSchema(), topic);
+
+        // then
+        assertThat(enforcedMessage).isEqualTo(avroMessage.asBytes());
+    }
+
 
     @Test
     public void shouldConvertToAvroWhenReceivedAvroJSONOnAvroTopic() throws IOException {
