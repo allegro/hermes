@@ -98,7 +98,7 @@
                         <span uib-popover='Should data from this topic be stored in offline storage (e.g. HDFS).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p ng-show="topic.offlineStorage.enabled">
-                        <strong>Offline retention:</strong> {{topic.offlineStorage.retentionTime.infinite < 1 ? 'infinite' : topic.offlineStorage.retentionTime.duration + ' days'}}
+                        <strong>Offline retention:</strong> {{topic.offlineStorage.retentionTime.infinite ? 'infinite' : topic.offlineStorage.retentionTime.duration + ' days'}}
                         <span uib-popover='For how long should this topic be stored in offline storage.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
 
