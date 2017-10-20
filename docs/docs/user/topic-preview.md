@@ -8,8 +8,9 @@ as a preview that can be accessed via Management module. In most cases it should
 environments.
 
 Preview holds up to N messages, where N is configured by Hermes cluster administrator. Messages are refreshed and should
-represent the current format of messages on given topic. Messages for preview are saved on arrival, before any
-conversions (e.g. JSON -> Avro) are made. Messages are treated as byte array.
+represent the current format of messages on given topic. Messages for preview are saved on arrival in JSON format. 
+For Avro, the message is converted to JSON and if it fails, raw byte array is saved. For JSON format no conversion 
+is necessary. No other conversion is made on the message.
 
 If preview is enabled, it is accessible in Hermes Console topic view or via Management REST API:
 
