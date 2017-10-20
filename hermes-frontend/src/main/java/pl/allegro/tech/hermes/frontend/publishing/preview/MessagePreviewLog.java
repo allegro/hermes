@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.TopicsMessagesPreview;
+import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -32,10 +33,10 @@ public class MessagePreviewLog {
         this.previewSizePerTopic = previewSizePerTopic;
     }
 
-    public void add(TopicName topicName, byte[] messageContent) {
+    public void add(TopicName topicName, Message message) {
         long counter = limiter.getAndIncrement(topicName);
         if (counter < previewSizePerTopic) {
-            messages.add(new MessagePreviewSnapshot(topicName, messagePreviewFactory.create(messageContent)));
+            messages.add(new MessagePreviewSnapshot(topicName, messagePreviewFactory.create(message)));
         }
     }
 
