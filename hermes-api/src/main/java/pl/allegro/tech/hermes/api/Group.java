@@ -11,7 +11,7 @@ import java.util.Objects;
 public class Group {
 
     @NotNull
-    @Pattern(regexp = Names.ALLOWED_GROUP_NAME_REGEX)
+    @Pattern(regexp = Names.ALLOWED_NAME_REGEX)
     private String groupName;
 
     /**
