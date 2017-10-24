@@ -25,7 +25,7 @@ public class OfflineRetentionTime {
         return new OfflineRetentionTime(null, false);
     }
 
-    public int getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
