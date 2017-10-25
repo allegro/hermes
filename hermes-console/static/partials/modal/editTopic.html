@@ -103,10 +103,12 @@
             </div>
 
             <hr />
-            <div class="form-group">
+            <div class="form-group {{topicForm.topicStoreOffline.$valid ? '' : 'has-error'}}">
                 <label for="topicStoreOffline" class="col-md-3 control-label">Store offline</label>
                 <div class="col-md-9">
-                    <input type="checkbox" id="topicStoreOffline" name="topicStoreOffline" ng-model="topic.offlineStorage.enabled"/>
+                    <select id="topicStoreOffline" name="topicStoreOffline" ng-model="topic.offlineStorage.enabled"
+                            ng-options="(item ? 'yes':'no') for item in [true, false]"
+                            required unknown-value-required/>
                 </div>
             </div>
             <div class="form-group {{topicForm.topicOfflineRetention.$valid ? '' : 'has-error'}}" ng-show="topic.offlineStorage.enabled && !topic.offlineStorage.retentionTime.infinite">
