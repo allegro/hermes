@@ -47,19 +47,25 @@
             <div class="form-group">
                 <label for="subscriptionType" class="col-md-3 control-label">Delivery type</label>
                 <div class="col-md-9">
-                    <select required class="form-control" id="deliveryType" name="deliveryType" ng-model="subscription.deliveryType">
-                        <option value="SERIAL">SERIAL</option>
-                        <option value="BATCH">BATCH (incubating feature)</option>
-                    </select>
+                    <div class="input-group">
+                        <select required class="form-control" id="deliveryType" name="deliveryType" ng-model="subscription.deliveryType">
+                            <option value="SERIAL">SERIAL</option>
+                            <option value="BATCH">BATCH (incubating feature)</option>
+                        </select>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Hermes can deliver messages in SERIAL (one message at a time) or in BATCH (group of messages at a time).">?</span>
+                    </div>
                 </div>
             </div>
             <div class="form-group">
                 <label for="mode" class="col-md-3 control-label">Mode</label>
                 <div class="col-md-9">
-                    <select required class="form-control" id="mode" name="mode" ng-model="subscription.mode">
-                        <option value="ANYCAST">ANYCAST</option>
-                        <option value="BROADCAST">BROADCAST (incubating feature)</option>
-                    </select>
+                    <div class="input-group">
+                        <select required class="form-control" id="mode" name="mode" ng-model="subscription.mode">
+                            <option value="ANYCAST">ANYCAST</option>
+                            <option value="BROADCAST">BROADCAST (incubating feature)</option>
+                        </select>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Hermes can deliver messages in ANYCAST (to one of subscribed hosts) or in BROADCAST (to all subscribed hosts) mode.">?</span>
+                    </div>
                 </div>
             </div>
 
@@ -69,6 +75,7 @@
                     <div class="input-group">
                         <input type="number" min="0" max="5000" step="10" ng-required="subscription.deliveryType === 'SERIAL'" class="form-control" id="subscriptionRateLimit" name="subscriptionRateLimit" placeholder="limit of messages sent by Hermes" ng-model="subscription.subscriptionPolicy.rate"/>
                         <span class="input-group-addon">messages/second</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Maximum rate defined by user. Maximum rate calculated by algorithm can be observed in "Output rate" metric.">?</span>
                     </div>
                 </div>
             </div>
@@ -119,6 +126,7 @@
                     <div class="input-group">
                         <input type="number" min="0" max="7200" step="1" required class="form-control" id="subscriptionMessageTtl" name="subscriptionMessageTtl" placeholder="Time when message can be resent to endpoint after failed sending attempts" ng-model="subscription.subscriptionPolicy.messageTtl"/>
                         <span class="input-group-addon">seconds</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.">?</span>
                     </div>
                 </div>
             </div>
@@ -138,6 +146,7 @@
                     <div class="input-group">
                         <input type="number" min="0" max="1000000" step="1" required class="form-control" id="subscriptionMessageBackoff" name="subscriptionMessageBackoff" placeholder="Delay between send attempts of failed requests" ng-model="subscription.subscriptionPolicy.messageBackoff"/>
                         <span class="input-group-addon">milliseconds</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Minimum amount of time between consecutive message retries.">?</span>
                     </div>
                 </div>
             </div>
