@@ -1,3 +1,60 @@
+## 0.12.2 (25.10.2017)
+
+All issues and pull requests: [0.12.2 milestone](https://github.com/allegro/hermes/milestone/39)
+
+### Features
+
+#### ([814](https://github.com/allegro/hermes/pull/814)) Offline storage metadata
+
+Add new metadata to topic entity. From now on it is possible to specify if data from the topic
+should be persisted into any kind of offline store (like HDFS). Metadata is not used by Hermes,
+but is part of the API and can be consumed by tools like [Gobblin](https://github.com/apache/incubator-gobblin)
+to choose which data should be moved to HDFS and for how long should it be kept.
+
+#### ([821](https://github.com/allegro/hermes/issues/821)) Avro message preview in human-readable form
+
+[Topic message preview](http://hermes-pubsub.readthedocs.io/en/latest/user/topic-preview/) for Avro messages
+now shows data transformed to JSON instead of raw Avro bytes.
+
+Contributed by @mictyd
+
+#### ([822](https://github.com/allegro/hermes/issues/822)) Detailed message when Avro validation fails
+
+`400 Bad Message` status now returns much more meaningful information when Avro validation fails.
+
+Contributed by @janisz.
+
+#### ([824](https://github.com/allegro/hermes/pull/824)) Bum dependencies versions
+
+Upgraded the following dependencies:
+
+* Metrics to 3.2.5 
+* Guava to 23.0
+* Apache Curator to 2.12.0 (forced by Guava upgrade)
+
+#### ([756](https://github.com/allegro/hermes/issues/756)) Display owner source in Console
+
+Console now displays the source of topic and subscription owner next to the owner name.
+
+### Bugfixes
+
+#### ([769](https://github.com/allegro/hermes/issues/769)) Deleted topics come back to life
+
+Fixed by upgrading Kafka client to 0.10.1.0.
+
+#### ([812](https://github.com/allegro/hermes/pull/812)) Fixed Elasticsearch trace repo bug introduced in 0.12.0
+
+#### ([809](https://github.com/allegro/hermes/pull/809)) Fixed Hermes Console retransmit button
+
+Contributed by @piorkowskiprzemyslaw.
+
+#### ([834](https://github.com/allegro/hermes/issues/834)) Max-rate Zookeeper structure cleanup script
+
+Max-rate Zookeeper structure is not cleaned up when subscription is deleted. This, in time, leads to building
+up a huge structure with lots of watches. We observed that due to the amount of watches, Consumers startup time
+degrades significantly (up to 10 minutes). There is no fix for the lack of cleanup, but we created the script
+that can be run once in a while to keep the structure in desired size.
+
 ## 0.12.1 (04.08.2017)
 
 All issues and pull requests: [0.12.1 milestone](https://github.com/allegro/hermes/milestone/37)
