@@ -59,6 +59,10 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
         }
     }
 
+    public void removeFromCache(Topic topic) {
+        versionsCache.invalidate(topic);
+    }
+
     private static class SchemaVersionsLoader extends CacheLoader<Topic, List<SchemaVersion>> {
 
         private final RawSchemaClient rawSchemaClient;
