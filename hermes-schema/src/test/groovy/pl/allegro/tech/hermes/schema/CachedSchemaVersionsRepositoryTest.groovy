@@ -117,4 +117,18 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         versionsRepository.schemaVersionExists(topic, v1)
         versionsRepository.latestSchemaVersion(topic).get() == v1
     }
+
+    def "should remove schema version from cache on topic removal"() {
+        given:
+        rawSchemaClient.getVersions(topic.getName()) >>> [[v1], [v0]]
+
+        expect:
+        versionsRepository.versions(topic, false) == [v1]
+
+        when:
+        versionsRepository.removeFromCache(topic)
+
+        then:
+        versionsRepository.versions(topic, false) == [v0]
+    }
 }

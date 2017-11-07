@@ -6,7 +6,9 @@ import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class CachedCompiledSchemaRepository<T> implements CompiledSchemaRepository<T> {
 
@@ -27,6 +29,13 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         } catch (Exception e) {
             throw new CouldNotLoadSchemaException(e);
         }
+    }
+
+    public void removeFromCache(Topic topic) {
+        Set<TopicAndSchemaVersion> topicWithSchemas = cache.asMap().keySet().stream()
+                .filter(topicWithSchema -> topicWithSchema.topic.equals(topic))
+                .collect(Collectors.toSet());
+        cache.invalidateAll(topicWithSchemas);
     }
 
     private static class CompiledSchemaLoader<T> extends CacheLoader<TopicAndSchemaVersion, CompiledSchema<T>> {

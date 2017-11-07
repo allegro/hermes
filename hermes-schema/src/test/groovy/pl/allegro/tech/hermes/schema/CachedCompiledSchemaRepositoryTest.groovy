@@ -13,7 +13,7 @@ class CachedCompiledSchemaRepositoryTest extends Specification {
 
     def "should provide schema from source of given version"() {
         given:
-        def version = SchemaVersion.valueOf(1);
+        def version = SchemaVersion.valueOf(1)
         def schema = new CompiledSchema('stuff', version)
         delegate.getSchema(topic, version) >> schema
 
@@ -23,7 +23,7 @@ class CachedCompiledSchemaRepositoryTest extends Specification {
 
     def "should provide previously compiled schema without reloading its schema source"() {
         given:
-        def version = SchemaVersion.valueOf(1);
+        def version = SchemaVersion.valueOf(1)
         def firstSchema = new CompiledSchema('stuff', version)
         def secondSchema = new CompiledSchema('other stuff', version)
 
@@ -36,7 +36,7 @@ class CachedCompiledSchemaRepositoryTest extends Specification {
 
     def "should fail to provide schema if delegate failed to load it"() {
         given:
-        def version = SchemaVersion.valueOf(1);
+        def version = SchemaVersion.valueOf(1)
         delegate.getSchema(topic, version) >> { throw new RuntimeException("loading failed") }
 
         when:
@@ -44,6 +44,24 @@ class CachedCompiledSchemaRepositoryTest extends Specification {
 
         then:
         thrown CouldNotLoadSchemaException
+    }
+
+    def "should remove schema from cache on topic removal"() {
+        given:
+        def version = SchemaVersion.valueOf(1)
+        def firstSchema = new CompiledSchema('stuff', version)
+        def secondSchema = new CompiledSchema('other stuff', version)
+
+        delegate.getSchema(topic, version) >>> [firstSchema, secondSchema]
+
+        expect:
+        repository.getSchema(topic, version) == firstSchema
+
+        when:
+        repository.removeFromCache(topic)
+
+        then:
+        repository.getSchema(topic, version) == secondSchema
     }
 
 }
