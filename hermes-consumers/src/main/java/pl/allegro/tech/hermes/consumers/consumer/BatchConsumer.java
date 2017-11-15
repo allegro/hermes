@@ -36,6 +36,7 @@ import java.util.Set;
 
 import static com.github.rholder.retry.WaitStrategies.fixedWait;
 import static java.util.Optional.of;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class BatchConsumer implements Consumer {
@@ -179,16 +180,22 @@ public class BatchConsumer implements Consumer {
     }
 
     private Retryer<MessageSendingResult> createRetryer(MessageBatch batch, BatchSubscriptionPolicy policy) {
-        return createRetryer(batch, policy.getMessageBackoff(), policy.getMessageTtl(), policy.isRetryClientErrors());
+        return createRetryer(batch,
+                policy.getMessageBackoff(),
+                SECONDS.toMillis(policy.getMessageTtl()),
+                policy.isRetryClientErrors());
     }
 
-    private Retryer<MessageSendingResult> createRetryer(final MessageBatch batch, int messageBackoff, int messageTtl, boolean retryClientErrors) {
+    private Retryer<MessageSendingResult> createRetryer(final MessageBatch batch,
+                                                        int messageBackoff,
+                                                        long messageTtlMillis,
+                                                        boolean retryClientErrors) {
         return RetryerBuilder.<MessageSendingResult>newBuilder()
                 .retryIfExceptionOfType(IOException.class)
                 .retryIfRuntimeException()
                 .retryIfResult(result -> consuming && !result.succeeded() && shouldRetryOnClientError(retryClientErrors, result))
                 .withWaitStrategy(fixedWait(messageBackoff, MILLISECONDS))
-                .withStopStrategy(attempt -> attempt.getDelaySinceFirstAttempt() > messageTtl)
+                .withStopStrategy(attempt -> attempt.getDelaySinceFirstAttempt() > messageTtlMillis)
                 .withRetryListener(getRetryListener(result -> {
                     batch.incrementRetryCounter();
                     monitoring.markFailed(batch, subscription, result);

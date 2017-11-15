@@ -169,7 +169,7 @@ public class BatchDeliveryTest extends IntegrationTest {
     private BatchSubscriptionPolicy.Builder buildBatchPolicy() {
         return batchSubscriptionPolicy()
                 .applyDefaults()
-                .withMessageTtl(100 * 1000)
+                .withMessageTtl(100)
                 .withRequestTimeout(100)
                 .withMessageBackoff(10);
     }
