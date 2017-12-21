@@ -10,6 +10,8 @@ public class SchemaRepositoryProperties {
 
     private String serverUrl = Configs.SCHEMA_REPOSITORY_SERVER_URL.getDefaultValue();
 
+    private boolean validationEnabled = false;
+
     public String getType() {
         return type;
     }
@@ -24,5 +26,13 @@ public class SchemaRepositoryProperties {
 
     public void setServerUrl(String serverUrl) {
         this.serverUrl = serverUrl;
+    }
+
+    public boolean isValidationEnabled() {
+        return validationEnabled;
+    }
+
+    public void setValidationEnabled(boolean validationEnabled) {
+        this.validationEnabled = validationEnabled;
     }
 }

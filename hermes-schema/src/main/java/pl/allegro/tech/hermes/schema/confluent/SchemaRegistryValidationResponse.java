@@ -1,37 +1,29 @@
 package pl.allegro.tech.hermes.schema.confluent;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Objects;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class SchemaRegistryValidationResponse {
+class SchemaRegistryValidationResponse {
 
-    private final boolean compatible;
+    private final boolean valid;
+    private final List<SchemaRegistryValidationError> errors;
 
     @JsonCreator
-    SchemaRegistryValidationResponse(@JsonProperty("is_compatible") boolean compatible) {
-        this.compatible = compatible;
+    SchemaRegistryValidationResponse(@JsonProperty("is_valid") boolean valid, @JsonProperty("errors") List<SchemaRegistryValidationError> errors) {
+        this.valid = valid;
+        this.errors = errors;
     }
 
-    public boolean isCompatible() {
-        return compatible;
+    public boolean isValid() {
+        return valid;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        SchemaRegistryValidationResponse that = (SchemaRegistryValidationResponse) o;
-        return compatible == that.compatible;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(compatible);
+    @JsonIgnore
+    public String getErrorsMessage() {
+        return errors.stream().map(error -> error.getMessage()).collect(Collectors.joining(". "));
     }
 }

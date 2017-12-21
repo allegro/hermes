@@ -45,7 +45,8 @@ public class SchemaRepositoryConfiguration {
     @ConditionalOnMissingBean(RawSchemaClient.class)
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_registry")
     public RawSchemaClient schemaRegistryRawSchemaClient(Client httpClient, ObjectMapper objectMapper) {
-        return new SchemaRegistryRawSchemaClient(httpClient, URI.create(schemaRepositoryProperties.getServerUrl()), objectMapper);
+        return new SchemaRegistryRawSchemaClient(httpClient, URI.create(schemaRepositoryProperties.getServerUrl()),
+                objectMapper, schemaRepositoryProperties.isValidationEnabled());
     }
 
     @Bean

@@ -24,9 +24,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+
 /**
  * This implementation of RawSchemaClient is compatible with Confluent Schema Registry API
- * except for the deleteAllSchemaVersions, which is basically not supported by the Confluent project
+ * except for the deleteAllSchemaVersions and validation endpoint which are not fully supported by the Confluent project
  */
 public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
@@ -37,8 +40,16 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     private final WebTarget target;
 
     private final ObjectMapper objectMapper;
+    private final boolean validationEndpointEnabled;
 
     public SchemaRegistryRawSchemaClient(Client client, URI schemaRegistryUri, ObjectMapper objectMapper) {
+        this(client, schemaRegistryUri, objectMapper, false);
+    }
+
+    public SchemaRegistryRawSchemaClient(Client client, URI schemaRegistryUri, ObjectMapper objectMapper,
+                                         boolean validationEndpointEnabled) {
+
+        this.validationEndpointEnabled = validationEndpointEnabled;
         this.target = client.target(schemaRegistryUri);
         this.objectMapper = objectMapper;
     }
@@ -160,6 +171,13 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
     @Override
     public void validateSchema(TopicName topic, RawSchema schema) {
+        checkCompatibility(topic, schema);
+        if (validationEndpointEnabled) {
+            checkValidation(topic, schema);
+        }
+    }
+
+    private void checkCompatibility(TopicName topic, RawSchema schema) {
         Response response = target.path("compatibility")
                 .path("subjects")
                 .path(topic.qualifiedName())
@@ -169,16 +187,49 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
                 .accept(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(SchemaRegistryRequest.fromRawSchema(schema), SCHEMA_REPO_CONTENT_TYPE));
 
-        checkSchemaValidationResponse(topic, response);
+        checkSchemaCompatibilityResponse(topic, response);
     }
 
-    private void checkSchemaValidationResponse(TopicName topic, Response response) {
+    private void checkValidation(TopicName topic, RawSchema schema) {
+        Response response = target.path("subjects")
+                .path(topic.qualifiedName())
+                .path("validation")
+                .request()
+                .accept(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(SchemaRegistryRequest.fromRawSchema(schema), SCHEMA_REPO_CONTENT_TYPE));
+
+        checkValidationResponse(topic, response);
+    }
+
+    private void checkValidationResponse(TopicName topic, Response response) {
+        if (response.getStatusInfo().getFamily() == SUCCESSFUL) {
+            validateSuccessfulValidationResult(topic, response);
+        } else {
+            handleErrorResponse(topic, response);
+        }
+    }
+
+    private void validateSuccessfulValidationResult(TopicName topic, Response response) {
+        SchemaRegistryValidationResponse validationResponse = response.readEntity(SchemaRegistryValidationResponse.class);
+
+        if (!validationResponse.isValid()) {
+            throw new BadSchemaRequestException(topic.qualifiedName(), BAD_REQUEST.getStatusCode(),
+                    validationResponse.getErrorsMessage());
+        }
+    }
+
+    private void checkSchemaCompatibilityResponse(TopicName topic, Response response) {
+        if (response.getStatusInfo().getFamily() == SUCCESSFUL) {
+            validateSuccessfulCompatibilityResult(topic, response);
+        } else {
+            handleErrorResponse(topic, response);
+        }
+    }
+
+    private void handleErrorResponse(TopicName topic, Response response) {
         switch (response.getStatusInfo().getFamily()) {
-            case SUCCESSFUL:
-                validateSuccessfulValidationResult(topic, response);
-                break;
             case CLIENT_ERROR:
-                if (response.getStatus() == 422) { // for other cases we assume the schema was valid
+                if (response.getStatus() == 422) { // for other cases we assume the schema is valid
                     throw new BadSchemaRequestException(topic.qualifiedName(), response);
                 }
                 break;
@@ -191,17 +242,17 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
         }
     }
 
-    private void validateSuccessfulValidationResult(TopicName topic, Response response) {
+    private void validateSuccessfulCompatibilityResult(TopicName topic, Response response) {
         String validationResultStr = response.readEntity(String.class);
-        SchemaRegistryValidationResponse validationResponse = toSchemaRegistryValidationResponse(topic, validationResultStr, response.getStatus());
+        SchemaRegistryCompatibilityResponse validationResponse = toSchemaRegistryValidationResponse(topic, validationResultStr, response.getStatus());
         if (!validationResponse.isCompatible()) {
             throw new BadSchemaRequestException(topic.qualifiedName(), response.getStatus(), validationResultStr);
         }
     }
 
-    private SchemaRegistryValidationResponse toSchemaRegistryValidationResponse(TopicName topic, String validationResultStr, int status) {
+    private SchemaRegistryCompatibilityResponse toSchemaRegistryValidationResponse(TopicName topic, String validationResultStr, int status) {
         try {
-            return objectMapper.readValue(validationResultStr, SchemaRegistryValidationResponse.class);
+            return objectMapper.readValue(validationResultStr, SchemaRegistryCompatibilityResponse.class);
         } catch (IOException e) {
             logger.error("Could not parse schema validation response from schema registry", e);
             throw new InternalSchemaRepositoryException(topic.qualifiedName(), status, validationResultStr);
