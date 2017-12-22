@@ -299,7 +299,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
                 """
 { "is_valid": false,
   "errors": [
-    {"message": "missing doc field"},
+    {"message": "missing doc field", "ignoredField": true},
     {"message": "name should start with uppercase"}
   ]
 }""")))
