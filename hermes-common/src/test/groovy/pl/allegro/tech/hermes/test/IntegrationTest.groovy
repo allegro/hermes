@@ -9,6 +9,8 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository
+import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClient
+import pl.allegro.tech.hermes.infrastructure.zookeeper.commands.ZookeeperCommandFactory
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperResource
 import spock.lang.Shared
@@ -42,7 +44,18 @@ abstract class IntegrationTest extends Specification {
 
     protected PathsCompiler pathsCompiler = new PathsCompiler("")
 
+    protected ZookeeperCommandFactory commandFactory = new ZookeeperCommandFactory(paths, mapper)
+
     protected CuratorFramework zookeeper() {
         return zookeeperResource.curator()
+    }
+
+    protected ZookeeperClient zookeeperClient() {
+        return new ZookeeperClient(zookeeper(), "test-client", "local")
+    }
+
+    protected  <T> T getData(ZookeeperClient client, String path, Class<T> contentType) {
+        def data = client.getCuratorFramework().getData().forPath(path)
+        return mapper.readValue(data, contentType)
     }
 }
