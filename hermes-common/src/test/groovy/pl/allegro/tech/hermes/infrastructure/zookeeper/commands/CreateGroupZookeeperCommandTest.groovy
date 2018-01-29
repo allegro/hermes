@@ -26,19 +26,19 @@ class CreateGroupZookeeperCommandTest extends IntegrationTest {
 
     def "should rollback group creation"() {
         given:
-        def group = new Group("group-name-rollback", "support-team")
+        def group = new Group("group-create-rollback", "support-team")
 
         and:
         def command = commandFactory.createGroup(group)
         command.backup(client)
         command.execute(client)
-        wait.untilZookeeperPathIsCreated("/hermes/groups/group-name-rollback")
+        wait.untilZookeeperPathIsCreated("/hermes/groups/group-create-rollback")
 
         when:
         command.rollback(client)
 
         then:
-        wait.untilZookeeperPathNotExists("/hermes/groups/group-name-rollback")
+        wait.untilZookeeperPathNotExists("/hermes/groups/group-create-rollback")
     }
 
 

@@ -42,47 +42,35 @@ public class DistributedZookeeperSubscriptionRepository extends DistributedZooke
 
     @Override
     public boolean subscriptionExists(TopicName topicName, String subscriptionName) {
-        return getClient().pathExists(paths.subscriptionPath(topicName, subscriptionName));
+        return clientManager.getLocalClient().pathExists(paths.subscriptionPath(topicName, subscriptionName));
     }
 
     @Override
     public void ensureSubscriptionExists(TopicName topicName, String subscriptionName) {
-        preconditions.ensureSubscriptionExists(getClient(), topicName, subscriptionName);
+        preconditions.ensureSubscriptionExists(clientManager.getLocalClient(), topicName, subscriptionName);
     }
 
     @Override
     public void createSubscription(Subscription subscription) {
         ZookeeperCommand command = commandFactory.createSubscription(subscription);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public void removeSubscription(TopicName topicName, String subscriptionName) {
         ZookeeperCommand command = commandFactory.removeSubscription(topicName, subscriptionName);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public void updateSubscription(Subscription modifiedSubscription) {
         ZookeeperCommand command = commandFactory.updateSubscription(modifiedSubscription);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state) {
-        ZookeeperClient client = getClient();
+        ZookeeperClient client = clientManager.getLocalClient();
 
         preconditions.ensureSubscriptionExists(client, topicName, subscriptionName);
 
@@ -104,7 +92,7 @@ public class DistributedZookeeperSubscriptionRepository extends DistributedZooke
 
     @Override
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
-        ZookeeperClient client = getClient();
+        ZookeeperClient client = clientManager.getLocalClient();
         return getSubscriptionDetails(client, topicName, subscriptionName, false).get();
     }
 
@@ -115,7 +103,7 @@ public class DistributedZookeeperSubscriptionRepository extends DistributedZooke
 
     @Override
     public List<String> listSubscriptionNames(TopicName topicName) {
-        ZookeeperClient client = getClient();
+        ZookeeperClient client = clientManager.getLocalClient();
         return listSubscriptionNames(client, topicName);
     }
 
@@ -126,7 +114,7 @@ public class DistributedZookeeperSubscriptionRepository extends DistributedZooke
 
     @Override
     public List<Subscription> listSubscriptions(TopicName topicName) {
-        ZookeeperClient client = getClient();
+        ZookeeperClient client = clientManager.getLocalClient();
 
         return listSubscriptionNames(topicName).stream()
                 .map(subscription -> getSubscriptionDetails(client, topicName, subscription, true))
@@ -142,9 +130,4 @@ public class DistributedZookeeperSubscriptionRepository extends DistributedZooke
         return client.readFrom(path, (data) -> mapper.readValue(data, Subscription.class), quiet);
     }
 
-    private ZookeeperClient getClient() {
-        ZookeeperClient client = clientManager.getLocalClient();
-        client.ensureConnected();
-        return client;
-    }
 }

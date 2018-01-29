@@ -36,13 +36,13 @@ class UpdateOAuthProviderZookeeperCommand extends ZookeeperCommand {
     public void execute(ZookeeperClient client) {
         preconditions.ensureOAuthProviderExists(client, provider.getName());
 
-        logger.info("Updating OAuthProvider {} via client {}", provider.getName(), client.getName());
+        logger.info("Updating OAuthProvider '{}' via client '{}'", provider.getName(), client.getName());
         client.setData(getPath(), marshall(mapper, provider));
     }
 
     @Override
     public void rollback(ZookeeperClient client) {
-        logger.info("Rolling back changes: OAuthProvider {} update via client {}", provider.getName(),
+        logger.info("Rolling back changes: OAuthProvider '{}' update via client '{}'", provider.getName(),
                 client.getName());
         client.setData(getPath(), providerDataBackup);
     }

@@ -3,6 +3,9 @@ package pl.allegro.tech.hermes.test
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.curator.framework.CuratorFramework
 import org.junit.ClassRule
+import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository
@@ -12,11 +15,16 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClient
 import pl.allegro.tech.hermes.infrastructure.zookeeper.commands.ZookeeperCommandFactory
 import pl.allegro.tech.hermes.metrics.PathsCompiler
+import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperResource
 import spock.lang.Shared
 import spock.lang.Specification
 
 import java.util.function.Consumer
+
+import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.*
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 abstract class IntegrationTest extends Specification {
 
@@ -25,6 +33,9 @@ abstract class IntegrationTest extends Specification {
     ZookeeperResource zookeeperResource = new ZookeeperResource(42182, true, { starter ->
         starter.curator().create().creatingParentsIfNeeded().forPath("/hermes/groups")
     } as Consumer)
+
+    private ZookeeperClient zookeeperClient = new ZookeeperClient(zookeeperResource.curator(),
+        "test-client", "local")
 
     static final String BASE_ZOOKEEPER_PATH = "/hermes"
 
@@ -51,11 +62,38 @@ abstract class IntegrationTest extends Specification {
     }
 
     protected ZookeeperClient zookeeperClient() {
-        return new ZookeeperClient(zookeeper(), "test-client", "local")
+        return zookeeperClient
     }
 
     protected  <T> T getData(ZookeeperClient client, String path, Class<T> contentType) {
         def data = client.getCuratorFramework().getData().forPath(path)
         return mapper.readValue(data, contentType)
+    }
+
+    protected def createGroupIfNotExists(String name) {
+        if(!zookeeperClient.pathExists("/hermes/groups/$name")) {
+            createGroup(name)
+        }
+    }
+
+    protected def createGroup(String name) {
+        def group = group(name).build()
+        commandFactory.createGroup(group).execute(zookeeperClient)
+    }
+
+    protected Topic createTopicIfNotExists(String name, String group) {
+        def topic = topic(group, name).build()
+        if(!zookeeperClient.pathExists("/hermes/groups/$group/topics/$name")) {
+            commandFactory.createTopic(topic).execute(zookeeperClient)
+        }
+        return topic
+    }
+
+    protected Subscription createSubscriptionIfNotExists(String name, String topic, String group) {
+        def subscription = subscription(new TopicName(group, topic), name).build()
+        if(!zookeeperClient.pathExists("/hermes/groups/$group/topics/$topic/subscriptions/$name")) {
+            commandFactory.createSubscription(subscription).execute(zookeeperClient)
+        }
+        return subscription
     }
 }

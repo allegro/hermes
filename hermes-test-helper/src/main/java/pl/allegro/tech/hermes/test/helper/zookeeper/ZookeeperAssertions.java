@@ -9,6 +9,7 @@ public class ZookeeperAssertions {
     private CuratorFramework client;
     private ObjectMapper mapper;
 
+    // TODO pass ZookeeperClient instead of CuratorFramework
     public ZookeeperAssertions(CuratorFramework client, ObjectMapper mapper) {
         this.client = client;
         this.mapper = mapper;

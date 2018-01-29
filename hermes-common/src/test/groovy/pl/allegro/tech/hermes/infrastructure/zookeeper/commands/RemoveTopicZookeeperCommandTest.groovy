@@ -3,49 +3,39 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper.commands
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.test.IntegrationTest
-import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
+import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperAssertions
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperWaiter
-
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.*
-
 
 class RemoveTopicZookeeperCommandTest extends IntegrationTest {
 
-    private static final String GROUP = "group"
-    private static final String TOPIC = "topic"
-
     def client = zookeeperClient()
     def wait = new ZookeeperWaiter(client.getCuratorFramework())
+    def assertions = new ZookeeperAssertions(client.getCuratorFramework(), mapper)
 
-    def topic = topic(GROUP, TOPIC).build()
+    Topic topic
+
+    def topicPath = "/hermes/groups/group/topics/topic-remove"
 
     def setup() {
-        if(client.getCuratorFramework().checkExists().forPath("/hermes/groups/$GROUP") == null) {
-            commandFactory.createGroup(GroupBuilder.group(GROUP).build()).execute(client)
-
-            if(client.getCuratorFramework().checkExists().forPath("/hermes/groups/$GROUP/topics/$TOPIC") == null) {
-                commandFactory.createTopic(topic).execute(client)
-            }
-        }
+        createGroupIfNotExists("group")
+        topic = createTopicIfNotExists("topic-remove", "group")
     }
 
     def "should remove topic"() {
         given:
-        def command = commandFactory.removeTopic(new TopicName(GROUP, TOPIC))
+
+        def command = commandFactory.removeTopic(new TopicName("group", "topic-remove"))
 
         when:
         command.execute(client)
 
         then:
-        wait.untilZookeeperPathNotExists("/hermes/groups/$GROUP/topics/$TOPIC")
+        wait.untilZookeeperPathNotExists(topicPath)
     }
 
     def "should rollback topic removal"() {
         given:
-        def topicPath = "/hermes/groups/$GROUP/topics/$TOPIC"
-
-        and:
-        def command = commandFactory.removeTopic(new TopicName(GROUP, TOPIC))
+        def command = commandFactory.removeTopic(new TopicName("group", "topic-remove"))
         command.backup(client)
         command.execute(client)
         wait.untilZookeeperPathNotExists(topicPath)
@@ -55,7 +45,7 @@ class RemoveTopicZookeeperCommandTest extends IntegrationTest {
 
         then:
         wait.untilZookeeperPathIsCreated(topicPath)
-        getData(client, topicPath, Topic.class) == topic
+        assertions.zookeeperPathContains(topicPath, topic)
 
         wait.untilZookeeperPathIsCreated("$topicPath/subscriptions")
     }

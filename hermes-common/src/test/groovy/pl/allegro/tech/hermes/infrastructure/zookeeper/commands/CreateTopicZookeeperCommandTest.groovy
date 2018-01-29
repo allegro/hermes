@@ -48,11 +48,4 @@ class CreateTopicZookeeperCommandTest extends IntegrationTest {
         then:
         wait.untilZookeeperPathNotExists("/hermes/groups/$GROUP/topics/rollback-topic")
     }
-
-    private def createGroupIfNotExists(String name) {
-        if(client.getCuratorFramework().checkExists().forPath("/hermes/groups/$name") == null) {
-            def group = GroupBuilder.group(name).build()
-            commandFactory.createGroup(group).execute(client)
-        }
-    }
 }

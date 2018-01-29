@@ -80,30 +80,18 @@ public class DistributedZookeeperOAuthProviderRepository extends DistributedZook
     @Override
     public void createOAuthProvider(OAuthProvider provider) {
         ZookeeperCommand command = commandFactory.createOAuthProvider(provider);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public void updateOAuthProvider(OAuthProvider provider) {
         ZookeeperCommand command = commandFactory.updateOAuthProvider(provider);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public void removeOAuthProvider(String providerName) {
         ZookeeperCommand command = commandFactory.removeOAuthProvider(providerName);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 }

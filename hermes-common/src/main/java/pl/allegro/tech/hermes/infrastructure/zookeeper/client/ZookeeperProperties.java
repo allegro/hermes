@@ -7,8 +7,7 @@ public class ZookeeperProperties {
     private String pathPrefix = "/hermes";
     private int retryTimes = 3;
     private int retrySleep = 1000;
-    private int sharedCountersExpiration = 72;
-    private int commandPoolSize = 100;
+    private int maxRetrySleep = 30000;
     private boolean transactional = true;
     private List<ZookeeperClusterProperties> clusters = Collections.emptyList();
 
@@ -38,14 +37,6 @@ public class ZookeeperProperties {
         this.retrySleep = retrySleep;
     }
 
-    public int getSharedCountersExpiration() {
-        return sharedCountersExpiration;
-    }
-
-    public void setSharedCountersExpiration(int sharedCountersExpiration) {
-        this.sharedCountersExpiration = sharedCountersExpiration;
-    }
-
     public ZookeeperAuthProperties getAuthorization() {
         return authorization;
     }
@@ -62,19 +53,19 @@ public class ZookeeperProperties {
         this.clusters = clusters;
     }
 
-    public int getCommandPoolSize() {
-        return commandPoolSize;
-    }
-
-    public void setCommandPoolSize(int commandPoolSize) {
-        this.commandPoolSize = commandPoolSize;
-    }
-
     public boolean isTransactional() {
         return transactional;
     }
 
     public void setTransactional(boolean transactional) {
         this.transactional = transactional;
+    }
+
+    public int getMaxRetrySleep() {
+        return maxRetrySleep;
+    }
+
+    public void setMaxRetrySleep(int maxRetrySleep) {
+        this.maxRetrySleep = maxRetrySleep;
     }
 }

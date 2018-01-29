@@ -26,6 +26,8 @@ class RemoveGroupZookeeperCommand extends ZookeeperCommand {
 
     @Override
     public void backup(ZookeeperClient client) {
+        preconditions.ensureGroupExists(client, groupName);
+
         groupDataBackup = client.getData(paths.groupPath(groupName));
     }
 
@@ -34,18 +36,21 @@ class RemoveGroupZookeeperCommand extends ZookeeperCommand {
         preconditions.ensureGroupExists(client, groupName);
         preconditions.ensureGroupIsEmpty(client, groupName);
 
-        logger.info("Removing group {} via client {}", groupName, client.getName());
+        logger.info("Removing group '{}' via client '{}'", groupName, client.getName());
         client.deleteWithChildrenWithGuarantee(paths.groupPath(groupName));
     }
 
     @Override
     public void rollback(ZookeeperClient client) {
+        logger.info("Rolling back changes: group '{}' removal via client '{}'", groupName, client.getName());
+
         CuratorFramework curator = client.getCuratorFramework();
         try {
-            curator.transaction().forOperations(
-                    curator.transactionOp().create().forPath(paths.groupPath(groupName), groupDataBackup),
-                    curator.transactionOp().create().forPath(paths.topicsPath(groupName))
-            );
+            curator.inTransaction()
+                    .create().forPath(paths.groupPath(groupName), groupDataBackup).and()
+                    .create().forPath(paths.topicsPath(groupName)).and()
+                    .commit();
+
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }

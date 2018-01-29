@@ -38,13 +38,14 @@ class UpdateSubscriptionZookeeperCommand extends ZookeeperCommand {
     public void execute(ZookeeperClient client) {
         preconditions.ensureSubscriptionExists(client, subscription.getTopicName(), subscription.getName());
 
-        logger.info("Updating subscription {} via client {}", subscription.getQualifiedName(), client.getName());
+        logger.info("Updating subscription '{}' via client '{}'", subscription.getQualifiedName(), client.getName());
         client.setData(getPath(), marshall(mapper, subscription));
     }
 
     @Override
     public void rollback(ZookeeperClient client) {
-        logger.info("Rolling back changes: subscription {} update via client {}", subscription.getQualifiedName(), client.getName());
+        logger.info("Rolling back changes: subscription '{}' update via client '{}'", subscription.getQualifiedName(),
+                client.getName());
 
         client.setData(getPath(), subscriptionDataBackup);
     }

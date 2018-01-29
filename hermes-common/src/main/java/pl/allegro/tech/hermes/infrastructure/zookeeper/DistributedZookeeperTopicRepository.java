@@ -40,7 +40,6 @@ public class DistributedZookeeperTopicRepository extends DistributedZookeeperRep
     @Override
     public boolean topicExists(TopicName topicName) {
         ZookeeperClient client = clientManager.getLocalClient();
-        client.ensureConnected();
 
         return client.pathExists(paths.topicPath(topicName));
     }
@@ -48,7 +47,6 @@ public class DistributedZookeeperTopicRepository extends DistributedZookeeperRep
     @Override
     public void ensureTopicExists(TopicName topicName) {
         ZookeeperClient client = clientManager.getLocalClient();
-        client.ensureConnected();
 
         topicPreconditions.ensureTopicExists(client, topicName);
     }
@@ -56,7 +54,6 @@ public class DistributedZookeeperTopicRepository extends DistributedZookeeperRep
     @Override
     public List<String> listTopicNames(String groupName) {
         ZookeeperClient client = clientManager.getLocalClient();
-        client.ensureConnected();
 
         return listTopicNames(client, groupName);
     }
@@ -70,7 +67,6 @@ public class DistributedZookeeperTopicRepository extends DistributedZookeeperRep
     @Override
     public List<Topic> listTopics(String groupName) {
         ZookeeperClient client = clientManager.getLocalClient();
-        client.ensureConnected();
 
         return listTopicNames(client, groupName).stream()
                 .map(name -> getTopicDetails(client, new TopicName(groupName, name), true))
@@ -82,47 +78,30 @@ public class DistributedZookeeperTopicRepository extends DistributedZookeeperRep
     @Override
     public void createTopic(Topic topic) {
         ZookeeperCommand command = commandFactory.createTopic(topic);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public void removeTopic(TopicName topicName) {
         ZookeeperCommand command = commandFactory.removeTopic(topicName);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public void updateTopic(Topic topic) {
         ZookeeperCommand command = commandFactory.updateTopic(topic);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public void touchTopic(TopicName topicName) {
         ZookeeperCommand command = commandFactory.touchTopic(topicName);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public Topic getTopicDetails(TopicName topicName) {
         ZookeeperClient client = clientManager.getLocalClient();
-        client.ensureConnected();
 
         return getTopicDetails(client, topicName, false).orElse(null);
     }

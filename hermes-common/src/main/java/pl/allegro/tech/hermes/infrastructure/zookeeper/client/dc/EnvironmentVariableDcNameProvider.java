@@ -1,6 +1,10 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper.client.dc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class EnvironmentVariableDcNameProvider implements DcNameProvider {
+    private static final Logger logger = LoggerFactory.getLogger(EnvironmentVariableDcNameProvider.class);
 
     private String variableName;
 
@@ -14,6 +18,7 @@ public class EnvironmentVariableDcNameProvider implements DcNameProvider {
         if(dcName == null) {
             throw new DcNameProvisionException("Undefined environment variable: " + variableName);
         }
+        logger.info("Providing DC name from environment variable: {}={}", variableName, dcName);
         return dcName;
     }
 }

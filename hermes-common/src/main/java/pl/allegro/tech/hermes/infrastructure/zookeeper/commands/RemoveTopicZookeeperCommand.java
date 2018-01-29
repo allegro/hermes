@@ -35,7 +35,7 @@ class RemoveTopicZookeeperCommand extends ZookeeperCommand {
         preconditions.ensureTopicExists(client, topicName);
         preconditions.ensureTopicIsEmpty(client, topicName);
 
-        logger.info("Removing topic {} via client {}", topicName.getName(), client.getName());
+        logger.info("Removing topic '{}' via client '{}'", topicName.getName(), client.getName());
 
         String topicPath = paths.topicPath(topicName);
         client.deleteWithChildrenWithGuarantee(topicPath);
@@ -43,17 +43,17 @@ class RemoveTopicZookeeperCommand extends ZookeeperCommand {
 
     @Override
     public void rollback(ZookeeperClient client) {
-        logger.info("Rolling back changes: topic {} removal via client {}", topicName.getName(), client.getName());
+        logger.info("Rolling back changes: topic '{}' removal via client '{}'", topicName.getName(), client.getName());
 
         String topicPath = paths.topicPath(topicName);
         String subscriptionsPath = paths.subscriptionsPath(topicName);
 
         CuratorFramework curator = client.getCuratorFramework();
         try {
-            curator.transaction().forOperations(
-                    curator.transactionOp().create().forPath(topicPath, topicDataBackup),
-                    curator.transactionOp().create().forPath(subscriptionsPath)
-            );
+            curator.inTransaction()
+                    .create().forPath(topicPath, topicDataBackup).and()
+                    .create().forPath(subscriptionsPath).and()
+                    .commit();
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }

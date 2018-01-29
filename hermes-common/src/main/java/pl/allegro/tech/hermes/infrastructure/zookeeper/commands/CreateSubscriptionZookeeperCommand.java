@@ -34,7 +34,7 @@ class CreateSubscriptionZookeeperCommand extends ZookeeperCommand {
     public void execute(ZookeeperClient client) {
         preconditions.ensureTopicExists(client, subscription.getTopicName());
 
-        logger.info("Creating subscription {} via client {}", subscription.getQualifiedName(), client.getName());
+        logger.info("Creating subscription '{}' via client '{}'", subscription.getQualifiedName(), client.getName());
         String path = paths.subscriptionPath(subscription);
 
         try {
@@ -48,6 +48,9 @@ class CreateSubscriptionZookeeperCommand extends ZookeeperCommand {
 
     @Override
     public void rollback(ZookeeperClient client) {
+        logger.info("Rolling back changes: subscription '{}' creation via client '{}'", subscription.getQualifiedName(),
+                client.getName());
+
         String path = paths.subscriptionPath(subscription);
         client.deleteWithChildren(path);
     }
