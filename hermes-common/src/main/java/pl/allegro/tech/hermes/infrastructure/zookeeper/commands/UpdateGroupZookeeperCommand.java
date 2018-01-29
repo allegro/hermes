@@ -1,11 +1,9 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper.commands;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Group;
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.GroupPreconditions;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClient;
@@ -37,7 +35,7 @@ class UpdateGroupZookeeperCommand extends ZookeeperCommand {
     public void execute(ZookeeperClient client) {
         preconditions.ensureGroupExists(client, group.getGroupName());
 
-        logger.info("Updating group {} via client {}", group.getGroupName(), client.getName());
+        logger.info("Updating group '{}' via client '{}'", group.getGroupName(), client.getName());
 
         String path = paths.groupPath(group.getGroupName());
         client.setData(path, marshall(mapper, group));
@@ -45,6 +43,8 @@ class UpdateGroupZookeeperCommand extends ZookeeperCommand {
 
     @Override
     public void rollback(ZookeeperClient client) {
+        logger.info("Rolling back changes: group '{}' update via client '{}'", group.getGroupName(), client.getName());
+
         String path = paths.groupPath(group.getGroupName());
         client.setData(path, groupDataBackup);
     }

@@ -1,13 +1,9 @@
-package pl.allegro.tech.hermes.infrastructure.zookeeper
+package pl.allegro.tech.hermes.infrastructure.zookeeper.executor
 
-import org.apache.curator.framework.CuratorFramework
+import java.util.concurrent.Executors
+import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClient
 import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClientManager
-import pl.allegro.tech.hermes.infrastructure.zookeeper.executor.ZookeeperCommand
-import pl.allegro.tech.hermes.infrastructure.zookeeper.executor.RollbackFailedException
-import pl.allegro.tech.hermes.infrastructure.zookeeper.executor.ZookeeperCommandExecutor
-import pl.allegro.tech.hermes.infrastructure.zookeeper.executor.ZookeeperCommandFailedException
 import spock.lang.Specification
-
 
 class ZookeeperCommandExecutorTest extends Specification {
 
@@ -22,8 +18,8 @@ class ZookeeperCommandExecutorTest extends Specification {
         executor.execute(command)
 
         then:
-        1 * command.backup(_ as CuratorFramework)
-        1 * command.execute(_ as CuratorFramework)
+        1 * command.backup(_ as ZookeeperClient)
+        1 * command.execute(_ as ZookeeperClient)
     }
 
     def "should not backup executing command when rollback is disabled"() {
@@ -37,8 +33,8 @@ class ZookeeperCommandExecutorTest extends Specification {
         executor.execute(command)
 
         then:
-        0 * command.backup(_ as CuratorFramework)
-        1 * command.execute(_ as CuratorFramework)
+        0 * command.backup(_ as ZookeeperClient)
+        1 * command.execute(_ as ZookeeperClient)
     }
 
     def "should throw ZookeeperOperationFailedException when backup failed"() {
@@ -47,7 +43,7 @@ class ZookeeperCommandExecutorTest extends Specification {
 
         and:
         def command = Stub(ZookeeperCommand)
-        command.backup(_ as CuratorFramework) >> { throw someException() }
+        command.backup(_ as ZookeeperClient) >> { throw someException() }
 
         when:
         executor.execute(command)
@@ -67,7 +63,7 @@ class ZookeeperCommandExecutorTest extends Specification {
         executor.execute(command)
 
         then:
-        1 * command.backup(_ as CuratorFramework)
+        1 * command.backup(_ as ZookeeperClient)
     }
 
     def "should execute command on each client"() {
@@ -81,13 +77,13 @@ class ZookeeperCommandExecutorTest extends Specification {
         executor.execute(command)
 
         then:
-        2 * command.execute(_ as CuratorFramework)
+        2 * command.execute(_ as ZookeeperClient)
     }
 
     def "should throw ZookeeperCommandFailedException when command failed on any client"() {
         given:
-        def succeedingClient = Stub(CuratorFramework)
-        def failingClient = Stub(CuratorFramework)
+        def succeedingClient = Stub(ZookeeperClient)
+        def failingClient = Stub(ZookeeperClient)
         def executor = buildExecutor([succeedingClient, failingClient], true)
 
         and:
@@ -103,8 +99,8 @@ class ZookeeperCommandExecutorTest extends Specification {
 
     def "should rollback only on clients which executed command successfully"() {
         given:
-        def succeedingClient = Stub(CuratorFramework)
-        def failingClient = Stub(CuratorFramework)
+        def succeedingClient = Stub(ZookeeperClient)
+        def failingClient = Stub(ZookeeperClient)
         def executor = buildExecutor([succeedingClient, failingClient], true)
 
         and:
@@ -122,8 +118,8 @@ class ZookeeperCommandExecutorTest extends Specification {
 
     def "should not rollback when rollback is disabled"() {
         given:
-        def succeedingClient = Stub(CuratorFramework)
-        def failingClient = Stub(CuratorFramework)
+        def succeedingClient = Stub(ZookeeperClient)
+        def failingClient = Stub(ZookeeperClient)
         def executor = buildExecutor([succeedingClient, failingClient], false)
 
         and:
@@ -138,8 +134,8 @@ class ZookeeperCommandExecutorTest extends Specification {
 
     def "should throw RollbackFailedException when rollback procedure failed"() {
         given:
-        def succeedingClient = Stub(CuratorFramework)
-        def failingClient = Stub(CuratorFramework)
+        def succeedingClient = Stub(ZookeeperClient)
+        def failingClient = Stub(ZookeeperClient)
         def executor = buildExecutor([succeedingClient, failingClient], true)
 
         and:
@@ -154,18 +150,26 @@ class ZookeeperCommandExecutorTest extends Specification {
         thrown RollbackFailedException
     }
 
-    def buildExecutor(List<CuratorFramework> clients, boolean rollbackEnabled) {
-        def clientManager = new ZookeeperClientManager(clients)
-        return new ZookeeperCommandExecutor(clientManager, 1, rollbackEnabled)
+    def someException() {
+        return new RuntimeException("Execution failed.")
     }
 
     def buildExecutor(int clientCount, boolean rollbackEnabled) {
-        def clients = new ArrayList<CuratorFramework>()
-        clientCount.times { clients.add(Stub(CuratorFramework)) }
+        def clients = stubClients(clientCount)
         return buildExecutor(clients, rollbackEnabled)
     }
 
-    def someException() {
-        return new RuntimeException("Execution failed.")
+    def buildExecutor(List<ZookeeperClient> clients, boolean rollbackEnabled) {
+        def clientManager = Stub(ZookeeperClientManager)
+        clientManager.getLocalClient() >> clients.first()
+        clientManager.getClients() >> clients
+        def executor = Executors.newSingleThreadExecutor()
+        return new ZookeeperCommandExecutor(clientManager, executor, rollbackEnabled)
+    }
+
+    private def stubClients(int clientCount) {
+        List<ZookeeperClient> clients = new ArrayList<>()
+        clientCount.times { clients.add(Stub(ZookeeperClient)) }
+        return clients
     }
 }

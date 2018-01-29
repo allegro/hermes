@@ -27,7 +27,7 @@ class TouchTopicZookeeperCommand extends ZookeeperCommand {
     public void execute(ZookeeperClient client) {
         preconditions.ensureTopicExists(client, topicName);
 
-        logger.info("Touching topic {} via client {}", topicName.qualifiedName(), client.getName());
+        logger.info("Touching topic '{}' via client '{}'", topicName.qualifiedName(), client.getName());
 
         String topicPath = paths.topicPath(topicName);
         client.touch(topicPath);

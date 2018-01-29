@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.common.exception.HermesException;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClient;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClientManager;
@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.commands.ZookeeperCommand
 import pl.allegro.tech.hermes.infrastructure.zookeeper.executor.ZookeeperCommandExecutor;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.executor.ZookeeperCommandFailedException;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,7 +38,6 @@ public class DistributedZookeeperGroupRepository extends DistributedZookeeperRep
     @Override
     public boolean groupExists(String groupName) {
         ZookeeperClient client = clientManager.getLocalClient();
-        client.ensureConnected();
 
         String path = paths.groupPath(groupName);
         return client.pathExists(path);
@@ -48,7 +46,6 @@ public class DistributedZookeeperGroupRepository extends DistributedZookeeperRep
     @Override
     public void ensureGroupExists(String groupName) {
         ZookeeperClient client = clientManager.getLocalClient();
-        client.ensureConnected();
 
         preconditions.ensureGroupExists(client, groupName);
     }
@@ -56,38 +53,24 @@ public class DistributedZookeeperGroupRepository extends DistributedZookeeperRep
     @Override
     public void createGroup(Group group) {
         ZookeeperCommand command = commandFactory.createGroup(group);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public void updateGroup(Group group) {
         ZookeeperCommand command = commandFactory.updateGroup(group);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public void removeGroup(String groupName) {
         ZookeeperCommand command = commandFactory.removeGroup(groupName);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override
     public List<String> listGroupNames() {
         ZookeeperClient client = clientManager.getLocalClient();
-        client.ensureConnected();
-
         return client.childrenOf(paths.groupsPath());
     }
 

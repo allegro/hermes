@@ -37,14 +37,15 @@ class CreateTopicZookeeperCommand extends ZookeeperCommand {
         String topicPath = paths.topicPath(topic.getName());
         String subscriptionsPath = paths.subscriptionsPath(topic.getName());
 
-        logger.info("Creating topic for path {} via client {}", topicPath, client.getName());
+        logger.info("Creating topic for path '{}' via client '{}'", topicPath, client.getName());
 
         CuratorFramework curator = client.getCuratorFramework();
         try {
-            curator.transaction().forOperations(
-                    curator.transactionOp().create().forPath(topicPath, mapper.writeValueAsBytes(topic)),
-                    curator.transactionOp().create().forPath(subscriptionsPath)
-            );
+            curator.inTransaction()
+                    .create().forPath(topicPath, mapper.writeValueAsBytes(topic)).and()
+                    .create().forPath(subscriptionsPath).and()
+                    .commit();
+
         } catch (KeeperException.NodeExistsException e) {
             throw new TopicAlreadyExistsException(topic.getName(), e);
         } catch (Exception e) {
@@ -55,6 +56,8 @@ class CreateTopicZookeeperCommand extends ZookeeperCommand {
     @Override
     public void rollback(ZookeeperClient client) {
         String topicPath = paths.topicPath(topic.getName());
+
+        logger.info("Rolling back changes: topic creation for path '{}' via client '{}'", topicPath, client.getName());
         client.deleteWithChildren(topicPath);
     }
 }

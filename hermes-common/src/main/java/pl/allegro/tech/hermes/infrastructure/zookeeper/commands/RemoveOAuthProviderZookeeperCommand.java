@@ -32,13 +32,13 @@ class RemoveOAuthProviderZookeeperCommand extends ZookeeperCommand {
     public void execute(ZookeeperClient client) {
         preconditions.ensureOAuthProviderExists(client, providerName);
 
-        logger.info("Removing OAuthProvider {} via client {}", providerName, client.getName());
+        logger.info("Removing OAuthProvider '{}' via client '{}'", providerName, client.getName());
         client.deleteWithChildrenWithGuarantee(getPath());
     }
 
     @Override
     public void rollback(ZookeeperClient client) {
-        logger.info("Rolling back changes: OAuthProvider {} removal via client {}", providerName, client.getName());
+        logger.info("Rolling back changes: OAuthProvider '{}' removal via client '{}'", providerName, client.getName());
         client.create(getPath(), providerDataBackup);
     }
 

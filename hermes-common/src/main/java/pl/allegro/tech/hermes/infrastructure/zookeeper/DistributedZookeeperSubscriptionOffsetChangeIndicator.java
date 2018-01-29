@@ -47,11 +47,7 @@ public class DistributedZookeeperSubscriptionOffsetChangeIndicator extends Distr
                 partitionOffset
         );
         ZookeeperCommand command = commandFactory.setSubscriptionOffset(data);
-        try {
-            commandExecutor.execute(command);
-        } catch (ZookeeperCommandFailedException e) {
-            throw new InternalProcessingException(e);
-        }
+        executeWithErrorHandling(commandExecutor, command);
     }
 
     @Override

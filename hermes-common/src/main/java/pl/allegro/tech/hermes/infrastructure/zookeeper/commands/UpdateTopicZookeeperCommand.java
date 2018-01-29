@@ -27,6 +27,8 @@ class UpdateTopicZookeeperCommand extends ZookeeperCommand {
 
     @Override
     public void backup(ZookeeperClient client) {
+        preconditions.ensureTopicExists(client, topic.getName());
+
         String topicPath = paths.topicPath(topic.getName());
         topicDataBackup = client.getData(topicPath);
     }
@@ -35,7 +37,7 @@ class UpdateTopicZookeeperCommand extends ZookeeperCommand {
     public void execute(ZookeeperClient client) {
         preconditions.ensureTopicExists(client, topic.getName());
 
-        logger.info("Updating topic {} via client {}", topic.getName(), client.getName());
+        logger.info("Updating topic '{}' via client '{}'", topic.getName(), client.getName());
 
         String topicPath = paths.topicPath(topic.getName());
         client.setData(topicPath, marshall(mapper, topic));
@@ -43,6 +45,8 @@ class UpdateTopicZookeeperCommand extends ZookeeperCommand {
 
     @Override
     public void rollback(ZookeeperClient client) {
+        logger.info("Rolling back changes: topic '{}' update via client '{}'", topic.getName(), client.getName());
+
         String topicPath = paths.topicPath(topic.getName());
         client.setData(topicPath, topicDataBackup);
     }

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -21,10 +20,10 @@ public class ZookeeperCommandExecutor {
     private boolean rollbackEnabled;
 
     public ZookeeperCommandExecutor(ZookeeperClientManager clientManager,
-                             int concurrentCommandPoolSize,
-                             boolean rollbackEnabled) {
+                                    ExecutorService executor,
+                                    boolean rollbackEnabled) {
         this.clientManager = clientManager;
-        this.executor = Executors.newFixedThreadPool(concurrentCommandPoolSize); // TODO monitoring? configuration of waiting queue?
+        this.executor = executor;
         this.rollbackEnabled = rollbackEnabled;
     }
 
@@ -38,7 +37,7 @@ public class ZookeeperCommandExecutor {
             List<ZookeeperClient> successfulClients = getClientsForExecutionsWithStatus(results, SUCCESS);
             rollback(successfulClients, command);
         }
-        if(results.executionFailed()) {
+        if (results.executionFailed()) {
             throw new ZookeeperCommandFailedException("Failed to execute command " +
                     command.getClass().getSimpleName(), results.getExceptions());
         }
@@ -76,7 +75,7 @@ public class ZookeeperCommandExecutor {
     }
 
     private List<ZookeeperClient> getClientsForExecutionsWithStatus(ExecutionResults results,
-                                                                     ExecutionResult.Status status) {
+                                                                    ExecutionResult.Status status) {
         List<ZookeeperClient> clients = new ArrayList<>();
         for (int executionNumber = 0; executionNumber < results.getExecutionNumber(); executionNumber++) {
             ExecutionResult result = results.get(executionNumber);
@@ -98,7 +97,7 @@ public class ZookeeperCommandExecutor {
                 .collect(Collectors.toList());
         ExecutionResults results = waitForExecutionResults(rollbacks);
         List<ZookeeperClient> failedClients = getClientsForExecutionsWithStatus(results, FAILURE);
-        if(!failedClients.isEmpty()) {
+        if (!failedClients.isEmpty()) {
             List<String> clientNames = failedClients
                     .stream()
                     .map(ZookeeperClient::getName)

@@ -38,14 +38,14 @@ class RemoveSubscriptionZookeeperCommand extends ZookeeperCommand {
     public void execute(ZookeeperClient client) {
         preconditions.ensureSubscriptionExists(client, topicName, subscriptionName);
 
-        logger.info("Removing subscription {} via client {}", subscriptionQualifiedName, client.getName());
+        logger.info("Removing subscription '{}' via client '{}'", subscriptionQualifiedName, client.getName());
 
         client.deleteWithChildrenWithGuarantee(getPath());
     }
 
     @Override
     public void rollback(ZookeeperClient client) {
-        logger.info("Rolling back changes: subscription {} removal via client {}", subscriptionQualifiedName, client.getName());
+        logger.info("Rolling back changes: subscription '{}' removal via client '{}'", subscriptionQualifiedName, client.getName());
 
         client.create(getPath(), subscriptionDataBackup);
     }

@@ -29,7 +29,7 @@ class CreateOAuthProviderZookeeperCommand extends ZookeeperCommand {
     @Override
     public void execute(ZookeeperClient client) {
         String path = paths.oAuthProviderPath(provider.getName());
-        logger.info("Creating OAuthProvider for path {} via client {}", path, client.getName());
+        logger.info("Creating OAuthProvider '{}' via client '{}'", provider.getName(), client.getName());
 
         try {
             client.getCuratorFramework().create().creatingParentsIfNeeded().forPath(path, marshall(mapper, provider));
@@ -42,6 +42,9 @@ class CreateOAuthProviderZookeeperCommand extends ZookeeperCommand {
 
     @Override
     public void rollback(ZookeeperClient client) {
+        logger.info("Rolling back changes: OAuthProvider '{}' creation via client '{}'", provider.getName(),
+                client.getName());
+
         client.deleteWithChildren(paths.oAuthProviderPath(provider.getName()));
     }
 }

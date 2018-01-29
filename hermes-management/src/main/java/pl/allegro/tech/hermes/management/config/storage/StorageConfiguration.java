@@ -1,9 +1,9 @@
-package pl.allegro.tech.hermes.management.config;
+package pl.allegro.tech.hermes.management.config.storage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,9 +27,12 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.DistributedZookeeperUndel
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClient;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClientManager;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClusterProperties;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperProperties;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.client.dc.DcNameProvider;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.client.dc.DcNameSource;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.client.dc.DefaultDcNameProvider;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.client.dc.EnvironmentVariableDcNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.commands.ZookeeperCommandFactory;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
@@ -40,70 +43,66 @@ import pl.allegro.tech.hermes.management.infrastructure.blacklist.DistributedZoo
 import javax.annotation.PostConstruct;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 @Configuration
 @EnableConfigurationProperties(StorageClustersProperties.class)
 public class StorageConfiguration {
 
     @Autowired
-    StorageClustersProperties zookeeperClustersProperties;
+    StorageClustersProperties storageClustersProperties;
 
     @Autowired
     ObjectMapper objectMapper;
 
     @Bean
     DcNameProvider dcNameProvider() {
-        return new DefaultDcNameProvider();
-    }
-
-    @Bean
-    @ConfigurationProperties(prefix = "zookeeper")
-    ZookeeperProperties zookeeperProperties() {
-        return new ZookeeperProperties();
+        if(storageClustersProperties.getDcNameSource() == DcNameSource.ENV) {
+            return new EnvironmentVariableDcNameProvider(storageClustersProperties.getDcNameSourceEnv());
+        } else {
+            return new DefaultDcNameProvider();
+        }
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     ZookeeperClientManager clientManager() {
-        return new ZookeeperClientManager(zookeeperProperties(), dcNameProvider());
-    }
-
-    @Bean
-    CuratorFramework curatorFramework() {
-        return clientManager().getLocalClient().getCuratorFramework();
+        ZookeeperProperties properties = new ZookeeperPropertiesMapper()
+                .fromStorageClustersProperies(storageClustersProperties);
+        return new ZookeeperClientManager(properties, dcNameProvider());
     }
 
     @Bean
     ZookeeperPaths zookeeperPaths() {
-        return new ZookeeperPaths(zookeeperClustersProperties.getPathPrefix());
+        return new ZookeeperPaths(storageClustersProperties.getPathPrefix());
     }
 
     @Bean
     public SharedCounter sharedCounter() {
-        ZookeeperProperties properties = zookeeperProperties();
-        return new SharedCounter(curatorFramework(),
-                properties.getSharedCountersExpiration(),
-                properties.getRetrySleep(),
-                properties.getRetryTimes());
+        CuratorFramework curatorFramework = clientManager().getLocalClient().getCuratorFramework();
+        return new SharedCounter(curatorFramework,
+                storageClustersProperties.getSharedCountersExpiration(),
+                storageClustersProperties.getRetrySleep(),
+                storageClustersProperties.getRetryTimes());
     }
 
     @Bean
     public DistributedEphemeralCounter distributedCounter() {
-        return new DistributedEphemeralCounter(curatorFramework());
+        CuratorFramework curatorFramework = clientManager().getLocalClient().getCuratorFramework();
+        return new DistributedEphemeralCounter(curatorFramework);
     }
 
     @Bean
-    ExecutorService zookeeperCommExecutorService() {
-        return Executors.newFixedThreadPool(zookeeperProperties().getCommandPoolSize());
+    ExecutorService zookeeperLinkExecutorService() {
+        ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("zk-link-%d").build();
+        return Executors.newFixedThreadPool(storageClustersProperties.getMaxConcurrentOperations(), factory);
     }
 
     @Bean
     ZookeeperCommandExecutor commandExecutor() {
-        ZookeeperProperties properties = zookeeperProperties();
-
         return new ZookeeperCommandExecutor(
                 clientManager(),
-                properties.getCommandPoolSize(),
-                properties.isTransactional()
+                zookeeperLinkExecutorService(),
+                storageClustersProperties.isTransactional()
         );
     }
 
@@ -138,8 +137,7 @@ public class StorageConfiguration {
 
     @Bean
     MessagePreviewRepository messagePreviewRepository() {
-        return new DistributedZookeeperMessagePreviewRepository(clientManager(), commandExecutor(),
-                zookeeperPaths(), objectMapper);
+        return new DistributedZookeeperMessagePreviewRepository(clientManager(), zookeeperPaths(), objectMapper);
     }
 
     @Bean
@@ -156,14 +154,15 @@ public class StorageConfiguration {
 
     @Bean
     AdminTool adminTool() {
-        return new ZookeeperAdminTool(zookeeperPaths(), curatorFramework(),
+        CuratorFramework curatorFramework = clientManager().getLocalClient().getCuratorFramework();
+        return new ZookeeperAdminTool(zookeeperPaths(), curatorFramework,
                 objectMapper, Configs.ADMIN_REAPER_INTERAL_MS.getDefaultValue());
     }
 
     @Bean
     UndeliveredMessageLog undeliveredMessageLog() {
-        return new DistributedZookeeperUndeliveredMessageLog(clientManager(), commandExecutor(), zookeeperPaths(),
-                zookeeperCommExecutorService(), objectMapper);
+        return new DistributedZookeeperUndeliveredMessageLog(clientManager(), zookeeperPaths(),
+                zookeeperLinkExecutorService(), objectMapper);
     }
 
     @PostConstruct

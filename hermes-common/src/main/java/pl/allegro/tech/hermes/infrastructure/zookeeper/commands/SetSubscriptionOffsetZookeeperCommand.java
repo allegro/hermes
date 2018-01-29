@@ -43,7 +43,7 @@ class SetSubscriptionOffsetZookeeperCommand extends ZookeeperCommand {
     public void execute(ZookeeperClient client) {
         preconditions.ensureSubscriptionExists(client, input.getTopicName(), input.getSubscriptionName());
 
-        logger.info("Changing subscription {} offset via client {}", subscriptionQualifiedName, client.getName());
+        logger.info("Changing subscription '{}' offset via client '{}'", subscriptionQualifiedName, client.getName());
 
         String offsetPath = getOffsetPath();
         byte[] offset = getOffsetAsBytes();
@@ -52,7 +52,7 @@ class SetSubscriptionOffsetZookeeperCommand extends ZookeeperCommand {
 
     @Override
     public void rollback(ZookeeperClient client) {
-        logger.info("Rolling back changes: subscription {} offset change via client {}", subscriptionQualifiedName,
+        logger.info("Rolling back changes: subscription '{}' offset change via client '{}'", subscriptionQualifiedName,
                 client.getName());
 
         String offsetPath = getOffsetPath();

@@ -32,14 +32,14 @@ class CreateGroupZookeeperCommand extends ZookeeperCommand {
         String groupPath = paths.groupPath(group.getGroupName());
         String topicsPath = paths.topicsPath(group.getGroupName());
 
-        logger.info("Creating group {} for path {} via client {}", group.getGroupName(), groupPath, client.getName());
+        logger.info("Creating group '{}' for path '{}' via client '{}'", group.getGroupName(), groupPath, client.getName());
 
         CuratorFramework curator = client.getCuratorFramework();
         try {
-            curator.transaction().forOperations(
-                    curator.transactionOp().create().forPath(groupPath, mapper.writeValueAsBytes(group)),
-                    curator.transactionOp().create().forPath(topicsPath)
-            );
+            curator.inTransaction()
+                    .create().forPath(groupPath, mapper.writeValueAsBytes(group)).and()
+                    .create().forPath(topicsPath).and()
+                    .commit();
         } catch (KeeperException.NodeExistsException ex) {
             throw new GroupAlreadyExistsException(group.getGroupName(), ex);
         } catch (Exception e) {
@@ -49,6 +49,8 @@ class CreateGroupZookeeperCommand extends ZookeeperCommand {
 
     @Override
     public void rollback(ZookeeperClient client) {
+        logger.info("Rolling back changes: group '{}' creation via client '{}'", group.getGroupName(), client.getName());
+
         String groupPath = paths.groupPath(group.getGroupName());
         client.deleteWithChildren(groupPath);
     }

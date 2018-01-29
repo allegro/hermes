@@ -15,13 +15,16 @@ import java.util.List;
 
 public class DistributedZookeeperTopicBlacklistRepository extends DistributedZookeeperRepository
         implements TopicBlacklistRepository {
+
+    private final ZookeeperCommandExecutor commandExecutor;
     private final ZookeeperPaths paths;
 
     public DistributedZookeeperTopicBlacklistRepository(ZookeeperClientManager clientManager,
-                                                           ZookeeperCommandExecutor commandExecutor,
-                                                           ZookeeperPaths paths,
-                                                           ObjectMapper mapper) {
-        super(clientManager, commandExecutor, mapper);
+                                                        ZookeeperCommandExecutor commandExecutor,
+                                                        ZookeeperPaths paths,
+                                                        ObjectMapper mapper) {
+        super(clientManager, mapper);
+        this.commandExecutor = commandExecutor;
         this.paths = paths;
     }
 
