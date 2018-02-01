@@ -20,7 +20,14 @@ import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.Auditor;
+import pl.allegro.tech.hermes.management.domain.dc.DcBoundRepositoryHolder;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
+import pl.allegro.tech.hermes.management.domain.topic.commands.CreateTopicRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.topic.commands.RemoveTopicRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.topic.commands.TouchTopicRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.topic.commands.UpdateTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -28,6 +35,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareServic
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,12 +54,13 @@ public class TopicService {
     private final SchemaService schemaService;
 
     private final TopicMetricsRepository metricRepository;
-    private final MessagePreviewRepository messagePreviewRepository;
     private final MultiDCAwareService multiDCAwareService;
     private final TopicValidator topicValidator;
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
     private final Clock clock;
     private final Auditor auditor;
+    private final MultiDcRepositoryCommandExecutor multiDcExecutor;
+    private final RepositoryManager repositoryManager;
 
     @Autowired
     public TopicService(MultiDCAwareService multiDCAwareService,
@@ -61,9 +70,10 @@ public class TopicService {
                         SchemaService schemaService, TopicMetricsRepository metricRepository,
                         TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
-                        MessagePreviewRepository messagePreviewRepository,
                         Clock clock,
-                        Auditor auditor) {
+                        Auditor auditor,
+                        MultiDcRepositoryCommandExecutor multiDcExecutor,
+                        RepositoryManager repositoryManager) {
         this.multiDCAwareService = multiDCAwareService;
         this.topicRepository = topicRepository;
         this.groupService = groupService;
@@ -72,9 +82,10 @@ public class TopicService {
         this.metricRepository = metricRepository;
         this.topicValidator = topicValidator;
         this.topicContentTypeMigrationService = topicContentTypeMigrationService;
-        this.messagePreviewRepository = messagePreviewRepository;
         this.clock = clock;
         this.auditor = auditor;
+        this.multiDcExecutor = multiDcExecutor;
+        this.repositoryManager = repositoryManager;
     }
 
     public void createTopicWithSchema(TopicWithSchema topicWithSchema, String createdBy, CreatorRights isAllowedToManage) {
@@ -120,7 +131,7 @@ public class TopicService {
 
     private void createTopic(Topic topic, String createdBy, CreatorRights creatorRights) {
         topicValidator.ensureCreatedTopicIsValid(topic, creatorRights);
-        topicRepository.createTopic(topic);
+        multiDcExecutor.execute(new CreateTopicRepositoryCommand(topic));
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
@@ -140,7 +151,7 @@ public class TopicService {
                     String.format("Could not create topic %s, rollback topic creation.", topic.getQualifiedName()),
                     exception
             );
-            topicRepository.removeTopic(topic.getName());
+            multiDcExecutor.execute(new RemoveTopicRepositoryCommand(topic.getName()));
         }
     }
 
@@ -160,7 +171,7 @@ public class TopicService {
     }
 
     private void removeTopic(Topic topic, String removedBy) {
-        topicRepository.removeTopic(topic.getName());
+        multiDcExecutor.execute(new RemoveTopicRepositoryCommand(topic.getName()));
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
         auditor.objectRemoved(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
     }
@@ -192,7 +203,7 @@ public class TopicService {
                         brokerTopicManagement.updateTopic(modified)
                 );
             }
-            topicRepository.updateTopic(modified);
+            multiDcExecutor.execute(new UpdateTopicRepositoryCommand(modified));
             if (!retrieved.wasMigratedFromJsonType() && modified.wasMigratedFromJsonType()) {
                 topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
             }
@@ -201,7 +212,7 @@ public class TopicService {
     }
 
     public void touchTopic(TopicName topicName) {
-        topicRepository.touchTopic(topicName);
+        multiDcExecutor.execute(new TouchTopicRepositoryCommand(topicName));
     }
 
     public List<String> listQualifiedTopicNames(String groupName) {
@@ -288,7 +299,7 @@ public class TopicService {
     }
 
     public Optional<byte[]> preview(TopicName topicName, int idx) {
-        List<byte[]> result = messagePreviewRepository.loadPreview(topicName)
+        List<byte[]> result = loadMessagePreviewsFromAllDc(topicName)
                 .stream()
                 .map(MessagePreview::getContent)
                 .collect(toList());
@@ -299,9 +310,23 @@ public class TopicService {
     }
 
     public List<MessageTextPreview> previewText(TopicName topicName) {
-        return messagePreviewRepository.loadPreview(topicName).stream()
+        return loadMessagePreviewsFromAllDc(topicName).stream()
                 .map(p -> new MessageTextPreview(new String(p.getContent(), StandardCharsets.UTF_8), p.isTruncated()))
                 .collect(toList());
+    }
+
+    private List<MessagePreview> loadMessagePreviewsFromAllDc(TopicName topicName) {
+        List<DcBoundRepositoryHolder<MessagePreviewRepository>> repositories =
+                repositoryManager.getRepositories(MessagePreviewRepository.class);
+        List<MessagePreview> previews = new ArrayList<>();
+        for(DcBoundRepositoryHolder<MessagePreviewRepository> holder : repositories) {
+            try {
+                previews.addAll(holder.getRepository().loadPreview(topicName));
+            } catch (Exception e) {
+                logger.warn("Could not load message preview for DC: {}", holder.getDcName());
+            }
+        }
+        return previews;
     }
 
     public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {

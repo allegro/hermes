@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
@@ -61,6 +62,9 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @Autowired
     AdminTool adminTool;
 
+    @Autowired
+    MultiDcRepositoryCommandExecutor multiDcExecutor;
+
     private final List<ZkClient> zkClients = new ArrayList<>();
     private final List<CuratorFramework> curators = new ArrayList<>();
 
@@ -78,9 +82,9 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     storage,
                     kafkaRawMessageReader,
                     messageContentWrapper,
-                    subscriptionOffsetChangeIndicator,
                     simpleConsumerPool,
-                    kafkaNamesMapper
+                    kafkaNamesMapper,
+                    multiDcExecutor
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
             return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,

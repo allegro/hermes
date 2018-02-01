@@ -13,9 +13,8 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 
@@ -29,24 +28,24 @@ public class KafkaRetransmissionService implements RetransmissionService {
     private final BrokerStorage brokerStorage;
     private final KafkaRawMessageReader kafkaRawMessageReader;
     private final MessageContentWrapper messageContentWrapper;
-    private final SubscriptionOffsetChangeIndicator subscriptionOffsetChange;
     private final SimpleConsumerPool simpleConsumerPool;
     private final KafkaNamesMapper kafkaNamesMapper;
+    private final MultiDcRepositoryCommandExecutor multiDcExecutor;
 
     public KafkaRetransmissionService(
             BrokerStorage brokerStorage,
             KafkaRawMessageReader kafkaRawMessageReader,
             MessageContentWrapper messageContentWrapper,
-            SubscriptionOffsetChangeIndicator subscriptionOffsetChange,
             SimpleConsumerPool simpleConsumerPool,
-            KafkaNamesMapper kafkaNamesMapper) {
+            KafkaNamesMapper kafkaNamesMapper,
+            MultiDcRepositoryCommandExecutor multiDcExecutor) {
 
         this.brokerStorage = brokerStorage;
         this.kafkaRawMessageReader = kafkaRawMessageReader;
         this.messageContentWrapper = messageContentWrapper;
-        this.subscriptionOffsetChange = subscriptionOffsetChange;
         this.simpleConsumerPool = simpleConsumerPool;
         this.kafkaNamesMapper = kafkaNamesMapper;
+        this.multiDcExecutor = multiDcExecutor;
     }
 
     @Override
@@ -63,7 +62,9 @@ public class KafkaRetransmissionService implements RetransmissionService {
                 PartitionOffset partitionOffset = new PartitionOffset(k.name(), offset, partitionId);
                 partitionOffsetList.add(partitionOffset);
                 if (!dryRun) {
-                    subscriptionOffsetChange.setSubscriptionOffset(topic.getName(), subscription, brokersClusterName, partitionOffset);
+                    multiDcExecutor.execute(new SetSubscriptionOffsetRepositoryCommand(topic.getName(), subscription,
+                            brokersClusterName, partitionOffset));
+
                 }
             }
         });

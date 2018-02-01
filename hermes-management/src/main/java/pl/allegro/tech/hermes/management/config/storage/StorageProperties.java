@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.config.storage;
 
 
 public class StorageProperties {
-    private String name;
     private String dc;
     private String connectionString = "localhost:2181";
     private int sessionTimeout = 10000;
@@ -30,14 +29,6 @@ public class StorageProperties {
 
     public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDc() {

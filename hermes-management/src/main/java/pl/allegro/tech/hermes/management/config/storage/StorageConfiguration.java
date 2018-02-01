@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.config.storage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -12,38 +11,33 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminTool;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
+import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.DistributedZookeeperGroupRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.DistributedZookeeperMessagePreviewRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.DistributedZookeeperOAuthProviderRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.DistributedZookeeperSubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.DistributedZookeeperSubscriptionRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.DistributedZookeeperTopicRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.DistributedZookeeperUndeliveredMessageLog;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClient;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClientManager;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperClusterProperties;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.client.ZookeeperProperties;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.client.dc.DcNameProvider;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.client.dc.DcNameSource;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.client.dc.DefaultDcNameProvider;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.client.dc.EnvironmentVariableDcNameProvider;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.commands.ZookeeperCommandFactory;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.executor.ZookeeperCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
-import pl.allegro.tech.hermes.management.infrastructure.blacklist.DistributedZookeeperTopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameSource;
+import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDcNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.dc.EnvironmentVariableDcNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
+import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
+import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 
 import javax.annotation.PostConstruct;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 @Configuration
 @EnableConfigurationProperties(StorageClustersProperties.class)
@@ -66,14 +60,23 @@ public class StorageConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     ZookeeperClientManager clientManager() {
-        ZookeeperProperties properties = new ZookeeperPropertiesMapper()
-                .fromStorageClustersProperies(storageClustersProperties);
-        return new ZookeeperClientManager(properties, dcNameProvider());
+        return new ZookeeperClientManager(storageClustersProperties, dcNameProvider());
+    }
+
+    @Bean(initMethod = "start")
+    ZookeeperRepositoryManager repositoryManager() {
+        return new ZookeeperRepositoryManager(clientManager(), dcNameProvider(), objectMapper,
+                zookeeperPaths());
     }
 
     @Bean
     ZookeeperPaths zookeeperPaths() {
         return new ZookeeperPaths(storageClustersProperties.getPathPrefix());
+    }
+
+    @Bean
+    MultiDcRepositoryCommandExecutor multiDcRepositoryCommandExecutor() {
+        return new MultiDcRepositoryCommandExecutor(repositoryManager(), storageClustersProperties.isTransactional());
     }
 
     @Bean
@@ -92,77 +95,61 @@ public class StorageConfiguration {
     }
 
     @Bean
-    ExecutorService zookeeperLinkExecutorService() {
-        ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("zk-link-%d").build();
-        return Executors.newFixedThreadPool(storageClustersProperties.getMaxConcurrentOperations(), factory);
-    }
-
-    @Bean
-    ZookeeperCommandExecutor commandExecutor() {
-        return new ZookeeperCommandExecutor(
-                clientManager(),
-                zookeeperLinkExecutorService(),
-                storageClustersProperties.isTransactional()
-        );
-    }
-
-    @Bean
-    ZookeeperCommandFactory commandFactory() {
-        return new ZookeeperCommandFactory(zookeeperPaths(), objectMapper);
-    }
-
-    @Bean
     GroupRepository groupRepository() {
-        return new DistributedZookeeperGroupRepository(clientManager(), commandExecutor(), commandFactory(),
-                zookeeperPaths(), objectMapper);
+        ZookeeperClient localClient = clientManager().getLocalClient();
+        return new ZookeeperGroupRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
     TopicRepository topicRepository() {
-        return new DistributedZookeeperTopicRepository(clientManager(), commandExecutor(), commandFactory(),
-                zookeeperPaths(), objectMapper);
+        ZookeeperClient localClient = clientManager().getLocalClient();
+        return new ZookeeperTopicRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths(),
+                groupRepository());
     }
 
     @Bean
     SubscriptionRepository subscriptionRepository() {
-        return new DistributedZookeeperSubscriptionRepository(clientManager(), commandExecutor(), commandFactory(),
-                zookeeperPaths(), objectMapper);
+        ZookeeperClient localClient = clientManager().getLocalClient();
+        return new ZookeeperSubscriptionRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths(),
+                topicRepository());
     }
 
     @Bean
     OAuthProviderRepository oAuthProviderRepository() {
-        return new DistributedZookeeperOAuthProviderRepository(clientManager(), commandExecutor(), commandFactory(),
-                zookeeperPaths(), objectMapper);
+        ZookeeperClient localClient = clientManager().getLocalClient();
+        return new ZookeeperOAuthProviderRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
     MessagePreviewRepository messagePreviewRepository() {
-        return new DistributedZookeeperMessagePreviewRepository(clientManager(), zookeeperPaths(), objectMapper);
+        ZookeeperClient localClient = clientManager().getLocalClient();
+        return new ZookeeperMessagePreviewRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
     TopicBlacklistRepository topicBlacklistRepository() {
-        return new DistributedZookeeperTopicBlacklistRepository(clientManager(), commandExecutor(), zookeeperPaths(),
-                objectMapper);
+        ZookeeperClient localClient = clientManager().getLocalClient();
+        return new ZookeeperTopicBlacklistRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
     SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator() {
-        return new DistributedZookeeperSubscriptionOffsetChangeIndicator(clientManager(), commandExecutor(),
-                commandFactory(), zookeeperPaths(), objectMapper);
+        ZookeeperClient localClient = clientManager().getLocalClient();
+        return new ZookeeperSubscriptionOffsetChangeIndicator(localClient.getCuratorFramework(), zookeeperPaths(),
+                subscriptionRepository());
     }
 
     @Bean
     AdminTool adminTool() {
-        CuratorFramework curatorFramework = clientManager().getLocalClient().getCuratorFramework();
-        return new ZookeeperAdminTool(zookeeperPaths(), curatorFramework,
+        ZookeeperClient localClient = clientManager().getLocalClient();
+        return new ZookeeperAdminTool(zookeeperPaths(), localClient.getCuratorFramework(),
                 objectMapper, Configs.ADMIN_REAPER_INTERAL_MS.getDefaultValue());
     }
 
     @Bean
     UndeliveredMessageLog undeliveredMessageLog() {
-        return new DistributedZookeeperUndeliveredMessageLog(clientManager(), zookeeperPaths(),
-                zookeeperLinkExecutorService(), objectMapper);
+        ZookeeperClient localClient = clientManager().getLocalClient();
+        return new ZookeeperUndeliveredMessageLog(localClient.getCuratorFramework(), zookeeperPaths(), objectMapper);
     }
 
     @PostConstruct

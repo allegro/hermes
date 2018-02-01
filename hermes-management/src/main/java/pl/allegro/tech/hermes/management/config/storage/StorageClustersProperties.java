@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config.storage;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.client.dc.DcNameSource;
+import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameSource;
 
 import java.util.ArrayList;
 import java.util.List;
