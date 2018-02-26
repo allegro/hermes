@@ -18,6 +18,9 @@ public class StorageClustersProperties {
     private String dcNameSourceEnv = "DC";
     private boolean transactional = true;
     private int maxConcurrentOperations = 100;
+    private String connectionString = "localhost:2181";
+    private int sessionTimeout = 10000;
+    private int connectTimeout = 1000;
     private List<StorageProperties> clusters = new ArrayList<>();
 
     @NestedConfigurationProperty
@@ -101,5 +104,29 @@ public class StorageClustersProperties {
 
     public void setMaxConcurrentOperations(int maxConcurrentOperations) {
         this.maxConcurrentOperations = maxConcurrentOperations;
+    }
+
+    public String getConnectionString() {
+        return connectionString;
+    }
+
+    public void setConnectionString(String connectionString) {
+        this.connectionString = connectionString;
+    }
+
+    public int getSessionTimeout() {
+        return sessionTimeout;
+    }
+
+    public void setSessionTimeout(int sessionTimeout) {
+        this.sessionTimeout = sessionTimeout;
+    }
+
+    public int getConnectTimeout() {
+        return connectTimeout;
+    }
+
+    public void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
     }
 }
