@@ -9,7 +9,9 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties;
 import pl.allegro.tech.hermes.management.config.storage.StorageProperties;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDcNameProvider;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,10 +36,27 @@ public class ZookeeperClientManager {
     }
 
     private void createClients() {
-        clients = properties.getClusters()
+        clients = getClusterProperties()
                 .stream()
                 .map(clusterProperties -> buildZookeeperClient(clusterProperties, properties))
                 .collect(Collectors.toList());
+    }
+
+    private List<StorageProperties> getClusterProperties() {
+        if (properties.getClusters().isEmpty()) {
+            return Collections.singletonList(createPropertiesForSingleCluster());
+        } else {
+            return properties.getClusters();
+        }
+    }
+
+    private StorageProperties createPropertiesForSingleCluster() {
+        StorageProperties clusterProperties = new StorageProperties();
+        clusterProperties.setConnectionString(properties.getConnectionString());
+        clusterProperties.setConnectTimeout(properties.getConnectTimeout());
+        clusterProperties.setSessionTimeout(properties.getSessionTimeout());
+        clusterProperties.setDc(DefaultDcNameProvider.DEFAULT_DC_NAME);
+        return clusterProperties;
     }
 
     private void selectLocalClient() {
