@@ -4,6 +4,10 @@ import pl.allegro.tech.hermes.api.ErrorCode;
 
 public class RetransmissionException extends HermesException {
 
+    public RetransmissionException(String message) {
+        super(message);
+    }
+
     public RetransmissionException(Throwable cause) {
         super("Error during retransmitting messages.", cause);
     }
