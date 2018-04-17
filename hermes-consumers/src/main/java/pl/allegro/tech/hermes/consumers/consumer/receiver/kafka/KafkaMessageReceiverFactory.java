@@ -67,7 +67,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 subscription,
                 clock,
                 configs.getIntProperty(Configs.CONSUMER_RECEIVER_POOL_TIMEOUT),
-                configs.getIntProperty(Configs.CONSUMER_RECEIVER_READ_QUEUE_CAPACITY));
+                configs.getIntProperty(Configs.CONSUMER_RECEIVER_READ_QUEUE_CAPACITY),
+                configs.getIntProperty(Configs.CONSUMER_RETRANSMISSION_QUEUE_CAPACITY));
 
         if (configs.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
             FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(

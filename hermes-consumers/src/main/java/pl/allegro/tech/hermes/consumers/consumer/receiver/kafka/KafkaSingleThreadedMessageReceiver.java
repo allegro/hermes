@@ -22,6 +22,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.PartitionAssigningAwareRetransmitter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 
 import java.time.Clock;
@@ -43,6 +44,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private final Clock clock;
 
     private final BlockingQueue<Message> readQueue;
+    private final PartitionAssigningAwareRetransmitter retransmitter;
 
     private final HermesMetrics metrics;
     private Topic topic;
@@ -60,7 +62,8 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                                               Subscription subscription,
                                               Clock clock,
                                               int pollTimeout,
-                                              int readQueueCapacity) {
+                                              int readQueueCapacity,
+                                              int retransmissionQueueCapacity) {
         this.metrics = metrics;
         this.topic = topic;
         this.subscription = subscription;
@@ -70,8 +73,12 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
         this.consumer = consumer;
         this.messageContentWrapper = messageContentWrapper;
         this.clock = clock;
-        this.readQueue = new ArrayBlockingQueue<Message>(readQueueCapacity);
-        this.consumer.subscribe(topics.keySet());
+        this.readQueue = new ArrayBlockingQueue<>(readQueueCapacity);
+        this.retransmitter = new PartitionAssigningAwareRetransmitter(
+                subscription.getQualifiedName(),
+                retransmissionQueueCapacity,
+                consumer);
+        this.consumer.subscribe(topics.keySet(), retransmitter);
     }
 
     private Collection<KafkaTopic> getKafkaTopics(Topic topic, KafkaNamesMapper kafkaNamesMapper) {
@@ -112,8 +119,8 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     }
 
     private Message convertToMessage(ConsumerRecord<byte[], byte[]> record) {
-        UnwrappedMessageContent unwrappedContent = getUnwrappedMessageContent(record);
         KafkaTopic kafkaTopic = topics.get(record.topic());
+        UnwrappedMessageContent unwrappedContent = getUnwrappedMessageContent(record, kafkaTopic.contentType());
         return new Message(
                 unwrappedContent.getMessageMetadata().getId(),
                 topic.getQualifiedName(),
@@ -128,10 +135,11 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
         );
     }
 
-    private UnwrappedMessageContent getUnwrappedMessageContent(ConsumerRecord<byte[], byte[]> message) {
-        if (topic.getContentType() == ContentType.AVRO) {
+    private UnwrappedMessageContent getUnwrappedMessageContent(ConsumerRecord<byte[], byte[]> message,
+                                                               ContentType contentType) {
+        if (contentType == ContentType.AVRO) {
             return messageContentWrapper.unwrapAvro(message.value(), topic);
-        } else if (topic.getContentType() == ContentType.JSON) {
+        } else if (contentType == ContentType.JSON) {
             return messageContentWrapper.unwrapJson(message.value());
         }
         throw new UnsupportedContentTypeException(topic);
@@ -173,7 +181,6 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
     @Override
     public void moveOffset(SubscriptionPartitionOffset offset) {
-        logger.info("Moving offset for subscription {} {}", subscription.getQualifiedName(), offset.toString());
-        consumer.seek(new TopicPartition(offset.getKafkaTopicName().asString(), offset.getPartition()), offset.getOffset());
+        retransmitter.moveOffsetOrSchedule(offset);
     }
 }
