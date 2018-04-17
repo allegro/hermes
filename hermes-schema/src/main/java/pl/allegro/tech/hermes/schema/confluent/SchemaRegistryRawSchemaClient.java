@@ -81,6 +81,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     private Optional<String> extractSchema(String subject, String version, Response response) {
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
+                logger.info("Found schema for subject {} at version {}", subject,  version);
                 String schema = response.readEntity(SchemaRegistryResponse.class).getSchema();
                 return Optional.of(schema);
             case CLIENT_ERROR:
@@ -88,6 +89,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
                 return Optional.empty();
             case SERVER_ERROR:
             default:
+                logger.error("Could not find schema for subject {} at version {}, reason: {}", subject, version, response.getStatus());
                 throw new InternalSchemaRepositoryException(subject, response);
         }
     }
