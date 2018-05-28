@@ -9,10 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCache;
 
 import javax.inject.Inject;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -38,20 +40,22 @@ public class MaxRateRegistry {
     private final ZookeeperPaths zookeeperPaths;
     private final MaxRatePathSerializer pathSerializer;
     private final HierarchicalCache cache;
+    private final SubscriptionsCache subscriptionsCache;
 
     private final Map<ConsumerInstance, RateInfo> rateInfos = new ConcurrentHashMap<>();
 
     @Inject
     public MaxRateRegistry(CuratorFramework curator, ObjectMapper objectMapper, ZookeeperPaths zookeeperPaths,
-                           MaxRatePathSerializer pathSerializer) {
+                           MaxRatePathSerializer pathSerializer, SubscriptionsCache subscriptionsCache) {
         this.curator = curator;
         this.objectMapper = objectMapper;
         this.zookeeperPaths = zookeeperPaths;
         this.pathSerializer = pathSerializer;
+        this.subscriptionsCache = subscriptionsCache;
 
         ThreadFactory cacheThreadFactory = new ThreadFactoryBuilder().setNameFormat("max-rate-registry-%d").build();
         this.cache = new HierarchicalCache(curator,
-                Executors.newSingleThreadScheduledExecutor(cacheThreadFactory),
+                Executors.newSingleThreadExecutor(cacheThreadFactory),
                 zookeeperPaths.consumersRateRuntimePath(), 3, Collections.emptyList()
         );
 
@@ -60,7 +64,14 @@ public class MaxRateRegistry {
     }
 
     public void start() throws Exception {
+        long startNanos = System.nanoTime();
+
+        loadExistingEntries();
         cache.start();
+
+        long elapsedMillis = Duration.ofNanos(System.nanoTime() - startNanos).toMillis();
+
+        logger.info("Started in {}ms", elapsedMillis);
     }
 
     public void stop() throws Exception {
@@ -204,5 +215,22 @@ public class MaxRateRegistry {
         } catch (Exception e) {
             logger.warn("Problem updating rate history for consumer {}", consumer, e);
         }
+    }
+
+    private void loadExistingEntries() {
+        subscriptionsCache.listActiveSubscriptionNames().forEach(subscriptionName -> {
+            try {
+                String subscriptionConsumersPath = zookeeperPaths.consumersRateSubscriptionPath(subscriptionName);
+                for (String consumerId : curator.getChildren().forPath(subscriptionConsumersPath)) {
+                    zookeeperPaths.consumersMaxRatePath(subscriptionName, consumerId);
+                    ConsumerInstance consumer = new ConsumerInstance(consumerId, subscriptionName);
+                    byte[] rawMaxRate = curator.getData().forPath(zookeeperPaths.consumersMaxRatePath(subscriptionName, consumerId));
+                    MaxRate maxRate = objectMapper.readValue(rawMaxRate, MaxRate.class);
+                    rateInfos.put(consumer, RateInfo.withNoHistory(maxRate));
+                }
+            } catch (Exception e) {
+                logger.error("Exception occurred when initializing cache for subscription {}", subscriptionName, e);
+            }
+        });
     }
 }
