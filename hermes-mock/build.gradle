@@ -1,0 +1,16 @@
+plugins {
+    id 'groovy'
+    id 'java'
+}
+
+dependencies {
+    compile project(':hermes-test-helper')
+
+    compile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock
+    compile group: 'org.codehaus.groovy', name: 'groovy-all'
+
+    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
+}
