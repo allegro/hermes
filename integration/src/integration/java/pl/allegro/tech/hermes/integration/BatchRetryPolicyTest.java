@@ -102,7 +102,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     public void shouldRetryUntilTtlExceeded() throws Throwable {
         //given
         Topic topic = operations.buildTopic("group", "retryUntilTtlExceeded");
-        createSingleMessageBatchSubscription(topic, 100, 20);
+        createSingleMessageBatchSubscription(topic, 1, 10);
 
         wireMock.register(post(topicUrl(topic))
                 .withRequestBody(containing("failed"))
@@ -211,7 +211,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     }
 
     private void createSingleMessageBatchSubscription(Topic topic, boolean retryOnClientErrors) {
-        operations.createBatchSubscription(topic, subscriptionEndpoint(topic.getName().getName()), 100, 10, 1, 1, 500, retryOnClientErrors);
+        operations.createBatchSubscription(topic, subscriptionEndpoint(topic.getName().getName()), 1, 10, 1, 1, 500, retryOnClientErrors);
     }
 
     private String subscriptionEndpoint(String topicName) {
