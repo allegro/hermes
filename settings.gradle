@@ -13,5 +13,6 @@ include 'hermes-common',
         'hermes-metrics',
         'hermes-tracker-elasticsearch',
         'hermes-schema',
-        'hermes-benchmark'
+        'hermes-benchmark',
+        'hermes-mock'
 
