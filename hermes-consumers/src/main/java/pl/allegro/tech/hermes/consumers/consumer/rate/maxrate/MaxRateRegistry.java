@@ -218,7 +218,9 @@ public class MaxRateRegistry {
     }
 
     private void loadExistingEntries() {
-        subscriptionsCache.listActiveSubscriptionNames().forEach(subscriptionName -> {
+        List<SubscriptionName> subscriptions = subscriptionsCache.listActiveSubscriptionNames();
+        int loadedMaxRates = 0;
+        for (SubscriptionName subscriptionName : subscriptions) {
             try {
                 String subscriptionConsumersPath = zookeeperPaths.consumersRateSubscriptionPath(subscriptionName);
                 for (String consumerId : curator.getChildren().forPath(subscriptionConsumersPath)) {
@@ -228,9 +230,11 @@ public class MaxRateRegistry {
                     MaxRate maxRate = objectMapper.readValue(rawMaxRate, MaxRate.class);
                     rateInfos.put(consumer, RateInfo.withNoHistory(maxRate));
                 }
+                loadedMaxRates++;
             } catch (Exception e) {
-                logger.error("Exception occurred when initializing cache for subscription {}", subscriptionName, e);
+                logger.warn("Exception occurred when initializing cache for subscription {}", subscriptionName, e);
             }
-        });
+        };
+        logger.info("Loaded max-rates of {} out of {} subscriptions", loadedMaxRates, subscriptions.size());
     }
 }
