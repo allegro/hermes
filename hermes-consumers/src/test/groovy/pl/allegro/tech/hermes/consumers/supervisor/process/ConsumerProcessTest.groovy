@@ -24,12 +24,10 @@ class ConsumerProcessTest extends Specification {
 
     private Retransmitter retransmitter = Mock(Retransmitter)
 
-    private Subscription subscription = SubscriptionBuilder
-            .subscription(SubscriptionName.fromString('group.topic$sub')).build()
+    private SubscriptionName subscription = SubscriptionName.fromString('group.topic$sub')
 
     private ConsumerProcess process = new ConsumerProcess(
-            Signal.of(Signal.SignalType.START, subscription.qualifiedName, subscription),
-            consumer,
+            Signal.of(Signal.SignalType.START, subscription, consumer),
             retransmitter,
             { a -> shutdownRun = true },
             Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault()),
@@ -41,7 +39,7 @@ class ConsumerProcessTest extends Specification {
     def "should run main loop till stop signal sent"() {
         when:
         Future processFuture = executor.submit(process)
-        process.accept(Signal.of(Signal.SignalType.STOP, subscription.qualifiedName))
+        process.accept(Signal.of(Signal.SignalType.STOP, subscription))
         waiter.waitForSignalProcessing()
 
         then:
@@ -54,7 +52,7 @@ class ConsumerProcessTest extends Specification {
     def "should run shutdown callback on Consumer stop"() {
         when:
         executor.submit(process)
-        process.accept(Signal.of(Signal.SignalType.STOP, subscription.qualifiedName))
+        process.accept(Signal.of(Signal.SignalType.STOP, subscription))
         waiter.waitForSignalProcessing()
 
         then:
@@ -66,7 +64,7 @@ class ConsumerProcessTest extends Specification {
         executor.submit(process)
 
         when:
-        process.accept(Signal.of(Signal.SignalType.STOP, subscription.qualifiedName))
+        process.accept(Signal.of(Signal.SignalType.STOP, subscription))
         waiter.waitForSignalProcessing()
 
         then:
@@ -78,8 +76,7 @@ class ConsumerProcessTest extends Specification {
         given:
         long unhealthyAfter = -1
         ConsumerProcess process = new ConsumerProcess(
-                Signal.of(Signal.SignalType.START, subscription.qualifiedName, subscription),
-                consumer,
+                Signal.of(Signal.SignalType.START, subscription, consumer),
                 retransmitter,
                 { a -> shutdownRun = true },
                 Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault()),
@@ -87,7 +84,7 @@ class ConsumerProcessTest extends Specification {
         executor.submit(process)
 
         when:
-        process.accept(Signal.of(Signal.SignalType.STOP, subscription.qualifiedName))
+        process.accept(Signal.of(Signal.SignalType.STOP, subscription))
         waiter.waitForSignalProcessing()
 
         then:
@@ -100,7 +97,7 @@ class ConsumerProcessTest extends Specification {
         executor.submit(process)
 
         when:
-        process.accept(Signal.of(Signal.SignalType.RESTART, subscription.qualifiedName))
+        process.accept(Signal.of(Signal.SignalType.RESTART, subscription))
         waiter.waitForSignalProcessing()
 
         then:
@@ -108,7 +105,7 @@ class ConsumerProcessTest extends Specification {
         consumer.initializationCount == 2
 
         cleanup:
-        process.accept(Signal.of(Signal.SignalType.STOP, subscription.qualifiedName))
+        process.accept(Signal.of(Signal.SignalType.STOP, subscription))
         waiter.waitForSignalProcessing()
         !shutdownRun
     }
@@ -118,14 +115,14 @@ class ConsumerProcessTest extends Specification {
         executor.submit(process)
 
         when:
-        process.accept(Signal.of(Signal.SignalType.RETRANSMIT, subscription.qualifiedName))
+        process.accept(Signal.of(Signal.SignalType.RETRANSMIT, subscription))
         waiter.waitForSignalProcessing()
 
         then:
         1 * retransmitter.reloadOffsets(_,_)
 
         cleanup:
-        process.accept(Signal.of(Signal.SignalType.STOP, subscription.qualifiedName))
+        process.accept(Signal.of(Signal.SignalType.STOP, subscription))
         waiter.waitForSignalProcessing()
     }
 
@@ -135,7 +132,7 @@ class ConsumerProcessTest extends Specification {
         executor.submit(process)
 
         when:
-        process.accept(Signal.of(Signal.SignalType.UPDATE_SUBSCRIPTION, subscription.qualifiedName, modifiedSubscription))
+        process.accept(Signal.of(Signal.SignalType.UPDATE_SUBSCRIPTION, subscription, modifiedSubscription))
         waiter.waitForSignalProcessing()
 
         then:
@@ -143,7 +140,7 @@ class ConsumerProcessTest extends Specification {
         consumer.modifiedSubscription == modifiedSubscription
 
         cleanup:
-        process.accept(Signal.of(Signal.SignalType.STOP, subscription.qualifiedName))
+        process.accept(Signal.of(Signal.SignalType.STOP, subscription))
         waiter.waitForSignalProcessing()
     }
 }

@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -305,10 +304,6 @@ class ConsumerTestRuntimeEnvironment {
         await().atMost(adjust(ONE_SECOND)).until(
                 () -> verify(supervisor).assignConsumerForSubscription(subscription));
 
-    }
-
-    void withOverriddenConfigProperty(Configs property, int value) {
-        this.configFactory.overrideProperty(property, value);
     }
 
     static class ConsumerControllers {

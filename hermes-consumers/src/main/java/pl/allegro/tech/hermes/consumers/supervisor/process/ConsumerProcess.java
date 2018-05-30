@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import org.jctools.queues.SpscArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
@@ -23,7 +22,7 @@ public class ConsumerProcess implements Runnable {
 
     private final Clock clock;
 
-    private final Subscription subscription;
+    private final SubscriptionName subscriptionName;
 
     private final Consumer consumer;
 
@@ -42,13 +41,13 @@ public class ConsumerProcess implements Runnable {
 
     public ConsumerProcess(
             Signal startSignal,
-            Consumer consumer,
             Retransmitter retransmitter,
             java.util.function.Consumer<Signal> shutdownCallback,
             Clock clock,
-            long unhealthyAfter) {
-        this.subscription = startSignal.getPayload();
-        this.consumer = consumer;
+            long unhealthyAfter
+    ) {
+        this.subscriptionName = startSignal.getTarget();
+        this.consumer = startSignal.getPayload();
         this.retransmitter = retransmitter;
         this.shutdownCallback = shutdownCallback;
         this.clock = clock;
@@ -61,7 +60,7 @@ public class ConsumerProcess implements Runnable {
     @Override
     public void run() {
         try {
-            Thread.currentThread().setName("consumer-" + getSubscriptionName());
+            Thread.currentThread().setName("consumer-" + subscriptionName);
 
             while (running && !Thread.interrupted()) {
                 consumer.consume(this::processSignals);
@@ -69,9 +68,9 @@ public class ConsumerProcess implements Runnable {
             stop();
 
         } catch (Exception ex) {
-            logger.error("Consumer process of subscription {} failed", getSubscriptionName(), ex);
+            logger.error("Consumer process of subscription {} failed", subscriptionName, ex);
         } finally {
-            logger.info("Releasing consumer process thread of subscription {}", getSubscriptionName());
+            logger.info("Releasing consumer process thread of subscription {}", subscriptionName);
             shutdownCallback.accept(lastSignal);
             refreshHealthcheck();
             Thread.currentThread().setName("consumer-released-thread");
@@ -143,59 +142,55 @@ public class ConsumerProcess implements Runnable {
 
     private void start(Signal signal) {
         long startTime = clock.millis();
-        logger.info("Starting consumer for subscription {}. {}",
-                getSubscriptionName(), signal.getLogWithIdAndType());
+        logger.info("Starting consumer for subscription {}. {}", subscriptionName, signal.getLogWithIdAndType());
 
         consumer.initialize();
 
         long initializationTime = clock.millis();
         logger.info("Started consumer for subscription {} in {}ms. {}",
-                getSubscriptionName(), initializationTime - startTime, signal.getLogWithIdAndType());
+                subscriptionName, initializationTime - startTime, signal.getLogWithIdAndType());
         signalTimesheet.put(START, initializationTime);
     }
 
     private void stop() {
         long startTime = clock.millis();
-        logger.info("Stopping consumer for subscription {}", getSubscriptionName());
+        logger.info("Stopping consumer for subscription {}", subscriptionName);
 
         consumer.tearDown();
 
-        logger.info("Stopped consumer for subscription {} in {}ms", getSubscriptionName(), clock.millis() - startTime);
+        logger.info("Stopped consumer for subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
     }
 
     private void retransmit(Signal signal) {
         long startTime = clock.millis();
-        logger.info("Starting retransmission for consumer of subscription {}. {}",
-                getSubscriptionName(), signal.getLogWithIdAndType());
+        logger.info("Starting retransmission for consumer of subscription {}. {}", subscriptionName, signal.getLogWithIdAndType());
         try {
-            retransmitter.reloadOffsets(getSubscriptionName(), consumer);
-            logger.info("Done retransmission for consumer of subscription {} in {}ms",
-                    getSubscriptionName(), clock.millis() - startTime);
+            retransmitter.reloadOffsets(subscriptionName, consumer);
+            logger.info("Done retransmission for consumer of subscription {} in {}ms", subscriptionName, clock.millis() - startTime);
         } catch (Exception ex) {
             logger.error("Failed retransmission for consumer of subscription {} in {}ms",
-                    getSubscriptionName(), clock.millis() - startTime, ex);
+                    subscriptionName, clock.millis() - startTime, ex);
         }
     }
 
     private void restart(Signal signal) {
         long startTime = clock.millis();
         try {
-            logger.info("Restarting consumer for subscription {}. {}",
-                    getSubscriptionName(), signal.getLogWithIdAndType());
+            logger.info("Restarting consumer for subscription {}. {}", subscriptionName, signal.getLogWithIdAndType());
             stop();
             start(signal);
             logger.info("Done restarting consumer for subscription {} in {}ms. {}",
-                    getSubscriptionName(), clock.millis() - startTime, signal.getLogWithIdAndType());
+                    subscriptionName, clock.millis() - startTime, signal.getLogWithIdAndType());
         } catch (Exception e) {
             logger.error("Failed restarting consumer for subscription {} in {}ms. {}",
-                    getSubscriptionName(), clock.millis() - startTime, signal.getLogWithIdAndType(), e);
+                    subscriptionName, clock.millis() - startTime, signal.getLogWithIdAndType(), e);
         }
     }
 
     @Override
     public String toString() {
         return "ConsumerProcess{" +
-                "subscriptionName=" + getSubscriptionName() +
+                "subscriptionName=" + subscriptionName +
                 '}';
     }
 
@@ -204,23 +199,23 @@ public class ConsumerProcess implements Runnable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConsumerProcess that = (ConsumerProcess) o;
-        return Objects.equals(getSubscriptionName(), that.getSubscriptionName());
+        return Objects.equals(subscriptionName, that.subscriptionName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSubscriptionName());
+        return Objects.hash(subscriptionName);
     }
 
-    public Subscription getSubscription() {
-        return subscription;
+    public SubscriptionName getSubscriptionName() {
+        return subscriptionName;
+    }
+
+    public Consumer getConsumer() {
+        return consumer;
     }
 
     public Map<Signal.SignalType, Long> getSignalTimesheet() {
         return ImmutableMap.copyOf(signalTimesheet);
-    }
-
-    private SubscriptionName getSubscriptionName() {
-        return subscription.getQualifiedName();
     }
 }
