@@ -4,11 +4,11 @@ plugins {
 }
 
 dependencies {
-    compile project(':hermes-test-helper')
-
     compile group: 'junit', name: 'junit', version: '4.11'
     compile group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock
+    compile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
 
+    testCompile project(':hermes-test-helper')
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
