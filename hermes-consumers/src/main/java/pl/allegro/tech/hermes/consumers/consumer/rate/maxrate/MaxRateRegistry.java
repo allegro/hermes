@@ -223,18 +223,37 @@ public class MaxRateRegistry {
         for (SubscriptionName subscriptionName : subscriptions) {
             try {
                 String subscriptionConsumersPath = zookeeperPaths.consumersRateSubscriptionPath(subscriptionName);
-                for (String consumerId : curator.getChildren().forPath(subscriptionConsumersPath)) {
-                    zookeeperPaths.consumersMaxRatePath(subscriptionName, consumerId);
-                    ConsumerInstance consumer = new ConsumerInstance(consumerId, subscriptionName);
-                    byte[] rawMaxRate = curator.getData().forPath(zookeeperPaths.consumersMaxRatePath(subscriptionName, consumerId));
-                    MaxRate maxRate = objectMapper.readValue(rawMaxRate, MaxRate.class);
-                    rateInfos.put(consumer, RateInfo.withNoHistory(maxRate));
+                List<String> assignedConsumers = curator.getChildren().forPath(subscriptionConsumersPath);
+                if (setInitialMaxRates(subscriptionName, assignedConsumers)) {
+                    loadedMaxRates++;
                 }
-                loadedMaxRates++;
             } catch (Exception e) {
                 logger.warn("Exception occurred when initializing cache for subscription {}", subscriptionName, e);
             }
         };
         logger.info("Loaded max-rates of {} out of {} subscriptions", loadedMaxRates, subscriptions.size());
+    }
+
+    private boolean setInitialMaxRates(SubscriptionName subscriptionName, List<String> consumerIds) {
+        // It is possible that some stale consumer entries exist. They will be logged.
+        // We consider the operation successful when at least one consumer's max rate is read.
+        boolean atLeastOneConsumerInitialized = false;
+        for (String consumerId : consumerIds) {
+            try {
+                zookeeperPaths.consumersMaxRatePath(subscriptionName, consumerId);
+                ConsumerInstance consumer = new ConsumerInstance(consumerId, subscriptionName);
+                byte[] rawMaxRate = curator.getData().forPath(
+                        zookeeperPaths.consumersMaxRatePath(subscriptionName, consumerId));
+                MaxRate maxRate = objectMapper.readValue(rawMaxRate, MaxRate.class);
+                rateInfos.put(consumer, RateInfo.withNoHistory(maxRate));
+                atLeastOneConsumerInitialized = true;
+            } catch (Exception e) {
+                logger.warn(
+                        "Exception occurred when initializing cache for subscription {} and consumer {}",
+                        subscriptionName, consumerId, e
+                );
+            }
+        }
+        return atLeastOneConsumerInitialized;
     }
 }
