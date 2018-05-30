@@ -17,7 +17,7 @@ class RunningConsumerProcesses {
     private final Map<SubscriptionName, RunningProcess> processes = new ConcurrentHashMap<>();
 
     void add(ConsumerProcess process, Future executionHandle) {
-        this.processes.put(process.getSubscriptionName(), new RunningProcess(process, executionHandle));
+        this.processes.put(process.getSubscription().getQualifiedName(), new RunningProcess(process, executionHandle));
     }
 
     void remove(SubscriptionName subscriptionName) {
