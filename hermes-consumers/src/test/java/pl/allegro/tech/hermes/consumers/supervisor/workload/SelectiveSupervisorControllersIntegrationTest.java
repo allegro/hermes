@@ -5,10 +5,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
@@ -31,6 +33,8 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     @BeforeClass
     public static void setupAlways() {
         runtime = new ConsumerTestRuntimeEnvironment(ZookeeperBaseTest::newClient);
+        runtime.withOverriddenConfigProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL, 1000);
+        runtime.withOverriddenConfigProperty(Configs.CONSUMER_WORKLOAD_MONITOR_SCAN_INTERVAL, 1);
     }
 
     @Before
@@ -43,23 +47,27 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     @Test
     public void shouldRegisterConsumerInActiveNodesRegistryOnStartup() throws Exception {
         // when
-        String consumerId = runtime.spawnConsumer().consumerId();
+        SelectiveSupervisorController controller = runtime.spawnConsumer();
 
         // then
-        runtime.waitForRegistration(consumerId);
+        runtime.waitForRegistration(controller.consumerId());
+
+        shutdown(controller);
     }
 
     @Test
-    public void shouldElectOnlyOneLeaderFromRegisteredConsumers() {
+    public void shouldElectOnlyOneLeaderFromRegisteredConsumers() throws InterruptedException {
         // when
         List<SelectiveSupervisorController> supervisors = runtime.spawnConsumers(3);
 
         // then
         assertThat(supervisors.stream().filter(SelectiveSupervisorController::isLeader).count()).isEqualTo(1);
+
+        shutdown(supervisors);
     }
 
     @Test
-    public void shouldElectNewLeaderAfterShutdown() throws InterruptedException {
+    public void shouldElectNewLeaderAfterShutdown() {
         // given
         List<SelectiveSupervisorController> supervisors = runtime.spawnConsumers(3);
         SelectiveSupervisorController leader = runtime.findLeader(supervisors);
@@ -73,7 +81,7 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     }
 
     @Test
-    public void shouldAssignConsumerToSubscription() {
+    public void shouldAssignConsumerToSubscription() throws InterruptedException {
         // given
         SelectiveSupervisorController node = runtime.spawnConsumer();
 
@@ -82,10 +90,12 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
 
         // then
         runtime.awaitUntilAssignmentExists(subscription, node);
+
+        shutdown(node);
     }
 
     @Test
-    public void shouldAssignSubscriptionToMultipleConsumers() {
+    public void shouldAssignSubscriptionToMultipleConsumers() throws InterruptedException {
         // given
         List<SelectiveSupervisorController> nodes = runtime.spawnConsumers(2);
 
@@ -94,10 +104,12 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
 
         // then
         nodes.forEach(node -> runtime.awaitUntilAssignmentExists(subscription, node));
+
+        shutdown(nodes);
     }
 
     @Test
-    public void shouldAssignConsumerToMultipleSubscriptions() {
+    public void shouldAssignConsumerToMultipleSubscriptions() throws InterruptedException {
         // given
         SelectiveSupervisorController node = runtime.spawnConsumer();
 
@@ -106,10 +118,12 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
 
         // then
         subscriptions.forEach(subscription -> runtime.awaitUntilAssignmentExists(subscription, node));
+
+        shutdown(node);
     }
 
     @Test
-    public void shouldRecreateMissingConsumer() {
+    public void shouldRecreateMissingConsumer() throws InterruptedException {
         // given
         ConsumerFactory consumerFactory = mock(ConsumerFactory.class);
 
@@ -125,14 +139,21 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
         runtime.awaitUntilAssignmentExists(runtime.createSubscription(), node);
 
         // when
-        runtime.monitor("consumer", supervisor, node).run();
+        ConsumersRuntimeMonitor monitor = runtime.monitor("consumer", supervisor, node);
+        monitor.start();
 
         // then
-        verify(consumerFactory, times(2)).createConsumer(any());
+        await().atMost(FIVE_SECONDS).until(
+                () -> verify(consumerFactory, times(2)).createConsumer(any()));
+
+        shutdown(supervisor);
+        shutdown(node);
+        shutdown(monitor);
+
     }
 
     @Test
-    public void shouldCreateConsumerForExistingAssignment() {
+    public void shouldCreateConsumerForExistingAssignment() throws InterruptedException {
         // given
         SubscriptionName subscription = runtime.createSubscription();
         runtime.createAssignment(subscription, "consumer");
@@ -143,5 +164,25 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
 
         // then
         runtime.verifyConsumerWouldBeCreated(supervisor, runtime.getSubscription(subscription));
+
+        shutdown(supervisor);
+    }
+
+    private void shutdown(SelectiveSupervisorController controller) throws InterruptedException {
+        controller.shutdown();
+    }
+
+    private void shutdown(List<SelectiveSupervisorController> controllers) throws InterruptedException {
+        for (SelectiveSupervisorController s: controllers) {
+            s.shutdown();
+        }
+    }
+
+    private void shutdown(ConsumersRuntimeMonitor monitor) throws InterruptedException {
+        monitor.shutdown();
+    }
+
+    private void shutdown(ConsumersSupervisor supervisor) throws InterruptedException {
+        supervisor.shutdown();
     }
 }
