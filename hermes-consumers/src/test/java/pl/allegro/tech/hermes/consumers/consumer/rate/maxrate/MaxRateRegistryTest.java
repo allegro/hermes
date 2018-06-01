@@ -7,12 +7,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class MaxRateRegistryTest extends ZookeeperBaseTest {
 
@@ -20,11 +24,14 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
     private final SubscriptionName subscription = qualifiedName("subscription");
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final MaxRatePathSerializer pathSerializer = new MaxRatePathSerializer();
+    private final SubscriptionsCache subscriptionsCache = mock(SubscriptionsCache.class);
+
     private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(
-            zookeeperClient, objectMapper, zookeeperPaths, pathSerializer);
+            zookeeperClient, objectMapper, zookeeperPaths, pathSerializer, subscriptionsCache);
 
     @Before
     public void setUp() throws Exception {
+        when(subscriptionsCache.listActiveSubscriptionNames()).thenReturn(Collections.singletonList(subscription));
         maxRateRegistry.start();
     }
 

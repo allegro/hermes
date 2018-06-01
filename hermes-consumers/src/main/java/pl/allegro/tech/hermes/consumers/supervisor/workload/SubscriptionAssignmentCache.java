@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCache;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -65,6 +66,8 @@ public class SubscriptionAssignmentCache {
     }
 
     public void start() throws Exception {
+        long startNanos = System.nanoTime();
+
         logger.info("Starting assignment cache for {}", basePath);
 
         List<SubscriptionAssignment> currentAssignments = readExistingAssignments();
@@ -74,7 +77,10 @@ public class SubscriptionAssignmentCache {
 
         started = true;
 
-        logger.info("Started assignment cache for {}. Read {} assignments", basePath, currentAssignments.size());
+        long elapsedMillis = Duration.ofNanos(System.nanoTime() - startNanos).toMillis();
+
+        logger.info("Started assignment cache for {}. Read {} assignments. Took {}ms",
+                basePath, currentAssignments.size(), elapsedMillis);
     }
 
     public void stop() throws Exception {
