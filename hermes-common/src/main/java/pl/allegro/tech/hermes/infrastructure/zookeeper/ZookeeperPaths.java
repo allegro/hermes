@@ -114,6 +114,10 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "runtime");
     }
 
+    public String consumersRateSubscriptionPath(SubscriptionName subscription) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription);
+    }
+
     public String consumersRatePath(SubscriptionName subscription, String consumerId) {
         return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId);
     }

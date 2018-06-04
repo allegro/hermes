@@ -37,7 +37,6 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
     private static final Logger logger = LoggerFactory.getLogger(NonblockingConsumersSupervisor.class);
 
     private final ConsumerProcessSupervisor backgroundProcess;
-    private final ConsumerFactory consumerFactory;
     private final UndeliveredMessageLogPersister undeliveredMessageLogPersister;
     private final ConfigFactory configs;
     private final OffsetCommitter offsetCommitter;
@@ -56,11 +55,11 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                                           HermesMetrics metrics,
                                           ConsumerMonitor monitor,
                                           Clock clock) {
-        this.consumerFactory = consumerFactory;
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
         this.configs = configFactory;
-        this.backgroundProcess = new ConsumerProcessSupervisor(executor, retransmitter, clock, metrics, configFactory);
+        this.backgroundProcess = new ConsumerProcessSupervisor(executor, retransmitter, clock, metrics,
+                configFactory, consumerFactory);
         this.scheduledExecutor = createExecutorForSupervision();
         this.offsetCommitter = new OffsetCommitter(
                 offsetQueue,
@@ -83,20 +82,16 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
     @Override
     public void assignConsumerForSubscription(Subscription subscription) {
-        logger.info("Creating consumer for {}", subscription.getQualifiedName());
         try {
-            Consumer consumer = consumerFactory.createConsumer(subscription);
-            Signal start = Signal.of(Signal.SignalType.START, subscription.getQualifiedName(), consumer);
-            logger.info("Created consumer for {}. {}", subscription.getQualifiedName(), start.getLogWithIdAndType());
+            Signal start = Signal.of(Signal.SignalType.START, subscription.getQualifiedName(), subscription);
 
             backgroundProcess.accept(start);
 
             if (subscription.getState() == PENDING) {
                 subscriptionRepository.updateSubscriptionState(subscription.getTopicName(), subscription.getName(), ACTIVE);
             }
-            logger.info("Consumer for {} was added for execution. {}", subscription.getQualifiedName(), start.getLogWithIdAndType());
-        } catch (Exception ex) {
-            logger.error("Failed to create consumer for subscription {}", subscription.getQualifiedName(), ex);
+        } catch (RuntimeException e) {
+            logger.error("Error during assigning subscription {} to consumer", subscription.getQualifiedName(), e);
         }
     }
 
