@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCaches;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -37,7 +37,7 @@ public class HermesConsumers {
 
     private final SupervisorController supervisorController;
     private final MaxRateSupervisor maxRateSupervisor;
-    private final SubscriptionAssignmentCaches assignmentCaches;
+    private final SubscriptionAssignmentCache assignmentCache;
     private final OAuthClient oAuthHttpClient;
 
     public static void main(String... args) {
@@ -61,14 +61,14 @@ public class HermesConsumers {
 
         supervisorController = serviceLocator.getService(SupervisorController.class);
         maxRateSupervisor = serviceLocator.getService(MaxRateSupervisor.class);
-        assignmentCaches = serviceLocator.getService(SubscriptionAssignmentCaches.class);
+        assignmentCache = serviceLocator.getService(SubscriptionAssignmentCache.class);
         oAuthHttpClient = serviceLocator.getService(OAuthClient.class);
 
         hooksHandler.addShutdownHook((s) -> {
             try {
                 consumerHttpServer.stop();
                 maxRateSupervisor.stop();
-                assignmentCaches.stop();
+                assignmentCache.stop();
                 oAuthHttpClient.stop();
                 supervisorController.shutdown();
                 s.shutdown();
@@ -92,7 +92,7 @@ public class HermesConsumers {
                             messageSenderFactory.addSupportedProtocol(entry.getKey(), supplier.apply(serviceLocator))
                     ));
             supervisorController.start();
-            assignmentCaches.start();
+            assignmentCache.start();
             maxRateSupervisor.start();
             serviceLocator.getService(ConsumersRuntimeMonitor.class).start();
             consumerHttpServer.start();

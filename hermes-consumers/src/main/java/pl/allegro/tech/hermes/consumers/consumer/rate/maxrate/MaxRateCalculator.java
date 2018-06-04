@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.Gauges;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
 
 import java.time.Clock;
 import java.util.Map;
@@ -17,7 +18,7 @@ class MaxRateCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(MaxRateCalculator.class);
 
-    private final SubscriptionConsumersCache subscriptionConsumersCache;
+    private final SubscriptionAssignmentCache subscriptionAssignmentCache;
     private final SubscriptionsCache subscriptionsCache;
     private final MaxRateBalancer balancer;
     private final MaxRateRegistry maxRateRegistry;
@@ -26,13 +27,13 @@ class MaxRateCalculator {
 
     private volatile long lastUpdateDurationMillis = 0;
 
-    MaxRateCalculator(SubscriptionConsumersCache subscriptionConsumersCache,
+    MaxRateCalculator(SubscriptionAssignmentCache subscriptionAssignmentCache,
                       SubscriptionsCache subscriptionsCache,
                       MaxRateBalancer balancer,
                       MaxRateRegistry maxRateRegistry,
                       HermesMetrics metrics,
                       Clock clock) {
-        this.subscriptionConsumersCache = subscriptionConsumersCache;
+        this.subscriptionAssignmentCache = subscriptionAssignmentCache;
         this.subscriptionsCache = subscriptionsCache;
         this.balancer = balancer;
         this.maxRateRegistry = maxRateRegistry;
@@ -44,7 +45,7 @@ class MaxRateCalculator {
 
     void calculate() {
         try {
-            if (!subscriptionConsumersCache.isStarted()) {
+            if (!subscriptionAssignmentCache.isStarted()) {
                 return;
             }
             logger.info("Max rate calculation started");
@@ -52,7 +53,7 @@ class MaxRateCalculator {
             long start = clock.millis();
 
             Map<SubscriptionName, Set<String>> subscriptionConsumers =
-                    subscriptionConsumersCache.getSubscriptionsConsumers();
+                    subscriptionAssignmentCache.getSubscriptionConsumers();
 
             subscriptionConsumers.entrySet().forEach(entry -> {
                 try {

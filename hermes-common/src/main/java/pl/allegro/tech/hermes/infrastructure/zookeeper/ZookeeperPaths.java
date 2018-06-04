@@ -110,28 +110,30 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH);
     }
 
-    public String consumersRateRuntimePath() {
-        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "runtime");
+    public String consumersRateRuntimePath(String cluster) {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, cluster, "runtime");
     }
 
-    public String consumersRateSubscriptionPath(SubscriptionName subscription) {
-        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription);
+    public String consumersRateSubscriptionPath(String cluster, SubscriptionName subscription) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(cluster), subscription);
     }
 
-    public String consumersRatePath(SubscriptionName subscription, String consumerId) {
-        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId);
+    public String consumersRatePath(String cluster, SubscriptionName subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(cluster), subscription, consumerId);
     }
 
-    public String consumersRateHistoryPath(SubscriptionName subscription, String consumerId) {
-        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, MAX_RATE_HISTORY_PATH);
+    public String consumersRateHistoryPath(String cluster, SubscriptionName subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(cluster), subscription, consumerId,
+                MAX_RATE_HISTORY_PATH);
     }
 
-    public String consumersMaxRatePath(SubscriptionName subscription, String consumerId) {
-        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, MAX_RATE_PATH);
+    public String consumersMaxRatePath(String cluster, SubscriptionName subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(cluster), subscription, consumerId,
+                MAX_RATE_PATH);
     }
 
-    public String maxRateLeaderPath() {
-        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "leader");
+    public String maxRateLeaderPath(String cluster) {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, cluster, "leader");
     }
 
     public String topicsBlacklistPath() {

@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import javax.inject.Inject;
@@ -30,7 +31,7 @@ public class MaxRateSupervisor implements Runnable {
     @Inject
     public MaxRateSupervisor(ConfigFactory configFactory,
                              CuratorFramework curator,
-                             SubscriptionConsumersCache subscriptionConsumersCache,
+                             SubscriptionAssignmentCache subscriptionAssignmentCache,
                              MaxRateRegistry maxRateRegistry,
                              SubscriptionsCache subscriptionsCache,
                              ZookeeperPaths zookeeperPaths,
@@ -48,13 +49,16 @@ public class MaxRateSupervisor implements Runnable {
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_MAX_RATE),
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_ALLOWED_CHANGE_PERCENT));
 
+        String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
+        String leaderPath = zookeeperPaths.maxRateLeaderPath(cluster);
+
         this.calculatorJob = new MaxRateCalculatorJob(
                 curator,
                 configFactory,
-                subscriptionConsumersCache,
+                subscriptionAssignmentCache,
                 balancer,
                 maxRateRegistry,
-                zookeeperPaths.maxRateLeaderPath(),
+                leaderPath,
                 subscriptionsCache,
                 metrics,
                 clock
