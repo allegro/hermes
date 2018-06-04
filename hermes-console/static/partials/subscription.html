@@ -121,7 +121,7 @@
                     </p>
                     <p ng-show="subscription.deliveryType === 'SERIAL'">
                         <strong>Rate limit:</strong> {{subscription.subscriptionPolicy.rate}}
-                        <span uib-popover='Maximum rate defined by user. Maximum rate calculated by algorithm can be observed in "Output rate" metric.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                        <span uib-popover='Maximum rate defined by user (per data center). Maximum rate calculated by algorithm can be observed in "Output rate" metric.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p ng-show="subscription.deliveryType === 'BATCH'">
                         <strong>Batch size:</strong> {{subscription.subscriptionPolicy.batchSize}} messages
