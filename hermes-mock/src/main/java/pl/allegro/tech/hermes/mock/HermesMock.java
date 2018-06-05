@@ -4,15 +4,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import org.junit.rules.MethodRule;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.Statement;
+import org.apache.avro.AvroRuntimeException;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.io.Decoder;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.http.HttpStatus;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -23,27 +32,14 @@ import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 
-public class HermesMock implements MethodRule {
-
-    public enum RESPONSE_CODE {
-        CREATED(201),
-        ACCEPTED(202),
-        BAD_MESSAGE(400),
-        NOT_FOUND(404),
-        REQUEST_TIMEOUT(408),
-        INTERNAL_ERROR(500),
-        SERVICE_UNAVAILABLE(503);
-
-        private int code;
-
-        RESPONSE_CODE(int code) {
-            this.code = code;
-        }
-    }
-
+public class HermesMock {
     private WireMockServer wireMockServer;
     private ObjectMapper objectMapper = new ObjectMapper();
     private int awaitSeconds = 5;
+
+    public HermesMock() {
+        wireMockServer = new WireMockServer();
+    }
 
     public HermesMock(int port) {
         wireMockServer = new WireMockServer(port);
@@ -58,20 +54,37 @@ public class HermesMock implements MethodRule {
     }
 
     public void addTopic(String topicName) {
-        addTopic(topicName, RESPONSE_CODE.CREATED);
+        addTopic(topicName, HttpStatus.SC_CREATED);
     }
 
-    public void addTopic(String topicName, RESPONSE_CODE statusCode) {
-        addTopic(topicName, aResponse().withStatus(statusCode.code));
+    public void addAvroTopic(String topicName) {
+        addAvroTopic(topicName, HttpStatus.SC_CREATED);
     }
 
-    public void addTopic(String topicName, ResponseDefinitionBuilder responseDefinitionBuilder) {
-        wireMockServer.stubFor(get(urlPathMatching("/topics/" + topicName))
-                .willReturn(responseDefinitionBuilder
-                        .withHeader("Content-Type", "application/json")
-                        .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
-                )
-        );
+    public void addTopic(String topicName, int statusCode) {
+        addTopic(topicName, false, aResponse().withStatus(statusCode));
+    }
+
+    public void addAvroTopic(String topicName, int statusCode) {
+        addTopic(topicName, true, aResponse().withStatus(statusCode));
+    }
+
+    public void addTopic(String topicName, Boolean isAvro, ResponseDefinitionBuilder responseDefinitionBuilder) {
+        if (isAvro) {
+            wireMockServer.stubFor(get(urlPathMatching("/topics/" + topicName))
+                    .willReturn(responseDefinitionBuilder
+                            .withHeader("Content-Type", "avro/binary")
+                            .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
+                    )
+            );
+        } else {
+            wireMockServer.stubFor(get(urlPathMatching("/topics/" + topicName))
+                    .willReturn(responseDefinitionBuilder
+                            .withHeader("Content-Type", "application/json")
+                            .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
+                    )
+            );
+        }
     }
 
     public void expectSingleMessageOnTopic(String topicName) {
@@ -84,7 +97,42 @@ public class HermesMock implements MethodRule {
                     wireMockServer.verify(count, postRequestedFor(urlEqualTo("/topics/" + topicName)))
             );
         } catch (Exception ex) {
+            throw new HermesMockException("Hermes mock did not receive " + count + " messages. " + ex.getMessage());
+        }
+    }
+
+    public <T> void expectSingleMessageOnTopicAs(String topicName, Class<T> clazz) {
+        expectMessagesOnTopicAs(1, topicName, clazz);
+    }
+
+    public <T> void expectMessagesOnTopicAs(int count, String topicName, Class<T> clazz) {
+        try {
+            await().atMost(awaitSeconds, SECONDS).until(() ->
+                    wireMockServer.verify(count, postRequestedFor(urlEqualTo("/topics/" + topicName)))
+            );
+        } catch (Exception ex) {
             throw new HermesMockException("Hermes mock did not received " + count + " messages. " + ex.getMessage());
+        }
+        List<T> allMessages = getAllMessagesAs(topicName, clazz);
+        if (allMessages.size() != count) {
+            throw new HermesMockException("Hermes mock did not received " + count + " messages, got " + allMessages.size());
+        }
+    }
+
+    public void expectSingleAvroMessageOnTopic(String topicName, Schema schema) {
+        expectAvroMessagesOnTopic(1, topicName, schema);
+    }
+
+    public void expectAvroMessagesOnTopic(int count, String topicName, Schema schema) {
+        try {
+            await().atMost(awaitSeconds, SECONDS).until(() ->
+                    wireMockServer.verify(count, postRequestedFor(urlEqualTo("/topics/" + topicName)))
+            );
+        } catch (Exception ex) {
+            throw new HermesMockException("Hermes mock did not received " + count + " messages. " + ex.getMessage());
+        }
+        if (getAllAvroMessagesAs(topicName, schema).size() != count) {
+            throw new HermesMockException("Hermes mock did not received " + count + " messages, got " + getAllAvroMessagesAs(topicName, schema).size());
         }
     }
 
@@ -97,16 +145,14 @@ public class HermesMock implements MethodRule {
     }
 
     public <T> List<T> getAllMessagesAs(String topicName, Class<T> clazz) {
-        final Function<LoggedRequest, T> deserialize = (req) -> {
-            try {
-                return objectMapper.readValue(req.getBodyAsString(), clazz);
-            } catch (IOException ex) {
-                throw new HermesMockException("Cannot read body " + req.getBodyAsString() + " as " + clazz.getSimpleName());
-            }
-        };
-
         return getAllRequests(topicName).stream()
-                .map(deserialize)
+                .map(req -> deserialize(req, clazz))
+                .collect(toList());
+    }
+
+    public List<byte[]> getAllAvroMessagesAs(String topicName, Schema schema) {
+        return getAllRequests(topicName).stream()
+                .map(req -> deserializeAvro(req, schema))
                 .collect(toList());
     }
 
@@ -115,33 +161,50 @@ public class HermesMock implements MethodRule {
     }
 
     public <T> Optional<T> getLastMessageAs(String topicName, Class<T> clazz) {
-        Optional<LoggedRequest> request = getLastRequest(topicName);
-        if (!request.isPresent()) {
-            return Optional.empty();
-        }
-
-        String bodyAsString = request.get().getBodyAsString();
-        try {
-            return Optional.of(objectMapper.readValue(bodyAsString, clazz));
-        } catch (IOException ex) {
-            throw new HermesMockException("Cannot read body " + bodyAsString + " as " + clazz.getSimpleName());
-        }
+        return getLastRequest(topicName)
+                .map(req -> deserialize(req, clazz));
     }
 
     public void resetReceivedRequest() {
         wireMockServer.resetRequests();
     }
 
-    @Override
-    public Statement apply(Statement base, FrameworkMethod method, Object target) {
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                wireMockServer.start();
-                resetReceivedRequest();
-                base.evaluate();
-                wireMockServer.stop();
-            }
-        };
+    public void start() {
+        wireMockServer.start();
+    }
+
+    public void stop() {
+        wireMockServer.stop();
+    }
+
+    private <T> T deserialize(LoggedRequest request, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(request.getBodyAsString(), clazz);
+        } catch (IOException ex) {
+            throw new HermesMockException("Cannot read body " + request.getBodyAsString() + " as " + clazz.getSimpleName());
+        }
+    }
+
+    private byte[] deserializeAvro(LoggedRequest request, Schema schema) {
+        try {
+            return convertToAvro(readJson(request.getBody(), schema), schema);
+        } catch (IOException | AvroRuntimeException ex) {
+            throw new HermesMockException("Failed to convert to AVRO." + ex.getMessage());
+        }
+    }
+
+    private GenericData.Record readJson(byte[] bytes, Schema schema) throws IOException {
+        InputStream input = new ByteArrayInputStream(bytes);
+        Decoder decoder = DecoderFactory.get().jsonDecoder(schema, input);
+        return new GenericDatumReader<GenericData.Record>(schema).read(null, decoder);
+    }
+
+    private byte[] convertToAvro(GenericData.Record jsonData, Schema schema) throws IOException {
+        GenericDatumWriter<GenericData.Record> writer = new GenericDatumWriter<>(schema);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Encoder encoder = EncoderFactory.get().binaryEncoder(outputStream, null);
+        writer.write(jsonData, encoder);
+        encoder.flush();
+        return outputStream.toByteArray();
     }
 }

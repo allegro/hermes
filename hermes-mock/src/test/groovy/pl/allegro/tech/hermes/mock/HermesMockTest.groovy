@@ -6,7 +6,7 @@ import spock.lang.Specification
 
 class HermesMockTest extends Specification {
     @Rule
-    HermesMock hermes = new HermesMock(56789);
+    HermesMockRule hermes = new HermesMockRule(56789);
 
     protected HermesPublisher publisher = new HermesPublisher("http://localhost:56789");
 
@@ -46,15 +46,42 @@ class HermesMockTest extends Specification {
             publish(topicName)
         }
 
-        new Thread(new Runnable() {
-            void run() {
-                sleep(500)
-                publish(topicName)
-            }
-        }).start();
+        Thread.start {
+            sleep(500)
+            publish(topicName)
+        }
 
         then:
         hermes.expectMessagesOnTopic(3, topicName)
+    }
+
+    def "should receive message as class"() {
+        given:
+        def topicName = "my-test-topic"
+        hermes.addTopic(topicName)
+
+        when:
+        publish(topicName)
+
+        then:
+        hermes.expectSingleMessageOnTopicAs(topicName, TestMessage)
+    }
+
+    def "should receive all messages as a particular class"() {
+        given:
+        def topicName = "my-test-topic"
+        hermes.addTopic(topicName)
+
+        when:
+        3.times {
+            publish(topicName)
+        }
+        3.times {
+            publish("blag")
+        }
+
+        then:
+        hermes.expectMessagesOnTopicAs(3, topicName, TestMessage)
     }
 
     def "should throw on more than 1 message"() {
@@ -71,7 +98,24 @@ class HermesMockTest extends Specification {
         hermes.expectSingleMessageOnTopic(topicName)
 
         then:
-        def e = thrown(HermesMockException)
+        def ex = thrown(HermesMockException)
+    }
+
+    def "should throw on more than 1 message of particular class"() {
+        given:
+        def topicName = "my-first-failing-test-topic"
+        hermes.addTopic(topicName)
+
+        when:
+        2.times {
+            publish(topicName)
+        }
+
+        and:
+        hermes.expectSingleMessageOnTopicAs(topicName, TestMessage)
+
+        then:
+        def ex = thrown(HermesMockException)
     }
 
     def "should get all messages"() {
@@ -152,13 +196,13 @@ class HermesMockTest extends Specification {
         }
 
         then:
-        def requests = hermes.getAllMessagesAs(topicName, TestMessage.class)
+        def requests = hermes.getAllMessagesAs(topicName, TestMessage)
         requests.size() == 5
-        requests[0].getKey() == "key-0"
-        requests[0].getValue() == "value-0"
+        requests[0].key == "key-0"
+        requests[0].value == "value-0"
     }
 
-    def "should get last request & message as specified class"() {
+    def "should get last message as specified class"() {
         given:
         def topicName = "my-topic"
         hermes.addTopic(topicName)
@@ -169,9 +213,9 @@ class HermesMockTest extends Specification {
         }
 
         then:
-        def message = hermes.getLastMessageAs(topicName, TestMessage.class)
+        def message = hermes.getLastMessageAs(topicName, TestMessage)
         message.isPresent()
-        message.get().getKey() == "random"
+        message.get().key == "random"
 
         def request = hermes.getLastRequest(topicName)
         request.isPresent()

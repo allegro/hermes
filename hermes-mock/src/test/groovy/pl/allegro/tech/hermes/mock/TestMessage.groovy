@@ -6,24 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 class TestMessage {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private String key
-    private String value
-
-    String getKey() {
-        return key
-    }
-
-    void setKey(String key) {
-        this.key = key
-    }
-
-    String getValue() {
-        return value
-    }
-
-    void setValue(String value) {
-        this.value = value
-    }
+    String key
+    String value
 
     TestMessage() {}
 
@@ -34,10 +18,6 @@ class TestMessage {
 
     static TestMessage random() {
         return new TestMessage("random", UUID.randomUUID().toString());
-    }
-
-    String body() {
-        return toString();
     }
 
     @Override
