@@ -7,9 +7,6 @@ import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;
 
 public class DistributedEphemeralCounter {
