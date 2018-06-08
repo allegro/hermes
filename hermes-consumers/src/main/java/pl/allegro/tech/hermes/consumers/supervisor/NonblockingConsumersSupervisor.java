@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
@@ -69,8 +68,10 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                 configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_PERIOD),
                 metrics
         );
-        monitor.register(SUBSCRIPTIONS, backgroundProcess::listRunningSubscriptions);
-        monitor.register(SUBSCRIPTIONS_COUNT, backgroundProcess::countRunningSubscriptions);
+        monitor.register(SUBSCRIPTIONS, backgroundProcess::runningSubscriptionsStatus);
+        monitor.register(SUBSCRIPTIONS_COUNT, backgroundProcess::countRunningProcesses);
+
+
     }
 
     private ScheduledExecutorService createExecutorForSupervision() {

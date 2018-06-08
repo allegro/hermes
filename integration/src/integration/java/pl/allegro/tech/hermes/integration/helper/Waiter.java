@@ -17,7 +17,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionStatus;
+import pl.allegro.tech.hermes.consumers.supervisor.process.ManagedSubscriptionStatus;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
@@ -92,7 +92,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
                         .isPresent());
     }
 
-    private void until(Duration duration, Topic topic, String subscription, Predicate<RunningSubscriptionStatus> predicate) {
+    private void until(Duration duration, Topic topic, String subscription, Predicate<ManagedSubscriptionStatus> predicate) {
         waitAtMost(adjust(duration)).until(() ->
                 endpoints.consumer().listSubscriptions().stream()
                         .filter(sub -> sub.getQualifiedName().equals(topic.getQualifiedName() + "$" + subscription))

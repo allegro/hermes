@@ -51,7 +51,7 @@ class ConsumerProcessSupervisorTest extends Specification {
         consumerProcessSupervisor.run()
 
         when:
-        consumerProcessSupervisor.accept(Signal.of(Signal.SignalType.CLEANUP, subscription.getQualifiedName()))
+        consumerProcessSupervisor.accept(Signal.of(Signal.SignalType.KILL, subscription.getQualifiedName()))
         consumerProcessSupervisor.accept(Signal.of(Signal.SignalType.COMMIT, subscription.getQualifiedName()))
         consumerProcessSupervisor.run()
 
