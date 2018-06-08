@@ -96,13 +96,16 @@ class ConsumerProcessSupervisorSignalsTest extends Specification {
         }
 
         consumerFactory.createConsumer(subscription) >> consumer
+
         consumerProcessSupervisor.accept(
                 Signal.of(Signal.SignalType.START, subscription.getQualifiedName(), subscription))
+
         consumerProcessSupervisor.run()
 
         when:
         consumerProcessSupervisor.accept(
                 Signal.of(signalType, subscription.getQualifiedName(), subscription))
+
         consumerProcessSupervisor.run()
 
         then:
@@ -118,7 +121,7 @@ class ConsumerProcessSupervisorSignalsTest extends Specification {
     }
 
 
-    def "should force kill stopped process if it is running to long"() {
+    def "should force kill stopped process if it is running too long"() {
         given:
         def delay = 0.5
         def timestampContainer = new TimestampContainer()
@@ -134,8 +137,10 @@ class ConsumerProcessSupervisorSignalsTest extends Specification {
         }
 
         consumerFactory.createConsumer(subscription) >> consumer
+
         consumerProcessSupervisor.accept(
                 Signal.of(Signal.SignalType.START, subscription.getQualifiedName(), subscription))
+
         consumerProcessSupervisor.run()
 
         when:

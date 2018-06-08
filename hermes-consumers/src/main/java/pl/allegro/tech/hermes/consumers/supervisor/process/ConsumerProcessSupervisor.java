@@ -163,9 +163,7 @@ public class ConsumerProcessSupervisor implements Runnable {
                 break;
             case RESTART_UNHEALTHY:
                 forRunningConsumerProcess(signal, consumerProcess -> {
-                    // we can't use KILL signal except calling killRunning(signal) because it has to be done
-                    // before START signal will be pushed to the queue, so we call this immediately
-                    killRunning(signal);
+                    taskQueue.offer(signal.createChild(KILL, clock.millis(), consumerProcess.getSubscription()));
                     taskQueue.offer(signal.createChild(START, clock.millis(), consumerProcess.getSubscription()));
                 });
                 break;
