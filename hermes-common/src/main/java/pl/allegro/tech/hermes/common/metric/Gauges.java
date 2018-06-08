@@ -24,5 +24,7 @@ public class Gauges {
             MAX_RATE_VALUE =
                     "consumers-rate.max-rate.node." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".max-rate",
             MAX_RATE_ACTUAL_RATE_VALUE =
-                    "consumers-rate.max-rate.node." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".rate";
+                    "consumers-rate.max-rate.node." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".rate",
+            RUNNING_CONSUMER_PROCESSES_COUNT = "consumer-processes.running-consumer-processes.count",
+            DYING_CONSUMER_PROCESSES_COUNT = "consumer-processes.dying-consumer-processes.count";
 }
