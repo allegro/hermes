@@ -7,6 +7,11 @@ import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.List;
+
+import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;
+
 public class DistributedEphemeralCounter {
 
     private static final Logger logger = LoggerFactory.getLogger(DistributedEphemeralCounter.class);
@@ -50,7 +55,7 @@ public class DistributedEphemeralCounter {
                 }
             }
         } catch (Exception e) {
-            logger.error(String.format("Error while reading value for path %s/?/%s", basePath, childrenPath), e);
+            logger.warn("Error while reading value for base path: {} and child path: {}; {}", basePath, childrenPath, getRootCauseMessage(e));
         } finally {
             return sum;
         }
