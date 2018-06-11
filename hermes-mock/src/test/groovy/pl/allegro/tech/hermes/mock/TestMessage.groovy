@@ -1,11 +1,8 @@
 package pl.allegro.tech.hermes.mock
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.ObjectMapper
+import groovy.json.JsonOutput
 
 class TestMessage {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
     String key
     String value
 
@@ -20,12 +17,7 @@ class TestMessage {
         return new TestMessage("random", UUID.randomUUID().toString());
     }
 
-    @Override
-    String toString() {
-        try {
-            return objectMapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    String asJson() {
+        JsonOutput.toJson(this)
     }
 }

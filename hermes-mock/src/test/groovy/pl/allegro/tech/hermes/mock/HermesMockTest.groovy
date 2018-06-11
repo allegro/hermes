@@ -8,24 +8,24 @@ class HermesMockTest extends Specification {
     @Rule
     HermesMockRule hermes = new HermesMockRule(56789);
 
-    protected HermesPublisher publisher = new HermesPublisher("http://localhost:56789");
+    private HermesPublisher publisher = new HermesPublisher("http://localhost:56789");
 
     def "should receive a message"() {
         given:
         def topicName = "my-test-topic"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         when:
         publish(topicName)
 
         then:
-        hermes.expectSingleMessageOnTopic(topicName)
+        hermes.expect().singleMessageOnTopic(topicName)
     }
 
     def "should receive 3 messages"() {
         given:
         def topicName = "my-test-topic"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         when:
         3.times {
@@ -33,13 +33,13 @@ class HermesMockTest extends Specification {
         }
 
         then:
-        hermes.expectMessagesOnTopic(3, topicName)
+        hermes.expect().messagesOnTopic(3, topicName)
     }
 
     def "should receive 2 messages + 1 delayed"() {
         given:
         def topicName = "my-test-topic-3"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         when:
         2.times {
@@ -52,25 +52,25 @@ class HermesMockTest extends Specification {
         }
 
         then:
-        hermes.expectMessagesOnTopic(3, topicName)
+        hermes.expect().messagesOnTopic(3, topicName)
     }
 
     def "should receive message as class"() {
         given:
         def topicName = "my-test-topic"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         when:
         publish(topicName)
 
         then:
-        hermes.expectSingleMessageOnTopicAs(topicName, TestMessage)
+        hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
     }
 
     def "should receive all messages as a particular class"() {
         given:
         def topicName = "my-test-topic"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         when:
         3.times {
@@ -81,13 +81,13 @@ class HermesMockTest extends Specification {
         }
 
         then:
-        hermes.expectMessagesOnTopicAs(3, topicName, TestMessage)
+        hermes.expect().jsonMessagesOnTopicAs(3, topicName, TestMessage)
     }
 
     def "should throw on more than 1 message"() {
         given:
         def topicName = "my-first-failing-test-topic"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         when:
         2.times {
@@ -95,7 +95,7 @@ class HermesMockTest extends Specification {
         }
 
         and:
-        hermes.expectSingleMessageOnTopic(topicName)
+        hermes.expect().singleMessageOnTopic(topicName)
 
         then:
         def ex = thrown(HermesMockException)
@@ -104,7 +104,7 @@ class HermesMockTest extends Specification {
     def "should throw on more than 1 message of particular class"() {
         given:
         def topicName = "my-first-failing-test-topic"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         when:
         2.times {
@@ -112,7 +112,7 @@ class HermesMockTest extends Specification {
         }
 
         and:
-        hermes.expectSingleMessageOnTopicAs(topicName, TestMessage)
+        hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
 
         then:
         def ex = thrown(HermesMockException)
@@ -121,7 +121,7 @@ class HermesMockTest extends Specification {
     def "should get all messages"() {
         given:
         def topicName = "get-all-test-topic"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         when:
         5.times {
@@ -129,7 +129,7 @@ class HermesMockTest extends Specification {
         }
 
         then:
-        def requests = hermes.getAllRequests()
+        def requests = hermes.query().allRequests()
         requests.size() == 5
     }
 
@@ -137,8 +137,8 @@ class HermesMockTest extends Specification {
         given:
         def topicName = "get-all-test-topic"
         def topicName2 = "get-all-test-topic-2"
-        hermes.addTopic(topicName)
-        hermes.addTopic(topicName2)
+        hermes.define().jsonTopic(topicName)
+        hermes.define().jsonTopic(topicName2)
 
         when:
         5.times {
@@ -149,21 +149,21 @@ class HermesMockTest extends Specification {
         }
 
         then:
-        def requests1 = hermes.getAllRequests(topicName)
+        def requests1 = hermes.query().allRequestsOnTopic(topicName)
         requests1.size() == 5
 
         and:
-        def requests2 = hermes.getAllRequests(topicName2)
+        def requests2 = hermes.query().allRequestsOnTopic(topicName2)
         requests2.size() == 2
 
         and:
-        hermes.getAllRequests().size() == 7
+        hermes.query().allRequests().size() == 7
     }
 
     def 'should reset received messages'() {
         given:
         def topicName = "get-all-test-topic"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         when:
         5.times {
@@ -171,19 +171,19 @@ class HermesMockTest extends Specification {
         }
 
         then:
-        hermes.getAllRequests(topicName).size() == 5
+        hermes.query().allRequestsOnTopic(topicName).size() == 5
 
         and:
         hermes.resetReceivedRequest()
 
         then:
-        hermes.getAllRequests(topicName).isEmpty()
+        hermes.query().allRequestsOnTopic(topicName).isEmpty()
     }
 
     def "should get all messages as specified class"() {
         given:
         def topicName = "get-all-test-topic"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         def messages = []
         5.times {
@@ -192,11 +192,11 @@ class HermesMockTest extends Specification {
 
         when:
         5.times {
-            publish(topicName, messages[it].toString())
+            publish(topicName, messages[it].asJson())
         }
 
         then:
-        def requests = hermes.getAllMessagesAs(topicName, TestMessage)
+        def requests = hermes.query().allJsonMessagesAs(topicName, TestMessage)
         requests.size() == 5
         requests[0].key == "key-0"
         requests[0].value == "value-0"
@@ -205,7 +205,7 @@ class HermesMockTest extends Specification {
     def "should get last message as specified class"() {
         given:
         def topicName = "my-topic"
-        hermes.addTopic(topicName)
+        hermes.define().jsonTopic(topicName)
 
         when:
         3.times {
@@ -213,17 +213,17 @@ class HermesMockTest extends Specification {
         }
 
         then:
-        def message = hermes.getLastMessageAs(topicName, TestMessage)
+        def message = hermes.query().lastJsonMessageAs(topicName, TestMessage)
         message.isPresent()
         message.get().key == "random"
 
-        def request = hermes.getLastRequest(topicName)
+        def request = hermes.query().lastRequest(topicName)
         request.isPresent()
-        request.get().getBodyAsString() == message.get().toString()
+        new String(request.get().getBody()) == message.get().asJson()
     }
 
     def publish(String topic) {
-        publish(topic, TestMessage.random().toString())
+        publish(topic, TestMessage.random().asJson())
     }
 
     def publish(String topic, String body) {

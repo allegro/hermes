@@ -4,14 +4,32 @@ import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
-public class HermesMockRule extends HermesMock implements MethodRule {
+public class HermesMockRule implements MethodRule {
 
-    public HermesMockRule() {
-        super();
-    }
+    private HermesMock hermesMock;
 
     public HermesMockRule(int port) {
-        super(port);
+        this.hermesMock = new HermesMock.Builder().withPort(port).build();
+    }
+
+    public HermesMockRule(HermesMock hermesMock) {
+        this.hermesMock = hermesMock;
+    }
+
+    public HermesMockDefine define() {
+        return hermesMock.define();
+    }
+
+    public HermesMockExpect expect() {
+        return hermesMock.expect();
+    }
+
+    public HermesMockQuery query() {
+        return hermesMock.query();
+    }
+
+    public void resetReceivedRequest() {
+        hermesMock.resetReceivedRequest();
     }
 
     @Override
@@ -20,11 +38,11 @@ public class HermesMockRule extends HermesMock implements MethodRule {
             @Override
             public void evaluate() throws Throwable {
                 try {
-                    start();
-                    resetReceivedRequest();
+                    hermesMock.start();
+                    hermesMock.resetReceivedRequest();
                     base.evaluate();
                 } finally {
-                    stop();
+                    hermesMock.stop();
                 }
             }
         };
