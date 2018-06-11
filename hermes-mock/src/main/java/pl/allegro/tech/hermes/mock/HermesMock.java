@@ -8,7 +8,6 @@ public class HermesMock {
     private ObjectMapper objectMapper = new ObjectMapper();
     private int awaitSeconds = 5;
 
-    private HermesMockHelper hermesMockHelper;
     private HermesMockDefine hermesMockDefine;
     private HermesMockExpect hermesMockExpect;
     private HermesMockQuery hermesMockQuery;
@@ -24,10 +23,10 @@ public class HermesMock {
     }
 
     private void initComponents() {
-        hermesMockHelper = new HermesMockHelper(wireMockServer, objectMapper);
-        hermesMockDefine = new HermesMockDefine(wireMockServer);
-        hermesMockExpect = new HermesMockExpect(wireMockServer, awaitSeconds, hermesMockHelper);
-        hermesMockQuery = new HermesMockQuery(wireMockServer, hermesMockHelper);
+        HermesMockHelper hermesMockHelper = new HermesMockHelper(wireMockServer, objectMapper);
+        hermesMockDefine = new HermesMockDefine(hermesMockHelper);
+        hermesMockExpect = new HermesMockExpect(hermesMockHelper, awaitSeconds);
+        hermesMockQuery = new HermesMockQuery(hermesMockHelper);
     }
 
     public HermesMockDefine define() {

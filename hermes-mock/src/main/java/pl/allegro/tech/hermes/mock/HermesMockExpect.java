@@ -1,13 +1,11 @@
 package pl.allegro.tech.hermes.mock;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.avro.Schema;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -16,14 +14,12 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 
 class HermesMockExpect {
-    private WireMockServer wireMockServer;
-    private int awaitSeconds;
     private HermesMockHelper hermesMockHelper;
+    private int awaitSeconds;
 
-    public HermesMockExpect(WireMockServer wireMockServer, int awaitSeconds, HermesMockHelper hermesMockHelper) {
-        this.wireMockServer = wireMockServer;
-        this.awaitSeconds = awaitSeconds;
+    public HermesMockExpect(HermesMockHelper hermesMockHelper, int awaitSeconds) {
         this.hermesMockHelper = hermesMockHelper;
+        this.awaitSeconds = awaitSeconds;
     }
 
     public void singleMessageOnTopic(String topicName) {
@@ -39,40 +35,32 @@ class HermesMockExpect {
     }
 
     public void messagesOnTopic(int count, String topicName) {
-        try {
-            await().atMost(awaitSeconds, SECONDS).until(() ->
-                    wireMockServer.verify(count, postRequestedFor(urlEqualTo("/topics/" + topicName)))
-            );
-        } catch (Exception ex) {
-            throw new HermesMockException("Hermes mock did not receive " + count + " messages. ", ex);
-        }
+        assertMessages(count, topicName, null);
     }
 
     public <T> void jsonMessagesOnTopicAs(int count, String topicName, Class<T> clazz) {
-        try {
-            await().atMost(awaitSeconds, SECONDS).until(() ->
-                    wireMockServer.verify(count, postRequestedFor(urlEqualTo("/topics/" + topicName)))
-            );
-        } catch (ConditionTimeoutException ex) {
-            throw new HermesMockException("Hermes mock did not received " + count + " messages. ", ex);
-        }
-        List<T> allMessages = allJsonMessagesAs(topicName, clazz);
-        if (allMessages.size() != count) {
-            throw new HermesMockException("Hermes mock did not received " + count + " messages, got " + allMessages.size());
-        }
+        assertMessages(count, topicName, () -> allJsonMessagesAs(topicName, clazz));
     }
 
     public void avroMessagesOnTopic(int count, String topicName, Schema schema) {
+        assertMessages(count, topicName, () -> allAvroMessagesAs(topicName));
+    }
+
+    private <T> void assertMessages(int count, String topicName, Supplier<List<T>> obj) {
         try {
-            await().atMost(awaitSeconds, SECONDS).until(() ->
-                    wireMockServer.verify(count, postRequestedFor(urlEqualTo("/topics/" + topicName)))
-            );
+            await().atMost(awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
         } catch (ConditionTimeoutException ex) {
             throw new HermesMockException("Hermes mock did not received " + count + " messages. ", ex);
         }
-        List<byte[]> allAvroMessagesAs = allAvroMessagesAs(topicName);
-        if (allAvroMessagesAs.size() != count) {
-            throw new HermesMockException("Hermes mock did not received " + count + " messages, got " + allAvroMessagesAs.size());
+
+        if (obj != null) {
+            assertMessagesCount(count, obj.get());
+        }
+    }
+
+    private <T> void assertMessagesCount(int count, List<T> messages) {
+        if (messages != null && messages.size() != count) {
+            throw new HermesMockException("Hermes mock did not received " + count + " messages, got " + messages.size());
         }
     }
 
@@ -89,6 +77,6 @@ class HermesMockExpect {
     }
 
     private List<LoggedRequest> getAllRequests(String topicName) {
-        return wireMockServer.findAll(postRequestedFor(urlEqualTo("/topics/" + topicName)));
+        return hermesMockHelper.findAll(postRequestedFor(urlEqualTo("/topics/" + topicName)));
     }
 }

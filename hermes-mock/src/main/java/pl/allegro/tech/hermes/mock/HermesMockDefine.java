@@ -1,19 +1,12 @@
 package pl.allegro.tech.hermes.mock;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
 import org.apache.http.HttpStatus;
 
-import java.util.UUID;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-
 class HermesMockDefine {
-    private WireMockServer wireMockServer;
+    private HermesMockHelper hermesMockHelper;
 
-    public HermesMockDefine(WireMockServer wireMockServer) {
-        this.wireMockServer = wireMockServer;
+    public HermesMockDefine(HermesMockHelper hermesMockHelper) {
+        this.hermesMockHelper = hermesMockHelper;
     }
 
     public void jsonTopic(String topicName) {
@@ -33,12 +26,6 @@ class HermesMockDefine {
     }
 
     private void addTopic(String topicName, int statusCode, String contentType) {
-        wireMockServer.stubFor(get(urlPathMatching("/topics/" + topicName))
-                .willReturn(aResponse()
-                        .withStatus(statusCode)
-                        .withHeader("Content-Type", contentType)
-                        .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
-                )
-        );
+        hermesMockHelper.addStub(topicName, statusCode, contentType);
     }
 }

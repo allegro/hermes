@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.mock;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
 import org.apache.avro.Schema;
 
@@ -13,23 +12,21 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.util.stream.Collectors.toList;
 
 class HermesMockQuery {
-    private WireMockServer wireMockServer;
     private HermesMockHelper hermesMockHelper;
 
-    public HermesMockQuery(WireMockServer wireMockServer, HermesMockHelper hermesMockHelper) {
-        this.wireMockServer = wireMockServer;
+    public HermesMockQuery(HermesMockHelper hermesMockHelper) {
         this.hermesMockHelper = hermesMockHelper;
     }
 
     public List<Request> allRequests() {
-        return wireMockServer.findAll(postRequestedFor(urlPathMatching(("/topics/")))).stream()
+        return hermesMockHelper.findAll(postRequestedFor(urlPathMatching(("/topics/")))).stream()
                 .map(Request::new)
                 .collect(toList());
     }
 
     public List<Request> allRequestsOnTopic(String topicName) {
         RequestPatternBuilder matcher = postRequestedFor(urlEqualTo("/topics/" + topicName));
-        return wireMockServer.findAll(matcher).stream()
+        return hermesMockHelper.findAll(matcher).stream()
                 .map(Request::new)
                 .collect(toList());
     }
