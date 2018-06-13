@@ -3,26 +3,27 @@ package pl.allegro.tech.hermes.mock;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+
 public class HermesMock {
-    private WireMockServer wireMockServer;
+    private final WireMockServer wireMockServer;
     private ObjectMapper objectMapper = new ObjectMapper();
     private int awaitSeconds = 5;
 
-    private HermesMockDefine hermesMockDefine;
-    private HermesMockExpect hermesMockExpect;
-    private HermesMockQuery hermesMockQuery;
+    private final HermesMockDefine hermesMockDefine;
+    private final HermesMockExpect hermesMockExpect;
+    private final HermesMockQuery hermesMockQuery;
 
     public HermesMock() {
-        wireMockServer = new WireMockServer();
-        initComponents();
+        this(wireMockConfig().portNumber());
     }
 
     public HermesMock(int port) {
+        if (port == 0) {
+            port = wireMockConfig().dynamicPort().portNumber();
+        }
         wireMockServer = new WireMockServer(port);
-        initComponents();
-    }
 
-    private void initComponents() {
         HermesMockHelper hermesMockHelper = new HermesMockHelper(wireMockServer, objectMapper);
         hermesMockDefine = new HermesMockDefine(hermesMockHelper);
         hermesMockExpect = new HermesMockExpect(hermesMockHelper, awaitSeconds);
@@ -79,12 +80,7 @@ public class HermesMock {
         }
 
         public HermesMock build() {
-            HermesMock hermesMock;
-            if (port == 0) {
-                hermesMock = new HermesMock();
-            } else {
-                hermesMock = new HermesMock(port);
-            }
+            HermesMock hermesMock = new HermesMock(port);
             hermesMock.awaitSeconds = awaitSeconds;
             hermesMock.objectMapper = objectMapper;
             return hermesMock;
