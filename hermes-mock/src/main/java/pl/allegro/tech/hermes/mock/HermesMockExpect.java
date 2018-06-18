@@ -14,8 +14,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 
 class HermesMockExpect {
-    private HermesMockHelper hermesMockHelper;
-    private int awaitSeconds;
+    private final HermesMockHelper hermesMockHelper;
+    private final int awaitSeconds;
 
     public HermesMockExpect(HermesMockHelper hermesMockHelper, int awaitSeconds) {
         this.hermesMockHelper = hermesMockHelper;

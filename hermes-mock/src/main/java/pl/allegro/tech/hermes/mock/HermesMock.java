@@ -7,21 +7,12 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 
 public class HermesMock {
     private final WireMockServer wireMockServer;
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private int awaitSeconds = 5;
 
     private final HermesMockDefine hermesMockDefine;
     private final HermesMockExpect hermesMockExpect;
     private final HermesMockQuery hermesMockQuery;
 
-    public HermesMock() {
-        this(wireMockConfig().portNumber());
-    }
-
-    public HermesMock(int port) {
-        if (port == 0) {
-            port = wireMockConfig().dynamicPort().portNumber();
-        }
+    private HermesMock(int port, int awaitSeconds, ObjectMapper objectMapper) {
         wireMockServer = new WireMockServer(port);
 
         HermesMockHelper hermesMockHelper = new HermesMockHelper(wireMockServer, objectMapper);
@@ -60,6 +51,7 @@ public class HermesMock {
         private ObjectMapper objectMapper;
 
         public Builder() {
+            port = wireMockConfig().portNumber();
             awaitSeconds = 5;
             objectMapper = new ObjectMapper();
         }
@@ -80,10 +72,10 @@ public class HermesMock {
         }
 
         public HermesMock build() {
-            HermesMock hermesMock = new HermesMock(port);
-            hermesMock.awaitSeconds = awaitSeconds;
-            hermesMock.objectMapper = objectMapper;
-            return hermesMock;
+            if (port == 0) {
+                port = wireMockConfig().dynamicPort().portNumber();
+            }
+            return new HermesMock(port, awaitSeconds, objectMapper);
         }
     }
 }

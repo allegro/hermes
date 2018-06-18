@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.mock;
 import org.apache.http.HttpStatus;
 
 class HermesMockDefine {
-    private HermesMockHelper hermesMockHelper;
+    private final HermesMockHelper hermesMockHelper;
 
     public HermesMockDefine(HermesMockHelper hermesMockHelper) {
         this.hermesMockHelper = hermesMockHelper;

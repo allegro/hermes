@@ -6,7 +6,7 @@ import org.junit.runners.model.Statement;
 
 public class HermesMockRule implements MethodRule {
 
-    private HermesMock hermesMock;
+    private final HermesMock hermesMock;
 
     public HermesMockRule(int port) {
         this.hermesMock = new HermesMock.Builder().withPort(port).build();

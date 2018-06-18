@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     compile group: 'junit', name: 'junit', version: '4.11'
-    compile group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock
+    compile group: 'com.github.tomakehurst', name: 'wiremock', version: '2.14.0'
     compile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
     compile group: 'org.apache.avro', name: 'avro', version: '1.8.1'
     compile group: 'tech.allegro.schema.json2avro', name: 'converter', version: '0.2.5'

@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.mock;
 
-import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import org.apache.avro.Schema;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.util.stream.Collectors.toList;
 
 class HermesMockQuery {
-    private HermesMockHelper hermesMockHelper;
+    private final HermesMockHelper hermesMockHelper;
 
     public HermesMockQuery(HermesMockHelper hermesMockHelper) {
         this.hermesMockHelper = hermesMockHelper;

@@ -2,7 +2,8 @@ package pl.allegro.tech.hermes.mock;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
+import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
@@ -19,8 +20,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 
 class HermesMockHelper {
-    private WireMockServer wireMockServer;
-    private ObjectMapper objectMapper;
+    private final WireMockServer wireMockServer;
+    private final ObjectMapper objectMapper;
 
     public HermesMockHelper(WireMockServer wireMockServer, ObjectMapper objectMapper) {
         this.wireMockServer = wireMockServer;
