@@ -32,7 +32,6 @@ scmVersion {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'groovy'
-    apply plugin: 'maven-publish'
 
     group = 'pl.allegro.tech.hermes'
     version = scmVersion.version
@@ -113,16 +112,6 @@ configure(subprojects - project(':integration')) {
 }
 
 subprojects {
-    apply plugin: 'maven-publish'
-
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                from project.components.java
-            }
-        }
-    }
-
     configurations {
         all*.exclude group: "org.slf4j", module: "slf4j-log4j12"
         all*.exclude group: "log4j", module: "log4j"
