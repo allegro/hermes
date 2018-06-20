@@ -35,7 +35,7 @@ class HermesMockExpect {
     }
 
     public void messagesOnTopic(int count, String topicName) {
-        assertMessages(count, topicName, null);
+        assertMessages(count, topicName);
     }
 
     public <T> void jsonMessagesOnTopicAs(int count, String topicName, Class<T> clazz) {
@@ -46,16 +46,21 @@ class HermesMockExpect {
         assertMessages(count, topicName, () -> validateAvroMessages(topicName, schema));
     }
 
+    private <T> void assertMessages(int count, String topicName) {
+        try {
+            await().atMost(awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
+        } catch (ConditionTimeoutException ex) {
+            throw new HermesMockException("Hermes mock did not receive " + count + " messages.", ex);
+        }
+    }
+
     private <T> void assertMessages(int count, String topicName, Supplier<List<T>> messages) {
         try {
             await().atMost(awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
         } catch (ConditionTimeoutException ex) {
             throw new HermesMockException("Hermes mock did not receive " + count + " messages.", ex);
         }
-
-        if (messages != null) {
-            assertMessagesCount(count, messages.get());
-        }
+        assertMessagesCount(count, messages.get());
     }
 
     private <T> void assertMessagesCount(int count, List<T> messages) {

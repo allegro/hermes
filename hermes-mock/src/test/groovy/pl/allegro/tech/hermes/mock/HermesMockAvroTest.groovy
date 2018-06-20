@@ -27,7 +27,7 @@ class HermesMockAvroTest extends Specification {
         when:
             publish(topicName)
 
-        then:
+        then: "check for any single message on the topic and check for single specific avro message"
             hermes.expect().singleMessageOnTopic(topicName)
             hermes.expect().singleAvroMessageOnTopic(topicName, schema)
     }
