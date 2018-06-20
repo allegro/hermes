@@ -29,8 +29,6 @@ class HermesMockAvroTest extends Specification {
 
         then:
             hermes.expect().singleMessageOnTopic(topicName)
-
-        and:
             hermes.expect().singleAvroMessageOnTopic(topicName, schema)
     }
 
