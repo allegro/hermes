@@ -19,7 +19,7 @@ class HermesMockQuery {
     }
 
     public List<Request> allRequests() {
-        return hermesMockHelper.findAll(postRequestedFor(urlPathMatching(("/topics/")))).stream()
+        return hermesMockHelper.findAll(postRequestedFor(urlPathMatching(("/topics/.*")))).stream()
                 .map(Request::new)
                 .collect(toList());
     }

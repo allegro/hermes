@@ -24,7 +24,7 @@ scmVersion {
     versionCreator 'versionWithBranch'
 
     hooks {
-        pre 'fileUpdate', [files: ['mkdocs.yml', 'hermes-console/package.json'], pattern: {v, p -> /$v/ }, replacement: {v, p -> "$v"}]
+        pre 'fileUpdate', [files: ['mkdocs.yml', 'hermes-console/package.json'], pattern: { v, p -> /$v/ }, replacement: { v, p -> "$v" }]
         pre 'commit'
     }
 }
@@ -32,6 +32,7 @@ scmVersion {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'groovy'
+    apply plugin: 'maven-publish'
 
     group = 'pl.allegro.tech.hermes'
     version = scmVersion.version
@@ -71,7 +72,7 @@ allprojects {
     }
 
     test {
-        if(project.hasProperty('tests.timeout.multiplier')) {
+        if (project.hasProperty('tests.timeout.multiplier')) {
             jvmArgs = ["-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"]
         }
     }
@@ -112,6 +113,16 @@ configure(subprojects - project(':integration')) {
 }
 
 subprojects {
+    apply plugin: 'maven-publish'
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from project.components.java
+            }
+        }
+    }
+
     configurations {
         all*.exclude group: "org.slf4j", module: "slf4j-log4j12"
         all*.exclude group: "log4j", module: "log4j"

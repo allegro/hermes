@@ -30,7 +30,7 @@ class HermesMockExpect {
         jsonMessagesOnTopicAs(1, topicName, clazz);
     }
 
-    public void singleAvroMessageOnTopic(String topicName, Schema schema) {
+    public <T> void singleAvroMessageOnTopic(String topicName, Schema schema) {
         avroMessagesOnTopic(1, topicName, schema);
     }
 
@@ -42,31 +42,32 @@ class HermesMockExpect {
         assertMessages(count, topicName, () -> allJsonMessagesAs(topicName, clazz));
     }
 
-    public void avroMessagesOnTopic(int count, String topicName, Schema schema) {
-        assertMessages(count, topicName, () -> allAvroMessagesAs(topicName));
+    public <T> void avroMessagesOnTopic(int count, String topicName, Schema schema) {
+        assertMessages(count, topicName, () -> validateAvroMessages(topicName, schema));
     }
 
-    private <T> void assertMessages(int count, String topicName, Supplier<List<T>> obj) {
+    private <T> void assertMessages(int count, String topicName, Supplier<List<T>> messages) {
         try {
             await().atMost(awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
         } catch (ConditionTimeoutException ex) {
-            throw new HermesMockException("Hermes mock did not received " + count + " messages. ", ex);
+            throw new HermesMockException("Hermes mock did not receive " + count + " messages. ", ex);
         }
 
-        if (obj != null) {
-            assertMessagesCount(count, obj.get());
+        if (messages != null) {
+            assertMessagesCount(count, messages.get());
         }
     }
 
     private <T> void assertMessagesCount(int count, List<T> messages) {
         if (messages != null && messages.size() != count) {
-            throw new HermesMockException("Hermes mock did not received " + count + " messages, got " + messages.size());
+            throw new HermesMockException("Hermes mock did not receive " + count + " messages, got " + messages.size());
         }
     }
 
-    private List<byte[]> allAvroMessagesAs(String topicName) {
+    private <T> List<byte[]> validateAvroMessages(String topicName, Schema schema) {
         return getAllRequests(topicName).stream()
                 .map(LoggedRequest::getBody)
+                .peek(raw -> hermesMockHelper.validateAvroSchema(raw, schema))
                 .collect(toList());
     }
 
