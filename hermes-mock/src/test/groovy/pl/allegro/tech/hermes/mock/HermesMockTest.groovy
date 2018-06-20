@@ -89,7 +89,7 @@ class HermesMockTest extends Specification {
 
         then:
             def ex = thrown(HermesMockException)
-            ex.message == "Hermes mock did not receive 1 messages"
+            ex.message == "Hermes mock did not receive 1 messages."
     }
 
     def "should throw on more than 1 message of particular class"() {
@@ -105,7 +105,7 @@ class HermesMockTest extends Specification {
 
         then:
             def ex = thrown(HermesMockException)
-            ex.message == "Hermes mock did not receive 1 messages"
+            ex.message == "Hermes mock did not receive 1 messages."
     }
 
     def "should get all messages"() {

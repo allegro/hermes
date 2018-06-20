@@ -50,7 +50,7 @@ class HermesMockExpect {
         try {
             await().atMost(awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
         } catch (ConditionTimeoutException ex) {
-            throw new HermesMockException("Hermes mock did not receive " + count + " messages. ", ex);
+            throw new HermesMockException("Hermes mock did not receive " + count + " messages.", ex);
         }
 
         if (messages != null) {
