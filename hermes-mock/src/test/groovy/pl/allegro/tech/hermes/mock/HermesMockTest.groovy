@@ -31,7 +31,7 @@ class HermesMockTest extends Specification {
             3.times { publish(topicName) }
 
         then:
-            hermes.expect().messagesOnTopic(3, topicName)
+            hermes.expect().messagesOnTopic( topicName,3)
     }
 
     def "should receive 2 messages + 1 delayed"() {
@@ -48,7 +48,7 @@ class HermesMockTest extends Specification {
             }
 
         then:
-            hermes.expect().messagesOnTopic(3, topicName)
+            hermes.expect().messagesOnTopic(topicName, 3)
     }
 
     def "should receive message as class"() {
@@ -73,7 +73,7 @@ class HermesMockTest extends Specification {
             3.times { publish("whatever") }
 
         then:
-            hermes.expect().jsonMessagesOnTopicAs(3, topicName, TestMessage)
+            hermes.expect().jsonMessagesOnTopicAs(topicName,3, TestMessage)
     }
 
     def "should throw on more than 1 message"() {

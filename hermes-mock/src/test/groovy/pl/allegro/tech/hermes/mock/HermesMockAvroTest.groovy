@@ -43,7 +43,7 @@ class HermesMockAvroTest extends Specification {
             messages.each {publish(topicName, it) }
 
         then:
-            hermes.expect().avroMessagesOnTopic(5, topicName, schema)
+            hermes.expect().avroMessagesOnTopic(topicName,5, schema)
     }
 
     def "should get messages with schema from file"() {
