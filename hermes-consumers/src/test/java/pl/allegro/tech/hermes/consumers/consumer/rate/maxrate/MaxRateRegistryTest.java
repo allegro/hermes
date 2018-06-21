@@ -7,8 +7,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import java.util.Collections;
@@ -25,9 +28,13 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final MaxRatePathSerializer pathSerializer = new MaxRatePathSerializer();
     private final SubscriptionsCache subscriptionsCache = mock(SubscriptionsCache.class);
+    private final ConfigFactory configFactory = new MutableConfigFactory();
+    private final String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 
     private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(
-            zookeeperClient, objectMapper, zookeeperPaths, pathSerializer, subscriptionsCache);
+            configFactory, zookeeperClient, objectMapper, zookeeperPaths, pathSerializer, subscriptionsCache
+    );
+
 
     @Before
     public void setUp() throws Exception {
@@ -59,7 +66,7 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
         // when
         maxRateRegistry.writeRateHistory(consumer, rateHistory);
         wait.untilZookeeperPathIsCreated(
-                zookeeperPaths.consumersRateHistoryPath(consumer.getSubscription(), consumer.getConsumerId()));
+                zookeeperPaths.consumersRateHistoryPath(cluster, consumer.getSubscription(), consumer.getConsumerId()));
 
         // then
         assertEquals(rateHistory, maxRateRegistry.getRateHistory(consumer));
@@ -79,9 +86,9 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
                 ));
 
         wait.untilZookeeperPathIsCreated(
-                zookeeperPaths.consumersMaxRatePath(consumer1.getSubscription(), consumer1.getConsumerId()));
+                zookeeperPaths.consumersMaxRatePath(cluster, consumer1.getSubscription(), consumer1.getConsumerId()));
         wait.untilZookeeperPathIsCreated(
-                zookeeperPaths.consumersMaxRatePath(consumer2.getSubscription(), consumer2.getConsumerId()));
+                zookeeperPaths.consumersMaxRatePath(cluster, consumer2.getSubscription(), consumer2.getConsumerId()));
 
         // then
         assertEquals(new MaxRate(350.0), maxRateRegistry.getMaxRate(consumer1).get());
@@ -100,14 +107,14 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
         ));
 
         wait.untilZookeeperPathIsCreated(
-                zookeeperPaths.consumersMaxRatePath(consumer1.getSubscription(), consumer1.getConsumerId()));
+                zookeeperPaths.consumersMaxRatePath(cluster, consumer1.getSubscription(), consumer1.getConsumerId()));
         wait.untilZookeeperPathIsCreated(
-                zookeeperPaths.consumersMaxRatePath(consumer2.getSubscription(), consumer2.getConsumerId()));
+                zookeeperPaths.consumersMaxRatePath(cluster, consumer2.getSubscription(), consumer2.getConsumerId()));
 
         // when
         maxRateRegistry.ensureCorrectAssignments(subscription, Sets.newHashSet("consumer1", "consumer3"));
         wait.untilZookeeperPathNotExists(
-                zookeeperPaths.consumersRatePath(consumer2.getSubscription(), consumer2.getConsumerId()));
+                zookeeperPaths.consumersRatePath(cluster, consumer2.getSubscription(), consumer2.getConsumerId()));
 
         // then
         assertEquals(Optional.empty(), maxRateRegistry.getMaxRate(consumer2));
