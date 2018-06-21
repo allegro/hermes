@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -52,8 +51,8 @@ import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_SECOND;
 import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
+import static org.mockito.Mockito.verify;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -141,13 +140,11 @@ class ConsumerTestRuntimeEnvironment {
         );
         subscriptionsCaches.add(subscriptionsCache);
 
-        SubscriptionAssignmentCache subscriptionAssignmentCache = new SubscriptionAssignmentCache(
-                curator, configFactory, paths, subscriptionsCache
-        );
+        SubscriptionAssignmentCaches subscriptionAssignmentCaches = new SubscriptionAssignmentCaches(
+                curator, configFactory, paths, subscriptionsCache);
 
         SubscriptionAssignmentRegistry assignmentRegistry = new SubscriptionAssignmentRegistryFactory(
-                curator, configFactory, subscriptionAssignmentCache
-        ).provide();
+                curator, configFactory, subscriptionAssignmentCaches).provide();
 
         WorkTracker workTracker = new WorkTracker(consumerId, assignmentRegistry);
 
@@ -156,7 +153,7 @@ class ConsumerTestRuntimeEnvironment {
                 mock(ZookeeperAdminCache.class), executorService, configFactory, metricsSupplier.get()
         );
 
-        return new ConsumerControllers(subscriptionAssignmentCache, supervisor);
+        return new ConsumerControllers(subscriptionAssignmentCaches, supervisor);
     }
 
     SelectiveSupervisorController spawnConsumer(String consumerId, ConsumersSupervisor consumersSupervisor) {
@@ -226,7 +223,7 @@ class ConsumerTestRuntimeEnvironment {
         try {
             consumerControllers.supervisorController.start();
             waitForRegistration(consumerControllers.supervisorController.consumerId());
-            consumerControllers.assignmentCache.start();
+            consumerControllers.assignmentCaches.start();
             return consumerControllers;
         } catch (Exception e) {
             throw new InternalProcessingException(e);
@@ -315,15 +312,18 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     static class ConsumerControllers {
-        SubscriptionAssignmentCache assignmentCache;
+        SubscriptionAssignmentCaches assignmentCaches;
         SelectiveSupervisorController supervisorController;
 
-        public ConsumerControllers(SubscriptionAssignmentCache assignmentCache,
+        public ConsumerControllers(SubscriptionAssignmentCaches assignmentCaches,
                                    SelectiveSupervisorController supervisorController) {
-            this.assignmentCache = assignmentCache;
+            this.assignmentCaches = assignmentCaches;
             this.supervisorController = supervisorController;
         }
 
+        public SubscriptionAssignmentCaches getAssignmentCaches() {
+            return assignmentCaches;
+        }
 
         public SelectiveSupervisorController getSupervisorController() {
             return supervisorController;

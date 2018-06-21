@@ -8,8 +8,6 @@ import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -43,24 +41,22 @@ public class MaxRateRegistry {
     private final MaxRatePathSerializer pathSerializer;
     private final HierarchicalCache cache;
     private final SubscriptionsCache subscriptionsCache;
-    private final String cluster;
 
     private final Map<ConsumerInstance, RateInfo> rateInfos = new ConcurrentHashMap<>();
 
     @Inject
-    public MaxRateRegistry(ConfigFactory configFactory, CuratorFramework curator, ObjectMapper objectMapper, ZookeeperPaths zookeeperPaths,
+    public MaxRateRegistry(CuratorFramework curator, ObjectMapper objectMapper, ZookeeperPaths zookeeperPaths,
                            MaxRatePathSerializer pathSerializer, SubscriptionsCache subscriptionsCache) {
         this.curator = curator;
         this.objectMapper = objectMapper;
         this.zookeeperPaths = zookeeperPaths;
         this.pathSerializer = pathSerializer;
         this.subscriptionsCache = subscriptionsCache;
-        this.cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 
         ThreadFactory cacheThreadFactory = new ThreadFactoryBuilder().setNameFormat("max-rate-registry-%d").build();
         this.cache = new HierarchicalCache(curator,
                 Executors.newSingleThreadExecutor(cacheThreadFactory),
-                zookeeperPaths.consumersRateRuntimePath(cluster), 3, Collections.emptyList()
+                zookeeperPaths.consumersRateRuntimePath(), 3, Collections.emptyList()
         );
 
         handleContentUpdates();
@@ -101,7 +97,7 @@ public class MaxRateRegistry {
     void update(SubscriptionName subscriptionName, Map<String, MaxRate> newMaxRates) {
         try {
             for (Map.Entry<String, MaxRate> entry : newMaxRates.entrySet()) {
-                String maxRatePath = zookeeperPaths.consumersMaxRatePath(cluster, subscriptionName, entry.getKey());
+                String maxRatePath = zookeeperPaths.consumersMaxRatePath(subscriptionName, entry.getKey());
                 writeOrCreate(maxRatePath, objectMapper.writeValueAsBytes(entry.getValue()));
             }
         } catch (Exception e) {
@@ -119,7 +115,7 @@ public class MaxRateRegistry {
     }
 
     void writeRateHistory(ConsumerInstance consumer, RateHistory rateHistory) {
-        String path = zookeeperPaths.consumersRateHistoryPath(cluster, consumer.getSubscription(), consumer.getConsumerId());
+        String path = zookeeperPaths.consumersRateHistoryPath(consumer.getSubscription(), consumer.getConsumerId());
         try {
             byte[] serialized = objectMapper.writeValueAsBytes(rateHistory);
             writeOrCreate(path, serialized);
@@ -129,7 +125,7 @@ public class MaxRateRegistry {
     }
 
     private void cleanupRegistry(SubscriptionName subscriptionName, List<String> currentConsumers) throws Exception {
-        List<String> previousConsumers = rateInfos.keySet().stream() // FIXME what if the previous consumer is not in rateInfos?
+        List<String> previousConsumers = rateInfos.keySet().stream()
                 .filter(c -> c.getSubscription().equals(subscriptionName))
                 .map(c -> c.getConsumerId()).collect(Collectors.toList());
 
@@ -145,7 +141,7 @@ public class MaxRateRegistry {
     private void removeConsumerEntries(SubscriptionName subscriptionName, String consumerId) {
         try {
             curator.delete().deletingChildrenIfNeeded()
-                    .forPath(zookeeperPaths.consumersRatePath(cluster, subscriptionName, consumerId));
+                    .forPath(zookeeperPaths.consumersRatePath(subscriptionName, consumerId));
         } catch (KeeperException.NoNodeException e) {
             // ignore
         } catch (Exception e) {
@@ -226,7 +222,8 @@ public class MaxRateRegistry {
         int loadedMaxRates = 0;
         for (SubscriptionName subscriptionName : subscriptions) {
             try {
-                List<String> assignedConsumers = consumersInRegistry(subscriptionName);
+                String subscriptionConsumersPath = zookeeperPaths.consumersRateSubscriptionPath(subscriptionName);
+                List<String> assignedConsumers = curator.getChildren().forPath(subscriptionConsumersPath);
                 if (setInitialMaxRates(subscriptionName, assignedConsumers)) {
                     loadedMaxRates++;
                 }
@@ -237,20 +234,16 @@ public class MaxRateRegistry {
         logger.info("Loaded max-rates of {} out of {} subscriptions", loadedMaxRates, subscriptions.size());
     }
 
-    private List<String> consumersInRegistry(SubscriptionName subscriptionName) throws Exception {
-        String subscriptionConsumersPath = zookeeperPaths.consumersRateSubscriptionPath(cluster, subscriptionName);
-        return curator.getChildren().forPath(subscriptionConsumersPath);
-    }
-
     private boolean setInitialMaxRates(SubscriptionName subscriptionName, List<String> consumerIds) {
         // It is possible that some stale consumer entries exist. They will be logged.
         // We consider the operation successful when at least one consumer's max rate is read.
         boolean atLeastOneConsumerInitialized = false;
         for (String consumerId : consumerIds) {
             try {
+                zookeeperPaths.consumersMaxRatePath(subscriptionName, consumerId);
                 ConsumerInstance consumer = new ConsumerInstance(consumerId, subscriptionName);
                 byte[] rawMaxRate = curator.getData().forPath(
-                        zookeeperPaths.consumersMaxRatePath(cluster, subscriptionName, consumerId));
+                        zookeeperPaths.consumersMaxRatePath(subscriptionName, consumerId));
                 MaxRate maxRate = objectMapper.readValue(rawMaxRate, MaxRate.class);
                 rateInfos.put(consumer, RateInfo.withNoHistory(maxRate));
                 atLeastOneConsumerInitialized = true;
