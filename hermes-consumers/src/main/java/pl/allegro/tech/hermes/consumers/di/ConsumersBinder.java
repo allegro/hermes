@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.di;
 
+import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -32,11 +33,12 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClient;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
-import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRatePathSerializer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
+import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.SubscriptionConsumersCache;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
@@ -56,8 +58,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEn
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeoutFactory;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
-import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
+import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionCacheFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -68,7 +70,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.NonblockingConsumersSuperviso
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitorFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCaches;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistryFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
@@ -123,7 +125,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(HttpClientFactory.class);
 
         bindFactory(SubscriptionCacheFactory.class).in(Singleton.class).to(SubscriptionsCache.class);
-        bindSingleton(SubscriptionAssignmentCache.class);
+        bindSingleton(SubscriptionAssignmentCaches.class);
 
         bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
         bindFactory(WorkTrackerFactory.class).in(Singleton.class).to(WorkTracker.class);
@@ -132,6 +134,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);
         bindFactory(ConsumersRuntimeMonitorFactory.class).in(Singleton.class).to(ConsumersRuntimeMonitor.class);
 
+        bindSingleton(SubscriptionConsumersCache.class);
         bindSingleton(MaxRatePathSerializer.class);
         bindSingleton(MaxRateSupervisor.class);
         bindSingleton(MaxRateProviderFactory.class);
