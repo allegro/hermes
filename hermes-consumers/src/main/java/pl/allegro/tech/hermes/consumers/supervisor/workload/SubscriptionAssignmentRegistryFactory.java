@@ -19,15 +19,15 @@ public class SubscriptionAssignmentRegistryFactory implements Factory<Subscripti
 
     private final ConfigFactory configFactory;
 
-    private final SubscriptionAssignmentCaches subscriptionAssignmentCaches;
+    private final SubscriptionAssignmentCache subscriptionAssignmentCache;
 
     @Inject
     public SubscriptionAssignmentRegistryFactory(@Named(CuratorType.HERMES) CuratorFramework curatorClient,
                                                  ConfigFactory configFactory,
-                                                 SubscriptionAssignmentCaches subscriptionAssignmentCaches) {
+                                                 SubscriptionAssignmentCache subscriptionAssignmentCache) {
         this.curatorClient = curatorClient;
         this.configFactory = configFactory;
-        this.subscriptionAssignmentCaches = subscriptionAssignmentCaches;
+        this.subscriptionAssignmentCache = subscriptionAssignmentCache;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class SubscriptionAssignmentRegistryFactory implements Factory<Subscripti
         String consumersRuntimePath = paths.consumersRuntimePath(cluster);
         return new SubscriptionAssignmentRegistry(
                 curatorClient,
-                subscriptionAssignmentCaches.localClusterCache(),
+                subscriptionAssignmentCache,
                 new SubscriptionAssignmentPathSerializer(consumersRuntimePath, AUTO_ASSIGNED_MARKER)
         );
     }
