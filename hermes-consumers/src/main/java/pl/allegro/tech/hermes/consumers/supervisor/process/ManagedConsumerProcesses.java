@@ -32,6 +32,10 @@ class ManagedConsumerProcesses {
 		return runningProcesses.size();
 	}
 
+	int countDyingSubscriptions() {
+		return dyingProcesses.size();
+	}
+
 	Set<SubscriptionName> runningSubscriptions() {
 		return ImmutableSet.copyOf(runningProcesses.keySet());
 	}
