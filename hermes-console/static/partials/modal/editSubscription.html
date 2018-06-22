@@ -75,7 +75,7 @@
                     <div class="input-group">
                         <input type="number" min="0" max="5000" step="10" ng-required="subscription.deliveryType === 'SERIAL'" class="form-control" id="subscriptionRateLimit" name="subscriptionRateLimit" placeholder="limit of messages sent by Hermes" ng-model="subscription.subscriptionPolicy.rate"/>
                         <span class="input-group-addon">messages/second</span>
-                        <span class="input-group-addon helpme-addon" uib-tooltip="Maximum rate defined by user. Maximum rate calculated by algorithm can be observed in "Output rate" metric.">?</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Maximum rate defined by user (per data center). Maximum rate calculated by algorithm can be observed in "Output rate" metric.">?</span>
                     </div>
                 </div>
             </div>
