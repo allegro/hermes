@@ -314,5 +314,13 @@ public class HermesMetrics {
         metricRegistry.remove(metricRegistryName(
                 Gauges.MAX_RATE_ACTUAL_RATE_VALUE, subscription.getTopicName(), subscription.getName()));
     }
+
+    public void registerRunningConsumerProcessesCountGauge(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.RUNNING_CONSUMER_PROCESSES_COUNT), gauge);
+    }
+
+    public void registerDyingConsumerProcessesCountGauge(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.DYING_CONSUMER_PROCESSES_COUNT), gauge);
+    }
 }
 

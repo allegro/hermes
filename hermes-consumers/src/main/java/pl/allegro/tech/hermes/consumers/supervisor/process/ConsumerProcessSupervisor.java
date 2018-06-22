@@ -61,6 +61,9 @@ public class ConsumerProcessSupervisor implements Runnable {
         this.signalsFilter = new SignalsFilter(taskQueue, clock);
         this.consumerFactory = consumerFactory;
         this.consumerProcesses = new ManagedConsumerProcesses(clock);
+
+        metrics.registerRunningConsumerProcessesCountGauge(consumerProcesses::countRunningSubscriptions);
+        metrics.registerDyingConsumerProcessesCountGauge(consumerProcesses::countDyingSubscriptions);
     }
 
     public void accept(Signal signal) {
