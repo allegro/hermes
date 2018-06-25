@@ -5,7 +5,9 @@ site_author: Skylab
 repo_url: https://github.com/allegro/hermes
 
 docs_dir: docs/docs
-theme_dir: docs/theme
+theme: 
+  name: null
+  custom_dir: docs/theme
 
 extra_css:
     - styles.css
