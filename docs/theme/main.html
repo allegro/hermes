@@ -22,7 +22,7 @@
         <script src="{{ base_url }}/{{ js }}"></script>
     {% endfor %}
 
-    <title>{{ site_name }} {% if page_title %} # {{ page_title }} {% endif %}</title>
+    <title>{{ config.site_name }} {% if page.title %} # {{ page.title }} {% endif %}</title>
 </head>
 
 <body>
@@ -72,14 +72,14 @@
         </div>
 
         <div class="col-md-9 content">
-            {{ content }}
+            {{ page.content }}
         </div>
     </div>
 
     <div class="container-fluid footer">
         <div class="row">
             <div class="col-md-2 pull-right text-right">
-                Created by {{ site_author }}
+                Created by {{ config.site_author }}
             </div>
         </div>
     </div>
