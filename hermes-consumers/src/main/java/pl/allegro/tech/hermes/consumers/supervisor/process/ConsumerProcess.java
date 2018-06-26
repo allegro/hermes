@@ -63,7 +63,7 @@ public class ConsumerProcess implements Runnable {
         try {
             Thread.currentThread().setName("consumer-" + getSubscriptionName());
 
-            while (running && !Thread.interrupted()) {
+            while (running && !Thread.currentThread().isInterrupted()) {
                 consumer.consume(this::processSignals);
             }
             stop();
