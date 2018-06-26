@@ -226,8 +226,8 @@ public class ConsumerProcessSupervisor implements Runnable {
                         subscriptionName(signal), signal.getLogWithIdAndType());
             }
         } else {
-            logger.info("Consumer was already dead process {}. {}", signal.getTarget(), signal.getLogWithIdAndType());
-            cleanup(signal);
+            logger.info("Consumer was already dead process {}. {} but still not called shutdown callback",
+                    signal.getTarget(), signal.getLogWithIdAndType());
         }
     }
 
