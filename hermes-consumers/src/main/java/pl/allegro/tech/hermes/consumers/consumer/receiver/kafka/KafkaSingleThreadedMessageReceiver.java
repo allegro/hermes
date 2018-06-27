@@ -111,7 +111,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
             // Despite that Thread.currentThread().interrupt() is called in InterruptException's constructor
             // Thread.currentThread().isInterrupted() somehow returns false so we reset it.
             logger.info("Kafka consumer thread interrupted", ex);
-            Thread.currentThread().interrupt();
+//            Thread.currentThread().interrupt();
             return Optional.empty();
         } catch (KafkaException ex) {
             logger.error("Error while reading message for subscription {}", subscription.getQualifiedName(), ex);
