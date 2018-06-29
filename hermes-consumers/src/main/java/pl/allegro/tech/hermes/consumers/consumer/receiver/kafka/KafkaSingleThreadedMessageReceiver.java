@@ -7,6 +7,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.InterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ContentType;
@@ -106,6 +107,12 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                 }
             }
             return Optional.ofNullable(readQueue.poll());
+        } catch (InterruptException ex ) {
+            // Despite that Thread.currentThread().interrupt() is called in InterruptException's constructor
+            // Thread.currentThread().isInterrupted() somehow returns false so we reset it.
+            logger.info("Kafka consumer thread interrupted", ex);
+            Thread.currentThread().interrupt();
+            return Optional.empty();
         } catch (KafkaException ex) {
             logger.error("Error while reading message for subscription {}", subscription.getQualifiedName(), ex);
             return Optional.empty();
@@ -159,6 +166,9 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     public void commit(Set<SubscriptionPartitionOffset> offsets) {
         try {
             consumer.commitSync(createOffset(offsets));
+        } catch (InterruptException ex ) {
+            logger.info("Kafka consumer thread interrupted", ex);
+            Thread.currentThread().interrupt();
         } catch (Exception ex) {
             logger.error("Error while committing offset for subscription {}", subscription.getQualifiedName(), ex);
             metrics.counter("offset-committer.failed").inc();
