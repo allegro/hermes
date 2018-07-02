@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException;
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -118,6 +119,15 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     @Override
     public Topic getTopicDetails(TopicName topicName) {
         return getTopicDetails(topicName, false).get();
+    }
+
+    @Override
+    public List<Topic> getTopicsDetails(Collection<TopicName> topicNames) {
+        return topicNames.stream()
+                .map(topicName -> getTopicDetails(topicName, true))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
     }
 
     @Override

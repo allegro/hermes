@@ -88,6 +88,23 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
         topics.containsAll([topic1, topic2])
     }
 
+    def "should topics details by topic names"() {
+        given:
+        Topic topic1 = topic(GROUP, 'listByNames1').build()
+        Topic topic2 = topic(GROUP, 'listByNames2').build()
+        repository.createTopic(topic1)
+        repository.createTopic(topic2)
+
+        wait.untilTopicCreated(GROUP, 'listByNames1')
+        wait.untilTopicCreated(GROUP, 'listByNames2')
+
+        when:
+        List topics = repository.getTopicsDetails([topic1.name, topic2.name])
+
+        then:
+        topics.containsAll([topic1, topic2])
+    }
+
     def "should load topic details"() {
         given:
         repository.createTopic(topic(GROUP, 'details').withDescription('description').build())
