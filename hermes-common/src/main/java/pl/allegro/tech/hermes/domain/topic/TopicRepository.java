@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.domain.topic;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface TopicRepository {
@@ -24,6 +25,8 @@ public interface TopicRepository {
     void touchTopic(TopicName topicName);
 
     Topic getTopicDetails(TopicName topicName);
+
+    List<Topic> getTopicsDetails(Collection<TopicName> topicNames);
 
     boolean isSubscribingRestricted(TopicName topicName);
 }

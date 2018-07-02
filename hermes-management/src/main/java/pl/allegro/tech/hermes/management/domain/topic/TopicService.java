@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTextPreview;
+import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.RawSchema;
@@ -28,6 +29,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareServic
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,6 +54,7 @@ public class TopicService {
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
     private final Clock clock;
     private final Auditor auditor;
+    private final TopicOwnerCache topicOwnerCache;
 
     @Autowired
     public TopicService(MultiDCAwareService multiDCAwareService,
@@ -63,7 +66,8 @@ public class TopicService {
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
                         MessagePreviewRepository messagePreviewRepository,
                         Clock clock,
-                        Auditor auditor) {
+                        Auditor auditor,
+                        TopicOwnerCache topicOwnerCache) {
         this.multiDCAwareService = multiDCAwareService;
         this.topicRepository = topicRepository;
         this.groupService = groupService;
@@ -75,6 +79,7 @@ public class TopicService {
         this.messagePreviewRepository = messagePreviewRepository;
         this.clock = clock;
         this.auditor = auditor;
+        this.topicOwnerCache = topicOwnerCache;
     }
 
     public void createTopicWithSchema(TopicWithSchema topicWithSchema, String createdBy, CreatorRights isAllowedToManage) {
@@ -125,6 +130,7 @@ public class TopicService {
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
             auditor.objectCreated(createdBy, topic);
+            topicOwnerCache.onCreatedTopic(topic);
         } else {
             logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
         }
@@ -163,6 +169,7 @@ public class TopicService {
         topicRepository.removeTopic(topic.getName());
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
         auditor.objectRemoved(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
+        topicOwnerCache.onRemovedTopic(topic);
     }
 
     public void updateTopicWithSchema(TopicName topicName, PatchData patch, String modifiedBy) {
@@ -197,6 +204,7 @@ public class TopicService {
                 topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
             }
             auditor.objectUpdated(modifiedBy, retrieved, modified);
+            topicOwnerCache.onUpdatedTopic(retrieved, modified);
         }
     }
 
@@ -317,5 +325,10 @@ public class TopicService {
                     return TopicNameWithMetrics.from(metrics, t.getQualifiedName());
                 })
                 .collect(toList());
+    }
+
+    public List<Topic> listForOwnerId(OwnerId ownerId) {
+        Collection<TopicName> topicNames = topicOwnerCache.get(ownerId);
+        return topicRepository.getTopicsDetails(topicNames);
     }
 }
