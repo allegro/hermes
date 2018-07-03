@@ -84,10 +84,15 @@ class ConsumerProcessSupervisorSignalsTest extends Specification {
     @Unroll
     def "should #signalName process"() {
         given:
-        def delay = 0.5
+        def delay = 0.5 // every 0.5 seconds check test condition
+
+        // we need object variable to be updated in the consumer process because if we use long variable
+        // it will not be allocated on heap and changes will not be visible
         def timestampContainer = new TimestampContainer()
 
         def consumer = Stub(Consumer)
+
+        // 4 * delay is just a chosen rational timeout in which condition should be fulfilled
         def conditions = new PollingConditions(timeout: 4 * delay, delay: delay)
 
         consumer.consume(_) >> { Runnable signalsInterrupt ->
@@ -109,6 +114,9 @@ class ConsumerProcessSupervisorSignalsTest extends Specification {
         consumerProcessSupervisor.run()
 
         then:
+        // This condition will run every 0.5 seconds and wait at most 4 loop runs in which consumer should be stopped.
+        // 2 * delay means that within 4 condition loops, 2 consecutive timestampContainer.timestamp values should not
+        // change (so this indicates that consumer process was stopped).
         conditions.within(4 * delay) {
             assert System.currentTimeMillis() - timestampContainer.timestamp > 2 * delay * 1000
             assert consumerProcessSupervisor.countRunningProcesses() == 0
