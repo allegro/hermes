@@ -52,15 +52,19 @@ public class TopicOwnerCache {
     }
 
     private void refillCache() {
-        logger.info("Starting filling Owner Id to Topic Name cache");
-        long start = System.currentTimeMillis();
-        Multimap<OwnerId, TopicName> cache = ArrayListMultimap.create();
-        groupService.listGroupNames().stream()
-                .flatMap(groupName -> topicRepository.listTopics(groupName).stream())
-                .forEach(topic -> cache.put(topic.getOwner(), topic.getName()));
-        this.cache = Multimaps.synchronizedMultimap(cache);
-        long end = System.currentTimeMillis();
-        logger.info("Cache filled. Took {}ms", end - start);
+        try {
+            logger.info("Starting filling Owner Id to Topic Name cache");
+            long start = System.currentTimeMillis();
+            Multimap<OwnerId, TopicName> cache = ArrayListMultimap.create();
+            groupService.listGroupNames().stream()
+                    .flatMap(groupName -> topicRepository.listTopics(groupName).stream())
+                    .forEach(topic -> cache.put(topic.getOwner(), topic.getName()));
+            this.cache = Multimaps.synchronizedMultimap(cache);
+            long end = System.currentTimeMillis();
+            logger.info("Cache filled. Took {}ms", end - start);
+        } catch (Exception e) {
+            logger.error("Error while filling cache", e);
+        }
     }
 
     void onRemovedTopic(Topic topic) {
