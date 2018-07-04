@@ -5,15 +5,19 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTextPreview;
+import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
+import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
+import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
 import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -51,12 +55,15 @@ public class TopicsEndpoint {
 
     private final TopicService topicService;
     private final ManagementRights managementRights;
+    private final OwnerSources ownerSources;
 
     @Autowired
     public TopicsEndpoint(TopicService topicService,
-                          ManagementRights managementRights) {
+                          ManagementRights managementRights,
+                          OwnerSources ownerSources) {
         this.topicService = topicService;
         this.managementRights = managementRights;
+        this.ownerSources = ownerSources;
     }
 
     @GET
@@ -177,6 +184,19 @@ public class TopicsEndpoint {
                     brokersClusterName, qualifiedTopicName, partition, offset
             ));
         }
+    }
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/owner/{ownerSourceName}/{ownerId}")
+    public List<Topic> listForOwner(@PathParam("ownerSourceName") String ownerSourceName, @PathParam("ownerId") String id) {
+        OwnerSource ownerSource = ownerSources.getByName(ownerSourceName)
+                .orElseThrow(() -> new OwnerSourceNotFound(ownerSourceName));
+        if (!ownerSource.exists(id)) {
+            throw new OwnerSource.OwnerNotFound(ownerSourceName, id);
+        }
+        OwnerId ownerId = new OwnerId(ownerSource.name(), id);
+        return topicService.listForOwnerId(ownerId);
     }
 
     private List<String> listTracked(String groupName) {
