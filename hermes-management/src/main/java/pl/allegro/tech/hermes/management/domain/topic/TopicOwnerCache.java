@@ -29,7 +29,7 @@ public class TopicOwnerCache {
     private final GroupService groupService;
     private final ScheduledExecutorService scheduledExecutorService;
 
-    private final Multimap<OwnerId, TopicName> cache = Multimaps.synchronizedMultimap(ArrayListMultimap.create());
+    private Multimap<OwnerId, TopicName> cache = Multimaps.synchronizedMultimap(ArrayListMultimap.create());
 
     public TopicOwnerCache(TopicRepository topicRepository, GroupService groupService,
                            @Value("${topicOwnerCache.refreshRateInSeconds}") int refreshRateInSeconds) {
@@ -39,7 +39,7 @@ public class TopicOwnerCache {
                 new ThreadFactoryBuilder()
                         .setNameFormat("topic-owner-cache-%d")
                         .build());
-        scheduledExecutorService.scheduleAtFixedRate(this::fillCache, 0, refreshRateInSeconds, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleAtFixedRate(this::refillCache, 0, refreshRateInSeconds, TimeUnit.SECONDS);
     }
 
     @PreDestroy
@@ -51,12 +51,14 @@ public class TopicOwnerCache {
         return cache.get(ownerId);
     }
 
-    private void fillCache() {
+    private void refillCache() {
         logger.info("Starting filling Owner Id to Topic Name cache");
         long start = System.currentTimeMillis();
+        Multimap<OwnerId, TopicName> cache = ArrayListMultimap.create();
         groupService.listGroupNames().stream()
                 .flatMap(groupName -> topicRepository.listTopics(groupName).stream())
                 .forEach(topic -> cache.put(topic.getOwner(), topic.getName()));
+        this.cache = Multimaps.synchronizedMultimap(cache);
         long end = System.currentTimeMillis();
         logger.info("Cache filled. Took {}ms", end - start);
     }
