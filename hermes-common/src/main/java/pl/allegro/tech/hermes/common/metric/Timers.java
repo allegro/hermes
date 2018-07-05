@@ -39,6 +39,7 @@ public class Timers {
             GET_SCHEMA_VERSIONS_LATENCY = SCHEMA + ".get-schema-versions",
 
             CONSUMER_WORKLOAD_REBALANCE_DURATION = "consumers-workload." + KAFKA_CLUSTER + ".selective.rebalance-duration",
+            CONSUMER_IDLE_TIME = "idle-time." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
 
             OAUTH_PROVIDER_TOKEN_REQUEST_LATENCY = "oauth.provider." + OAUTH_PROVIDER_NAME + ".token-request-latency",
 
