@@ -156,9 +156,13 @@ public enum Configs {
     MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO("frontend.messages.loading.wait.for.broker.topic.info", 5),
     MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED("frontend.messages.local.storage.size.reporting.enabled", true),
 
-    CONSUMER_RECEIVER_POOL_TIMEOUT("consumer.receiver.pool.timeout", 100),
+    CONSUMER_RECEIVER_POOL_TIMEOUT("consumer.receiver.pool.timeout", 30),
     CONSUMER_RECEIVER_READ_QUEUE_CAPACITY("consumer.receiver.read.queue.capacity", 1000),
     CONSUMER_RETRANSMISSION_QUEUE_CAPACITY("consumer.receiver.retransmission.queue.capacity", 20),
+
+    CONSUMER_RECEIVER_WAIT_BETWEEN_UNSUCCESSFUL_POLLS("consumer.receiver.wait.between.unsuccessful.polls", true),
+    CONSUMER_RECEIVER_INITIAL_IDLE_TIME("consumer.receiver.initial.idle.time", 10),
+    CONSUMER_RECEIVER_MAX_IDLE_TIME("consumer.receiver.max.idle.time", 1000),
 
     CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 60),
     CONSUMER_COMMIT_OFFSET_QUEUES_SIZE("consumer.commit.offset.queues.size", 200_000),
