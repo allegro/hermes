@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.domain.subscription;
 
+import java.util.Collection;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -22,7 +23,9 @@ public interface SubscriptionRepository {
 
     Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName);
 
-    Subscription getSubscriptionDetails(SubscriptionName subscriptionId);
+    Subscription getSubscriptionDetails(SubscriptionName subscriptionNames);
+
+    List<Subscription> getSubscriptionDetails(Collection<SubscriptionName> subscriptionNames);
 
     List<String> listSubscriptionNames(TopicName topicName);
 
