@@ -1,14 +1,17 @@
 package pl.allegro.tech.hermes.management.domain.subscription;
 
+import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTrace;
+import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
@@ -32,6 +35,7 @@ public class SubscriptionService {
     private static final int LAST_MESSAGE_COUNT = 100;
 
     private final SubscriptionRepository subscriptionRepository;
+    private final SubscriptionOwnerCache subscriptionOwnerCache;
     private final TopicService topicService;
     private final SubscriptionMetricsRepository metricsRepository;
     private final SubscriptionHealthChecker subscriptionHealthChecker;
@@ -42,6 +46,7 @@ public class SubscriptionService {
 
     @Autowired
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
+                               SubscriptionOwnerCache subscriptionOwnerCache,
                                TopicService topicService,
                                SubscriptionMetricsRepository metricsRepository,
                                SubscriptionHealthChecker subscriptionHealthChecker,
@@ -50,6 +55,7 @@ public class SubscriptionService {
                                SubscriptionValidator subscriptionValidator,
                                Auditor auditor) {
         this.subscriptionRepository = subscriptionRepository;
+        this.subscriptionOwnerCache = subscriptionOwnerCache;
         this.topicService = topicService;
         this.metricsRepository = metricsRepository;
         this.subscriptionHealthChecker = subscriptionHealthChecker;
@@ -84,6 +90,7 @@ public class SubscriptionService {
         subscriptionValidator.checkCreation(subscription, creatorRights);
         subscriptionRepository.createSubscription(subscription);
         auditor.objectCreated(createdBy, subscription);
+        subscriptionOwnerCache.onCreatedSubscription(subscription);
     }
 
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
@@ -93,6 +100,7 @@ public class SubscriptionService {
     public void removeSubscription(TopicName topicName, String subscriptionName, String removedBy) {
         subscriptionRepository.removeSubscription(topicName, subscriptionName);
         auditor.objectRemoved(removedBy, Subscription.class.getSimpleName(), subscriptionName);
+        subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
     }
 
     public void updateSubscription(TopicName topicName,
@@ -104,6 +112,7 @@ public class SubscriptionService {
         Subscription updated = Patch.apply(retrieved, patch);
         revertStateIfChangedToPending(updated, oldState);
         subscriptionValidator.checkModification(updated);
+        subscriptionOwnerCache.onUpdatedSubscription(retrieved, updated);
 
         if (!retrieved.equals(updated)) {
             subscriptionRepository.updateSubscription(updated);
@@ -172,6 +181,11 @@ public class SubscriptionService {
                 .map(this::listSubscriptions)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+    }
+
+    public List<Subscription> listForOwnerId(OwnerId ownerId) {
+        Collection<SubscriptionName> subscriptionNames = subscriptionOwnerCache.get(ownerId);
+        return subscriptionRepository.getSubscriptionDetails(subscriptionNames);
     }
 
     private List<SubscriptionNameWithMetrics> getSubscriptionsMetrics() {

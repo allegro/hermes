@@ -53,7 +53,7 @@ public class TopicOwnerCache {
 
     private void refillCache() {
         try {
-            logger.info("Starting filling Owner Id to Topic Name cache");
+            logger.info("Starting filling TopicOwnerCache cache");
             long start = System.currentTimeMillis();
             Multimap<OwnerId, TopicName> cache = ArrayListMultimap.create();
             groupService.listGroupNames().stream()
@@ -61,9 +61,9 @@ public class TopicOwnerCache {
                     .forEach(topic -> cache.put(topic.getOwner(), topic.getName()));
             this.cache = Multimaps.synchronizedMultimap(cache);
             long end = System.currentTimeMillis();
-            logger.info("Cache filled. Took {}ms", end - start);
+            logger.info("TopicOwnerCache filled. Took {}ms", end - start);
         } catch (Exception e) {
-            logger.error("Error while filling cache", e);
+            logger.error("Error while filling TopicOwnerCache", e);
         }
     }
 

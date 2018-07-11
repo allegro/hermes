@@ -32,3 +32,6 @@ audit.enabled: false
 
 topicOwnerCache:
   refreshRateInSeconds: 300 # 5 minutes
+
+subscriptionOwnerCache:
+  refreshRateInSeconds: 300
