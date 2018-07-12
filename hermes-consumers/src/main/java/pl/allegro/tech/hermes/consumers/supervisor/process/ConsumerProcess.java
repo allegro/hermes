@@ -29,7 +29,7 @@ public class ConsumerProcess implements Runnable {
 
     private final Retransmitter retransmitter;
 
-    private final java.util.function.Consumer<Signal> shutdownCallback;
+    private final java.util.function.Consumer<SubscriptionName> shutdownCallback;
 
     private final long unhealthyAfter;
 
@@ -38,13 +38,12 @@ public class ConsumerProcess implements Runnable {
     private volatile long healthcheckRefreshTime;
 
     private Map<Signal.SignalType, Long> signalTimesheet = new ConcurrentHashMap<>();
-    private Signal lastSignal;
 
     public ConsumerProcess(
             Signal startSignal,
             Consumer consumer,
             Retransmitter retransmitter,
-            java.util.function.Consumer<Signal> shutdownCallback,
+            java.util.function.Consumer<SubscriptionName> shutdownCallback,
             Clock clock,
             long unhealthyAfter) {
         this.subscription = startSignal.getPayload();
@@ -66,15 +65,14 @@ public class ConsumerProcess implements Runnable {
             while (running && !Thread.currentThread().isInterrupted()) {
                 consumer.consume(this::processSignals);
             }
-            stop();
-
         } catch (Exception ex) {
             logger.error("Consumer process of subscription {} failed", getSubscriptionName(), ex);
         } finally {
             logger.info("Releasing consumer process thread of subscription {}", getSubscriptionName());
-            shutdownCallback.accept(lastSignal);
+            shutdownCallback.accept(getSubscriptionName());
             refreshHealthcheck();
             Thread.currentThread().setName("consumer-released-thread");
+            stop();
         }
     }
 
@@ -106,7 +104,6 @@ public class ConsumerProcess implements Runnable {
     }
 
     private void process(Signal signal) {
-        lastSignal = signal;
         try {
             switch (signal.getType()) {
                 case START:

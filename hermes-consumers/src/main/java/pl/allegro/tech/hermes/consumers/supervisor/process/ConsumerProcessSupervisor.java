@@ -161,6 +161,7 @@ public class ConsumerProcessSupervisor implements Runnable {
                 break;
             case KILL:
                 forRunningConsumerProcess(signal, consumerProcess -> {
+                    consumerProcesses.moveToDyingProcesses(signal, clock.millis());
                     killRunning(signal);
                 });
                 break;
@@ -206,28 +207,26 @@ public class ConsumerProcessSupervisor implements Runnable {
     private void killRunning(Signal signal) {
         logger.info("Interrupting consumer process for subscription {}. {}", subscriptionName(signal), signal.getLogWithIdAndType());
         Future task = consumerProcesses.getRunningExecutionHandle(signal);
-        consumerProcesses.moveToDyingProcesses(signal, clock.millis());
-        if (task.cancel(true)) {
-            logger.info("Interrupted consumer process {}. {}", subscriptionName(signal), signal.getLogWithIdAndType());
-        } else {
-            logger.error("Failed to interrupt consumer process {}, possible stale consumer. {}",
-                    subscriptionName(signal), signal.getLogWithIdAndType());
-        }
+        kill(signal, task, "running");
     }
 
     private void forceKillDying(Signal signal) {
         logger.info("Force interrupting already dying consumer process for subscription {}. {}", subscriptionName(signal), signal.getLogWithIdAndType());
         Future task = consumerProcesses.getDyingExecutionHandle(signal);
         if (!task.isDone()) {
-            if (task.cancel(true)) {
-                logger.info("Force interrupted consumer process {}. {}", subscriptionName(signal), signal.getLogWithIdAndType());
-            } else {
-                logger.error("Failed to force interrupt consumer process {}, possible stale consumer. {}",
-                        subscriptionName(signal), signal.getLogWithIdAndType());
-            }
+            kill(signal, task, "dying");
         } else {
             logger.info("Consumer was already dead process {}. {} but still not called shutdown callback",
                     signal.getTarget(), signal.getLogWithIdAndType());
+        }
+    }
+
+    private void kill(Signal signal, Future task, String processState) {
+        if (task.cancel(true)) {
+            logger.info("Interrupted {} consumer process {}. {}", processState, subscriptionName(signal), signal.getLogWithIdAndType());
+        } else {
+            logger.error("Failed to interrupt {} consumer process {}, possible stale consumer. {}",
+                    processState, subscriptionName(signal), signal.getLogWithIdAndType());
         }
     }
 
@@ -258,15 +257,13 @@ public class ConsumerProcessSupervisor implements Runnable {
         }
     }
 
-    private void handleProcessShutdown(Signal lastSignal) {
-        logger.info("Shutting down consumer process {}", lastSignal.getTarget());
+    private void handleProcessShutdown(SubscriptionName subscriptionName) {
+        logger.info("Shutting down consumer process {}", subscriptionName);
+        Signal cleanup = Signal.of(CLEANUP, subscriptionName);
         if (Thread.currentThread().isInterrupted()) {
-            Signal cleanup = Signal.of(CLEANUP, subscriptionName(lastSignal));
-            logger.info("Consumer process was interrupted. Its last processed signal is {}. Accepting {}", lastSignal, cleanup);
-            accept(cleanup);
-        } else {
-            accept(lastSignal.createChild(CLEANUP));
+            logger.info("Consumer process for {} was interrupted. Accepting {}", subscriptionName, cleanup);
         }
+        accept(cleanup);
     }
 
     private void cleanup(Signal signal) {
