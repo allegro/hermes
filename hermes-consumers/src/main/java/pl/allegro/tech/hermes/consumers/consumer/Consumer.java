@@ -21,4 +21,6 @@ public interface Consumer {
     void commit(Set<SubscriptionPartitionOffset> offsets);
 
     void moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset);
+
+    Subscription getSubscription();
 }
