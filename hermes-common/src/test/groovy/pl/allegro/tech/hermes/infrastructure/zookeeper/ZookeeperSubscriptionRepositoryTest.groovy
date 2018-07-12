@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper
 import pl.allegro.tech.hermes.api.EndpointAddress
 import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.api.helpers.Patch
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
@@ -165,5 +166,25 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
 
         then:
         notThrown(MalformedDataException)
+    }
+
+    def "should get list of subscriptions based on names list"() {
+        given:
+        def subscription1 = subscription(TOPIC, 'subscription1', EndpointAddress.of('hello')).build()
+        def subscription2 = subscription(TOPIC, 'subscription2', EndpointAddress.of('hello')).build()
+        def subscriptionName1 = new SubscriptionName("subscription1", TOPIC)
+        def subscriptionName2 = new SubscriptionName("subscription2", TOPIC)
+
+        repository.createSubscription(subscription1)
+        repository.createSubscription(subscription2)
+
+        wait.untilSubscriptionCreated(TOPIC, 'subscription1')
+        wait.untilSubscriptionCreated(TOPIC, 'subscription2')
+
+        when:
+        List<Subscription> retrived = repository.getSubscriptionDetails([subscriptionName1, subscriptionName2])
+
+        then:
+        retrived.containsAll([subscription1, subscription2])
     }
 }

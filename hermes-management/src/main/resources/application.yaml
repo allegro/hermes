@@ -29,3 +29,9 @@ management:
 schema.repository.type: schema_registry
 
 audit.enabled: false
+
+topicOwnerCache:
+  refreshRateInSeconds: 300 # 5 minutes
+
+subscriptionOwnerCache:
+  refreshRateInSeconds: 300

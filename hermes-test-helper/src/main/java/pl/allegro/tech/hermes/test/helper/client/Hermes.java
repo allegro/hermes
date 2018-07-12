@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.endpoints.BlacklistEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.MigrationEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OAuthProviderEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OwnerEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
@@ -82,6 +83,10 @@ public class Hermes {
 
     public SubscriptionEndpoint createSubscriptionEndpoint() {
         return createProxy(url, SubscriptionEndpoint.class, managementConfig);
+    }
+
+    public SubscriptionOwnershipEndpoint createSubscriptionOwnershipEndpoint() {
+        return createProxy(url, SubscriptionOwnershipEndpoint.class, managementConfig);
     }
 
     public QueryEndpoint createQueryEndpoint() {
