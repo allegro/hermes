@@ -17,8 +17,7 @@ public class Signal {
     private final long id;
 
     public enum SignalType {
-        START, STOP, RETRANSMIT, UPDATE_SUBSCRIPTION, UPDATE_TOPIC, KILL, FORCE_KILL_DYING,
-        RESTART, RESTART_UNHEALTHY, STOP_RESTART, CLEANUP, COMMIT
+        START, STOP, RETRANSMIT, UPDATE_SUBSCRIPTION, UPDATE_TOPIC, COMMIT
     }
 
     private static AtomicLong SIGNALS_COUNTER = new AtomicLong();
@@ -44,14 +43,6 @@ public class Signal {
     }
 
     Signal createChild(SignalType type) {
-        return new Signal(type, target, payload, executeAfterTimestamp, id);
-    }
-
-    Signal createChild(SignalType type, long executeAfterTimestamp) {
-        return new Signal(type, target, payload, executeAfterTimestamp, id);
-    }
-
-    Signal createChild(SignalType type, long executeAfterTimestamp, Object payload) {
         return new Signal(type, target, payload, executeAfterTimestamp, id);
     }
 

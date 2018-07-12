@@ -20,8 +20,6 @@ public interface ConsumersSupervisor {
 
     void retransmit(SubscriptionName subscription) throws Exception;
 
-    void restartConsumer(SubscriptionName subscription) throws Exception;
-
     Set<SubscriptionName> runningConsumers();
 
     void start() throws Exception;

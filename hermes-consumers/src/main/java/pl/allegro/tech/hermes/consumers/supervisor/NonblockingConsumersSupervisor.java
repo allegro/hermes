@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
+import pl.allegro.tech.hermes.consumers.supervisor.process.ConsumerProcessFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.process.ConsumerProcessSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Signal;
@@ -57,8 +58,8 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
         this.configs = configFactory;
-        this.backgroundProcess = new ConsumerProcessSupervisor(executor, retransmitter, clock, metrics,
-                configFactory, consumerFactory);
+        this.backgroundProcess = new ConsumerProcessSupervisor(executor, clock, metrics, configFactory,
+                new ConsumerProcessFactory(retransmitter, consumerFactory, configs, clock));
         this.scheduledExecutor = createExecutorForSupervision();
         this.offsetCommitter = new OffsetCommitter(
                 offsetQueue,
@@ -117,11 +118,6 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
     @Override
     public void retransmit(SubscriptionName subscription) {
         backgroundProcess.accept(Signal.of(Signal.SignalType.RETRANSMIT, subscription));
-    }
-
-    @Override
-    public void restartConsumer(SubscriptionName subscription) {
-        backgroundProcess.accept(Signal.of(Signal.SignalType.RESTART, subscription));
     }
 
     @Override

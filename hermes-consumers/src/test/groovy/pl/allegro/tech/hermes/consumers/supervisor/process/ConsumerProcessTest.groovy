@@ -14,26 +14,26 @@ import java.util.concurrent.Future
 
 class ConsumerProcessTest extends Specification {
 
-    private static final long UNHEALTHY_AFTER_MS = 2048;
+    private static final long UNHEALTHY_AFTER_MS = 2048
 
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private ExecutorService executor = Executors.newSingleThreadExecutor()
 
     private ConsumerProcessWaiter waiter = new ConsumerProcessWaiter()
-
-    private ConsumerStub consumer = new ConsumerStub()
 
     private Retransmitter retransmitter = Mock(Retransmitter)
 
     private Subscription subscription = SubscriptionBuilder
             .subscription(SubscriptionName.fromString('group.topic$sub')).build()
 
+    private ConsumerStub consumer = new ConsumerStub(subscription)
+
     private ConsumerProcess process = new ConsumerProcess(
             Signal.of(Signal.SignalType.START, subscription.qualifiedName, subscription),
             consumer,
             retransmitter,
-            { a -> shutdownRun = true },
             Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault()),
-            UNHEALTHY_AFTER_MS
+            UNHEALTHY_AFTER_MS,
+            { a -> shutdownRun = true }
     )
 
     private boolean shutdownRun = false
@@ -81,9 +81,9 @@ class ConsumerProcessTest extends Specification {
                 Signal.of(Signal.SignalType.START, subscription.qualifiedName, subscription),
                 consumer,
                 retransmitter,
-                { a -> shutdownRun = true },
                 Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault()),
-                unhealthyAfter)
+                unhealthyAfter,
+                { a -> shutdownRun = true })
         executor.submit(process)
 
         when:
@@ -93,24 +93,6 @@ class ConsumerProcessTest extends Specification {
         then:
         !process.isHealthy()
         process.lastSeen() > unhealthyAfter
-    }
-
-    def "should tear down and initialize consumer on restart but not call shutdown hook"() {
-        given:
-        executor.submit(process)
-
-        when:
-        process.accept(Signal.of(Signal.SignalType.RESTART, subscription.qualifiedName))
-        waiter.waitForSignalProcessing()
-
-        then:
-        consumer.tearDownCount == 1
-        consumer.initializationCount == 2
-
-        cleanup:
-        process.accept(Signal.of(Signal.SignalType.STOP, subscription.qualifiedName))
-        waiter.waitForSignalProcessing()
-        !shutdownRun
     }
 
     def "should stop, retransmit and start consumer on retransmission"() {
@@ -140,7 +122,7 @@ class ConsumerProcessTest extends Specification {
 
         then:
         consumer.updated
-        consumer.modifiedSubscription == modifiedSubscription
+        consumer.subscription == modifiedSubscription
 
         cleanup:
         process.accept(Signal.of(Signal.SignalType.STOP, subscription.qualifiedName))
