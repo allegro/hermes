@@ -179,6 +179,11 @@ public class BatchConsumer implements Consumer {
         }
     }
 
+    @Override
+    public Subscription getSubscription() {
+        return subscription;
+    }
+
     private Retryer<MessageSendingResult> createRetryer(MessageBatch batch, BatchSubscriptionPolicy policy) {
         return createRetryer(batch,
                 policy.getMessageBackoff(),
