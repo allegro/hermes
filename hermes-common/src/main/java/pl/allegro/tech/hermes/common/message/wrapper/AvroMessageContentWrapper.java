@@ -45,11 +45,12 @@ public class AvroMessageContentWrapper {
     private MessageMetadata getMetadata(Map<Utf8, Utf8> metadata) {
         if (metadata == null) {
             long timestamp = clock.millis();
-            return new MessageMetadata(timestamp, MessageId.forTimestamp(timestamp), Collections.EMPTY_MAP);
+            return new MessageMetadata(timestamp, MessageId.empty(), Collections.EMPTY_MAP);
         } else {
-            long timestamp = metadata.containsKey(METADATA_TIMESTAMP_KEY) ? timestampFromMetadata(metadata) : clock.millis();
+            long timestamp = metadata.containsKey(METADATA_TIMESTAMP_KEY) ? timestampFromMetadata(metadata) :
+                    clock.millis();
             String messageId = metadata.containsKey(METADATA_MESSAGE_ID_KEY) ? messageIdFromMetadata(metadata) :
-                    MessageId.forTimestamp(timestamp);
+                    MessageId.empty();
 
             return new MessageMetadata(timestamp, messageId, extractMetadata(metadata));
         }
