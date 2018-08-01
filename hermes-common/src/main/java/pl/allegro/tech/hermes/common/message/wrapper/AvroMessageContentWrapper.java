@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.common.message.wrapper;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
-import pl.allegro.tech.hermes.common.util.MessageId;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import javax.inject.Inject;
@@ -20,6 +19,10 @@ import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.M
 import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_MESSAGE_ID_KEY;
 import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_TIMESTAMP_KEY;
 
+/** This class deals only with wrapping and unwrapping messages.
+ *  It does not generate any Hermes ID for message in case it is missing.
+ *  Missing Hermes ID will be left as empty.
+ */
 public class AvroMessageContentWrapper {
 
     private final Clock clock;
@@ -45,13 +48,14 @@ public class AvroMessageContentWrapper {
     private MessageMetadata getMetadata(Map<Utf8, Utf8> metadata) {
         if (metadata == null) {
             long timestamp = clock.millis();
-            return new MessageMetadata(timestamp, MessageId.forTimestamp(timestamp), Collections.EMPTY_MAP);
+            return new MessageMetadata(timestamp, Collections.EMPTY_MAP);
         } else {
-            long timestamp = metadata.containsKey(METADATA_TIMESTAMP_KEY) ? timestampFromMetadata(metadata) : clock.millis();
-            String messageId = metadata.containsKey(METADATA_MESSAGE_ID_KEY) ? messageIdFromMetadata(metadata) :
-                    MessageId.forTimestamp(timestamp);
+            long timestamp = metadata.containsKey(METADATA_TIMESTAMP_KEY) ? timestampFromMetadata(metadata) :
+                    clock.millis();
+            Map<String, String> extractedMetadata = extractMetadata(metadata);
 
-            return new MessageMetadata(timestamp, messageId, extractMetadata(metadata));
+            return metadata.containsKey(METADATA_MESSAGE_ID_KEY) ?
+                    new MessageMetadata(timestamp, messageIdFromMetadata(metadata), extractedMetadata) : new MessageMetadata(timestamp, extractedMetadata);
         }
     }
 

@@ -26,6 +26,10 @@ public class MessageMetadata {
         this.externalMetadata = ofNullable(externalMetadata).orElseGet(ImmutableMap::<String, String>of);
     }
 
+    public MessageMetadata(long timestamp, Map<String, String> externalMetadata) {
+        this(timestamp, "", externalMetadata);
+    }
+
     public String getId() {
         return id;
     }
