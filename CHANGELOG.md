@@ -1,3 +1,23 @@
+## 0.12.9 (12.07.2018)
+
+All issues and pull requests: [0.12.9 milestone](https://github.com/allegro/hermes/milestone/46)
+
+### Features
+
+#### ([886](https://github.com/allegro/hermes/pull/886)) Listing topics by their owner 
+
+Endpoint in hermes-management to list topics by their owner with lower latency than using QueryEndpoint.
+
+#### ([888](https://github.com/allegro/hermes/pull/888)) Listing subscriptions by their owner
+
+Endpoint in hermes-management to list subscriptions by their owner with lower latency than using QueryEndpoint.
+
+#### ([887](https://github.com/allegro/hermes/pull/887)) Waiting between unsuccessful polls to reduce cpu utilization
+
+In a previous releases subscribing to topics with low rps is very cpu intensive because when polling KafkaConsumer
+implementation is constantly looping until timeout is reached. We introduced simple exponentially growing strategy
+to wait between unsuccessful polls which reduces cpu utilization by a significant margin in those cases.
+
 ## 0.12.8 (29.06.2018)
 
 All issues and pull requests: [0.12.8 milestone](https://github.com/allegro/hermes/milestone/45)
