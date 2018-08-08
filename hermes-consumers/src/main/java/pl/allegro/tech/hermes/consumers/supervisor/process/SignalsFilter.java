@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
 import com.google.common.collect.ImmutableMap;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType;
 
@@ -19,10 +18,6 @@ class SignalsFilter {
             .put(SignalType.STOP, SignalType.START)
             .build();
 
-    private static final Map<SignalType, SignalType> OVERRULING_SIGNALS = ImmutableMap.<SignalType, SignalType>builder()
-            .put(SignalType.START, SignalType.KILL_UNHEALTHY)
-            .build();
-
     private final Clock clock;
 
     private final MonitoredMpscQueue<Signal> taskQueue;
@@ -32,20 +27,16 @@ class SignalsFilter {
         this.clock = clock;
     }
 
-    Set<Signal> filterSignals(List<Signal> signals, Set<SubscriptionName> existingConsumers) {
+    Set<Signal> filterSignals(List<Signal> signals) {
         Set<Signal> filteredSignals = Collections.newSetFromMap(new LinkedHashMap<>(signals.size()));
 
         for (Signal signal : signals) {
             boolean merged = merge(filteredSignals, signal);
             if (!merged) {
-                negate(filteredSignals, signal);
-
-                if (signal.getType() == SignalType.START || existingConsumers.contains(signal.getTarget())) {
-                    if (signal.canExecuteNow(clock.millis())) {
-                        filteredSignals.add(signal);
-                    } else {
-                        taskQueue.offer(signal);
-                    }
+                if (signal.canExecuteNow(clock.millis())) {
+                    filteredSignals.add(signal);
+                } else {
+                    taskQueue.offer(signal);
                 }
             }
         }
@@ -60,12 +51,4 @@ class SignalsFilter {
         }
         return false;
     }
-
-    private void negate(Set<Signal> filteredSignals, Signal signal) {
-        SignalType signalToRemove = OVERRULING_SIGNALS.get(signal.getType());
-        if (signalToRemove != null) {
-            filteredSignals.remove(signal.createChild(signalToRemove));
-        }
-    }
-
 }

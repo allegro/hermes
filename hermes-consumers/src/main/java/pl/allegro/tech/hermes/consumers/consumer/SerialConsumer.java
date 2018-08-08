@@ -184,4 +184,9 @@ public class SerialConsumer implements Consumer {
     public void moveOffset(SubscriptionPartitionOffset offset) {
         messageReceiver.moveOffset(offset);
     }
+
+    @Override
+    public Subscription getSubscription() {
+        return subscription;
+    }
 }

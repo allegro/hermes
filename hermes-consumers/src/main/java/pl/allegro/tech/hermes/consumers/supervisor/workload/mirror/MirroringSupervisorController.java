@@ -140,11 +140,6 @@ public class MirroringSupervisorController implements SupervisorController {
     }
 
     @Override
-    public void restartConsumer(SubscriptionName subscription) throws Exception {
-        supervisor.restartConsumer(subscription);
-    }
-
-    @Override
     public Optional<String> watchedConsumerId() {
         return Optional.of(consumerNodeId);
     }

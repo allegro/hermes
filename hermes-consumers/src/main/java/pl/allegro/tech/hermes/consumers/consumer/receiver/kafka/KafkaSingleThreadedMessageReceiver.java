@@ -154,7 +154,11 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
     @Override
     public void stop() {
-        consumer.close();
+        try {
+            consumer.close();
+        } catch (IllegalStateException ex) {
+            // means it was already closed
+        }
     }
 
     @Override

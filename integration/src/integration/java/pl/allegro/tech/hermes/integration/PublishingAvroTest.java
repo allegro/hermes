@@ -21,12 +21,9 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.time.Clock;
 import java.util.Collections;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -50,7 +47,7 @@ public class PublishingAvroTest extends IntegrationTest {
     private Clock clock = Clock.systemDefaultZone();
 
     @BeforeClass
-    public void initialize() throws Exception {
+    public void initialize() {
         user = new AvroUser("Bob", 50, "blue");
     }
 
@@ -60,7 +57,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldPublishAvroAndConsumeJsonMessage() throws InterruptedException, ExecutionException, TimeoutException, IOException {
+    public void shouldPublishAvroAndConsumeJsonMessage() {
         // given
         Topic topic = topic("publishAvroConsumeJson.topic")
                 .withContentType(AVRO)
@@ -77,29 +74,28 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldNotPublishAvroWhenMessageIsNotJsonOrAvro() throws InterruptedException, ExecutionException, TimeoutException, IOException {
+    public void shouldNotPublishAvroWhenMessageIsNotJsonOrAvro() {
         // given
-        Topic topic = topic("publishAvroConsumeAvro.topic")
+        Topic topic = topic("notPublishAvroConsumeAvro.topic")
                 .withContentType(AVRO)
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
 
         // when
-        Response response = publisher.publish("publishAvroConsumeAvro.topic", user.asJson(), Collections.singletonMap("Content-Type", TEXT_PLAIN));
+        Response response = publisher.publish("notPublishAvroConsumeAvro.topic", user.asJson(), Collections.singletonMap("Content-Type", TEXT_PLAIN));
 
         // then
         assertThat(response).hasStatus(BAD_REQUEST);
     }
 
     @Test
-    public void shouldPublishAvroAndConsumeAvroMessage() throws InterruptedException, ExecutionException, TimeoutException, IOException {
+    public void shouldPublishAvroAndConsumeAvroMessage() {
         // given
-        Topic topic = operations.buildTopic(topic("publishAvroConsumeAvro.topic")
+        Topic topic = topic("publishAvroConsumeAvro.topic")
                 .withContentType(AVRO)
-                .build()
-        );
-        operations.saveSchema(topic, user.getSchemaAsString());
+                .build();
+        operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
 
         // when
@@ -111,7 +107,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldSendAvroAfterSubscriptionContentTypeChanged() throws Exception {
+    public void shouldSendAvroAfterSubscriptionContentTypeChanged() {
         // given
         Topic topic = topic("publishAvroAfterTopicEditing.topic").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
@@ -139,7 +135,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldGetBadRequestForPublishingInvalidMessageWithSchema() throws InterruptedException, ExecutionException, TimeoutException {
+    public void shouldGetBadRequestForPublishingInvalidMessageWithSchema() {
         // given
         Topic topic = topic("invalidAvro.topic").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
@@ -218,7 +214,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnServerInternalErrorResponseOnMissingSchemaAtSpecifiedVersion() throws Exception {
+    public void shouldReturnServerInternalErrorResponseOnMissingSchemaAtSpecifiedVersion() {
         Topic topic = topic("avro.topicWithoutSchemaAtSpecifiedVersion").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
 
@@ -279,7 +275,7 @@ public class PublishingAvroTest extends IntegrationTest {
 
     @Test
     @Unreliable
-    public void shouldPublishAndConsumeJsonMessageAfterMigrationFromJsonToAvro() throws Exception {
+    public void shouldPublishAndConsumeJsonMessageAfterMigrationFromJsonToAvro() {
         // given
         Topic topic = operations.buildTopic(topic("migrated", "topic")
                 .withContentType(JSON)
@@ -311,7 +307,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldPublishAvroAndConsumeJsonMessageWithTraceId() throws IOException {
+    public void shouldPublishAvroAndConsumeJsonMessageWithTraceId() {
 
         // given
         String traceId = UUID.randomUUID().toString();
@@ -336,7 +332,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldUseExplicitSchemaVersionWhenPublishingAndConsuming() throws IOException {
+    public void shouldUseExplicitSchemaVersionWhenPublishingAndConsuming() {
         // given
         Topic topic = topic("explicitSchemaVersion.topic")
                 .withContentType(AVRO)
