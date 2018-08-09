@@ -6,7 +6,7 @@ dependencies {
 
     compile group: 'io.undertow', name: 'undertow-core', version: '1.4.21.Final'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
-    compile group: 'net.openhft', name: 'chronicle-map', version: '2.4.13'
+    compile group: 'net.openhft', name: 'chronicle-map', version: '3.16.0'
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
     compile group: 'net.jodah', name: 'failsafe', version: '1.0.0'
 
@@ -15,7 +15,7 @@ dependencies {
     testCompile group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
-    testCompile (group: 'com.jayway.awaitility', name: 'awaitility-groovy', version: '1.7.0') {
+    testCompile(group: 'com.jayway.awaitility', name: 'awaitility-groovy', version: '1.7.0') {
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'
     }
 

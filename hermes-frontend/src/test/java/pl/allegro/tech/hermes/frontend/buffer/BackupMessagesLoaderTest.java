@@ -9,22 +9,22 @@ import org.junit.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
-import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.io.File;
 import java.util.Optional;
-import java.util.UUID;
 
 import static java.time.LocalDateTime.now;
 import static java.time.ZoneOffset.UTC;
@@ -37,6 +37,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class BackupMessagesLoaderTest {
+
+    private static final int ENTRIES = 100;
+    private static final int AVERAGE_MESSAGE_SIZE = 600;
 
     private BrokerMessageProducer producer = mock(BrokerMessageProducer.class);
 
@@ -75,7 +78,12 @@ public class BackupMessagesLoaderTest {
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(8);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(2);
 
-        MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
+        MessageRepository messageRepository = ChronicleMapMessageRepository.create(
+                new File(tempDir.getAbsoluteFile(), "messages.dat"),
+                ENTRIES,
+                AVERAGE_MESSAGE_SIZE
+        );
+
         BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
 
         messageRepository.save(messageOfAge(1), topic);
@@ -104,7 +112,11 @@ public class BackupMessagesLoaderTest {
         }).when(producer).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
 
 
-        MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
+        MessageRepository messageRepository = ChronicleMapMessageRepository.create(
+                new File(tempDir.getAbsoluteFile(), "messages.dat"),
+                ENTRIES,
+                AVERAGE_MESSAGE_SIZE
+        );
         BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
 
         messageRepository.save(messageOfAge(1), topic);
@@ -125,7 +137,11 @@ public class BackupMessagesLoaderTest {
         when(producer.isTopicAvailable(cachedTopic)).thenReturn(false).thenReturn(false).thenReturn(true);
 
         BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
-        MessageRepository messageRepository = new ChronicleMapMessageRepository(new File(tempDir.getAbsoluteFile(), "messages.dat"));
+        MessageRepository messageRepository = ChronicleMapMessageRepository.create(
+                new File(tempDir.getAbsoluteFile(), "messages.dat"),
+                ENTRIES,
+                AVERAGE_MESSAGE_SIZE
+        );
         messageRepository.save(messageOfAge(1), topic);
 
         // when
@@ -137,6 +153,9 @@ public class BackupMessagesLoaderTest {
     }
 
     private Message messageOfAge(int ageHours) {
-        return new JsonMessage(UUID.randomUUID().toString(), "{'a':'b'}".getBytes(), now().minusHours(ageHours).toInstant(UTC).toEpochMilli());
+        return new JsonMessage(
+                MessageIdGenerator.generate(),
+                "{'a':'b'}".getBytes(),
+                now().minusHours(ageHours).toInstant(UTC).toEpochMilli());
     }
 }

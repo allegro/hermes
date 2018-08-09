@@ -18,13 +18,16 @@ import java.time.Clock;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_SIZE_MB;
 
 public class PersistentBufferExtension {
 
     private static final Logger logger = LoggerFactory.getLogger(PersistentBufferExtension.class);
+
+    private static final int MEGABYTES_TO_BYTES_MULTIPLIER = 1024 * 1024;
 
     private final ConfigFactory config;
 
@@ -71,9 +74,12 @@ public class PersistentBufferExtension {
         }
 
         if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {
-            MessageRepository repository = config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED) ?
-                    new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), hermesMetrics) :
-                    new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile());
+            int backupStorageSizeInBytes = config.getIntProperty(MESSAGES_LOCAL_STORAGE_SIZE_MB) * MEGABYTES_TO_BYTES_MULTIPLIER;
+            int entries = backupStorageSizeInBytes / config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
+            MessageRepository repository = ChronicleMapMessageRepository.create(
+                    backupFilesManager.getCurrentBackupFile(),
+                    entries,
+                    config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE));
             BrokerListener brokerListener = new BrokerListener(repository);
 
             listeners.addAcknowledgeListener(brokerListener);
@@ -84,7 +90,7 @@ public class PersistentBufferExtension {
 
     private void loadOldMessages(BackupFilesManager backupFilesManager, File oldBackup) {
         logger.info("Loading messages from backup file: {}", oldBackup.getName());
-        MessageRepository oldMessageRepository = new ChronicleMapMessageRepository(oldBackup);
+        MessageRepository oldMessageRepository = ChronicleMapMessageRepository.recover(oldBackup);
         backupMessagesLoader.loadMessages(oldMessageRepository);
         oldMessageRepository.close();
         backupFilesManager.delete(oldBackup);
