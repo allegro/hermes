@@ -551,3 +551,9 @@ It returns array of message tracking information in following format:
     }
 ]
 ```
+
+## Sending delay
+
+Sending delay can be defined for each serial subscription. Consumers will wait for a given time before trying to deliver a message.
+This might be useful in situations when there are multiple topics that sends events in the same time, but you want to increase
+chance that events from one topics will be delivered later than events from another topic. 

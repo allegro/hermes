@@ -4,8 +4,10 @@ import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -35,6 +37,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.glassfish.jersey.client.ClientProperties.REQUEST_ENTITY_PROCESSING;
 import static org.glassfish.jersey.client.RequestEntityProcessing.CHUNKED;
+import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -369,5 +372,34 @@ public class PublishingTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
         assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("Trace-Id", "valueFromRequest");
+    }
+
+    @Test
+    public void shouldPublishWithDelayAndConsumeMessage() {
+        // given
+        int delay = 2000;
+        Topic topic = operations.buildTopic("publishWithDelay", "topic");
+        Subscription subscriptionWithDelay = subscription(topic, "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withContentType(ContentType.JSON)
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
+                        .withSendingDelay(delay)
+                        .build())
+                .withMode(SubscriptionMode.ANYCAST)
+                .build();
+        operations.createSubscription(topic, subscriptionWithDelay);
+
+        TestMessage message = TestMessage.of("hello", "world");
+        remoteService.expectMessages(message.body());
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), message.body());
+        long publishedTime = System.currentTimeMillis();
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+        remoteService.waitUntilReceived();
+        long receivedTime = System.currentTimeMillis();
+        assertThat(receivedTime - publishedTime).isGreaterThan(delay);
     }
 }

@@ -89,18 +89,26 @@ public class ConsumerMessageSender {
 
 
     public void sendAsync(Message message) {
-        sendAsync(message, 0);
+        sendAsync(message, delayForSubscription());
     }
 
     private void sendAsync(Message message, int delayMillis) {
         retrySingleThreadExecutor.schedule(() -> sendMessage(message), delayMillis, TimeUnit.MILLISECONDS);
     }
 
+    private int delayForSubscription() {
+        if (!subscription.isBatchSubscription()) {
+            return subscription.getSerialSubscriptionPolicy().getSendingDelay();
+        } else {
+            return 0;
+        }
+    }
+
     /**
      * Method is calling MessageSender and is registering listeners to handle response.
      * Main responsibility of this method is that no message will be fully processed or rejected without release on semaphore.
      */
-    public void sendMessage(final Message message) {
+    private void sendMessage(final Message message) {
         rateLimiter.acquire();
         ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
         CompletableFuture<MessageSendingResult> response = async.within(

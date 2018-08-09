@@ -18,6 +18,7 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     subscriptionPolicy: {
                         messageTtl: 3600,
                         messageBackoff: 100,
+                        sendingDelay: 0
                     },
                     monitoringDetails: {
                         severity: 'NON_IMPORTANT',
