@@ -150,6 +150,8 @@ public enum Configs {
 
     MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", false),
     MESSAGES_LOCAL_STORAGE_DIRECTORY("frontend.messages.local.storage.directory", Files.createTempDir().getAbsolutePath()),
+    MESSAGES_LOCAL_STORAGE_SIZE_MB("frontend.messages.local.storage.size.mb", 300),
+    MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE("frontend.messages.local.storage.average.message.size.in.bytes", 600),
     MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS("frontend.messages.local.storage.max.age.hours", 72),
     MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES("frontend.messages.local.storage.max.resend.retries", 5),
     MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS("frontend.messages.loading.pause.between.resend", 30),
@@ -177,7 +179,6 @@ public enum Configs {
     CONSUMER_HTTP_CLIENT_VALIDATE_CERTS("consumer.http.client.validate.certs", true),
     CONSUMER_HTTP_CLIENT_VALIDATE_PEER_CERTS("consumer.http.client.validate.peer.certs", true),
     CONSUMER_HTTP_CLIENT_ENABLE_CRLDP("consumer.http.client.enable.crldp", true),
-
 
 
     CONSUMER_HTTP2_ENABLED("consumer.http2.enabled", true),
@@ -214,7 +215,7 @@ public enum Configs {
     CONSUMER_WORKLOAD_AUTO_REBALANCE("consumer.workload.rebalance.auto", true),
     CONSUMER_WORKLOAD_DEAD_AFTER_SECONDS("consumer.workload.dead.after.seconds", 120),
     CONSUMER_BATCH_POOLABLE_SIZE("consumer.batch.poolable.size", 1024),
-    CONSUMER_BATCH_MAX_POOL_SIZE("consumer.batch.max.pool.size", 64*1024*1024),
+    CONSUMER_BATCH_MAX_POOL_SIZE("consumer.batch.max.pool.size", 64 * 1024 * 1024),
     CONSUMER_BATCH_CONNECTION_TIMEOUT("consumer.batch.connection.timeout", 500),
     CONSUMER_BATCH_SOCKET_TIMEOUT("consumer.batch.socket.timeout", 500),
     CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
