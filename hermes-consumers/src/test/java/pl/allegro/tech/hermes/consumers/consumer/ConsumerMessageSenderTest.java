@@ -345,7 +345,7 @@ public class ConsumerMessageSenderTest {
     }
 
     @Test
-    public void shouldDelaySendingMessageForOneSecond() {
+    public void shouldDelaySendingMessageForHalfSecond() {
         // given
         Subscription subscription = subscriptionBuilderWithTestValues()
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()

@@ -134,7 +134,7 @@
                 <div class="col-md-9">
                     <div class="input-group">
                         <input type="number" min="0" max="7200" step="1" required class="form-control" id="subscriptionMessageTtl" name="subscriptionMessageTtl" placeholder="Time when message can be resent to endpoint after failed sending attempts" ng-model="subscription.subscriptionPolicy.messageTtl"/>
-                        <span class="input-group-addon">seconds</span>
+                        <span class="input-group-addon">milliseconds</span>
                         <span class="input-group-addon helpme-addon" uib-tooltip="Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.">?</span>
                     </div>
                 </div>

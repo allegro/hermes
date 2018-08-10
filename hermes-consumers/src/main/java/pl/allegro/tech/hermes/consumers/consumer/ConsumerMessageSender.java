@@ -97,11 +97,7 @@ public class ConsumerMessageSender {
     }
 
     private int delayForSubscription() {
-        if (!subscription.isBatchSubscription()) {
-            return subscription.getSerialSubscriptionPolicy().getSendingDelay();
-        } else {
-            return 0;
-        }
+        return subscription.getSerialSubscriptionPolicy().getSendingDelay();
     }
 
     /**
