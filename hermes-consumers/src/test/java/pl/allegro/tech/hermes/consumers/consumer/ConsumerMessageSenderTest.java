@@ -323,7 +323,7 @@ public class ConsumerMessageSenderTest {
         sender.sendAsync(message);
 
         // then
-        verify(otherMessageSender).send(message);
+        verify(otherMessageSender, timeout(1000)).send(message);
     }
 
     @Test
