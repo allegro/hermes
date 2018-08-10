@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.nio.file.Files;
 import java.time.Clock;
 import java.util.List;
 
@@ -39,6 +40,8 @@ public class PersistentBufferExtension {
 
     private final BackupMessagesLoader backupMessagesLoader;
     private final HermesMetrics hermesMetrics;
+
+    private File file;
 
     @Inject
     public PersistentBufferExtension(ConfigFactory configFactory,
@@ -73,18 +76,24 @@ public class PersistentBufferExtension {
             });
         }
 
-        if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {
-            int backupStorageSizeInBytes = config.getIntProperty(MESSAGES_LOCAL_STORAGE_SIZE_MB) * MEGABYTES_TO_BYTES_MULTIPLIER;
-            int entries = backupStorageSizeInBytes / config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
-            MessageRepository repository = ChronicleMapMessageRepository.create(
-                    backupFilesManager.getCurrentBackupFile(),
-                    entries,
-                    config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE));
-            BrokerListener brokerListener = new BrokerListener(repository);
+        try {
 
-            listeners.addAcknowledgeListener(brokerListener);
-            listeners.addErrorListener(brokerListener);
-            listeners.addTimeoutListener(brokerListener);
+            if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {
+                int backupStorageSizeInBytes = config.getIntProperty(MESSAGES_LOCAL_STORAGE_SIZE_MB) * MEGABYTES_TO_BYTES_MULTIPLIER;
+                int entries = backupStorageSizeInBytes / config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
+                MessageRepository repository = ChronicleMapMessageRepository.create(
+                        Files.createTempFile("kek","lel").toFile(),
+                        entries,
+                        config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE));
+                BrokerListener brokerListener = new BrokerListener(repository);
+
+                listeners.addAcknowledgeListener(brokerListener);
+                listeners.addErrorListener(brokerListener);
+                listeners.addTimeoutListener(brokerListener);
+            }
+        } catch (Exception e) {
+
+
         }
     }
 
