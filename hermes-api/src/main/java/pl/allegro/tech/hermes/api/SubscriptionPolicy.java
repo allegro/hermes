@@ -16,6 +16,7 @@ public class SubscriptionPolicy {
     private static final int DEFAULT_MESSAGE_BACKOFF = 100;
     private static final int DEFAULT_REQUEST_TIMEOUT = 1000;
     private static final int DEFAULT_INFLIGHT_SIZE = 100;
+    private static final int DEFAULT_SENDING_DELAY = 0;
 
     @Min(1)
     private int rate = DEFAULT_RATE;
@@ -34,6 +35,10 @@ public class SubscriptionPolicy {
     @Min(1)
     private int inflightSize = DEFAULT_INFLIGHT_SIZE;
 
+    @Min(0)
+    @Max(5000)
+    private int sendingDelay = DEFAULT_SENDING_DELAY;
+
     private boolean retryClientErrors = false;
 
     private SubscriptionPolicy() {
@@ -44,13 +49,15 @@ public class SubscriptionPolicy {
                               int requestTimeout,
                               boolean retryClientErrors,
                               int messageBackoff,
-                              Integer inflightSize) {
+                              Integer inflightSize,
+                              int sendingDelay) {
         this.rate = rate;
         this.messageTtl = messageTtl;
         this.requestTimeout = requestTimeout;
         this.retryClientErrors = retryClientErrors;
         this.messageBackoff = messageBackoff;
         this.inflightSize = inflightSize;
+        this.sendingDelay = sendingDelay;
     }
 
     @JsonCreator
@@ -61,13 +68,14 @@ public class SubscriptionPolicy {
                 (Integer) properties.getOrDefault("requestTimeout", DEFAULT_REQUEST_TIMEOUT),
                 (Boolean) properties.getOrDefault("retryClientErrors", false),
                 (Integer) properties.getOrDefault("messageBackoff", DEFAULT_MESSAGE_BACKOFF),
-                (Integer) properties.getOrDefault("inflightSize", DEFAULT_INFLIGHT_SIZE)
+                (Integer) properties.getOrDefault("inflightSize", DEFAULT_INFLIGHT_SIZE),
+                (Integer) properties.getOrDefault("sendingDelay", DEFAULT_SENDING_DELAY)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(rate, messageTtl, messageBackoff, retryClientErrors, requestTimeout, inflightSize);
+        return Objects.hash(rate, messageTtl, messageBackoff, retryClientErrors, requestTimeout, inflightSize, sendingDelay);
     }
 
     @Override
@@ -84,7 +92,8 @@ public class SubscriptionPolicy {
                 && Objects.equals(this.messageBackoff, other.messageBackoff)
                 && Objects.equals(this.retryClientErrors, other.retryClientErrors)
                 && Objects.equals(this.requestTimeout, other.requestTimeout)
-                && Objects.equals(this.inflightSize, other.inflightSize);
+                && Objects.equals(this.inflightSize, other.inflightSize)
+                && Objects.equals(this.sendingDelay, other.sendingDelay);
     }
 
     @Override
@@ -96,6 +105,7 @@ public class SubscriptionPolicy {
                 .add("messageBackoff", messageBackoff)
                 .add("retryClientErrors", retryClientErrors)
                 .add("inflightSize", inflightSize)
+                .add("sendingDelay", sendingDelay)
                 .toString();
     }
 
@@ -125,6 +135,10 @@ public class SubscriptionPolicy {
 
     public Integer getInflightSize() {
         return inflightSize;
+    }
+
+    public Integer getSendingDelay() {
+        return sendingDelay;
     }
 
     public static class Builder {
@@ -168,6 +182,11 @@ public class SubscriptionPolicy {
 
         public Builder withClientErrorRetry() {
             subscriptionPolicy.retryClientErrors = true;
+            return this;
+        }
+
+        public Builder withSendingDelay(int sendingDelay) {
+            subscriptionPolicy.sendingDelay = sendingDelay;
             return this;
         }
 

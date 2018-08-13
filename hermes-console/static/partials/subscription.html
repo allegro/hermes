@@ -139,6 +139,10 @@
                         <strong>Request timeout:</strong> {{subscription.subscriptionPolicy.requestTimeout}} milliseconds
                         <span uib-popover='Max time for processing message by subscriber.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
+                    <p ng-show="subscription.deliveryType === 'SERIAL'">
+                        <strong>Sending delay:</strong> {{subscription.subscriptionPolicy.sendingDelay}} milliseconds
+                        <span uib-popover='Amount of time in ms after which an event will be send. Useful if events from two topics are sent at the same time and you want to increase chance that events from one topic will be deliver after events from other topic.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
                     <p>
                         <strong>Message TTL:</strong> {{subscription.subscriptionPolicy.messageTtl}} seconds
                         <span uib-popover='Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>

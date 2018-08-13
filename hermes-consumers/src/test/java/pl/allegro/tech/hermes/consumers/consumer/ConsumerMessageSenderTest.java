@@ -29,7 +29,13 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.passwordGrantOAuthPolicy;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -98,7 +104,7 @@ public class ConsumerMessageSenderTest {
         when(messageSender.send(message)).thenReturn(success());
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
@@ -116,7 +122,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
@@ -134,7 +140,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure()).when(messageSender).send(message);
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
@@ -151,7 +157,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
@@ -168,7 +174,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(403)).doReturn(failure(403)).doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscriptionWith4xxRetry), any(MessageSendingResult.class));
 
         // then
@@ -183,7 +189,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
         verifyRateLimiterFailedSendingCountedTimes(0);
@@ -198,7 +204,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(500)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
         verifyRateLimiterFailedSendingCountedTimes(1);
@@ -213,7 +219,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(403)).doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
         verifyRateLimiterFailedSendingCountedTimes(2);
@@ -230,7 +236,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(401)).doReturn(failure(401)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
         verifyRateLimiterFailedSendingCountedTimes(2);
@@ -244,7 +250,7 @@ public class ConsumerMessageSenderTest {
         when(messageSender.send(message)).thenReturn(new CompletableFuture<>());
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
         verifyErrorHandlerHandleFailed(message, subscription, 1, 3000);
@@ -263,7 +269,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(500)).when(messageSender).send(message);
 
         //when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         //then
         Thread.sleep(executionTime);
@@ -278,7 +284,7 @@ public class ConsumerMessageSenderTest {
         doReturn(backoff(retrySeconds)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
         verifyRateLimiterFailedSendingCountedTimes(0);
@@ -294,7 +300,7 @@ public class ConsumerMessageSenderTest {
         doReturn(backoff(retrySeconds)).when(messageSender).send(message);
 
         // when
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
         verifyRateLimiterSuccessfulSendingCountedTimes(1);
@@ -314,10 +320,10 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.updateSubscription(subscriptionWithModfiedEndpoint);
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
-        verify(otherMessageSender).send(message);
+        verify(otherMessageSender, timeout(1000)).send(message);
     }
 
     @Test
@@ -332,10 +338,34 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.updateSubscription(subscriptionWithModfiedTimeout);
-        sender.sendMessage(message);
+        sender.sendAsync(message);
 
         // then
-        verify(otherMessageSender).send(message);
+        verify(otherMessageSender, timeout(1000)).send(message);
+    }
+
+    @Test
+    public void shouldDelaySendingMessageForHalfSecond() {
+        // given
+        Subscription subscription = subscriptionBuilderWithTestValues()
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
+                        .withSendingDelay(500)
+                        .build())
+                .build();
+        setUpMetrics(subscription);
+
+        Message message = message();
+        when(messageSender.send(message)).thenReturn(success());
+        ConsumerMessageSender sender = consumerMessageSender(subscription);
+
+        // when
+        long sendingStartTime = System.currentTimeMillis();
+        sender.sendAsync(message);
+        verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
+
+        // then
+        long sendingTime = System.currentTimeMillis() - sendingStartTime;
+        assertThat(sendingTime).isGreaterThan(500);
     }
 
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
