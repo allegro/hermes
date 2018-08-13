@@ -62,7 +62,8 @@ public class ChronicleMapMessageRepository implements MessageRepository {
                     .constantKeySizeBySample(MessageIdGenerator.generate())
                     .averageValueSize(averageMessageSize)
                     .entries(entries)
-                    .createPersistedTo(file);
+                    .recoverPersistedTo(file, SAME_BUILDER_CONFIG);
+//                    .createPersistedTo(file);
             if (map == null) {
                 logger.error("Backup file could not be read - check if it was not corrupted.");
             }
