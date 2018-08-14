@@ -14,7 +14,6 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.nio.file.Files;
 import java.time.Clock;
 import java.util.List;
 
@@ -23,6 +22,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAG
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_SIZE_MB;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED;
 
 public class PersistentBufferExtension {
 
@@ -68,7 +68,7 @@ public class PersistentBufferExtension {
         if (!rolledBackupFiles.isEmpty()) {
             logger.info("Backup files were found. Number of files: {}. Files: {}",
                     rolledBackupFiles.size(),
-                    rolledBackupFiles.stream().map(f -> f.getName()).collect(joining(", ")));
+                    rolledBackupFiles.stream().map(File::getName).collect(joining(", ")));
 
             hooksHandler.addStartupHook((s) -> {
                 rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
@@ -76,24 +76,20 @@ public class PersistentBufferExtension {
             });
         }
 
-        try {
+        if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {
+            int backupStorageSizeInBytes = config.getIntProperty(MESSAGES_LOCAL_STORAGE_SIZE_MB) * MEGABYTES_TO_BYTES_MULTIPLIER;
+            int entries = backupStorageSizeInBytes / config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
+            int avgMessageSize = config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
 
-            if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {
-                int backupStorageSizeInBytes = config.getIntProperty(MESSAGES_LOCAL_STORAGE_SIZE_MB) * MEGABYTES_TO_BYTES_MULTIPLIER;
-                int entries = backupStorageSizeInBytes / config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
-                MessageRepository repository = ChronicleMapMessageRepository.create(
-                        Files.createTempFile("kek","lel").toFile(),
-                        entries,
-                        config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE));
-                BrokerListener brokerListener = new BrokerListener(repository);
+            MessageRepository repository = config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED)
+                    ? ChronicleMapMessageRepository.create(backupFilesManager.getCurrentBackupFile(), hermesMetrics, entries, avgMessageSize)
+                    : ChronicleMapMessageRepository.create(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize);
 
-                listeners.addAcknowledgeListener(brokerListener);
-                listeners.addErrorListener(brokerListener);
-                listeners.addTimeoutListener(brokerListener);
-            }
-        } catch (Exception e) {
+            BrokerListener brokerListener = new BrokerListener(repository);
 
-
+            listeners.addAcknowledgeListener(brokerListener);
+            listeners.addErrorListener(brokerListener);
+            listeners.addTimeoutListener(brokerListener);
         }
     }
 
