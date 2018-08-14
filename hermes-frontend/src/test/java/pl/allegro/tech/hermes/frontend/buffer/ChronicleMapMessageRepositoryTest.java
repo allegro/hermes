@@ -97,7 +97,7 @@ public class ChronicleMapMessageRepositoryTest {
     }
 
     @Test
-    public void shouldCreateRepositoryCloseAndRestore() {
+    public void shouldCreateRepositoryThenCloseAndRestore() {
         //given
         Message message = generateMessage();
         String qualifiedName = "groupName.topic";

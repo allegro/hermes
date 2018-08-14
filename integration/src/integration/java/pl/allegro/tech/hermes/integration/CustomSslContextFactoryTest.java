@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.integration;
 
-import org.junit.Ignore;
+import com.google.common.io.Files;
 import org.mockito.Mockito;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
+import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
@@ -21,14 +21,14 @@ public class CustomSslContextFactoryTest extends IntegrationTest {
     private HermesFrontend hermesFrontend;
 
     @Test
-    @Ignore
     public void shouldInjectCustomSslContextFactoryToFrontend() {
         // given
         SslContextFactory customSslContextFactory = Mockito.mock(SslContextFactory.class);
 
         ConfigFactory configFactory = new MutableConfigFactory()
                 .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
-                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
+                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
+                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         hermesFrontend = HermesFrontend.frontend()
                 .withBinding(configFactory, ConfigFactory.class)
