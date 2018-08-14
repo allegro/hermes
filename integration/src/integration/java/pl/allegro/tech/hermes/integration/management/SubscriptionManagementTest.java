@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
@@ -125,6 +128,43 @@ public class SubscriptionManagementTest extends IntegrationTest {
         remoteService.expectMessages(MESSAGE.body());
         publishMessage(topic.getQualifiedName(), MESSAGE.body());
         remoteService.waitUntilReceived();
+    }
+
+    @Test
+    public void shouldUpdateSubscriptionPolicy() {
+        // given
+        Topic topic = operations.buildTopic("updateSubscriptionPolicy", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL + "v1/");
+        wait.untilSubscriptionIsActivated(topic, "subscription");
+
+        PatchData patchData = patchData().set("subscriptionPolicy", ImmutableMap.builder()
+                    .put("inflightSize", 100)
+                    .put("messageBackoff", 100)
+                    .put("messageTtl", 3600)
+                    .put("rate", 300)
+                    .put("requestTimeout", 1000)
+                    .put("retryClientErrors", false)
+                    .put("sendingDelay", 1000)
+                    .build())
+                .build();
+
+        // when
+        Response response = management.subscription().update(
+                topic.getQualifiedName(),
+                "subscription",
+                patchData
+        );
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+        SubscriptionPolicy policy = management.subscription().get(topic.getQualifiedName(), "subscription").getSerialSubscriptionPolicy();
+        assertThat(policy.getInflightSize()).isEqualTo(100);
+        assertThat(policy.getMessageBackoff()).isEqualTo(100);
+        assertThat(policy.getMessageTtl()).isEqualTo(3600);
+        assertThat(policy.getRate()).isEqualTo(300);
+        assertThat(policy.getRequestTimeout()).isEqualTo(1000);
+        assertThat(policy.isRetryClientErrors()).isFalse();
+        assertThat(policy.getSendingDelay()).isEqualTo(1000);
     }
 
     @Test

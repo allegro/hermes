@@ -28,45 +28,14 @@ class SignalsFilterTest extends Specification {
                 Signal.of(SignalType.START, subscription('A'))
         ]
 
-        Set<SubscriptionName> existingConsumers = [
-                subscription('A'), subscription('B'), subscription('C'), subscription('D')
-        ]
-
         when:
-        Set<Signal> filteredSignals = filter.filterSignals(signals, existingConsumers)
+        Set<Signal> filteredSignals = filter.filterSignals(signals)
 
         then:
         filteredSignals == [
                 Signal.of(SignalType.STOP, subscription('B')),
                 Signal.of(SignalType.STOP, subscription('C')),
                 Signal.of(SignalType.START, subscription('D'))
-        ] as Set
-    }
-
-    def "should remove all pending KILL_UNHEALTHY signals if START signals appears"() {
-        given:
-        List<Signal> signals = [
-                Signal.of(SignalType.KILL_UNHEALTHY, subscription('A')),
-                Signal.of(SignalType.UPDATE_TOPIC, subscription('B')),
-                Signal.of(SignalType.STOP, subscription('C')),
-                Signal.of(SignalType.KILL_UNHEALTHY, subscription('A')),
-                Signal.of(SignalType.START, subscription('D')),
-                Signal.of(SignalType.START, subscription('A'))
-        ]
-
-        Set<SubscriptionName> existingConsumers = [
-                subscription('A'), subscription('B'), subscription('C'), subscription('D')
-        ]
-
-        when:
-        Set<Signal> filteredSignals = filter.filterSignals(signals, existingConsumers)
-
-        then:
-        filteredSignals == [
-                Signal.of(SignalType.UPDATE_TOPIC, subscription('B')),
-                Signal.of(SignalType.STOP, subscription('C')),
-                Signal.of(SignalType.START, subscription('D')),
-                Signal.of(SignalType.START, subscription('A'))
         ] as Set
     }
 
@@ -77,10 +46,8 @@ class SignalsFilterTest extends Specification {
                 Signal.of(SignalType.UPDATE_TOPIC, subscription('A'), 'second-update'),
         ]
 
-        Set<SubscriptionName> existingConsumers = [subscription('A')]
-
         when:
-        Set<Signal> filteredSignals = filter.filterSignals(signals, existingConsumers)
+        Set<Signal> filteredSignals = filter.filterSignals(signals)
 
         then:
         filteredSignals == [
@@ -93,54 +60,16 @@ class SignalsFilterTest extends Specification {
         given:
         Object payload = null
         List<Signal> signals = [
-                Signal.of(SignalType.KILL_UNHEALTHY, subscription('A'), payload, 2048),
+                Signal.of(SignalType.START, subscription('A'), payload, 2048),
         ]
 
-        Set<SubscriptionName> existingConsumers = [subscription('A')]
-
         when:
-        Set<Signal> filteredSignals = filter.filterSignals(signals, existingConsumers)
+        Set<Signal> filteredSignals = filter.filterSignals(signals)
 
         then:
         filteredSignals == [] as Set
-        taskQueue.drain({ s -> s == Signal.of(SignalType.KILL_UNHEALTHY, subscription('A')) })
+        taskQueue.drain({ s -> s == Signal.of(SignalType.START, subscription('A')) })
     }
-
-    def "should filter out signals for consumer processes that do not exist"() {
-        given:
-        List<Signal> signals = [
-                Signal.of(SignalType.KILL, subscription('A')),
-                Signal.of(SignalType.KILL, subscription('B')),
-        ]
-
-        Set<SubscriptionName> existingConsumers = [subscription('A')]
-
-        when:
-        Set<Signal> filteredSignals = filter.filterSignals(signals, existingConsumers)
-
-        then:
-        filteredSignals == [
-                Signal.of(SignalType.KILL, subscription('A'))
-        ] as Set
-    }
-
-    def "should allow on processing START signal for processes that do not exist"() {
-        given:
-        List<Signal> signals = [
-                Signal.of(SignalType.START, subscription('A')),
-        ]
-
-        Set<SubscriptionName> existingConsumers = []
-
-        when:
-        Set<Signal> filteredSignals = filter.filterSignals(signals, existingConsumers)
-
-        then:
-        filteredSignals == [
-                Signal.of(SignalType.START, subscription('A'))
-        ] as Set
-    }
-
 
     private SubscriptionName subscription(String suffix) {
         return SubscriptionName.fromString("group.topic\$sub$suffix")

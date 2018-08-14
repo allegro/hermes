@@ -174,13 +174,4 @@ public class SelectiveSupervisorController implements SupervisorController {
             supervisor.retransmit(subscription);
         }
     }
-
-    @Override
-    public void restartConsumer(SubscriptionName subscription) throws Exception {
-        if (workTracker.isAssignedTo(subscription, consumerId())) {
-            supervisor.restartConsumer(subscription);
-        }
-    }
-
-
 }

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
+import java.util.HashMap;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -71,14 +72,42 @@ public class AvroMessageContentWrapperTest {
         UnwrappedMessageContent unwrappedMessage = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getCompiledSchema());
 
         //then
-        assertThat(unwrappedMessage.getMessageMetadata().getId()).isNotEmpty();
+        assertThat(unwrappedMessage.getMessageMetadata().getId()).isEmpty();
         assertThat(unwrappedMessage.getMessageMetadata().getTimestamp()).isNotNull();
         assertThat(unwrappedMessage.getContent()).startsWith(content);
     }
 
-    private byte[] wrapContentWithoutMetadata(byte[] message, Schema schema) throws Exception{
+    @Test
+    public void shouldUnwrapAvroMessageAndSetEmptyMessageIdWhenNotGivenInMetadata() throws Throwable {
+        // given
+        byte [] wrappedMessage = wrapContentWithoutMessageIdInMetadata(content, avroUser.getSchema());
+
+        //when
+        UnwrappedMessageContent unwrappedMessage = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getCompiledSchema());
+
+        // then
+        assertThat(unwrappedMessage.getMessageMetadata().getId()).isEmpty();
+        assertThat(unwrappedMessage.getMessageMetadata().getTimestamp()).isNotNull();
+        assertThat(unwrappedMessage.getContent()).contains(content);
+    }
+
+    private byte[] wrapContentWithoutMetadata(byte[] message, Schema schema) throws Exception {
+        return wrapContent(message, schema, null);
+    }
+
+    private byte[] wrapContentWithoutMessageIdInMetadata(byte[] message, Schema schema) throws Exception {
+        return wrapContent(message, schema, metadataMapWithoutMessageId(timestamp));
+    }
+
+    private byte[] wrapContent(byte[] message, Schema schema, Map<Utf8, Utf8> metadata) throws Exception {
         GenericRecord genericRecord = bytesToRecord(message, schema);
-        genericRecord.put(METADATA_MARKER, null);
+        genericRecord.put(METADATA_MARKER, metadata);
         return recordToBytes(genericRecord, schema);
+    }
+
+    private Map<Utf8, Utf8> metadataMapWithoutMessageId(long timestamp) {
+        Map<Utf8, Utf8> metadata = new HashMap<>();
+        metadata.put(METADATA_TIMESTAMP_KEY, new Utf8(Long.toString(timestamp)));
+        return metadata;
     }
 }
