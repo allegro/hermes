@@ -1,3 +1,19 @@
+## 0.12.10 (14.08.2018)
+
+All issues and pull requests: [0.12.10 milestone](https://github.com/allegro/hermes/milestone/47)
+
+### Features
+
+#### ([894](https://github.com/allegro/hermes/pull/894)) Sending delay
+
+Sending delay feature. We want to give users possibility to postpone sending an event for given time (max 5 seconds) 
+so if there are multiple topics that sends messages at the same time, then can increase chance of receiving an event 
+from one topic before an event from another topic.
+
+#### ([894](https://github.com/allegro/hermes/pull/871)) Improved processes signals management
+
+Improve processes management to be more predictable and easy to understand.
+
 ## 0.12.9 (12.07.2018)
 
 All issues and pull requests: [0.12.9 milestone](https://github.com/allegro/hermes/milestone/46)
