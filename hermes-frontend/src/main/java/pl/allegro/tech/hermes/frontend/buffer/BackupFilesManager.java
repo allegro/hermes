@@ -18,7 +18,7 @@ public class BackupFilesManager {
 
     private static final Logger logger = LoggerFactory.getLogger(BackupFilesManager.class);
 
-    private static final String FILE_NAME = "hermes-buffer";
+    private static final String FILE_NAME = "hermes-buffer-v3";
     private static final String TIMESTAMPED_BACKUP_FILE_PATTERN = FILE_NAME + "-\\d+\\.dat";
 
     private final String baseDir;
