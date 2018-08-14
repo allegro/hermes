@@ -97,10 +97,6 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         try {
             ChronicleMapMessageRepository backupRepository = createBackupRepository(tempDirPath);
 
-//            ChronicleMapMessageRepository backupRepository = createBackupRepository(
-//                    frontend.config().getStringProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY)
-//            );
-
             await().atMost(5, SECONDS).until(() ->
                     assertThat(publisher.publish("backupGroup.uniqueTopic", "message").getStatus())
                             .isEqualTo(CREATED.getStatusCode()));

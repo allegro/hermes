@@ -24,27 +24,27 @@ public class CustomSslContextFactoryTest extends IntegrationTest {
     @Ignore
     public void shouldInjectCustomSslContextFactoryToFrontend() {
         // given
-//        SslContextFactory customSslContextFactory = Mockito.mock(SslContextFactory.class);
-//
-//        ConfigFactory configFactory = new MutableConfigFactory()
-//                .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
-//                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
-//
-//        hermesFrontend = HermesFrontend.frontend()
-//                .withBinding(configFactory, ConfigFactory.class)
-//                .withSslContextFactory(customSslContextFactory)
-//                .build();
-//        hermesFrontend.start();
-//
-//        // when
-//        SslContextFactoryProvider sslContextFactoryProvider = hermesFrontend.getService(SslContextFactoryProvider.class);
-//
-//        // then
-//        assertThat(sslContextFactoryProvider.getSslContextFactory()).isEqualTo(customSslContextFactory);
+        SslContextFactory customSslContextFactory = Mockito.mock(SslContextFactory.class);
+
+        ConfigFactory configFactory = new MutableConfigFactory()
+                .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
+                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
+
+        hermesFrontend = HermesFrontend.frontend()
+                .withBinding(configFactory, ConfigFactory.class)
+                .withSslContextFactory(customSslContextFactory)
+                .build();
+        hermesFrontend.start();
+
+        // when
+        SslContextFactoryProvider sslContextFactoryProvider = hermesFrontend.getService(SslContextFactoryProvider.class);
+
+        // then
+        assertThat(sslContextFactoryProvider.getSslContextFactory()).isEqualTo(customSslContextFactory);
     }
 
     @AfterClass
     public void tearDown() throws InterruptedException {
-//        hermesFrontend.stop();
+        hermesFrontend.stop();
     }
 }
