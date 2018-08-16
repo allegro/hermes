@@ -37,7 +37,6 @@ import java.util.Properties;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.time.Instant.now;
-import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -119,15 +118,16 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     @Test
     public void shouldLoadMessageFromBackupStorage() throws Exception {
         // given
+        String tempDirPath = Files.createTempDir().getAbsolutePath();
         Topic topic = topic("backupGroup", "topic").withContentType(ContentType.JSON).build();
-        backupFileWithOneMessage(topic);
+        backupFileWithOneMessage(tempDirPath, topic);
 
         operations.createSubscription(operations.buildTopic(topic), "subscription", HTTP_ENDPOINT_URL);
 
         remoteService.expectMessages("message");
 
         FrontendStarter frontend = new FrontendStarter(Ports.nextAvailable(), false);
-        frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDir.getAbsolutePath());
+        frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
 
         // when
         frontend.start();
@@ -139,8 +139,8 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         frontend.stop();
     }
 
-    private File backupFileWithOneMessage(Topic topic) {
-        File backup = new File(tempDir.getAbsoluteFile(), "hermes-buffer.dat");
+    private File backupFileWithOneMessage(String tempDirPath, Topic topic) {
+        File backup = new File(tempDirPath, "hermes-buffer.dat");
 
         MessageRepository messageRepository = ChronicleMapMessageRepository.create(backup, ENTRIES, AVERAGE_MESSAGE_SIZE);
         JsonMessageContentWrapper contentWrapper = new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper());
