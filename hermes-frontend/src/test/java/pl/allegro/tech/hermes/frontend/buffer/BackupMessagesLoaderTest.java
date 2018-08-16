@@ -58,7 +58,7 @@ public class BackupMessagesLoaderTest {
     private final Topic topic = TopicBuilder.topic("pl.allegro.tech.hermes.test").build();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         tempDir = Files.createTempDir();
 
         when(cachedTopic.getTopic()).thenReturn(topic);
@@ -91,7 +91,7 @@ public class BackupMessagesLoaderTest {
         messageRepository.save(messageOfAge(10), topic);
 
         //when
-        backupMessagesLoader.loadMessages(messageRepository);
+        backupMessagesLoader.loadMessages(messageRepository.findAll());
 
         //then
         verify(producer, times(1)).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
@@ -122,7 +122,7 @@ public class BackupMessagesLoaderTest {
         messageRepository.save(messageOfAge(1), topic);
 
         //when
-        backupMessagesLoader.loadMessages(messageRepository);
+        backupMessagesLoader.loadMessages(messageRepository.findAll());
 
         //then
         verify(producer, times(noOfSentCalls)).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
@@ -145,7 +145,7 @@ public class BackupMessagesLoaderTest {
         messageRepository.save(messageOfAge(1), topic);
 
         // when
-        backupMessagesLoader.loadMessages(messageRepository);
+        backupMessagesLoader.loadMessages(messageRepository.findAll());
 
         // then
         verify(producer, times(3)).isTopicAvailable(cachedTopic);
