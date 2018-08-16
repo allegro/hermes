@@ -140,7 +140,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     }
 
     private File backupFileWithOneMessage(String tempDirPath, Topic topic) {
-        File backup = new File(tempDirPath, "hermes-buffer.dat");
+        File backup = new File(tempDirPath, "hermes-buffer-v3.dat");
 
         MessageRepository messageRepository = ChronicleMapMessageRepository.create(backup, ENTRIES, AVERAGE_MESSAGE_SIZE);
         JsonMessageContentWrapper contentWrapper = new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper());
