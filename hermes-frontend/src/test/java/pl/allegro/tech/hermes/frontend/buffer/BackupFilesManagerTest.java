@@ -66,7 +66,7 @@ public class BackupFilesManagerTest {
     }
 
     @Test
-    public void shouldReadEmptyBackupFileList() throws IOException {
+    public void shouldReadEmptyBackupFileList() {
         // given
         BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
 
@@ -83,13 +83,13 @@ public class BackupFilesManagerTest {
         BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
         // when
         Optional<File> backupFile = backupFilesManager.rolloverBackupFileIfExists();
-        
+
         // when & then
         assertThat(backupFile.isPresent()).isFalse();
     }
 
     @Test
-    public void shouldUseNewNamingSchemeWhenNoFilesAvailable() throws IOException {
+    public void shouldUseNewNamingSchemeWhenNoFilesAvailable() {
         // given
         BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
 

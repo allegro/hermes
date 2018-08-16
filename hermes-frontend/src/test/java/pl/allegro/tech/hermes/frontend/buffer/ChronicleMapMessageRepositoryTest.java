@@ -30,7 +30,7 @@ public class ChronicleMapMessageRepositoryTest {
     }
 
     @Test
-    public void shouldSaveFindAndDeleteMessage() throws Exception {
+    public void shouldSaveFindAndDeleteMessage() {
         //given
         String qualifiedName = "groupName.topic";
 
@@ -55,7 +55,7 @@ public class ChronicleMapMessageRepositoryTest {
     }
 
     @Test
-    public void shouldSaveMultipleTimesFindAndDeleteMessage() throws Exception {
+    public void shouldSaveMultipleTimesFindAndDeleteMessage() {
         //given
         String messageContent = "hello world";
         Message message1 = generateMessage(messageContent);
