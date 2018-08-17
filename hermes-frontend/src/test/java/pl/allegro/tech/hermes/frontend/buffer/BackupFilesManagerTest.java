@@ -99,4 +99,24 @@ public class BackupFilesManagerTest {
         // then
         assertThat(file.getName()).isEqualTo("hermes-buffer-v3.dat");
     }
+
+    @Test
+    public void shouldLoadAllTemporaryBackupV2Files() throws IOException {
+        // given
+        BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
+        File temporaryBackup1 = new File(tempDir, "hermes-buffer-v3-001-v2-old.tmp");
+        File temporaryBackup2 = new File(tempDir, "hermes-buffer-v3-002-v2-old.tmp");
+        File customBackup = new File(tempDir, "hermes-buffer-v3-old.dat");
+
+        // and
+        temporaryBackup1.createNewFile();
+        temporaryBackup2.createNewFile();
+        customBackup.createNewFile();
+
+        // when
+        List<File> files = backupFilesManager.getTemporaryBackupV2Files();
+
+        // then
+        assertThat(files.size()).isEqualTo(2);
+    }
 }

@@ -24,6 +24,9 @@ import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static java.time.LocalDateTime.now;
@@ -152,10 +155,32 @@ public class BackupMessagesLoaderTest {
         verify(producer, times(1)).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
     }
 
+    @Test
+    public void shouldReadV2MessagesFromTemporaryFile2() throws IOException {
+        // given
+        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(10);
+        when(producer.isTopicAvailable(cachedTopic)).thenReturn(true);
+        when(topicsCache.getTopic(any())).thenReturn(Optional.of(cachedTopic));
+
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
+
+        // and
+        ClassLoader classLoader = getClass().getClassLoader();
+        File temporaryBackup1 = new File(classLoader.getResource("backup/hermes-buffer-12345.dat-v2-old.tmp").getFile());
+        List<File> files = Arrays.asList(temporaryBackup1);
+
+        //when
+        backupMessagesLoader.loadFromTemporaryBackupV2Files(files);
+
+        //then
+        verify(producer, times(20)).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
+    }
+
     private Message messageOfAge(int ageHours) {
         return new JsonMessage(
                 MessageIdGenerator.generate(),
                 "{'a':'b'}".getBytes(),
-                now().minusHours(ageHours).toInstant(UTC).toEpochMilli());
+                now().minusHours(ageHours).toInstant(UTC).toEpochMilli()
+        );
     }
 }
