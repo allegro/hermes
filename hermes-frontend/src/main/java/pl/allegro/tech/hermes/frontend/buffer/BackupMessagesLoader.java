@@ -18,6 +18,10 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -93,6 +97,24 @@ public class BackupMessagesLoader {
         } while (toResend.get().size() > 0 && retry <= maxResendRetries);
 
         logger.info("Finished resending messages from backup storage after retry #{} with {} unsent messages.", retry - 1, toResend.get().size());
+    }
+
+    public void loadFromTemporaryBackupV2Files(List<File> files) {
+        files.forEach(file -> {
+            try (
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            ) {
+                List<BackupMessage> messages = (List<BackupMessage>) objectInputStream.readObject();
+                logger.info("Loaded {} messages from temporary v2 backup file: {}", messages.size(), file.toString());
+                loadMessages(messages);
+
+            } catch (IOException | ClassNotFoundException e) {
+                logger.error("Error reading temporary backup v2 files from path.",
+                        file.getAbsolutePath(),
+                        e);
+            }
+        });
     }
 
     public void clearTopicsAvailabilityCache() {
