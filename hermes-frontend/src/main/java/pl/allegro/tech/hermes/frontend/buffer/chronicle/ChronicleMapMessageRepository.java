@@ -24,52 +24,14 @@ public class ChronicleMapMessageRepository implements MessageRepository {
 
     private ChronicleMap<String, ChronicleMapEntryValue> map;
 
-    public static ChronicleMapMessageRepository recover(File file) {
-        return new ChronicleMapMessageRepository(file);
-    }
-
-    public static ChronicleMapMessageRepository create(File file, int entries, int averageMessageSize) {
-        return new ChronicleMapMessageRepository(file, entries, averageMessageSize);
-    }
-
-    public static ChronicleMapMessageRepository create(File file, HermesMetrics hermesMetrics, int entries, int averageMessageSize) {
-        ChronicleMapMessageRepository repository = new ChronicleMapMessageRepository(file, entries, averageMessageSize);
-        hermesMetrics.registerMessageRepositorySizeGauge(() -> repository.map.size());
-        return repository;
-    }
-
-    @Deprecated // use .create() or .recover()
-    public ChronicleMapMessageRepository(File file, HermesMetrics hermesMetrics) {
-        this(file);
-        hermesMetrics.registerMessageRepositorySizeGauge(() -> map.size());
-    }
-
-    private ChronicleMapMessageRepository(File file) {
-        logger.info("Creating backup storage in path: {}", file.getAbsolutePath());
-        try {
-            map = ChronicleMapBuilder.of(String.class, ChronicleMapEntryValue.class)
-                    .constantKeySizeBySample(MessageIdGenerator.generate())
-                    .averageValueSize(600)
-                    .entries(100)
-                    .recoverPersistedTo(file, SAME_BUILDER_CONFIG);
-
-            if (map == null) {
-                logger.error("Backup file could not be read - check if it was not corrupted.");
-            }
-        } catch (IOException e) {
-            logger.error("Failed to load backup storage file from path {}", file.getAbsoluteFile(), e);
-            throw new ChronicleMapCreationException(e);
-        }
-    }
-
-    private ChronicleMapMessageRepository(File file, int entries, int averageMessageSize) {
+    public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize) {
         logger.info("Creating backup storage in path: {}", file.getAbsolutePath());
         try {
             map = ChronicleMapBuilder.of(String.class, ChronicleMapEntryValue.class)
                     .constantKeySizeBySample(MessageIdGenerator.generate())
                     .averageValueSize(averageMessageSize)
                     .entries(entries)
-                    .createPersistedTo(file);
+                    .createOrRecoverPersistedTo(file);
 
             if (map == null) {
                 logger.error("Backup file could not be read - check if it was not corrupted.");
@@ -78,6 +40,11 @@ public class ChronicleMapMessageRepository implements MessageRepository {
             logger.error("Failed to load backup storage file from path {}", file.getAbsoluteFile(), e);
             throw new ChronicleMapCreationException(e);
         }
+    }
+
+    public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize, HermesMetrics hermesMetrics) {
+        this(file, entries, averageMessageSize);
+        hermesMetrics.registerMessageRepositorySizeGauge(() -> map.size());
     }
 
     @Override
