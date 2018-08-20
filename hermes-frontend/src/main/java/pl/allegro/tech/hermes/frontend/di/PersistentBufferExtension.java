@@ -42,8 +42,6 @@ public class PersistentBufferExtension {
     private final BackupMessagesLoader backupMessagesLoader;
     private final HermesMetrics hermesMetrics;
 
-    private File file;
-
     @Inject
     public PersistentBufferExtension(ConfigFactory configFactory,
                                      Clock clock,
