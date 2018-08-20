@@ -65,8 +65,11 @@ public class PersistentBufferExtension {
                 clock);
 
         if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED)) {
-            List<File> backupFiles = backupFilesManager.getTemporaryBackupV2Files();
-            backupMessagesLoader.loadFromTemporaryBackupV2Files(backupFiles);
+            List<File> temporaryBackupV2Files = backupFilesManager.getTemporaryBackupV2Files();
+            hooksHandler.addStartupHook((s) -> {
+                temporaryBackupV2Files.forEach(f -> loadTemporaryBackupV2Messages(backupFilesManager, f));
+                backupMessagesLoader.clearTopicsAvailabilityCache();
+            });
         }
 
         backupFilesManager.rolloverBackupFileIfExists();
@@ -97,6 +100,12 @@ public class PersistentBufferExtension {
             listeners.addErrorListener(brokerListener);
             listeners.addTimeoutListener(brokerListener);
         }
+    }
+
+    private void loadTemporaryBackupV2Messages(BackupFilesManager backupFilesManager, File temporaryBackup) {
+        logger.info("Loading messages from temporary backup v2 file: {}", temporaryBackup.getName());
+        backupMessagesLoader.loadFromTemporaryBackupV2File(temporaryBackup);
+        backupFilesManager.delete(temporaryBackup);
     }
 
     private void loadOldMessages(BackupFilesManager backupFilesManager, File oldBackup) {
