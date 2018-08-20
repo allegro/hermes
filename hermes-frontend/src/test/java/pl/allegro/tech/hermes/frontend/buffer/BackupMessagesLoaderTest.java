@@ -158,7 +158,8 @@ public class BackupMessagesLoaderTest {
     @Test
     public void shouldReadV2MessagesFromTemporaryFile2() throws IOException {
         // given
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(10);
+        // after 1_000_000 hours please regenerate `backup/hermes-buffer-12345.dat-v2-old.tmp` with `backup-message-migrator`
+        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(1000000);
         when(producer.isTopicAvailable(cachedTopic)).thenReturn(true);
         when(topicsCache.getTopic(any())).thenReturn(Optional.of(cachedTopic));
 
@@ -167,10 +168,9 @@ public class BackupMessagesLoaderTest {
         // and
         ClassLoader classLoader = getClass().getClassLoader();
         File temporaryBackup1 = new File(classLoader.getResource("backup/hermes-buffer-12345.dat-v2-old.tmp").getFile());
-        List<File> files = Arrays.asList(temporaryBackup1);
 
         //when
-        backupMessagesLoader.loadFromTemporaryBackupV2Files(files);
+        backupMessagesLoader.loadFromTemporaryBackupV2File(temporaryBackup1);
 
         //then
         verify(producer, times(20)).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
