@@ -31,7 +31,7 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
         common.put(BOOTSTRAP_SERVERS_CONFIG, getString(KAFKA_BROKER_LIST));
         common.put(MAX_BLOCK_MS_CONFIG, getInt(KAFKA_PRODUCER_MAX_BLOCK_MS));
         common.put(COMPRESSION_TYPE_CONFIG, getString(KAFKA_PRODUCER_COMPRESSION_CODEC));
-        common.put(BUFFER_MEMORY_CONFIG, configFactory.getLongProperty(KAFKA_PRODUCER_BUFFER_MEMORY));
+        common.put(BUFFER_MEMORY_CONFIG, configFactory.getLongProperty(MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE));
         common.put(REQUEST_TIMEOUT_MS_CONFIG, getInt(KAFKA_PRODUCER_REQUEST_TIMEOUT_MS));
         common.put(BATCH_SIZE_CONFIG, getInt(KAFKA_PRODUCER_BATCH_SIZE));
         common.put(SEND_BUFFER_CONFIG, getInt(KAFKA_PRODUCER_TCP_SEND_BUFFER));
