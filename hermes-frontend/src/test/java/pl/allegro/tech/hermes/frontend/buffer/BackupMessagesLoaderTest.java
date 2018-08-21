@@ -79,7 +79,7 @@ public class BackupMessagesLoaderTest {
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(8);
         when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(2);
 
-        MessageRepository messageRepository = new ChronicleMapMessageRepository(
+        MessageRepository messageRepository = ChronicleMapMessageRepository.create(
                 new File(tempDir.getAbsoluteFile(), "messages.dat"),
                 ENTRIES,
                 AVERAGE_MESSAGE_SIZE
@@ -113,7 +113,7 @@ public class BackupMessagesLoaderTest {
         }).when(producer).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
 
 
-        MessageRepository messageRepository = new ChronicleMapMessageRepository(
+        MessageRepository messageRepository = ChronicleMapMessageRepository.create(
                 new File(tempDir.getAbsoluteFile(), "messages.dat"),
                 ENTRIES,
                 AVERAGE_MESSAGE_SIZE
@@ -138,7 +138,7 @@ public class BackupMessagesLoaderTest {
         when(producer.isTopicAvailable(cachedTopic)).thenReturn(false).thenReturn(false).thenReturn(true);
 
         BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
-        MessageRepository messageRepository = new ChronicleMapMessageRepository(
+        MessageRepository messageRepository = ChronicleMapMessageRepository.create(
                 new File(tempDir.getAbsoluteFile(), "messages.dat"),
                 ENTRIES,
                 AVERAGE_MESSAGE_SIZE
