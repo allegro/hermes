@@ -115,7 +115,7 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.close();
 
         //when
-        messageRepository = new ChronicleMapMessageRepository(file, 600, 100);
+        messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
 
         //then
         assertThat(messageRepository.findAll()).contains(new BackupMessage(message.getId(), message.getData(), message.getTimestamp(), qualifiedName));

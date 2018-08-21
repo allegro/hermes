@@ -40,6 +40,9 @@ public class PersistentBufferExtension {
     private final BackupMessagesLoader backupMessagesLoader;
     private final HermesMetrics hermesMetrics;
 
+    private int entries;
+    private int avgMessageSize;
+
     @Inject
     public PersistentBufferExtension(ConfigFactory configFactory,
                                      Clock clock,
@@ -60,45 +63,22 @@ public class PersistentBufferExtension {
                 config.getStringProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY),
                 clock);
 
+        int backupStorageSizeInBytes = config.getIntProperty(MESSAGES_LOCAL_STORAGE_SIZE);
+        entries = backupStorageSizeInBytes / config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
+        avgMessageSize = config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
+
         if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED)) {
             loadTemporaryBackupV2Files(backupFilesManager);
         }
 
         backupFilesManager.rolloverBackupFileIfExists();
         List<File> rolledBackupFiles = backupFilesManager.getRolledBackupFiles();
-        rollBackupFiles(backupFilesManager, rolledBackupFiles);
+        if (!rolledBackupFiles.isEmpty()) {
+            rollBackupFiles(backupFilesManager, rolledBackupFiles);
+        }
 
         if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {
             enableLocalStorage(backupFilesManager);
-        }
-    }
-
-    private void enableLocalStorage(BackupFilesManager backupFilesManager) {
-        int backupStorageSizeInBytes = config.getIntProperty(MESSAGES_LOCAL_STORAGE_SIZE);
-        int entries = backupStorageSizeInBytes / config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
-        int avgMessageSize = config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
-
-        MessageRepository repository = config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED)
-                ? new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize, hermesMetrics)
-                : new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize);
-
-        BrokerListener brokerListener = new BrokerListener(repository);
-
-        listeners.addAcknowledgeListener(brokerListener);
-        listeners.addErrorListener(brokerListener);
-        listeners.addTimeoutListener(brokerListener);
-    }
-
-    private void rollBackupFiles(BackupFilesManager backupFilesManager, List<File> rolledBackupFiles) {
-        if (!rolledBackupFiles.isEmpty()) {
-            logger.info("Backup files were found. Number of files: {}. Files: {}",
-                    rolledBackupFiles.size(),
-                    rolledBackupFiles.stream().map(File::getName).collect(joining(", ")));
-
-            hooksHandler.addStartupHook((s) -> {
-                rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
-                backupMessagesLoader.clearTopicsAvailabilityCache();
-            });
         }
     }
 
@@ -110,6 +90,29 @@ public class PersistentBufferExtension {
         });
     }
 
+    private void rollBackupFiles(BackupFilesManager backupFilesManager, List<File> rolledBackupFiles) {
+        logger.info("Backup files were found. Number of files: {}. Files: {}",
+                rolledBackupFiles.size(),
+                rolledBackupFiles.stream().map(File::getName).collect(joining(", ")));
+
+        hooksHandler.addStartupHook((s) -> {
+            rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
+            backupMessagesLoader.clearTopicsAvailabilityCache();
+        });
+    }
+
+    private void enableLocalStorage(BackupFilesManager backupFilesManager) {
+        MessageRepository repository = config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED)
+                ? new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize, hermesMetrics)
+                : new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize);
+
+        BrokerListener brokerListener = new BrokerListener(repository);
+
+        listeners.addAcknowledgeListener(brokerListener);
+        listeners.addErrorListener(brokerListener);
+        listeners.addTimeoutListener(brokerListener);
+    }
+
     private void loadTemporaryBackupV2Messages(BackupFilesManager backupFilesManager, File temporaryBackup) {
         logger.info("Loading messages from temporary backup v2 file: {}", temporaryBackup.getName());
         backupMessagesLoader.loadFromTemporaryBackupV2File(temporaryBackup);
@@ -118,7 +121,7 @@ public class PersistentBufferExtension {
 
     private void loadOldMessages(BackupFilesManager backupFilesManager, File oldBackup) {
         logger.info("Loading messages from backup file: {}", oldBackup.getName());
-        MessageRepository oldMessageRepository = new ChronicleMapMessageRepository(oldBackup, 600, 100);
+        MessageRepository oldMessageRepository = new ChronicleMapMessageRepository(oldBackup, entries, avgMessageSize);
         backupMessagesLoader.loadMessages(oldMessageRepository.findAll());
         oldMessageRepository.close();
         backupFilesManager.delete(oldBackup);
