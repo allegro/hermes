@@ -142,7 +142,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     private File backupFileWithOneMessage(String tempDirPath, Topic topic) {
         File backup = new File(tempDirPath, "hermes-buffer-v3.dat");
 
-        MessageRepository messageRepository = ChronicleMapMessageRepository.create(backup, ENTRIES, AVERAGE_MESSAGE_SIZE);
+        MessageRepository messageRepository = new ChronicleMapMessageRepository(backup, ENTRIES, AVERAGE_MESSAGE_SIZE);
         JsonMessageContentWrapper contentWrapper = new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper());
         SchemaOnlineChecksRateLimiter schemaOnlineCheckRateLimiter = () -> true;
         MessageContentWrapper wrapper = new MessageContentWrapper(contentWrapper, null, null,
@@ -170,7 +170,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     }
 
     private ChronicleMapMessageRepository createBackupRepository(String storageDirPath) {
-        return ChronicleMapMessageRepository.create(
+        return new ChronicleMapMessageRepository(
                 new BackupFilesManager(storageDirPath, Clock.systemUTC()).getCurrentBackupFile(),
                 ENTRIES,
                 AVERAGE_MESSAGE_SIZE

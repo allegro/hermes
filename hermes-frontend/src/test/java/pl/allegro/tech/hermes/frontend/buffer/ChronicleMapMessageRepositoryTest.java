@@ -26,7 +26,7 @@ public class ChronicleMapMessageRepositoryTest {
     @Before
     public void setUp() throws Throwable {
         file = File.createTempFile("local_backup", ".dat");
-        messageRepository = ChronicleMapMessageRepository.create(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
+        messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
     }
 
     @Test
@@ -90,7 +90,7 @@ public class ChronicleMapMessageRepositoryTest {
         File file = new File(baseDir, "messages.dat");
 
         //when
-        ChronicleMapMessageRepository.create(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
+        new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
 
         //then
         assertThat(file).exists();
@@ -106,7 +106,7 @@ public class ChronicleMapMessageRepositoryTest {
         String baseDir = Files.createTempDir().getAbsolutePath();
         File file = new File(baseDir, "messages.dat");
 
-        messageRepository = ChronicleMapMessageRepository.create(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
+        messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
 
         //when
         messageRepository.save(message, topic);
@@ -115,7 +115,7 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.close();
 
         //when
-        messageRepository = ChronicleMapMessageRepository.recover(file);
+        messageRepository = new ChronicleMapMessageRepository(file, 600, 100);
 
         //then
         assertThat(messageRepository.findAll()).contains(new BackupMessage(message.getId(), message.getData(), message.getTimestamp(), qualifiedName));
