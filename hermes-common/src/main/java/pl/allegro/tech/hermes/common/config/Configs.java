@@ -64,7 +64,6 @@ public enum Configs {
     KAFKA_PRODUCER_METADATA_MAX_AGE("kafka.producer.metadata.max.age.ms", 5 * 60 * 1000),
     KAFKA_PRODUCER_COMPRESSION_CODEC("kafka.producer.compression.codec", "none"),
     KAFKA_PRODUCER_RETRIES("kafka.producer.retries", Integer.MAX_VALUE),
-    KAFKA_PRODUCER_BUFFER_MEMORY("kafka.producer.buffer.memory", 256 * 1024 * 1024L),
     KAFKA_PRODUCER_RETRY_BACKOFF_MS("kafka.producer.retry.backoff.ms", 256),
     // In the current version of kafka-producer (0.10.1) request.timeout.ms parameter is also used as a timeout
     // for dropping batches from internal accumulator. Therefore, it is better to increase this timeout to very high value,
@@ -148,10 +147,11 @@ public enum Configs {
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT("frontend.startup.topic.schema.loading.retry.count", 3),
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.schema.loading.thread.pool.size", 16),
 
+    MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE("messages.local.buffered.storage.size.bytes", 256 * 1024 * 1024),
+
     MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED("frontend.messages.local.storage.v2.migration.enabled", true),
     MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", false),
     MESSAGES_LOCAL_STORAGE_DIRECTORY("frontend.messages.local.storage.directory", Files.createTempDir().getAbsolutePath()),
-    MESSAGES_LOCAL_STORAGE_SIZE("frontend.messages.local.storage.size", 256 * 1024 * 1024),
     MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE("frontend.messages.local.storage.average.message.size.in.bytes", 600),
     MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS("frontend.messages.local.storage.max.age.hours", 72),
     MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES("frontend.messages.local.storage.max.resend.retries", 5),
