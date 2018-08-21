@@ -115,7 +115,7 @@
                 <div class="col-md-9">
                     <div class="input-group">
                         <input type="number" min="0" max="1000000" step="1" ng-required="subscription.deliveryType === 'BATCH'" class="form-control" id="subscriptionRequestTimeout" name="subscriptionRequestTimeout" placeholder="Max time for processing message by subscriber." ng-model="subscription.subscriptionPolicy.requestTimeout"/>
-                        <span class="input-group-addon">seconds</span>
+                        <span class="input-group-addon">milliseconds</span>
                     </div>
                 </div>
             </div>
@@ -124,7 +124,7 @@
                 <div class="col-md-9">
                     <div class="input-group">
                         <input type="number" min="0" max="5000" step="1" required class="form-control" id="subscriptionSendingDelay" name="subscriptionSendingDelay" placeholder="Delay after which an event will be send" ng-model="subscription.subscriptionPolicy.sendingDelay"/>
-                        <span class="input-group-addon">seconds</span>
+                        <span class="input-group-addon">milliseconds</span>
                         <span class="input-group-addon helpme-addon" uib-tooltip="Amount of time in ms after which an event will be send. Useful if events from two topics are sent at the same time and you want to increase chance that events from one topic will be deliver after events from other topic.">?</span>
                     </div>
                 </div>
