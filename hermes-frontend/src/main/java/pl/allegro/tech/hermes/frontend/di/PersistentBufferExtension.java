@@ -64,7 +64,7 @@ public class PersistentBufferExtension {
                 clock);
 
         long backupStorageSizeInBytes = config.getLongProperty(MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE);
-        entries = (int)(backupStorageSizeInBytes / config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE));
+        entries = (int) (backupStorageSizeInBytes / config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE));
         avgMessageSize = config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
 
         if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED)) {
@@ -78,11 +78,7 @@ public class PersistentBufferExtension {
         }
 
         if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {
-            try {
-                enableLocalStorage(backupFilesManager);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            enableLocalStorage(backupFilesManager);
         }
     }
 
