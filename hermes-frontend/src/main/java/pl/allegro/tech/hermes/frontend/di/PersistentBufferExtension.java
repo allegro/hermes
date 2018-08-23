@@ -23,6 +23,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAG
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_TEMPORARY_DIRECTORY;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED;
 
 public class PersistentBufferExtension {
@@ -83,7 +84,8 @@ public class PersistentBufferExtension {
     }
 
     private void loadTemporaryBackupV2Files(BackupFilesManager backupFilesManager) {
-        List<File> temporaryBackupV2Files = backupFilesManager.getTemporaryBackupV2Files();
+        String temporaryDir = config.getStringProperty(MESSAGES_LOCAL_STORAGE_TEMPORARY_DIRECTORY);
+        List<File> temporaryBackupV2Files = backupFilesManager.getTemporaryBackupV2Files(temporaryDir);
         hooksHandler.addStartupHook((s) -> {
             temporaryBackupV2Files.forEach(f -> loadTemporaryBackupV2Messages(backupFilesManager, f));
             backupMessagesLoader.clearTopicsAvailabilityCache();

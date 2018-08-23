@@ -64,9 +64,9 @@ public class BackupFilesManager {
         return Optional.of(timestampedBackupFile);
     }
 
-    public List<File> getTemporaryBackupV2Files() {
+    public List<File> getTemporaryBackupV2Files(String temporaryDir) {
         try {
-            Path dir = Paths.get(baseDir);
+            Path dir = Paths.get(temporaryDir);
             return Files.list(dir)
                     .filter(file -> file.getFileName().toString().startsWith(OLD_V2_BACKUP_PREFIX))
                     .filter(file -> file.getFileName().toString().endsWith(OLD_V2_BACKUP_SUFFIX))
