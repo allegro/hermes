@@ -9,6 +9,17 @@ All issues and pull requests: [0.13.0 milestone](https://github.com/allegro/herm
 Starting from this version Hermes will use [ChronicleMap v3](https://github.com/OpenHFT/Chronicle-Map) as a temporary
 buffer for messages (before that Hermes was using ChronicleMap v2).
 
+Now there are 2 new config properties:
+- `messages.local.buffered.storage.size.bytes` - describes default size for a delayed messages queue in bytes
+in internal Kafka Produced Queue and Hermes Frontend Buffer. 
+  
+- `frontend.messages.local.storage.average.message.size.in.bytes` - describes average message size for better performance
+for delayed messages in Hermes Frontend Buffer.
+
+And also `kafka.producer.buffer.memory` was removed from a config, now `messages.local.buffered.storage.size.bytes`
+is responsible for that parameter.
+
+
 #### ([898](https://github.com/allegro/hermes/pull/898)) Sending Delay is not required in batch subscription
 
 #### ([896](https://github.com/allegro/hermes/pull/896)) Make BackupMessage serializable
@@ -32,12 +43,6 @@ All issues and pull requests: [0.12.10 milestone](https://github.com/allegro/her
 Sending delay feature. We want to give users possibility to postpone sending an event for given time (max 5 seconds) 
 so if there are multiple topics that sends messages at the same time, then can increase chance of receiving an event 
 from one topic before an event from another topic.
-
-Now there are 2 new config properties:
-- `MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE` - describes default size for a delayed messages queue in bytes.
-  
-- `MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE` - describes average message size for better performance
-for delayed messages.
 
 #### ([894](https://github.com/allegro/hermes/pull/871)) Improved processes signals management
 
