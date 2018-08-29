@@ -11,7 +11,7 @@ buffer for messages (before that Hermes was using ChronicleMap v2).
 
 Now there are 2 new config properties:
 - `messages.local.buffered.storage.size.bytes` - describes default size for a delayed messages queue in bytes
-in internal Kafka Produced Queue and Hermes Frontend Buffer. 
+in internal Kafka Producer Queue and Hermes Frontend Buffer. 
   
 - `frontend.messages.local.storage.average.message.size.in.bytes` - describes average message size for better performance
 for delayed messages in Hermes Frontend Buffer.
