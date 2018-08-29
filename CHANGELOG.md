@@ -33,6 +33,12 @@ Sending delay feature. We want to give users possibility to postpone sending an 
 so if there are multiple topics that sends messages at the same time, then can increase chance of receiving an event 
 from one topic before an event from another topic.
 
+Now there are 2 new config properties:
+- `MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE` - describes default size for a delayed messages queue in bytes.
+  
+- `MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE` - describes average message size for better performance
+for delayed messages.
+
 #### ([894](https://github.com/allegro/hermes/pull/871)) Improved processes signals management
 
 Improve processes management to be more predictable and easy to understand.
