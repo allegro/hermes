@@ -1,3 +1,26 @@
+## 0.12.11 (28.08.2018)
+
+All issues and pull requests: [0.12.11 milestone](https://github.com/allegro/hermes/milestone/48)
+
+### Features
+
+#### ([899](https://github.com/allegro/hermes/pull/899)) ChronicleMap v3
+
+Starting from this version Hermes will use [ChronicleMap v3](https://github.com/OpenHFT/Chronicle-Map) as a temporary
+buffer for messages (before that Hermes was using ChronicleMap v2).
+
+#### ([898](https://github.com/allegro/hermes/pull/898)) Sending Delay is not required in batch subscription
+
+#### ([896](https://github.com/allegro/hermes/pull/896)) Make BackupMessage serializable
+
+#### ([900](https://github.com/allegro/hermes/pull/900)) Hermes Mock documentation  
+
+### Bugfixes
+
+#### ([897](https://github.com/allegro/hermes/pull/897)) Fix label from `seconds` to `milliseconds`
+In Hermes console there were an inconsistency regarding `requestTimeout` and `sendingDelay` labels. Label stated that
+those values are in seconds, but they are in milliseconds. 
+
 ## 0.12.10 (14.08.2018)
 
 All issues and pull requests: [0.12.10 milestone](https://github.com/allegro/hermes/milestone/47)
