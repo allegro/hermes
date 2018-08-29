@@ -80,7 +80,7 @@ compile group: 'pl.allegro.tech.hermes', name: 'hermes-mock', version: versions.
 class MyServiceTest {
 
     @Rule
-    HermesMockRule hermesMockRule = new HermesMockRule(8090);
+    HermesMockRule hermesMock = new HermesMockRule(8090);
     
     @Test
     public void exampleTest() {
@@ -88,18 +88,18 @@ class MyServiceTest {
         MyMessage myMessage = new MyMessage("id123", "content");
         String topicName = "myTopic";
         
-        hermesMockRule.define().jsonTopic(topicName);
+        hermesMock.define().jsonTopic(topicName);
 
         // when
         myService.publishHermesMessage(myMessage);
 
         // then
-        hermesMockRule.expect().jsonMessagesOnTopicAs(topicName, MyMessage.class);
+        hermesMock.expect().jsonMessagesOnTopicAs(topicName, MyMessage.class);
         
         // and
-        List<MyMessage> allMessages = hermesMockRule.query().allJsonMessagesAs(topicName, MyMessage.class);
+        List<MyMessage> all = hermesMock.query().allJsonMessagesAs(topicName, MyMessage.class);
         
-        // and verify that `allMessages` contains what we're expecting 
+        // and verify that `all` contains what we're expecting 
     }
 }
 ```
