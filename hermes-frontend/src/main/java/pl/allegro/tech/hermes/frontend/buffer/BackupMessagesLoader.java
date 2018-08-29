@@ -7,10 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
-import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
@@ -18,6 +18,10 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -30,7 +34,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES;
 
 public class BackupMessagesLoader {
 
@@ -64,10 +71,8 @@ public class BackupMessagesLoader {
         this.maxResendRetries = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES);
     }
 
-    public void loadMessages(MessageRepository messageRepository) {
-        List<BackupMessage> messages = messageRepository.findAll();
+    public void loadMessages(List<BackupMessage> messages) {
         logger.info("Loading {} messages from backup storage.", messages.size());
-        int retry = 0;
         toResend.set(new ConcurrentLinkedQueue<>());
 
         sendMessages(messages);
@@ -77,6 +82,7 @@ public class BackupMessagesLoader {
             return;
         }
 
+        int retry = 0;
         do {
             if (retry > 0) {
                 List<Pair<Message, CachedTopic>> retryMessages = Lists.newArrayList(toResend.getAndSet(new ConcurrentLinkedQueue<>()));
@@ -91,6 +97,22 @@ public class BackupMessagesLoader {
         } while (toResend.get().size() > 0 && retry <= maxResendRetries);
 
         logger.info("Finished resending messages from backup storage after retry #{} with {} unsent messages.", retry - 1, toResend.get().size());
+    }
+
+    public void loadFromTemporaryBackupV2File(File file) {
+        try (
+                FileInputStream fileInputStream = new FileInputStream(file);
+                ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+        ) {
+            List<BackupMessage> messages = (List<BackupMessage>) objectInputStream.readObject();
+            logger.info("Loaded {} messages from temporary v2 backup file: {}", messages.size(), file.toString());
+            loadMessages(messages);
+
+        } catch (IOException | ClassNotFoundException e) {
+            logger.error("Error reading temporary backup v2 files from path.",
+                    file.getAbsolutePath(),
+                    e);
+        }
     }
 
     public void clearTopicsAvailabilityCache() {
@@ -150,7 +172,7 @@ public class BackupMessagesLoader {
 
     private void waitOnBrokerTopicAvailability(CachedTopic cachedTopic) {
         int tries = 0;
-        while(!isBrokerTopicAvailable(cachedTopic)) {
+        while (!isBrokerTopicAvailable(cachedTopic)) {
             try {
                 tries++;
                 logger.info("Broker topic {} is not available, checked {} times.", cachedTopic.getTopic().getQualifiedName(), tries);
