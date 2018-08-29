@@ -34,6 +34,7 @@ pages:
     - 'Topic Preview': 'user/topic-preview.md'
     - 'Ownership and permissions': 'user/permissions.md'
     - 'Java Client': 'user/java-client.md'
+    - 'Hermes mock': 'user/hermes-mock.md'
   - Deployment:
       - 'Packaging': 'deployment/packaging.md'
       - 'Deployment': 'deployment/deployment.md'
