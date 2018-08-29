@@ -1,6 +1,6 @@
 # Hermes Mock
 
-A thin library designed to mocking Hermes in tests.
+A thin library designed to mocking Hermes Frontend in tests.
 
 ## Overview
 
@@ -11,19 +11,21 @@ Mocking is provided by `HermesMock` class, which consists of 3 parts:
 
 ##### HermesMockDefine
 
-Is responsible for defining new topics on Hermes, consists of those methods:
+Is responsible for defining new topics on Hermes, provides the following methods:
 
-- `jsonTopic(String topicName)` - defines a JSON topic .
+- `jsonTopic(String topicName)` - defines a JSON topic.
 
-- `avroTopic(String topicName)` - defines am Avro topic.
+- `avroTopic(String topicName)` - defines an Avro topic.
 
-- `jsonTopic(String topicName, int statusCode)` - defines a JSON topic with a specific response code.
+- `jsonTopic(String topicName, int statusCode)` - defines a JSON topic that when published on responds
+with a given response code.
 
-- `avroTopic(String topicName, int statusCode)` - defines an Avro topic with a specific response code.
+- `avroTopic(String topicName, int statusCode)` - defines an Avro topic that when published on responds
+with a given response code.
 
 ##### HermesMockExpect
 
-Is responsible for expectation of message on Hermes side, consists of those methods:
+Is responsible for expectation of message on Hermes side, provides the following methods:
  
 - `void singleMessageOnTopic(String topicName)` - expects 1 and only 1 message on topic.
 
@@ -43,7 +45,7 @@ Avro messages on a given topic.
 
 ##### HermesMockQuery
 
-Is responsible for querying Hermes for a received messages, consists of those methods: 
+Is responsible for querying Hermes for a received messages, provides the following methods: 
 
 - `List<Request> allRequests()` - get all the received messages.
 
@@ -68,7 +70,7 @@ as a specific type.
 
 ## Creating
 
-To start using Hermes mock, add it as an dependency:
+To start using Hermes mock, add it as a dependency:
 
 ```groovy
 compile group: 'pl.allegro.tech.hermes', name: 'hermes-mock', version: versions.hermes
