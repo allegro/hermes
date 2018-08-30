@@ -1,3 +1,10 @@
+## 0.13.1 (30.08.2018)
+
+Small fix in config.properties.
+
+Property `messages.local.buffered.storage.size.bytes` from 0.13.0 now becomes
+`frontend.messages.local.buffered.storage.size.bytes`.
+
 ## 0.13.0 (28.08.2018)
 
 All issues and pull requests: [0.13.0 milestone](https://github.com/allegro/hermes/milestone/48)
@@ -10,13 +17,13 @@ Starting from this version Hermes will use [ChronicleMap v3](https://github.com/
 buffer for messages (before that Hermes was using ChronicleMap v2).
 
 Now there are 2 new config properties:
-- `messages.local.buffered.storage.size.bytes` - describes default size for a delayed messages queue in bytes
+- `frontend.messages.local.buffered.storage.size.bytes` - describes default size for a delayed messages queue in bytes
 in internal Kafka Producer Queue and Hermes Frontend Buffer. 
   
 - `frontend.messages.local.storage.average.message.size.in.bytes` - describes average message size for better performance
 for delayed messages in Hermes Frontend Buffer.
 
-And also `kafka.producer.buffer.memory` was removed from a config, now `messages.local.buffered.storage.size.bytes`
+And also `kafka.producer.buffer.memory` was removed from a config, now `frontend.messages.local.buffered.storage.size.bytes`
 is responsible for that parameter.
 
 
