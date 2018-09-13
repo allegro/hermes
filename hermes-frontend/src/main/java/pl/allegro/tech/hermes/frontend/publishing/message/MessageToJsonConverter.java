@@ -10,7 +10,7 @@ public class MessageToJsonConverter {
         try {
             return message.<Schema>getCompiledSchema()
                     .map(schema -> converter.convertToJson(message.getData(), schema.getSchema()))
-                    .orElse(message.getData());
+                    .orElseGet(message::getData);
         } catch (Exception ignored) {
             return message.getData();
         }
