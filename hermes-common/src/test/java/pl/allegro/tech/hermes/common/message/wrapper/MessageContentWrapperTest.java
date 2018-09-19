@@ -55,7 +55,7 @@ public class MessageContentWrapperTest {
         }
     };
 
-    static CompiledSchemaRepository<Schema> compiledSchemaRepository = (topic, version) -> {
+    static CompiledSchemaRepository<Schema> compiledSchemaRepository = (topic, version, online) -> {
         switch (version.value()) {
             case 1: return schema1;
             case 2: return schema2;
