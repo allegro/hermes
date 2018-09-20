@@ -4,6 +4,7 @@ import org.apache.avro.Schema;
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -53,16 +54,20 @@ public class AvroCompiledSchemaRepositoryFactory implements Factory<CompiledSche
 
             @Override
             public void onTopicCreated(Topic topic) {
-                logger.info("Loading latest schema for created topic {}", topic.getQualifiedName());
-                schemaVersionsRepository.onlineLatestSchemaVersion(topic).ifPresent(
-                        schemaVersion -> repository.getSchema(topic, schemaVersion, true));
+                updateLatestSchema(topic, "new");
             }
 
             @Override
             public void onTopicChanged(Topic topic) {
-                logger.info("Loading latest schema for updated topic {}", topic.getQualifiedName());
-                schemaVersionsRepository.onlineLatestSchemaVersion(topic).ifPresent(
-                        schemaVersion -> repository.getSchema(topic, schemaVersion, true));
+                updateLatestSchema(topic, "updated");
+            }
+
+            private void updateLatestSchema(Topic topic, String operationName) {
+                if (topic.getContentType() == ContentType.AVRO) {
+                    logger.info("Loading latest schema for {} topic {}", operationName, topic.getQualifiedName());
+                    schemaVersionsRepository.onlineLatestSchemaVersion(topic).ifPresent(
+                            schemaVersion -> repository.getSchema(topic, schemaVersion, true));
+                }
             }
         });
 

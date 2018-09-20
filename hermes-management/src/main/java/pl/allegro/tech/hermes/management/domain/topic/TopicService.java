@@ -59,7 +59,7 @@ public class TopicService {
     private final Clock clock;
     private final Auditor auditor;
     private final TopicOwnerCache topicOwnerCache;
-    ScheduledExecutorService scheduledTopicExecutor = Executors.newSingleThreadScheduledExecutor(
+    private final ScheduledExecutorService scheduledTopicExecutor = Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder()
                     .setNameFormat("scheduled-topic-executor-%d")
                     .build());
