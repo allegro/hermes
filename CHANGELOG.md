@@ -1,3 +1,60 @@
+## 0.13.1 (30.08.2018)
+
+Small fix in config.properties.
+
+Property `messages.local.buffered.storage.size.bytes` from 0.13.0 now becomes
+`frontend.messages.local.buffered.storage.size.bytes`.
+
+## 0.13.0 (28.08.2018)
+
+All issues and pull requests: [0.13.0 milestone](https://github.com/allegro/hermes/milestone/48)
+
+### Features
+
+#### ([899](https://github.com/allegro/hermes/pull/899)) ChronicleMap v3
+
+Starting from this version Hermes will use [ChronicleMap v3](https://github.com/OpenHFT/Chronicle-Map) as a temporary
+buffer for messages (before that Hermes was using ChronicleMap v2).
+
+Now there are 2 new config properties:
+- `frontend.messages.local.buffered.storage.size.bytes` - describes default size for a delayed messages queue in bytes
+in internal Kafka Producer Queue and Hermes Frontend Buffer. 
+  
+- `frontend.messages.local.storage.average.message.size.in.bytes` - describes average message size for better performance
+for delayed messages in Hermes Frontend Buffer.
+
+And also `kafka.producer.buffer.memory` was removed from a config, now `frontend.messages.local.buffered.storage.size.bytes`
+is responsible for that parameter.
+
+
+#### ([898](https://github.com/allegro/hermes/pull/898)) Sending Delay is not required in batch subscription
+
+#### ([896](https://github.com/allegro/hermes/pull/896)) Make BackupMessage serializable
+
+#### ([900](https://github.com/allegro/hermes/pull/900)) Hermes Mock documentation  
+
+### Bugfixes
+
+#### ([897](https://github.com/allegro/hermes/pull/897)) Fix label from `seconds` to `milliseconds`
+In Hermes console there were an inconsistency regarding `requestTimeout` and `sendingDelay` labels. Label stated that
+those values are in seconds, but they are in milliseconds. 
+
+## 0.12.10 (14.08.2018)
+
+All issues and pull requests: [0.12.10 milestone](https://github.com/allegro/hermes/milestone/47)
+
+### Features
+
+#### ([894](https://github.com/allegro/hermes/pull/894)) Sending delay
+
+Sending delay feature. We want to give users possibility to postpone sending an event for given time (max 5 seconds) 
+so if there are multiple topics that sends messages at the same time, then can increase chance of receiving an event 
+from one topic before an event from another topic.
+
+#### ([894](https://github.com/allegro/hermes/pull/871)) Improved processes signals management
+
+Improve processes management to be more predictable and easy to understand.
+
 ## 0.12.9 (12.07.2018)
 
 All issues and pull requests: [0.12.9 milestone](https://github.com/allegro/hermes/milestone/46)

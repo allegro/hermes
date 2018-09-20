@@ -84,7 +84,8 @@ public class MessageFactory {
             }
             case AVRO:
                 return createAvroMessage(headerMap, topic, messageId, messageContent, timestamp);
-            default: throw new UnsupportedContentTypeException(topic);
+            default:
+                throw new UnsupportedContentTypeException(topic);
         }
     }
 
@@ -97,7 +98,7 @@ public class MessageFactory {
     private AvroMessage createAvroMessage(HeaderMap headerMap, Topic topic, String messageId, byte[] messageContent, long timestamp) {
         CompiledSchema<Schema> schema = extractSchemaVersion(headerMap)
                 .map(version -> schemaRepository.getAvroSchema(topic, version))
-                .orElse(schemaRepository.getLatestAvroSchema(topic));
+                .orElseGet(() -> schemaRepository.getLatestAvroSchema(topic));
 
         AvroMessage message = new AvroMessage(
                 messageId,
@@ -127,6 +128,6 @@ public class MessageFactory {
         return stream(spliteratorUnknownSize(headerMap.iterator(), 0), false)
                 .collect(toMap(
                         h -> h.getHeaderName().toString(),
-                        h-> h.getFirst()));
+                        h -> h.getFirst()));
     }
 }

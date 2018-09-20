@@ -37,8 +37,8 @@ public class KafkaBrokerMessageProducerTest {
     private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP);
 
     private ByteArraySerializer serializer = new ByteArraySerializer();
-    private MockProducer leaderConfirmsProducer = new MockProducer(true, serializer, serializer);
-    private MockProducer everyoneConfirmProducer = new MockProducer(true, serializer, serializer);
+    private MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
+    private MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
     private Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, new ConfigFactory());
 
     private KafkaBrokerMessageProducer producer;

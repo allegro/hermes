@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.auth;
 
 import avro.shaded.com.google.common.collect.Lists;
+import com.google.common.io.Files;
 import io.undertow.security.impl.BasicAuthenticationMechanism;
 import io.undertow.util.StatusCodes;
 import org.testng.annotations.AfterClass;
@@ -9,8 +10,8 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
@@ -44,7 +45,8 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
                 .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
                 .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
                 .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven")
-                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true);
+                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true)
+                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         AuthenticationConfiguration authConfig = new AuthenticationConfiguration(
                 exchange -> true,
