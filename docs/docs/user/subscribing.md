@@ -39,18 +39,18 @@ Minimal request:
 
 All options:
 
-Option                               | Description                           | Default value
------------------------------------- | ------------------------------------- | -------------
-trackingEnabled                      | track incoming messages?              | false
-subscriptionPolicy.rate              | maximum sending speed in rps (per DC) | 400
-subscriptionPolicy.messageTtl        | inflight Time To Live in seconds      | 3600
-subscriptionPolicy.messageBackoff    | backoff time between retry attempts   | 100
-subscriptionPolicy.retryClientErrors | retry on receiving 4xx status         | false
-subscriptionPolicy.requestTimeout    | request timeout in millis             | 1000
-subscriptionPolicy.inflightSize      | max number of pending requests        | 100
-headers                              | additional HTTP request headers       | [] (array of headers)
-filters                              | used for skipping unwanted messages   | [] (array of filters)
-endpointAddressResolverMetadata      | additional address resolver metadata  | {} (map)
+Option                               | Description                                    | Default value
+------------------------------------ | ---------------------------------------------- | -------------
+trackingEnabled                      | track incoming messages?                       | false
+subscriptionPolicy.rate              | maximum sending speed in rps (per DC)          | 400
+subscriptionPolicy.messageTtl        | inflight Time To Live in seconds               | 3600
+subscriptionPolicy.messageBackoff    | backoff time between retry attempts in millis  | 100
+subscriptionPolicy.retryClientErrors | retry on receiving 4xx status                  | false
+subscriptionPolicy.requestTimeout    | request timeout in millis                      | 1000
+subscriptionPolicy.inflightSize      | max number of pending requests                 | 100
+headers                              | additional HTTP request headers                | [] (array of headers)
+filters                              | used for skipping unwanted messages            | [] (array of filters)
+endpointAddressResolverMetadata      | additional address resolver metadata           | {} (map)
 
 
 Request that specifies all available options:

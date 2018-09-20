@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class BackupMessage {
+public class BackupMessage implements Serializable {
 
     private final String messageId;
     private final byte[] data;

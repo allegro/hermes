@@ -7,13 +7,18 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 
 import java.io.File;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class ChronicleMapMessageRepositoryTest {
+
+    private static final int ENTRIES = 100;
+    private static final int AVERAGE_MESSAGE_SIZE = 600;
 
     private File file;
     private MessageRepository messageRepository;
@@ -21,17 +26,18 @@ public class ChronicleMapMessageRepositoryTest {
     @Before
     public void setUp() throws Throwable {
         file = File.createTempFile("local_backup", ".dat");
-        messageRepository = new ChronicleMapMessageRepository(file);
+        messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
     }
 
     @Test
-    public void shouldSaveFindAndDeleteMessage() throws Exception {
+    public void shouldSaveFindAndDeleteMessage() {
         //given
-        byte[] messageContent = "hello world".getBytes();
-        long timestamp = System.currentTimeMillis();
-        String id = "id1";
-        Message message = new JsonMessage(id, messageContent, timestamp);
         String qualifiedName = "groupName.topic";
+
+        Message message = generateMessage();
+        String id = message.getId();
+        byte[] messageContent = message.getData();
+        long timestamp = message.getTimestamp();
 
         Topic topic = topic(qualifiedName).build();
 
@@ -49,14 +55,13 @@ public class ChronicleMapMessageRepositoryTest {
     }
 
     @Test
-    public void shouldSaveMultipleTimesFindAndDeleteMessage() throws Exception {
+    public void shouldSaveMultipleTimesFindAndDeleteMessage() {
         //given
-        byte[] messageContent = "hello world".getBytes();
-        long timestamp = System.currentTimeMillis();
-        String id1 = "id1";
-        Message message1 = new JsonMessage(id1, messageContent, timestamp);
-        String id2 = "id2";
-        Message message2 = new JsonMessage(id2, messageContent, timestamp);
+        String messageContent = "hello world";
+        Message message1 = generateMessage(messageContent);
+        Message message2 = generateMessage(messageContent);
+        String id1 = message1.getId();
+        String id2 = message2.getId();
         String qualifiedName = "groupName.topic";
 
         Topic topic = topic(qualifiedName).build();
@@ -68,14 +73,14 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message2, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id1, messageContent, timestamp, qualifiedName));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id1, messageContent.getBytes(), message1.getTimestamp(), qualifiedName));
 
         //when
         messageRepository.delete(id1);
 
         //then
         assertThat(messageRepository.findAll()).hasSize(1);
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id2, messageContent, timestamp, qualifiedName));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id2, messageContent.getBytes(), message2.getTimestamp(), qualifiedName));
     }
 
     @Test
@@ -85,9 +90,48 @@ public class ChronicleMapMessageRepositoryTest {
         File file = new File(baseDir, "messages.dat");
 
         //when
-        new ChronicleMapMessageRepository(file);
+        new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
 
         //then
         assertThat(file).exists();
+    }
+
+    @Test
+    public void shouldCreateRepositoryThenCloseAndRestore() {
+        //given
+        Message message = generateMessage();
+        String qualifiedName = "groupName.topic";
+        Topic topic = topic(qualifiedName).build();
+
+        String baseDir = Files.createTempDir().getAbsolutePath();
+        File file = new File(baseDir, "messages.dat");
+
+        messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
+
+        //when
+        messageRepository.save(message, topic);
+
+        //then
+        messageRepository.close();
+
+        //when
+        messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
+
+        //then
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(message.getId(), message.getData(), message.getTimestamp(), qualifiedName));
+    }
+
+    private Message generateMessage() {
+        return generateMessage(UUID.randomUUID().toString());
+    }
+
+    private Message generateMessage(String content) {
+        return generateMessage(content, System.currentTimeMillis());
+    }
+
+    private Message generateMessage(String content, long timestamp) {
+        byte[] messageContent = content.getBytes();
+        String id = MessageIdGenerator.generate();
+        return new JsonMessage(id, messageContent, timestamp);
     }
 }
