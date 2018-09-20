@@ -12,6 +12,10 @@ public class SchemaRepositoryProperties {
 
     private boolean validationEnabled = false;
 
+    private int connectionTimeoutMillis = 1000;
+
+    private int socketTimeoutMillis = 3000;
+
     public String getType() {
         return type;
     }
@@ -34,5 +38,17 @@ public class SchemaRepositoryProperties {
 
     public void setValidationEnabled(boolean validationEnabled) {
         this.validationEnabled = validationEnabled;
+    }
+
+    public int getConnectionTimeoutMillis() {
+        return connectionTimeoutMillis;
+    }
+
+    public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
+        this.connectionTimeoutMillis = connectionTimeoutMillis;
+    }
+
+    public int getSocketTimeoutMillis() {
+        return socketTimeoutMillis;
     }
 }
