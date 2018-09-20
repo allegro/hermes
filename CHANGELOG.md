@@ -1,3 +1,18 @@
+## 0.13.2 (20.09.2018)
+
+### Enhancments
+
+#### ([909](https://github.com/allegro/hermes/pull/909)) Schema update improvements
+
+From now on when topic schema is updated via hermes-console then all Hermes instances are notified to load latest schema
+from schema-registry as soon as possible (by default they should be notified in 2 minutes).
+
+#### ([906](https://github.com/allegro/hermes/pull/906)) Docs for adding subscription's filters
+
+### Bugfixes
+
+#### ([872](https://github.com/allegro/hermes/pull/872)) Fix for reading Graphite stats in Management
+
 ## 0.13.1 (30.08.2018)
 
 Small fix in config.properties.
