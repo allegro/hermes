@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 public class CachedCompiledSchemaRepository<T> implements CompiledSchemaRepository<T> {
 
     private final LoadingCache<TopicAndSchemaVersion, CompiledSchema<T>> cache;
+    private final CompiledSchemaRepository<T> compiledSchemaRepository;
 
     public CachedCompiledSchemaRepository(CompiledSchemaRepository<T> delegate, long maximumCacheSize, int expireAfterAccessMinutes) {
         this.cache = CacheBuilder
@@ -20,11 +21,17 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
                 .maximumSize(maximumCacheSize)
                 .expireAfterAccess(expireAfterAccessMinutes, TimeUnit.MINUTES)
                 .build(new CompiledSchemaLoader<>(delegate));
+        this.compiledSchemaRepository = delegate;
     }
 
     @Override
-    public CompiledSchema<T> getSchema(Topic topic, SchemaVersion version) {
+    public CompiledSchema<T> getSchema(Topic topic, SchemaVersion version, boolean online) {
         try {
+            if (online) {
+                CompiledSchema<T> compiledSchema = compiledSchemaRepository.getSchema(topic, version);
+                cache.put(new TopicAndSchemaVersion(topic, version), compiledSchema);
+                return compiledSchema;
+            }
             return cache.get(new TopicAndSchemaVersion(topic, version));
         } catch (Exception e) {
             throw new CouldNotLoadSchemaException(e);

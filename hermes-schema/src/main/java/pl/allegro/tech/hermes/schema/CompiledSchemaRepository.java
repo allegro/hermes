@@ -4,5 +4,9 @@ import pl.allegro.tech.hermes.api.Topic;
 
 public interface CompiledSchemaRepository<T> {
 
-    CompiledSchema<T> getSchema(Topic topic, SchemaVersion version);
+    default CompiledSchema<T> getSchema(Topic topic, SchemaVersion version) {
+        return getSchema(topic, version, false);
+    }
+
+    CompiledSchema<T> getSchema(Topic topic, SchemaVersion version, boolean online);
 }
