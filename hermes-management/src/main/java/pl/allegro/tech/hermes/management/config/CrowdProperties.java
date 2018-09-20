@@ -19,6 +19,15 @@ public class CrowdProperties {
 
     private Long cacheSize = 1000L;
 
+    private int connectionTimeoutMillis = 1000;
+
+    private int socketTimeoutMillis = 2000;
+
+    private int maxConnections = 100;
+
+    private int maxConnectionsPerRoute = 10;
+
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -67,4 +76,35 @@ public class CrowdProperties {
         this.cacheSize = cacheSize;
     }
 
+    public int getConnectionTimeoutMillis() {
+        return connectionTimeoutMillis;
+    }
+
+    public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
+        this.connectionTimeoutMillis = connectionTimeoutMillis;
+    }
+
+    public int getSocketTimeoutMillis() {
+        return socketTimeoutMillis;
+    }
+
+    public void setSocketTimeoutMillis(int socketTimeoutMillis) {
+        this.socketTimeoutMillis = socketTimeoutMillis;
+    }
+
+    public int getMaxConnections() {
+        return maxConnections;
+    }
+
+    public void setMaxConnections(int maxConnections) {
+        this.maxConnections = maxConnections;
+    }
+
+    public int getMaxConnectionsPerRoute() {
+        return maxConnectionsPerRoute;
+    }
+
+    public void setMaxConnectionsPerRoute(int maxConnectionsPerRoute) {
+        this.maxConnectionsPerRoute = maxConnectionsPerRoute;
+    }
 }

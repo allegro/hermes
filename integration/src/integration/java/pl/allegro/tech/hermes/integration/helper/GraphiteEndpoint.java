@@ -21,10 +21,11 @@ public class GraphiteEndpoint implements EnvironmentAware {
             + "]";
 
     private static final String SUBSCRIPTION_RESPONSE
-            = "[ "
-            + "{\"target\": \"sumSeries(stats.tech.hermes.consumer.*.meter.SUBSCRIPTION.m1_rate)\", \"datapoints\": "
-            + "[[RATE, TIMESTAMP]]}"
-            + "]";
+            = "[{" +
+            " \"target\": \"sumSeries(stats.tech.hermes.consumer.*.meter.SUBSCRIPTION.m1_rate)\"," +
+            " \"datapoints\": [[RATE, TIMESTAMP]]," +
+            " \"tags\": []" +
+            "}]";
 
     private static final String TOPIC_URL_PATTERN = "/.*sumSeries%28stats.tech.hermes\\." +
             "(consumer|producer)\\.%2A\\.meter\\.[^\\.]*\\.[^\\.]*\\.m1_rate%29.*";

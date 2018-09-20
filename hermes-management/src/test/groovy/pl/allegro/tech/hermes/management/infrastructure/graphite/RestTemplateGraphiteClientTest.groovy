@@ -1,31 +1,26 @@
 package pl.allegro.tech.hermes.management.infrastructure.graphite
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import org.junit.Rule
+import org.springframework.web.client.RestTemplate
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Specification
 
-import javax.ws.rs.client.ClientBuilder
-import javax.ws.rs.client.WebTarget
 import javax.ws.rs.core.MediaType
 
-class WebTargetGraphiteClientTest extends Specification {
+class RestTemplateGraphiteClientTest extends Specification {
 
     private static final int GRAPHITE_HTTP_PORT = Ports.nextAvailable()
 
     @Rule
     WireMockRule wireMockRule = new WireMockRule(GRAPHITE_HTTP_PORT)
 
-    private WebTargetGraphiteClient client
+    private RestTemplateGraphiteClient client
 
     void setup() {
-        WebTarget webTarget = ClientBuilder
-                .newClient()
-                .register(JacksonJsonProvider.class)
-                .target("http://localhost:$GRAPHITE_HTTP_PORT")
-        client = new WebTargetGraphiteClient(webTarget);
+        RestTemplate restTemplate = new RestTemplate();
+        client = new RestTemplateGraphiteClient(restTemplate, URI.create("http://localhost:$GRAPHITE_HTTP_PORT"));
     }
 
     def "should get metrics for path"() {
@@ -67,6 +62,19 @@ class WebTargetGraphiteClientTest extends Specification {
         metrics.metricValue("metric") == "13"
     }
 
+    def "should properly encode metric query strings"() {
+        given:
+        mockGraphite([
+                [ metric: 'sumSeries%28stats.tech.hermes.%2A.m1_rate%29', data: ['13'] ],
+        ])
+
+        when:
+        GraphiteMetrics metrics = client.readMetrics('sumSeries(stats.tech.hermes.*.m1_rate)');
+
+        then:
+        metrics.metricValue('sumSeries%28stats.tech.hermes.%2A.m1_rate%29') == "13"
+    }
+
     private void mockGraphite(List queries) {
         String targetParams = queries.collect({ "target=$it.metric" }).join('&')
         String response = '[' + queries.collect({ jsonResponse(it.metric, it.data) }).join(',') + ']'
@@ -85,7 +93,7 @@ class WebTargetGraphiteClientTest extends Specification {
     private String jsonResponse(String query, List datapoints) {
         long timestamp = System.currentTimeSeconds()
         String datapointsString = datapoints.collect({ "[$it, $timestamp]" }).join(',')
-        return '{"target": "' + query + '", "datapoints": [' + datapointsString + ']}'
+        return '{"target": "' + query + '", "datapoints": [' + datapointsString + '], "tags": []}'
     }
     
 }
