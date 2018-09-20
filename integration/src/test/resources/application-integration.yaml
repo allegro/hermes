@@ -34,6 +34,10 @@ auth:
 metrics:
   graphiteHttpUri: http://localhost:18089/
 
+graphite:
+  client:
+    cacheTtlSeconds: 1
+
 spring:
   jersey:
     type: filter
