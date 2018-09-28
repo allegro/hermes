@@ -163,28 +163,6 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         waitAtMost(adjust(Duration.FIVE_SECONDS)).until(() -> zookeeper.checkExists().forPath(path) == null);
     }
 
-    public void waitUntilConsumerMetadataAvailable(Subscription subscription, String host, int port) throws InterruptedException {
-//        Thread.sleep(2000);
-//        BlockingChannel channel = createBlockingChannel(host, port);
-//        channel.connect();
-//
-//        waitAtMost(adjust((Duration.TEN_SECONDS))).until(() -> {
-//            channel.send(new GroupCoordinatorRequest(kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName()).asString(),
-//                    GroupCoordinatorRequest.CurrentVersion(), 0, "0"));
-//            GroupCoordinatorResponse metadataResponse = GroupCoordinatorResponse.readFrom(channel.receive().payload());
-//            return metadataResponse.errorCode() == ErrorMapping.NoError();
-//        });
-//
-//        channel.disconnect();
-    }
-
-//    private BlockingChannel createBlockingChannel(String host, int port) {
-//        return new BlockingChannel(host, port,
-//                BlockingChannel.UseDefaultBufferSize(),
-//                BlockingChannel.UseDefaultBufferSize(),
-//                (int) adjust(Duration.TEN_SECONDS).getValueInMS());
-//    }
-
     public ConditionFactory awaitAtMost(Duration duration) {
         return waitAtMost(adjust(duration));
     }
