@@ -20,9 +20,9 @@ public class KafkaProperties {
 
     private String namespace = "";
 
-    private SimpleConsumer simpleConsumer = new SimpleConsumer();
+    private KafkaConsumer kafkaConsumer = new KafkaConsumer();
 
-    public static final class SimpleConsumer {
+    public static final class KafkaConsumer {
 
         private int cacheExpiration = 60;
 
@@ -31,6 +31,10 @@ public class KafkaProperties {
         private int timeout = 5000;
 
         private String namePrefix = "offsetChecker";
+
+        private int pollTimeoutMillis = 30;
+
+        private String consumerGroupName = "RETRANSMISSION_GROUP";
 
         public int getCacheExpiration() {
             return cacheExpiration;
@@ -62,6 +66,22 @@ public class KafkaProperties {
 
         public void setNamePrefix(String namePrefix) {
             this.namePrefix = namePrefix;
+        }
+
+        public int getPollTimeoutMillis() {
+            return pollTimeoutMillis;
+        }
+
+        public void setPollTimeoutMillis(int pollTimeoutMillis) {
+            this.pollTimeoutMillis = pollTimeoutMillis;
+        }
+
+        public String getConsumerGroupName() {
+            return consumerGroupName;
+        }
+
+        public void setConsumerGroupName(String consumerGroupName) {
+            this.consumerGroupName = consumerGroupName;
         }
     }
 
@@ -105,12 +125,12 @@ public class KafkaProperties {
         this.retrySleep = retrySleep;
     }
 
-    public SimpleConsumer getSimpleConsumer() {
-        return simpleConsumer;
+    public KafkaConsumer getKafkaConsumer() {
+        return kafkaConsumer;
     }
 
-    public void setSimpleConsumer(SimpleConsumer simpleConsumer) {
-        this.simpleConsumer = simpleConsumer;
+    public void setKafkaConsumer(KafkaConsumer kafkaConsumer) {
+        this.kafkaConsumer = kafkaConsumer;
     }
 
     public String getClusterName() {

@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.common.kafka;
 
-public class SimpleConsumerPoolConfig {
+public class KafkaConsumerPoolConfig {
 
     private final int cacheExpiration;
 
@@ -10,11 +10,16 @@ public class SimpleConsumerPoolConfig {
 
     private final String idPrefix;
 
-    public SimpleConsumerPoolConfig(int cacheExpiration, int timeout, int bufferSize, String idPrefix) {
+    private final String consumerGroupName;
+
+
+    public KafkaConsumerPoolConfig(int cacheExpiration, int timeout, int bufferSize, String idPrefix,
+                                   String consumerGroupName) {
         this.cacheExpiration = cacheExpiration;
         this.timeout = timeout;
         this.bufferSize = bufferSize;
         this.idPrefix = idPrefix;
+        this.consumerGroupName = consumerGroupName;
     }
 
     public int getCacheExpiration() {
@@ -31,5 +36,9 @@ public class SimpleConsumerPoolConfig {
 
     public String getIdPrefix() {
         return idPrefix;
+    }
+
+    public String getConsumerGroupName() {
+        return consumerGroupName;
     }
 }

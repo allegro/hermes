@@ -19,8 +19,8 @@ import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
-import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPoolConfig;
+import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
+import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPoolConfig;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
@@ -72,24 +72,24 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties), kafkaNamesMapper);
 
-            SimpleConsumerPool simpleConsumerPool = simpleConsumersPool(kafkaProperties, storage);
-            KafkaRawMessageReader kafkaRawMessageReader = new KafkaRawMessageReader(simpleConsumerPool);
+            KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage);
+            KafkaRawMessageReader kafkaRawMessageReader =
+                    new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                     storage,
                     kafkaRawMessageReader,
                     messageContentWrapper,
                     subscriptionOffsetChangeIndicator,
-                    simpleConsumerPool,
+                    consumerPool,
                     kafkaNamesMapper
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
             return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,
-                    retransmissionService, brokerTopicManagement, kafkaNamesMapper, new OffsetsAvailableChecker(simpleConsumerPool, storage));
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper, new OffsetsAvailableChecker(consumerPool, storage));
         }).collect(toList());
 
         return new MultiDCAwareService(clusters, adminTool);
     }
-
 
     @Bean
     @ConditionalOnMissingBean
@@ -135,13 +135,14 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
         return new ZookeeperBrokerStorage(curatorFramework, mapper);
     }
 
-    private SimpleConsumerPool simpleConsumersPool(KafkaProperties kafkaProperties, BrokerStorage brokerStorage) {
-        SimpleConsumerPoolConfig config = new SimpleConsumerPoolConfig(
-                kafkaProperties.getSimpleConsumer().getCacheExpiration(),
-                kafkaProperties.getSimpleConsumer().getTimeout(),
-                kafkaProperties.getSimpleConsumer().getBufferSize(),
-                kafkaProperties.getSimpleConsumer().getNamePrefix());
+    private KafkaConsumerPool kafkaConsumersPool(KafkaProperties kafkaProperties, BrokerStorage brokerStorage) {
+        KafkaConsumerPoolConfig config = new KafkaConsumerPoolConfig(
+                kafkaProperties.getKafkaConsumer().getCacheExpiration(),
+                kafkaProperties.getKafkaConsumer().getTimeout(),
+                kafkaProperties.getKafkaConsumer().getBufferSize(),
+                kafkaProperties.getKafkaConsumer().getNamePrefix(),
+                kafkaProperties.getKafkaConsumer().getConsumerGroupName());
 
-        return new SimpleConsumerPool(config, brokerStorage);
+        return new KafkaConsumerPool(config, brokerStorage);
     }
 }

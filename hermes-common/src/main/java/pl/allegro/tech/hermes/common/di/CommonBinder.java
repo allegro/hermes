@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.common.di.factories.OAuthProviderRepositoryFactory
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.common.di.factories.PathsCompilerFactory;
 import pl.allegro.tech.hermes.common.di.factories.SharedCounterFactory;
-import pl.allegro.tech.hermes.common.di.factories.SimpleConsumerPoolFactory;
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionOffsetChangeIndicatorFactory;
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
@@ -83,7 +82,6 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(GroupRepositoryFactory.class);
         bindSingletonFactory(TopicRepositoryFactory.class);
         bindSingletonFactory(SubscriptionRepositoryFactory.class);
-        bindSingletonFactory(SimpleConsumerPoolFactory.class);
         bindSingletonFactory(SubscriptionOffsetChangeIndicatorFactory.class);
         bindSingletonFactory(PathsCompilerFactory.class);
         bindSingletonFactory(KafkaNamesMapperFactory.class);
