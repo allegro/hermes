@@ -23,6 +23,7 @@ repository.factory('SubscriptionRepository', ['DiscoveryService', '$resource', f
         var listing = $resource(discovery.resolve('/topics/:topicName/subscriptions/'));
         var eventTrace = $resource(discovery.resolve('/topics/:topicName/subscriptions/:subscriptionName/events/:eventId/trace'));
         var retransmission = $resource(discovery.resolve('/topics/:topicName/subscriptions/:subscriptionName/retransmission'), null, {save: {method: 'PUT'}});
+        var addFilter = $resource(discovery.resolve('/topics/:topicName/subscriptions/:subscriptionName'), null, {save: {method: 'PUT'}});
 
         return {
             list: function (topicName) {
@@ -51,7 +52,7 @@ repository.factory('SubscriptionRepository', ['DiscoveryService', '$resource', f
                                 '5xx': parseFloat(metrics.codes5xx),
                                 errors: parseFloat(metrics.otherErrors),
                                 timeouts: parseFloat(metrics.timeouts)
-                            },
+                            }
                         };
                     });
             },
@@ -75,6 +76,13 @@ repository.factory('SubscriptionRepository', ['DiscoveryService', '$resource', f
             },
             retransmit: function (topicName, subscriptionName, fromDate) {
                 return retransmission.save({topicName: topicName, subscriptionName: subscriptionName}, fromDate);
+            },
+            addFilter: function (topicName, subscriptionName, filterType, path, matcher) {
+                return addFilter.save({topicName: topicName, subscriptionName: subscriptionName}, {
+                    filters: [{
+                        type: filterType, path: path, matcher: matcher
+                    }]
+                });
             }
         };
-    }]);
+}]);

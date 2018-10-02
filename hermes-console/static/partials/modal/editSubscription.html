@@ -170,6 +170,43 @@
                 </div>
             </div>
 
+            <hr />
+            <div class="form-group">
+                <label for="subscriptionFilter" class="col-md-3 control-label">Filter</label>
+                <div class="col-md-9">
+                    <div class="row">
+                        <label for="subscriptionFilterPath" class="col-md-2 control-label">Path</label>
+                        <div class="col-md-9">
+                            <input ng-model="subscription.filter.path" class="form-control" id="subscriptionFilterPath"
+                                   name="subscriptionFilterPathInput" placeholder="Path for filter"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <label for="subscriptionFilterMatcher" class="col-md-2 control-label">Matcher</label>
+                        <div class="col-md-6">
+                            <input ng-model="subscription.filter.matcher" class="form-control"
+                                   id="subscriptionFilterMatcher"
+                                   name="subscriptionFilterMatcherInput" placeholder="Matcher for filter"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-1 subscription-add-subscription-filter">
+                            <button class="btn btn-success" ng-click="addFilter()">Add</button>
+                        </div>
+                        <div class="input-group col-md-6">
+                            <select id="filterType" class="form-control" ng-model="subscription.filter.type">
+                                <option>avropath</option>
+                                <option>jsonpath</option>
+                            </select>
+                            <span class="input-group-addon helpme-addon"
+                                  uib-tooltip='Filtering is done before any conversion takes place so all messages have the same content type as topic on which they were published.'>?</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="monitoringSeverity" class="col-md-3 control-label">Monitoring severity</label>
                 <div class="col-md-9">
