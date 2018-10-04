@@ -134,7 +134,7 @@ public class Subscription implements Anonymizable {
                                                         State state,
                                                         String description,
                                                         SubscriptionPolicy subscriptionPolicy,
-                                                        boolean allTrackingEnabled,
+                                                        boolean fullTrackingEnabled,
                                                         boolean discardedTrackingEnabled,
                                                         OwnerId owner,
                                                         String supportTeam,
@@ -146,7 +146,7 @@ public class Subscription implements Anonymizable {
                                                         EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                         SubscriptionOAuthPolicy oAuthPolicy,
                                                         boolean http2Enabled) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, allTrackingEnabled, discardedTrackingEnabled,
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, fullTrackingEnabled, discardedTrackingEnabled,
                 owner, supportTeam, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
     }
@@ -157,7 +157,7 @@ public class Subscription implements Anonymizable {
                                                        State state,
                                                        String description,
                                                        BatchSubscriptionPolicy subscriptionPolicy,
-                                                       boolean allTrackingEnabled,
+                                                       boolean fullTrackingEnabled,
                                                        boolean discardedTrackingEnabled,
                                                        OwnerId owner,
                                                        String supportTeam,
@@ -168,7 +168,7 @@ public class Subscription implements Anonymizable {
                                                        EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                        SubscriptionOAuthPolicy oAuthPolicy,
                                                        boolean http2Enabled) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, allTrackingEnabled, discardedTrackingEnabled,
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, fullTrackingEnabled, discardedTrackingEnabled,
                 owner, supportTeam, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
     }
