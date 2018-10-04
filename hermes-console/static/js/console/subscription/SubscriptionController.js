@@ -235,6 +235,23 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
                     });
         };
 
+        $scope.addFilter = function () {
+            if (!$scope.filter.type || !$scope.filter.path || !$scope.filter.matcher) {
+                return;
+            }
+
+            $scope.subscription.filters.push({
+                type: $scope.filter.type,
+                path: $scope.filter.path,
+                matcher: $scope.filter.matcher
+            });
+            $scope.filter = {};
+        };
+
+        $scope.delFilter = function (index) {
+            $scope.subscription.filters.splice(index, 1);
+        };
+
     }]);
 
 function initRetransmissionCalendar(daysBack) {
