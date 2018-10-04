@@ -236,12 +236,12 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
         };
 
         $scope.addFilter = function () {
-            if (!$scope.filter.type || !$scope.filter.path || !$scope.filter.matcher) {
+            if (!$scope.filter.path || !$scope.filter.matcher) {
                 return;
             }
 
             $scope.subscription.filters.push({
-                type: $scope.filter.type,
+                type: $scope.subscription.contentType === "JSON" ? "jsonpath" : "avropath",
                 path: $scope.filter.path,
                 matcher: $scope.filter.matcher
             });
