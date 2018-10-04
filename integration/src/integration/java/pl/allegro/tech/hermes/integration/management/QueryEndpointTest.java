@@ -94,12 +94,12 @@ public class QueryEndpointTest extends IntegrationTest {
     @Test(dataProvider = "topicData")
     public void shouldQueryTopic(String query, List<Integer> positions) {
         // given
-        Topic topic1 = topic("testGroup1", "testTopic1").withContentType(AVRO).withTrackingEnabled(false).build();
+        Topic topic1 = topic("testGroup1", "testTopic1").withContentType(AVRO).withFullTrackingEnabled(false).build();
         operations.buildTopicWithSchema(topicWithSchema(topic1, SCHEMA));
-        Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build()).getTopic();
-        Topic topic3 = topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).build();
+        Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withFullTrackingEnabled(false).build()).getTopic();
+        Topic topic3 = topic("testGroup1", "testTopic3").withContentType(AVRO).withFullTrackingEnabled(true).build();
         operations.buildTopicWithSchema(topicWithSchema(topic3, SCHEMA));
-        Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true)
+        Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withFullTrackingEnabled(true)
                 .withOwner(new OwnerId("Plaintext", "Team Alpha")).build()
         ).getTopic();
 
@@ -185,8 +185,8 @@ public class QueryEndpointTest extends IntegrationTest {
     @Test(dataProvider = "topicsMetricsFilteringData")
     public void shouldQueryTopicsMetrics(String topicName1, String topicName2, String query, List<String> qualifiedNames) {
         // given
-        operations.buildTopic(topic("testGroup", topicName1).withContentType(JSON).withTrackingEnabled(false).build());
-        operations.buildTopic(topic("testGroup", topicName2).withContentType(JSON).withTrackingEnabled(false).build());
+        operations.buildTopic(topic("testGroup", topicName1).withContentType(JSON).withFullTrackingEnabled(false).build());
+        operations.buildTopic(topic("testGroup", topicName2).withContentType(JSON).withFullTrackingEnabled(false).build());
 
         publisher.publish("testGroup." + topicName1, "testMessage1");
         publisher.publish("testGroup." + topicName2, "testMessage2");
@@ -233,7 +233,7 @@ public class QueryEndpointTest extends IntegrationTest {
 
     private Subscription enrichSubscription(SubscriptionBuilder subscription, String endpoint) {
         return subscription
-                .withTrackingEnabled(true)
+                .withFullTrackingEnabled(true)
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
                 .withEndpoint(EndpointAddress.of(endpoint))
                 .build();

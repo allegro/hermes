@@ -186,10 +186,10 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldGetEventStatus() throws InterruptedException {
         // given
-        Topic topic = operations.buildTopic(topic("eventStatus", "topic").withContentType(ContentType.JSON).withTrackingEnabled(true).build());
+        Topic topic = operations.buildTopic(topic("eventStatus", "topic").withContentType(ContentType.JSON).withFullTrackingEnabled(true).build());
 
         Subscription subscription = subscription("eventStatus.topic", "subscription", HTTP_ENDPOINT_URL)
-                .withTrackingEnabled(true)
+                .withFullTrackingEnabled(true)
                 .build();
 
         operations.createSubscription(topic, subscription);
@@ -215,7 +215,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("tracked", "topic");
         Subscription subscription = subscription("tracked.topic", "subscription", HTTP_ENDPOINT_URL)
-                .withTrackingEnabled(true).build();
+                .withFullTrackingEnabled(true).build();
         operations.createSubscription(topic, subscription);
         operations.createSubscription(topic, "sub2", HTTP_ENDPOINT_URL);
 
@@ -231,8 +231,8 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // given
         Topic topic = operations.buildTopic("queried", "topic");
-        operations.createSubscription(topic, subscription("queried.topic", "sub1").withTrackingEnabled(true).build());
-        operations.createSubscription(topic, subscription("queried.topic", "sub2").withTrackingEnabled(true).build());
+        operations.createSubscription(topic, subscription("queried.topic", "sub1").withFullTrackingEnabled(true).build());
+        operations.createSubscription(topic, subscription("queried.topic", "sub2").withFullTrackingEnabled(true).build());
         operations.createSubscription(topic, subscription("queried.topic", "sub3").build());
         operations.suspendSubscription(topic, "sub2");
 

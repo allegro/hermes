@@ -25,7 +25,7 @@ class DefaultSuccessHandlerTest extends Specification {
 
     private Trackers trackers = new Trackers([sendingTracker])
 
-    private Subscription subscription = subscription('group.topic', 'subscription').withTrackingEnabled(true).build()
+    private Subscription subscription = subscription('group.topic', 'subscription').withFullTrackingEnabled(true).build()
 
     private DefaultSuccessHandler handler = new DefaultSuccessHandler(offsetQueue, Stub(HermesMetrics), trackers)
 

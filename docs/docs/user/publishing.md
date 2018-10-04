@@ -63,22 +63,25 @@ Minimal request:
 
 Other options:
 
-Option            | Description                             | Options     | Default value
----------------   | --------------------------------------- | ----------- | -------------
-ack               | acknowledgement level                   | ALL, LEADER | LEADER
-trackingEnabled   | track incoming messages?                | -           | false
+Option               | Description                             | Options     | Default value
+---------------      | --------------------------------------- | ----------- | -------------
+ack                  | acknowledgement level                   | ALL, LEADER | LEADER
+trackingEnabled      | track incoming messages?                | -           | false
+errorTrackingEnabled | error track for incoming messages?      | -           | false
+
 
 Request that specifies all available options:
 
-```
+```json
 {
     "name": "myTopic",
     "description": "This is my topic",
     "ack": "LEADER",
     "retentionTime": {
         "duration": 1
-    }
+    },
     "trackingEnabled": false,
+    "errorTrackingEnabled": false,
     "contentType": "JSON"
 }
 ```

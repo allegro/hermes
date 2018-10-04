@@ -44,7 +44,7 @@ public class FilteredMessageHandler {
 
             updateMetrics(message, subscription);
 
-            if (subscription.isTrackingEnabled()) {
+            if (subscription.isAnyTrackingEnabled()) {
                 trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
             }
 

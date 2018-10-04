@@ -18,13 +18,25 @@ public class TrackersTest {
     @Mock
     NoOperationSendingTracker noOperationDeliveryTracker;
 
+    @Mock
+    DiscardedSendingTracker discardedSendingTracker;
+
     @InjectMocks
     Trackers trackers;
 
     @Test
     public void shouldDispatchCorrectTracker() {
-        assertThat(trackers.get(subscription("group.topic", "sub").withTrackingEnabled(false).build())).isEqualTo(noOperationDeliveryTracker);
-        assertThat(trackers.get(subscription("group.topic", "sub").withTrackingEnabled(true).build())).isEqualTo(messageDeliveryTracker);
+        assertThat(trackers.get(subscription("group.topic", "sub").withFullTrackingEnabled(false)
+                .build())).isEqualTo(noOperationDeliveryTracker);
+        assertThat(trackers.get(subscription("group.topic", "sub").withFullTrackingEnabled(false)
+                .withDiscardedTrackingEnabled(true).build())).isEqualTo(discardedSendingTracker);
+
+
+        assertThat(trackers.get(subscription("group.topic", "sub").withFullTrackingEnabled(true)
+                .build())).isEqualTo(messageDeliveryTracker);
+        assertThat(trackers.get(subscription("group.topic", "sub").withFullTrackingEnabled(true)
+                .withDiscardedTrackingEnabled(true).build())).isEqualTo(messageDeliveryTracker);
+
     }
 
 }

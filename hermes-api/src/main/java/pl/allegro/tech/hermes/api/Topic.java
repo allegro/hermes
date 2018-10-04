@@ -47,7 +47,9 @@ public class Topic {
     @NotNull
     private RetentionTime retentionTime = RetentionTime.of(1);
 
-    private boolean trackingEnabled = false;
+    private boolean fullTrackingEnabled = false;
+
+    private boolean errorTrackingEnabled = false;
 
     private boolean migratedFromJsonType = false;
 
@@ -60,8 +62,8 @@ public class Topic {
     private final TopicDataOfflineStorage offlineStorage;
 
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
-                 boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
-                 boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
+                 boolean migratedFromJsonType, Ack ack, boolean fullTrackingEnabled, boolean errorTrackingEnabled,
+                 ContentType contentType, boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
                  TopicDataOfflineStorage offlineStorage) {
         this.name = name;
@@ -69,7 +71,8 @@ public class Topic {
         this.owner = owner;
         this.retentionTime = retentionTime;
         this.ack = (ack == null ? Ack.LEADER : ack);
-        this.trackingEnabled = trackingEnabled;
+        this.fullTrackingEnabled = fullTrackingEnabled;
+        this.errorTrackingEnabled = errorTrackingEnabled;
         this.migratedFromJsonType = migratedFromJsonType;
         this.contentType = contentType;
         this.jsonToAvroDryRunEnabled = jsonToAvroDryRunEnabled;
@@ -88,7 +91,8 @@ public class Topic {
             @JsonProperty("retentionTime") RetentionTime retentionTime,
             @JsonProperty("jsonToAvroDryRun") boolean jsonToAvroDryRunEnabled,
             @JsonProperty("ack") Ack ack,
-            @JsonProperty("trackingEnabled") boolean trackingEnabled,
+            @JsonProperty("trackingEnabled") boolean fullTrackingEnabled,
+            @JsonProperty("errorTrackingEnabled") boolean errorTrackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
             @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType,
@@ -98,7 +102,7 @@ public class Topic {
             @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage
             ) {
         this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
-                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
+                fullTrackingEnabled, errorTrackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
                 maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize,
                 publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
                 subscribingRestricted,
@@ -112,9 +116,9 @@ public class Topic {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize, publishingAuth, subscribingRestricted,
-                offlineStorage);
+        return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, fullTrackingEnabled, errorTrackingEnabled,
+                ack, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize, publishingAuth,
+                subscribingRestricted, offlineStorage);
     }
 
     @Override
@@ -132,7 +136,8 @@ public class Topic {
                 && Objects.equals(this.owner, other.owner)
                 && Objects.equals(this.retentionTime, other.retentionTime)
                 && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
-                && Objects.equals(this.trackingEnabled, other.trackingEnabled)
+                && Objects.equals(this.fullTrackingEnabled, other.fullTrackingEnabled)
+                && Objects.equals(this.errorTrackingEnabled, other.errorTrackingEnabled)
                 && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
                 && Objects.equals(this.schemaVersionAwareSerializationEnabled, other.schemaVersionAwareSerializationEnabled)
                 && Objects.equals(this.ack, other.ack)
@@ -174,8 +179,18 @@ public class Topic {
         return contentType;
     }
 
-    public boolean isTrackingEnabled() {
-        return trackingEnabled;
+    @JsonProperty("trackingEnabled")
+    public boolean isFullTrackingEnabled() {
+        return fullTrackingEnabled;
+    }
+
+    public boolean isErrorTrackingEnabled() {
+        return errorTrackingEnabled;
+    }
+
+    @JsonIgnore
+    public boolean isAnyTrackingEnabled() {
+        return fullTrackingEnabled || errorTrackingEnabled;
     }
 
     @JsonProperty("migratedFromJsonType")

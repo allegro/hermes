@@ -28,7 +28,9 @@ public class TopicBuilder {
 
     private RetentionTime retentionTime = RetentionTime.of(1);
 
-    private boolean trackingEnabled = false;
+    private boolean fullTrackingEnabled = false;
+
+    private boolean errorTrackingEnabled = false;
 
     private boolean migratedFromJsonType = false;
 
@@ -64,8 +66,8 @@ public class TopicBuilder {
 
     public Topic build() {
         return new Topic(
-                name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize,
+                name, description, owner, retentionTime, migratedFromJsonType, ack, fullTrackingEnabled, errorTrackingEnabled,
+                contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize,
                 new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
                 offlineStorage
         );
@@ -101,8 +103,13 @@ public class TopicBuilder {
         return this;
     }
 
-    public TopicBuilder withTrackingEnabled(boolean enabled) {
-        this.trackingEnabled = enabled;
+    public TopicBuilder withFullTrackingEnabled(boolean enabled) {
+        this.fullTrackingEnabled = enabled;
+        return this;
+    }
+
+    public TopicBuilder withErrorTrackingEnabled(boolean enabled) {
+        this.errorTrackingEnabled = enabled;
         return this;
     }
 
