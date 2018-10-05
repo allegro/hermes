@@ -183,10 +183,22 @@
                             </tr>
                             <tbody>
                             <tr ng-repeat="filter in subscription.filters">
-                                <td>{{filter.type}}</td>
-                                <td>{{filter.path}}</td>
-                                <td>{{filter.matcher}}</td>
-                                <td ng-click="delFilter($index)">x</td>
+                                <td>
+                                    <label readonly ng-model="filter.type" style="top: 8px;" class="col-sm-2 col-form-label form-control-plaintext">{{filter.type}}</label>
+                                </td>
+                                <td>
+                                    <input ng-model="filter.path" class="form-control col-md-1 {{filter.path.$valid ? '' : 'has-error'}}"
+                                           id="subscriptionFilterPathEdit"
+                                           name="subscriptionFilterPathInput" placeholder="{{filter.path}}"/>
+                                </td>
+                                <td>
+                                    <input ng-model="filter.matcher" class="form-control col-md-1 {{filter.matcher.$valid ? '' : 'has-error'}}"
+                                           id="subscriptionFilterMatcherEdit"
+                                           name="subscriptionFilterMatcherInput" placeholder="{{filter.matcher}}"/>
+                                </td>
+                                <td>
+                                    <button class="btn btn-danger" ng-click="delFilter($index)">Delete</button>
+                                </td>
                             </tr>
                             </tbody>
                         </table>
@@ -195,12 +207,6 @@
                     <div class="panel">
                         <table class="table">
                             <tr>
-                                <td>
-                                    <!--<select required ng-model="filter.type" id="filterType" class="form-control {{filter.type.$valid ? '' : 'has-error'}}">-->
-                                        <!--<option>avropath</option>-->
-                                        <!--<option>jsonpath</option>-->
-                                    <!--</select>-->
-                                </td>
                                 <td>
                                     <input ng-model="filter.path" class="form-control col-md-1 {{filter.path.$valid ? '' : 'has-error'}}"
                                            id="subscriptionFilterPath"
