@@ -140,6 +140,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 kafkaProperties.getKafkaConsumer().getCacheExpiration(),
                 kafkaProperties.getKafkaConsumer().getTimeout(),
                 kafkaProperties.getKafkaConsumer().getBufferSize(),
+                kafkaProperties.getKafkaConsumer().getFetchMaxWaitMillis(),
+                kafkaProperties.getKafkaConsumer().getFetchMinBytes(),
                 kafkaProperties.getKafkaConsumer().getNamePrefix(),
                 kafkaProperties.getKafkaConsumer().getConsumerGroupName());
 

@@ -34,6 +34,10 @@ public class KafkaProperties {
 
         private int pollTimeoutMillis = 30;
 
+        private final int fetchMaxWaitMillis = 30;
+
+        private final int fetchMinBytes = 1;
+
         private String consumerGroupName = "RETRANSMISSION_GROUP";
 
         public int getCacheExpiration() {
@@ -82,6 +86,14 @@ public class KafkaProperties {
 
         public void setConsumerGroupName(String consumerGroupName) {
             this.consumerGroupName = consumerGroupName;
+        }
+
+        public int getFetchMaxWaitMillis() {
+            return fetchMaxWaitMillis;
+        }
+
+        public int getFetchMinBytes() {
+            return fetchMinBytes;
         }
     }
 

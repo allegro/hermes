@@ -11,6 +11,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.FETCH_MIN_BYTES_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.RECEIVE_BUFFER_CONFIG;
 
@@ -60,6 +63,9 @@ public class KafkaConsumerPool {
             props.put(BOOTSTRAP_SERVERS_CONFIG, brokerDetails.getHost() + ":" + brokerDetails.getPort());
             props.put(GROUP_ID_CONFIG, poolConfig.getIdPrefix() + "_" + poolConfig.getConsumerGroupName());
             props.put(RECEIVE_BUFFER_CONFIG, poolConfig.getBufferSize());
+            props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
+            props.put(FETCH_MAX_WAIT_MS_CONFIG, poolConfig.getFetchMaxWaitMillis());
+            props.put(FETCH_MIN_BYTES_CONFIG, poolConfig.getFetchMinBytes());
             props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
             props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
             return new KafkaConsumer<>(props);
