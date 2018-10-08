@@ -27,6 +27,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         $scope.metricsUrls = subscriptionMetrics.metricsUrls(groupName, topicName, subscriptionName);
 
         topicRepository.get(topicName).then(function(topic) {
+            $scope.topicContentType = topic.contentType;
             initRetransmissionCalendar(topic.retentionTime.duration);
         });
 
@@ -81,6 +82,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     },
                     endpointAddressResolverMetadataConfig: function() {
                         return config.endpointAddressResolverMetadata;
+                    },
+                    topicContentType: function () {
+                        return $scope.topicContentType;
                     }
                 }
             });
@@ -196,10 +200,11 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
-    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig',
+    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'topicContentType',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
-              endpointAddressResolverMetadataConfig) {
+              endpointAddressResolverMetadataConfig, topicContentType) {
         $scope.topicName = topicName;
+        $scope.topicContentType = topicContentType;
         $scope.subscription = subscription;
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
@@ -241,7 +246,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
             }
 
             $scope.subscription.filters.push({
-                type: $scope.subscription.contentType === "JSON" ? "jsonpath" : "avropath",
+                type: $scope.topicContentType === "JSON" ? "jsonpath" : "avropath",
                 path: $scope.filter.path,
                 matcher: $scope.filter.matcher
             });
