@@ -77,4 +77,4 @@ repository.factory('SubscriptionRepository', ['DiscoveryService', '$resource', f
                 return retransmission.save({topicName: topicName, subscriptionName: subscriptionName}, fromDate);
             }
         };
-    }]);
+}]);
