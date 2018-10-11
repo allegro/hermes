@@ -256,6 +256,38 @@
         </div>
     </div>
 
+    <div class="row" ng-show="subscription.filters.length > 0">
+
+        <div class="col-md-12" ng-show="subscription.filters">
+
+            <div class="panel">
+
+                <div class="panel-heading">
+                    <h3 class="panel-title">Subscription filters</h3>
+                </div>
+
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>Path</th>
+                        <th>Matcher</th>
+                        <th> </th>
+                    </tr>
+
+                    <tr ng-repeat="filter in subscription.filters">
+                        <td>{{$index + 1}}</td>
+                        <td>{{filter.type}}</td>
+                        <td>{{filter.path}}</td>
+                        <td>{{filter.matcher}}</td>
+                    </tr>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+
     <div class="row">
 
         <div class="col-md-12" ng-show="undelivered">
