@@ -3,14 +3,12 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmi
 import com.google.common.collect.Range;
  import java.util.Collections;
 import java.util.Optional;
-import kafka.common.TopicAndPartition;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
@@ -56,7 +54,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
             List<Integer> partitionsIds = brokerStorage.readPartitionsIds(k.name().asString());
 
             for (Integer partitionId : partitionsIds) {
-                KafkaConsumer<byte[], byte[]> consumer = createKafkaConsumer(k.name(), partitionId);
+                KafkaConsumer<byte[], byte[]> consumer = createKafkaConsumer(k, partitionId);
                 long offset = getLastOffset(consumer, topic, k, partitionId, timestamp);
                 PartitionOffset partitionOffset = new PartitionOffset(k.name(), offset, partitionId);
                 partitionOffsetList.add(partitionOffset);
@@ -69,10 +67,8 @@ public class KafkaRetransmissionService implements RetransmissionService {
         return partitionOffsetList;
     }
 
-    private KafkaConsumer<byte[], byte[]> createKafkaConsumer(KafkaTopicName kafkaTopicName, int partition) {
-        Integer leader = brokerStorage.readLeaderForPartition(new TopicAndPartition(kafkaTopicName.asString(), partition));
-
-        return consumerPool.get(leader);
+    private KafkaConsumer<byte[], byte[]> createKafkaConsumer(KafkaTopic kafkaTopic, int partition) {
+        return consumerPool.get(kafkaTopic, partition);
     }
 
     private long getLastOffset(KafkaConsumer<byte[], byte[]> consumer, Topic topic, KafkaTopic kafkaTopic, int partition, long timestamp) {

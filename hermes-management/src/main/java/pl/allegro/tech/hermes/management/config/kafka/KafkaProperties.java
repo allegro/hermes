@@ -32,7 +32,7 @@ public class KafkaProperties {
 
         private String namePrefix = "offsetChecker";
 
-        private int pollTimeoutMillis = 30;
+        private int pollTimeoutMillis = 50;
 
         private final int fetchMaxWaitMillis = 30;
 
