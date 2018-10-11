@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.result
 
 import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.api.TrackingMode
 import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.Message
@@ -25,7 +26,8 @@ class DefaultSuccessHandlerTest extends Specification {
 
     private Trackers trackers = new Trackers([sendingTracker])
 
-    private Subscription subscription = subscription('group.topic', 'subscription').withFullTrackingEnabled(true).build()
+    private Subscription subscription = subscription('group.topic', 'subscription')
+            .withTrackingMode(TrackingMode.TRACK_ALL).build()
 
     private DefaultSuccessHandler handler = new DefaultSuccessHandler(offsetQueue, Stub(HermesMetrics), trackers)
 

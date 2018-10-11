@@ -192,8 +192,8 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnTopicsThatAreCurrentlyTracked() {
         // given
-        operations.buildTopic(topic("trackedGroup", "topic").withFullTrackingEnabled(true).build());
-        operations.buildTopic(topic("untrackedGroup", "topic").withFullTrackingEnabled(false).build());
+        operations.buildTopic(topic("trackedGroup", "topic").withTrackingEnabled(true).build());
+        operations.buildTopic(topic("untrackedGroup", "topic").withTrackingEnabled(false).build());
 
         // when
         List<String> tracked = management.topic().list("", true);
@@ -205,8 +205,8 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnTopicsThatAreCurrentlyTrackedForGivenGroup() {
         // given
-        operations.buildTopic(topic("mixedTrackedGroup", "trackedTopic").withFullTrackingEnabled(true).build());
-        operations.buildTopic(topic("mixedTrackedGroup", "untrackedTopic").withFullTrackingEnabled(false).build());
+        operations.buildTopic(topic("mixedTrackedGroup", "trackedTopic").withTrackingEnabled(true).build());
+        operations.buildTopic(topic("mixedTrackedGroup", "untrackedTopic").withTrackingEnabled(false).build());
 
         // when
         List<String> tracked = management.topic().list("mixedTrackedGroup", true);
@@ -220,14 +220,14 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldReturnTrackedTopicsWithAvroContentType() {
         // given
         operations.buildTopicWithSchema(topicWithSchema(topic("avroGroup", "avroNonTrackedTopic").withContentType(AVRO)
-                .withFullTrackingEnabled(false).build(), SCHEMA));
+                .withTrackingEnabled(false).build(), SCHEMA));
         operations.buildTopic(topic("jsonGroup", "jsonTopic")
-                .withContentType(JSON).withFullTrackingEnabled(false).build());
+                .withContentType(JSON).withTrackingEnabled(false).build());
 
         operations.buildTopicWithSchema(topicWithSchema(topic("avroGroup", "avroTrackedTopic")
-                .withContentType(AVRO).withFullTrackingEnabled(true).build(), SCHEMA));
+                .withContentType(AVRO).withTrackingEnabled(true).build(), SCHEMA));
 
-        operations.buildTopic(topic("jsonGroup", "jsonTrackedTopic").withContentType(JSON).withFullTrackingEnabled(true).build());
+        operations.buildTopic(topic("jsonGroup", "jsonTrackedTopic").withContentType(JSON).withTrackingEnabled(true).build());
 
         // and
         String query = "{\"query\": {\"trackingEnabled\": \"true\", \"contentType\": \"AVRO\"}}";
@@ -248,11 +248,11 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldReturnTrackedTopicsWithAvroContentTypeForGivenGroup() {
         // given
         operations.buildTopicWithSchema(topicWithSchema(topic("mixedTrackedGroup", "avroTopic").withContentType(AVRO)
-                .withFullTrackingEnabled(false).build(), SCHEMA));
-        operations.buildTopic(topic("mixedTrackedGroup", "jsonTopic").withContentType(JSON).withFullTrackingEnabled(false).build());
+                .withTrackingEnabled(false).build(), SCHEMA));
+        operations.buildTopic(topic("mixedTrackedGroup", "jsonTopic").withContentType(JSON).withTrackingEnabled(false).build());
         operations.buildTopicWithSchema(topicWithSchema(topic("mixedTrackedGroup", "avroTrackedTopic").withContentType(AVRO)
-                .withFullTrackingEnabled(true).build(), SCHEMA));
-        operations.buildTopic(topic("mixedTrackedGroup", "jsonTrackedTopic").withContentType(JSON).withFullTrackingEnabled(true).build());
+                .withTrackingEnabled(true).build(), SCHEMA));
+        operations.buildTopic(topic("mixedTrackedGroup", "jsonTrackedTopic").withContentType(JSON).withTrackingEnabled(true).build());
 
         // and
         String query = "{\"query\": {\"trackingEnabled\": \"true\", \"contentType\": \"AVRO\"}}";

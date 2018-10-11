@@ -63,7 +63,7 @@ public class HermesAPIOperations {
     }
 
     public TopicWithSchema createTopic(TopicWithSchema topicWithSchema) {
-        if (endpoints.findTopics(topicWithSchema, topicWithSchema.isFullTrackingEnabled()).contains(topicWithSchema.getQualifiedName())) {
+        if (endpoints.findTopics(topicWithSchema, topicWithSchema.isTrackingEnabled()).contains(topicWithSchema.getQualifiedName())) {
             return topicWithSchema;
         }
         assertThat(endpoints.topic().create(topicWithSchema).getStatus()).isEqualTo(CREATED.getStatusCode());
@@ -103,7 +103,7 @@ public class HermesAPIOperations {
     }
 
     public Subscription createSubscription(Topic topic, Subscription subscription) {
-        if (endpoints.findSubscriptions(topic.getName().getGroupName(), topic.getName().getName(), subscription.isFullTrackingEnabled()).contains(subscription.getName())) {
+        if (endpoints.findSubscriptions(topic.getName().getGroupName(), topic.getName().getName(), subscription.isTrackingEnabled()).contains(subscription.getName())) {
             return subscription;
         }
 

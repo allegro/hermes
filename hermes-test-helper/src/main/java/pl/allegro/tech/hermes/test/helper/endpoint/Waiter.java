@@ -18,7 +18,7 @@ public class Waiter {
     }
 
     public void untilSubscriptionCreated(Topic topic, Subscription subscription) {
-        untilSubscriptionCreated(topic, subscription.getName(), subscription.isFullTrackingEnabled());
+        untilSubscriptionCreated(topic, subscription.getName(), subscription.isTrackingEnabled());
     }
 
     public void untilSubscriptionCreated(Topic topic, String subscription, boolean isTracked) {
@@ -35,7 +35,7 @@ public class Waiter {
 
     public void untilTopicCreated(Topic topic) {
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
-            endpoints.findTopics(topic, topic.isFullTrackingEnabled()).contains(topic.getQualifiedName())
+            endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName())
         );
     }
 

@@ -71,7 +71,7 @@ public class SubscriptionService {
 
     public List<String> listTrackedSubscriptionNames(TopicName topicName) {
         return listSubscriptions(topicName).stream()
-                .filter(Subscription::isAnyTrackingEnabled)
+                .filter(Subscription::isTrackingEnabled)
                 .map(Subscription::getName)
                 .collect(Collectors.toList());
     }

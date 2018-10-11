@@ -72,14 +72,14 @@ public class PatchTest {
     @Test
     public void shouldNotResetPrimitiveFields() {
         // given
-        Topic topic = topic("group.topic").withFullTrackingEnabled(true).build();
+        Topic topic = topic("group.topic").withTrackingEnabled(true).build();
         PatchData patch = patchData().set("schemaVersionAwareSerializationEnabled", true).build();
 
         // when
         Topic patched = Patch.apply(topic, patch);
 
         // then
-        assertThat(patched.isFullTrackingEnabled()).isTrue();
+        assertThat(patched.isTrackingEnabled()).isTrue();
         assertThat(patched.isSchemaVersionAwareSerializationEnabled()).isTrue();
     }
 }

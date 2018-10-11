@@ -3,13 +3,7 @@ package pl.allegro.tech.hermes.integration.management;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.PatchData;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -186,10 +180,11 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldGetEventStatus() throws InterruptedException {
         // given
-        Topic topic = operations.buildTopic(topic("eventStatus", "topic").withContentType(ContentType.JSON).withFullTrackingEnabled(true).build());
+        Topic topic = operations.buildTopic(topic("eventStatus", "topic").withContentType(ContentType.JSON)
+                .withTrackingEnabled(true).build());
 
         Subscription subscription = subscription("eventStatus.topic", "subscription", HTTP_ENDPOINT_URL)
-                .withFullTrackingEnabled(true)
+                .withTrackingMode(TrackingMode.TRACK_ALL)
                 .build();
 
         operations.createSubscription(topic, subscription);
@@ -215,7 +210,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("tracked", "topic");
         Subscription subscription = subscription("tracked.topic", "subscription", HTTP_ENDPOINT_URL)
-                .withFullTrackingEnabled(true).build();
+                .withTrackingMode(TrackingMode.TRACK_ALL).build();
         operations.createSubscription(topic, subscription);
         operations.createSubscription(topic, "sub2", HTTP_ENDPOINT_URL);
 
@@ -231,8 +226,8 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // given
         Topic topic = operations.buildTopic("queried", "topic");
-        operations.createSubscription(topic, subscription("queried.topic", "sub1").withFullTrackingEnabled(true).build());
-        operations.createSubscription(topic, subscription("queried.topic", "sub2").withFullTrackingEnabled(true).build());
+        operations.createSubscription(topic, subscription("queried.topic", "sub1").withTrackingMode(TrackingMode.TRACK_ALL).build());
+        operations.createSubscription(topic, subscription("queried.topic", "sub2").withTrackingMode(TrackingMode.TRACK_ALL).build());
         operations.createSubscription(topic, subscription("queried.topic", "sub3").build());
         operations.suspendSubscription(topic, "sub2");
 

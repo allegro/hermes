@@ -27,10 +27,13 @@ public class Trackers {
     }
 
     public SendingTracker get(Subscription subscription) {
-        if (subscription.isFullTrackingEnabled()) {
-            return sendingMessageTracker;
-        } else if (subscription.isDiscardedTrackingEnabled()) {
-            return discardedSendingTracker;
+        switch (subscription.getTrackingMode()) {
+            case TRACK_ALL:
+                return  sendingMessageTracker;
+            case TRACK_DISCARDED_ONLY:
+                return  discardedSendingTracker;
+            case TRACKING_OFF:
+                return noOperationDeliveryTracker;
         }
 
         return noOperationDeliveryTracker;

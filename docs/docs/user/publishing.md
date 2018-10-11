@@ -67,7 +67,6 @@ Option               | Description                             | Options     | D
 ---------------      | --------------------------------------- | ----------- | -------------
 ack                  | acknowledgement level                   | ALL, LEADER | LEADER
 trackingEnabled      | track incoming messages?                | -           | false
-errorTrackingEnabled | error track for incoming messages?      | -           | false
 
 
 Request that specifies all available options:
@@ -81,7 +80,6 @@ Request that specifies all available options:
         "duration": 1
     },
     "trackingEnabled": false,
-    "errorTrackingEnabled": false,
     "contentType": "JSON"
 }
 ```

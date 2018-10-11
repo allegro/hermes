@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.result
 
 import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.api.TrackingMode
 import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
@@ -30,7 +31,8 @@ class DefaultErrorHandlerTest extends Specification {
 
     private Trackers trackers = new Trackers([sendingTracker])
 
-    private Subscription subscription = subscription('group.topic', 'subscription').withFullTrackingEnabled(true).build()
+    private Subscription subscription = subscription('group.topic', 'subscription')
+            .withTrackingMode(TrackingMode.TRACK_ALL).build()
 
     private DefaultErrorHandler handler = new DefaultErrorHandler(
             offsetQueue, Stub(HermesMetrics), undeliveredLog, Clock.systemUTC(), trackers, "cluster")

@@ -23,9 +23,9 @@ public class SubscriptionBuilder {
 
     private BatchSubscriptionPolicy batchSubscriptionPolicy;
 
-    private boolean fullTrackingEnabled = false;
+    private boolean trackingEnabled = false;
 
-    private boolean discardedTrackingEnabled = false;
+    private TrackingMode trackingMode = TrackingMode.TRACKING_OFF;
 
     private boolean http2Enabled = false;
 
@@ -89,15 +89,15 @@ public class SubscriptionBuilder {
         if (deliveryType == DeliveryType.SERIAL) {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
-                    serialSubscriptionPolicy,
-                    fullTrackingEnabled, discardedTrackingEnabled, owner, supportTeam, monitoringDetails, contentType,
+                    serialSubscriptionPolicy, trackingEnabled,
+                    trackingMode, owner, supportTeam, monitoringDetails, contentType,
                     filters, mode, headers, metadata, oAuthPolicy, http2Enabled
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
-                    batchSubscriptionPolicy,
-                    fullTrackingEnabled, discardedTrackingEnabled, owner, supportTeam, monitoringDetails, contentType,
+                    batchSubscriptionPolicy, trackingEnabled,
+                    trackingMode, owner, supportTeam, monitoringDetails, contentType,
                     filters, headers, metadata, oAuthPolicy, http2Enabled
             );
         }
@@ -143,13 +143,9 @@ public class SubscriptionBuilder {
         return this;
     }
 
-    public SubscriptionBuilder withFullTrackingEnabled(boolean fullTrackingEnabled) {
-        this.fullTrackingEnabled = fullTrackingEnabled;
-        return this;
-    }
-
-    public SubscriptionBuilder withDiscardedTrackingEnabled(boolean discardedTrackingEnabled) {
-        this.discardedTrackingEnabled = discardedTrackingEnabled;
+    public SubscriptionBuilder withTrackingMode(TrackingMode trackingMode) {
+        this.trackingMode = trackingMode;
+        this.trackingEnabled = trackingMode != TrackingMode.TRACKING_OFF;
         return this;
     }
 

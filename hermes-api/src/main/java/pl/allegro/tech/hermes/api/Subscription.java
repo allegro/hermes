@@ -45,9 +45,13 @@ public class Subscription implements Anonymizable {
     @Valid
     private BatchSubscriptionPolicy batchSubscriptionPolicy;
 
-    private boolean fullTrackingEnabled = false;
+    /**
+     * Use trackingMode field instead.
+     */
+    @Deprecated
+    private boolean trackingEnabled = false;
 
-    private boolean discardedTrackingEnabled = false;
+    private TrackingMode trackingMode = TrackingMode.TRACKING_OFF;
 
     private boolean http2Enabled = false;
 
@@ -92,8 +96,8 @@ public class Subscription implements Anonymizable {
                          State state,
                          String description,
                          Object subscriptionPolicy,
-                         boolean fullTrackingEnabled,
-                         boolean discardedTrackingEnabled,
+                         boolean trackingEnabled,
+                         TrackingMode trackingMode,
                          OwnerId owner,
                          String supportTeam,
                          MonitoringDetails monitoringDetails,
@@ -110,8 +114,8 @@ public class Subscription implements Anonymizable {
         this.endpoint = endpoint;
         this.state = state != null ? state : State.PENDING;
         this.description = description;
-        this.fullTrackingEnabled = fullTrackingEnabled;
-        this.discardedTrackingEnabled = discardedTrackingEnabled;
+        this.trackingEnabled = trackingEnabled;
+        this.trackingMode = trackingMode;
         this.owner = owner;
         this.supportTeam = supportTeam;
         this.monitoringDetails = monitoringDetails == null ? MonitoringDetails.EMPTY : monitoringDetails;
@@ -134,8 +138,8 @@ public class Subscription implements Anonymizable {
                                                         State state,
                                                         String description,
                                                         SubscriptionPolicy subscriptionPolicy,
-                                                        boolean fullTrackingEnabled,
-                                                        boolean discardedTrackingEnabled,
+                                                        boolean trackingEnabled,
+                                                        TrackingMode trackingMode,
                                                         OwnerId owner,
                                                         String supportTeam,
                                                         MonitoringDetails monitoringDetails,
@@ -146,7 +150,7 @@ public class Subscription implements Anonymizable {
                                                         EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                         SubscriptionOAuthPolicy oAuthPolicy,
                                                         boolean http2Enabled) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, fullTrackingEnabled, discardedTrackingEnabled,
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
                 owner, supportTeam, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
     }
@@ -157,8 +161,8 @@ public class Subscription implements Anonymizable {
                                                        State state,
                                                        String description,
                                                        BatchSubscriptionPolicy subscriptionPolicy,
-                                                       boolean fullTrackingEnabled,
-                                                       boolean discardedTrackingEnabled,
+                                                       boolean trackingEnabled,
+                                                       TrackingMode trackingMode,
                                                        OwnerId owner,
                                                        String supportTeam,
                                                        MonitoringDetails monitoringDetails,
@@ -168,7 +172,7 @@ public class Subscription implements Anonymizable {
                                                        EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                        SubscriptionOAuthPolicy oAuthPolicy,
                                                        boolean http2Enabled) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, fullTrackingEnabled, discardedTrackingEnabled,
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
                 owner, supportTeam, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
     }
@@ -181,8 +185,8 @@ public class Subscription implements Anonymizable {
             @JsonProperty("state") State state,
             @JsonProperty("description") String description,
             @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
-            @JsonProperty("trackingEnabled") boolean fullTrackingEnabled,
-            @JsonProperty("discardedTrackingEnabled") boolean discardedTrackingEnabled,
+            @JsonProperty("trackingEnabled") boolean trackingEnabled,
+            @JsonProperty("trackingMode") TrackingMode trackingMode,
             @JsonProperty("owner") OwnerId owner,
             @JsonProperty("supportTeam") String supportTeam,
             @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
@@ -199,6 +203,11 @@ public class Subscription implements Anonymizable {
         SubscriptionMode subscriptionMode = mode == null ? SubscriptionMode.ANYCAST : mode;
         Map<String, Object> validSubscriptionPolicy = subscriptionPolicy == null ? new HashMap<>() : subscriptionPolicy;
 
+        TrackingMode validTrackingMode =
+                trackingMode == null ?
+                (trackingEnabled ? TrackingMode.TRACK_ALL : TrackingMode.TRACKING_OFF) : trackingMode;
+        boolean validTrackingEnabled = trackingMode != TrackingMode.TRACKING_OFF;
+
         return new Subscription(
                 TopicName.fromQualifiedName(topicName),
                 name,
@@ -207,8 +216,8 @@ public class Subscription implements Anonymizable {
                 description,
                 validDeliveryType == DeliveryType.SERIAL ?
                         SubscriptionPolicy.create(validSubscriptionPolicy) : BatchSubscriptionPolicy.create(validSubscriptionPolicy),
-                fullTrackingEnabled,
-                discardedTrackingEnabled,
+                validTrackingEnabled,
+                validTrackingMode,
                 owner,
                 supportTeam,
                 monitoringDetails,
@@ -226,7 +235,7 @@ public class Subscription implements Anonymizable {
     @Override
     public int hashCode() {
         return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy,
-                fullTrackingEnabled, discardedTrackingEnabled, owner, supportTeam, monitoringDetails, contentType, filters, mode, headers,
+                trackingEnabled, trackingMode, owner, supportTeam, monitoringDetails, contentType, filters, mode, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
     }
 
@@ -246,8 +255,8 @@ public class Subscription implements Anonymizable {
                 && Objects.equals(this.description, other.description)
                 && Objects.equals(this.serialSubscriptionPolicy, other.serialSubscriptionPolicy)
                 && Objects.equals(this.batchSubscriptionPolicy, other.batchSubscriptionPolicy)
-                && Objects.equals(this.fullTrackingEnabled, other.fullTrackingEnabled)
-                && Objects.equals(this.discardedTrackingEnabled, other.discardedTrackingEnabled)
+                && Objects.equals(this.trackingEnabled, other.trackingEnabled)
+                && Objects.equals(this.trackingMode, other.trackingMode)
                 && Objects.equals(this.owner, other.owner)
                 && Objects.equals(this.supportTeam, other.supportTeam)
                 && Objects.equals(this.monitoringDetails, other.monitoringDetails)
@@ -304,18 +313,13 @@ public class Subscription implements Anonymizable {
         return isBatchSubscription() ? batchSubscriptionPolicy : serialSubscriptionPolicy;
     }
 
-    @JsonProperty("trackingEnabled")
-    public boolean isFullTrackingEnabled() {
-        return fullTrackingEnabled;
+    public boolean isTrackingEnabled() {
+        //return trackingEnabled;
+        return trackingMode != TrackingMode.TRACKING_OFF;
     }
 
-    public boolean isDiscardedTrackingEnabled() {
-        return discardedTrackingEnabled;
-    }
-
-    @JsonIgnore
-    public boolean isAnyTrackingEnabled() {
-        return fullTrackingEnabled || discardedTrackingEnabled;
+    public TrackingMode getTrackingMode() {
+        return trackingMode;
     }
 
     public OwnerId getOwner() {
@@ -402,8 +406,8 @@ public class Subscription implements Anonymizable {
                     state,
                     description,
                     deliveryType == DeliveryType.BATCH ? batchSubscriptionPolicy : serialSubscriptionPolicy,
-                    fullTrackingEnabled,
-                    discardedTrackingEnabled,
+                    trackingEnabled,
+                    trackingMode,
                     owner,
                     supportTeam,
                     monitoringDetails,

@@ -41,8 +41,7 @@ All options:
 
 Option                               | Description                                     | Default value
 ------------------------------------ | ----------------------------------------------  | -------------
-trackingEnabled                      | track incoming messages?                        | false
-discardedTrackingEnabled             | track for discarded incoming messages?          | false
+trackingMode                         | track incoming messages                         | TRACKING_OFF
 subscriptionPolicy.rate              | maximum sending speed in rps (per DC)           | 400
 subscriptionPolicy.messageTtl        | inflight Time To Live in seconds                | 3600
 subscriptionPolicy.messageBackoff    | backoff time between retry attempts in millis   | 100
@@ -53,6 +52,11 @@ headers                              | additional HTTP request headers          
 filters                              | used for skipping unwanted messages             | [] (array of filters)
 endpointAddressResolverMetadata      | additional address resolver metadata            | {} (map)
 
+Possible values for **trackingMode** are:
+
+- TRACKING_OFF
+- TRACK_DISCARDED_ONLY
+- TRACK_ALL
 
 Request that specifies all available options:
 
@@ -62,8 +66,7 @@ Request that specifies all available options:
     "name": "mySubscription",
     "endpoint": "http://my-service",
     "description": "This is my subscription",
-    "trackingEnabled": false,
-    "discardedTrackingEnabled": false,
+    "trackingMode": "TRACK_ALL",
     "owner": {
         "source": "Plaintext",
         "id": "My Team"

@@ -78,8 +78,8 @@ class TopicValidatorTest extends Specification {
 
     def "topic when doing a basic update should be valid"() {
         given:
-        Topic validTopic = topic('group.topic').withFullTrackingEnabled(false).build()
-        Topic updatedValidTopic = topic('group.topic').withFullTrackingEnabled(true).build()
+        Topic validTopic = topic('group.topic').withTrackingEnabled(false).build()
+        Topic updatedValidTopic = topic('group.topic').withTrackingEnabled(true).build()
 
         when:
         topicValidator.ensureUpdatedTopicIsValid(updatedValidTopic, validTopic)

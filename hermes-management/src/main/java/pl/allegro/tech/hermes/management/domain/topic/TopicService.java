@@ -285,14 +285,14 @@ public class TopicService {
         return groupService.listGroupNames().stream()
                 .map(topicRepository::listTopics)
                 .flatMap(List::stream)
-                .filter(Topic::isAnyTrackingEnabled)
+                .filter(Topic::isTrackingEnabled)
                 .map(Topic::getQualifiedName)
                 .collect(toList());
     }
 
     public List<String> listTrackedTopicNames(String groupName) {
         return listTopics(groupName).stream()
-                .filter(Topic::isAnyTrackingEnabled)
+                .filter(Topic::isTrackingEnabled)
                 .map(Topic::getQualifiedName)
                 .collect(toList());
     }
