@@ -362,6 +362,32 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldUseExplicitSchemaVersionWhenPublishingAndConsumingWithLowercaseHeader() {
+        // given
+        Topic topic = topic("explicitSchemaVersion.topic")
+                .withContentType(AVRO)
+                .withSchemaVersionAwareSerialization()
+                .build();
+        operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
+
+        operations.saveSchema(topic, load("/schema/user_v2.avsc").toString());
+
+        // when
+        HermesMessage message = hermesMessage(topic.getQualifiedName(), user.asBytes())
+                .withContentType(AVRO_BINARY)
+                .withHeader("schema-version", "1")
+                .build();
+
+        assertThat(publisher.publishAvro(topic.getQualifiedName(), message.getBody(), message.getHeaders())).hasStatus(CREATED);
+
+        // then
+        remoteService.waitUntilRequestReceived(request -> {
+            assertBodyDeserializesIntoUser(request.getBodyAsString(), user);
+        });
+    }
+
+    @Test
     public void shouldUpdateSchemaAndUseItImmediately() {
         // given
         Topic topic = topic("latestSchemaVersionUpdate.topic").withContentType(AVRO).build();
