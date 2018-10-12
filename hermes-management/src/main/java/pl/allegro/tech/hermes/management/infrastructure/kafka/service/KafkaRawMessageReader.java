@@ -41,26 +41,25 @@ public class KafkaRawMessageReader {
                 }
                 logger.info("Found an old offset: {} Expecting: {}", record.offset(), offset);
             }
-            throw messageReaderException(topic, partition, offset, "Cannot find message");
+            throw messageNotFoundException(topic, partition, offset);
         } catch (Exception e) {
-            throw messageReaderException(topic, partition, offset, "Error during polling kafka message", e);
+            throw pollingException(topic, partition, offset, e);
         }
     }
 
-    private SingleMessageReaderException messageReaderException(KafkaTopic topic, int partition, long offset, String message) {
-        String cause = buildErrorMessage(topic, partition, offset, message);
+    private static SingleMessageReaderException messageNotFoundException(KafkaTopic topic, int partition, long offset) {
+        String cause = buildErrorMessage(topic, partition, offset, "Cannot find message");
         logger.error(cause);
         return new SingleMessageReaderException(cause);
     }
 
-    private SingleMessageReaderException messageReaderException(KafkaTopic topic, int partition, long offset, String message,
-                                                                Throwable throwable) {
-        String cause = buildErrorMessage(topic, partition, offset, message);
+    private static SingleMessageReaderException pollingException(KafkaTopic topic, int partition, long offset, Throwable throwable) {
+        String cause = buildErrorMessage(topic, partition, offset, "Error during polling kafka message");
         logger.error(cause, throwable);
         return new SingleMessageReaderException(cause, throwable);
     }
 
-    private String buildErrorMessage(KafkaTopic topic, int partition, long offset, String message) {
+    private static String buildErrorMessage(KafkaTopic topic, int partition, long offset, String message) {
         return message + format("[offset %d, kafka_topic %s, partition %d]",
                 offset, topic.name().asString(), partition);
     }

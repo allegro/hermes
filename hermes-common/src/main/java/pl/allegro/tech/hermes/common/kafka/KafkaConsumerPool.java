@@ -1,6 +1,10 @@
 package pl.allegro.tech.hermes.common.kafka;
 
-import com.google.common.cache.*;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.util.Properties;
 import kafka.common.TopicAndPartition;
@@ -50,7 +54,7 @@ public class KafkaConsumerPool {
 
         private final KafkaConsumerPoolConfig poolConfig;
 
-        public KafkaConsumerSupplier(BrokerStorage brokerStorage, KafkaConsumerPoolConfig poolConfig) {
+        KafkaConsumerSupplier(BrokerStorage brokerStorage, KafkaConsumerPoolConfig poolConfig) {
             this.brokerStorage = brokerStorage;
             this.poolConfig = poolConfig;
         }
