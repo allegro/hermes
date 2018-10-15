@@ -44,7 +44,9 @@ public class FilteredMessageHandler {
 
             updateMetrics(message, subscription);
 
-            trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
+            if(subscription.isTrackingEnabled()) {
+                trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
+            }
 
             consumerRateLimiter.acquireFiltered();
         }

@@ -81,7 +81,7 @@ public class SubscriptionTest {
                 "\"name\": \"test\", " +
                 "\"topicName\": \"g1.t1\", " +
                 "\"endpoint\": \"http://localhost:8888\", " +
-                "\"trackingMode\": \"TRACK_ALL\"" +
+                "\"trackingMode\": \"trackingAll\"" +
                 "}";
 
         // when
@@ -118,7 +118,7 @@ public class SubscriptionTest {
                 "\"topicName\": \"g1.t1\", " +
                 "\"endpoint\": \"http://localhost:8888\", " +
                 "\"trackingEnabled\": \"true\", " +
-                "\"trackingMode\": \"TRACK_DISCARDED_ONLY\"" +
+                "\"trackingMode\": \"discardedOnly\"" +
                 "}";
 
         // when

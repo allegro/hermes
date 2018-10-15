@@ -186,7 +186,7 @@ public class Subscription implements Anonymizable {
             @JsonProperty("description") String description,
             @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
-            @JsonProperty("trackingMode") TrackingMode trackingMode,
+            @JsonProperty("trackingMode") String trackingMode,
             @JsonProperty("owner") OwnerId owner,
             @JsonProperty("supportTeam") String supportTeam,
             @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
@@ -204,9 +204,9 @@ public class Subscription implements Anonymizable {
         Map<String, Object> validSubscriptionPolicy = subscriptionPolicy == null ? new HashMap<>() : subscriptionPolicy;
 
         TrackingMode validTrackingMode =
-                trackingMode == null ?
-                (trackingEnabled ? TrackingMode.TRACK_ALL : TrackingMode.TRACKING_OFF) : trackingMode;
-        boolean validTrackingEnabled = trackingMode != TrackingMode.TRACKING_OFF;
+                TrackingMode.fromString(trackingMode) == null ?
+                (trackingEnabled ? TrackingMode.TRACK_ALL : TrackingMode.TRACKING_OFF) : TrackingMode.fromString(trackingMode);
+        boolean validTrackingEnabled = validTrackingMode != TrackingMode.TRACKING_OFF;
 
         return new Subscription(
                 TopicName.fromQualifiedName(topicName),
@@ -314,10 +314,15 @@ public class Subscription implements Anonymizable {
     }
 
     public boolean isTrackingEnabled() {
-        //return trackingEnabled;
         return trackingMode != TrackingMode.TRACKING_OFF;
     }
 
+    @JsonProperty("trackingMode")
+    public String getTrackingModeString() {
+        return trackingMode.getValue();
+    }
+
+    @JsonIgnore
     public TrackingMode getTrackingMode() {
         return trackingMode;
     }
