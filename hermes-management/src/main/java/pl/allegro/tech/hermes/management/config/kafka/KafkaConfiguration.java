@@ -77,8 +77,6 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                     storage,
-                    kafkaRawMessageReader,
-                    messageContentWrapper,
                     subscriptionOffsetChangeIndicator,
                     consumerPool,
                     kafkaNamesMapper
@@ -104,11 +102,11 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     }
 
     private ZkUtils zkClient(KafkaProperties kafkaProperties) {
-        ZkConnection connection = new ZkConnection(kafkaProperties.getConnectionString(), kafkaProperties.getSessionTimeout());
+        ZkConnection connection = new ZkConnection(kafkaProperties.getConnectionString(), kafkaProperties.getSessionTimeoutMillis());
 
         ZkClient zkClient = new ZkClient(
                 connection,
-                kafkaProperties.getConnectionTimeout(),
+                kafkaProperties.getConnectionTimeoutMillis(),
                 ZKStringSerializer$.MODULE$
         );
 
@@ -122,7 +120,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     private CuratorFramework curatorFramework(KafkaProperties kafkaProperties) {
         CuratorFramework curator = CuratorFrameworkFactory.newClient(
                 kafkaProperties.getConnectionString(),
-                new RetryNTimes(kafkaProperties.getRetryTimes(), kafkaProperties.getRetrySleep()));
+                new RetryNTimes(kafkaProperties.getRetryTimes(), kafkaProperties.getRetrySleepMillis()));
 
         curator.start();
 
@@ -137,9 +135,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
     private KafkaConsumerPool kafkaConsumersPool(KafkaProperties kafkaProperties, BrokerStorage brokerStorage) {
         KafkaConsumerPoolConfig config = new KafkaConsumerPoolConfig(
-                kafkaProperties.getKafkaConsumer().getCacheExpiration(),
-                kafkaProperties.getKafkaConsumer().getTimeout(),
-                kafkaProperties.getKafkaConsumer().getBufferSize(),
+                kafkaProperties.getKafkaConsumer().getCacheExpirationSeconds(),
+                kafkaProperties.getKafkaConsumer().getBufferSizeBytes(),
                 kafkaProperties.getKafkaConsumer().getFetchMaxWaitMillis(),
                 kafkaProperties.getKafkaConsumer().getFetchMinBytes(),
                 kafkaProperties.getKafkaConsumer().getNamePrefix(),

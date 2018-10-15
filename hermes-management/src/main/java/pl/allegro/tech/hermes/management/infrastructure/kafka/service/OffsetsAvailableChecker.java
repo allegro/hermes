@@ -22,7 +22,7 @@ public class OffsetsAvailableChecker {
         this.storage = storage;
     }
 
-    public boolean areOffsetsAvailable(KafkaTopic topic) {
+    boolean areOffsetsAvailable(KafkaTopic topic) {
         try {
             return storage.readPartitionsIds(topic.name().asString()).stream().allMatch(partition -> {
                 TopicPartition topicPartition = new TopicPartition(topic.name().asString(), partition);

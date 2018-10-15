@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.test.helper.endpoint;
 import com.jayway.awaitility.Duration;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
-import kafka.admin.RackAwareMode$;
 import kafka.utils.ZKStringSerializer$;
 import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
@@ -39,7 +38,7 @@ public class BrokerOperations {
                 configFactory.getStringProperty(Configs.KAFKA_NAMESPACE));
     }
 
-    public BrokerOperations(Map<String, String> kafkaZkConnection, int sessionTimeout, int connectionTimeout, String namespace) {
+    private BrokerOperations(Map<String, String> kafkaZkConnection, int sessionTimeout, int connectionTimeout, String namespace) {
         zkClients = kafkaZkConnection.entrySet().stream()
                 .collect(toMap(Map.Entry::getKey,
                                e -> {

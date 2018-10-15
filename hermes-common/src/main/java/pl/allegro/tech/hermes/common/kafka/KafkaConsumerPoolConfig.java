@@ -2,36 +2,30 @@ package pl.allegro.tech.hermes.common.kafka;
 
 public class KafkaConsumerPoolConfig {
 
-    private final int cacheExpiration;
-    private final int timeout;
-    private final int bufferSize;
+    private final int cacheExpirationSeconds;
+    private final int bufferSizeBytes;
     private final int fetchMaxWaitMillis;
     private final int fetchMinBytes;
     private final String idPrefix;
     private final String consumerGroupName;
 
 
-    public KafkaConsumerPoolConfig(int cacheExpiration, int timeout, int bufferSize, int fetchMaxWaitMillis,
+    public KafkaConsumerPoolConfig(int cacheExpirationSeconds, int bufferSize, int fetchMaxWaitMillis,
                                    int fetchMinBytes, String idPrefix, String consumerGroupName) {
-        this.cacheExpiration = cacheExpiration;
-        this.timeout = timeout;
-        this.bufferSize = bufferSize;
+        this.cacheExpirationSeconds = cacheExpirationSeconds;
+        this.bufferSizeBytes = bufferSize;
         this.fetchMaxWaitMillis = fetchMaxWaitMillis;
         this.fetchMinBytes = fetchMinBytes;
         this.idPrefix = idPrefix;
         this.consumerGroupName = consumerGroupName;
     }
 
-    public int getCacheExpiration() {
-        return cacheExpiration;
+    public int getCacheExpirationSeconds() {
+        return cacheExpirationSeconds;
     }
 
-    public int getBufferSize() {
-        return bufferSize;
-    }
-
-    public int getTimeout() {
-        return timeout;
+    public int getBufferSizeBytes() {
+        return bufferSizeBytes;
     }
 
     public String getIdPrefix() {

@@ -27,7 +27,7 @@ public class KafkaRawMessageReader {
         this.pollTimeoutMillis = pollTimeoutMillis;
     }
 
-    public byte[] readMessage(KafkaTopic topic, int partition, long offset) {
+    byte[] readMessage(KafkaTopic topic, int partition, long offset) {
         KafkaConsumer<byte[], byte[]> kafkaConsumer = consumerPool.get(topic, partition);
         TopicPartition topicPartition = new TopicPartition(topic.name().asString(), partition);
 

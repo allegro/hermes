@@ -9,7 +9,6 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.util.Properties;
 import kafka.common.TopicAndPartition;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.TopicPartition;
 import pl.allegro.tech.hermes.common.broker.BrokerDetails;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 
@@ -26,18 +25,21 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.RECEIVE_BUFFER_CO
 
 public class KafkaConsumerPool {
 
-    private final LoadingCache<TopicPartition, KafkaConsumer<byte[], byte[]>> kafkaConsumers;
+    private final LoadingCache<Integer, KafkaConsumer<byte[], byte[]>> kafkaConsumers;
+    private final BrokerStorage brokerStorage;
 
     public KafkaConsumerPool(KafkaConsumerPoolConfig poolConfig, BrokerStorage brokerStorage) {
+        this.brokerStorage = brokerStorage;
         this.kafkaConsumers = CacheBuilder.newBuilder()
-                .expireAfterAccess(poolConfig.getCacheExpiration(), TimeUnit.SECONDS)
+                .expireAfterAccess(poolConfig.getCacheExpirationSeconds(), TimeUnit.SECONDS)
                 .removalListener(new KafkaConsumerRemoveListener())
                 .build(new KafkaConsumerSupplier(brokerStorage, poolConfig));
     }
 
     public KafkaConsumer<byte[], byte[]> get(KafkaTopic topic, int partition) {
         try {
-            return kafkaConsumers.get(new TopicPartition(topic.name().asString(), partition));
+            int leaderId = brokerStorage.readLeaderForPartition(new TopicAndPartition(topic.name().asString(), partition));
+            return kafkaConsumers.get(leaderId);
         } catch (ExecutionException e) {
             String message = String.format("Cannot get KafkaConsumer for topic %s and partition %d", topic.name().asString(), partition);
             throw new KafkaConsumerPoolException(message, e);
@@ -49,29 +51,28 @@ public class KafkaConsumerPool {
         }
     }
 
-    private static class KafkaConsumerSupplier extends CacheLoader<TopicPartition, KafkaConsumer<byte[], byte[]>> {
-        private BrokerStorage brokerStorage;
+    private static class KafkaConsumerSupplier extends CacheLoader<Integer, KafkaConsumer<byte[], byte[]>> {
 
         private final KafkaConsumerPoolConfig poolConfig;
+        private final BrokerStorage brokerStorage;
 
         KafkaConsumerSupplier(BrokerStorage brokerStorage, KafkaConsumerPoolConfig poolConfig) {
-            this.brokerStorage = brokerStorage;
             this.poolConfig = poolConfig;
+            this.brokerStorage = brokerStorage;
         }
 
         @Override
-        public KafkaConsumer<byte[], byte[]> load(TopicPartition topicPartition) throws Exception {
-            return createKafkaConsumer(topicPartition);
+        public KafkaConsumer<byte[], byte[]> load(Integer leaderId) throws Exception {
+            return createKafkaConsumer(leaderId);
         }
 
-        private KafkaConsumer<byte[], byte[]> createKafkaConsumer(TopicPartition topicPartition) {
-            int brokerId = brokerStorage.readLeaderForPartition(new TopicAndPartition(topicPartition));
-            BrokerDetails brokerDetails = brokerStorage.readBrokerDetails(brokerId);
+        private KafkaConsumer<byte[], byte[]> createKafkaConsumer(int leaderId) {
+            BrokerDetails brokerDetails = brokerStorage.readBrokerDetails(leaderId);
 
             Properties props = new Properties();
             props.put(BOOTSTRAP_SERVERS_CONFIG, brokerDetails.getHost() + ":" + brokerDetails.getPort());
             props.put(GROUP_ID_CONFIG, poolConfig.getIdPrefix() + "_" + poolConfig.getConsumerGroupName());
-            props.put(RECEIVE_BUFFER_CONFIG, poolConfig.getBufferSize());
+            props.put(RECEIVE_BUFFER_CONFIG, poolConfig.getBufferSizeBytes());
             props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
             props.put(FETCH_MAX_WAIT_MS_CONFIG, poolConfig.getFetchMaxWaitMillis());
             props.put(FETCH_MIN_BYTES_CONFIG, poolConfig.getFetchMinBytes());
@@ -81,9 +82,9 @@ public class KafkaConsumerPool {
         }
     }
 
-    private static class KafkaConsumerRemoveListener implements RemovalListener<TopicPartition, KafkaConsumer<byte[], byte[]>> {
+    private static class KafkaConsumerRemoveListener implements RemovalListener<Integer, KafkaConsumer<byte[], byte[]>> {
         @Override
-        public void onRemoval(RemovalNotification<TopicPartition, KafkaConsumer<byte[], byte[]>> notification) {
+        public void onRemoval(RemovalNotification<Integer, KafkaConsumer<byte[], byte[]>> notification) {
             notification.getValue().close();
         }
     }
