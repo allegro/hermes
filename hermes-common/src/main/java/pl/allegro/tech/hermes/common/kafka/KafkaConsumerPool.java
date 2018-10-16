@@ -23,6 +23,13 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.FETCH_MIN_BYTES_C
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.RECEIVE_BUFFER_CONFIG;
 
+
+/**
+ * This class help us to avoid unnecessarily creating new kafka consumers for the same broker instance, mainly in case of
+ * retransmission and migrating topic from json to avro. We map topic and its partitions to specific kafka broker which
+ * without caching would lead to creating exactly the same consumer multiple times in short period of time.
+ * Additionaly consumers created here are rarely used, so we don't bother about concurrency and thread safety.
+ */
 public class KafkaConsumerPool {
 
     private final LoadingCache<Integer, KafkaConsumer<byte[], byte[]>> kafkaConsumers;
