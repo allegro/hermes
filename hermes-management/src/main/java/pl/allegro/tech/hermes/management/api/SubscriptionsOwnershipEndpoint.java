@@ -8,6 +8,7 @@ import javax.ws.rs.Produces;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
@@ -39,5 +40,18 @@ public class SubscriptionsOwnershipEndpoint {
 		}
 		OwnerId ownerId = new OwnerId(ownerSource.name(), id);
 		return subscriptionService.listForOwnerId(ownerId);
+	}
+
+	@GET
+	@Produces(APPLICATION_JSON)
+	@Path("/{ownerSourceName}/{ownerId}/unhealthy")
+	public List<UnhealthySubscription> listUnhealthyForOwner(@PathParam("ownerSourceName") String ownerSourceName, @PathParam("ownerId") String id) {
+		OwnerSource ownerSource = ownerSources.getByName(ownerSourceName)
+				.orElseThrow(() -> new OwnerSourceNotFound(ownerSourceName));
+		if (!ownerSource.exists(id)) {
+			throw new OwnerSource.OwnerNotFound(ownerSourceName, id);
+		}
+		OwnerId ownerId = new OwnerId(ownerSource.name(), id);
+		return subscriptionService.listUnhealthyForOwner(ownerId);
 	}
 }

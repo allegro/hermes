@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.management.domain.subscription;
 
 import java.util.Collection;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTrace;
+import pl.allegro.tech.hermes.api.MonitoringDetails;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
@@ -19,6 +21,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
+import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
@@ -28,6 +31,7 @@ import pl.allegro.tech.hermes.tracker.management.LogRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class SubscriptionService {
@@ -146,9 +150,7 @@ public class SubscriptionService {
 
     public SubscriptionHealth getSubscriptionHealth(TopicName topicName, String subscriptionName) {
         Subscription subscription = getSubscriptionDetails(topicName, subscriptionName);
-        TopicMetrics topicMetrics = topicService.getTopicMetrics(topicName);
-        SubscriptionMetrics subscriptionMetrics = getSubscriptionMetrics(topicName, subscriptionName);
-        return subscriptionHealthChecker.checkHealth(subscription, topicMetrics, subscriptionMetrics);
+        return getHealth(subscription);
     }
 
     public Optional<SentMessageTrace> getLatestUndeliveredMessage(TopicName topicName, String subscriptionName) {
@@ -186,6 +188,28 @@ public class SubscriptionService {
     public List<Subscription> listForOwnerId(OwnerId ownerId) {
         Collection<SubscriptionName> subscriptionNames = subscriptionOwnerCache.get(ownerId);
         return subscriptionRepository.getSubscriptionDetails(subscriptionNames);
+    }
+
+    public List<UnhealthySubscription> listUnhealthyForOwner(OwnerId ownerId) {
+        List<Subscription> ownerSubscriptions = listForOwnerId(ownerId);
+        return ownerSubscriptions.stream()
+                .filter(subscription ->  subscription.getMonitoringDetails().getSeverity() != MonitoringDetails.Severity.NON_IMPORTANT)
+                .flatMap(subscription -> {
+                    SubscriptionHealth subscriptionHealth = getHealth(subscription);
+                    if (subscriptionHealth.getStatus() == SubscriptionHealth.Status.UNHEALTHY) {
+                        return Stream.of(UnhealthySubscription.from(subscription, subscriptionHealth));
+                    } else {
+                        return Stream.empty();
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    private SubscriptionHealth getHealth(Subscription subscription) {
+        TopicName topicName = subscription.getTopicName();
+        TopicMetrics topicMetrics = topicService.getTopicMetrics(topicName);
+        SubscriptionMetrics subscriptionMetrics = getSubscriptionMetrics(topicName, subscription.getName());
+        return subscriptionHealthChecker.checkHealth(subscription, topicMetrics, subscriptionMetrics);
     }
 
     private List<SubscriptionNameWithMetrics> getSubscriptionsMetrics() {
