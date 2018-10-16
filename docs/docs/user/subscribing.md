@@ -41,7 +41,7 @@ All options:
 
 Option                               | Description                                     | Default value
 ------------------------------------ | ----------------------------------------------  | -------------
-trackingMode                         | track incoming -> outgoing messages             | trackingOff
+trackingMode                         | track outgoing messages                         | trackingOff
 subscriptionPolicy.rate              | maximum sending speed in rps (per DC)           | 400
 subscriptionPolicy.messageTtl        | inflight Time To Live in seconds                | 3600
 subscriptionPolicy.messageBackoff    | backoff time between retry attempts in millis   | 100
