@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.api;
 
+import java.util.Optional;
+
 public enum TrackingMode {
 
     TRACK_ALL("trackingAll"),
@@ -21,22 +23,20 @@ public enum TrackingMode {
         return this.value;
     }
 
-    public static TrackingMode fromString(String trackingMode) {
+    public static Optional<TrackingMode> fromString(String trackingMode) {
 
         if(trackingMode == null) {
-            return null;
+            return Optional.empty();
         }
 
         switch(trackingMode){
             case "trackingAll":
-                return TRACK_ALL;
+                return Optional.of(TRACK_ALL);
             case "discardedOnly":
-                return TRACK_DISCARDED_ONLY;
+                return Optional.of(TRACK_DISCARDED_ONLY);
             case "trackingOff":
-                return TRACKING_OFF;
             default:
-                return TRACKING_OFF;
+                return Optional.of(TRACKING_OFF);
         }
-
     }
 }

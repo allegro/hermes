@@ -203,9 +203,8 @@ public class Subscription implements Anonymizable {
         SubscriptionMode subscriptionMode = mode == null ? SubscriptionMode.ANYCAST : mode;
         Map<String, Object> validSubscriptionPolicy = subscriptionPolicy == null ? new HashMap<>() : subscriptionPolicy;
 
-        TrackingMode validTrackingMode =
-                TrackingMode.fromString(trackingMode) == null ?
-                (trackingEnabled ? TrackingMode.TRACK_ALL : TrackingMode.TRACKING_OFF) : TrackingMode.fromString(trackingMode);
+        TrackingMode validTrackingMode = TrackingMode.fromString(trackingMode)
+                .orElse(trackingEnabled ? TrackingMode.TRACK_ALL : TrackingMode.TRACKING_OFF);
         boolean validTrackingEnabled = validTrackingMode != TrackingMode.TRACKING_OFF;
 
         return new Subscription(
