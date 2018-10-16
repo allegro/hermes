@@ -147,7 +147,7 @@
                         <strong>Message TTL:</strong> {{subscription.subscriptionPolicy.messageTtl}} seconds
                         <span uib-popover='Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
-                    <p><strong>Tracking enabled:</strong> {{subscription.trackingEnabled}}</p>
+                    <p><strong>Tracking:</strong> {{subscription.trackingMode}}</p>
                     <p>
                         <strong>Retry on 4xx status:</strong> {{subscription.subscriptionPolicy.retryClientErrors}}
                         <span uib-popover='If false, message will not be retried when service responds with 4xx status (i.e. Bad Request).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>

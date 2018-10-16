@@ -159,16 +159,20 @@
                     </div>
                 </div>
             </div>
+
             <div class="form-group">
-                <label for="trackingEnabled" class="col-md-3 control-label">Tracking enabled</label>
+                <label for="trackingMode" class="col-md-3 control-label">Message delivery tracking mode</label>
                 <div class="col-md-9">
-                    <div class="input-group checkbox">
-                        <label>
-                            <input type="checkbox" id="trackingEnabled" name="trackingEnabled" ng-model="subscription.trackingEnabled"/>
-                        </label>
+                    <div class="input-group">
+                        <select class="form-control" id="trackingMode" name="trackingMode" ng-model="subscription.trackingMode">
+                            <option value="trackingAll">No tracking</option>
+                            <option value="discardedOnly">Track message discarding only</option>
+                            <option value="trackingOff">Track everything</option>
+                        </select>
                     </div>
                 </div>
             </div>
+
 
             <div class="form-group">
                 <label class="col-md-3 control-label">Filter</label>
