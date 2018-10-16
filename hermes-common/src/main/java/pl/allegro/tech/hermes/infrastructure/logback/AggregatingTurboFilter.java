@@ -98,16 +98,34 @@ public class AggregatingTurboFilter extends TurboFilter {
             return FilterReply.NEUTRAL;
         }
 
+        if (ex == null) {
+            Optional<Throwable> throwable = extractLastParamThrowable(params);
+            if (throwable.isPresent()) {
+                ex = throwable.get();
+                params = Arrays.copyOfRange(params, 0, params.length - 1);
+            }
+        }
+        Throwable exception = ex;
+
         LoggingEventKey loggingEventKey = new LoggingEventKey(message, params, level, getEnrichedMarker(marker));
         logAggregates.computeIfAbsent(logger, l -> new LoggerAggregates())
                 .aggregates.merge(loggingEventKey, new AggregateSummary(ex),
-                (currentAggregate, emptyAggregate) -> AggregateSummary.incrementCount(currentAggregate, ex));
+                (currentAggregate, emptyAggregate) -> AggregateSummary.incrementCount(currentAggregate, exception));
 
         return FilterReply.DENY;
     }
 
     private boolean isAggregatedLog(Marker marker) {
         return marker != null && (marker.equals(MARKER) || marker.contains(MARKER));
+    }
+
+    private Optional<Throwable> extractLastParamThrowable(Object[] params) {
+        return Optional.ofNullable(params)
+                .map(Arrays::stream)
+                .flatMap(a -> a.skip(params.length - 1)
+                        .findFirst()
+                        .filter(o -> o instanceof Throwable)
+                        .map(Throwable.class::cast));
     }
 
     private Marker getEnrichedMarker(Marker marker) {

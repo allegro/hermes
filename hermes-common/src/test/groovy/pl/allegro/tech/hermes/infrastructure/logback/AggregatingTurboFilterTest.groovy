@@ -194,6 +194,36 @@ class AggregatingTurboFilterTest extends Specification {
         0 * appender.doAppend(_)
     }
 
+    def "should create aggregates properly when last param is an exception"() {
+        given:
+        def filter = createFilter("some-aggregated-logger")
+
+        def aggregatedLogger = getLogger("some-aggregated-logger")
+        def appender = Mock(Appender)
+        aggregatedLogger.addAppender(appender)
+        List<LoggingEvent> capturedEvents = []
+
+        when:
+        filter.decide(null, aggregatedLogger, Level.ERROR, "Some problem", (Object[])[new RuntimeException("problem!")], null)
+        filter.decide(null, aggregatedLogger, Level.ERROR, "Some problem", (Object[])[new RuntimeException("another problem!")], null)
+        filter.decide(null, aggregatedLogger, Level.ERROR, "An error caused by {}", (Object[])["James", new RuntimeException("abort 1!")], null)
+        filter.decide(null, aggregatedLogger, Level.ERROR, "An error caused by {}", (Object[])["James"], new RuntimeException("abort 2!"))
+        filter.decide(null, aggregatedLogger, Level.ERROR, "An error caused by {}", (Object[])["James"], null)
+
+        and:
+        filter.report()
+
+        then:
+        2 * appender.doAppend(_) >> { LoggingEvent event ->
+            capturedEvents << event
+        }
+        capturedEvents.count { it.message == "Some problem [occurrences=2]" && it.argumentArray.size() == 0 &&
+                it.throwableProxy.message == "another problem!"} == 1
+        capturedEvents.count { it.message == "An error caused by {} [occurrences=3]" &&
+                it.argumentArray[0] == "James" && it.throwableProxy.message == "abort 2!"} == 1
+
+    }
+
     def "should allow multithreaded access"() {
         given:
         def threadsCount = 5
