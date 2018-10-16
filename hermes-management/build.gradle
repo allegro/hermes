@@ -34,10 +34,6 @@ dependencies {
     testCompile group: 'org.spockframework', name: 'spock-spring', version: versions.spock
 
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
-    testCompile(group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock) {
-        exclude group: 'org.mortbay.jetty', module: 'servlet-api'
-        exclude group: 'net.sf.jopt-simple'
-    }
 }
 
 if (project.hasProperty('distribution')) {
