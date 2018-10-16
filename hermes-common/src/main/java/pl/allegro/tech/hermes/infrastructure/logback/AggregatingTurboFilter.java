@@ -158,9 +158,9 @@ public class AggregatingTurboFilter extends TurboFilter {
     private static class LoggingEventKey {
 
         private final String message;
-        private final Object[] params;
         private final int level;
         private final Marker marker;
+        private final Object[] params;
 
         LoggingEventKey(String message, Object[] params, Level level, Marker marker) {
             this.message = message;
@@ -176,8 +176,8 @@ public class AggregatingTurboFilter extends TurboFilter {
             LoggingEventKey that = (LoggingEventKey) o;
             return level == that.level &&
                     Objects.equals(message, that.message) &&
-                    Arrays.equals(params, that.params) &&
-                    Objects.equals(marker, that.marker);
+                    Objects.equals(marker, that.marker) &&
+                    Arrays.equals(params, that.params);
         }
 
         @Override
