@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.schema.confluent
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
-import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.matching.UrlPattern
 import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.schema.BadSchemaRequestException
@@ -313,23 +313,23 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         e.message.contains("name should start with uppercase")
     }
 
-    private UrlMatchingStrategy versionsUrl(TopicName topic) {
+    private UrlPattern versionsUrl(TopicName topic) {
         urlEqualTo("/subjects/${topic.qualifiedName()}/versions")
     }
 
-    private UrlMatchingStrategy schemaVersionUrl(TopicName topic, int version) {
+    private UrlPattern schemaVersionUrl(TopicName topic, int version) {
         urlEqualTo("/subjects/${topic.qualifiedName()}/versions/$version")
     }
 
-    private UrlMatchingStrategy schemaLatestVersionUrl(TopicName topic) {
+    private UrlPattern schemaLatestVersionUrl(TopicName topic) {
         urlEqualTo("/subjects/${topic.qualifiedName()}/versions/latest")
     }
 
-    private UrlMatchingStrategy schemaCompatibilityUrl(TopicName topic) {
+    private UrlPattern schemaCompatibilityUrl(TopicName topic) {
         urlEqualTo("/compatibility/subjects/${topic.qualifiedName()}/versions/latest")
     }
 
-    private UrlMatchingStrategy schemaValidationUrl(TopicName topic) {
+    private UrlPattern schemaValidationUrl(TopicName topic) {
         urlEqualTo("/subjects/${topic.qualifiedName()}/validation")
     }
 
