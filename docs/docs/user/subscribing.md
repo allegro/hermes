@@ -259,7 +259,10 @@ Example:
 
 ### Adding filters
 
-We currently don't support editing filters via UI, it has to be done by api. Send PUT request for subscriptions endpoint.
+We support editing filters via UI. Click edit subscription and add or remove a particular filter.
+Also filters can be added during creation of a new subscription.
+
+And it can be done by api also. Send PUT request for subscriptions endpoint.
 Example:
 ```
 curl  -H "Content-Type: application/json" -X PUT "http://{hermesManagementUrl}/topics/{topicName}/subscriptions/{subscriptionName}" -d '{"filters": [{"type": "avropath", "path": ".user.name", "matcher": "^abc.*"}]}'

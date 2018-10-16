@@ -29,7 +29,8 @@ class AvroPathMessageFilterSpec extends Specification {
                 "topping": {
                      "id": "5004",
                      "type": "Maple",
-                     "description": "Maple syrup"
+                     "description": "Maple syrup",
+                     "ingredients": ["corn syrup", "water"]
                 }
             }
         '''
@@ -59,6 +60,10 @@ class AvroPathMessageFilterSpec extends Specification {
         ".topping.type"           | "^Map.*"    | true
         ".topping.description"    | ".*syrup.*" | true
         ".topping.description.a"  | ".*"        | false
+        ".batter.ingredients"     | "null"      | true
+        ".batter.ingredients"     | ".*"        | true
+        ".batter.ingredients"     | "sugar"     | false
+        ".topping.ingredients"    | ".*syrup.*" | true
     }
 
     def "should throw exception for malformed message"() {
