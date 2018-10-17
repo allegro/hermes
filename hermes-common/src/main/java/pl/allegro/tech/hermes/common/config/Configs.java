@@ -16,6 +16,7 @@ public enum Configs {
     ZOOKEEPER_MAX_RETRIES("zookeeper.max.retries", 29),
     ZOOKEEPER_CONNECTION_TIMEOUT("zookeeper.connection.timeout", 10000),
     ZOOKEEPER_SESSION_TIMEOUT("zookeeper.session.timeout", 10000),
+    ZOOKEEPER_MAX_INFLIGHT_REQUESTS("zookeeper.max.inflight.requests", 1000),
 
     ZOOKEEPER_AUTHORIZATION_ENABLED("zookeeper.authorization.enabled", false),
     ZOOKEEPER_AUTHORIZATION_SCHEME("zookeeper.authorization.scheme", "digest"),

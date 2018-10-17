@@ -1,13 +1,12 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import kafka.utils.ZKStringSerializer$;
-import kafka.utils.ZkUtils;
-import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.ZkConnection;
+import kafka.zk.AdminZkClient;
+import kafka.zk.KafkaZkClient;
+import kafka.zookeeper.ZooKeeperClient;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
+import org.apache.kafka.common.utils.Time;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -43,14 +42,14 @@ import static java.util.stream.Collectors.toList;
 @EnableConfigurationProperties(KafkaClustersProperties.class)
 public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
+    private final static String ZOOKEEPER_METRIC_GROUP = "zookeeper-metrics-group";
+    private final static String ZOOKEEPER_METRIC_TYPE = "zookeeper";
+
     @Autowired
     KafkaClustersProperties kafkaClustersProperties;
 
     @Autowired
     TopicProperties topicProperties;
-
-    @Autowired
-    ObjectMapper mapper;
 
     @Autowired
     MessageContentWrapper messageContentWrapper;
@@ -61,7 +60,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @Autowired
     AdminTool adminTool;
 
-    private final List<ZkClient> zkClients = new ArrayList<>();
+    private final List<ZooKeeperClient> zkClients = new ArrayList<>();
     private final List<CuratorFramework> curators = new ArrayList<>();
 
     @Bean
@@ -69,8 +68,13 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
             KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getClusterName());
 
-            BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties));
-            BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, zkClient(kafkaProperties), kafkaNamesMapper);
+            ZooKeeperClient zooKeeperClient = zooKeeperClient(kafkaProperties);
+            KafkaZkClient kafkaZkClient = kafkaZkClient(zooKeeperClient);
+            AdminZkClient adminZkClient = adminZkClient(kafkaZkClient);
+
+            BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties), kafkaZkClient);
+
+            BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, adminZkClient, kafkaZkClient, kafkaNamesMapper);
 
             KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage);
             KafkaRawMessageReader kafkaRawMessageReader =
@@ -98,23 +102,28 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @PreDestroy
     public void shutdown() {
         curators.forEach(CuratorFramework::close);
-        zkClients.forEach(ZkClient::close);
+        zkClients.forEach(ZooKeeperClient::close);
     }
 
-    private ZkUtils zkClient(KafkaProperties kafkaProperties) {
-        ZkConnection connection = new ZkConnection(kafkaProperties.getConnectionString(), kafkaProperties.getSessionTimeoutMillis());
+    private AdminZkClient adminZkClient(KafkaZkClient kafkaZkClient) {
+        return new AdminZkClient(kafkaZkClient);
+    }
 
-        ZkClient zkClient = new ZkClient(
-                connection,
+    private KafkaZkClient kafkaZkClient(ZooKeeperClient zooKeeperClient) {
+        return new KafkaZkClient(zooKeeperClient, false, Time.SYSTEM);
+    }
+
+    private ZooKeeperClient zooKeeperClient(KafkaProperties kafkaProperties) {
+        ZooKeeperClient zooKeeperClient =  new ZooKeeperClient(
+                kafkaProperties.getConnectionString(),
+                kafkaProperties.getSessionTimeoutMillis(),
                 kafkaProperties.getConnectionTimeoutMillis(),
-                ZKStringSerializer$.MODULE$
-        );
+                kafkaProperties.getMaxInflight(),
+                Time.SYSTEM, ZOOKEEPER_METRIC_GROUP, ZOOKEEPER_METRIC_TYPE);
 
-        zkClient.waitUntilConnected();
-
-        zkClients.add(zkClient);
-
-        return new ZkUtils(zkClient, connection, false);
+        zkClients.add(zooKeeperClient);
+        zooKeeperClient.waitUntilConnected();
+        return zooKeeperClient;
     }
 
     private CuratorFramework curatorFramework(KafkaProperties kafkaProperties) {
@@ -129,8 +138,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
         return curator;
     }
 
-    private BrokerStorage brokersStorage(CuratorFramework curatorFramework) {
-        return new ZookeeperBrokerStorage(curatorFramework, mapper);
+    private BrokerStorage brokersStorage(CuratorFramework curatorFramework, KafkaZkClient kafkaZkClient) {
+        return new ZookeeperBrokerStorage(curatorFramework, kafkaZkClient);
     }
 
     private KafkaConsumerPool kafkaConsumersPool(KafkaProperties kafkaProperties, BrokerStorage brokerStorage) {

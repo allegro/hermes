@@ -1,12 +1,11 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import com.jayway.awaitility.Duration;
-import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
-import kafka.utils.ZKStringSerializer$;
-import kafka.utils.ZkUtils;
-import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.ZkConnection;
+import kafka.zk.AdminZkClient;
+import kafka.zk.KafkaZkClient;
+import kafka.zookeeper.ZooKeeperClient;
+import org.apache.kafka.common.utils.Time;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -29,22 +28,29 @@ public class BrokerOperations {
 
     private static final int DEFAULT_PARTITIONS = 2;
     private static final int DEFAULT_REPLICATION_FACTOR = 1;
-    private Map<String, ZkUtils> zkClients;
+    private final static String ZOOKEEPER_METRIC_GROUP = "zookeeper-metrics-group";
+    private final static String ZOOKEEPER_METRIC_TYPE = "zookeeper";
+
+    private Map<String, KafkaZkClient> zkClients;
     private KafkaNamesMapper kafkaNamesMapper;
 
     public BrokerOperations(Map<String, String> kafkaZkConnection, ConfigFactory configFactory) {
         this(kafkaZkConnection, configFactory.getIntProperty(Configs.ZOOKEEPER_SESSION_TIMEOUT),
                 configFactory.getIntProperty(Configs.ZOOKEEPER_CONNECTION_TIMEOUT),
+                configFactory.getIntProperty(Configs.ZOOKEEPER_MAX_INFLIGHT_REQUESTS),
                 configFactory.getStringProperty(Configs.KAFKA_NAMESPACE));
     }
 
-    private BrokerOperations(Map<String, String> kafkaZkConnection, int sessionTimeout, int connectionTimeout, String namespace) {
+    private BrokerOperations(Map<String, String> kafkaZkConnection, int sessionTimeout, int connectionTimeout,
+                             int maxInflightRequests, String namespace) {
         zkClients = kafkaZkConnection.entrySet().stream()
                 .collect(toMap(Map.Entry::getKey,
                                e -> {
-                                   ZkConnection connection = new ZkConnection(e.getValue(), sessionTimeout);
-                                   ZkClient zkClient = new ZkClient(connection, connectionTimeout, ZKStringSerializer$.MODULE$);
-                                   return new ZkUtils(zkClient, connection, false);
+                                   ZooKeeperClient zooKeeperClient = new ZooKeeperClient(
+                                           e.getValue(), connectionTimeout, sessionTimeout, maxInflightRequests,
+                                           Time.SYSTEM, ZOOKEEPER_METRIC_GROUP, ZOOKEEPER_METRIC_TYPE);
+
+                                   return new KafkaZkClient(zooKeeperClient, false, Time.SYSTEM);
                                }));
         kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(namespace);
     }
@@ -57,13 +63,14 @@ public class BrokerOperations {
         createTopic(topicName, zkClients.get(brokerName));
     }
 
-    private void createTopic(String topicName, ZkUtils zkUtils) {
+    private void createTopic(String topicName, KafkaZkClient kafkaZkClient) {
         Topic topic = topic(topicName).build();
         kafkaNamesMapper.toKafkaTopics(topic).forEach(kafkaTopic -> {
-            AdminUtils.createTopic(zkUtils, kafkaTopic.name().asString(), DEFAULT_PARTITIONS, DEFAULT_REPLICATION_FACTOR, new Properties(), RackAwareMode.Enforced$.MODULE$);
+            AdminZkClient adminZkClient = new AdminZkClient(kafkaZkClient);
+            adminZkClient.createTopic(kafkaTopic.name().asString(), DEFAULT_PARTITIONS, DEFAULT_REPLICATION_FACTOR, new Properties(), RackAwareMode.Enforced$.MODULE$);
 
             waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
-                        AdminUtils.topicExists(zkUtils, kafkaTopic.name().asString());
+                        kafkaZkClient.topicExists(kafkaTopic.name().asString());
                     }
             );
         });
@@ -72,11 +79,11 @@ public class BrokerOperations {
     public boolean topicExists(String topicName, String kafkaClusterName) {
         Topic topic = topic(topicName).build();
         return kafkaNamesMapper.toKafkaTopics(topic)
-                .allMatch(kafkaTopic -> AdminUtils.topicExists(zkClients.get(kafkaClusterName), kafkaTopic.name().asString()) &&
+                .allMatch(kafkaTopic -> zkClients.get(kafkaClusterName).topicExists(kafkaTopic.name().asString()) &&
                         !isMarkedForDeletion(kafkaClusterName, kafkaTopic));
     }
 
     private boolean isMarkedForDeletion(String kafkaClusterName, KafkaTopic kafkaTopic) {
-        return zkClients.get(kafkaClusterName).pathExists(ZkUtils.getDeleteTopicPath(kafkaTopic.name().asString()));
+        return zkClients.get(kafkaClusterName).isTopicMarkedForDeletion(kafkaTopic.name().asString());
     }
 }

@@ -52,9 +52,7 @@ public class CommonBinder extends AbstractBinder {
     @Override
     protected void configure() {
         bind(ZookeeperCounterStorage.class).to(CounterStorage.class).in(Singleton.class);
-        bind(ZookeeperBrokerStorage.class).to(BrokerStorage.class).in(Singleton.class);
         bindFactory(ClockFactory.class).in(Singleton.class).to(Clock.class);
-        bind(ZookeeperBrokerStorage.class).to(BrokerStorage.class).in(Singleton.class);
         bind(InetAddressHostnameResolver.class).in(Singleton.class).to(HostnameResolver.class);
         bindSingletonFactory(RawSchemaClientFactory.class);
         bindSingletonFactory(SchemaVersionsRepositoryFactory.class);

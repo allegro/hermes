@@ -10,6 +10,8 @@ public class KafkaProperties {
 
     private int connectionTimeoutMillis = 3000;
 
+    private int maxInflight = 1000;
+
     private int retryTimes = 3;
 
     private int retrySleepMillis = 1000;
@@ -175,5 +177,13 @@ public class KafkaProperties {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public int getMaxInflight() {
+        return maxInflight;
+    }
+
+    public void setMaxInflight(int maxInflight) {
+        this.maxInflight = maxInflight;
     }
 }
