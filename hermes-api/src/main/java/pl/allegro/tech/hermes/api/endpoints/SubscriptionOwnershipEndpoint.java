@@ -12,15 +12,15 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Path("subscriptions/owner")
 public interface SubscriptionOwnershipEndpoint {
-	@GET
-	@Produces(APPLICATION_JSON)
-	@Path("/{ownerSourceName}/{ownerId}")
-	List<Subscription> listForOwner(@PathParam("ownerSourceName") String ownerSourceName,
-									@PathParam("ownerId") String ownerId);
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/{ownerSourceName}/{ownerId}")
+    List<Subscription> listForOwner(@PathParam("ownerSourceName") String ownerSourceName,
+                                    @PathParam("ownerId") String ownerId);
 
-	@GET
-	@Produces(APPLICATION_JSON)
-	@Path("/{ownerSourceName}/{ownerId}/unhealthy")
-	List<UnhealthySubscription> listUnhealthyForOwner(@PathParam("ownerSourceName") String ownerSourceName,
-													  @PathParam("ownerId") String ownerId);
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/{ownerSourceName}/{ownerId}/unhealthy")
+    List<UnhealthySubscription> listUnhealthyForOwner(@PathParam("ownerSourceName") String ownerSourceName,
+                                                      @PathParam("ownerId") String ownerId);
 }
