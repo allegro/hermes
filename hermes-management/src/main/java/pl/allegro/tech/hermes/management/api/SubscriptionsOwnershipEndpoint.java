@@ -33,12 +33,7 @@ public class SubscriptionsOwnershipEndpoint {
 	@Produces(APPLICATION_JSON)
 	@Path("/{ownerSourceName}/{ownerId}")
 	public List<Subscription> listForOwner(@PathParam("ownerSourceName") String ownerSourceName, @PathParam("ownerId") String id) {
-		OwnerSource ownerSource = ownerSources.getByName(ownerSourceName)
-				.orElseThrow(() -> new OwnerSourceNotFound(ownerSourceName));
-		if (!ownerSource.exists(id)) {
-			throw new OwnerSource.OwnerNotFound(ownerSourceName, id);
-		}
-		OwnerId ownerId = new OwnerId(ownerSource.name(), id);
+		OwnerId ownerId = resolveOwnerId(ownerSourceName, id);
 		return subscriptionService.listForOwnerId(ownerId);
 	}
 
@@ -46,12 +41,16 @@ public class SubscriptionsOwnershipEndpoint {
 	@Produces(APPLICATION_JSON)
 	@Path("/{ownerSourceName}/{ownerId}/unhealthy")
 	public List<UnhealthySubscription> listUnhealthyForOwner(@PathParam("ownerSourceName") String ownerSourceName, @PathParam("ownerId") String id) {
+		OwnerId ownerId = resolveOwnerId(ownerSourceName, id);
+		return subscriptionService.listUnhealthyForOwner(ownerId);
+	}
+
+	private OwnerId resolveOwnerId(String ownerSourceName, String id) {
 		OwnerSource ownerSource = ownerSources.getByName(ownerSourceName)
 				.orElseThrow(() -> new OwnerSourceNotFound(ownerSourceName));
 		if (!ownerSource.exists(id)) {
 			throw new OwnerSource.OwnerNotFound(ownerSourceName, id);
 		}
-		OwnerId ownerId = new OwnerId(ownerSource.name(), id);
-		return subscriptionService.listUnhealthyForOwner(ownerId);
+		return new OwnerId(ownerSource.name(), id);
 	}
 }
