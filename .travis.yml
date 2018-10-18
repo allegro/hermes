@@ -10,7 +10,7 @@ env:
 
 install: ./gradlew assemble
 script:
-  - "./gradlew -Ptests.timeout.multiplier=3 -Ptests.retry.count=0 $TEST_SUITE"
+  - "./gradlew -Ptests.timeout.multiplier=3 $TEST_SUITE"
 
 jdk:
   - oraclejdk8
