@@ -18,7 +18,7 @@ project.configurations {
 /*
     This is required for proper http2 integration testing. We only need one version at a time but it's rather
     impossible to know which update of Java8 developers are running so we're trying to support all common use cases;
-    code refers to: https://github.com/jetty-project/jetty-alpn/blob/master/docs/version_mapping.properties
+    code refers to: http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-versions
  */
 def getAlpnVersion() {
     def javaVersion = System.getProperty("java.version")
@@ -50,8 +50,6 @@ def getAlpnVersion() {
                 return '8.1.11.v20170118'
             case 161..181:
                 return '8.1.12.v20180117'
-            case 191..192:
-                return '8.1.13.v20181017'
             default:
                 throw new IllegalStateException("ALPN version not defined for Java version: ${javaVersion}; extracted minor version: ${version}")
         }
