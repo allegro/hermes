@@ -146,13 +146,55 @@ public class ConsumerMessageSender {
     }
 
     private void handleFailedSending(Message message, MessageSendingResult result) {
+        registerResultInRateLimiter(result);
+        retrySending(message, result);
+        errorHandlers.forEach(h -> h.handleFailed(message, subscription, result));
+    }
+
+    private void registerResultInRateLimiter(MessageSendingResult result) {
         if (result.ignoreInRateCalculation(subscription.getSerialSubscriptionPolicy().isRetryClientErrors(),
                 subscription.hasOAuthPolicy())) {
             rateLimiter.registerSuccessfulSending();
         } else {
             rateLimiter.registerFailedSending();
         }
-        errorHandlers.forEach(h -> h.handleFailed(message, subscription, result));
+    }
+
+    private void retrySending(Message message, MessageSendingResult result) {
+        List<URI> succeededUris = result.getSucceededUris(ConsumerMessageSender.this::messageSentSucceeded);
+        message.incrementRetryCounter(succeededUris);
+
+        long retryDelay = extractRetryDelay(result);
+        if (running && shouldAttemptResending(message, result, retryDelay)) {
+            retrySingleThreadExecutor.schedule(() -> resend(message, result), retryDelay, TimeUnit.MILLISECONDS);
+        } else {
+            handleMessageDiscarding(message, result);
+        }
+    }
+
+    private boolean shouldAttemptResending(Message message, MessageSendingResult result, long retryDelay) {
+        return !willExceedTtl(message, retryDelay) && shouldResendMessage(result);
+    }
+
+    private long extractRetryDelay(MessageSendingResult result) {
+        long defaultBackoff = subscription.getSerialSubscriptionPolicy().getMessageBackoff();
+        long ttl = TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
+        return result.getRetryAfterMillis().map(delay -> Math.min(delay, ttl)).orElse(defaultBackoff);
+    }
+
+    private void resend(Message message, MessageSendingResult result) {
+        if (result.isLoggable()) {
+            result.getLogInfo().stream().forEach(logInfo -> logResultInfo(message, logInfo));
+        }
+        sendMessage(message);
+    }
+
+    private void logResultInfo(Message message, MessageSendingResultLogInfo logInfo) {
+        logger.debug(
+                format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
+                        logInfo.getUrlString(), message.getId(), message.getOffset(), message.getPartition(),
+                        subscription.getQualifiedName(), logInfo.getRootCause()),
+                logInfo.getFailure());
     }
 
     private void handleMessageDiscarding(Message message, MessageSendingResult result) {
@@ -161,6 +203,7 @@ public class ConsumerMessageSender {
     }
 
     private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
+        rateLimiter.registerSuccessfulSending();
         inflight.release();
         successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
     }
@@ -196,47 +239,10 @@ public class ConsumerMessageSender {
         public void accept(MessageSendingResult result) {
             timer.stop();
             if (result.succeeded()) {
-                rateLimiter.registerSuccessfulSending();
                 handleMessageSendingSuccess(message, result);
             } else {
                 handleFailedSending(message, result);
-
-                List<URI> succeededUris = result.getSucceededUris(ConsumerMessageSender.this::messageSentSucceeded);
-                message.incrementRetryCounter(succeededUris);
-
-                long retryDelay = extractRetryDelay(result);
-                if (running && shouldAttemptResending(result, retryDelay)) {
-                    retrySingleThreadExecutor.schedule(() -> retrySending(result), retryDelay, TimeUnit.MILLISECONDS);
-                } else {
-                    handleMessageDiscarding(message, result);
-                }
             }
-        }
-
-        private boolean shouldAttemptResending(MessageSendingResult result, long retryDelay) {
-            return !willExceedTtl(message, retryDelay) && shouldResendMessage(result);
-        }
-
-        private long extractRetryDelay(MessageSendingResult result) {
-            long defaultBackoff = subscription.getSerialSubscriptionPolicy().getMessageBackoff();
-            long ttl = TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
-            return result.getRetryAfterMillis().map(delay -> Math.min(delay, ttl)).orElse(defaultBackoff);
-        }
-
-        private void retrySending(MessageSendingResult result) {
-            if (result.isLoggable()) {
-                result.getLogInfo().stream().forEach(this::logResultInfo);
-            }
-
-            sendMessage(message);
-        }
-
-        private void logResultInfo(MessageSendingResultLogInfo logInfo) {
-            logger.debug(
-                    format("Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                            logInfo.getUrlString(), message.getId(), message.getOffset(), message.getPartition(),
-                            subscription.getQualifiedName(), logInfo.getRootCause()),
-                    logInfo.getFailure());
         }
     }
 }
