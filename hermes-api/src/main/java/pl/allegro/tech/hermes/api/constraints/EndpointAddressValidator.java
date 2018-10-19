@@ -14,7 +14,7 @@ import static java.util.Arrays.asList;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
-public class EndpointAddressValidator implements ConstraintValidator<ValidAddress, String> {
+public class EndpointAddressValidator extends BaseValidator implements ConstraintValidator<ValidAddress, String> {
 
     private static final String PROTOCOL_ADDRESS_FORMAT_INVALID = "Endpoint address has invalid format: %s";
 
@@ -64,12 +64,6 @@ public class EndpointAddressValidator implements ConstraintValidator<ValidAddres
         }
 
         return true;
-    }
-
-    private void createConstraintMessage(ConstraintValidatorContext context, String message) {
-        context.buildConstraintViolationWithTemplate(message)
-                .addConstraintViolation()
-                .disableDefaultConstraintViolation();
     }
 
     private boolean isInvalidHost(UriTemplate template) {
