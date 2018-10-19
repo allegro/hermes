@@ -6,12 +6,19 @@ language: java
 env:
   - TEST_SUITE=integrationTest
 
-install: ./gradlew assemble
 script:
+  - 'echo "cat /proc/cpuinfo"'
   - "cat /proc/cpuinfo"
+  - 'echo "free"'
   - "free"
+  - 'echo "cat /proc/meminfo"'
   - "cat /proc/meminfo"
+  - 'echo "df -h'
   - "df -h"
+  - 'echo "top -n 1"'
+  - "top -n 1"
+  - 'echo "top -n 1"'
+  - "top -n 1"
 
 jdk:
   - oraclejdk8
