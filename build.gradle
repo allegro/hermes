@@ -74,9 +74,6 @@ allprojects {
         if (project.hasProperty('tests.timeout.multiplier')) {
             jvmArgs = ["-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"]
         }
-        if (project.hasProperty('tests.retry.count')) {
-            jvmArgs = ["-Dtests.retry.count=${project.property('tests.retry.count')}"]
-        }
     }
 }
 
