@@ -184,7 +184,7 @@ public class ConsumerMessageSender {
 
     private void resend(Message message, MessageSendingResult result) {
         if (result.isLoggable()) {
-            result.getLogInfo().stream().forEach(logInfo -> logResultInfo(message, logInfo));
+            result.getLogInfo().forEach(logInfo -> logResultInfo(message, logInfo));
         }
         sendMessage(message);
     }
