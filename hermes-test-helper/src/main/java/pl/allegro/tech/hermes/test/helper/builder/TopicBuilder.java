@@ -51,8 +51,8 @@ public class TopicBuilder {
         this.name = topicName;
     }
 
-    public static TopicBuilder randomTopic() {
-        return topic("anyGroup", "anyTopic-" + UUID.randomUUID());
+    public static TopicBuilder randomTopic(String group, String topicNamePrefix) {
+        return topic(group, topicNamePrefix + "-" + UUID.randomUUID());
     }
 
     public static TopicBuilder topic(TopicName topicName) {

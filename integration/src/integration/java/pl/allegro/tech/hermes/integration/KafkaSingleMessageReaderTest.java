@@ -43,7 +43,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldFetchSingleMessageByTopicPartitionAndOffset() {
         // given
-        Topic topic = operations.buildTopic(randomTopic().build());
+        Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "topic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         List<String> messages = new ArrayList<String>() {{ range(0, 3).forEach(i -> add(TestMessage.random().body())); }};
@@ -65,7 +65,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldFetchSingleAvroMessage() throws IOException {
         // given
-        Topic topic = randomTopic().withContentType(AVRO).build();
+        Topic topic = randomTopic("avro", "fetch").withContentType(AVRO).build();
         TopicWithSchema topicWithSchema = topicWithSchema(topic, avroUser.getSchemaAsString());
         operations.buildTopicWithSchema(topicWithSchema);
 
@@ -85,7 +85,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldFetchSingleAvroMessageWithSchemaAwareSerialization() throws IOException {
         // given
-        Topic topic = randomTopic()
+        Topic topic = randomTopic("avro", "fetchSchemaAwareSerialization")
                 .withSchemaVersionAwareSerialization()
                 .withContentType(AVRO)
                 .build();
@@ -108,7 +108,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldReturnNotFoundErrorForNonExistingOffset() {
         // given
-        Topic topic = operations.buildTopic(randomTopic().build());
+        Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "offsetTestTopic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         List<String> messages = new ArrayList<String>() {{ range(0, 3).forEach(i -> add(TestMessage.random().body())); }};
 
@@ -127,7 +127,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldReturnNotFoundErrorForNonExistingPartition() {
         // given
-        Topic topic = operations.buildTopic(randomTopic().build());
+        Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "partitionTestTopic").build());
 
         // when
         catchException(management.topic()).preview(topic.getQualifiedName(), PRIMARY_KAFKA_CLUSTER_NAME, 10, 0L);
