@@ -23,7 +23,8 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     monitoringDetails: {
                         severity: 'NON_IMPORTANT',
                         reaction: ''
-                    }
+                    },
+                    state: 'ACTIVE'
                 };
 
                 _.merge(defaults, subscriptionConfig.defaults);

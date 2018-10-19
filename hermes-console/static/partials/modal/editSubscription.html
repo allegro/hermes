@@ -187,6 +187,16 @@
                 </div>
             </div>
 
+            <div class="form-group" ng-show="operation === 'ADD'">
+                <label for="mode" class="col-md-3 control-label">Initial state</label>
+                <div class="col-md-9">
+                    <select required class="form-control" id="initialState" name="initialState" ng-model="subscription.state">
+                        <option value="ACTIVE" selected="selected">ACTIVE</option>
+                        <option value="SUSPENDED">SUSPENDED</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="form-group {{subscriptionForm.http2Enabled.$valid ? '' : 'has-error'}}">
                 <label for="http2Enabled" class="col-md-3 control-label">Deliver using http/2</label>
                 <div class="col-md-9">

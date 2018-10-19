@@ -320,6 +320,26 @@ public class SubscriptionManagementTest extends IntegrationTest {
         assertThat(subscriptionHealth).isEqualTo(SubscriptionHealth.NO_DATA);
     }
 
+    @Test
+    public void shouldCreateSubscriptionWithSuspendedStatus() {
+        // given
+        Topic topic = operations.buildTopic("subscribeGroup", "topic");
+
+        // when
+        Response response = management.subscription().create(
+            topic.getQualifiedName(),
+            subscription("subscribeGroup.topic", "subscription")
+                .withState(Subscription.State.SUSPENDED)
+                .build()
+        );
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        wait.untilSubscriptionCreated(topic, "subscription", false);
+        assertThat(management.subscription().list(topic.getQualifiedName(), false)).containsExactly("subscription");
+        wait.untilSubscriptionIsSuspended(topic, "subscription");
+    }
+
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
         Response response = management.subscription().getMessageTrace(topic, subscription, messageId);
         return response.readEntity(new GenericType<List<Map<String, String>>>() {
