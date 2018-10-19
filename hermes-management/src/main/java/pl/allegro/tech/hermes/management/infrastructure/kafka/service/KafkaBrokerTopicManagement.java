@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
 import kafka.admin.AdminUtils;
-import kafka.admin.RackAwareMode;
 import kafka.log.LogConfig;
 import kafka.utils.ZkUtils;
-import org.I0Itec.zkclient.ZkClient;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
@@ -30,7 +28,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     @Override
     public void createTopic(Topic topic) {
-        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
+        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties, topic);
 
         kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
                         AdminUtils.createTopic(
@@ -51,7 +49,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     @Override
     public void updateTopic(Topic topic) {
-        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
+        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties, topic);
         KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
 
         if (isMigrationToNewKafkaTopic(kafkaTopics)) {
@@ -83,10 +81,11 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
                 !AdminUtils.topicExists(client, kafkaTopics.getPrimary().name().asString());
     }
 
-    private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties) {
+    private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties, Topic topic) {
         Properties props = new Properties();
         props.put(LogConfig.RetentionMsProp(), String.valueOf(TimeUnit.DAYS.toMillis(retentionPolicy)));
         props.put(LogConfig.UncleanLeaderElectionEnableProp(), Boolean.toString(topicProperties.isUncleanLeaderElectionEnabled()));
+        props.put(LogConfig.MaxMessageBytesProp(), String.valueOf(topic.getMaxMessageSize()));
 
         return props;
     }
