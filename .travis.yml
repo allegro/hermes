@@ -1,12 +1,7 @@
-sudo: false
-dist: trusty
-
 language: java
 
 env:
-  - TEST_SUITE=check
   - TEST_SUITE=integrationTest
-  - TEST_SUITE="jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0"
 
 install: ./gradlew assemble
 script:
