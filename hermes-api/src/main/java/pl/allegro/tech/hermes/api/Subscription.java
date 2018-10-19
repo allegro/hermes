@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
+import pl.allegro.tech.hermes.api.constraints.ValidMessageFilters;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
