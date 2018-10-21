@@ -44,7 +44,12 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
     @Override
     public List<SchemaVersion> versions(Topic topic, boolean online) {
         try {
-            return online? rawSchemaClient.getVersions(topic.getName()) : versionsCache.get(topic);
+            if (online) {
+                List<SchemaVersion> v = rawSchemaClient.getVersions(topic.getName());
+                versionsCache.put(topic, v);
+                return v;
+            }
+            return versionsCache.get(topic);
         } catch (Exception e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
             return emptyList();

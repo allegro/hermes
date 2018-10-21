@@ -58,6 +58,78 @@ public class SubscriptionTest {
     }
 
     @Test
+    public void shouldDeserializeSubscriptionWithDefaultTracking() throws Exception {
+        // given
+        String json = "{" +
+                "\"name\": \"test\", " +
+                "\"topicName\": \"g1.t1\", " +
+                "\"endpoint\": \"http://localhost:8888\"" +
+                "}";
+
+        // when
+        Subscription subscription = mapper.readValue(json, Subscription.class);
+
+        // then
+        assertThat(subscription.isTrackingEnabled()).isFalse();
+        assertThat(subscription.getTrackingMode()).isEqualTo(TrackingMode.TRACKING_OFF);
+    }
+
+    @Test
+    public void shouldDeserializeSubscriptionWithTrackAllMode() throws Exception {
+        // given
+        String json = "{" +
+                "\"name\": \"test\", " +
+                "\"topicName\": \"g1.t1\", " +
+                "\"endpoint\": \"http://localhost:8888\", " +
+                "\"trackingMode\": \"trackingAll\"" +
+                "}";
+
+        // when
+        Subscription subscription = mapper.readValue(json, Subscription.class);
+
+        // then
+        assertThat(subscription.isTrackingEnabled()).isTrue();
+        assertThat(subscription.getTrackingMode()).isEqualTo(TrackingMode.TRACK_ALL);
+    }
+
+    @Test
+    public void shouldDeserializeSubscriptionWithTrackEnabled() throws Exception {
+        // given
+        String json = "{" +
+                "\"name\": \"test\", " +
+                "\"topicName\": \"g1.t1\", " +
+                "\"endpoint\": \"http://localhost:8888\", " +
+                "\"trackingEnabled\": \"true\"" +
+                "}";
+
+        // when
+        Subscription subscription = mapper.readValue(json, Subscription.class);
+
+        // then
+        assertThat(subscription.isTrackingEnabled()).isTrue();
+        assertThat(subscription.getTrackingMode()).isEqualTo(TrackingMode.TRACK_ALL);
+    }
+
+    @Test
+    public void shouldDeserializeSubscriptionWithTrackEnabledAndTrackMode() throws Exception {
+        // given
+        String json = "{" +
+                "\"name\": \"test\", " +
+                "\"topicName\": \"g1.t1\", " +
+                "\"endpoint\": \"http://localhost:8888\", " +
+                "\"trackingEnabled\": \"true\", " +
+                "\"trackingMode\": \"discardedOnly\"" +
+                "}";
+
+        // when
+        Subscription subscription = mapper.readValue(json, Subscription.class);
+
+        // then
+        assertThat(subscription.isTrackingEnabled()).isTrue();
+        assertThat(subscription.getTrackingMode()).isEqualTo(TrackingMode.TRACK_DISCARDED_ONLY);
+    }
+
+    @Test
     public void shouldApplyPatchToSubscriptionPolicy() {
         //given
         PatchData patch = patchData().set("rate", 8).build();

@@ -177,6 +177,9 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                     },
                     endpointAddressResolverMetadataConfig: function() {
                         return subscriptionConfig.endpointAddressResolverMetadata;
+                    },
+                    topicContentType: function () {
+                        return $scope.topic.contentType;
                     }
                 }
             }).result.then(function () {
