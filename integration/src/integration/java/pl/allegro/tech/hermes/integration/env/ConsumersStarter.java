@@ -36,7 +36,7 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
     public void start() throws Exception {
         LOGGER.info("Starting Hermes Consumers");
         configFactory.overrideProperty(SCHEMA_REPOSITORY_TYPE, SCHEMA_REGISTRY.name());
-        configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, false);
+        configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, true);
         configFactory.overrideProperty(KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG, "earliest");
         configFactory.overrideProperty(KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG, 25);
         configFactory.overrideProperty(KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG, 25);

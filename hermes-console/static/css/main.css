@@ -17,6 +17,10 @@
     margin-top: 35px;
 }
 
+.borderless td {
+    border: none;
+}
+
 span.helpme {
     color: #428bca;
     padding: .2em .6em .2em;

@@ -39,19 +39,24 @@ Minimal request:
 
 All options:
 
-Option                               | Description                                    | Default value
------------------------------------- | ---------------------------------------------- | -------------
-trackingEnabled                      | track incoming messages?                       | false
-subscriptionPolicy.rate              | maximum sending speed in rps (per DC)          | 400
-subscriptionPolicy.messageTtl        | inflight Time To Live in seconds               | 3600
-subscriptionPolicy.messageBackoff    | backoff time between retry attempts in millis  | 100
-subscriptionPolicy.retryClientErrors | retry on receiving 4xx status                  | false
-subscriptionPolicy.requestTimeout    | request timeout in millis                      | 1000
-subscriptionPolicy.inflightSize      | max number of pending requests                 | 100
-headers                              | additional HTTP request headers                | [] (array of headers)
-filters                              | used for skipping unwanted messages            | [] (array of filters)
-endpointAddressResolverMetadata      | additional address resolver metadata           | {} (map)
+Option                               | Description                                     | Default value
+------------------------------------ | ----------------------------------------------  | -------------
+trackingMode                         | track outgoing messages                         | trackingOff
+subscriptionPolicy.rate              | maximum sending speed in rps (per DC)           | 400
+subscriptionPolicy.messageTtl        | inflight Time To Live in seconds                | 3600
+subscriptionPolicy.messageBackoff    | backoff time between retry attempts in millis   | 100
+subscriptionPolicy.retryClientErrors | retry on receiving 4xx status                   | false
+subscriptionPolicy.requestTimeout    | request timeout in millis                       | 1000
+subscriptionPolicy.inflightSize      | max number of pending requests                  | 100
+headers                              | additional HTTP request headers                 | [] (array of headers)
+filters                              | used for skipping unwanted messages             | [] (array of filters)
+endpointAddressResolverMetadata      | additional address resolver metadata            | {} (map)
 
+Possible values for **trackingMode** are:
+
+- trackingAll
+- discardedOnly
+- trackingOff
 
 Request that specifies all available options:
 
@@ -61,7 +66,7 @@ Request that specifies all available options:
     "name": "mySubscription",
     "endpoint": "http://my-service",
     "description": "This is my subscription",
-    "trackingEnabled": false,
+    "trackingMode": "trackingAll",
     "owner": {
         "source": "Plaintext",
         "id": "My Team"
@@ -250,6 +255,17 @@ matcher               | regexp expression to match value from avro document
 Example:
 ```
 {"type": "avropath", "path": ".user.name", "matcher": "^abc.*"}
+```
+
+### Adding filters
+
+We support editing filters via UI. Click edit subscription and add or remove a particular filter.
+Also filters can be added during creation of a new subscription.
+
+And it can be done by api also. Send PUT request for subscriptions endpoint.
+Example:
+```
+curl  -H "Content-Type: application/json" -X PUT "http://{hermesManagementUrl}/topics/{topicName}/subscriptions/{subscriptionName}" -d '{"filters": [{"type": "avropath", "path": ".user.name", "matcher": "^abc.*"}]}'
 ```
 
 ## Authorization

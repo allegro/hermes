@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -31,11 +33,13 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_JSON;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
+import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader.load;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -219,7 +223,7 @@ public class PublishingAvroTest extends IntegrationTest {
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
 
         // when
-        HermesMessage message = HermesMessage.hermesMessage(topic.getQualifiedName(), user.asBytes())
+        HermesMessage message = hermesMessage(topic.getQualifiedName(), user.asBytes())
                 .avro(2)
                 .build();
 
@@ -344,7 +348,7 @@ public class PublishingAvroTest extends IntegrationTest {
         operations.saveSchema(topic, load("/schema/user_v2.avsc").toString());
 
         // when
-        HermesMessage message = HermesMessage.hermesMessage(topic.getQualifiedName(), user.asBytes())
+        HermesMessage message = hermesMessage(topic.getQualifiedName(), user.asBytes())
                 .avro(1)
                 .build();
 
@@ -354,6 +358,67 @@ public class PublishingAvroTest extends IntegrationTest {
         remoteService.waitUntilRequestReceived(request -> {
             assertThat(request.getHeaders().getHeader(HermesMessage.SCHEMA_VERSION_HEADER).firstValue()).isEqualTo("1");
             assertBodyDeserializesIntoUser(request.getBodyAsString(), user);
+        });
+    }
+
+    @Test
+    public void shouldUseExplicitSchemaVersionWhenPublishingAndConsumingWithLowercaseHeader() {
+        // given
+        Topic topic = topic("explicitSchemaVersion.topic")
+                .withContentType(AVRO)
+                .withSchemaVersionAwareSerialization()
+                .build();
+        operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
+
+        operations.saveSchema(topic, load("/schema/user_v2.avsc").toString());
+
+        // when
+        HermesMessage message = hermesMessage(topic.getQualifiedName(), user.asBytes())
+                .withContentType(AVRO_BINARY)
+                .withHeader("schema-version", "1")
+                .build();
+
+        assertThat(publisher.publishAvro(topic.getQualifiedName(), message.getBody(), message.getHeaders())).hasStatus(CREATED);
+
+        // then
+        remoteService.waitUntilRequestReceived(request -> {
+            assertBodyDeserializesIntoUser(request.getBodyAsString(), user);
+        });
+    }
+
+    @Test
+    public void shouldUpdateSchemaAndUseItImmediately() {
+        // given
+        Topic topic = topic("latestSchemaVersionUpdate.topic").withContentType(AVRO).build();
+
+        operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
+
+        HermesMessage message = hermesMessage(topic.getQualifiedName(), user.asBytes()).withContentType(AVRO_BINARY).build();
+
+        assertThat(publisher.publishAvro(topic.getQualifiedName(), message.getBody(), message.getHeaders())).hasStatus(CREATED);
+
+        remoteService.waitUntilRequestReceived(request -> {
+            assertThat(request.getHeaders().getHeader(HermesMessage.SCHEMA_VERSION_HEADER).firstValue()).isEqualTo("1");
+            assertBodyDeserializesIntoUser(request.getBodyAsString(), user);
+        });
+        remoteService.reset();
+
+        Schema schemaV2 = load("/schema/user_v2.avsc");
+        AvroUser userV2 = new AvroUser(new CompiledSchema<>(schemaV2, SchemaVersion.valueOf(2)), "Bob", 50, "blue");
+        HermesMessage messageV2 = hermesMessage(topic.getQualifiedName(), userV2.asBytes()).withContentType(AVRO_BINARY).build();
+
+        // when
+        operations.saveSchema(topic, schemaV2.toString());
+
+        // and
+        assertThat(publisher.publishAvro(topic.getQualifiedName(), messageV2.getBody(), messageV2.getHeaders())).hasStatus(CREATED);
+
+        // then
+        remoteService.waitUntilRequestReceived(request -> {
+            assertThat(request.getHeaders().getHeader(HermesMessage.SCHEMA_VERSION_HEADER).firstValue()).isEqualTo("2");
+            assertBodyDeserializesIntoUser(request.getBodyAsString(), userV2);
         });
     }
 

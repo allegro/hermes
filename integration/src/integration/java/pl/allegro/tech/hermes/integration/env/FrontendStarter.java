@@ -36,7 +36,7 @@ public class FrontendStarter implements Starter<HermesFrontend> {
         configFactory = new MutableConfigFactory();
         configFactory.overrideProperty(FRONTEND_PORT, port);
         configFactory.overrideProperty(SCHEMA_REPOSITORY_TYPE, SCHEMA_REGISTRY.name());
-        configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, false);
+        configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, true);
         configFactory.overrideProperty(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
         configFactory.overrideProperty(FRONTEND_THROUGHPUT_TYPE, "fixed");
         configFactory.overrideProperty(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L);
