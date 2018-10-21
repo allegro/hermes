@@ -1,3 +1,42 @@
+## 0.13.3 (18.10.2018)
+
+### Features
+
+#### ([918](https://github.com/allegro/hermes/pull/918)) Trace only discarded messages
+
+Added options to trace only discarded messages for subscription and error for topic.
+
+### Enhancments
+
+#### ([916](https://github.com/allegro/hermes/pull/916)) Subscription filter on UI
+
+Now we support editing filters via UI. Filters can be added/edited during creation or editing a subscription.
+
+#### ([923](https://github.com/allegro/hermes/pull/923)) Avro filter supports null value
+
+Now using avro filter we are able to filter fields with a null value.
+
+#### ([924](https://github.com/allegro/hermes/pull/924)) Adding health status endpoint to hermes-management
+
+#### ([925](https://github.com/allegro/hermes/pull/925)) Updating wiremock and switching it to standalone version
+
+Updating wiremock to the latest version (2.19.0) and using standalone version where it is possible to avoid conflicts of its dependencies.
+
+## 0.13.2 (20.09.2018)
+
+### Enhancments
+
+#### ([909](https://github.com/allegro/hermes/pull/909)) Schema update improvements
+
+From now on when topic schema is updated via hermes-console then all Hermes instances are notified to load latest schema
+from schema-registry as soon as possible (by default they should be notified in 2 minutes).
+
+#### ([906](https://github.com/allegro/hermes/pull/906)) Docs for adding subscription's filters
+
+### Bugfixes
+
+#### ([872](https://github.com/allegro/hermes/pull/872)) Fix for reading Graphite stats in Management
+
 ## 0.13.1 (30.08.2018)
 
 Small fix in config.properties.

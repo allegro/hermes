@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.topic;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
@@ -55,6 +59,10 @@ public class TopicService {
     private final Clock clock;
     private final Auditor auditor;
     private final TopicOwnerCache topicOwnerCache;
+    private final ScheduledExecutorService scheduledTopicExecutor = Executors.newSingleThreadScheduledExecutor(
+            new ThreadFactoryBuilder()
+                    .setNameFormat("scheduled-topic-executor-%d")
+                    .build());
 
     @Autowired
     public TopicService(MultiDCAwareService multiDCAwareService,
@@ -91,8 +99,8 @@ public class TopicService {
                 && topicWithSchema.getSchema() != null);
 
         validateSchema(validateAndRegisterSchema, topicWithSchema, topic);
-        createTopic(topic, createdBy, isAllowedToManage);
         registerAvroSchema(validateAndRegisterSchema, topicWithSchema, createdBy);
+        createTopic(topic, createdBy);
     }
 
     private void ensureTopicDoesNotExist(Topic topic) {
@@ -123,8 +131,7 @@ public class TopicService {
         }
     }
 
-    private void createTopic(Topic topic, String createdBy, CreatorRights creatorRights) {
-        topicValidator.ensureCreatedTopicIsValid(topic, creatorRights);
+    private void createTopic(Topic topic, String createdBy) {
         topicRepository.createTopic(topic);
 
         if (!multiDCAwareService.topicExists(topic)) {
@@ -176,7 +183,10 @@ public class TopicService {
         Topic topic = getTopicDetails(topicName);
         boolean validateAvroSchema = AVRO.equals(topic.getContentType());
         extractSchema(patch)
-                .ifPresent(schema -> schemaService.registerSchema(topic, schema, validateAvroSchema));
+                .ifPresent(schema -> {
+                    schemaService.registerSchema(topic, schema, validateAvroSchema);
+                    scheduleTouchTopic(topicName);
+                });
         updateTopic(topicName, patch, modifiedBy);
     }
 
@@ -208,7 +218,25 @@ public class TopicService {
         }
     }
 
-    public void touchTopic(TopicName topicName) {
+    /**
+     * Topic is touched so other Hermes instances are notified to read latest topic schema from schema-registry.
+     * However, schema-registry can be distributed so when schema is written there then it can not be available on all nodes immediately.
+     * This is the reason why we delay touch of topic here, to wait until schema is distributed on schema-registry nodes.
+     */
+    public void scheduleTouchTopic(TopicName topicName) {
+        if (topicProperties.isTouchSchedulerEnabled()) {
+            logger.info("Scheduling touch of topic {}", topicName.qualifiedName());
+            scheduledTopicExecutor.schedule(() -> touchTopic(topicName),
+                    topicProperties.getTouchDelayInSeconds(),
+                    TimeUnit.SECONDS
+            );
+        } else {
+            touchTopic(topicName);
+        }
+    }
+
+    private void touchTopic(TopicName topicName) {
+        logger.info("Touching topic {}", topicName.qualifiedName());
         topicRepository.touchTopic(topicName);
     }
 

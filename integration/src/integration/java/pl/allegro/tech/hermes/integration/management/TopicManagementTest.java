@@ -221,9 +221,12 @@ public class TopicManagementTest extends IntegrationTest {
         // given
         operations.buildTopicWithSchema(topicWithSchema(topic("avroGroup", "avroNonTrackedTopic").withContentType(AVRO)
                 .withTrackingEnabled(false).build(), SCHEMA));
-        operations.buildTopic(topic("jsonGroup", "jsonTopic").withContentType(JSON).withTrackingEnabled(false).build());
+        operations.buildTopic(topic("jsonGroup", "jsonTopic")
+                .withContentType(JSON).withTrackingEnabled(false).build());
+
         operations.buildTopicWithSchema(topicWithSchema(topic("avroGroup", "avroTrackedTopic")
                 .withContentType(AVRO).withTrackingEnabled(true).build(), SCHEMA));
+
         operations.buildTopic(topic("jsonGroup", "jsonTrackedTopic").withContentType(JSON).withTrackingEnabled(true).build());
 
         // and

@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
+import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
@@ -233,7 +234,7 @@ public class QueryEndpointTest extends IntegrationTest {
 
     private Subscription enrichSubscription(SubscriptionBuilder subscription, String endpoint) {
         return subscription
-                .withTrackingEnabled(true)
+                .withTrackingMode(TrackingMode.TRACK_ALL)
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
                 .withEndpoint(EndpointAddress.of(endpoint))
                 .build();
