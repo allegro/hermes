@@ -15,6 +15,10 @@ public class TopicProperties {
 
     private boolean uncleanLeaderElectionEnabled = false;
 
+    private int touchDelayInSeconds = 120;
+
+    private boolean touchSchedulerEnabled = true;
+
     public int getReplicationFactor() {
         return replicationFactor;
     }
@@ -53,5 +57,21 @@ public class TopicProperties {
 
     public void setUncleanLeaderElectionEnabled(boolean uncleanLeaderElectionEnabled) {
         this.uncleanLeaderElectionEnabled = uncleanLeaderElectionEnabled;
+    }
+
+    public int getTouchDelayInSeconds() {
+        return touchDelayInSeconds;
+    }
+
+    public void setTouchDelayInSeconds(int touchDelayInSeconds) {
+        this.touchDelayInSeconds = touchDelayInSeconds;
+    }
+
+    public boolean isTouchSchedulerEnabled() {
+        return touchSchedulerEnabled;
+    }
+
+    public void setTouchSchedulerEnabled(boolean touchSchedulerEnabled) {
+        this.touchSchedulerEnabled = touchSchedulerEnabled;
     }
 }

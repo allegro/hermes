@@ -22,25 +22,36 @@
     {
       "name": "topping",
       "type": [ "null", {
-             "name": "toppingType",
-             "type": "record",
-             "fields": [
-               {
-                 "name": "id",
-                 "type": "string"
-               },
-               {
-                 "name": "type",
-                 "type": "string"
-               },
-               {
-                 "name": "description",
-                 "default": null,
-                 "type": [ "null", "string" ]
-               }
-             ]
-           }
-         ],
+        "name": "toppingType",
+        "type": "record",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "default": null,
+            "type": [ "null", "string" ]
+          },
+          {
+            "name": "ingredients",
+            "type": [
+            "null",
+              {
+                "type": "array",
+                "items": "string"
+              }
+            ],
+            "default": null
+          }
+        ]
+      }
+      ],
       "default": null
     },
     {
@@ -56,11 +67,22 @@
           {
             "name": "type",
             "type": "string"
+          },
+          {
+            "name": "ingredients",
+            "type": [
+              "null",
+              {
+                "type": "array",
+                "items": "string"
+              }
+            ],
+            "default": null
           }
         ]
       }
-    ],
-    "default": null
+      ],
+      "default": null
     }
   ]
 }

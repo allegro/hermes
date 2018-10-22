@@ -14,7 +14,7 @@ public class DirectCompiledSchemaRepository<T> implements CompiledSchemaReposito
     }
 
     @Override
-    public CompiledSchema<T> getSchema(Topic topic, SchemaVersion version) {
+    public CompiledSchema<T> getSchema(Topic topic, SchemaVersion version, boolean online) {
         return rawSchemaClient.getSchema(topic.getName(), version)
                 .map(rawSchema -> new CompiledSchema<>(schemaCompiler.compile(rawSchema), version))
                 .orElseThrow(() -> new SchemaNotFoundException(topic, version));

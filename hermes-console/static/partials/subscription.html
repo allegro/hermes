@@ -147,7 +147,7 @@
                         <strong>Message TTL:</strong> {{subscription.subscriptionPolicy.messageTtl}} seconds
                         <span uib-popover='Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
-                    <p><strong>Tracking enabled:</strong> {{subscription.trackingEnabled}}</p>
+                    <p><strong>Tracking:</strong> {{subscription.trackingMode}}</p>
                     <p>
                         <strong>Retry on 4xx status:</strong> {{subscription.subscriptionPolicy.retryClientErrors}}
                         <span uib-popover='If false, message will not be retried when service responds with 4xx status (i.e. Bad Request).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
@@ -251,6 +251,38 @@
                     </table>
                     <p ng-show="eventTrace.length == 0 && eventId">No matches found - is the id correct? Remember we keep traces for 14 days.</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" ng-show="subscription.filters.length > 0">
+
+        <div class="col-md-12" ng-show="subscription.filters">
+
+            <div class="panel">
+
+                <div class="panel-heading">
+                    <h3 class="panel-title">Subscription filters</h3>
+                </div>
+
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>Path</th>
+                        <th>Matcher</th>
+                        <th> </th>
+                    </tr>
+
+                    <tr ng-repeat="filter in subscription.filters">
+                        <td>{{$index + 1}}</td>
+                        <td>{{filter.type}}</td>
+                        <td>{{filter.path}}</td>
+                        <td>{{filter.matcher}}</td>
+                    </tr>
+
+                </table>
+
             </div>
         </div>
     </div>

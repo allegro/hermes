@@ -25,6 +25,8 @@ public class SubscriptionBuilder {
 
     private boolean trackingEnabled = false;
 
+    private TrackingMode trackingMode = TrackingMode.TRACKING_OFF;
+
     private boolean http2Enabled = false;
 
     private OwnerId owner = new OwnerId("Plaintext", "some team");
@@ -87,15 +89,15 @@ public class SubscriptionBuilder {
         if (deliveryType == DeliveryType.SERIAL) {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
-                    serialSubscriptionPolicy,
-                    trackingEnabled, owner, supportTeam, monitoringDetails, contentType,
+                    serialSubscriptionPolicy, trackingEnabled,
+                    trackingMode, owner, supportTeam, monitoringDetails, contentType,
                     filters, mode, headers, metadata, oAuthPolicy, http2Enabled
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
-                    batchSubscriptionPolicy,
-                    trackingEnabled, owner, supportTeam, monitoringDetails, contentType,
+                    batchSubscriptionPolicy, trackingEnabled,
+                    trackingMode, owner, supportTeam, monitoringDetails, contentType,
                     filters, headers, metadata, oAuthPolicy, http2Enabled
             );
         }
@@ -141,8 +143,9 @@ public class SubscriptionBuilder {
         return this;
     }
 
-    public SubscriptionBuilder withTrackingEnabled(boolean trackingEnabled) {
-        this.trackingEnabled = trackingEnabled;
+    public SubscriptionBuilder withTrackingMode(TrackingMode trackingMode) {
+        this.trackingMode = trackingMode;
+        this.trackingEnabled = trackingMode != TrackingMode.TRACKING_OFF;
         return this;
     }
 
