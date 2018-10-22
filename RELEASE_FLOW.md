@@ -34,7 +34,7 @@ When the last commit on **master** is untagged then there are commits waiting fo
 
 ### Creating enhancement/bugfix
 
-Branch from **master** branch, code, merge back to the branch that you used in the first place.
+Branch from **master** branch, code, merge back when enhancement/bugfix is ready.
 
 ### Creating major feature
 
