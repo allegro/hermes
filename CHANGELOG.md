@@ -1,3 +1,9 @@
+## 0.13.5 (22.10.2018)
+
+### Bugfixes
+
+#### ([947](https://github.com/allegro/hermes/pull/947)) Fix subscription page
+
 ## 0.13.4 (22.10.2018)
 
 ### Bugfixes
