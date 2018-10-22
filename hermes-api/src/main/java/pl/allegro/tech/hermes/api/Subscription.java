@@ -47,7 +47,13 @@ public class Subscription implements Anonymizable {
     @Valid
     private BatchSubscriptionPolicy batchSubscriptionPolicy;
 
+    /**
+     * Use trackingMode field instead.
+     */
+    @Deprecated
     private boolean trackingEnabled = false;
+
+    private TrackingMode trackingMode = TrackingMode.TRACKING_OFF;
 
     private boolean http2Enabled = false;
 
@@ -93,6 +99,7 @@ public class Subscription implements Anonymizable {
                          String description,
                          Object subscriptionPolicy,
                          boolean trackingEnabled,
+                         TrackingMode trackingMode,
                          OwnerId owner,
                          String supportTeam,
                          MonitoringDetails monitoringDetails,
@@ -110,6 +117,7 @@ public class Subscription implements Anonymizable {
         this.state = state != null ? state : State.PENDING;
         this.description = description;
         this.trackingEnabled = trackingEnabled;
+        this.trackingMode = trackingMode;
         this.owner = owner;
         this.supportTeam = supportTeam;
         this.monitoringDetails = monitoringDetails == null ? MonitoringDetails.EMPTY : monitoringDetails;
@@ -133,6 +141,7 @@ public class Subscription implements Anonymizable {
                                                         String description,
                                                         SubscriptionPolicy subscriptionPolicy,
                                                         boolean trackingEnabled,
+                                                        TrackingMode trackingMode,
                                                         OwnerId owner,
                                                         String supportTeam,
                                                         MonitoringDetails monitoringDetails,
@@ -143,8 +152,8 @@ public class Subscription implements Anonymizable {
                                                         EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                         SubscriptionOAuthPolicy oAuthPolicy,
                                                         boolean http2Enabled) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, owner,
-                supportTeam, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
+                owner, supportTeam, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
     }
 
@@ -155,6 +164,7 @@ public class Subscription implements Anonymizable {
                                                        String description,
                                                        BatchSubscriptionPolicy subscriptionPolicy,
                                                        boolean trackingEnabled,
+                                                       TrackingMode trackingMode,
                                                        OwnerId owner,
                                                        String supportTeam,
                                                        MonitoringDetails monitoringDetails,
@@ -164,8 +174,8 @@ public class Subscription implements Anonymizable {
                                                        EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                        SubscriptionOAuthPolicy oAuthPolicy,
                                                        boolean http2Enabled) {
-        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, owner,
-                supportTeam, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
+        return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
+                owner, supportTeam, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
     }
 
@@ -178,6 +188,7 @@ public class Subscription implements Anonymizable {
             @JsonProperty("description") String description,
             @JsonProperty("subscriptionPolicy") Map<String, Object> subscriptionPolicy,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
+            @JsonProperty("trackingMode") String trackingMode,
             @JsonProperty("owner") OwnerId owner,
             @JsonProperty("supportTeam") String supportTeam,
             @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
@@ -194,6 +205,10 @@ public class Subscription implements Anonymizable {
         SubscriptionMode subscriptionMode = mode == null ? SubscriptionMode.ANYCAST : mode;
         Map<String, Object> validSubscriptionPolicy = subscriptionPolicy == null ? new HashMap<>() : subscriptionPolicy;
 
+        TrackingMode validTrackingMode = TrackingMode.fromString(trackingMode)
+                .orElse(trackingEnabled ? TrackingMode.TRACK_ALL : TrackingMode.TRACKING_OFF);
+        boolean validTrackingEnabled = validTrackingMode != TrackingMode.TRACKING_OFF;
+
         return new Subscription(
                 TopicName.fromQualifiedName(topicName),
                 name,
@@ -202,7 +217,8 @@ public class Subscription implements Anonymizable {
                 description,
                 validDeliveryType == DeliveryType.SERIAL ?
                         SubscriptionPolicy.create(validSubscriptionPolicy) : BatchSubscriptionPolicy.create(validSubscriptionPolicy),
-                trackingEnabled,
+                validTrackingEnabled,
+                validTrackingMode,
                 owner,
                 supportTeam,
                 monitoringDetails,
@@ -220,7 +236,7 @@ public class Subscription implements Anonymizable {
     @Override
     public int hashCode() {
         return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy,
-                trackingEnabled, owner, supportTeam, monitoringDetails, contentType, filters, mode, headers,
+                trackingEnabled, trackingMode, owner, supportTeam, monitoringDetails, contentType, filters, mode, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
     }
 
@@ -241,6 +257,7 @@ public class Subscription implements Anonymizable {
                 && Objects.equals(this.serialSubscriptionPolicy, other.serialSubscriptionPolicy)
                 && Objects.equals(this.batchSubscriptionPolicy, other.batchSubscriptionPolicy)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
+                && Objects.equals(this.trackingMode, other.trackingMode)
                 && Objects.equals(this.owner, other.owner)
                 && Objects.equals(this.supportTeam, other.supportTeam)
                 && Objects.equals(this.monitoringDetails, other.monitoringDetails)
@@ -298,7 +315,17 @@ public class Subscription implements Anonymizable {
     }
 
     public boolean isTrackingEnabled() {
-        return trackingEnabled;
+        return trackingMode != TrackingMode.TRACKING_OFF;
+    }
+
+    @JsonProperty("trackingMode")
+    public String getTrackingModeString() {
+        return trackingMode.getValue();
+    }
+
+    @JsonIgnore
+    public TrackingMode getTrackingMode() {
+        return trackingMode;
     }
 
     public OwnerId getOwner() {
@@ -386,6 +413,7 @@ public class Subscription implements Anonymizable {
                     description,
                     deliveryType == DeliveryType.BATCH ? batchSubscriptionPolicy : serialSubscriptionPolicy,
                     trackingEnabled,
+                    trackingMode,
                     owner,
                     supportTeam,
                     monitoringDetails,

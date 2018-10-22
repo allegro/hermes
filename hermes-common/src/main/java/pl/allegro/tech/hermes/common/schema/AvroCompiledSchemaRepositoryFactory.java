@@ -2,6 +2,9 @@ package pl.allegro.tech.hermes.common.schema;
 
 import org.apache.avro.Schema;
 import org.glassfish.hk2.api.Factory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -10,22 +13,30 @@ import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
 import pl.allegro.tech.hermes.schema.CachedCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
-import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
+import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
 
 import javax.inject.Inject;
 
 public class AvroCompiledSchemaRepositoryFactory implements Factory<CompiledSchemaRepository<Schema>> {
 
+    private static final Logger logger = LoggerFactory.getLogger(AvroCompiledSchemaRepositoryFactory.class);
+
     private final RawSchemaClient rawSchemaClient;
     private final ConfigFactory configFactory;
     private final InternalNotificationsBus notificationsBus;
+    private final SchemaVersionsRepository schemaVersionsRepository;
 
     @Inject
-    public AvroCompiledSchemaRepositoryFactory(RawSchemaClient rawSchemaClient, ConfigFactory configFactory, InternalNotificationsBus notificationsBus) {
+    public AvroCompiledSchemaRepositoryFactory(RawSchemaClient rawSchemaClient,
+                                               ConfigFactory configFactory,
+                                               InternalNotificationsBus notificationsBus,
+                                               SchemaVersionsRepository schemaVersionsRepository) {
         this.rawSchemaClient = rawSchemaClient;
         this.configFactory = configFactory;
         this.notificationsBus = notificationsBus;
+        this.schemaVersionsRepository = schemaVersionsRepository;
     }
 
     @Override
@@ -39,6 +50,24 @@ public class AvroCompiledSchemaRepositoryFactory implements Factory<CompiledSche
             @Override
             public void onTopicRemoved(Topic topic) {
                 repository.removeFromCache(topic);
+            }
+
+            @Override
+            public void onTopicCreated(Topic topic) {
+                updateLatestSchema(topic, "new");
+            }
+
+            @Override
+            public void onTopicChanged(Topic topic) {
+                updateLatestSchema(topic, "updated");
+            }
+
+            private void updateLatestSchema(Topic topic, String operationName) {
+                if (topic.getContentType() == ContentType.AVRO) {
+                    logger.info("Loading latest schema for {} topic {}", operationName, topic.getQualifiedName());
+                    schemaVersionsRepository.onlineLatestSchemaVersion(topic).ifPresent(
+                            schemaVersion -> repository.getSchema(topic, schemaVersion, true));
+                }
             }
         });
 

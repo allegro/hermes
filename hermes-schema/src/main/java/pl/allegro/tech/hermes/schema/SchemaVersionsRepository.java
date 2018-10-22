@@ -16,6 +16,10 @@ public interface SchemaVersionsRepository {
         return versions(topic).stream().max(Comparator.comparingInt(SchemaVersion::value));
     }
 
+    default Optional<SchemaVersion> onlineLatestSchemaVersion(Topic topic) {
+        return versions(topic, true).stream().max(Comparator.comparingInt(SchemaVersion::value));
+    }
+
     default List<SchemaVersion> versions(Topic topic) {
         return versions(topic, false);
     }

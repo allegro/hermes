@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.DeliveryType;
+import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -187,10 +188,11 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldGetEventStatus() throws InterruptedException {
         // given
-        Topic topic = operations.buildTopic(topic("eventStatus", "topic").withContentType(ContentType.JSON).withTrackingEnabled(true).build());
+        Topic topic = operations.buildTopic(topic("eventStatus", "topic").withContentType(ContentType.JSON)
+                .withTrackingEnabled(true).build());
 
         Subscription subscription = subscription("eventStatus.topic", "subscription", HTTP_ENDPOINT_URL)
-                .withTrackingEnabled(true)
+                .withTrackingMode(TrackingMode.TRACK_ALL)
                 .build();
 
         operations.createSubscription(topic, subscription);
@@ -216,7 +218,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("tracked", "topic");
         Subscription subscription = subscription("tracked.topic", "subscription", HTTP_ENDPOINT_URL)
-                .withTrackingEnabled(true).build();
+                .withTrackingMode(TrackingMode.TRACK_ALL).build();
         operations.createSubscription(topic, subscription);
         operations.createSubscription(topic, "sub2", HTTP_ENDPOINT_URL);
 
@@ -232,8 +234,8 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // given
         Topic topic = operations.buildTopic("queried", "topic");
-        operations.createSubscription(topic, subscription("queried.topic", "sub1").withTrackingEnabled(true).build());
-        operations.createSubscription(topic, subscription("queried.topic", "sub2").withTrackingEnabled(true).build());
+        operations.createSubscription(topic, subscription("queried.topic", "sub1").withTrackingMode(TrackingMode.TRACK_ALL).build());
+        operations.createSubscription(topic, subscription("queried.topic", "sub2").withTrackingMode(TrackingMode.TRACK_ALL).build());
         operations.createSubscription(topic, subscription("queried.topic", "sub3").build());
         operations.suspendSubscription(topic, "sub2");
 
