@@ -197,6 +197,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                         });
                 });
         };
+
+        $scope.trackingModeName = {"trackingOff": "No tracking", "discardedOnly": "Track message discarding only", "trackingAll": "Track everything"};
+
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
