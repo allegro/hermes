@@ -87,8 +87,7 @@ public class SubscriptionService {
     }
 
     public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights) {
-        Topic topic = topicService.getTopicDetails(subscription.getTopicName());
-        subscriptionValidator.checkCreation(subscription, topic, creatorRights);
+        subscriptionValidator.checkCreation(subscription, creatorRights);
         subscriptionRepository.createSubscription(subscription);
         auditor.objectCreated(createdBy, subscription);
         subscriptionOwnerCache.onCreatedSubscription(subscription);
@@ -112,8 +111,7 @@ public class SubscriptionService {
         Subscription.State oldState = retrieved.getState();
         Subscription updated = Patch.apply(retrieved, patch);
         revertStateIfChangedToPending(updated, oldState);
-        Topic topic = topicService.getTopicDetails(topicName);
-        subscriptionValidator.checkModification(updated, topic);
+        subscriptionValidator.checkModification(updated);
         subscriptionOwnerCache.onUpdatedSubscription(retrieved, updated);
 
         if (!retrieved.equals(updated)) {
