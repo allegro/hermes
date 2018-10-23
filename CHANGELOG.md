@@ -1,3 +1,17 @@
+## 0.13.5 (22.10.2018)
+
+### Bugfixes
+
+#### ([947](https://github.com/allegro/hermes/pull/947)) Fix subscription page
+
+## 0.13.4 (22.10.2018)
+
+### Bugfixes
+
+#### ([933](https://github.com/allegro/hermes/pull/933)) Fix trackingmode mapping
+
+Fix improper mapping for tracking mode in subsription edit page.
+
 ## 0.13.3 (18.10.2018)
 
 ### Features
