@@ -1,9 +1,12 @@
 package pl.allegro.tech.hermes.common.broker;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import java.util.Collections;
+import java.util.HashMap;
 import kafka.common.TopicAndPartition;
 import org.junit.After;
 import org.junit.Test;
@@ -19,7 +22,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
 
-    private final ZookeeperBrokerStorage brokerStorage = new ZookeeperBrokerStorage(zookeeperClient, new ObjectMapper());
+    private final ZookeeperBrokerStorage brokerStorage =
+            new ZookeeperBrokerStorage(zookeeperClient, kafkaZkClient);
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @After
     public void after() throws Exception {
@@ -114,15 +120,38 @@ public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
     }
 
     private void createBrokerDetails(int brokerId, String host, int port) throws Exception {
-        String data = String.format("{\"host\": \"%s\", \"port\": %d}", host, port);
-        String path = brokerStorage.getBrokerDetailsPath(brokerId);
+        String path = "/brokers/ids/" + brokerId;
         zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
-        zookeeperClient.setData().forPath(path, data.getBytes());
+        zookeeperClient.setData().forPath(path, getSampleBrokerDetails(host, port).getBytes());
     }
 
     private void createLeaderForPartition(TopicAndPartition topicAndPartition, int leaderId) throws Exception {
-        String path = brokerStorage.getTopicPartitionLeaderPath(topicAndPartition);
+        String path = "/brokers/topics/" + topicAndPartition.topic() + "/partitions/" + topicAndPartition.partition() + "/state";
         zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
-        zookeeperClient.setData().forPath(path, String.format("{\"leader\": %d}", leaderId).getBytes());
+        zookeeperClient.setData().forPath(path, getSampleLeaderDetails(leaderId).getBytes());
+    }
+
+    @SuppressWarnings("unchecked")
+    private String getSampleLeaderDetails(int leaderId) throws JsonProcessingException {
+        HashMap map = new HashMap();
+        map.put("controller_epoch", 1);
+        map.put("leader", leaderId);
+        map.put("version", 1);
+        map.put("leader_epoch", 0);
+        map.put("isr", Collections.singletonList(1));
+        return objectMapper.writeValueAsString(map);
+    }
+
+    @SuppressWarnings("unchecked")
+    private String getSampleBrokerDetails(String host, int port) throws JsonProcessingException {
+        HashMap map = new HashMap();
+        map.put("listener_security_protocol_map", Collections.singletonMap("PLAINTEXT", "PLAINTEXT"));
+        map.put("endpoints", Collections.singletonList("PLAINTEXT://" + host + ":" + port));
+        map.put("jmx_port", -1);
+        map.put("host", host);
+        map.put("timestamp", "0");
+        map.put("port", port);
+        map.put("version", 4);
+        return objectMapper.writeValueAsString(map);
     }
 }

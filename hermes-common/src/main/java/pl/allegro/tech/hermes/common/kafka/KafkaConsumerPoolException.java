@@ -3,9 +3,9 @@ package pl.allegro.tech.hermes.common.kafka;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.common.exception.HermesException;
 
-public class SimpleConsumerPoolException extends HermesException {
+public class KafkaConsumerPoolException extends HermesException {
 
-    public SimpleConsumerPoolException(String message, Throwable t) {
+    public KafkaConsumerPoolException(String message, Throwable t) {
         super(message, t);
     }
 
