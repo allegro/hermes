@@ -60,7 +60,7 @@ public class KafkaRawMessageReader {
     }
 
     private static String buildErrorMessage(KafkaTopic topic, int partition, long offset, String message) {
-        return message + format("[offset %d, kafka_topic %s, partition %d]",
-                offset, topic.name().asString(), partition);
+        return format("%s [offset %d, kafka_topic %s, partition %d]", message, offset,
+                topic.name().asString(), partition);
     }
 }
