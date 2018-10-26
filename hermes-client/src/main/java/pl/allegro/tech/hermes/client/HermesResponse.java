@@ -47,5 +47,23 @@ public interface HermesResponse {
         return getHeader(MESSAGE_ID);
     }
 
-    default String getProtocol() { return HTTP_1_1; }
+    default String getProtocol() {
+        return HTTP_1_1;
+    }
+
+    default String getDebugLog() {
+        StringBuilder builder = new StringBuilder("Sending message ")
+                .append(getMessageId())
+                .append(" to Hermes ")
+                .append(isSuccess() ? "succeeded" : "failed")
+                .append(", response code: ")
+                .append(getHttpStatus())
+                .append(", body: ")
+                .append(getBody());
+        getFailureCause().ifPresent(ex ->
+                builder.append(", exception: ")
+                       .append(ex.getMessage())
+        );
+        return builder.toString();
+    }
 }
