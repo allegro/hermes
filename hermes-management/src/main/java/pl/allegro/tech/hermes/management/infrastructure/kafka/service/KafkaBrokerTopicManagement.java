@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
-import kafka.admin.AdminUtils;
-import kafka.admin.RackAwareMode;
 import kafka.log.LogConfig;
-import kafka.utils.ZkUtils;
-import org.I0Itec.zkclient.ZkClient;
+import kafka.zk.AdminZkClient;
+import kafka.zk.KafkaZkClient;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
@@ -18,45 +16,47 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     private final TopicProperties topicProperties;
 
-    private final ZkUtils client;
+    private final AdminZkClient adminZkClient;
+
+    private final KafkaZkClient kafkaZkClient;
 
     private final KafkaNamesMapper kafkaNamesMapper;
 
-    public KafkaBrokerTopicManagement(TopicProperties topicProperties, ZkUtils zkClient, KafkaNamesMapper kafkaNamesMapper) {
+    public KafkaBrokerTopicManagement(TopicProperties topicProperties, AdminZkClient adminZkClient,
+                                      KafkaZkClient kafkaZkClient, KafkaNamesMapper kafkaNamesMapper) {
         this.topicProperties = topicProperties;
-        this.client = zkClient;
+        this.adminZkClient = adminZkClient;
+        this.kafkaZkClient = kafkaZkClient;
         this.kafkaNamesMapper = kafkaNamesMapper;
     }
 
     @Override
     public void createTopic(Topic topic) {
-        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
+        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties, topic);
 
         kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
-                        AdminUtils.createTopic(
-                                client,
-                                k.name().asString(),
-                                topicProperties.getPartitions(),
-                                topicProperties.getReplicationFactor(),
-                                config,
-                                kafka.admin.RackAwareMode.Enforced$.MODULE$
-                        )
+                adminZkClient.createTopic(
+                        k.name().asString(),
+                        topicProperties.getPartitions(),
+                        topicProperties.getReplicationFactor(),
+                        config,
+                        kafka.admin.RackAwareMode.Enforced$.MODULE$
+                )
         );
     }
 
     @Override
     public void removeTopic(Topic topic) {
-        kafkaNamesMapper.toKafkaTopics(topic).forEach(k -> AdminUtils.deleteTopic(client, k.name().asString()));
+        kafkaNamesMapper.toKafkaTopics(topic).forEach(k -> adminZkClient.deleteTopic(k.name().asString()));
     }
 
     @Override
     public void updateTopic(Topic topic) {
-        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
+        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties, topic);
         KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
 
         if (isMigrationToNewKafkaTopic(kafkaTopics)) {
-            AdminUtils.createTopic(
-                    client,
+            adminZkClient.createTopic(
                     kafkaTopics.getPrimary().name().asString(),
                     topicProperties.getPartitions(),
                     topicProperties.getReplicationFactor(),
@@ -64,29 +64,30 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
                     kafka.admin.RackAwareMode.Enforced$.MODULE$
             );
         } else {
-            AdminUtils.changeTopicConfig(client, kafkaTopics.getPrimary().name().asString(), config);
+            adminZkClient.changeTopicConfig(kafkaTopics.getPrimary().name().asString(), config);
         }
 
         kafkaTopics.getSecondary().ifPresent(secondary ->
-                        AdminUtils.changeTopicConfig(client, secondary.name().asString(), config)
+                adminZkClient.changeTopicConfig(secondary.name().asString(), config)
         );
     }
 
     @Override
     public boolean topicExists(Topic topic) {
         return kafkaNamesMapper.toKafkaTopics(topic)
-                .allMatch(kafkaTopic -> AdminUtils.topicExists(client, kafkaTopic.name().asString()));
+                .allMatch(kafkaTopic -> kafkaZkClient.topicExists(kafkaTopic.name().asString()));
     }
 
-    protected boolean isMigrationToNewKafkaTopic(KafkaTopics kafkaTopics) {
+    private boolean isMigrationToNewKafkaTopic(KafkaTopics kafkaTopics) {
         return kafkaTopics.getSecondary().isPresent() &&
-                !AdminUtils.topicExists(client, kafkaTopics.getPrimary().name().asString());
+                !kafkaZkClient.topicExists(kafkaTopics.getPrimary().name().asString());
     }
 
-    private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties) {
+    private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties, Topic topic) {
         Properties props = new Properties();
         props.put(LogConfig.RetentionMsProp(), String.valueOf(TimeUnit.DAYS.toMillis(retentionPolicy)));
         props.put(LogConfig.UncleanLeaderElectionEnableProp(), Boolean.toString(topicProperties.isUncleanLeaderElectionEnabled()));
+        props.put(LogConfig.MaxMessageBytesProp(), String.valueOf(topic.getMaxMessageSize()));
 
         return props;
     }

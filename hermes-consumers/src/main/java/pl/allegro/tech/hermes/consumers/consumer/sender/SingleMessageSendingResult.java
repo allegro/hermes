@@ -48,7 +48,7 @@ public class SingleMessageSendingResult implements MessageSendingResult {
 
         if (result.getResponse() != null) {
             initializeForStatusCode(result.getResponse().getStatus());
-            if (isRetryLater()) {
+            if (isStatusCodeServiceUnavailable()) {
                 initializeRetryAfterMillis(result);
             }
         }
@@ -68,7 +68,7 @@ public class SingleMessageSendingResult implements MessageSendingResult {
 
     SingleMessageSendingResult(int statusCode, long retryAfterMillis) {
         initializeForStatusCode(statusCode);
-        if (isRetryLater() && retryAfterMillis >= 0) {
+        if (isStatusCodeServiceUnavailable() && retryAfterMillis >= 0) {
             this.retryAfterMillis = Optional.of(retryAfterMillis);
         }
     }
@@ -102,6 +102,10 @@ public class SingleMessageSendingResult implements MessageSendingResult {
 
     @Override
     public boolean isRetryLater() {
+        return isStatusCodeServiceUnavailable() && retryAfterMillis.isPresent();
+    }
+
+    private boolean isStatusCodeServiceUnavailable() {
         return getStatusCode() == SERVICE_UNAVAILABLE.getStatusCode();
     }
 

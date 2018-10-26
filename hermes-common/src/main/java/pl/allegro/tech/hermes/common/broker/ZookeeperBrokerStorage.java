@@ -1,14 +1,15 @@
 package pl.allegro.tech.hermes.common.broker;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Ints;
+import kafka.cluster.Broker;
 import kafka.common.TopicAndPartition;
-import kafka.utils.ZkUtils;
+import kafka.zk.KafkaZkClient;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.network.ListenerName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
@@ -19,7 +20,6 @@ import pl.allegro.tech.hermes.common.exception.PartitionsNotFoundForGivenTopicEx
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.Lists.transform;
@@ -28,24 +28,25 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperBrokerStorage.class);
 
+    private static final String BROKER_LISTENER_NAME = "plaintext";
     private static final String PARTITIONS = "/brokers/topics/%s/partitions";
 
     private final CuratorFramework curatorFramework;
-    private final ObjectMapper objectMapper;
+    private final KafkaZkClient kafkaZkClient;
 
     @Inject
-    public ZookeeperBrokerStorage(@Named(CuratorType.KAFKA) CuratorFramework curatorFramework, ObjectMapper objectMapper) {
+    public ZookeeperBrokerStorage(@Named(CuratorType.KAFKA) CuratorFramework curatorFramework,
+                                  KafkaZkClient kafkaZkClient) {
         this.curatorFramework = curatorFramework;
-        this.objectMapper = objectMapper;
+        this.kafkaZkClient = kafkaZkClient;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public int readLeaderForPartition(TopicAndPartition topicAndPartition) {
         try {
-            byte[] data = curatorFramework.getData().forPath(getTopicPartitionLeaderPath(topicAndPartition));
-            Map<String, Object> values = objectMapper.readValue(data, Map.class);
-            return (Integer) values.get("leader");
+            TopicPartition topicPartition = new TopicPartition(topicAndPartition.topic(), topicAndPartition.partition());
+            return (int)kafkaZkClient.getLeaderForPartition(topicPartition).get();
         } catch (Exception exception) {
             throw new BrokerNotFoundForPartitionException(topicAndPartition.topic(), topicAndPartition.partition(), exception);
         }
@@ -56,7 +57,7 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
         Multimap<Integer, TopicAndPartition> leadersForPartitions = ArrayListMultimap.create();
         for (TopicAndPartition topicAndPartition : topicAndPartitionSet) {
             try {
-                Integer leaderId = leaderIdForPartition(topicAndPartition);
+                Integer leaderId = readLeaderForPartition(topicAndPartition);
                 leadersForPartitions.put(leaderId, topicAndPartition);
             } catch (BrokerNotFoundForPartitionException ex) {
                 LOGGER.warn("Broker not found", ex);
@@ -69,22 +70,12 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
     @SuppressWarnings("unchecked")
     public BrokerDetails readBrokerDetails(Integer brokerId) {
         try {
-            byte[] data = curatorFramework.getData().forPath(getBrokerDetailsPath(brokerId));
-            Map<String, Object> values = objectMapper.readValue(data, Map.class);
-            return new BrokerDetails((String) values.get("host"), (Integer) values.get("port"));
+            Broker broker = kafkaZkClient.getBroker(brokerId).get();
+            String host = broker.getNode(ListenerName.normalised(BROKER_LISTENER_NAME)).get().host();
+            int port = broker.getNode(ListenerName.normalised(BROKER_LISTENER_NAME)).get().port();
+            return new BrokerDetails(host, port);
         } catch (Exception exception) {
             throw new BrokerInfoNotAvailableException(brokerId, exception);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private Integer leaderIdForPartition(TopicAndPartition topicAndPartition) {
-        try {
-            byte[] data = curatorFramework.getData().forPath(getTopicPartitionLeaderPath(topicAndPartition));
-            Map<String, Object> values = objectMapper.readValue(data, Map.class);
-            return (Integer) values.get("leader");
-        } catch (Exception exception) {
-            throw new BrokerNotFoundForPartitionException(topicAndPartition.topic(), topicAndPartition.partition(), exception);
         }
     }
 
@@ -98,15 +89,5 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
         } catch (Exception exception) {
             throw new PartitionsNotFoundForGivenTopicException(topicName, exception);
         }
-    }
-
-    @VisibleForTesting
-    protected String getTopicPartitionLeaderPath(TopicAndPartition topicAndPartition) {
-        return ZkUtils.getTopicPartitionLeaderAndIsrPath(topicAndPartition.topic(), topicAndPartition.partition());
-    }
-
-    @VisibleForTesting
-    protected String getBrokerDetailsPath(int brokerId) {
-        return ZkUtils.BrokerIdsPath() + "/" + brokerId;
     }
 }

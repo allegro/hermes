@@ -39,7 +39,7 @@
                 <div class="col-md-9">
                     <select required class="form-control" id="subscriptionType" name="subscriptionType" ng-model="subscription.contentType">
                         <option value="JSON">JSON</option>
-                        <option value="AVRO">AVRO</option>
+                        <option value="AVRO" ng-disabled="subscription.deliveryType === 'BATCH'">AVRO (not supported in BATCH delivery mode)</option>
                     </select>
                 </div>
             </div>
@@ -50,7 +50,7 @@
                     <div class="input-group">
                         <select required class="form-control" id="deliveryType" name="deliveryType" ng-model="subscription.deliveryType">
                             <option value="SERIAL">SERIAL</option>
-                            <option value="BATCH">BATCH (incubating feature)</option>
+                            <option value="BATCH" ng-disabled="subscription.subscriptionType === 'AVRO'">BATCH (incubating feature)</option>
                         </select>
                         <span class="input-group-addon helpme-addon" uib-tooltip="Hermes can deliver messages in SERIAL (one message at a time) or in BATCH (group of messages at a time).">?</span>
                     </div>

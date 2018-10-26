@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class TopicBuilder {
 
@@ -48,6 +49,10 @@ public class TopicBuilder {
 
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
+    }
+
+    public static TopicBuilder randomTopic(String group, String topicNamePrefix) {
+        return topic(group, topicNamePrefix + "-" + UUID.randomUUID());
     }
 
     public static TopicBuilder topic(TopicName topicName) {

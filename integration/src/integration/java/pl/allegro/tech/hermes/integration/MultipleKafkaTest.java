@@ -54,7 +54,6 @@ public class MultipleKafkaTest extends IntegrationTest {
         Topic topic = operations.buildTopic("secondaryKafka", "topic");
         Subscription subscription = operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         wait.untilSubscriptionIsActivated(topic, subscription.getName());
-        wait.waitUntilConsumerMetadataAvailable(subscription, "localhost", SECONDARY_KAFKA_PORT);
         remoteService.expectMessages("message");
 
         // when

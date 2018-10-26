@@ -1,6 +1,6 @@
 <section>
     <div class="modal-header">
-        <h3 class="modal-title" ng-show="operation === 'ADD'"><small>Create topic:</small> {{topic.name.indexOf(groupName) === 0 ? '' : groupName}}.{{topic.shortName}}</h3>
+        <h3 class="modal-title" ng-show="operation === 'ADD'"><small>Create topic:</small> {{groupName}}.{{topic.shortName}}</h3>
         <h3 class="modal-title" ng-show="operation === 'EDIT'"><small>Edit topic:</small> {{topic.name}}</h3>
     </div>
     <div class="modal-body">

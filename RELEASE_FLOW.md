@@ -24,9 +24,8 @@ use them on production environment. They also might not be documented.
 
 ## Workflow
 
-* **master** branch contains current stable code that can be run on production
-* **develop** branch contains code that should be fairly stable, but needs more testing; **release-{version}** branches are created from it
-* **release-{version}** branches contain code scheduled and prepared for next release, we merge them to **master**
+**master** branch is the most important branch. It contains **hermes-{version}** tags pointing to stable code that can be run on production.
+When the last commit on **master** is untagged then there are commits waiting for release.
 
 ### General rules
 
@@ -35,27 +34,26 @@ use them on production environment. They also might not be documented.
 
 ### Creating enhancement/bugfix
 
-Branch from **rc** or **release-{version}** branch (if this is a bugfix for a scheduled release), code, merge back to
-the branch that you used in the first place.
+Branch from **master** branch, code, merge back when enhancement/bugfix is ready.
 
 ### Creating major feature
 
-Create branch from **rc** with short and descriptive name (e.g. *avro_support*). This will be a long-living branch.
+Create branch from **master** with short and descriptive name (e.g. *avro_support*). This will be a long-living branch.
 Create other branches to code portions of new feature and create pull requests to feature branch to start reviews as
-early as possible. When it is finished and with feature switch in place, it will be merged to **rc** and scheduled for
+early as possible. When it is finished and with feature switch in place, it will be merged to **master** and scheduled for
 next **patch** release in *incubating* state.
 
 ## Example workflow
 
 Full workflow from creating an issue to releasing it:
 
-* i want to code feature: *change subscription endpoint*
-* i create branch *feature/change_subscription_endpoint*
-* i code the feature
-* i test the code create pull request from feature branch to **develop**
-* after pull request is accepted, i squash commits, merge it and delete unused feature branch
-* i schedule the change for 0.1.1 version
-* i create **release-0.1.1** branch from **develop** branch
-* i test **release-0.1.1** branch, add changelog etc
-* i merge **release-0.1.1** branch to **master**
-* i create release from **master** - new stable version is **0.1.1**
+1. I want to code feature: *change subscription endpoint*
+2. I create branch *feature/change_subscription_endpoint* from **master** branch
+3. I code the feature
+4. I test the feature
+5. I create pull request from feature branch to **master**
+6. After pull request is accepted I squash commits into one, merge it and delete unused feature branch
+7. Hermes team member releases Hermes:
+    1. Updates CHANGELOG.md about what is new in upcoming release
+    2. Tags HEAD of master branch with following version pattern **hermes-x.y.z**
+    3. From the tagged code builds and publishes Hermes packages to maven Sonatype repository

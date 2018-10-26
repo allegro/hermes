@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
@@ -340,6 +341,25 @@ public class SubscriptionManagementTest extends IntegrationTest {
         wait.untilSubscriptionCreated(topic, "subscription", false);
         assertThat(management.subscription().list(topic.getQualifiedName(), false)).containsExactly("subscription");
         wait.untilSubscriptionIsSuspended(topic, "subscription");
+    }
+
+    @Test
+    public void shouldNotAllowSubscriptionWithBatchDeliveryAndAvroContentType() {
+        // given
+        Topic topic = operations.buildTopic("subscribeGroup", "topic");
+        Subscription subscription = subscription("subscribeGroup.topic", "subscription")
+                .withDeliveryType(DeliveryType.BATCH)
+                .withContentType(ContentType.AVRO)
+                .build();
+
+        // when
+        Response response = management.subscription().create(
+                topic.getQualifiedName(),
+                subscription
+        );
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
