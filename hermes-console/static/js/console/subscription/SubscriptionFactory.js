@@ -25,7 +25,7 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                         severity: 'NON_IMPORTANT',
                         reaction: ''
                     },
-                    state: 'ACTIVE'
+                    state: 'ACTIVE' // must be in sync with editSubscription.html:255
                 };
 
                 _.merge(defaults, subscriptionConfig.defaults);
