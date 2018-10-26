@@ -10,6 +10,7 @@
     <div class="pull-right">
         <span bind-html="config.buttonsExtension"></span>
         <button class="btn btn-primary" ng-click="edit()">Edit</button>
+        <button class="btn btn-primary" ng-click="clone()">Clone</button>
         <button class="btn btn-warning" ng-click="blacklist()" ng-show="!isBlacklisted">Blacklist</button>
         <button class="btn btn-default" ng-click="unblacklist()" ng-show="isBlacklisted">Unblacklist</button>
         <button class="btn btn-danger" ng-click="remove()">Remove</button>
