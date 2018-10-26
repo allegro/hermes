@@ -44,7 +44,7 @@ class MultiMessageSendingResultTest extends Specification {
 
     def "should return retry later if any of children has retry later"() {
         given:
-        def children = [ofStatusCode(503), ofStatusCode(200)]
+        def children = [retryAfter(1), ofStatusCode(200)]
 
         expect:
         new MultiMessageSendingResult(children).isRetryLater()
