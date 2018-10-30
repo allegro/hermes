@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import com.google.common.collect.ImmutableList;
+import java.time.Duration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -93,7 +94,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     public Optional<Message> next() {
         try {
             if (readQueue.isEmpty()) {
-                ConsumerRecords<byte[], byte[]> records = consumer.poll(pollTimeout);
+                ConsumerRecords<byte[], byte[]> records = consumer.poll(Duration.ofMillis(pollTimeout));
                 try {
                     for (ConsumerRecord<byte[], byte[]> record : records) {
                         readQueue.add(convertToMessage(record));

@@ -6,13 +6,15 @@ public class KafkaProperties {
 
     private String connectionString = "localhost:2181";
 
-    private int sessionTimeout = 10000;
+    private int sessionTimeoutMillis = 10000;
 
-    private int connectionTimeout = 3000;
+    private int connectionTimeoutMillis = 3000;
+
+    private int maxInflight = 10;
 
     private int retryTimes = 3;
 
-    private int retrySleep = 1000;
+    private int retrySleepMillis = 1000;
 
     private String offsetsStorage = "kafka";
 
@@ -20,40 +22,48 @@ public class KafkaProperties {
 
     private String namespace = "";
 
-    private SimpleConsumer simpleConsumer = new SimpleConsumer();
+    private KafkaConsumer kafkaConsumer = new KafkaConsumer();
 
-    public static final class SimpleConsumer {
+    public static final class KafkaConsumer {
 
-        private int cacheExpiration = 60;
+        private int cacheExpirationSeconds = 60;
 
-        private int bufferSize = 64 * 1024;
+        private int bufferSizeBytes = 64 * 1024;
 
-        private int timeout = 5000;
+        private int timeoutMillis = 5000;
 
         private String namePrefix = "offsetChecker";
 
-        public int getCacheExpiration() {
-            return cacheExpiration;
+        private int pollTimeoutMillis = 50;
+
+        private final int fetchMaxWaitMillis = 30;
+
+        private final int fetchMinBytes = 1;
+
+        private String consumerGroupName = "RETRANSMISSION_GROUP";
+
+        public int getCacheExpirationSeconds() {
+            return cacheExpirationSeconds;
         }
 
-        public void setCacheExpiration(int cacheExpiration) {
-            this.cacheExpiration = cacheExpiration;
+        public void setCacheExpirationSeconds(int cacheExpirationSeconds) {
+            this.cacheExpirationSeconds = cacheExpirationSeconds;
         }
 
-        public int getBufferSize() {
-            return bufferSize;
+        public int getBufferSizeBytes() {
+            return bufferSizeBytes;
         }
 
-        public void setBufferSize(int bufferSize) {
-            this.bufferSize = bufferSize;
+        public void setBufferSizeBytes(int bufferSizeBytes) {
+            this.bufferSizeBytes = bufferSizeBytes;
         }
 
-        public int getTimeout() {
-            return timeout;
+        public int getTimeoutMillis() {
+            return timeoutMillis;
         }
 
-        public void setTimeout(int timeout) {
-            this.timeout = timeout;
+        public void setTimeoutMillis(int timeoutMillis) {
+            this.timeoutMillis = timeoutMillis;
         }
 
         public String getNamePrefix() {
@@ -62,6 +72,30 @@ public class KafkaProperties {
 
         public void setNamePrefix(String namePrefix) {
             this.namePrefix = namePrefix;
+        }
+
+        public int getPollTimeoutMillis() {
+            return pollTimeoutMillis;
+        }
+
+        public void setPollTimeoutMillis(int pollTimeoutMillis) {
+            this.pollTimeoutMillis = pollTimeoutMillis;
+        }
+
+        public String getConsumerGroupName() {
+            return consumerGroupName;
+        }
+
+        public void setConsumerGroupName(String consumerGroupName) {
+            this.consumerGroupName = consumerGroupName;
+        }
+
+        public int getFetchMaxWaitMillis() {
+            return fetchMaxWaitMillis;
+        }
+
+        public int getFetchMinBytes() {
+            return fetchMinBytes;
         }
     }
 
@@ -73,20 +107,20 @@ public class KafkaProperties {
         this.connectionString = connectionString;
     }
 
-    public int getSessionTimeout() {
-        return sessionTimeout;
+    public int getSessionTimeoutMillis() {
+        return sessionTimeoutMillis;
     }
 
-    public void setSessionTimeout(int sessionTimeout) {
-        this.sessionTimeout = sessionTimeout;
+    public void setSessionTimeoutMillis(int sessionTimeoutMillis) {
+        this.sessionTimeoutMillis = sessionTimeoutMillis;
     }
 
-    public int getConnectionTimeout() {
-        return connectionTimeout;
+    public int getConnectionTimeoutMillis() {
+        return connectionTimeoutMillis;
     }
 
-    public void setConnectionTimeout(int connectionTimeout) {
-        this.connectionTimeout = connectionTimeout;
+    public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
+        this.connectionTimeoutMillis = connectionTimeoutMillis;
     }
 
     public int getRetryTimes() {
@@ -97,20 +131,20 @@ public class KafkaProperties {
         this.retryTimes = retryTimes;
     }
 
-    public int getRetrySleep() {
-        return retrySleep;
+    public int getRetrySleepMillis() {
+        return retrySleepMillis;
     }
 
-    public void setRetrySleep(int retrySleep) {
-        this.retrySleep = retrySleep;
+    public void setRetrySleepMillis(int retrySleepMillis) {
+        this.retrySleepMillis = retrySleepMillis;
     }
 
-    public SimpleConsumer getSimpleConsumer() {
-        return simpleConsumer;
+    public KafkaConsumer getKafkaConsumer() {
+        return kafkaConsumer;
     }
 
-    public void setSimpleConsumer(SimpleConsumer simpleConsumer) {
-        this.simpleConsumer = simpleConsumer;
+    public void setKafkaConsumer(KafkaConsumer kafkaConsumer) {
+        this.kafkaConsumer = kafkaConsumer;
     }
 
     public String getClusterName() {
@@ -143,5 +177,13 @@ public class KafkaProperties {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public int getMaxInflight() {
+        return maxInflight;
+    }
+
+    public void setMaxInflight(int maxInflight) {
+        this.maxInflight = maxInflight;
     }
 }

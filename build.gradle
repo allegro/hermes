@@ -40,7 +40,7 @@ allprojects {
     targetCompatibility = 1.8
 
     project.ext.versions = [
-            kafka    : '0.10.2.1',
+            kafka    : '2.0.0',
             guava    : '23.0',
             jackson  : '2.8.3',
             jersey   : '2.23.2',

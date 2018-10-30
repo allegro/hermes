@@ -2,10 +2,6 @@ package pl.allegro.tech.hermes.integration.helper;
 
 import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionFactory;
-import kafka.api.GroupCoordinatorRequest;
-import kafka.api.GroupCoordinatorResponse;
-import kafka.common.ErrorMapping;
-import kafka.network.BlockingChannel;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,27 +161,6 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private void untilZookeeperNodeDeletion(final String path, final CuratorFramework zookeeper) {
         waitAtMost(adjust(Duration.FIVE_SECONDS)).until(() -> zookeeper.checkExists().forPath(path) == null);
-    }
-
-    public void waitUntilConsumerMetadataAvailable(Subscription subscription, String host, int port) {
-        BlockingChannel channel = createBlockingChannel(host, port);
-        channel.connect();
-
-        waitAtMost(adjust((Duration.TEN_SECONDS))).until(() -> {
-            channel.send(new GroupCoordinatorRequest(kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName()).asString(),
-                    GroupCoordinatorRequest.CurrentVersion(), 0, "0"));
-            GroupCoordinatorResponse metadataResponse = GroupCoordinatorResponse.readFrom(channel.receive().payload());
-            return metadataResponse.errorCode() == ErrorMapping.NoError();
-        });
-
-        channel.disconnect();
-    }
-
-    private BlockingChannel createBlockingChannel(String host, int port) {
-        return new BlockingChannel(host, port,
-                BlockingChannel.UseDefaultBufferSize(),
-                BlockingChannel.UseDefaultBufferSize(),
-                (int) adjust(Duration.TEN_SECONDS).getValueInMS());
     }
 
     public ConditionFactory awaitAtMost(Duration duration) {
