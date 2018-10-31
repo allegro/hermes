@@ -18,6 +18,8 @@ public class CustomKafkaStarter extends KafkaStarter {
         properties.setProperty("broker.id", "0");
         properties.setProperty("log.dirs", Files.createTempDir().getAbsolutePath());
         properties.setProperty("delete.topic.enable", "true");
+        properties.setProperty("offsets.topic.replication.factor", "1");
+        properties.setProperty("group.initial.rebalance.delay.ms", "0");
 
         return properties;
     }
