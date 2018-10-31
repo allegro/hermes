@@ -28,10 +28,10 @@ public class GraphiteEndpoint implements EnvironmentAware {
             "}]";
 
     private static final String TOPIC_URL_PATTERN = "/.*sumSeries%28stats.tech.hermes\\." +
-            "(consumer|producer)\\.%2A\\.meter\\.[^\\.]*\\.[^\\.]*\\.m1_rate%29.*";
+            "(consumer|producer)\\.%2A\\.meter\\.GROUP\\.TOPIC\\.m1_rate%29.*";
 
     private static final String SUBSCRIPTION_URL_PATTERN = "/.*sumSeries%28stats.tech.hermes\\." +
-            "consumer\\.%2A\\.meter\\.[^\\.]*\\.[^\\.]*\\.[^\\.]*\\.m1_rate%29.*";
+            "consumer\\.%2A\\.meter\\.GROUP\\.TOPIC\\.SUBSCRIPTION\\.m1_rate%29.*";
 
     private final WireMock graphiteListener;
 
@@ -44,7 +44,8 @@ public class GraphiteEndpoint implements EnvironmentAware {
                 .replaceAll("RATE", Integer.toString(rate))
                 .replaceAll("DELIVERY", Integer.toString(deliveryRate))
                 .replaceAll("TIMESTAMP", TIMESTAMP);
-        graphiteListener.register(get(urlMatching(TOPIC_URL_PATTERN))
+        String urlPattern = TOPIC_URL_PATTERN.replace("GROUP", group).replace("TOPIC", topic);
+        graphiteListener.register(get(urlMatching(urlPattern))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -55,7 +56,8 @@ public class GraphiteEndpoint implements EnvironmentAware {
         String response = SUBSCRIPTION_RESPONSE.replaceAll("SUBSCRIPTION", group + "." + topic + "." + subscription)
                 .replaceAll("RATE", Integer.toString(rate))
                 .replaceAll("TIMESTAMP", TIMESTAMP);
-        graphiteListener.register(get(urlMatching(SUBSCRIPTION_URL_PATTERN))
+        String urlPattern = SUBSCRIPTION_URL_PATTERN.replace("GROUP", group).replace("TOPIC", topic).replace("SUBSCRIPTION", subscription);
+        graphiteListener.register(get(urlMatching(urlPattern))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")

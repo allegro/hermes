@@ -27,7 +27,7 @@ public class ListSubscriptionForOwnerTest extends IntegrationTest {
 	}
 
 	@Test
-	public void shouldListSubxscriptionAfterNewSubscriptionIsAdded() {
+	public void shouldListSubscriptionAfterNewSubscriptionIsAdded() {
 		// given
 		assertThat(listSubscriptionsForOwner("Team C").isEmpty());
 
