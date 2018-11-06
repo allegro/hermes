@@ -1,3 +1,13 @@
+## 0.14.0 (25.10.2018)
+
+### Enhancements
+
+#### ([914](https://github.com/allegro/hermes/pull/914)) Upgrading kafka to version 2.0
+
+This version of Hermes is safe and backward compatible, so no additional actions are required to be performed on kafka brokers.
+
+#### ([944](https://github.com/allegro/hermes/pull/944)) Updating info about simplified release flow
+
 ## 0.13.5 (22.10.2018)
 
 ### Bugfixes
@@ -20,7 +30,7 @@ Fix improper mapping for tracking mode in subsription edit page.
 
 Added options to trace only discarded messages for subscription and error for topic.
 
-### Enhancments
+### Enhancements
 
 #### ([916](https://github.com/allegro/hermes/pull/916)) Subscription filter on UI
 
@@ -38,7 +48,7 @@ Updating wiremock to the latest version (2.19.0) and using standalone version wh
 
 ## 0.13.2 (20.09.2018)
 
-### Enhancments
+### Enhancements
 
 #### ([909](https://github.com/allegro/hermes/pull/909)) Schema update improvements
 

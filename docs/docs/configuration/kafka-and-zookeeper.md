@@ -17,6 +17,7 @@ zookeeper.authorization.enabled  | n/a                            | enable Zooke
 zookeeper.authorization.scheme   | storage.authorization.scheme   | authorization scheme                                                       | digest
 zookeeper.authorization.user     | storage.authorization.user     | username                                                                   | user
 zookeeper.authorization.password | storage.authorization.password | password                                                                   | password
+zookeeper.max.inflight.requests  | n/a                            | maximum number of unacknowledged requests before blocking                  | 10
 
 ## Kafka
 

@@ -31,7 +31,12 @@ public final class MonitoringDetails {
     }
 
     public enum Severity {
-        CRITICAL, IMPORTANT, NON_IMPORTANT
+        @JsonProperty("CRITICAL")
+        CRITICAL,
+        @JsonProperty("IMPORTANT")
+        IMPORTANT,
+        @JsonProperty("NON_IMPORTANT")
+        NON_IMPORTANT
     }
 
     @Override

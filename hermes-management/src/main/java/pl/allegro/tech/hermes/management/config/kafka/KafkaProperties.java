@@ -10,7 +10,7 @@ public class KafkaProperties {
 
     private int connectionTimeoutMillis = 3000;
 
-    private int maxInflight = 1;
+    private int maxInflight = 10;
 
     private int retryTimes = 3;
 
