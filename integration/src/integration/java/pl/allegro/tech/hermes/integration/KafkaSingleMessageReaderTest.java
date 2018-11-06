@@ -25,7 +25,7 @@ import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class KafkaSingleMessageReaderTest extends IntegrationTest {
 
@@ -43,14 +43,14 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldFetchSingleMessageByTopicPartitionAndOffset() {
         // given
-        Topic topic = operations.buildTopic("kafkaPreviewTestGroup", "topic");
+        Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "topic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         List<String> messages = new ArrayList<String>() {{ range(0, 3).forEach(i -> add(TestMessage.random().body())); }};
 
         remoteService.expectMessages(messages);
 
-        String qualifiedTopicName = "kafkaPreviewTestGroup.topic";
+        String qualifiedTopicName = topic.getQualifiedName();
         messages.forEach(message -> publisher.publish(qualifiedTopicName, message));
 
         remoteService.waitUntilReceived();
@@ -65,7 +65,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldFetchSingleAvroMessage() throws IOException {
         // given
-        Topic topic = topic("avro.fetch").withContentType(AVRO).build();
+        Topic topic = randomTopic("avro", "fetch").withContentType(AVRO).build();
         TopicWithSchema topicWithSchema = topicWithSchema(topic, avroUser.getSchemaAsString());
         operations.buildTopicWithSchema(topicWithSchema);
 
@@ -85,7 +85,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldFetchSingleAvroMessageWithSchemaAwareSerialization() throws IOException {
         // given
-        Topic topic = topic("avro.fetchSchemaAwareSerialization")
+        Topic topic = randomTopic("avro", "fetchSchemaAwareSerialization")
                 .withSchemaVersionAwareSerialization()
                 .withContentType(AVRO)
                 .build();
@@ -108,17 +108,17 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldReturnNotFoundErrorForNonExistingOffset() {
         // given
-        Topic topic = operations.buildTopic("kafkaPreviewTestGroup", "offsetTestTopic");
+        Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "offsetTestTopic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         List<String> messages = new ArrayList<String>() {{ range(0, 3).forEach(i -> add(TestMessage.random().body())); }};
 
         remoteService.expectMessages(messages);
-        messages.forEach(message -> publisher.publish("kafkaPreviewTestGroup.offsetTestTopic", message));
+        messages.forEach(message -> publisher.publish(topic.getQualifiedName(), message));
 
         remoteService.waitUntilReceived();
 
         // when
-        catchException(management.topic()).preview("kafkaPreviewTestGroup.offsetTestTopic", PRIMARY_KAFKA_CLUSTER_NAME, 0, 10L);
+        catchException(management.topic()).preview(topic.getQualifiedName(), PRIMARY_KAFKA_CLUSTER_NAME, 0, 10L);
 
         // then
         assertThat(CatchException.<NotFoundException>caughtException()).isInstanceOf(NotFoundException.class);
@@ -127,10 +127,10 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldReturnNotFoundErrorForNonExistingPartition() {
         // given
-        operations.buildTopic("kafkaPreviewTestGroup", "partitionTestTopic");
+        Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "partitionTestTopic").build());
 
         // when
-        catchException(management.topic()).preview("kafkaPreviewTestGroup.partitionTestTopic", PRIMARY_KAFKA_CLUSTER_NAME, 10, 0L);
+        catchException(management.topic()).preview(topic.getQualifiedName(), PRIMARY_KAFKA_CLUSTER_NAME, 10, 0L);
 
         // then
         assertThat(CatchException.<NotFoundException>caughtException()).isInstanceOf(NotFoundException.class);

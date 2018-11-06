@@ -95,6 +95,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
         // then
         assertThat(response.isSuccess()).isTrue();
         assertThat(response.getMessageId()).isNotEmpty();
+        assertThat(response.getDebugLog()).contains("Sending message").contains("succeeded");
     }
 
     private void shouldNotPublishUsingHermesClient(HermesClient client) {
@@ -106,6 +107,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
 
         // then
         assertThat(response.isFailure()).isTrue();
+        assertThat(response.getDebugLog()).contains("Sending message").contains("failed");
     }
 
     private OkHttpClient getOkHttpClientWithSslContextConfigured() {

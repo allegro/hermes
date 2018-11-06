@@ -87,6 +87,36 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                         return $scope.topicContentType;
                     }
                 }
+            }).result.then(function(response){
+                $scope.subscription = response.subscription;
+            });
+        };
+
+        $scope.clone = function () {
+            $modal.open({
+                templateUrl: 'partials/modal/editSubscription.html',
+                controller: 'SubscriptionEditController',
+                size: 'lg',
+                resolve: {
+                    subscription: function () {
+                        return $scope.subscription;
+                    },
+                    topicName: function () {
+                        return topicName;
+                    },
+                    operation: function () {
+                        return 'ADD';
+                    },
+                    endpointAddressResolverMetadataConfig: function() {
+                        return config.endpointAddressResolverMetadata;
+                    },
+                    topicContentType: function () {
+                        return $scope.topicContentType;
+                    }
+                }
+            }).result.then(function(response){
+                var subscriptionName = response.subscription.name;
+                $location.path('/groups/' + groupName + '/topics/' + topicName + '/subscriptions/' + subscriptionName);
             });
         };
 
@@ -208,22 +238,19 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
               endpointAddressResolverMetadataConfig, topicContentType) {
         $scope.topicName = topicName;
         $scope.topicContentType = topicContentType;
-        $scope.subscription = subscription;
+        $scope.subscription = _.cloneDeep(subscription);
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
 
-        var subscriptionBeforeChanges = _.cloneDeep(subscription);
-
         $scope.save = function () {
             var promise;
+            var subscriptionToSave = _.cloneDeep($scope.subscription);
             passwordService.setRoot($scope.rootPassword);
 
             if (operation === 'ADD') {
-                promise = subscriptionRepository.add(topicName, $scope.subscription).$promise;
-            }
-            else {
-                var subscriptionToSave = _.cloneDeep(subscription);
-                if(subscription.endpoint === subscriptionBeforeChanges.endpoint) {
+                promise = subscriptionRepository.add(topicName, subscriptionToSave).$promise;
+            } else {
+                if(subscription.endpoint === subscriptionToSave.endpoint) {
                     delete subscriptionToSave.endpoint;
                 }
                 delete subscriptionToSave['oAuthPolicy']; // prevent from resetting password
@@ -233,7 +260,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
             promise
                     .then(function () {
                         toaster.pop('success', 'Success', 'Subscription has been saved');
-                        $modal.close();
+                        $modal.close({ subscription: $scope.subscription });
                     })
                     .catch(function (response) {
                         toaster.pop('error', 'Error ' + response.status, response.data.message);
@@ -273,6 +300,6 @@ function initRetransmissionCalendar(daysBack) {
         showMeridian: true,
         autoclose: true,
         startDate: startDate,
-        endDate: new Date(),
+        endDate: new Date()
     });
 }

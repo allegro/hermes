@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
+import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -289,6 +290,21 @@ public class ConsumerMessageSenderTest {
         // then
         verifyRateLimiterFailedSendingCountedTimes(0);
         verifyRateLimiterSuccessfulSendingCountedTimes(2);
+        verifySemaphoreReleased();
+    }
+
+    @Test
+    public void shouldBackoffRetriesOnServiceUnavailableWithoutRetryAfter() throws InterruptedException {
+        // given
+        Message message = message();
+        doReturn(failure(SERVICE_UNAVAILABLE.getStatusCode())).doReturn(success()).when(messageSender).send(message);
+
+        // when
+        sender.sendAsync(message);
+
+        // then
+        verifyRateLimiterFailedSendingCountedTimes(1);
+        verifyRateLimiterSuccessfulSendingCountedTimes(1);
         verifySemaphoreReleased();
     }
 
