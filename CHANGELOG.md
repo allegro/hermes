@@ -5,7 +5,7 @@
 8 changes were merged in this release which were done during Allegro Hacktoberfest event.
 
 #### ([919](https://github.com/allegro/hermes/pull/919)) Test case for lowercase header
-#### ([935](https://github.com/allegro/hermes/pull/935)) added log ready debug message to hermes response interface
+#### ([935](https://github.com/allegro/hermes/pull/935)) Added log ready debug message to hermes response interface
 #### ([937](https://github.com/allegro/hermes/pull/937)) 503 response without Retry-After does not ignore rate limiting
 #### ([938](https://github.com/allegro/hermes/pull/938)) Introduce randomTopic test helper method creating topic with random name
 #### ([940](https://github.com/allegro/hermes/pull/940)) Added message filter type validation against topic
