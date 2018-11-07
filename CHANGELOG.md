@@ -4,14 +4,14 @@
 
 8 changes were merged in this release which were done during Allegro Hacktoberfest event.
 
-#### ([919](https://github.com/allegro/hermes/pull/919)) Test case for lowercase header
-#### ([935](https://github.com/allegro/hermes/pull/935)) Added log ready debug message to hermes response interface
-#### ([937](https://github.com/allegro/hermes/pull/937)) 503 response without Retry-After does not ignore rate limiting
-#### ([938](https://github.com/allegro/hermes/pull/938)) Introduce randomTopic test helper method creating topic with random name
-#### ([940](https://github.com/allegro/hermes/pull/940)) Added message filter type validation against topic
-#### ([942](https://github.com/allegro/hermes/pull/942)) Passing max message size to kafka
-#### ([943](https://github.com/allegro/hermes/pull/943)) Added content type validation disabling AVRO for BATCH delivery mode
-#### ([949](https://github.com/allegro/hermes/pull/949)) Added clone action for topics and subscriptions
+#### ([919](https://github.com/allegro/hermes/pull/919)) Test case for lowercase header by @adididas122
+#### ([935](https://github.com/allegro/hermes/pull/935)) Added log ready debug message to hermes response interface by @mictyd 
+#### ([937](https://github.com/allegro/hermes/pull/937)) 503 response without Retry-After does not ignore rate limiting by @spooz
+#### ([938](https://github.com/allegro/hermes/pull/938)) Introduce randomTopic test helper method creating topic with random  name by @Theer108
+#### ([940](https://github.com/allegro/hermes/pull/940)) Added message filter type validation against topic by @klacia
+#### ([942](https://github.com/allegro/hermes/pull/942)) Passing max message size to kafka by @mictyd
+#### ([943](https://github.com/allegro/hermes/pull/943)) Added content type validation disabling AVRO for BATCH delivery mode by @pwolaq
+#### ([949](https://github.com/allegro/hermes/pull/949)) Added clone action for topics and subscriptions by @pwolaq
 
 ## 0.14.0 (25.10.2018)
 
