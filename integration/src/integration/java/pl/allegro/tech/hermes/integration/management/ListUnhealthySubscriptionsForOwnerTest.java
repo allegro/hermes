@@ -13,11 +13,12 @@ import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
-import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.api.MonitoringDetails.*;
+import static pl.allegro.tech.hermes.api.SubscriptionHealth.*;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
@@ -54,20 +55,48 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         graphiteEndpoint.returnMetricForSubscription("group", "topic", "ownedSubscription3", 100);
 
         // then
-
         assertThat(listUnhealthySubscriptionsForOwner("Team A")).containsOnly(
-                new UnhealthySubscription("ownedSubscription2", "group.topic", MonitoringDetails.Severity.IMPORTANT, ImmutableSet.of(SubscriptionHealth.Problem.SLOW))
+                new UnhealthySubscription("ownedSubscription2", "group.topic", Severity.IMPORTANT, ImmutableSet.of(Problem.SLOW))
         );
     }
 
-    private void createSubscriptionForOwner(String subscriptionName, String ownerId) {
+    @Test
+    public void shouldReportAllUnhealthySubscriptionsForEmptyOwnerSource() {
+        // given
+        createSubscriptionForOwner("ownedSubscription1", "Team A");
+        createSubscriptionForOwner("ownedSubscription2", "Team A");
+
+        graphiteEndpoint.returnMetricForTopic("group", "topic", 100, 50);
+        graphiteEndpoint.returnMetricForSubscription("group", "topic", "ownedSubscription1", 100);
+        graphiteEndpoint.returnMetricForSubscription("group", "topic", "ownedSubscription2", 50);
+
+        // then
+        assertThat(listAllUnhealthySubscriptions()).containsOnly(
+                new UnhealthySubscription("ownedSubscription2", "group.topic", Severity.IMPORTANT, ImmutableSet.of(Problem.SLOW))
+        );
+    }
+
+    @Test
+    public void shouldReportSuspendedSubscriptionAsHealthy() {
+        // given
+        Subscription s = createSubscriptionForOwner("subscription1", "Team A");
+
+        // when
+        s.setState(Subscription.State.SUSPENDED);
+
+        // then
+        assertThat(listUnhealthySubscriptionsForOwner("Team A")).isEmpty();
+    }
+
+    private Subscription createSubscriptionForOwner(String subscriptionName, String ownerId) {
         Subscription subscription = subscription(topic, subscriptionName)
                 .withEndpoint(HTTP_ENDPOINT_URL)
                 .withOwner(ownerId(ownerId))
-                .withMonitoringDetails(new MonitoringDetails(MonitoringDetails.Severity.IMPORTANT, ""))
+                .withMonitoringDetails(new MonitoringDetails(Severity.IMPORTANT, ""))
                 .build();
 
         operations.createSubscription(topic, subscription);
+        return subscription;
     }
 
     @NotNull
@@ -76,6 +105,10 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
     }
 
     private List<UnhealthySubscription> listUnhealthySubscriptionsForOwner(String ownerId) {
-        return management.subscriptionOwnershipEndpoint().listUnhealthyForOwner("Plaintext", ownerId);
+        return management.subscriptionOwnershipEndpoint().listUnhealthy("Plaintext", ownerId, true);
+    }
+
+    private List<UnhealthySubscription> listAllUnhealthySubscriptions() {
+        return management.subscriptionOwnershipEndpoint().listUnhealthy(null, null, true);
     }
 }

@@ -1,37 +1,37 @@
 package pl.allegro.tech.hermes.management.domain.subscription;
 
-import java.util.Collection;
-
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.empty;
+import static java.util.stream.Stream.of;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTrace;
-import pl.allegro.tech.hermes.api.MonitoringDetails;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 public class SubscriptionService {
@@ -77,13 +77,13 @@ public class SubscriptionService {
         return listSubscriptions(topicName).stream()
                 .filter(Subscription::isTrackingEnabled)
                 .map(Subscription::getName)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public List<String> listFilteredSubscriptionNames(TopicName topicName, Query<Subscription> query) {
         return query.filter(listSubscriptions(topicName))
                 .map(Subscription::getName)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public List<Subscription> listSubscriptions(TopicName topicName) {
@@ -168,12 +168,12 @@ public class SubscriptionService {
     public List<Subscription> querySubscription(Query<Subscription> query) {
         return query
                 .filter(getAllSubscriptions())
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public List<SubscriptionNameWithMetrics> querySubscriptionsMetrics(Query<SubscriptionNameWithMetrics> query) {
         return query.filter(getSubscriptionsMetrics())
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     public List<Subscription> getAllSubscriptions() {
@@ -182,27 +182,38 @@ public class SubscriptionService {
                 .map(Topic::getName)
                 .map(this::listSubscriptions)
                 .flatMap(List::stream)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
-    public List<Subscription> listForOwnerId(OwnerId ownerId) {
+    public List<Subscription> getForOwnerId(OwnerId ownerId) {
         Collection<SubscriptionName> subscriptionNames = subscriptionOwnerCache.get(ownerId);
         return subscriptionRepository.getSubscriptionDetails(subscriptionNames);
     }
 
-    public List<UnhealthySubscription> listUnhealthyForOwner(OwnerId ownerId) {
-        List<Subscription> ownerSubscriptions = listForOwnerId(ownerId);
-        return ownerSubscriptions.stream()
-                .filter(subscription ->  subscription.getMonitoringDetails().getSeverity() != MonitoringDetails.Severity.NON_IMPORTANT)
-                .flatMap(subscription -> {
-                    SubscriptionHealth subscriptionHealth = getHealth(subscription);
-                    if (subscriptionHealth.getStatus() == SubscriptionHealth.Status.UNHEALTHY) {
-                        return Stream.of(UnhealthySubscription.from(subscription, subscriptionHealth));
+    public List<UnhealthySubscription> getAllUnhealthy() {
+        Collection<SubscriptionName> subscriptionNames = subscriptionOwnerCache.getAll();
+        List<Subscription> subscriptions = subscriptionRepository.getSubscriptionDetails(subscriptionNames);
+        return filterHealthy(subscriptions);
+    }
+
+    public List<UnhealthySubscription> getUnhealthyForOwner(OwnerId ownerId) {
+        List<Subscription> ownerSubscriptions = getForOwnerId(ownerId);
+        return filterHealthy(ownerSubscriptions);
+    }
+
+    private List<UnhealthySubscription> filterHealthy(Collection<Subscription> subscriptions) {
+        return subscriptions.stream()
+                .filter(s -> !s.isSeverityNotImportant())
+                .flatMap(s -> {
+                    SubscriptionHealth subscriptionHealth = getHealth(s);
+
+                    if (subscriptionHealth.getStatus() == Status.UNHEALTHY) {
+                        return of(UnhealthySubscription.from(s, subscriptionHealth));
                     } else {
-                        return Stream.empty();
+                        return empty();
                     }
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private SubscriptionHealth getHealth(Subscription subscription) {
@@ -217,6 +228,6 @@ public class SubscriptionService {
                 .map(s -> {
                     SubscriptionMetrics metrics = metricsRepository.loadMetrics(s.getTopicName(), s.getName());
                     return SubscriptionNameWithMetrics.from(metrics, s.getName(), s.getQualifiedTopicName());
-                }).collect(Collectors.toList());
+                }).collect(toList());
     }
 }
