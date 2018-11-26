@@ -4,6 +4,7 @@ import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.xcontent.XContentType;
 import pl.allegro.tech.hermes.tracker.QueueCommitter;
 
 import java.util.List;
@@ -34,7 +35,8 @@ public class ElasticsearchQueueCommitter extends QueueCommitter<ElasticsearchDoc
     @Override
     protected void processBatch(List<ElasticsearchDocument> batch) throws ExecutionException, InterruptedException {
         BulkRequestBuilder bulk = client.prepareBulk();
-        batch.forEach(entry -> bulk.add(client.prepareIndex(indexFactory.createIndex(), typeName).setSource(entry.bytes())));
+        batch.forEach(entry -> bulk.add(
+                client.prepareIndex(indexFactory.createIndex(), typeName).setSource(entry.bytes(), XContentType.JSON)));
         bulk.execute().get();
     }
 
