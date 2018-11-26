@@ -13,12 +13,16 @@ public class ElasticsearchClientFactory {
 
     private final TransportClient client;
 
-    public ElasticsearchClientFactory(int port, String clusterName, String... hosts) throws UnknownHostException {
+    public ElasticsearchClientFactory(int port, String clusterName, String... hosts) {
         client = new PreBuiltTransportClient(
                 Settings.builder().put("cluster.name", clusterName).build());
 
         for (String host: hosts) {
-            client.addTransportAddress(new TransportAddress(InetAddress.getByName(host), port));
+            try {
+                client.addTransportAddress(new TransportAddress(InetAddress.getByName(host), port));
+            } catch (UnknownHostException e) {
+                throw new RuntimeException("Unknown host", e);
+            }
         }
     }
 
