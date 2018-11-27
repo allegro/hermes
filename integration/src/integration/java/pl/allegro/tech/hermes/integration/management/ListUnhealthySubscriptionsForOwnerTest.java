@@ -1,25 +1,23 @@
 package pl.allegro.tech.hermes.integration.management;
 
 import com.google.common.collect.ImmutableSet;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.jetbrains.annotations.NotNull;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.MonitoringDetails;
+import static pl.allegro.tech.hermes.api.MonitoringDetails.Severity;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.MonitoringDetails.*;
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.*;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
 
@@ -105,10 +103,10 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
     }
 
     private List<UnhealthySubscription> listUnhealthySubscriptionsForOwner(String ownerId) {
-        return management.subscriptionOwnershipEndpoint().listUnhealthy("Plaintext", ownerId, true);
+        return management.unhealthyEndpoint().listUnhealthy("Plaintext", ownerId, true);
     }
 
     private List<UnhealthySubscription> listAllUnhealthySubscriptions() {
-        return management.subscriptionOwnershipEndpoint().listUnhealthy(null, null, true);
+        return management.unhealthyEndpoint().listUnhealthy(null, null, true);
     }
 }

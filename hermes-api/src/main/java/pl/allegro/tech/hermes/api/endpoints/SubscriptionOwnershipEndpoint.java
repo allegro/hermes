@@ -19,11 +19,4 @@ public interface SubscriptionOwnershipEndpoint {
     @Path("/{ownerSourceName}/{ownerId}")
     List<Subscription> listForOwner(@PathParam("ownerSourceName") String ownerSourceName,
                                     @PathParam("ownerId") String ownerId);
-
-    @GET
-    @Produces(APPLICATION_JSON)
-    @Path("/unhealthy")
-    List<UnhealthySubscription> listUnhealthy(@QueryParam("ownerSourceName") String ownerSourceName,
-                                              @QueryParam("ownerId") String id,
-                                              @QueryParam("respectMonitoringSeverity") boolean respectMonitoringSeverity);
 }
