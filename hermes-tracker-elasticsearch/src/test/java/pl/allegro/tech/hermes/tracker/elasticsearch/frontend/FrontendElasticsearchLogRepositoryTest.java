@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.frontend;
 
 import com.codahale.metrics.MetricRegistry;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
@@ -23,8 +23,9 @@ import java.time.ZoneOffset;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
-import static org.elasticsearch.index.query.QueryBuilders.filteredQuery;
-import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
 public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest implements LogSchemaAware {
 
@@ -34,7 +35,7 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
 
-    public static ElasticsearchResource elasticsearch = new ElasticsearchResource(frontendIndexFactory);
+    private static final ElasticsearchResource elasticsearch = new ElasticsearchResource();
 
     private SchemaManager schemaManager;
 
@@ -63,33 +64,30 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
                                                 String id,
                                                 PublishedMessageTraceStatus status,
                                                 String reason,
-                                                String remoteHostname) throws Exception {
+                                                String remoteHostname) {
         awaitUntilMessageIsIndexed(
-                filteredQuery(matchAllQuery(),
-                        FilterBuilders.andFilter(
-                                FilterBuilders.termFilter(TOPIC_NAME, topic),
-                                FilterBuilders.termFilter(MESSAGE_ID, id),
-                                FilterBuilders.termFilter(STATUS, status.toString()),
-                                FilterBuilders.termFilter(REASON, reason),
-                                FilterBuilders.termFilter(CLUSTER, CLUSTER_NAME),
-                                FilterBuilders.termFilter(REMOTE_HOSTNAME, remoteHostname)
-                        )));
+                getPublishedQuery(topic, id, status, remoteHostname)
+                        .must(matchQuery(REASON, reason)));
     }
 
     @Override
     protected void awaitUntilMessageIsPersisted(String topic,
                                                 String id,
                                                 PublishedMessageTraceStatus status,
-                                                String remoteHostname) throws Exception {
-        awaitUntilMessageIsIndexed(
-                filteredQuery(matchAllQuery(),
-                        FilterBuilders.andFilter(
-                                FilterBuilders.termFilter(TOPIC_NAME, topic),
-                                FilterBuilders.termFilter(MESSAGE_ID, id),
-                                FilterBuilders.termFilter(STATUS, status.toString()),
-                                FilterBuilders.termFilter(CLUSTER, CLUSTER_NAME),
-                                FilterBuilders.termFilter(REMOTE_HOSTNAME, remoteHostname)
-                        )));
+                                                String remoteHostname) {
+        awaitUntilMessageIsIndexed(getPublishedQuery(topic, id, status, remoteHostname));
+    }
+
+    private BoolQueryBuilder getPublishedQuery(String topic,
+                                               String id,
+                                               PublishedMessageTraceStatus status,
+                                               String remoteHostname) {
+        return boolQuery()
+                .must(termQuery(TOPIC_NAME, topic))
+                .must(termQuery(MESSAGE_ID, id))
+                .must(termQuery(STATUS, status.toString()))
+                .must(termQuery(CLUSTER, CLUSTER_NAME))
+                .must(termQuery(REMOTE_HOSTNAME, remoteHostname));
     }
 
     private void awaitUntilMessageIsIndexed(QueryBuilder query) {

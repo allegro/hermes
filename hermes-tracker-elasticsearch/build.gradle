@@ -1,11 +1,12 @@
 dependencies {
     compile project(':hermes-tracker')
     compile 'org.slf4j:slf4j-api:1.7.12'
-    compile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.7.1'
+    compile group: 'org.elasticsearch.client', name: 'transport', version: '6.1.4'
 
     testCompile project(path: ":hermes-tracker", configuration: "testArtifacts")
     testCompile project(path: ":hermes-test-helper")
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testCompile 'pl.allegro.tech:embedded-elasticsearch:2.7.0'
 }
 
 test.useTestNG()

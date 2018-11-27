@@ -12,10 +12,25 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendDailyIndexF
 import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.function.Function;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.*;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.BATCH_ID;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.CLUSTER;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.MESSAGE_ID;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.OFFSET;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.PARTITION;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.PUBLISH_TIMESTAMP;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.REASON;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.REMOTE_HOSTNAME;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.SOURCE_HOSTNAME;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.STATUS;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.SUBSCRIPTION;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TIMESTAMP;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TIMESTAMP_SECONDS;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TOPIC_NAME;
 
 public class SchemaManager {
 
@@ -85,7 +100,7 @@ public class SchemaManager {
                                 XContentBuilder templateMapping) {
 
         PutIndexTemplateRequest publishedTemplateRequest = new PutIndexTemplateRequest(templateName)
-                .template(indicesRegExp)
+                .patterns(Arrays.asList(indicesRegExp))
                 .mapping(indexType, templateMapping)
                 .alias(new Alias(aliasName));
 
@@ -100,9 +115,9 @@ public class SchemaManager {
         return prepareMapping(SENT_TYPE, xContentBuilder -> {
             try {
                 return xContentBuilder
-                        .startObject(SUBSCRIPTION).field("type", "string").field("index", "not_analyzed").endObject()
+                        .startObject(SUBSCRIPTION).field("type", "keyword").endObject()
                         .startObject(PUBLISH_TIMESTAMP).field("type", "long").endObject()
-                        .startObject(BATCH_ID).field("type", "string").field("index", "not_analyzed").endObject()
+                        .startObject(BATCH_ID).field("type", "keyword").endObject()
                         .startObject(OFFSET).field("type", "long").endObject()
                         .startObject(PARTITION).field("type", "integer").endObject();
             } catch (IOException e) {
@@ -114,21 +129,22 @@ public class SchemaManager {
     private XContentBuilder prepareMapping(String indexType, Function<XContentBuilder, XContentBuilder> additionalMapping) {
         try {
             XContentBuilder jsonBuilder = jsonBuilder()
-                    .startObject().startObject(indexType)
-                    .field("dynamic").value(dynamicMappingEnabled)
-                    .startObject("_all").field("enabled", false).endObject()
-                    .startObject("properties")
-                    .startObject(MESSAGE_ID).field("type", "string").field("index", "not_analyzed").endObject()
-                    .startObject(TIMESTAMP).field("type", "long").endObject()
-                    .startObject(TIMESTAMP_SECONDS).field("type", "long").endObject()
-                    .startObject(TOPIC_NAME).field("type", "string").field("index", "not_analyzed").endObject()
-                    .startObject(STATUS).field("type", "string").field("index", "not_analyzed").endObject()
-                    .startObject(CLUSTER).field("type", "string").field("index", "not_analyzed").endObject()
-                    .startObject(SOURCE_HOSTNAME).field("type", "string").field("index", "not_analyzed").endObject()
-                    .startObject(REMOTE_HOSTNAME).field("type", "string").field("index", "not_analyzed").endObject()
-                    .startObject(REASON).field("type", "string").field("index", "not_analyzed").endObject();
+                .startObject()
+                    .startObject(indexType)
+                        .field("dynamic", dynamicMappingEnabled)
+                        .startObject("_all").field("enabled", false).endObject()
+                        .startObject("properties")
+                            .startObject(MESSAGE_ID).field("type", "keyword").endObject()
+                            .startObject(TIMESTAMP).field("type", "long").field("index", false).endObject()
+                            .startObject(TIMESTAMP_SECONDS).field("type", "long").endObject()
+                            .startObject(TOPIC_NAME).field("type", "keyword").endObject()
+                            .startObject(STATUS).field("type", "keyword").endObject()
+                            .startObject(CLUSTER).field("type", "keyword").endObject()
+                            .startObject(SOURCE_HOSTNAME).field("type", "keyword").endObject()
+                            .startObject(REMOTE_HOSTNAME).field("type", "keyword").endObject()
+                            .startObject(REASON).field("type", "text").endObject();
 
-            return additionalMapping.apply(jsonBuilder).endObject().endObject();
+            return additionalMapping.apply(jsonBuilder).endObject().endObject().endObject();
         } catch (IOException ex) {
             throw new ElasticsearchRepositoryException(ex);
         }
