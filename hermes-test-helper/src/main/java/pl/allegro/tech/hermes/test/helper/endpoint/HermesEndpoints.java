@@ -5,12 +5,13 @@ import pl.allegro.tech.hermes.api.endpoints.BlacklistEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.MigrationEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OAuthProviderEndpoint;
-import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OwnerEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.UnhealthyEndpoint;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 import pl.allegro.tech.hermes.test.helper.client.Hermes;
 
@@ -40,6 +41,8 @@ public class HermesEndpoints {
 
     private final MigrationEndpoint migrationEndpoint;
 
+    public final UnhealthyEndpoint unhealthyEndpoint;
+
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
@@ -52,6 +55,7 @@ public class HermesEndpoints {
         this.consumerEndpoint = hermes.createConsumerEndpoint();
         this.ownerEndpoint = hermes.createOwnerEndpoint();
         this.migrationEndpoint = hermes.createMigrationEndpoint();
+        this.unhealthyEndpoint = hermes.unhealthyEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
@@ -94,6 +98,10 @@ public class HermesEndpoints {
 
     public MigrationEndpoint migration() {
         return migrationEndpoint;
+    }
+
+    public UnhealthyEndpoint unhealthyEndpoint() {
+        return unhealthyEndpoint;
     }
 
     public BlacklistEndpoint blacklist() {

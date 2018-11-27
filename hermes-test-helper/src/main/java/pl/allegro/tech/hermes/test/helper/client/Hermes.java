@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.UnhealthyEndpoint;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 
 import javax.ws.rs.Path;
@@ -107,6 +108,10 @@ public class Hermes {
 
     public MigrationEndpoint createMigrationEndpoint() {
         return createProxy(url, MigrationEndpoint.class, managementConfig);
+    }
+
+    public UnhealthyEndpoint unhealthyEndpoint() {
+        return createProxy(url, UnhealthyEndpoint.class, managementConfig);
     }
 
     public BlacklistEndpoint createBlacklistEndpoint() {

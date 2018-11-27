@@ -398,6 +398,11 @@ public class Subscription implements Anonymizable {
         return oAuthPolicy != null;
     }
 
+    @JsonIgnore
+    public boolean isSeverityNotImportant() {
+        return getMonitoringDetails().getSeverity() == MonitoringDetails.Severity.NON_IMPORTANT;
+    }
+
     public boolean isHttp2Enabled() {
         return http2Enabled;
     }
