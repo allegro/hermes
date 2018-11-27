@@ -9,11 +9,14 @@ import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Path("unhealthy")
 public class UnhealthyEndpoint {
@@ -31,23 +34,18 @@ public class UnhealthyEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/")
-    public List<UnhealthySubscription> listUnhealthy(@QueryParam("ownerSourceName") String ownerSourceName,
-                                                     @QueryParam("ownerId") String id,
-                                                     @QueryParam("respectMonitoringSeverity") boolean respectMonitoringSeverity) {
-        try {
-            OwnerId ownerId = resolveOwnerId(ownerSourceName, id);
-            return subscriptionService.getUnhealthyForOwner(ownerId);
-        } catch (OwnerSource.OwnerNotFound | OwnerSourceNotFound e) {
-            return subscriptionService.getAllUnhealthy();
-        }
+    public List<UnhealthySubscription> listUnhealthy(
+            @QueryParam("ownerSourceName") String ownerSourceName,
+            @QueryParam("ownerId") String id,
+            @DefaultValue("true") @QueryParam("respectMonitoringSeverity") boolean respectMonitoringSeverity) {
+
+        Optional<OwnerId> ownerId = resolveOwnerId(ownerSourceName, id);
+        return ownerId.isPresent()
+                ? subscriptionService.getUnhealthyForOwner(ownerId.get(), respectMonitoringSeverity)
+                : subscriptionService.getAllUnhealthy(respectMonitoringSeverity);
     }
 
-    private OwnerId resolveOwnerId(String ownerSourceName, String id) {
-        OwnerSource ownerSource = ownerSources.getByName(ownerSourceName)
-                .orElseThrow(() -> new OwnerSourceNotFound(ownerSourceName));
-        if (!ownerSource.exists(id)) {
-            throw new OwnerSource.OwnerNotFound(ownerSourceName, id);
-        }
-        return new OwnerId(ownerSource.name(), id);
+    private Optional<OwnerId> resolveOwnerId(String ownerSourceName, String id) {
+        return ownerSources.getByName(ownerSourceName).map(ownerSource -> new OwnerId(ownerSource.name(), id));
     }
 }

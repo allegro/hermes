@@ -190,20 +190,20 @@ public class SubscriptionService {
         return subscriptionRepository.getSubscriptionDetails(subscriptionNames);
     }
 
-    public List<UnhealthySubscription> getAllUnhealthy() {
+    public List<UnhealthySubscription> getAllUnhealthy(boolean respectMonitoringSeverity) {
         Collection<SubscriptionName> subscriptionNames = subscriptionOwnerCache.getAll();
         List<Subscription> subscriptions = subscriptionRepository.getSubscriptionDetails(subscriptionNames);
-        return filterHealthy(subscriptions);
+        return filterHealthy(subscriptions, respectMonitoringSeverity);
     }
 
-    public List<UnhealthySubscription> getUnhealthyForOwner(OwnerId ownerId) {
+    public List<UnhealthySubscription> getUnhealthyForOwner(OwnerId ownerId, boolean respectMonitoringSeverity) {
         List<Subscription> ownerSubscriptions = getForOwnerId(ownerId);
-        return filterHealthy(ownerSubscriptions);
+        return filterHealthy(ownerSubscriptions, respectMonitoringSeverity);
     }
 
-    private List<UnhealthySubscription> filterHealthy(Collection<Subscription> subscriptions) {
+    private List<UnhealthySubscription> filterHealthy(Collection<Subscription> subscriptions, boolean respectMonitoringSeverity) {
         return subscriptions.stream()
-                .filter(s -> !s.isSeverityNotImportant())
+                .filter(s -> filterBySeverityMonitorFlag(respectMonitoringSeverity, s.isSeverityNotImportant()))
                 .flatMap(s -> {
                     SubscriptionHealth subscriptionHealth = getHealth(s);
 
@@ -214,6 +214,10 @@ public class SubscriptionService {
                     }
                 })
                 .collect(toList());
+    }
+
+    private boolean filterBySeverityMonitorFlag(boolean respectMonitoringSeverity, boolean isSeverityNotImportant) {
+        return !(respectMonitoringSeverity && isSeverityNotImportant);
     }
 
     private SubscriptionHealth getHealth(Subscription subscription) {
