@@ -44,7 +44,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
 
-    public static final ElasticsearchResource elasticsearch = new ElasticsearchResource(frontendIndexFactory, consumersIndexFactory);
+    private static final ElasticsearchResource elasticsearch = new ElasticsearchResource();
 
     private LogRepository logRepository;
     private FrontendElasticsearchLogRepository frontendLogRepository;
@@ -96,7 +96,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     }
 
     @Test
-    public void shouldGetMessageStatus() throws Exception {
+    public void shouldGetMessageStatus() {
         //given
         MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch.messageStatus", "subscription");
         long timestamp = System.currentTimeMillis();
@@ -126,7 +126,8 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
 
         await().atMost(ONE_MINUTE).until(() -> {
             status.clear();
-            status.addAll(logRepository.getMessageStatus(messageMetadata.getTopic(), messageMetadata.getSubscription(), messageMetadata.getMessageId()));
+            status.addAll(logRepository.getMessageStatus(messageMetadata.getTopic(), messageMetadata.getSubscription(),
+                    messageMetadata.getMessageId()));
             return status.size() == 2;
         });
 
