@@ -1,3 +1,33 @@
+## 0.15.2 (5.12.2018)
+
+### Enhancements
+
+#### ([957](https://github.com/allegro/hermes/pull/957)) Optimized elasticsearch template mapping
+
+## 0.15.1 (28.11.2018)
+
+### Enhancements
+
+#### ([956](https://github.com/allegro/hermes/pull/956)) Updated elasticsearch to 6.1.4 version in hermes-tracker
+#### ([955](https://github.com/allegro/hermes/pull/955)) Changed format for subscription healthcheck endpoint
+
+From now on we can list unhealthy subscriptions via following endpoint on hermes-management:
+
+```
+POST `/unhealthy
+```
+
+We can also provide parameters:
+```
+POST /unhealthy?ownerSourceName={ownerSourceName}&ownerId={service_id}&respectMonitoringSeverity=true
+```
+
+Thanks the first two parameters you can narrow down search results to unhealthy subscriptions owned by provided
+{ownerId} from {ownerSourceName}. 
+
+The last flag decides whether monitoring severity flag on subscription should be respected. If true then only
+unhealthy subscriptions with severity monitor set to `Important` or `Critical` will be returned by unhealthy endpoint.
+
 ## 0.15.0 (06.11.2018)
 
 ### Enhancements
