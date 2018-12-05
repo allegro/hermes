@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactor
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.function.Function;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -115,9 +114,9 @@ public class SchemaManager {
         return prepareMapping(SENT_TYPE, xContentBuilder -> {
             try {
                 return xContentBuilder
-                        .startObject(SUBSCRIPTION).field("type", "keyword").endObject()
-                        .startObject(PUBLISH_TIMESTAMP).field("type", "long").endObject()
-                        .startObject(BATCH_ID).field("type", "keyword").endObject()
+                        .startObject(SUBSCRIPTION).field("type", "keyword").field("norms", false).endObject()
+                        .startObject(PUBLISH_TIMESTAMP).field("type", "date").field("index", false).endObject()
+                        .startObject(BATCH_ID).field("type", "keyword").field("norms", false).endObject()
                         .startObject(OFFSET).field("type", "long").endObject()
                         .startObject(PARTITION).field("type", "integer").endObject();
             } catch (IOException e) {
@@ -134,15 +133,15 @@ public class SchemaManager {
                         .field("dynamic", dynamicMappingEnabled)
                         .startObject("_all").field("enabled", false).endObject()
                         .startObject("properties")
-                            .startObject(MESSAGE_ID).field("type", "keyword").endObject()
-                            .startObject(TIMESTAMP).field("type", "long").field("index", false).endObject()
-                            .startObject(TIMESTAMP_SECONDS).field("type", "long").endObject()
-                            .startObject(TOPIC_NAME).field("type", "keyword").endObject()
-                            .startObject(STATUS).field("type", "keyword").endObject()
-                            .startObject(CLUSTER).field("type", "keyword").endObject()
-                            .startObject(SOURCE_HOSTNAME).field("type", "keyword").endObject()
-                            .startObject(REMOTE_HOSTNAME).field("type", "keyword").endObject()
-                            .startObject(REASON).field("type", "text").endObject();
+                            .startObject(MESSAGE_ID).field("type", "keyword").field("norms", false).endObject()
+                            .startObject(TIMESTAMP).field("type", "date").field("index", false).endObject()
+                            .startObject(TIMESTAMP_SECONDS).field("type", "date").field("format", "epoch_second").endObject()
+                            .startObject(TOPIC_NAME).field("type", "keyword").field("norms", false).endObject()
+                            .startObject(STATUS).field("type", "keyword").field("norms", false).endObject()
+                            .startObject(CLUSTER).field("type", "keyword").field("norms", false).endObject()
+                            .startObject(SOURCE_HOSTNAME).field("type", "keyword").field("norms", false).endObject()
+                            .startObject(REMOTE_HOSTNAME).field("type", "keyword").field("norms", false).endObject()
+                            .startObject(REASON).field("type", "text").field("norms", false).endObject();
 
             return additionalMapping.apply(jsonBuilder).endObject().endObject().endObject();
         } catch (IOException ex) {

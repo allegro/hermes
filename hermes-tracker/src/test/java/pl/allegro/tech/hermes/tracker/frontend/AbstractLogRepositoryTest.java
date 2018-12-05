@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
 import pl.allegro.tech.hermes.test.helper.retry.Retry;
 
+import static java.lang.System.currentTimeMillis;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.INFLIGHT;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
@@ -41,7 +42,7 @@ public abstract class AbstractLogRepositoryTest {
         String hostname = "172.16.254.1";
 
         // when
-        logRepository.logPublished(id, 1234L, topic, hostname);
+        logRepository.logPublished(id, currentTimeMillis(), topic, hostname);
 
         // then
         awaitUntilMessageIsPersisted(topic, id, SUCCESS, hostname);
@@ -55,7 +56,7 @@ public abstract class AbstractLogRepositoryTest {
         String hostname = "172.16.254.1";
 
         // when
-        logRepository.logError(id, 1234L, topic, "reason", hostname);
+        logRepository.logError(id, currentTimeMillis(), topic, "reason", hostname);
 
         // then
         awaitUntilMessageIsPersisted(topic, id, ERROR, "reason", hostname);
@@ -69,7 +70,7 @@ public abstract class AbstractLogRepositoryTest {
         String hostname = "172.16.254.1";
 
         // when
-        logRepository.logInflight(id, 1234L, topic, hostname);
+        logRepository.logInflight(id, currentTimeMillis(), topic, hostname);
 
         // then
         awaitUntilMessageIsPersisted(topic, id, INFLIGHT, hostname);

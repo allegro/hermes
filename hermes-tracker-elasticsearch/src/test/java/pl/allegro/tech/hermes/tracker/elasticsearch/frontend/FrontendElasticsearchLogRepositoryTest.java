@@ -31,7 +31,7 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
 
     private static final String CLUSTER_NAME = "primary";
 
-    private static final Clock clock = Clock.fixed(LocalDate.of(2000, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
+    private static final Clock clock = Clock.fixed(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
 
