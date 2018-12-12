@@ -127,6 +127,12 @@ subprojects {
     }
 
     test {
+        reports {
+            html.enabled = false
+            junitXml.enabled = true
+            junitXml.destination = file("$buildDir/test-results/$name")
+        }
+
         testLogging {
             exceptionFormat = 'full'
             events 'passed', 'skipped', 'failed'
