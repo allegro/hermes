@@ -12,6 +12,7 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -53,18 +54,13 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
 
         if (configFactory.getBooleanProperty(Configs.METRICS_GRAPHITE_REPORTER)) {
 
-            Set<MetricAttribute> disabledAttributes = new HashSet<>(
-                    Lists.newArrayList(
+            Set<MetricAttribute> disabledAttributes = Sets.newHashSet(
                             MetricAttribute.M15_RATE,
                             MetricAttribute.M5_RATE,
                             MetricAttribute.MEAN,
                             MetricAttribute.MEAN_RATE,
                             MetricAttribute.MIN,
-                            MetricAttribute.P50,
-                            MetricAttribute.P75,
-                            MetricAttribute.P95,
                             MetricAttribute.STDDEV
-                    )
             );
 
             String prefix = Joiner.on(".").join(
