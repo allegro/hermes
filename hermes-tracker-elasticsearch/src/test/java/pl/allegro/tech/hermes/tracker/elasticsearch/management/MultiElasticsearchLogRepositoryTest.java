@@ -83,10 +83,11 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
         MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch1.messageStatus", "subscription");
         long timestamp = System.currentTimeMillis();
 
+        // when
         frontendLogRepository.logPublished("1234", timestamp, "elasticsearch1.messageStatus", "localhost");
         consumersLogRepository.logSuccessful(messageMetadata, "localhost", timestamp);
 
-        // when
+        // then
         assertThat(fetchMessageStatus(messageMetadata))
                 .contains(publishedMessageTrace(messageMetadata, timestamp, PublishedMessageTraceStatus.SUCCESS))
                 .contains(sentMessageTrace(messageMetadata, timestamp, SentMessageTraceStatus.SUCCESS));
