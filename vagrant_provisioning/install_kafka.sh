@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-KAFKA_VERSION=0.10.2.1
-SCALA_VERSION=2.10
+KAFKA_VERSION=2.0.0
+SCALA_VERSION=2.11
 
 if [ ! -d /opt/kafka ]; then
     echo "Installing Apache Kafka ${KAFKA_VERSION}"
