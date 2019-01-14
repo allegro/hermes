@@ -52,4 +52,10 @@ public class MultiDCAwareService {
     public boolean topicExists(Topic topic) {
         return clusters.stream().map(brokersClusterService -> brokersClusterService.topicExists(topic)).allMatch(Boolean.TRUE::equals);
     }
+
+    public boolean areOffsetsMoved(Topic topic, String subscriptionName) {
+        return clusters.stream()
+                .map(cluster -> cluster.areOffsetsMoved(topic, subscriptionName))
+                .allMatch(Boolean.TRUE::equals);
+    }
 }

@@ -162,7 +162,6 @@ public enum Configs {
 
     CONSUMER_RECEIVER_POOL_TIMEOUT("consumer.receiver.pool.timeout", 30),
     CONSUMER_RECEIVER_READ_QUEUE_CAPACITY("consumer.receiver.read.queue.capacity", 1000),
-    CONSUMER_RETRANSMISSION_QUEUE_CAPACITY("consumer.receiver.retransmission.queue.capacity", 20),
 
     CONSUMER_RECEIVER_WAIT_BETWEEN_UNSUCCESSFUL_POLLS("consumer.receiver.wait.between.unsuccessful.polls", true),
     CONSUMER_RECEIVER_INITIAL_IDLE_TIME("consumer.receiver.initial.idle.time", 10),

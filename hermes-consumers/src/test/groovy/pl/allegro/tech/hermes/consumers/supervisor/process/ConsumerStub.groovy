@@ -72,8 +72,8 @@ class ConsumerStub implements Consumer {
     }
 
     @Override
-    void moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
-
+    boolean moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
+        return true
     }
 
     boolean getInitialized() {
