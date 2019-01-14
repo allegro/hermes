@@ -19,7 +19,7 @@ public class UnreachableIndicator implements SubscriptionHealthProblemIndicator 
     }
 
     @Override
-    public Optional<SubscriptionHealthProblem> getProblemIfPresent(SubscriptionHealthContext context) {
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
         SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
         if (areSubscriptionMetricsReliable(subscriptionMetrics) && isOtherErrorsRateHigh(subscriptionMetrics)) {
             return Optional.of(unreachable(subscriptionMetrics.getOtherErrorsRate()));

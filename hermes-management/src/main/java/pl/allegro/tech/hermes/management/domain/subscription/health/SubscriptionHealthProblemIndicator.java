@@ -5,5 +5,5 @@ import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import java.util.Optional;
 
 public interface SubscriptionHealthProblemIndicator {
-    Optional<SubscriptionHealthProblem> getProblemIfPresent(SubscriptionHealthContext context);
+    Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context);
 }

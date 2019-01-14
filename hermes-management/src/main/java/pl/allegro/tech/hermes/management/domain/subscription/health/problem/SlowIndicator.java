@@ -16,7 +16,7 @@ public class SlowIndicator implements SubscriptionHealthProblemIndicator {
     }
 
     @Override
-    public Optional<SubscriptionHealthProblem> getProblemIfPresent(SubscriptionHealthContext context) {
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
         double subscriptionRate = context.getSubscriptionMetrics().getRate();
         double topicRate = context.getTopicMetrics().getRate();
         if (subscriptionRate < minSubscriptionToTopicSpeedRatio * topicRate) {

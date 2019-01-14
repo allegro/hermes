@@ -19,7 +19,7 @@ public class MalfunctioningIndicator implements SubscriptionHealthProblemIndicat
     }
 
     @Override
-    public Optional<SubscriptionHealthProblem> getProblemIfPresent(SubscriptionHealthContext context) {
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
         SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
         if (areSubscriptionMetricsReliable(subscriptionMetrics) && isCode5xxErrorsRateHigh(subscriptionMetrics)) {
             return Optional.of(malfunctioning(subscriptionMetrics.getCode5xxErrorsRate()));

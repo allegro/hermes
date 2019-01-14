@@ -16,7 +16,7 @@ public class LaggingIndicator implements SubscriptionHealthProblemIndicator {
     }
 
     @Override
-    public Optional<SubscriptionHealthProblem> getProblemIfPresent(SubscriptionHealthContext context) {
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
         long subscriptionLag = context.getSubscriptionMetrics().getLag();
         double topicRate = context.getTopicMetrics().getRate();
         double lagInSeconds = subscriptionLag / topicRate;

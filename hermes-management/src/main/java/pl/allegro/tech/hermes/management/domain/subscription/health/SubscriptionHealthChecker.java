@@ -48,7 +48,7 @@ public class SubscriptionHealthChecker {
 
     private Set<SubscriptionHealthProblem> getHealthProblems(SubscriptionHealthContext healthContext) {
         return problemIndicators.stream()
-                .map(indicator -> indicator.getProblemIfPresent(healthContext))
+                .map(indicator -> indicator.getProblem(healthContext))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toSet());

@@ -14,6 +14,11 @@ import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.ProblemCode.T
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.ProblemCode.UNREACHABLE;
 
 public class SubscriptionHealthProblem {
+
+    public enum ProblemCode {
+        LAGGING, SLOW, UNREACHABLE, TIMING_OUT, MALFUNCTIONING, RECEIVING_MALFORMED_MESSAGES
+    }
+
     private final ProblemCode code;
     private final String description;
 
@@ -95,9 +100,5 @@ public class SubscriptionHealthProblem {
         SubscriptionHealthProblem other = (SubscriptionHealthProblem) obj;
         return Objects.equals(this.code, other.code)
                 && Objects.equals(this.description, other.description);
-    }
-
-    public enum ProblemCode {
-        LAGGING, SLOW, UNREACHABLE, TIMING_OUT, MALFUNCTIONING, RECEIVING_MALFORMED_MESSAGES
     }
 }

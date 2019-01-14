@@ -20,7 +20,7 @@ public class ReceivingMalformedMessagesIndicator implements SubscriptionHealthPr
     }
 
     @Override
-    public Optional<SubscriptionHealthProblem> getProblemIfPresent(SubscriptionHealthContext context) {
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
         Subscription subscription = context.getSubscription();
         SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
         if (hasClientErrorRetry(subscription)
