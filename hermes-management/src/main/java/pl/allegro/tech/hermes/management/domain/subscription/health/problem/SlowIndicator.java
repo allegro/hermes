@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
+import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
 
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem.SLOW;
+import java.util.Optional;
 
-public class SlowIndicator extends AbstractSubscriptionHealthProblemIndicator {
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.slow;
+
+public class SlowIndicator implements SubscriptionHealthProblemIndicator {
     private final double minSubscriptionToTopicSpeedRatio;
 
     public SlowIndicator(double minSubscriptionToTopicSpeedRatio) {
@@ -13,14 +16,12 @@ public class SlowIndicator extends AbstractSubscriptionHealthProblemIndicator {
     }
 
     @Override
-    public boolean problemOccurs(SubscriptionHealthContext context) {
+    public Optional<SubscriptionHealthProblem> getProblemIfPresent(SubscriptionHealthContext context) {
         double subscriptionRate = context.getSubscriptionMetrics().getRate();
         double topicRate = context.getTopicMetrics().getRate();
-        return subscriptionRate < minSubscriptionToTopicSpeedRatio * topicRate;
-    }
-
-    @Override
-    public SubscriptionHealth.Problem getProblem() {
-        return SLOW;
+        if (subscriptionRate < minSubscriptionToTopicSpeedRatio * topicRate) {
+            return Optional.of(slow(subscriptionRate, topicRate));
+        }
+        return Optional.empty();
     }
 }
