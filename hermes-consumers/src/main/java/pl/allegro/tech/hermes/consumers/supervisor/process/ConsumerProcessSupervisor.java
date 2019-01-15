@@ -156,7 +156,7 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private void stopOrUpdateConsumer(Signal signal) {
         Subscription signalSubscription = signal.getPayload();
-        if (deliveryTypesEqual(signalSubscription)) {
+        if (!deliveryTypesEqual(signalSubscription)) {
             logger.info("Stopping subscription: {} because of delivery type update", signalSubscription.getQualifiedName());
             stop(Signal.of(STOP, signal.getTarget()));
         } else {
@@ -165,7 +165,7 @@ public class ConsumerProcessSupervisor implements Runnable {
     }
 
     private boolean deliveryTypesEqual(Subscription signalSubscription) {
-        return signalSubscription.getDeliveryType() != runningConsumerProcesses.getProcess(signalSubscription.getQualifiedName())
+        return signalSubscription.getDeliveryType() == runningConsumerProcesses.getProcess(signalSubscription.getQualifiedName())
                                                                                 .getSubscription()
                                                                                 .getDeliveryType();
     }
