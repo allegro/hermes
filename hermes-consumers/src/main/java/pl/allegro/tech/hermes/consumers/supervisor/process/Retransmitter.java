@@ -49,6 +49,8 @@ public class Retransmitter {
                             partitionOffset.getTopic(),
                             partitionOffset.getPartition()
                     );
+                    logger.warn("Removed offset indicator for subscription={} and partition={}",
+                            subscriptionName, subscriptionPartitionOffset.getPartition());
                 }
             }
         } catch (Exception ex) {
@@ -62,8 +64,8 @@ public class Retransmitter {
         try {
             return consumer.moveOffset(subscriptionPartitionOffset);
         } catch (IllegalStateException ex) {
-            logger.warn("Cannot move offset for partition {} for subscription {}, possibly owned by different node",
-                    subscriptionPartitionOffset.getPartition(), subscriptionName, ex);
+            logger.warn("Cannot move offset for subscription={} and partition={} , possibly owned by different node",
+                    subscriptionName, subscriptionPartitionOffset.getPartition(), ex);
             return false;
         }
     }

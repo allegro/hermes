@@ -19,8 +19,6 @@ public class TopicContentTypeMigrationService {
 
     public static final Duration CHECK_OFFSETS_AVAILABLE_TIMEOUT = Duration.ofSeconds(1);
     public static final Duration INTERVAL_BETWEEN_OFFSETS_AVAILABLE_CHECK_RETRIES = Duration.ofMillis(500);
-    public static final Duration INTERVAL_BETWEEN_CHECKING_IF_OFFSETS_MOVED = Duration.ofMillis(1000);
-    public static final Duration OFFSETS_MOVED_TIMEOUT = Duration.ofSeconds(10);
 
     private final SubscriptionRepository subscriptionRepository;
     private final MultiDCAwareService multiDCAwareService;
@@ -40,22 +38,6 @@ public class TopicContentTypeMigrationService {
         subscriptionRepository.listSubscriptionNames(topic.getName()).forEach(s ->
                 notifySingleSubscription(topic, beforeMigrationInstant, s)
         );
-        subscriptionRepository.listSubscriptionNames(topic.getName()).forEach(s ->
-                waitUntilOffsetsMoved(topic, s)
-        );
-    }
-
-    private void waitUntilOffsetsMoved(Topic topic, String subscriptionName) {
-        Instant abortAttemptsInstant = clock.instant().plus(OFFSETS_MOVED_TIMEOUT);
-
-        while(!multiDCAwareService.areOffsetsMoved(topic, subscriptionName)) {
-            if (clock.instant().isAfter(abortAttemptsInstant)) {
-                throw new UnableToMoveOffsetsException(topic);
-            }
-            logger.debug("Not all offsets related to hermes topic {} were moved, will retry", topic.getQualifiedName());
-
-            sleep(INTERVAL_BETWEEN_CHECKING_IF_OFFSETS_MOVED);
-        }
     }
 
     private void notifySingleSubscription(Topic topic, Instant beforeMigrationInstant, String subscriptionName) {

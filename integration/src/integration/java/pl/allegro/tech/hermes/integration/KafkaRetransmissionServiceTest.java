@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,6 +26,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.integration.env.SharedServices.services;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 import static pl.allegro.tech.hermes.test.helper.message.TestMessage.simpleMessages;
 
 public class KafkaRetransmissionServiceTest extends IntegrationTest {
@@ -45,7 +45,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         // given
         String subscription = "subscription";
 
-        Topic topic = operations.buildTopic("resetOffsetGroup", "topic");
+        Topic topic = operations.buildTopic(randomTopic("resetOffsetGroup", "topic").build());
         operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
 
         sendMessagesOnTopic(topic, 4);
@@ -70,7 +70,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         // given
         String subscription = "subscription";
 
-        Topic topic = operations.buildTopic("resetOffsetGroup", "topicDryRun");
+        Topic topic = operations.buildTopic(randomTopic("resetOffsetGroup", "topicDryRun").build());
         operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
 
         // we have 2 partitions, thus 4 messages to get 2 per partition
@@ -93,9 +93,9 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldMoveOffsetInDryRunModeForTopicsMigratedToAvro() throws InterruptedException, IOException {
+    public void shouldMoveOffsetInDryRunModeForTopicsMigratedToAvro() throws InterruptedException {
         // given
-        Topic topic = operations.buildTopic("resetOffsetGroup", "migratedTopicDryRun");
+        Topic topic = operations.buildTopic(randomTopic("resetOffsetGroup", "migratedTopicDryRun").build());
         long currentTime = clock.millis();
         Subscription subscription = operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         wait.untilSubscriptionIsActivated(currentTime, topic, subscription.getName());

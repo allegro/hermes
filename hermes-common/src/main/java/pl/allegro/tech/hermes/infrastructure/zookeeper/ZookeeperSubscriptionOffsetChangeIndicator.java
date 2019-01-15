@@ -71,7 +71,7 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
         String offsetPath = paths.offsetPath(topicName, subscriptionName, kafkaTopicName, brokersClusterName, partitionId);
 
         try {
-            zookeeper.delete().forPath(offsetPath);
+            zookeeper.delete().guaranteed().deletingChildrenIfNeeded().forPath(offsetPath);
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
