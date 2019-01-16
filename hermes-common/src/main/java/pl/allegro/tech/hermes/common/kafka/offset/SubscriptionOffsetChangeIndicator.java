@@ -12,7 +12,7 @@ public interface SubscriptionOffsetChangeIndicator {
 
     PartitionOffsets getSubscriptionOffsets(TopicName topic, String subscriptionName, String brokersClusterName);
 
-    boolean areOffsetsMoved(TopicName name, String subscriptionName, String brokersClusterName,
+    boolean areOffsetsMoved(TopicName topicName, String subscriptionName, String brokersClusterName,
                             KafkaTopic kafkaTopic, List<Integer> partitionIds);
 
 

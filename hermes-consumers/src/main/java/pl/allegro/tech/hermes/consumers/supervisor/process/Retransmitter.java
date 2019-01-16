@@ -44,12 +44,12 @@ public class Retransmitter {
                 if (moveOffset(subscriptionName, consumer, subscriptionPartitionOffset)) {
                     subscriptionOffsetChangeIndicator.removeOffset(
                         subscriptionName.getTopicName(),
-                            subscriptionName.getName(),
-                            brokersClusterName,
-                            partitionOffset.getTopic(),
-                            partitionOffset.getPartition()
+                        subscriptionName.getName(),
+                        brokersClusterName,
+                        partitionOffset.getTopic(),
+                        partitionOffset.getPartition()
                     );
-                    logger.warn("Removed offset indicator for subscription={} and partition={}",
+                    logger.info("Removed offset indicator for subscription={} and partition={}",
                             subscriptionName, subscriptionPartitionOffset.getPartition());
                 }
             }
