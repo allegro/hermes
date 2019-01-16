@@ -17,5 +17,5 @@ public interface MessageReceiver {
 
     void commit(Set<SubscriptionPartitionOffset> offsets);
 
-    void moveOffset(SubscriptionPartitionOffset offset);
+    boolean moveOffset(SubscriptionPartitionOffset offset);
 }
