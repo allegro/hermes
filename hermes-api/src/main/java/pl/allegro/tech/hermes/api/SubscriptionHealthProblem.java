@@ -9,14 +9,13 @@ import static java.lang.String.format;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.ProblemCode.LAGGING;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.ProblemCode.MALFUNCTIONING;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.ProblemCode.RECEIVING_MALFORMED_MESSAGES;
-import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.ProblemCode.SLOW;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.ProblemCode.TIMING_OUT;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.ProblemCode.UNREACHABLE;
 
 public class SubscriptionHealthProblem {
 
     public enum ProblemCode {
-        LAGGING, SLOW, UNREACHABLE, TIMING_OUT, MALFUNCTIONING, RECEIVING_MALFORMED_MESSAGES
+        LAGGING, UNREACHABLE, TIMING_OUT, MALFUNCTIONING, RECEIVING_MALFORMED_MESSAGES
     }
 
     private final ProblemCode code;
@@ -47,13 +46,6 @@ public class SubscriptionHealthProblem {
         return new SubscriptionHealthProblem(
                 RECEIVING_MALFORMED_MESSAGES,
                 format("Consuming service returns a lot of 4xx codes, currently %.0f 4xx/s", code4xxErrorsRate)
-        );
-    }
-
-    public static SubscriptionHealthProblem slow(double subscriptionRate, double topicRate) {
-        return new SubscriptionHealthProblem(
-                SLOW,
-                format("Consumption rate (%.0f RPS) is lower than topic production rate (%.0f RPS)", subscriptionRate, topicRate)
         );
     }
 

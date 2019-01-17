@@ -22,6 +22,7 @@ import java.util.UUID;
 import static com.googlecode.catchexception.CatchException.catchException;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class MetricsTest extends IntegrationTest {
@@ -69,7 +70,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("pl.group", "topic");
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetricForSubscription("pl_group", "topic", "subscription", 15);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub("pl_group.topic.subscription").withRate(15).build());
 
         remoteService.expectMessages(TestMessage.simple().body());
         assertThat(publisher.publish("pl.group.topic", TestMessage.simple().body()).getStatus())
@@ -112,7 +113,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("pl.allegro.tech.hermes", "topic");
         operations.createSubscription(topic, "pl.allegro.tech.hermes.subscription", HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetricForSubscription("pl_allegro_tech_hermes", "topic", "pl_allegro_tech_hermes_subscription", 15);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub("pl_allegro_tech_hermes.topic.pl_allegro_tech_hermes_subscription").withRate(15).build());
 
         wait.until(() -> {
             // when

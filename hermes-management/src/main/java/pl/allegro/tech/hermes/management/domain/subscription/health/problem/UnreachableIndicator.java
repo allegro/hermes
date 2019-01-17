@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
-import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionMetrics;
 
 import java.util.Optional;
 
@@ -20,20 +19,18 @@ public class UnreachableIndicator implements SubscriptionHealthProblemIndicator 
 
     @Override
     public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
-        SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
-        if (areSubscriptionMetricsReliable(subscriptionMetrics) && isOtherErrorsRateHigh(subscriptionMetrics)) {
-            return Optional.of(unreachable(subscriptionMetrics.getOtherErrorsRate()));
+        if (areSubscriptionMetricsReliable(context) && isOtherErrorsRateHigh(context)) {
+            return Optional.of(unreachable(context.getOtherErrorsRate()));
         }
         return Optional.empty();
     }
 
-    private boolean areSubscriptionMetricsReliable(SubscriptionMetrics subscriptionMetrics) {
-        return subscriptionMetrics.getRate() > minSubscriptionRateForReliableMetrics;
+    private boolean areSubscriptionMetricsReliable(SubscriptionHealthContext context) {
+        return context.getSubscriptionRateRespectingDeliveryType() > minSubscriptionRateForReliableMetrics;
     }
 
-    private boolean isOtherErrorsRateHigh(SubscriptionMetrics subscriptionMetrics) {
-        double otherErrorsRate = subscriptionMetrics.getOtherErrorsRate();
-        double rate = subscriptionMetrics.getRate();
-        return otherErrorsRate > maxOtherErrorsRatio * rate;
+    private boolean isOtherErrorsRateHigh(SubscriptionHealthContext context) {
+        double otherErrorsRate = context.getOtherErrorsRate();
+        return otherErrorsRate > maxOtherErrorsRatio * context.getSubscriptionRateRespectingDeliveryType();
     }
 }

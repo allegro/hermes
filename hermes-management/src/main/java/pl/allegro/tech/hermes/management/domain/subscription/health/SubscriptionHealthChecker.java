@@ -17,7 +17,6 @@ import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
 @Component
 public class SubscriptionHealthChecker {
     private final Set<SubscriptionHealthProblemIndicator> problemIndicators;
-    private final SubscriptionHealthContextCreator contextCreator = new SubscriptionHealthContextCreator();
 
     @Autowired
     public SubscriptionHealthChecker(Set<SubscriptionHealthProblemIndicator> problemIndicators) {
@@ -38,7 +37,7 @@ public class SubscriptionHealthChecker {
 
     private SubscriptionHealth getActiveSubscriptionHealth(Subscription subscription, TopicMetrics topicMetrics, SubscriptionMetrics subscriptionMetrics) {
         try {
-            SubscriptionHealthContext healthContext = contextCreator.createContext(subscription, topicMetrics, subscriptionMetrics);
+            SubscriptionHealthContext healthContext = new SubscriptionHealthContext(subscription, topicMetrics, subscriptionMetrics);
             Set<SubscriptionHealthProblem> healthProblems = getHealthProblems(healthContext);
             return SubscriptionHealth.of(healthProblems);
         } catch (NumberFormatException e) {
