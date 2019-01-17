@@ -65,7 +65,7 @@ public class FilteringMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public void moveOffset(SubscriptionPartitionOffset offset) {
-        receiver.moveOffset(offset);
+    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+        return receiver.moveOffset(offset);
     }
 }

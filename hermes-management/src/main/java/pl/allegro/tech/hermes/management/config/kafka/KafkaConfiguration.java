@@ -12,16 +12,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPoolConfig;
+import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.management.config.SubscriptionProperties;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -31,11 +30,16 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMe
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.OffsetsAvailableChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import javax.annotation.PreDestroy;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
 import static java.util.stream.Collectors.toList;
 
 @Configuration
@@ -52,6 +56,9 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     TopicProperties topicProperties;
 
     @Autowired
+    SubscriptionProperties subscriptionProperties;
+
+    @Autowired
     MessageContentWrapper messageContentWrapper;
 
     @Autowired
@@ -64,7 +71,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     private final List<CuratorFramework> curators = new ArrayList<>();
 
     @Bean
-    MultiDCAwareService multiDCAwareService(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository) {
+    MultiDCAwareService multiDCAwareService(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
+                                            Clock clock) {
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
             KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getClusterName());
 
@@ -90,7 +98,12 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper, new OffsetsAvailableChecker(consumerPool, storage));
         }).collect(toList());
 
-        return new MultiDCAwareService(clusters, adminTool);
+        return new MultiDCAwareService(
+                clusters,
+                adminTool,
+                clock,
+                ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
+                ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()));
     }
 
     @Bean
