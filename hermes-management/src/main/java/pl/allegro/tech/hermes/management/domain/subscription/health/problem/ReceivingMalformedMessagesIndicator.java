@@ -1,13 +1,16 @@
 package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
+import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionMetrics;
 
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem.RECEIVING_MALFORMED_MESSAGES;
+import java.util.Optional;
 
-public class ReceivingMalformedMessagesIndicator extends AbstractSubscriptionHealthProblemIndicator {
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.receivingMalformedMessages;
+
+public class ReceivingMalformedMessagesIndicator implements SubscriptionHealthProblemIndicator {
     private final double max4xxErrorsRatio;
     private final double minSubscriptionRateForReliableMetrics;
 
@@ -17,12 +20,15 @@ public class ReceivingMalformedMessagesIndicator extends AbstractSubscriptionHea
     }
 
     @Override
-    public boolean problemOccurs(SubscriptionHealthContext context) {
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
         Subscription subscription = context.getSubscription();
         SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
-        return hasClientErrorRetry(subscription)
+        if (hasClientErrorRetry(subscription)
                 && areSubscriptionMetricsReliable(subscriptionMetrics)
-                && isCode4xxErrorsRateHigh(subscriptionMetrics);
+                && isCode4xxErrorsRateHigh(subscriptionMetrics)) {
+            return Optional.of(receivingMalformedMessages(subscriptionMetrics.getCode4xxErrorsRate()));
+        }
+        return Optional.empty();
     }
 
     private boolean hasClientErrorRetry(Subscription subscription) {
@@ -41,10 +47,5 @@ public class ReceivingMalformedMessagesIndicator extends AbstractSubscriptionHea
         double code4xxErrorsRate = subscriptionMetrics.getCode4xxErrorsRate();
         double rate = subscriptionMetrics.getRate();
         return code4xxErrorsRate > max4xxErrorsRatio * rate;
-    }
-
-    @Override
-    public SubscriptionHealth.Problem getProblem() {
-        return RECEIVING_MALFORMED_MESSAGES;
     }
 }
