@@ -39,23 +39,34 @@ public class Retransmitter {
             for (PartitionOffset partitionOffset : offsets) {
                 SubscriptionPartitionOffset subscriptionPartitionOffset = new SubscriptionPartitionOffset(
                         new SubscriptionPartition(partitionOffset.getTopic(), subscriptionName, partitionOffset.getPartition()),
-                        partitionOffset.getOffset()
-                );
-                moveOffset(subscriptionName, consumer, subscriptionPartitionOffset);
+                        partitionOffset.getOffset());
+
+                if (moveOffset(subscriptionName, consumer, subscriptionPartitionOffset)) {
+                    subscriptionOffsetChangeIndicator.removeOffset(
+                        subscriptionName.getTopicName(),
+                        subscriptionName.getName(),
+                        brokersClusterName,
+                        partitionOffset.getTopic(),
+                        partitionOffset.getPartition()
+                    );
+                    logger.info("Removed offset indicator for subscription={} and partition={}",
+                            subscriptionName, subscriptionPartitionOffset.getPartition());
+                }
             }
         } catch (Exception ex) {
             throw new RetransmissionException(ex);
         }
     }
 
-    private void moveOffset(SubscriptionName subscriptionName,
+    private boolean moveOffset(SubscriptionName subscriptionName,
                             Consumer consumer,
                             SubscriptionPartitionOffset subscriptionPartitionOffset) {
         try {
-            consumer.moveOffset(subscriptionPartitionOffset);
+            return consumer.moveOffset(subscriptionPartitionOffset);
         } catch (IllegalStateException ex) {
-            logger.warn("Cannot move offset for partition {} for subscription {}, possibly owned by different node",
-                    subscriptionPartitionOffset.getPartition(), subscriptionName, ex);
+            logger.warn("Cannot move offset for subscription={} and partition={} , possibly owned by different node",
+                    subscriptionName, subscriptionPartitionOffset.getPartition(), ex);
+            return false;
         }
     }
 }

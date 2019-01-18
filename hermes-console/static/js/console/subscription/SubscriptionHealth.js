@@ -8,8 +8,8 @@ health.factory('SubscriptionHealth', ['DiscoveryService', '$resource',
             health: function (topicName, subscriptionName) {
                 return health.get({topicName: topicName, subscriptionName: subscriptionName})
                     .$promise.then(function (health) {
-                        var problemOccurs = function (problem) {
-                            return _.include(health.problems, problem)
+                        var problemOccurs = function (problemCode) {
+                            return _.some(health.problems, {code: problemCode})
                         };
 
                         return {

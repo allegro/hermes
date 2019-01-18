@@ -173,10 +173,11 @@ public class BatchConsumer implements Consumer {
     }
 
     @Override
-    public void moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
+    public boolean moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
         if (receiver != null) {
-            receiver.moveOffset(subscriptionPartitionOffset);
+            return receiver.moveOffset(subscriptionPartitionOffset);
         }
+        return false;
     }
 
     @Override

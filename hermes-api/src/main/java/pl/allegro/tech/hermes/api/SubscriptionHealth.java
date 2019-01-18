@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.immutableEnumSet;
 import static java.util.Collections.emptySet;
 
 public final class SubscriptionHealth {
@@ -16,20 +15,20 @@ public final class SubscriptionHealth {
     public static final SubscriptionHealth NO_DATA = new SubscriptionHealth(Status.NO_DATA, emptySet());
 
     private final Status status;
-    private final ImmutableSet<Problem> problems;
+    private final ImmutableSet<SubscriptionHealthProblem> problems;
 
     @JsonCreator
     private SubscriptionHealth(@JsonProperty("status") Status status,
-                               @JsonProperty("problems") Set<Problem> problems) {
+                               @JsonProperty("problems") Set<SubscriptionHealthProblem> problems) {
         this.status = status;
-        this.problems = immutableEnumSet(problems);
+        this.problems = ImmutableSet.copyOf(problems);
     }
 
     public Status getStatus() {
         return status;
     }
 
-    public Set<Problem> getProblems() {
+    public Set<SubscriptionHealthProblem> getProblems() {
         return problems;
     }
 
@@ -55,7 +54,7 @@ public final class SubscriptionHealth {
                 '}';
     }
 
-    public static SubscriptionHealth of(Set<Problem> problems) {
+    public static SubscriptionHealth of(Set<SubscriptionHealthProblem> problems) {
         checkNotNull(problems, "Set of health problems cannot be null");
         if (problems.isEmpty()) {
             return HEALTHY;
@@ -66,9 +65,5 @@ public final class SubscriptionHealth {
 
     public enum Status {
         HEALTHY, UNHEALTHY, NO_DATA
-    }
-
-    public enum Problem {
-        LAGGING, SLOW, UNREACHABLE, TIMING_OUT, MALFUNCTIONING, RECEIVING_MALFORMED_MESSAGES
     }
 }

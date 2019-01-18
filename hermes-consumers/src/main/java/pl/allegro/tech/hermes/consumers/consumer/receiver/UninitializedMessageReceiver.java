@@ -18,7 +18,7 @@ public class UninitializedMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public void moveOffset(SubscriptionPartitionOffset offset) {
+    public boolean moveOffset(SubscriptionPartitionOffset offset) {
         throw new ConsumerNotInitializedException();
     }
 }
