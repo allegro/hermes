@@ -1,22 +1,22 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit;
 
- import java.util.Collections;
-import java.util.Optional;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.common.TopicPartition;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
+import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
-import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class KafkaRetransmissionService implements RetransmissionService {
 
@@ -57,6 +57,14 @@ public class KafkaRetransmissionService implements RetransmissionService {
         });
 
         return partitionOffsetList;
+    }
+
+    @Override
+    public boolean areOffsetsMoved(Topic topic, String subscriptionName, String brokersClusterName) {
+        return kafkaNamesMapper.toKafkaTopics(topic).allMatch(kafkaTopic -> {
+            List<Integer> partitionIds = brokerStorage.readPartitionsIds(kafkaTopic.name().asString());
+            return subscriptionOffsetChange.areOffsetsMoved(topic.getName(), subscriptionName, brokersClusterName, kafkaTopic, partitionIds);
+        });
     }
 
     private KafkaConsumer<byte[], byte[]> createKafkaConsumer(KafkaTopic kafkaTopic, int partition) {

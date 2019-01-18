@@ -150,7 +150,7 @@ public class MessageBatchReceiver {
         receiver.commit(offsets);
     };
 
-    public void moveOffset(SubscriptionPartitionOffset offset) {
-        receiver.moveOffset(offset);
+    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+        return receiver.moveOffset(offset);
     };
 }
