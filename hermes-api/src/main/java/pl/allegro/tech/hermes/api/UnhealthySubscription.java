@@ -11,14 +11,14 @@ public class UnhealthySubscription {
     private final String name;
     private final String qualifiedTopicName;
     private final MonitoringDetails.Severity severity;
-    private final Set<SubscriptionHealth.Problem> problems;
+    private final Set<SubscriptionHealthProblem> problems;
 
     @JsonCreator
     public UnhealthySubscription(
             @JsonProperty("name") String name,
             @JsonProperty("topicName") String qualifiedTopicName,
             @JsonProperty("severity") MonitoringDetails.Severity severity,
-            @JsonProperty("problems") Set<SubscriptionHealth.Problem> problems) {
+            @JsonProperty("problems") Set<SubscriptionHealthProblem> problems) {
         this.name = name;
         this.qualifiedTopicName = qualifiedTopicName;
         this.severity = severity;
@@ -45,7 +45,7 @@ public class UnhealthySubscription {
     }
 
     @JsonProperty("problems")
-    public Set<SubscriptionHealth.Problem> getProblems() {
+    public Set<SubscriptionHealthProblem> getProblems() {
         return problems;
     }
 

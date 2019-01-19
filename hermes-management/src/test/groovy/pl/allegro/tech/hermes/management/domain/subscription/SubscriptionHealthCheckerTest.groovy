@@ -18,8 +18,13 @@ import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE
 import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.HEALTHY
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.NO_DATA
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem.*
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.lagging
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.receivingMalformedMessages
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.slow
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.timingOut
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.unreachable
 import static pl.allegro.tech.hermes.api.SubscriptionMetrics.Builder.subscriptionMetrics
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 
@@ -71,7 +76,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [LAGGING] as Set
+        subscriptionHealth.problems == [lagging(60100)] as Set
     }
 
     def "should indicate that a subscriber whose speed is smaller than 80% of the topic speed is slow"() {
@@ -86,7 +91,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [SLOW] as Set
+        subscriptionHealth.problems == [slow(79, 100)] as Set
     }
 
     def "should indicate that a subscriber with more than 50% 'other' errors is unreachable"() {
@@ -102,7 +107,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [UNREACHABLE] as Set
+        subscriptionHealth.problems == [unreachable(51)] as Set
     }
 
     def "should indicate that a subscriber with more than 10% timeouts is timing out"() {
@@ -118,7 +123,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [TIMING_OUT] as Set
+        subscriptionHealth.problems == [timingOut(11)] as Set
     }
 
     def "should indicate that a subscriber returning more than 10% 5xx errors is malfunctioning"() {
@@ -134,7 +139,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [MALFUNCTIONING] as Set
+        subscriptionHealth.problems == [malfunctioning(11)] as Set
     }
 
     def "should indicate that a subscriber with client error retry returning more than 10% 4xx errors is receiving malformed events"() {
@@ -156,7 +161,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [RECEIVING_MALFORMED_MESSAGES] as Set
+        subscriptionHealth.problems == [receivingMalformedMessages(11)] as Set
     }
 
     def "should not indicate that a subscriber without client error retry returning more than 10% 4xx errors is receiving malformed events"() {
@@ -216,7 +221,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [LAGGING, SLOW] as Set
+        subscriptionHealth.problems == [lagging(60100), slow(1.9, 100)] as Set
     }
 
     def "should return healthy status for a healthy subscription when the topic is idle"() {

@@ -1,12 +1,15 @@
 package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
+import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionMetrics;
 
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem.MALFUNCTIONING;
+import java.util.Optional;
 
-public class MalfunctioningIndicator extends AbstractSubscriptionHealthProblemIndicator {
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
+
+public class MalfunctioningIndicator implements SubscriptionHealthProblemIndicator {
     private final double max5xxErrorsRatio;
     private final double minSubscriptionRateForReliableMetrics;
 
@@ -16,9 +19,12 @@ public class MalfunctioningIndicator extends AbstractSubscriptionHealthProblemIn
     }
 
     @Override
-    public boolean problemOccurs(SubscriptionHealthContext context) {
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
         SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
-        return areSubscriptionMetricsReliable(subscriptionMetrics) && isCode5xxErrorsRateHigh(subscriptionMetrics);
+        if (areSubscriptionMetricsReliable(subscriptionMetrics) && isCode5xxErrorsRateHigh(subscriptionMetrics)) {
+            return Optional.of(malfunctioning(subscriptionMetrics.getCode5xxErrorsRate()));
+        }
+        return Optional.empty();
     }
 
     private boolean areSubscriptionMetricsReliable(SubscriptionMetrics subscriptionMetrics) {
@@ -29,10 +35,5 @@ public class MalfunctioningIndicator extends AbstractSubscriptionHealthProblemIn
         double code5xxErrorsRate = subscriptionMetrics.getCode5xxErrorsRate();
         double rate = subscriptionMetrics.getRate();
         return code5xxErrorsRate > max5xxErrorsRatio * rate;
-    }
-
-    @Override
-    public SubscriptionHealth.Problem getProblem() {
-        return MALFUNCTIONING;
     }
 }

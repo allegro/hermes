@@ -1,11 +1,8 @@
 package pl.allegro.tech.hermes.management.api;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.UnhealthySubscription;
-import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
-import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 
@@ -14,9 +11,13 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.GenericEntity;
+import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
+
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 @Path("unhealthy")
 public class UnhealthyEndpoint {
@@ -32,17 +33,20 @@ public class UnhealthyEndpoint {
     }
 
     @GET
-    @Produces(APPLICATION_JSON)
+    @Produces({APPLICATION_JSON, TEXT_PLAIN})
     @Path("/")
-    public List<UnhealthySubscription> listUnhealthy(
+    public Response listUnhealthy(
             @QueryParam("ownerSourceName") String ownerSourceName,
             @QueryParam("ownerId") String id,
             @DefaultValue("true") @QueryParam("respectMonitoringSeverity") boolean respectMonitoringSeverity) {
 
         Optional<OwnerId> ownerId = resolveOwnerId(ownerSourceName, id);
-        return ownerId.isPresent()
+        List<UnhealthySubscription> unhealthySubscriptions = ownerId.isPresent()
                 ? subscriptionService.getUnhealthyForOwner(ownerId.get(), respectMonitoringSeverity)
                 : subscriptionService.getAllUnhealthy(respectMonitoringSeverity);
+        return Response.ok()
+                .entity(new GenericEntity<List<UnhealthySubscription>>(unhealthySubscriptions){})
+                .build();
     }
 
     private Optional<OwnerId> resolveOwnerId(String ownerSourceName, String id) {

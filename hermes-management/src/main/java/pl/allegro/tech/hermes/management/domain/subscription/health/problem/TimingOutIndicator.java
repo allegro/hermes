@@ -1,12 +1,15 @@
 package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
+import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionMetrics;
 
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem.TIMING_OUT;
+import java.util.Optional;
 
-public class TimingOutIndicator extends AbstractSubscriptionHealthProblemIndicator {
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.timingOut;
+
+public class TimingOutIndicator implements SubscriptionHealthProblemIndicator {
     private final double maxTimeoutsRatio;
     private final double minSubscriptionRateForReliableMetrics;
 
@@ -16,9 +19,12 @@ public class TimingOutIndicator extends AbstractSubscriptionHealthProblemIndicat
     }
 
     @Override
-    public boolean problemOccurs(SubscriptionHealthContext context) {
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
         SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
-        return areSubscriptionMetricsReliable(subscriptionMetrics) && isTimeoutsRateHigh(subscriptionMetrics);
+        if (areSubscriptionMetricsReliable(subscriptionMetrics) && isTimeoutsRateHigh(subscriptionMetrics)) {
+            return Optional.of(timingOut(subscriptionMetrics.getTimeoutsRate()));
+        }
+        return Optional.empty();
     }
 
     private boolean areSubscriptionMetricsReliable(SubscriptionMetrics subscriptionMetrics) {
@@ -29,10 +35,5 @@ public class TimingOutIndicator extends AbstractSubscriptionHealthProblemIndicat
         double timeoutsRate = subscriptionMetrics.getTimeoutsRate();
         double rate = subscriptionMetrics.getRate();
         return timeoutsRate > maxTimeoutsRatio * rate;
-    }
-
-    @Override
-    public SubscriptionHealth.Problem getProblem() {
-        return TIMING_OUT;
     }
 }
