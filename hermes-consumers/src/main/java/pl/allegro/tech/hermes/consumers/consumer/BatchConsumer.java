@@ -204,7 +204,7 @@ public class BatchConsumer implements Consumer {
                 .withStopStrategy(attempt -> attempt.getDelaySinceFirstAttempt() > messageTtlMillis)
                 .withRetryListener(getRetryListener(result -> {
                     batch.incrementRetryCounter();
-                    monitoring.markFailed(batch, subscription, result);
+                    monitoring.markSendingResult(batch, subscription, result);
                 }))
                 .build();
     }
@@ -215,7 +215,7 @@ public class BatchConsumer implements Consumer {
 
     private void deliver(Runnable signalsInterrupt, MessageBatch batch, Retryer<MessageSendingResult> retryer) {
         try (Timer.Context timer = hermesMetrics.subscriptionLatencyTimer(subscription).time()) {
-            MessageSendingResult result = retryer.call(() -> {
+            retryer.call(() -> {
                 signalsInterrupt.run();
                 return sender.send(
                         batch,
@@ -224,7 +224,6 @@ public class BatchConsumer implements Consumer {
                         subscription.getBatchSubscriptionPolicy().getRequestTimeout()
                 );
             });
-            monitoring.markSendingResult(batch, subscription, result);
         } catch (Exception e) {
             logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.getQualifiedName(), e);
             monitoring.markDiscarded(batch, subscription, e.getMessage());
