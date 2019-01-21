@@ -49,7 +49,7 @@ public class Request {
     }
 
     private Method getRequestMethod(RequestMethod req) {
-        Map<RequestMethod, Method> map = new HashMap<>(8);
+        Map<RequestMethod, Method> map = new HashMap<>();
         map.put(RequestMethod.GET, Method.GET);
         map.put(RequestMethod.POST, Method.POST);
         map.put(RequestMethod.PUT, Method.PUT);
