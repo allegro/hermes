@@ -40,10 +40,10 @@ class HermesMockAvroTest extends Specification {
             def messages = (1..5).collect { new TestMessage("key-" + it, "value-" + it) }
 
         when:
-            messages.each {publish(topicName, it) }
+            messages.each { publish(topicName, it) }
 
         then:
-            hermes.expect().avroMessagesOnTopic(topicName,5, schema)
+            hermes.expect().avroMessagesOnTopic(topicName, 5, schema)
     }
 
     def "should get messages with schema from file"() {
@@ -94,7 +94,7 @@ class HermesMockAvroTest extends Specification {
             def messages = (1..5).collect() { new TestMessage("key-" + it, "value-" + it) }
 
         when:
-            messages.each {publish(topicName, it) }
+            messages.each { publish(topicName, it) }
 
         then:
             def requests = hermes.query().allAvroMessagesAs(topicName, schema, TestMessage)
@@ -111,7 +111,7 @@ class HermesMockAvroTest extends Specification {
             def messages = (1..5).collect() { new TestMessage("key-" + it, "value-" + it) }
 
         when:
-            messages.each {publish(topicName, it) }
+            messages.each { publish(topicName, it) }
 
         then:
             def requests = hermes.query().allAvroRawMessages(topicName)
@@ -127,12 +127,12 @@ class HermesMockAvroTest extends Specification {
             def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
 
         when:
-            messages.each {publish(topicName, it) }
+            messages.each { publish(topicName, it) }
 
         then:
             def message = hermes.query().lastAvroRawMessage(topicName)
             message.isPresent()
-            message.get() == new JsonAvroConverter().convertToAvro(messages[0].asJson().bytes, schema)
+            message.get() == new JsonAvroConverter().convertToAvro(messages[count - 1].asJson().bytes, schema)
 
             def request = hermes.query().lastRequest(topicName)
             request.isPresent()
