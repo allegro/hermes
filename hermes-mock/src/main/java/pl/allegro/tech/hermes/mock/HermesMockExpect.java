@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 public class HermesMockExpect {
     private final HermesMockHelper hermesMockHelper;
-    private final long awaitSeconds;
+    private final int awaitSeconds;
 
     public HermesMockExpect(HermesMockHelper hermesMockHelper, int awaitSeconds) {
         this.hermesMockHelper = hermesMockHelper;
@@ -52,7 +52,7 @@ public class HermesMockExpect {
 
     private void expectMessages(String topicName, int count) {
         try {
-            await().atMost(awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
+            await().atMost((long)awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
         } catch (ConditionTimeoutException ex) {
             throw new HermesMockException("Hermes mock did not receive " + count + " messages.", ex);
         }
