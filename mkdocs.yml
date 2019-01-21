@@ -17,7 +17,7 @@ markdown_extensions:
         anchorlink: true
 
 extra:
-    version: '0.15.5'
+    version: '0.15.6'
     brand_image: 'img/hermes-mini.png'
 
 pages:
