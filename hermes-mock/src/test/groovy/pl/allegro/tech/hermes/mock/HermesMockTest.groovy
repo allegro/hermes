@@ -31,7 +31,7 @@ class HermesMockTest extends Specification {
             3.times { publish(topicName) }
 
         then:
-            hermes.expect().messagesOnTopic( topicName,3)
+            hermes.expect().messagesOnTopic(topicName, 3)
     }
 
     def "should receive 2 messages + 1 delayed"() {
@@ -73,7 +73,7 @@ class HermesMockTest extends Specification {
             3.times { publish("whatever") }
 
         then:
-            hermes.expect().jsonMessagesOnTopicAs(topicName,3, TestMessage)
+            hermes.expect().jsonMessagesOnTopicAs(topicName, 3, TestMessage)
     }
 
     def "should throw on more than 1 message"() {
@@ -183,14 +183,16 @@ class HermesMockTest extends Specification {
         given:
             def topicName = "my-topic"
             hermes.define().jsonTopic(topicName)
+            def count = 3
+            def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
 
         when:
-            3.times { publish(topicName) }
+            messages.each { publish(topicName, it.asJson()) }
 
         then:
             def message = hermes.query().lastJsonMessageAs(topicName, TestMessage)
             message.isPresent()
-            message.get().key == "random"
+            message.get().key == "key-3"
 
             def request = hermes.query().lastRequest(topicName)
             request.isPresent()
