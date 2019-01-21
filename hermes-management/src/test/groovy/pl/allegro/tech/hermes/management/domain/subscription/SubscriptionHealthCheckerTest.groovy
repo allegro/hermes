@@ -5,7 +5,11 @@ import pl.allegro.tech.hermes.api.SubscriptionHealth
 import pl.allegro.tech.hermes.api.SubscriptionMetrics
 import pl.allegro.tech.hermes.api.TopicMetrics
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker
-import pl.allegro.tech.hermes.management.domain.subscription.health.problem.*
+import pl.allegro.tech.hermes.management.domain.subscription.health.problem.LaggingIndicator
+import pl.allegro.tech.hermes.management.domain.subscription.health.problem.MalfunctioningIndicator
+import pl.allegro.tech.hermes.management.domain.subscription.health.problem.ReceivingMalformedMessagesIndicator
+import pl.allegro.tech.hermes.management.domain.subscription.health.problem.TimingOutIndicator
+import pl.allegro.tech.hermes.management.domain.subscription.health.problem.UnreachableIndicator
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -16,7 +20,11 @@ import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.HEALTHY
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.NO_DATA
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY
-import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.*
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.lagging
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.receivingMalformedMessages
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.timingOut
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.unreachable
 import static pl.allegro.tech.hermes.api.SubscriptionMetrics.Builder.subscriptionMetrics
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription

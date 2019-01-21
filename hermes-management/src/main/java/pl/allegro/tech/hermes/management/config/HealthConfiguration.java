@@ -15,6 +15,8 @@ import pl.allegro.tech.hermes.management.domain.subscription.health.problem.Unre
 @Configuration
 @EnableConfigurationProperties({HealthProperties.class})
 public class HealthConfiguration {
+    private static final DisabledIndicator DISABLED_INDICATOR = new DisabledIndicator();
+
     @Autowired
     private HealthProperties healthProperties;
 
@@ -23,7 +25,7 @@ public class HealthConfiguration {
         if (healthProperties.isLaggingIndicatorEnabled()) {
             return new LaggingIndicator(healthProperties.getMaxLagInSeconds());
         }
-        return new DisabledIndicator();
+        return DISABLED_INDICATOR;
     }
 
     @Bean
@@ -31,7 +33,7 @@ public class HealthConfiguration {
         if (healthProperties.isUnreachableIndicatorEnabled()) {
             return new UnreachableIndicator(healthProperties.getMaxOtherErrorsRatio(), healthProperties.getMinSubscriptionRateForReliableMetrics());
         }
-        return new DisabledIndicator();
+        return DISABLED_INDICATOR;
     }
 
     @Bean
@@ -39,7 +41,7 @@ public class HealthConfiguration {
         if (healthProperties.isTimingOutIndicatorEnabled()) {
             return new TimingOutIndicator(healthProperties.getMaxTimeoutsRatio(), healthProperties.getMinSubscriptionRateForReliableMetrics());
         }
-        return new DisabledIndicator();
+        return DISABLED_INDICATOR;
     }
 
     @Bean
@@ -47,7 +49,7 @@ public class HealthConfiguration {
         if (healthProperties.isMalfunctioningIndicatorEnabled()) {
             return new MalfunctioningIndicator(healthProperties.getMax5xxErrorsRatio(), healthProperties.getMinSubscriptionRateForReliableMetrics());
         }
-        return new DisabledIndicator();
+        return DISABLED_INDICATOR;
     }
 
     @Bean
@@ -55,6 +57,6 @@ public class HealthConfiguration {
         if (healthProperties.isReceivingMalformedMessagesIndicatorEnabled()) {
             return new ReceivingMalformedMessagesIndicator(healthProperties.getMax4xxErrorsRatio(), healthProperties.getMinSubscriptionRateForReliableMetrics());
         }
-        return new DisabledIndicator();
+        return DISABLED_INDICATOR;
     }
 }

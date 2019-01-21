@@ -22,12 +22,18 @@ public class SubscriptionMetrics {
     }
 
     @JsonCreator
-    public SubscriptionMetrics(@JsonProperty("delivered") long delivered, @JsonProperty("discarded") long discarded,
-                               @JsonProperty("inflight") long inflight, @JsonProperty("timeouts") String timeouts,
-                               @JsonProperty("otherErrors") String otherErrors, @JsonProperty("codes2xx") String codes2xx,
-                               @JsonProperty("codes4xx") String codes4xx, @JsonProperty("codes5xx") String codes5xx,
-                               @JsonProperty("Subscription") Subscription.State state, @JsonProperty("rate") String rate,
-                               @JsonProperty("throughput") String throughput, @JsonProperty("batchRate") String batchRate) {
+    public SubscriptionMetrics(@JsonProperty("delivered") long delivered,
+                               @JsonProperty("discarded") long discarded,
+                               @JsonProperty("inflight") long inflight,
+                               @JsonProperty("timeouts") String timeouts,
+                               @JsonProperty("otherErrors") String otherErrors,
+                               @JsonProperty("codes2xx") String codes2xx,
+                               @JsonProperty("codes4xx") String codes4xx,
+                               @JsonProperty("codes5xx") String codes5xx,
+                               @JsonProperty("Subscription") Subscription.State state,
+                               @JsonProperty("rate") String rate,
+                               @JsonProperty("throughput") String throughput,
+                               @JsonProperty("batchRate") String batchRate) {
         this.delivered = delivered;
         this.discarded = discarded;
         this.inflight = inflight;
