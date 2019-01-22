@@ -1,17 +1,16 @@
 package pl.allegro.tech.hermes.mock;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
+import static java.util.stream.Collectors.toList;
 import org.apache.avro.Schema;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static java.util.stream.Collectors.toList;
-
-class HermesMockQuery {
+public class HermesMockQuery {
     private final HermesMockHelper hermesMockHelper;
 
     public HermesMockQuery(HermesMockHelper hermesMockHelper) {
@@ -50,7 +49,7 @@ class HermesMockQuery {
     }
 
     public Optional<Request> lastRequest(String topicName) {
-        return allRequestsOnTopic(topicName).stream().findFirst();
+        return allRequestsOnTopic(topicName).stream().reduce((first, second) -> second);
     }
 
     public <T> Optional<T> lastJsonMessageAs(String topicName, Class<T> clazz) {
