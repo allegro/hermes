@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.mock
 
+import org.junit.Before
 import org.junit.ClassRule
-import org.testng.annotations.BeforeTest
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
 import spock.lang.Shared
 import spock.lang.Specification
@@ -13,7 +13,7 @@ class HermesMockTest extends Specification {
 
     private HermesPublisher publisher = new HermesPublisher("http://localhost:56789");
 
-    @BeforeTest
+    @Before
     void setup() {
         hermes.resetReceivedRequest();
     }

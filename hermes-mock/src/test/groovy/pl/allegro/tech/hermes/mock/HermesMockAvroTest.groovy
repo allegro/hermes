@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.mock
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.avro.Schema
 import org.apache.avro.reflect.ReflectData
+import org.junit.Before
 import org.junit.ClassRule
-import org.testng.annotations.BeforeTest
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
 import spock.lang.Shared
@@ -22,7 +22,7 @@ class HermesMockAvroTest extends Specification {
 
     private HermesPublisher publisher = new HermesPublisher("http://localhost:56789");
 
-    @BeforeTest
+    @Before
     void setup() {
         hermes.resetReceivedRequest();
     }
