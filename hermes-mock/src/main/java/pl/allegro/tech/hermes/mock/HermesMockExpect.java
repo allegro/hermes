@@ -1,19 +1,18 @@
 package pl.allegro.tech.hermes.mock;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import static com.jayway.awaitility.Awaitility.await;
 import com.jayway.awaitility.core.ConditionTimeoutException;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toList;
 import org.apache.avro.Schema;
 
 import java.util.List;
 import java.util.function.Supplier;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.jayway.awaitility.Awaitility.await;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.stream.Collectors.toList;
-
-class HermesMockExpect {
+public class HermesMockExpect {
     private final HermesMockHelper hermesMockHelper;
     private final int awaitSeconds;
 
@@ -30,7 +29,7 @@ class HermesMockExpect {
         jsonMessagesOnTopicAs(topicName, 1, clazz);
     }
 
-    public <T> void singleAvroMessageOnTopic(String topicName, Schema schema) {
+    public void singleAvroMessageOnTopic(String topicName, Schema schema) {
         avroMessagesOnTopic(topicName, 1, schema);
     }
 
@@ -42,7 +41,7 @@ class HermesMockExpect {
         assertMessages(topicName, count, () -> allJsonMessagesAs(topicName, clazz));
     }
 
-    public <T> void avroMessagesOnTopic(String topicName, int count, Schema schema) {
+    public void avroMessagesOnTopic(String topicName, int count, Schema schema) {
         assertMessages(topicName, count, () -> validateAvroMessages(topicName, schema));
     }
 
@@ -53,7 +52,7 @@ class HermesMockExpect {
 
     private void expectMessages(String topicName, int count) {
         try {
-            await().atMost(awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
+            await().atMost((long)awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
         } catch (ConditionTimeoutException ex) {
             throw new HermesMockException("Hermes mock did not receive " + count + " messages.", ex);
         }

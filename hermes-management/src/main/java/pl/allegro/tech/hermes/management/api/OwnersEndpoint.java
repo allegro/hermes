@@ -67,9 +67,13 @@ public class OwnersEndpoint {
         @JsonProperty("autocomplete")
         private final boolean autocomplete;
 
+        @JsonProperty("deprecated")
+        private final boolean deprecated;
+
         private SourceDescriptor(OwnerSource source) {
             this.name = source.name();
             this.autocomplete = source.autocompletion().isPresent();
+            this.deprecated = source.isDeprecated();
         }
 
         static SourceDescriptor of(OwnerSource source) {
