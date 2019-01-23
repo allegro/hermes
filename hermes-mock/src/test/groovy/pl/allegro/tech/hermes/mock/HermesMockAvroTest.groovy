@@ -3,21 +3,29 @@ package pl.allegro.tech.hermes.mock
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.avro.Schema
 import org.apache.avro.reflect.ReflectData
-import org.junit.Rule
+import org.junit.ClassRule
+import org.testng.annotations.BeforeTest
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
+import spock.lang.Shared
 import spock.lang.Specification
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 
 class HermesMockAvroTest extends Specification {
-    @Rule
-    HermesMockRule hermes = new HermesMockRule(56789);
+    @ClassRule
+    @Shared
+    HermesMockClassRule hermes = new HermesMockClassRule(56789);
 
     Schema schema = ReflectData.get().getSchema(TestMessage);
 
     JsonAvroConverter jsonAvroConverter = new JsonAvroConverter();
 
     private HermesPublisher publisher = new HermesPublisher("http://localhost:56789");
+
+    @BeforeTest
+    void setup() {
+        hermes.resetReceivedRequest();
+    }
 
     def "should receive an Avro message"() {
         given:
