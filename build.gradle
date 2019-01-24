@@ -24,7 +24,11 @@ scmVersion {
     versionCreator 'versionWithBranch'
 
     hooks {
-        pre 'fileUpdate', [files: ['mkdocs.yml', 'hermes-console/package.json'], pattern: { v, p -> /$v/ }, replacement: { v, p -> "$v" }]
+        pre 'fileUpdate', [
+                files: ['mkdocs.yml', 'hermes-console/package.json'],
+                pattern: { v, p -> /("?version"?): (['"])$v(['"])/ },
+                replacement: { v, p -> "\$1: \$2$v\$3" }
+        ]
         pre 'commit'
     }
 }

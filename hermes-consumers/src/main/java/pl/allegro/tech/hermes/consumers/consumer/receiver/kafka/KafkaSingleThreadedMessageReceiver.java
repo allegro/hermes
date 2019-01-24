@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import com.google.common.collect.ImmutableList;
-import java.time.Duration;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -24,10 +23,11 @@ import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
-import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.PartitionAssigningAwareRetransmitter;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.KafkaConsumerOffsetMover;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,7 +46,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private final Clock clock;
 
     private final BlockingQueue<Message> readQueue;
-    private final PartitionAssigningAwareRetransmitter retransmitter;
+    private final KafkaConsumerOffsetMover offsetMover;
 
     private final HermesMetrics metrics;
     private Topic topic;
@@ -64,8 +64,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                                               Subscription subscription,
                                               Clock clock,
                                               int pollTimeout,
-                                              int readQueueCapacity,
-                                              int retransmissionQueueCapacity) {
+                                              int readQueueCapacity) {
         this.metrics = metrics;
         this.topic = topic;
         this.subscription = subscription;
@@ -76,11 +75,8 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
         this.messageContentWrapper = messageContentWrapper;
         this.clock = clock;
         this.readQueue = new ArrayBlockingQueue<>(readQueueCapacity);
-        this.retransmitter = new PartitionAssigningAwareRetransmitter(
-                subscription.getQualifiedName(),
-                retransmissionQueueCapacity,
-                consumer);
-        this.consumer.subscribe(topics.keySet(), retransmitter);
+        this.offsetMover = new KafkaConsumerOffsetMover(consumer);
+        this.consumer.subscribe(topics.keySet());
     }
 
     private Collection<KafkaTopic> getKafkaTopics(Topic topic, KafkaNamesMapper kafkaNamesMapper) {
@@ -195,7 +191,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public void moveOffset(SubscriptionPartitionOffset offset) {
-        retransmitter.moveOffsetOrSchedule(offset);
+    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+        return offsetMover.move(offset);
     }
 }

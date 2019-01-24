@@ -10,12 +10,7 @@ script:
   - "./gradlew -Ptests.timeout.multiplier=3 $TEST_SUITE"
 
 jdk:
-  - oraclejdk8
-
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
+  - openjdk8
 
 branches:
   only:

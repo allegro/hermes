@@ -3,8 +3,10 @@ angular.module('hermes.owner')
         function ($scope, config, ownerRepository) {
 
         ownerRepository.getSourceNames().then(function (sources) {
-            $scope.possibleSources = sources;
-            $scope.sourceSelectModel = $scope.sourceName ? _.find(sources, function(s) { return s.name == $scope.sourceName}) : sources[0];
+            $scope.possibleSources = _.filter(sources, function (source) {
+                return !source.deprecated || $scope.sourceName === source.name;
+            });
+            $scope.sourceSelectModel = _.find($scope.possibleSources, {'name': $scope.sourceName}) || _.first($scope.possibleSources);
             if ($scope.ownerId) {
                 ownerRepository.getOwner($scope.sourceSelectModel.name, $scope.ownerId).then(function(owner) {
                     if ($scope.sourceSelectModel.autocomplete) {

@@ -54,4 +54,8 @@ public class BrokersClusterService {
     public boolean topicExists(Topic topic) {
         return brokerTopicManagement.topicExists(topic);
     }
+
+    public boolean areOffsetsMoved(Topic topic, String subscriptionName) {
+        return retransmissionService.areOffsetsMoved(topic, subscriptionName, clusterName);
+    }
 }
