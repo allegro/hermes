@@ -2,11 +2,10 @@ package pl.allegro.tech.hermes.mock;
 
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.util.stream.Collectors.toMap;
 
 public class Request {
     enum Method {
@@ -20,10 +19,10 @@ public class Request {
         TRACE
     }
 
-    private String url;
-    private Method method;
-    private byte[] body;
-    private Map<String, String> headers;
+    private final String url;
+    private final Method method;
+    private final byte[] body;
+    private final Map<String, String> headers;
 
     public Request(LoggedRequest loggedRequest) {
         this.url = loggedRequest.getUrl();

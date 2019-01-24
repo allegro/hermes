@@ -55,6 +55,7 @@ public enum Configs {
     KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG("kafka.consumer.request.timeout.ms", 250_000),
     KAFKA_CONSUMER_CONNECTIONS_MAX_IDLE_MS_CONFIG("kafka.consumer.connections.max.idle.ms", 9 * 60 * 1000),
     KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG("kafka.consumer.max.poll.records", 1),
+    KAFKA_CONSUMER_MAX_POLL_INTERVAL_CONFIG("kafka.consumer.max.poll.interval.ms", Integer.MAX_VALUE),
 
     KAFKA_SIMPLE_CONSUMER_TIMEOUT_MS("kafka.simple.consumer.timeout.ms", 5000),
     KAFKA_SIMPLE_CONSUMER_BUFFER_SIZE("kafka.simple.consumer.buffer.size", 64 * 1024),
@@ -162,7 +163,6 @@ public enum Configs {
 
     CONSUMER_RECEIVER_POOL_TIMEOUT("consumer.receiver.pool.timeout", 30),
     CONSUMER_RECEIVER_READ_QUEUE_CAPACITY("consumer.receiver.read.queue.capacity", 1000),
-    CONSUMER_RETRANSMISSION_QUEUE_CAPACITY("consumer.receiver.retransmission.queue.capacity", 20),
 
     CONSUMER_RECEIVER_WAIT_BETWEEN_UNSUCCESSFUL_POLLS("consumer.receiver.wait.between.unsuccessful.polls", true),
     CONSUMER_RECEIVER_INITIAL_IDLE_TIME("consumer.receiver.initial.idle.time", 10),

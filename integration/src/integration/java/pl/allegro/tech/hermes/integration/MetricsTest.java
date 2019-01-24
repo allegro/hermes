@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import com.googlecode.catchexception.CatchException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
@@ -19,9 +20,13 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import javax.ws.rs.BadRequestException;
 import java.util.UUID;
 
+import static com.google.common.collect.ImmutableMap.of;
 import static com.googlecode.catchexception.CatchException.catchException;
+import static java.lang.Integer.MAX_VALUE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
+import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class MetricsTest extends IntegrationTest {
@@ -224,7 +229,94 @@ public class MetricsTest extends IntegrationTest {
         graphiteServer.waitUntilReceived();
     }
 
+    @Test
+    public void shouldReportMetricForFilteredSubscription() {
+        // given
+        Topic topic = operations.buildTopic("filteredGroup", "topic");
+        operations.createSubscription(topic, subscription(topic.getName(), "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withFilter(filterMatchingHeaderByPattern("Trace-Id", "^vte.*"))
+                .build());
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.meter.filteredGroup.topic.subscription.filtered.count"), 1);
+
+        // when
+        publisher.publish("filteredGroup.topic", jsonWithField("msg", "unfiltered"), of("Trace-Id", "vte12"));
+        publisher.publish("filteredGroup.topic", jsonWithField("msg", "filtered"), of("Trace-Id", "otherTraceId"));
+
+        // then
+        graphiteServer.waitUntilReceived();
+    }
+
+    @Test
+    public void shouldReportMetricsForSuccessfulBatchDelivery() {
+        // given
+        Topic topic = operations.buildTopic("successBatchGroup", "topic");
+        operations.createSubscription(topic, subscription(topic, "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withSubscriptionPolicy(batchSubscriptionPolicy()
+                        .withBatchSize(2)
+                        .withMessageTtl(MAX_VALUE)
+                        .withRequestTimeout(MAX_VALUE)
+                        .withBatchTime(MAX_VALUE)
+                        .withBatchVolume(1024)
+                        .build())
+                .build());
+
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.meter.successBatchGroup.topic.subscription.count"), 2);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.meter.successBatchGroup.topic.subscription.batch.count"), 1);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.successBatchGroup.topic.subscription.2xx.200.count"), 1);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.successBatchGroup.topic.subscription.2xx.count"), 1);
+        remoteService.expectMessages(simpleJson(), simpleJson());
+
+        // when
+        publisher.publish(topic.getQualifiedName(), simpleJson());
+        publisher.publish(topic.getQualifiedName(), simpleJson());
+
+        // then
+        graphiteServer.waitUntilReceived();
+    }
+
+    @Test
+    public void shouldReportMetricsForFailedBatchDelivery() {
+        // given
+        Topic topic = operations.buildTopic("errorBatchGroup", "topic");
+        operations.createSubscription(topic, subscription(topic, "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withSubscriptionPolicy(batchSubscriptionPolicy()
+                        .withBatchSize(2)
+                        .withMessageTtl(0)
+                        .withRequestTimeout(MAX_VALUE)
+                        .withBatchTime(MAX_VALUE)
+                        .withBatchVolume(1024)
+                        .build())
+                .build());
+
+        remoteService.setReturnedStatusCode(404);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.errorBatchGroup.topic.subscription.4xx.404.count"), 1);
+        graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.errorBatchGroup.topic.subscription.4xx.count"), 1);
+        remoteService.expectMessages(simpleJson(), simpleJson());
+
+        // when
+        publisher.publish(topic.getQualifiedName(), simpleJson());
+        publisher.publish(topic.getQualifiedName(), simpleJson());
+
+        // then
+        graphiteServer.waitUntilReceived();
+    }
+
     private String metricNameWithPrefix(String metricName) {
         return String.format("%s.%s", Configs.GRAPHITE_PREFIX.getDefaultValue(), metricName);
+    }
+
+    private static String jsonWithField(String key, Object value) {
+        return TestMessage.of(key, value).body();
+    }
+
+    private static String simpleJson() {
+        return TestMessage.simple().body();
+    }
+
+    private static MessageFilterSpecification filterMatchingHeaderByPattern(String headerName, String pattern) {
+        return new MessageFilterSpecification(of("type", "header", "header", headerName, "matcher", pattern));
     }
 }

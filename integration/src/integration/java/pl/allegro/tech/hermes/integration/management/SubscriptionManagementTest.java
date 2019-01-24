@@ -36,8 +36,8 @@ import static com.jayway.awaitility.Awaitility.await;
 import static java.net.URI.create;
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem.SLOW;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.slow;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -300,7 +300,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(subscriptionHealth.getStatus()).isEqualTo(UNHEALTHY);
-        assertThat(subscriptionHealth.getProblems()).containsOnly(SLOW);
+        assertThat(subscriptionHealth.getProblems()).containsOnly(slow(50, 100));
     }
 
     @Test

@@ -38,13 +38,21 @@ public class HermesMockRule implements MethodRule {
             @Override
             public void evaluate() throws Throwable {
                 try {
-                    hermesMock.start();
-                    hermesMock.resetReceivedRequest();
+                     createInitialContext();
                     base.evaluate();
                 } finally {
-                    hermesMock.stop();
+                    destroyInitialContext();
                 }
             }
         };
+    }
+
+    private void createInitialContext() {
+        hermesMock.start();
+        hermesMock.resetReceivedRequest();
+    }
+
+    private void destroyInitialContext() {
+        hermesMock.stop();
     }
 }

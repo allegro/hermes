@@ -15,6 +15,10 @@ public interface OwnerSource {
 
     Owner get(String id) throws OwnerNotFound;
 
+    default boolean isDeprecated() {
+        return false;
+    }
+
     /**
      * Override if the implemented owner source supports autocompletion.
      */

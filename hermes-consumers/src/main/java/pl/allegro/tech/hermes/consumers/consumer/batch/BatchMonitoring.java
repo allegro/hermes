@@ -30,21 +30,33 @@ public class BatchMonitoring {
     }
 
     public void markSendingResult(MessageBatch batch, Subscription subscription, MessageSendingResult result) {
-        metrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
         if (result.succeeded()) {
-            markDelivered(batch, subscription, result.getHostname());
+            markDelivered(batch, subscription, result);
         } else {
-            markDiscarded(batch, subscription, "Retry policy exhausted with status code " + result.getStatusCode());
+            markFailed(batch, subscription, result);
         }
     }
 
-    private void markDelivered(MessageBatch batch, Subscription subscription, String hostname) {
+    private void markDelivered(MessageBatch batch, Subscription subscription, MessageSendingResult result) {
+        metrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
         metrics.meter(METER).mark(batch.size());
         metrics.meter(TOPIC_METER, subscription.getTopicName()).mark(batch.size());
         metrics.meter(SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark(batch.size());
         metrics.meter(SUBSCRIPTION_BATCH_METER, subscription.getTopicName(), subscription.getName()).mark();
         metrics.counter(Counters.DELIVERED, subscription.getTopicName(), subscription.getName()).inc(batch.size());
-        batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logSent(m, hostname));
+        batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logSent(m, result.getHostname()));
+    }
+
+    private void markFailed(MessageBatch batch, Subscription subscription, MessageSendingResult result) {
+        metrics.meter(Meters.FAILED_METER_SUBSCRIPTION, subscription.getTopicName(), subscription.getName()).mark();
+        if (result.hasHttpAnswer()) {
+            metrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
+        } else if (result.isTimeout()) {
+            metrics.consumerErrorsTimeoutMeter(subscription).mark();
+        } else {
+            metrics.consumerErrorsOtherMeter(subscription).mark();
+        }
+        batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logFailed(m, result.getRootCause(), result.getHostname()));
     }
 
     public void markDiscarded(MessageBatch batch, Subscription subscription, String reason) {
@@ -53,21 +65,6 @@ public class BatchMonitoring {
         metrics.meter(Meters.DISCARDED_TOPIC_METER, subscription.getTopicName()).mark(batch.size());
         metrics.meter(Meters.DISCARDED_SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark(batch.size());
         batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logDiscarded(m, reason));
-    }
-
-    public void markFailed(MessageBatch batch, Subscription subscription, MessageSendingResult result) {
-        metrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
-        metrics.meter(Meters.FAILED_METER_SUBSCRIPTION, subscription.getTopicName(), subscription.getName()).mark();
-        registerFailureMetrics(subscription, result);
-        batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logFailed(m, result.getRootCause(), result.getHostname()));
-    }
-
-    private void registerFailureMetrics(Subscription subscription, MessageSendingResult result) {
-        if (result.hasHttpAnswer()) {
-            metrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
-        } else {
-            (result.isTimeout() ? metrics.consumerErrorsTimeoutMeter(subscription) : metrics.consumerErrorsOtherMeter(subscription)).mark();
-        }
     }
 
     public void markDiscarded(MessageMetadata messageMetadata, Subscription subscription, String reason) {
