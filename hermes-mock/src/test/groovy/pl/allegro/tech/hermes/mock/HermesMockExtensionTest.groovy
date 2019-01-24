@@ -7,9 +7,9 @@ import spock.lang.Specification
 class HermesMockExtensionTest extends Specification {
 
     @RegisterExtension
-    HermesMockExtension hermes = new HermesMockExtension(56789);
+    HermesMockExtension hermes = new HermesMockExtension(56789)
 
-    HermesPublisher publisher = new HermesPublisher("http://localhost:56789");
+    HermesPublisher publisher = new HermesPublisher("http://localhost:56789")
 
     def 'simple publish-expect test'() {
         given:

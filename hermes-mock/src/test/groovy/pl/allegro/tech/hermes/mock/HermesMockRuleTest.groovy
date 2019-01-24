@@ -6,9 +6,9 @@ import spock.lang.Specification
 
 class HermesMockRuleTest extends Specification {
     @Rule
-    HermesMockRule hermes = new HermesMockRule(56789);
+    HermesMockRule hermes = new HermesMockRule(56789)
 
-    HermesPublisher publisher = new HermesPublisher("http://localhost:56789");
+    HermesPublisher publisher = new HermesPublisher("http://localhost:56789")
 
     def 'simple publish-expect test'() {
         given:

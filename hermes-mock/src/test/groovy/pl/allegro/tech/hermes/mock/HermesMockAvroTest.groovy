@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.mock
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.avro.Schema
 import org.apache.avro.reflect.ReflectData
-import org.junit.Before
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
@@ -14,17 +13,16 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 class HermesMockAvroTest extends Specification {
     @ClassRule
     @Shared
-    HermesMockClassRule hermes = new HermesMockClassRule(56789);
+    HermesMockRule hermes = new HermesMockRule(56789)
 
-    Schema schema = ReflectData.get().getSchema(TestMessage);
+    Schema schema = ReflectData.get().getSchema(TestMessage)
 
-    JsonAvroConverter jsonAvroConverter = new JsonAvroConverter();
+    JsonAvroConverter jsonAvroConverter = new JsonAvroConverter()
 
-    private HermesPublisher publisher = new HermesPublisher("http://localhost:56789");
+    HermesPublisher publisher = new HermesPublisher("http://localhost:56789")
 
-    @Before
-    void setup() {
-        hermes.resetReceivedRequest();
+    def setup() {
+        hermes.resetReceivedRequest()
     }
 
     def "should receive an Avro message"() {
@@ -66,7 +64,7 @@ class HermesMockAvroTest extends Specification {
                 "value": 0.42
             }
         '''
-            def message = new ObjectMapper().readValue(json, HashMap.class);
+            def message = new ObjectMapper().readValue(json, HashMap.class)
             def avro = new JsonAvroConverter().convertToAvro(json.bytes, schema)
 
         when:
@@ -79,7 +77,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should throw on incorrect Avro schema"() {
         given:
-            def schema = ReflectData.get().getSchema(TestMessage);
+            def schema = ReflectData.get().getSchema(TestMessage)
             def topicName = "my-first-avro-failing-test-topic"
             hermes.define().avroTopic(topicName)
 

@@ -14,7 +14,7 @@ class TestMessage {
     }
 
     static TestMessage random() {
-        return new TestMessage("random", UUID.randomUUID().toString());
+        return new TestMessage("random", UUID.randomUUID().toString())
     }
 
     String asJson() {
