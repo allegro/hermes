@@ -1,8 +1,5 @@
 package pl.allegro.tech.hermes.mock;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import static com.jayway.awaitility.Awaitility.await;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -10,14 +7,17 @@ import static java.util.stream.Collectors.toList;
 import org.apache.avro.Schema;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class HermesMockExpect {
     private final HermesMockHelper hermesMockHelper;
+    private final HermesMockQuery hermesMockQuery;
     private final int awaitSeconds;
 
     public HermesMockExpect(HermesMockHelper hermesMockHelper, int awaitSeconds) {
         this.hermesMockHelper = hermesMockHelper;
+        this.hermesMockQuery = new HermesMockQuery(hermesMockHelper);
         this.awaitSeconds = awaitSeconds;
     }
 
@@ -38,11 +38,19 @@ public class HermesMockExpect {
     }
 
     public <T> void jsonMessagesOnTopicAs(String topicName, int count, Class<T> clazz) {
-        assertMessages(topicName, count, () -> allJsonMessagesAs(topicName, clazz));
+        assertMessages(topicName, count, () -> hermesMockQuery.allJsonMessagesAs(topicName, clazz));
+    }
+
+    public <T> void jsonMessagesOnTopicAs(String topicName, int count, Class<T> clazz, Predicate<T> predicate) {
+        assertMessages(topicName, count, () -> hermesMockQuery.matchingJsonMessagesAs(topicName, clazz, predicate));
     }
 
     public void avroMessagesOnTopic(String topicName, int count, Schema schema) {
         assertMessages(topicName, count, () -> validateAvroMessages(topicName, schema));
+    }
+
+    public <T> void avroMessagesOnTopic(String topicName, int count, Schema schema, Class<T> clazz, Predicate<T> predicate) {
+        assertMessages(topicName, count, () -> validateAvroMessages(topicName, schema, clazz, predicate));
     }
 
     private <T> void assertMessages(String topicName, int count, Supplier<List<T>> messages) {
@@ -52,7 +60,7 @@ public class HermesMockExpect {
 
     private void expectMessages(String topicName, int count) {
         try {
-            await().atMost((long)awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
+            await().atMost((long) awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
         } catch (ConditionTimeoutException ex) {
             throw new HermesMockException("Hermes mock did not receive " + count + " messages.", ex);
         }
@@ -64,20 +72,16 @@ public class HermesMockExpect {
         }
     }
 
-    private <T> List<byte[]> validateAvroMessages(String topicName, Schema schema) {
-        return getAllRequests(topicName).stream()
-                .map(LoggedRequest::getBody)
+    private List<byte[]> validateAvroMessages(String topicName, Schema schema) {
+        return hermesMockQuery.allAvroRawMessages(topicName).stream()
                 .peek(raw -> hermesMockHelper.validateAvroSchema(raw, schema))
                 .collect(toList());
     }
 
-    private <T> List<T> allJsonMessagesAs(String topicName, Class<T> clazz) {
-        return getAllRequests(topicName).stream()
-                .map(req -> hermesMockHelper.deserializeJson(req.getBody(), clazz))
+    private <T> List<T> validateAvroMessages(String topicName, Schema schema, Class<T> clazz, Predicate<T> predicate) {
+        return hermesMockQuery.allAvroRawMessages(topicName).stream()
+                .map(raw -> hermesMockHelper.deserializeAvro(raw, schema, clazz))
+                .filter(predicate)
                 .collect(toList());
-    }
-
-    private List<LoggedRequest> getAllRequests(String topicName) {
-        return hermesMockHelper.findAll(postRequestedFor(urlEqualTo("/topics/" + topicName)));
     }
 }

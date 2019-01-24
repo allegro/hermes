@@ -37,11 +37,15 @@ public class HermesMockHelper {
     }
 
     public <T> T deserializeAvro(Request request, Schema schema, Class<T> clazz) {
+        return deserializeAvro(request.getBody(), schema, clazz);
+    }
+
+    public <T> T deserializeAvro(byte[] raw, Schema schema, Class<T> clazz) {
         try {
-            byte[] json = new JsonAvroConverter().convertToJson(request.getBody(), schema);
+            byte[] json = new JsonAvroConverter().convertToJson(raw, schema);
             return deserializeJson(json, clazz);
         } catch (AvroRuntimeException ex) {
-            throw new HermesMockException("Cannot convert body " + request.getBody().toString() + " as " + clazz.getSimpleName());
+            throw new HermesMockException("Cannot decode body " + raw + " to " + clazz.getSimpleName());
         }
     }
 
@@ -50,7 +54,7 @@ public class HermesMockHelper {
             BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(raw, null);
             new GenericDatumReader<>(schema).read(null, binaryDecoder);
         } catch (IOException e) {
-            throw new HermesMockException("Cannot convert raw bytes as " + schema.getName());
+            throw new HermesMockException("Cannot convert bytes as " + schema.getName());
         }
     }
 

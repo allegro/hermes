@@ -8,9 +8,9 @@ import spock.lang.Specification
 class HermesMockTest extends Specification {
     @ClassRule
     @Shared
-    HermesMockRule hermes = new HermesMockRule(56789)
+    HermesMockRule hermes = new HermesMockRule(5678)
 
-    HermesPublisher publisher = new HermesPublisher("http://localhost:56789")
+    HermesPublisher publisher = new HermesPublisher("http://localhost:5678")
 
     def setup() {
         hermes.resetReceivedRequest()
@@ -80,6 +80,22 @@ class HermesMockTest extends Specification {
 
         then:
             hermes.expect().jsonMessagesOnTopicAs(topicName, 3, TestMessage)
+    }
+
+    def "should receive all filtered messages as a particular class"() {
+        given:
+            def topicName = "my-test-filtered-topic"
+            hermes.define().jsonTopic(topicName)
+            def count = 5
+            def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
+            def filter = { TestMessage m -> m.key.startsWith("key-") }
+
+        when:
+            messages.each { publish(topicName, it.asJson()) }
+            3.times { publish("whatever") }
+
+        then:
+            hermes.expect().jsonMessagesOnTopicAs(topicName, count, TestMessage, filter)
     }
 
     def "should throw on more than 1 message"() {
@@ -203,6 +219,56 @@ class HermesMockTest extends Specification {
             def request = hermes.query().lastRequest(topicName)
             request.isPresent()
             new String(request.get().getBody()) == message.get().asJson()
+    }
+
+    def "should return last message that matches filter"() {
+        given:
+            def topicName = "my-topic"
+            hermes.define().avroTopic(topicName)
+            def count = 3
+            def messages = (1..count).collect { new TestMessage("key", "value-" + it) }
+            def filter = { TestMessage m -> m.key.equals("key") }
+
+        when:
+            messages.each { publish(topicName, it.asJson()) }
+
+        then:
+            def message = hermes.query().lastMatchingJsonMessageAs(topicName, TestMessage, filter)
+            message.isPresent()
+
+            def msg = message.get() as TestMessage
+            msg.key == messages[count - 1].key
+            msg.value == messages[count - 1].value
+    }
+
+    def "should return proper number of message"() {
+        given:
+            def topicName = "my-topic"
+            hermes.define().jsonTopic(topicName)
+            def count = 3
+            def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
+
+        when:
+            messages.each { publish(topicName, it.asJson()) }
+
+        then:
+            count == hermes.query().countJsonMessages(topicName, TestMessage)
+    }
+
+    def "should return proper number of matching messages"() {
+        given:
+            def topicName = "my-topic"
+            hermes.define().jsonTopic(topicName)
+            def count = 3
+            def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
+            def filter = { TestMessage m -> m.key.startsWith("key-") }
+
+        when:
+            messages.each { publish(topicName, it.asJson()) }
+            5.times { publish(topicName) }
+
+        then:
+            count == hermes.query().countMatchingJsonMessages(topicName, TestMessage, filter)
     }
 
     def publish(String topic) {
