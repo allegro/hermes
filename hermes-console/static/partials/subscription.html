@@ -40,10 +40,6 @@
                         <b>Subscription lag is growing</b>. Examine output rate and service response codes, looks like it is
                         not consuming at full speed.
                     </p>
-                    <p ng-show="health.problems.slow">
-                        <b>Consumption rate is lower than topic production rate</b>. Examine output rate and service response codes.
-                        If everything is well, take a look at maximum rate, maybe it is too low?
-                    </p>
                     <p ng-show="health.problems.malfunctioning">
                         <b>Consuming service returns a lot of 5xx codes</b>. Looks like it might be malfunctioning or doesn't know
                         how to handle messages. Take a look at "Last undelivered message" for more information.

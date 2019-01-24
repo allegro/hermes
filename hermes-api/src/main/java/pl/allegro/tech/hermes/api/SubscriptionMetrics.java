@@ -16,17 +16,24 @@ public class SubscriptionMetrics {
     private Subscription.State state;
     private String rate;
     private String throughput;
+    private String batchRate;
 
     private SubscriptionMetrics() {
     }
 
     @JsonCreator
-    public SubscriptionMetrics(@JsonProperty("delivered") long delivered, @JsonProperty("discarded") long discarded,
-                               @JsonProperty("inflight") long inflight, @JsonProperty("timeouts") String timeouts,
-                               @JsonProperty("otherErrors") String otherErrors, @JsonProperty("codes2xx") String codes2xx,
-                               @JsonProperty("codes4xx") String codes4xx, @JsonProperty("codes5xx") String codes5xx,
-                               @JsonProperty("Subscription") Subscription.State state, @JsonProperty("rate") String rate,
-                               @JsonProperty("throughput") String throughput) {
+    public SubscriptionMetrics(@JsonProperty("delivered") long delivered,
+                               @JsonProperty("discarded") long discarded,
+                               @JsonProperty("inflight") long inflight,
+                               @JsonProperty("timeouts") String timeouts,
+                               @JsonProperty("otherErrors") String otherErrors,
+                               @JsonProperty("codes2xx") String codes2xx,
+                               @JsonProperty("codes4xx") String codes4xx,
+                               @JsonProperty("codes5xx") String codes5xx,
+                               @JsonProperty("Subscription") Subscription.State state,
+                               @JsonProperty("rate") String rate,
+                               @JsonProperty("throughput") String throughput,
+                               @JsonProperty("batchRate") String batchRate) {
         this.delivered = delivered;
         this.discarded = discarded;
         this.inflight = inflight;
@@ -38,6 +45,7 @@ public class SubscriptionMetrics {
         this.state = state;
         this.rate = rate;
         this.throughput = throughput;
+        this.batchRate = batchRate;
     }
 
     public long getDelivered() {
@@ -86,6 +94,10 @@ public class SubscriptionMetrics {
 
     public String getThroughput() {
         return throughput;
+    }
+
+    public String getBatchRate() {
+        return batchRate;
     }
 
     public static class Builder {
@@ -152,6 +164,11 @@ public class SubscriptionMetrics {
 
         public Builder withThroughput(String throughput) {
             subscriptionMetrics.throughput = throughput;
+            return this;
+        }
+
+        public Builder withBatchRate(String batchRate) {
+            subscriptionMetrics.batchRate = batchRate;
             return this;
         }
 

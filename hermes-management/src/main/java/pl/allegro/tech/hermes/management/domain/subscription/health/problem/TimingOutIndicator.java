@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
-import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionMetrics;
 
 import java.util.Optional;
 
@@ -20,20 +19,18 @@ public class TimingOutIndicator implements SubscriptionHealthProblemIndicator {
 
     @Override
     public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
-        SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
-        if (areSubscriptionMetricsReliable(subscriptionMetrics) && isTimeoutsRateHigh(subscriptionMetrics)) {
-            return Optional.of(timingOut(subscriptionMetrics.getTimeoutsRate()));
+        if (areSubscriptionMetricsReliable(context) && isTimeoutsRateHigh(context)) {
+            return Optional.of(timingOut(context.getTimeoutsRate()));
         }
         return Optional.empty();
     }
 
-    private boolean areSubscriptionMetricsReliable(SubscriptionMetrics subscriptionMetrics) {
-        return subscriptionMetrics.getRate() > minSubscriptionRateForReliableMetrics;
+    private boolean areSubscriptionMetricsReliable(SubscriptionHealthContext context) {
+        return context.getSubscriptionRateRespectingDeliveryType() > minSubscriptionRateForReliableMetrics;
     }
 
-    private boolean isTimeoutsRateHigh(SubscriptionMetrics subscriptionMetrics) {
-        double timeoutsRate = subscriptionMetrics.getTimeoutsRate();
-        double rate = subscriptionMetrics.getRate();
-        return timeoutsRate > maxTimeoutsRatio * rate;
+    private boolean isTimeoutsRateHigh(SubscriptionHealthContext context) {
+        double timeoutsRate = context.getTimeoutsRate();
+        return timeoutsRate > maxTimeoutsRatio * context.getSubscriptionRateRespectingDeliveryType();
     }
 }

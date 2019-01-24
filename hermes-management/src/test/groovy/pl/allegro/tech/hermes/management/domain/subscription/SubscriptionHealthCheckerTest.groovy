@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.subscription
 
+import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionHealth
 import pl.allegro.tech.hermes.api.SubscriptionMetrics
 import pl.allegro.tech.hermes.api.TopicMetrics
@@ -7,12 +8,12 @@ import pl.allegro.tech.hermes.management.domain.subscription.health.Subscription
 import pl.allegro.tech.hermes.management.domain.subscription.health.problem.LaggingIndicator
 import pl.allegro.tech.hermes.management.domain.subscription.health.problem.MalfunctioningIndicator
 import pl.allegro.tech.hermes.management.domain.subscription.health.problem.ReceivingMalformedMessagesIndicator
-import pl.allegro.tech.hermes.management.domain.subscription.health.problem.SlowIndicator
 import pl.allegro.tech.hermes.management.domain.subscription.health.problem.TimingOutIndicator
 import pl.allegro.tech.hermes.management.domain.subscription.health.problem.UnreachableIndicator
 import spock.lang.Specification
 import spock.lang.Subject
 
+import static java.lang.Integer.MAX_VALUE
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy
 import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE
 import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED
@@ -22,22 +23,21 @@ import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.lagging
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.receivingMalformedMessages
-import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.slow
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.timingOut
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.unreachable
 import static pl.allegro.tech.hermes.api.SubscriptionMetrics.Builder.subscriptionMetrics
+import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 
 class SubscriptionHealthCheckerTest extends Specification {
     static final MIN_SUBSCRIPTION_RATE_FOR_RELIABLE_METRICS = 2.0
-    static final ACTIVE_SUBSCRIPTION = subscription("group.topic", "subscription")
+    static final ACTIVE_SERIAL_SUBSCRIPTION = subscription("group.topic", "subscription")
             .withState(ACTIVE)
             .build()
 
     @Subject
-    def subscriptionHealthChecker = new SubscriptionHealthChecker([
+    def healthChecker = new SubscriptionHealthChecker([
             new LaggingIndicator(600),
-            new SlowIndicator(0.8),
             new UnreachableIndicator(0.5, MIN_SUBSCRIPTION_RATE_FOR_RELIABLE_METRICS),
             new TimingOutIndicator(0.1, MIN_SUBSCRIPTION_RATE_FOR_RELIABLE_METRICS),
             new MalfunctioningIndicator(0.1, MIN_SUBSCRIPTION_RATE_FOR_RELIABLE_METRICS),
@@ -55,13 +55,14 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .withTimeouts("1.2345")
                 .withOtherErrors("1.2345")
                 .withLag(789)
+                .withBatchRate("0.0")
                 .build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(ACTIVE_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(ACTIVE_SERIAL_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth == HEALTHY
+        health == HEALTHY
     }
 
     def "should indicate that a subscriber with a lag longer than 10 minutes is lagging"() {
@@ -72,29 +73,28 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(ACTIVE_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(ACTIVE_SERIAL_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [lagging(60100)] as Set
+        health.status == UNHEALTHY
+        health.problems == [lagging(60100)] as Set
     }
 
-    def "should indicate that a subscriber whose speed is smaller than 80% of the topic speed is slow"() {
+    def "should not indicate lagging if production rate is 0"() {
         given:
-        def topicMetrics = topicMetricsWithRate("100.0")
+        def topicMetrics = topicMetricsWithRate("0.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("79.0")
+                .withLag(60100)
                 .build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(ACTIVE_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(ACTIVE_SERIAL_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [slow(79, 100)] as Set
+        health == HEALTHY
     }
 
-    def "should indicate that a subscriber with more than 50% 'other' errors is unreachable"() {
+    def "should indicate that a serial subscriber with more than 50% 'other' errors is unreachable"() {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
@@ -103,14 +103,31 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(ACTIVE_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(ACTIVE_SERIAL_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [unreachable(51)] as Set
+        health.status == UNHEALTHY
+        health.problems == [unreachable(51)] as Set
     }
 
-    def "should indicate that a subscriber with more than 10% timeouts is timing out"() {
+    def "should indicate that a batch subscriber with more than 50% 'other' errors is unreachable"() {
+        given:
+        def topicMetrics = topicMetricsWithRate("100.0")
+        def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
+                .withRate("40.0")
+                .withBatchRate("4.0")
+                .withOtherErrors("6.0")
+                .build()
+
+        when:
+        SubscriptionHealth health = healthChecker.checkHealth(batchSubscriptionWithSize(10), topicMetrics, subscriptionMetrics)
+
+        then:
+        health.status == UNHEALTHY
+        health.problems == [unreachable(6.0)] as Set
+    }
+
+    def "should indicate that a serial subscriber with more than 10% timeouts is timing out"() {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
@@ -119,14 +136,31 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(ACTIVE_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(ACTIVE_SERIAL_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [timingOut(11)] as Set
+        health.status == UNHEALTHY
+        health.problems == [timingOut(11)] as Set
     }
 
-    def "should indicate that a subscriber returning more than 10% 5xx errors is malfunctioning"() {
+    def "should indicate that a batch subscriber with more than 10% timeouts is timing out"() {
+        given:
+        def topicMetrics = topicMetricsWithRate("100.0")
+        def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
+                .withRate("80.0")
+                .withBatchRate("8.0")
+                .withTimeouts("2.0")
+                .build()
+
+        when:
+        SubscriptionHealth health = healthChecker.checkHealth(batchSubscriptionWithSize(10), topicMetrics, subscriptionMetrics)
+
+        then:
+        health.status == UNHEALTHY
+        health.problems == [timingOut(2.0)] as Set
+    }
+
+    def "should indicate that a serial subscriber returning more than 10% 5xx errors is malfunctioning"() {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
@@ -135,17 +169,34 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(ACTIVE_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(ACTIVE_SERIAL_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [malfunctioning(11)] as Set
+        health.status == UNHEALTHY
+        health.problems == [malfunctioning(11)] as Set
     }
 
-    def "should indicate that a subscriber with client error retry returning more than 10% 4xx errors is receiving malformed events"() {
+    def "should indicate that a batch subscriber returning more than 10% 5xx errors is malfunctioning"() {
         given:
-        def retrySubscriptionPolicy = batchSubscriptionPolicy()
-                .withClientErrorRetry(true)
+        def topicMetrics = topicMetricsWithRate("100.0")
+        def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
+                .withRate("80.0")
+                .withBatchRate("8.0")
+                .withCodes5xx("2.0")
+                .build()
+
+        when:
+        SubscriptionHealth health = healthChecker.checkHealth(batchSubscriptionWithSize(10), topicMetrics, subscriptionMetrics)
+
+        then:
+        health.status == UNHEALTHY
+        health.problems == [malfunctioning(2.0)] as Set
+    }
+
+    def "should indicate that a serial subscriber with retry returning more than 10% 4xx errors is receiving malformed events"() {
+        given:
+        def retrySubscriptionPolicy = subscriptionPolicy()
+                .withClientErrorRetry()
                 .build()
         def subscriptionWithRetry = subscription("group.topic", "subscription")
                 .withSubscriptionPolicy(retrySubscriptionPolicy)
@@ -157,16 +208,39 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(subscriptionWithRetry, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(subscriptionWithRetry, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [receivingMalformedMessages(11)] as Set
+        health.status == UNHEALTHY
+        health.problems == [receivingMalformedMessages(11.0)] as Set
     }
 
-    def "should not indicate that a subscriber without client error retry returning more than 10% 4xx errors is receiving malformed events"() {
+    def "should indicate that a batch subscriber with retry returning more than 10% 4xx errors is receiving malformed events"() {
         given:
-        def subscriptionWithoutRetry = ACTIVE_SUBSCRIPTION
+        def retrySubscriptionPolicy = batchSubscriptionPolicy()
+                .withClientErrorRetry(true)
+                .build()
+        def subscriptionWithRetry = subscription("group.topic", "subscription")
+                .withSubscriptionPolicy(retrySubscriptionPolicy)
+                .build()
+        def topicMetrics = topicMetricsWithRate("100.0")
+        def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
+                .withRate("100.0")
+                .withBatchRate("8.0")
+                .withCodes4xx("2.0")
+                .build()
+
+        when:
+        SubscriptionHealth health = healthChecker.checkHealth(subscriptionWithRetry, topicMetrics, subscriptionMetrics)
+
+        then:
+        health.status == UNHEALTHY
+        health.problems == [receivingMalformedMessages(2.0)] as Set
+    }
+
+    def "should not indicate that a serial subscriber without retry returning more than 10% 4xx errors is receiving malformed events"() {
+        given:
+        def subscriptionWithoutRetry = ACTIVE_SERIAL_SUBSCRIPTION
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
                 .withRate("100.0")
@@ -174,10 +248,32 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(subscriptionWithoutRetry, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(subscriptionWithoutRetry, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth == HEALTHY
+        health == HEALTHY
+    }
+
+    def "should not indicate that a batch subscriber without retry returning more than 10% 4xx errors is receiving malformed events"() {
+        given:
+        def noRetrySubscriptionPolicy = batchSubscriptionPolicy()
+                .withClientErrorRetry(false)
+                .build()
+        def subscriptionWithoutRetry = subscription("group.topic", "subscription")
+                .withSubscriptionPolicy(noRetrySubscriptionPolicy)
+                .build()
+        def topicMetrics = topicMetricsWithRate("100.0")
+        def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
+                .withRate("100.0")
+                .withBatchRate("8.0")
+                .withCodes4xx("2.0")
+                .build()
+
+        when:
+        SubscriptionHealth health = healthChecker.checkHealth(subscriptionWithoutRetry, topicMetrics, subscriptionMetrics)
+
+        then:
+        health == HEALTHY
     }
 
     def "should return healthy status for a suspended subscription even if its metrics are not healthy"() {
@@ -197,31 +293,10 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(suspendedSubscription, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(suspendedSubscription, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth == HEALTHY
-    }
-
-    def "should indicate lagging and slowness but not other health problems for a lagging and slow subscriber with rate lower than 2"() {
-        given:
-        def topicMetrics = topicMetricsWithRate("100.0")
-        def subscriptionMetrics = subscriptionMetrics()
-                .withRate("1.9")
-                .withCodes2xx("0.0")
-                .withCodes4xx("0.25")
-                .withCodes5xx("0.25")
-                .withTimeouts("0.25")
-                .withOtherErrors("1.0")
-                .withLag(60100)
-                .build()
-
-        when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(ACTIVE_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
-
-        then:
-        subscriptionHealth.status == UNHEALTHY
-        subscriptionHealth.problems == [lagging(60100), slow(1.9, 100)] as Set
+        health == HEALTHY
     }
 
     def "should return healthy status for a healthy subscription when the topic is idle"() {
@@ -230,10 +305,10 @@ class SubscriptionHealthCheckerTest extends Specification {
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics().build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(ACTIVE_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(ACTIVE_SERIAL_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth == HEALTHY
+        health == HEALTHY
     }
 
     def "should return 'no data' status and no problems when some of the metrics are unavailable even if others can be calculated"() {
@@ -245,10 +320,10 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
 
         when:
-        SubscriptionHealth subscriptionHealth = subscriptionHealthChecker.checkHealth(ACTIVE_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(ACTIVE_SERIAL_SUBSCRIPTION, topicMetrics, subscriptionMetrics)
 
         then:
-        subscriptionHealth == NO_DATA
+        health == NO_DATA
     }
 
     static TopicMetrics topicMetricsWithRate(String rate) {
@@ -266,5 +341,20 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .withTimeouts("0.0")
                 .withOtherErrors("0.0")
                 .withLag(0)
+                .withBatchRate("0.0")
+    }
+
+    private static Subscription batchSubscriptionWithSize(int batchSize) {
+        subscription("group.topic", "subscription")
+                .withState(ACTIVE)
+                .withSubscriptionPolicy(batchSubscriptionPolicy()
+                    .withMessageTtl(100)
+                    .withRequestTimeout(100)
+                    .withMessageBackoff(10)
+                    .withBatchSize(batchSize)
+                    .withBatchTime(MAX_VALUE)
+                    .withBatchVolume(1024)
+                    .build())
+                .build()
     }
 }

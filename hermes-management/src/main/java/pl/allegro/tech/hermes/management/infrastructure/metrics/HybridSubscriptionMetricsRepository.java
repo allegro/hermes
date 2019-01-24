@@ -33,6 +33,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
     private static final String SUBSCRIPTION_HTTP_STATUSES_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.m1_rate)";
     private static final String SUBSCRIPTION_ERROR_TIMEOUT_PATTERN = "sumSeries(%s.consumer.*.status.%s.errors.timeout.m1_rate)";
     private static final String SUBSCRIPTION_ERROR_OTHER_PATTERN = "sumSeries(%s.consumer.*.status.%s.errors.other.m1_rate)";
+    private static final String SUBSCRIPTION_BATCH_RATE_PATTERN = "sumSeries(%s.consumer.*.meter.%s.batch.m1_rate)";
 
     private final GraphiteClient graphiteClient;
 
@@ -69,8 +70,10 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
         String codes2xxPath = metricPathHttpStatuses(name, "2xx");
         String codes4xxPath = metricPathHttpStatuses(name, "4xx");
         String codes5xxPath = metricPathHttpStatuses(name, "5xx");
+        String batchPath = metricPathBatchRate(name);
 
-        GraphiteMetrics graphiteMetrics = graphiteClient.readMetrics(codes2xxPath, codes4xxPath, codes5xxPath, rateMetric, timeouts, otherErrors);
+        GraphiteMetrics graphiteMetrics = graphiteClient.readMetrics(codes2xxPath, codes4xxPath, codes5xxPath,
+                rateMetric, timeouts, otherErrors, batchPath);
         ZookeeperMetrics zookeeperMetrics = readZookeeperMetrics(name);
 
         return SubscriptionMetrics.Builder.subscriptionMetrics()
@@ -85,6 +88,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
                 .withOtherErrors(graphiteMetrics.metricValue(otherErrors))
                 .withLag(lagSource.getLag(topicName, subscriptionName))
                 .withThroughput(graphiteMetrics.metricValue(throughput))
+                .withBatchRate(graphiteMetrics.metricValue(batchPath))
                 .build();
     }
 
@@ -137,6 +141,12 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
     private String metricPathOtherErrors(SubscriptionName name) {
         return String.format(SUBSCRIPTION_ERROR_OTHER_PATTERN,
+                metricsPaths.prefix(), subscriptionNameToPath(name)
+        );
+    }
+
+    private String metricPathBatchRate(SubscriptionName name) {
+        return String.format(SUBSCRIPTION_BATCH_RATE_PATTERN,
                 metricsPaths.prefix(), subscriptionNameToPath(name)
         );
     }
