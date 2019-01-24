@@ -1,14 +1,20 @@
 package pl.allegro.tech.hermes.mock
 
-import org.junit.Rule
+import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
+import spock.lang.Shared
 import spock.lang.Specification
 
 class HermesMockTest extends Specification {
-    @Rule
-    HermesMockRule hermes = new HermesMockRule(56789);
+    @ClassRule
+    @Shared
+    HermesMockRule hermes = new HermesMockRule(56789)
 
-    private HermesPublisher publisher = new HermesPublisher("http://localhost:56789");
+    HermesPublisher publisher = new HermesPublisher("http://localhost:56789")
+
+    def setup() {
+        hermes.resetReceivedRequest()
+    }
 
     def "should receive a message"() {
         given:
