@@ -52,6 +52,21 @@ class HermesMockAvroTest extends Specification {
             hermes.expect().avroMessagesOnTopic(topicName, 5, schema)
     }
 
+    def "should get all filtered messages as avro"() {
+        given:
+            def topicName = "get-all-filtered-avro-topic"
+            hermes.define().avroTopic(topicName)
+
+            def messages = (1..5).collect { new TestMessage("key-" + it, "value-" + it) }
+            def filter = { TestMessage m -> m.key.startsWith("key-") }
+
+        when:
+            messages.each { publish(topicName, it) }
+
+        then:
+            hermes.expect().avroMessagesOnTopic(topicName, 5, schema, TestMessage, filter)
+    }
+
     def "should get messages with schema from file"() {
         given:
             def topicName = "my-avro-from-file"
@@ -89,7 +104,7 @@ class HermesMockAvroTest extends Specification {
 
         then:
             def ex = thrown(HermesMockException)
-            ex.message.startsWith("Cannot convert body")
+            ex.message.startsWith("Cannot decode body")
     }
 
     def "should get all avro message with schema"() {
@@ -142,6 +157,56 @@ class HermesMockAvroTest extends Specification {
 
             def request = hermes.query().lastRequest(topicName)
             request.isPresent()
+    }
+
+    def "should return last message that matches filter"() {
+        given:
+            def topicName = "my-topic"
+            hermes.define().avroTopic(topicName)
+            def count = 3
+            def messages = (1..count).collect { new TestMessage("key", "value-" + it) }
+            def filter = { TestMessage m -> m.key.equals("key") }
+
+        when:
+            messages.each { publish(topicName, it) }
+
+        then:
+            def message = hermes.query().lastMatchingAvroMessageAs(topicName, schema, TestMessage, filter)
+            message.isPresent()
+
+            def msg = message.get() as TestMessage
+            msg.key == messages[count - 1].key
+            msg.value == messages[count - 1].value
+    }
+
+    def "should return proper number of message"() {
+        given:
+            def topicName = "my-topic"
+            hermes.define().jsonTopic(topicName)
+            def count = 3
+            def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
+
+        when:
+            messages.each { publish(topicName, it) }
+
+        then:
+            count == hermes.query().countAvroMessages(topicName)
+    }
+
+    def "should return proper number of matching messages"() {
+        given:
+            def topicName = "my-topic"
+            hermes.define().jsonTopic(topicName)
+            def count = 3
+            def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
+            def filter = { TestMessage m -> m.key.startsWith("key-") }
+
+        when:
+            messages.each { publish(topicName, it) }
+            5.times { publish(topicName) }
+
+        then:
+            count == hermes.query().countMatchingAvroMessages(topicName, schema, TestMessage, filter)
     }
 
     def asAvro(TestMessage message) {
