@@ -17,7 +17,8 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import static java.util.stream.Collectors.toList;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.*;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP;
 
 public class ConsumerProcessSupervisor implements Runnable {
 
@@ -128,18 +129,16 @@ public class ConsumerProcessSupervisor implements Runnable {
             case START:
                 start(signal);
                 break;
-            case RETRANSMIT:
             case UPDATE_SUBSCRIPTION:
+                updateSubscription(signal);
+                break;
             case UPDATE_TOPIC:
+            case RETRANSMIT:
             case COMMIT:
                 forRunningConsumerProcess(signal, runningProcess -> runningProcess.getConsumerProcess().accept(signal));
                 break;
             case STOP:
-                forRunningConsumerProcess(signal, runningProcess -> {
-                    processKiller.observe(runningProcess);
-                    runningConsumerProcesses.remove(runningProcess);
-                    runningProcess.getConsumerProcess().accept(signal);
-                });
+                stop(signal);
                 break;
             default:
                 logger.warn("Unknown signal {}", signal);
@@ -147,13 +146,49 @@ public class ConsumerProcessSupervisor implements Runnable {
         }
     }
 
+    private void updateSubscription(Signal signal) {
+        if (runningConsumerProcesses.hasProcess(signal.getTarget())) {
+            stopOrUpdateConsumer(signal);
+        } else {
+            drop(signal);
+        }
+    }
+
+    private void stopOrUpdateConsumer(Signal signal) {
+        Subscription signalSubscription = signal.getPayload();
+        if (!deliveryTypesEqual(signalSubscription)) {
+            logger.info("Stopping subscription: {} because of delivery type update", signalSubscription.getQualifiedName());
+            stop(Signal.of(STOP, signal.getTarget()));
+        } else {
+            forRunningConsumerProcess(signal, runningProcess -> runningProcess.getConsumerProcess().accept(signal));
+        }
+    }
+
+    private boolean deliveryTypesEqual(Subscription signalSubscription) {
+        return signalSubscription.getDeliveryType() == runningConsumerProcesses.getProcess(signalSubscription.getQualifiedName())
+                                                                                .getSubscription()
+                                                                                .getDeliveryType();
+    }
+
+    private void stop(Signal signal) {
+        forRunningConsumerProcess(signal, runningProcess -> {
+            processKiller.observe(runningProcess);
+            runningConsumerProcesses.remove(runningProcess);
+            runningProcess.getConsumerProcess().accept(signal);
+        });
+    }
+
     private void forRunningConsumerProcess(Signal signal, java.util.function.Consumer<RunningConsumerProcess> consumerProcessConsumer) {
         if (runningConsumerProcesses.hasProcess(signal.getTarget())) {
             consumerProcessConsumer.accept(runningConsumerProcesses.getProcess(signal.getTarget()));
         } else {
-            metrics.counter("supervisor.signal.dropped." + signal.getType().name()).inc();
-            logger.warn("Dropping signal {} as running target consumer process does not exist.", signal);
+            drop(signal);
         }
+    }
+
+    private void drop(Signal signal) {
+        metrics.counter("supervisor.signal.dropped." + signal.getType().name()).inc();
+        logger.warn("Dropping signal {} as running target consumer process does not exist.", signal);
     }
 
     private void start(Signal start) {
