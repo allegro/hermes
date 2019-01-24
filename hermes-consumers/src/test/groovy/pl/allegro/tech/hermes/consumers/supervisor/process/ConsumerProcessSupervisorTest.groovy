@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.supervisor.process
 import com.codahale.metrics.MetricRegistry
 import com.jayway.awaitility.Awaitility
 import com.jayway.awaitility.core.ConditionFactory
+import pl.allegro.tech.hermes.api.DeliveryType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.Topic
@@ -13,6 +14,7 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.Clock
 import java.time.Instant
@@ -20,13 +22,12 @@ import java.time.ZoneId
 import java.util.function.Consumer
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.RETRANSMIT
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_SUBSCRIPTION
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_TOPIC
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT
-
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 
@@ -37,12 +38,12 @@ class ConsumerProcessSupervisorTest extends Specification {
     SubscriptionName subscriptionName = subscription1.getQualifiedName()
 
     def signals = [
-            start: Signal.of(START, subscriptionName, subscription1),
-            stop: Signal.of(STOP, subscriptionName),
-            retransmit: Signal.of(RETRANSMIT, subscriptionName),
+            start             : Signal.of(START, subscriptionName, subscription1),
+            stop              : Signal.of(STOP, subscriptionName),
+            retransmit        : Signal.of(RETRANSMIT, subscriptionName),
             updateSubscription: Signal.of(UPDATE_SUBSCRIPTION, subscriptionName, subscription1),
-            updateTopic: Signal.of(UPDATE_TOPIC, subscriptionName, topic1),
-            commit: Signal.of(COMMIT, subscriptionName)
+            updateTopic       : Signal.of(UPDATE_TOPIC, subscriptionName, topic1),
+            commit            : Signal.of(COMMIT, subscriptionName)
     ]
 
     ConsumerProcessSupervisor supervisor
@@ -170,6 +171,34 @@ class ConsumerProcessSupervisorTest extends Specification {
         }
     }
 
+    @Unroll
+    def "should stop consumer process when subscription delivery type is changed"() {
+        given:
+        Subscription existingSubscription = subscription(topic1.getQualifiedName(), 'sub1')
+                .withDeliveryType(existingDeliveryType)
+                .build()
+        consumer.updateSubscription(existingSubscription)
+
+        runAndWait(supervisor.accept(signals.start))
+
+        Subscription subscriptionWithNewDeliveryType = subscription(topic1.getQualifiedName(), 'sub1')
+                .withDeliveryType(newDeliveryType)
+                .build()
+
+        when:
+        runAndWait(supervisor.accept(Signal.of(UPDATE_SUBSCRIPTION, existingSubscription.getQualifiedName(), subscriptionWithNewDeliveryType)))
+
+        then:
+        supervisor.countRunningProcesses() == 0
+
+        where:
+        existingDeliveryType | newDeliveryType
+        DeliveryType.SERIAL  | DeliveryType.BATCH
+        DeliveryType.BATCH   | DeliveryType.SERIAL
+
+    }
+
+
     private static runAndWait(ConsumerProcessSupervisor supervisor) {
         supervisor.run()
         // this helps to pass tests consistently on CI
@@ -182,7 +211,9 @@ class ConsumerProcessSupervisorTest extends Specification {
 
     class CurrentTimeClock extends Clock {
         ZoneId getZone() { return null }
+
         Clock withZone(ZoneId zone) { return null }
+
         Instant instant() { return Instant.ofEpochMilli(currentTime) }
     }
 }
