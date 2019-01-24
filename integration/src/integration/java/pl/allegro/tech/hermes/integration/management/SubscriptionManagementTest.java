@@ -4,13 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
@@ -37,8 +37,9 @@ import static java.net.URI.create;
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
-import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.slow;
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
+import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -273,7 +274,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         Topic topic = operations.buildTopic(groupName, topicName);
         operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetricForTopic(groupName, topicName, 100, 100);
-        graphiteEndpoint.returnMetricForSubscription(groupName, topicName, subscriptionName, 100);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub("healthHealthy.topic.subscription").withRate(100).build());
 
         // when
         SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
@@ -283,7 +284,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnUnhealthyStatusWithAProblemForASlowSubscription() {
+    public void shouldReturnUnhealthyStatusWithAProblemForMalfunctioningSubscription() {
         // given
         String groupName = "healthUnhealthy";
         String topicName = "topic";
@@ -293,14 +294,14 @@ public class SubscriptionManagementTest extends IntegrationTest {
         Topic topic = operations.buildTopic(groupName, topicName);
         operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetricForTopic(groupName, topicName, 100, 50);
-        graphiteEndpoint.returnMetricForSubscription(groupName, topicName, subscriptionName, 50);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub("healthUnhealthy.topic.subscription").withRate(50).withStatusRate(500, 11).build());
 
         // when
         SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
 
         // then
         assertThat(subscriptionHealth.getStatus()).isEqualTo(UNHEALTHY);
-        assertThat(subscriptionHealth.getProblems()).containsOnly(slow(50, 100));
+        assertThat(subscriptionHealth.getProblems()).containsOnly(malfunctioning(11));
     }
 
     @Test
@@ -314,7 +315,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         Topic topic = operations.buildTopic(groupName, topicName);
         operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnServerErrorForAllTopics();
-        graphiteEndpoint.returnMetricForSubscription(groupName, topicName, subscriptionName, 100);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub("healthUnhealthy.topic.subscription").withRate(100).build());
 
         // when
         SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);

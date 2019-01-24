@@ -16,7 +16,6 @@ health.factory('SubscriptionHealth', ['DiscoveryService', '$resource',
                             status: health.status,
                             problems: {
                                 lagging: problemOccurs('LAGGING'),
-                                slow: problemOccurs('SLOW'),
                                 malfunctioning: problemOccurs('MALFUNCTIONING'),
                                 receivingMalformedMessages: problemOccurs('RECEIVING_MALFORMED_MESSAGES'),
                                 timingOut: problemOccurs('TIMING_OUT'),

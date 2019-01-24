@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
-import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionMetrics;
 
 import java.util.Optional;
 
@@ -21,31 +19,21 @@ public class ReceivingMalformedMessagesIndicator implements SubscriptionHealthPr
 
     @Override
     public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
-        Subscription subscription = context.getSubscription();
-        SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
-        if (hasClientErrorRetry(subscription)
-                && areSubscriptionMetricsReliable(subscriptionMetrics)
-                && isCode4xxErrorsRateHigh(subscriptionMetrics)) {
-            return Optional.of(receivingMalformedMessages(subscriptionMetrics.getCode4xxErrorsRate()));
+        if (context.subscriptionHasRetryOnError()
+                && areSubscriptionMetricsReliable(context)
+                && isCode4xxErrorsRateHigh(context)) {
+            return Optional.of(receivingMalformedMessages(context.getCode4xxErrorsRate()));
         }
         return Optional.empty();
     }
 
-    private boolean hasClientErrorRetry(Subscription subscription) {
-        if (subscription.isBatchSubscription()) {
-            return subscription.getBatchSubscriptionPolicy().isRetryClientErrors();
-        } else {
-            return subscription.getSerialSubscriptionPolicy().isRetryClientErrors();
-        }
+    private boolean areSubscriptionMetricsReliable(SubscriptionHealthContext context) {
+        return context.getSubscriptionRateRespectingDeliveryType() > minSubscriptionRateForReliableMetrics;
     }
 
-    private boolean areSubscriptionMetricsReliable(SubscriptionMetrics subscriptionMetrics) {
-        return subscriptionMetrics.getRate() > minSubscriptionRateForReliableMetrics;
-    }
-
-    private boolean isCode4xxErrorsRateHigh(SubscriptionMetrics subscriptionMetrics) {
-        double code4xxErrorsRate = subscriptionMetrics.getCode4xxErrorsRate();
-        double rate = subscriptionMetrics.getRate();
+    private boolean isCode4xxErrorsRateHigh(SubscriptionHealthContext context) {
+        double code4xxErrorsRate = context.getCode4xxErrorsRate();
+        double rate = context.getSubscriptionRateRespectingDeliveryType();
         return code4xxErrorsRate > max4xxErrorsRatio * rate;
     }
 }
