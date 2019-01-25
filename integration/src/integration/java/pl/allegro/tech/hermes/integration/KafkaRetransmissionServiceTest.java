@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.integration;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
@@ -9,8 +11,12 @@ import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.integration.env.ManagementStarter;
+import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
+import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
+import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -35,18 +41,37 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
     private final AvroUser user = new AvroUser();
     private Clock clock = Clock.systemDefaultZone();
 
+    private static String RETRANSMISSION_ENV = "retransmission";
+    private static int MANAGEMENT_PORT = 18083;
+    private static String MANAGEMENT_ENDPOINT_URL = "http://localhost:" + MANAGEMENT_PORT + "/";
+
+    private ManagementStarter managementStarter;
+    private HermesEndpoints management;
+    private HermesAPIOperations operations;
+    private Waiter wait;
+
     @BeforeMethod
     public void initializeAlways() {
         remoteService = new RemoteServiceEndpoint(services().serviceMock());
     }
 
-    @Test(enabled = false)
+    @BeforeClass
+    void beforeClass() throws Exception {
+        managementStarter = new ManagementStarter(MANAGEMENT_PORT, RETRANSMISSION_ENV);
+        managementStarter.start();
+        management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL);
+        wait = new Waiter(management, services().zookeeper(), brokerOperations, PRIMARY_KAFKA_CLUSTER_NAME, KAFKA_NAMESPACE);
+        operations = new HermesAPIOperations(management, wait);
+    }
+
+    @Test
     public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
         // given
         String subscription = "subscription";
 
         Topic topic = operations.buildTopic(randomTopic("resetOffsetGroup", "topic").build());
         operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscriptionSuspended", HTTP_ENDPOINT_URL, Subscription.State.SUSPENDED);
 
         sendMessagesOnTopic(topic, 4);
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
@@ -92,12 +117,14 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         remoteService.makeSureNoneReceived();
     }
 
-    @Test(enabled = false)
+    @Test
     public void shouldMoveOffsetInDryRunModeForTopicsMigratedToAvro() throws InterruptedException {
         // given
         Topic topic = operations.buildTopic(randomTopic("resetOffsetGroup", "migratedTopicDryRun").build());
         long currentTime = clock.millis();
         Subscription subscription = operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscriptionSuspended", HTTP_ENDPOINT_URL, Subscription.State.SUSPENDED);
+
         wait.untilSubscriptionIsActivated(currentTime, topic, subscription.getName());
 
         sendMessagesOnTopic(topic, 1);
@@ -116,7 +143,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
                 .build();
 
         currentTime = clock.millis();
-        operations.updateTopic("resetOffsetGroup", "migratedTopicDryRun", patch);
+        operations.updateTopic(topic.getName().getGroupName(), topic.getName().getName(), patch);
         wait.untilTopicIsUpdatedAfter(currentTime, topic, subscription.getName());
 
         sendAvroMessageOnTopic(topic, user.asTestMessage());
@@ -134,6 +161,11 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
 
         assertThat(offsets.jsonPartitionOffsets.stream().collect(summingLong(PartitionOffset::getOffset))).isEqualTo(1);
         assertThat(offsets.avroPartitionOffsets.stream().collect(summingLong(PartitionOffset::getOffset))).isEqualTo(0);
+    }
+
+    @AfterClass
+    public void afterClass() throws Exception {
+        managementStarter.stop();
     }
 
     private void sendAvroMessageOnTopic(Topic topic, TestMessage message) {
@@ -171,7 +203,6 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
             );
             return new PartitionOffsetsPerKafkaTopic(partitionOffsets.get(true), partitionOffsets.get(false));
         }
-
     }
 }
 

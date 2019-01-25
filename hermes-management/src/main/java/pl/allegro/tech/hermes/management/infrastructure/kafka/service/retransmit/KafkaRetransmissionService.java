@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit;
 
- import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.common.TopicPartition;
 import pl.allegro.tech.hermes.api.Topic;

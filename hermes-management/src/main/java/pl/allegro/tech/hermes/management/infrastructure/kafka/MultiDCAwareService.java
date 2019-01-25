@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
@@ -42,10 +43,10 @@ public class MultiDCAwareService {
 
     public String readMessageFromPrimary(String clusterName, Topic topic, Integer partition, Long offset) {
         return clusters.stream()
-            .filter(cluster -> clusterName.equals(cluster.getClusterName()))
-            .findFirst()
-            .orElseThrow(() -> new BrokersClusterNotFoundException(clusterName))
-            .readMessageFromPrimary(topic, partition, offset);
+                .filter(cluster -> clusterName.equals(cluster.getClusterName()))
+                .findFirst()
+                .orElseThrow(() -> new BrokersClusterNotFoundException(clusterName))
+                .readMessageFromPrimary(topic, partition, offset);
     }
 
     public MultiDCOffsetChangeSummary moveOffset(Topic topic, String subscriptionName, Long timestamp, boolean dryRun) {
@@ -56,6 +57,7 @@ public class MultiDCAwareService {
                 cluster.indicateOffsetChange(topic, subscriptionName, timestamp, dryRun)));
 
         if (!dryRun) {
+            logger.info("Preparing retransmission for subscription {}", topic.getQualifiedName() + "$" + subscriptionName);
             adminTool.retransmit(new SubscriptionName(subscriptionName, topic.getName()));
             clusters.forEach(clusters -> waitUntilOffsetsAreMoved(topic, subscriptionName));
         }
@@ -68,13 +70,13 @@ public class MultiDCAwareService {
     }
 
     public boolean topicExists(Topic topic) {
-        return clusters.stream().map(brokersClusterService -> brokersClusterService.topicExists(topic)).allMatch(Boolean.TRUE::equals);
+        return clusters.stream().allMatch(brokersClusterService -> brokersClusterService.topicExists(topic));
     }
 
     private void waitUntilOffsetsAreMoved(Topic topic, String subscriptionName) {
         Instant abortAttemptsInstant = clock.instant().plus(offsetsMovedTimeout);
 
-        while(!areOffsetsMoved(topic, subscriptionName)) {
+        while (!areOffsetsMoved(topic, subscriptionName)) {
             if (clock.instant().isAfter(abortAttemptsInstant)) {
                 logger.error("Not all offsets related to hermes subscription {}${} were moved.", topic.getQualifiedName(), subscriptionName);
                 throw new UnableToMoveOffsetsException(topic, subscriptionName);
@@ -87,8 +89,7 @@ public class MultiDCAwareService {
 
     private boolean areOffsetsMoved(Topic topic, String subscriptionName) {
         return clusters.stream()
-                .map(cluster -> cluster.areOffsetsMoved(topic, subscriptionName))
-                .allMatch(Boolean.TRUE::equals);
+                .allMatch(cluster -> cluster.areOffsetsMoved(topic, subscriptionName));
     }
 
     private void sleep(Duration sleepDuration) {
@@ -97,5 +98,10 @@ public class MultiDCAwareService {
         } catch (InterruptedException e) {
             throw new InternalProcessingException(e);
         }
+    }
+
+    public boolean allSubscriptionsHaveConsumersAssigned(Topic topic, List<Subscription> subscriptions) {
+        return clusters.stream().allMatch(brokersClusterService ->
+                brokersClusterService.allSubscriptionsHaveConsumersAssigned(topic, subscriptions));
     }
 }

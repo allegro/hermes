@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.common.kafka;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -36,5 +37,9 @@ public class KafkaTopics {
 
     public boolean allMatch(Function<KafkaTopic, Boolean> matcher) {
         return matcher.apply(primary) && secondary.map(matcher).orElse(true);
+    }
+
+    public Stream<KafkaTopic> stream() {
+        return secondary.map(secondary -> Stream.of(primary, secondary)).orElse(Stream.of(primary));
     }
 }
