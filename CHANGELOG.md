@@ -1,3 +1,51 @@
+## 0.15.7 (25.01.2018)
+
+### Enhancements
+
+#### ([979](https://github.com/allegro/hermes/pull/979)) Hermes Mock predicates
+#### ([977](https://github.com/allegro/hermes/pull/977)) Hermes Mock with ClassRule and JUnit 5 extension
+#### ([972](https://github.com/allegro/hermes/pull/972)) Improved subscription health problem indicator
+
+### Bugfixes
+
+#### ([978](https://github.com/allegro/hermes/issues/978)) Fix stale retransmission bug
+#### ([968](https://github.com/allegro/hermes/pull/968)) Subscription delivery type can be updated from batch to serial
+#### ([967](https://github.com/allegro/hermes/pull/967)) Fixes version replacement pattern
+#### ([974](https://github.com/allegro/hermes/pull/974)) Setting kafka consumer max.poll.interval.ms to Integer.MAX_VALUE
+#### ([973](https://github.com/allegro/hermes/pull/973)) Handling deprecated owner sources
+
+## 0.15.6 (21.01.2018)
+
+### Enhancements
+
+#### ([966](https://github.com/allegro/hermes/pull/966)) Adds endpoint returning description of unhealthy subscriptions
+#### ([971](https://github.com/allegro/hermes/pull/971)) Use OpenJDK8 instead of OracleJDK8
+
+### Bugfixes
+
+#### ([976](https://github.com/allegro/hermes/pull/976)) Make HermesMock API public
+#### ([970](https://github.com/allegro/hermes/pull/970)) Fixes metrics for batch and filtered subscriptions
+
+## 0.15.5 (16.01.2018)
+
+### Bugfixes
+
+#### ([969](https://github.com/allegro/hermes/pull/969)) Temporary retransmission fix
+
+## 0.15.4 (14.01.2018)
+
+### Enhancements
+
+#### ([963](https://github.com/allegro/hermes/pull/963)) Disabling not used graphite metrics attributes
+#### ([965](https://github.com/allegro/hermes/pull/965)) Updating kafka version to 2.0.0 in Vagrant
+
+## 0.15.3 (09.01.2018)
+
+### Enhancements
+
+#### ([960](https://github.com/allegro/hermes/pull/960)) Multi Elasticsearch log repository
+#### ([959](https://github.com/allegro/hermes/pull/959)) Write test output in Junit format
+
 ## 0.15.2 (5.12.2018)
 
 ### Enhancements
