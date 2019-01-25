@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
+import java.util.Properties;
 import kafka.zk.AdminZkClient;
 import kafka.zk.KafkaZkClient;
 import kafka.zookeeper.ZooKeeperClient;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
+import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.common.utils.Time;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -79,6 +82,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             ZooKeeperClient zooKeeperClient = zooKeeperClient(kafkaProperties);
             KafkaZkClient kafkaZkClient = kafkaZkClient(zooKeeperClient);
             AdminZkClient adminZkClient = adminZkClient(kafkaZkClient);
+            AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties.getBootstrapKafkaServer());
 
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties), kafkaZkClient);
 
@@ -95,7 +99,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
             return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,
-                    retransmissionService, brokerTopicManagement, kafkaNamesMapper, new OffsetsAvailableChecker(consumerPool, storage));
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper, new OffsetsAvailableChecker(consumerPool, storage), brokerAdminClient);
         }).collect(toList());
 
         return new MultiDCAwareService(
@@ -166,4 +170,11 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
         return new KafkaConsumerPool(config, brokerStorage);
     }
+
+    private AdminClient brokerAdminClient(String bootstrapServers) {
+        Properties props = new Properties();
+        props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        return AdminClient.create(props);
+    }
+
 }

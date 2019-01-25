@@ -6,6 +6,8 @@ public class KafkaProperties {
 
     private String connectionString = "localhost:2181";
 
+    private String bootstrapKafkaServer = "localhost:9093";
+
     private int sessionTimeoutMillis = 10000;
 
     private int connectionTimeoutMillis = 3000;
@@ -185,5 +187,13 @@ public class KafkaProperties {
 
     public void setMaxInflight(int maxInflight) {
         this.maxInflight = maxInflight;
+    }
+
+    public String getBootstrapKafkaServer() {
+        return bootstrapKafkaServer;
+    }
+
+    public void setBootstrapKafkaServer(String bootstrapKafkaServer) {
+        this.bootstrapKafkaServer = bootstrapKafkaServer;
     }
 }

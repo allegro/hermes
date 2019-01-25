@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import org.apache.curator.framework.CuratorFramework;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
@@ -14,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionOffsetChangeIndicator {
+
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperSubscriptionOffsetChangeIndicator.class);
 
     private final CuratorFramework zookeeper;
 
@@ -79,9 +83,12 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
 
     private boolean offsetDoesNotExist(TopicName topicName, String subscriptionName, String brokersClusterName, Integer partitionId,  KafkaTopic kafkaTopic) {
         String offsetPath = paths.offsetPath(topicName, subscriptionName, kafkaTopic.name(), brokersClusterName, partitionId);
-
         try {
-            return zookeeper.checkExists().forPath(offsetPath) == null;
+            boolean result = zookeeper.checkExists().forPath(offsetPath) == null;
+            if (!result) {
+                logger.info("Leftover on path {}", offsetPath);
+            }
+            return result;
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }

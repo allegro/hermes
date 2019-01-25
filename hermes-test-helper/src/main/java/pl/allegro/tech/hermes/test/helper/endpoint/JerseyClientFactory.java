@@ -12,7 +12,7 @@ public class JerseyClientFactory {
         return ClientBuilder.newClient(createConfig());
     }
 
-    public static ClientConfig createConfig() {
+    static ClientConfig createConfig() {
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.property(ClientProperties.ASYNC_THREADPOOL_SIZE, 10);
         clientConfig.property(ClientProperties.CONNECT_TIMEOUT, 5000);

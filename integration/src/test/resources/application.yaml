@@ -1,3 +1,10 @@
+owner:
+  crowd:
+    enabled: true
+    path: http://localhost:18222/crowd
+    connect-timeout: 2000
+    socket-timeout: 2000
+
 application:
   name: hermes-management
 

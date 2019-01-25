@@ -27,6 +27,8 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     private static final Map<Class<?>, Starter<?>> STARTERS = new LinkedHashMap<>();
 
+    private CuratorFramework zookeeper;
+
     static {
         STARTERS.put(ZookeeperStarter.class, new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_CONNECT_STRING, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT) + "/groups"));
         STARTERS.put(KafkaStarter.class, new KafkaStarter());
@@ -40,11 +42,8 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
                 SECONDARY_ZK_KAFKA_CONNECT));
         STARTERS.put(ConsumersStarter.class, new ConsumersStarter());
         STARTERS.put(FrontendStarter.class, new FrontendStarter(FRONTEND_PORT));
-        STARTERS.put(ManagementStarter.class, new ManagementStarter(MANAGEMENT_PORT));
-
+        STARTERS.put(ManagementStarter.class, new ManagementStarter(MANAGEMENT_PORT, "integration"));
     }
-
-    private CuratorFramework zookeeper;
 
     @BeforeSuite
     public void prepareEnvironment(ITestContext context) throws Exception {

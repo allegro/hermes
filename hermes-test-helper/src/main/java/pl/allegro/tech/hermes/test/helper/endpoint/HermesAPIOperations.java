@@ -83,20 +83,30 @@ public class HermesAPIOperations {
         return createSubscription(topic, subscriptionName, endpoint, ContentType.JSON);
     }
 
+    public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint, Subscription.State state) {
+        return createSubscription(topic, subscriptionName, endpoint, ContentType.JSON, SubscriptionMode.ANYCAST, state);
+    }
+
     public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint, ContentType contentType) {
-        return createSubscription(topic, subscriptionName, endpoint, contentType, SubscriptionMode.ANYCAST);
+        return createSubscription(topic, subscriptionName, endpoint, contentType, SubscriptionMode.ANYCAST, Subscription.State.PENDING);
     }
 
     public Subscription createBroadcastSubscription(Topic topic, String subscriptionName, String endpoint) {
-        return createSubscription(topic, subscriptionName, endpoint, ContentType.JSON, SubscriptionMode.BROADCAST);
+        return createSubscription(topic, subscriptionName, endpoint, ContentType.JSON, SubscriptionMode.BROADCAST, Subscription.State.PENDING);
     }
 
-    public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint, ContentType contentType, SubscriptionMode mode) {
+    public Subscription createSubscription(Topic topic,
+                                           String subscriptionName,
+                                           String endpoint,
+                                           ContentType contentType,
+                                           SubscriptionMode mode,
+                                           Subscription.State state) {
         Subscription subscription = subscription(topic, subscriptionName)
                 .withEndpoint(endpoint)
                 .withContentType(contentType)
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults().build())
                 .withMode(mode)
+                .withState(state)
                 .build();
 
         return createSubscription(topic, subscription);
