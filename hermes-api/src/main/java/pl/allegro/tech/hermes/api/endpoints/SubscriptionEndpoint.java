@@ -109,4 +109,10 @@ public interface SubscriptionEndpoint {
     Response getMessageTrace(@PathParam("topicName") String qualifiedTopicName,
                              @PathParam("subscriptionName") String subscriptionName,
                              @PathParam("messageId") String messageId);
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/{subscriptionName}/consumer-groups")
+    Response describeConsumerGroups(@PathParam("topicName") String qualifiedTopicName,
+                                    @PathParam("subscriptionName") String subscriptionName);
 }

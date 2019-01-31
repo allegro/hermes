@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.kafka.KafkaConsumerGroup;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService;
 import pl.allegro.tech.hermes.management.domain.topic.UnableToMoveOffsetsException;
@@ -16,7 +18,10 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
+
+import static java.util.stream.Collectors.toList;
 
 public class MultiDCAwareService {
 
@@ -103,5 +108,12 @@ public class MultiDCAwareService {
     public boolean allSubscriptionsHaveConsumersAssigned(Topic topic, List<Subscription> subscriptions) {
         return clusters.stream().allMatch(brokersClusterService ->
                 brokersClusterService.allSubscriptionsHaveConsumersAssigned(topic, subscriptions));
+    }
+
+    public List<KafkaConsumerGroup> describeConsumerGroups(TopicName topicName, String subscriptionName) {
+        return clusters.stream().map(brokersClusterService -> brokersClusterService.describeConsumerGroup(new SubscriptionName(subscriptionName, topicName)))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toList());
     }
 }

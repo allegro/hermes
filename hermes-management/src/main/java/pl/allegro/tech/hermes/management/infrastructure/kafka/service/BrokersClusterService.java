@@ -1,24 +1,41 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
+
+import com.google.common.collect.Lists;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
+import pl.allegro.tech.hermes.common.kafka.KafkaConsumerGroup;
+import pl.allegro.tech.hermes.common.kafka.KafkaConsumerGroupMember;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicPartition;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
+import scala.tools.cmd.Opt;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toSet;
 
 public class BrokersClusterService {
 
@@ -86,6 +103,41 @@ public class BrokersClusterService {
             logger.error("Failed to check assignments for topic " + topic.getQualifiedName() + " subscriptions", e);
             return false;
         }
+    }
+
+    public Optional<KafkaConsumerGroup> describeConsumerGroup(SubscriptionName subscription) {
+        ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription);
+        try {
+            return describeConsumerGroup(consumerGroupId);
+        } catch (Exception e) {
+            logger.error("Failed to describe group with id: " + consumerGroupId.asString(), e);
+            return Optional.empty();
+        }
+    }
+
+    private Optional<KafkaConsumerGroup> describeConsumerGroup(ConsumerGroupId consumerGroupId) throws ExecutionException, InterruptedException {
+        Optional<ConsumerGroupDescription> description = adminClient.describeConsumerGroups(Collections.singletonList(consumerGroupId.asString()))
+                .all()
+                .get()
+                .values()
+                .stream()
+                .findFirst();
+
+        return description.map(
+                d -> {
+                    Set<KafkaConsumerGroupMember> groupMembers = d.members().stream()
+                            .map(member -> {
+                                Set<KafkaTopicPartition> kafkaTopicPartitions = member.assignment().topicPartitions().stream().map(
+                                        topicPartition -> new KafkaTopicPartition(topicPartition.partition(), topicPartition.topic())
+                                ).collect(toSet());
+
+                                return new KafkaConsumerGroupMember(member.consumerId(), member.clientId(), member.host(), kafkaTopicPartitions);
+                            }).collect(toSet());
+
+                    return new KafkaConsumerGroup(d.groupId(), groupMembers);
+                }
+        );
+
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {
