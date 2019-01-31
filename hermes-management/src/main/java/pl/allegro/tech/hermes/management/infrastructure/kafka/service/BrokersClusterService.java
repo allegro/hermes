@@ -1,13 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.google.common.collect.Lists;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
@@ -27,7 +25,6 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
-import scala.tools.cmd.Opt;
 
 import java.util.Collection;
 import java.util.List;
@@ -116,6 +113,7 @@ public class BrokersClusterService {
     }
 
     private Optional<KafkaConsumerGroup> describeConsumerGroup(ConsumerGroupId consumerGroupId) throws ExecutionException, InterruptedException {
+        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsets = adminClient.listConsumerGroupOffsets(consumerGroupId.asString()).partitionsToOffsetAndMetadata().get();
         Optional<ConsumerGroupDescription> description = adminClient.describeConsumerGroups(Collections.singletonList(consumerGroupId.asString()))
                 .all()
                 .get()
@@ -128,16 +126,16 @@ public class BrokersClusterService {
                     Set<KafkaConsumerGroupMember> groupMembers = d.members().stream()
                             .map(member -> {
                                 Set<KafkaTopicPartition> kafkaTopicPartitions = member.assignment().topicPartitions().stream().map(
-                                        topicPartition -> new KafkaTopicPartition(topicPartition.partition(), topicPartition.topic())
+                                        topicPartition -> { OffsetAndMetadata offset = topicPartitionOffsets.get(topicPartition);
+                                            return new KafkaTopicPartition(topicPartition.partition(), topicPartition.topic(), offset.offset(), offset.metadata());}
                                 ).collect(toSet());
 
                                 return new KafkaConsumerGroupMember(member.consumerId(), member.clientId(), member.host(), kafkaTopicPartitions);
                             }).collect(toSet());
 
-                    return new KafkaConsumerGroup(d.groupId(), groupMembers);
+                    return new KafkaConsumerGroup(d.groupId(), d.state().toString(), groupMembers);
                 }
         );
-
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {
