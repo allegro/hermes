@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -74,7 +76,8 @@ public class ConsumerMessageSender {
 
     public void initialize() {
         running = true;
-        this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1);
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(subscription.getQualifiedName() + "-retry-executor-%d").build();
+        this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1, threadFactory);
     }
 
     public void shutdown() {
