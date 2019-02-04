@@ -115,7 +115,10 @@ public class BrokersClusterService {
     }
 
     private Optional<KafkaConsumerGroup> describeConsumerGroup(ConsumerGroupId consumerGroupId) throws ExecutionException, InterruptedException {
-        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsets = adminClient.listConsumerGroupOffsets(consumerGroupId.asString()).partitionsToOffsetAndMetadata().get();
+        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsets = adminClient
+                .listConsumerGroupOffsets(consumerGroupId.asString())
+                .partitionsToOffsetAndMetadata()
+                .get();
         Optional<ConsumerGroupDescription> description = adminClient.describeConsumerGroups(Collections.singletonList(consumerGroupId.asString()))
                 .all()
                 .get()
@@ -123,21 +126,23 @@ public class BrokersClusterService {
                 .stream()
                 .findFirst();
 
-        return description.map(
-                d -> {
-                    Set<KafkaConsumerGroupMember> groupMembers = d.members().stream()
-                            .map(member -> {
-                                Set<KafkaTopicPartition> kafkaTopicPartitions = member.assignment().topicPartitions().stream().map(
-                                        topicPartition -> {
-                                            OffsetAndMetadata offset = topicPartitionOffsets.get(topicPartition);
-                                            return new KafkaTopicPartition(topicPartition.partition(), topicPartition.topic(), offset.offset(), logEndOffsetChecker.check(topicPartition), offset.metadata());}
-                                ).collect(toSet());
-                                return new KafkaConsumerGroupMember(member.consumerId(), member.clientId(), member.host(), kafkaTopicPartitions);
-                            }).collect(toSet());
+        return description.map(d -> getKafkaConsumerGroup(topicPartitionOffsets, d));
+    }
 
-                    return new KafkaConsumerGroup(d.groupId(), d.state().toString(), groupMembers);
-                }
-        );
+    private KafkaConsumerGroup getKafkaConsumerGroup(Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsets, ConsumerGroupDescription description) {
+        Set<KafkaConsumerGroupMember> groupMembers = description.members().stream()
+                .map(member -> getKafkaConsumerGroupMember(topicPartitionOffsets, member)).collect(toSet());
+
+        return new KafkaConsumerGroup(description.groupId(), description.state().toString(), groupMembers);
+    }
+
+    private KafkaConsumerGroupMember getKafkaConsumerGroupMember(Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsets, MemberDescription member) {
+        Set<KafkaTopicPartition> kafkaTopicPartitions = member.assignment().topicPartitions().stream().map(
+                topicPartition -> {
+                    OffsetAndMetadata offset = topicPartitionOffsets.get(topicPartition);
+                    return new KafkaTopicPartition(topicPartition.partition(), topicPartition.topic(), offset.offset(), logEndOffsetChecker.check(topicPartition), offset.metadata());}
+        ).collect(toSet());
+        return new KafkaConsumerGroupMember(member.consumerId(), member.clientId(), member.host(), kafkaTopicPartitions);
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {
