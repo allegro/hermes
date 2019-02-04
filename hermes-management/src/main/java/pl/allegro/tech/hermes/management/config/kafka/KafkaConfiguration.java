@@ -31,6 +31,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClu
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.service.LogEndOffsetChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.OffsetsAvailableChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -99,7 +100,10 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
             return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,
-                    retransmissionService, brokerTopicManagement, kafkaNamesMapper, new OffsetsAvailableChecker(consumerPool, storage), brokerAdminClient);
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper,
+                    new OffsetsAvailableChecker(consumerPool, storage),
+                    new LogEndOffsetChecker(consumerPool),
+                    brokerAdminClient);
         }).collect(toList());
 
         return new MultiDCAwareService(

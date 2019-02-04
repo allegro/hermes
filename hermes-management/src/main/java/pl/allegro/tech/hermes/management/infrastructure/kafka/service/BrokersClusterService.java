@@ -44,12 +44,13 @@ public class BrokersClusterService {
     private final BrokerTopicManagement brokerTopicManagement;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final OffsetsAvailableChecker offsetsAvailableChecker;
+    private final LogEndOffsetChecker logEndOffsetChecker;
     private final AdminClient adminClient;
 
     public BrokersClusterService(String clusterName, SingleMessageReader singleMessageReader,
                                  RetransmissionService retransmissionService, BrokerTopicManagement brokerTopicManagement,
                                  KafkaNamesMapper kafkaNamesMapper, OffsetsAvailableChecker offsetsAvailableChecker,
-                                 AdminClient adminClient) {
+                                 LogEndOffsetChecker logEndOffsetChecker, AdminClient adminClient) {
 
         this.clusterName = clusterName;
         this.singleMessageReader = singleMessageReader;
@@ -57,6 +58,7 @@ public class BrokersClusterService {
         this.brokerTopicManagement = brokerTopicManagement;
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.offsetsAvailableChecker = offsetsAvailableChecker;
+        this.logEndOffsetChecker = logEndOffsetChecker;
         this.adminClient = adminClient;
     }
 
@@ -126,10 +128,10 @@ public class BrokersClusterService {
                     Set<KafkaConsumerGroupMember> groupMembers = d.members().stream()
                             .map(member -> {
                                 Set<KafkaTopicPartition> kafkaTopicPartitions = member.assignment().topicPartitions().stream().map(
-                                        topicPartition -> { OffsetAndMetadata offset = topicPartitionOffsets.get(topicPartition);
-                                            return new KafkaTopicPartition(topicPartition.partition(), topicPartition.topic(), offset.offset(), offset.metadata());}
+                                        topicPartition -> {
+                                            OffsetAndMetadata offset = topicPartitionOffsets.get(topicPartition);
+                                            return new KafkaTopicPartition(topicPartition.partition(), topicPartition.topic(), offset.offset(), logEndOffsetChecker.check(topicPartition), offset.metadata());}
                                 ).collect(toSet());
-
                                 return new KafkaConsumerGroupMember(member.consumerId(), member.clientId(), member.host(), kafkaTopicPartitions);
                             }).collect(toSet());
 

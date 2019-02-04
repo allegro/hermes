@@ -343,6 +343,22 @@ public class SubscriptionManagementTest extends IntegrationTest {
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
     }
 
+    @Test
+    public void shouldReturnConsumerGroupDescription() {
+        // given
+        Topic topic = operations.buildTopic("suspendSubscriptionGroup", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        wait.untilSubscriptionIsActivated(topic, "subscription");
+
+        // when
+        Response response = management.subscription().describeConsumerGroups(
+                topic.getQualifiedName(),
+                "subscription");
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+    }
+
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
         Response response = management.subscription().getMessageTrace(topic, subscription, messageId);
         return response.readEntity(new GenericType<List<Map<String, String>>>() {
