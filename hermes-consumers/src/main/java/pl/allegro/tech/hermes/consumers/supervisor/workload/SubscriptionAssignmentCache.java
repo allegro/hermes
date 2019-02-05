@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
@@ -56,8 +58,9 @@ public class SubscriptionAssignmentCache {
         this.basePath = zookeeperPaths.consumersRuntimePath(configFactory.getStringProperty(KAFKA_CLUSTER_NAME));
         this.subscriptionsCache = subscriptionsCache;
         this.pathSerializer = new SubscriptionAssignmentPathSerializer(basePath, AUTO_ASSIGNED_MARKER);
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("subscription-assignment-cache-%d").build();
         this.cache = new HierarchicalCache(
-                curator, Executors.newSingleThreadScheduledExecutor(), basePath, 2, Collections.emptyList()
+                curator, Executors.newSingleThreadScheduledExecutor(threadFactory), basePath, 2, Collections.emptyList()
         );
 
         cache.registerCallback(ASSIGNMENT_LEVEL, (e) -> {
