@@ -1,16 +1,23 @@
-package pl.allegro.tech.hermes.common.kafka;
+package pl.allegro.tech.hermes.api;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 import java.util.Set;
 
-public class KafkaConsumerGroupMember {
+public class ConsumerGroupMember {
     private final String consumerId;
     private final String clientId;
     private final String host;
 
-    private final Set<KafkaTopicPartition> partitions;
+    private final Set<TopicPartition> partitions;
 
-    public KafkaConsumerGroupMember(String consumerId, String clientId, String host, Set<KafkaTopicPartition> partitions) {
+    @JsonCreator
+    public ConsumerGroupMember(@JsonProperty("consumerId") String consumerId,
+                               @JsonProperty("clientId") String clientId,
+                               @JsonProperty("host")String host,
+                               @JsonProperty("partitions") Set<TopicPartition> partitions) {
         this.consumerId = consumerId;
         this.clientId = clientId;
         this.host = host;
@@ -29,7 +36,7 @@ public class KafkaConsumerGroupMember {
         return host;
     }
 
-    public Set<KafkaTopicPartition> getPartitions() {
+    public Set<TopicPartition> getPartitions() {
         return partitions;
     }
 
@@ -37,7 +44,7 @@ public class KafkaConsumerGroupMember {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        KafkaConsumerGroupMember that = (KafkaConsumerGroupMember) o;
+        ConsumerGroupMember that = (ConsumerGroupMember) o;
         return Objects.equals(consumerId, that.consumerId) &&
                 Objects.equals(clientId, that.clientId) &&
                 Objects.equals(host, that.host) &&

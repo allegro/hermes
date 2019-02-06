@@ -1,8 +1,11 @@
-package pl.allegro.tech.hermes.common.kafka;
+package pl.allegro.tech.hermes.api;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
-public class KafkaTopicPartition {
+public class TopicPartition {
     private final int partition;
     private final String topic;
     private final long currentOffset;
@@ -10,7 +13,12 @@ public class KafkaTopicPartition {
     private final long lag;
     private final String offsetMetadata;
 
-    public KafkaTopicPartition(int partition, String topic, long currentOffset, long logEndOffset, String offsetMetadata) {
+    @JsonCreator
+    public TopicPartition(@JsonProperty("partition") int partition,
+                          @JsonProperty("topic") String topic,
+                          @JsonProperty("currentOffset") long currentOffset,
+                          @JsonProperty("logEndOffset") long logEndOffset,
+                          @JsonProperty("offsetMetadata") String offsetMetadata) {
         this.partition = partition;
         this.topic = topic;
         this.currentOffset = currentOffset;
@@ -52,7 +60,7 @@ public class KafkaTopicPartition {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        KafkaTopicPartition that = (KafkaTopicPartition) o;
+        TopicPartition that = (TopicPartition) o;
         return partition == that.partition &&
                 currentOffset == that.currentOffset &&
                 logEndOffset == that.logEndOffset &&

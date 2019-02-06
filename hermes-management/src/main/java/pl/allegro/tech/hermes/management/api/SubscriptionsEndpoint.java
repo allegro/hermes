@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.kafka.KafkaConsumerGroup;
+import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
@@ -237,12 +237,12 @@ public class SubscriptionsEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/consumer-groups")
-    public Response describeConsumerGroups(@PathParam("topicName") String qualifiedTopicName,
-                                           @PathParam("subscriptionName") String subscriptionName) {
+    public List<ConsumerGroup> describeConsumerGroups(@PathParam("topicName") String qualifiedTopicName,
+                                                      @PathParam("subscriptionName") String subscriptionName) {
 
-        List<KafkaConsumerGroup> kafkaConsumerGroups =
+        List<ConsumerGroup> kafkaConsumerGroups =
                 multiDCAwareService.describeConsumerGroups(fromQualifiedName(qualifiedTopicName), subscriptionName);
-        return Response.status(OK).entity(kafkaConsumerGroups).build();
+        return kafkaConsumerGroups;
 
     }
 

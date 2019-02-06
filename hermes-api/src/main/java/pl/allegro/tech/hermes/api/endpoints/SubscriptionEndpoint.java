@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
+import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
@@ -113,6 +114,6 @@ public interface SubscriptionEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/consumer-groups")
-    Response describeConsumerGroups(@PathParam("topicName") String qualifiedTopicName,
-                                    @PathParam("subscriptionName") String subscriptionName);
+    List<ConsumerGroup> describeConsumerGroups(@PathParam("topicName") String qualifiedTopicName,
+                                               @PathParam("subscriptionName") String subscriptionName);
 }

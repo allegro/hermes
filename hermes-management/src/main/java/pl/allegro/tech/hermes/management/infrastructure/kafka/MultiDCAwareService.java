@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.common.kafka.KafkaConsumerGroup;
+import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService;
 import pl.allegro.tech.hermes.management.domain.topic.UnableToMoveOffsetsException;
@@ -110,7 +110,7 @@ public class MultiDCAwareService {
                 brokersClusterService.allSubscriptionsHaveConsumersAssigned(topic, subscriptions));
     }
 
-    public List<KafkaConsumerGroup> describeConsumerGroups(TopicName topicName, String subscriptionName) {
+    public List<ConsumerGroup> describeConsumerGroups(TopicName topicName, String subscriptionName) {
         return clusters.stream().map(brokersClusterService -> brokersClusterService.describeConsumerGroup(new SubscriptionName(subscriptionName, topicName)))
                 .filter(Optional::isPresent)
                 .map(Optional::get)

@@ -10,17 +10,16 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
-import pl.allegro.tech.hermes.common.kafka.KafkaConsumerGroup;
-import pl.allegro.tech.hermes.common.kafka.KafkaConsumerGroupMember;
+import pl.allegro.tech.hermes.api.ConsumerGroup;
+import pl.allegro.tech.hermes.api.ConsumerGroupMember;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicPartition;
+import pl.allegro.tech.hermes.api.TopicPartition;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
@@ -104,7 +103,7 @@ public class BrokersClusterService {
         }
     }
 
-    public Optional<KafkaConsumerGroup> describeConsumerGroup(SubscriptionName subscription) {
+    public Optional<ConsumerGroup> describeConsumerGroup(SubscriptionName subscription) {
         ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription);
         try {
             return describeConsumerGroup(consumerGroupId);
@@ -114,12 +113,13 @@ public class BrokersClusterService {
         }
     }
 
-    private Optional<KafkaConsumerGroup> describeConsumerGroup(ConsumerGroupId consumerGroupId) throws ExecutionException, InterruptedException {
-        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsets = adminClient
+    private Optional<ConsumerGroup> describeConsumerGroup(ConsumerGroupId consumerGroupId) throws ExecutionException, InterruptedException {
+        Map<org.apache.kafka.common.TopicPartition, OffsetAndMetadata> topicPartitionOffsets = adminClient
                 .listConsumerGroupOffsets(consumerGroupId.asString())
                 .partitionsToOffsetAndMetadata()
                 .get();
-        Optional<ConsumerGroupDescription> description = adminClient.describeConsumerGroups(Collections.singletonList(consumerGroupId.asString()))
+        Optional<ConsumerGroupDescription> description = adminClient
+                .describeConsumerGroups(Collections.singletonList(consumerGroupId.asString()))
                 .all()
                 .get()
                 .values()
@@ -129,20 +129,25 @@ public class BrokersClusterService {
         return description.map(d -> getKafkaConsumerGroup(topicPartitionOffsets, d));
     }
 
-    private KafkaConsumerGroup getKafkaConsumerGroup(Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsets, ConsumerGroupDescription description) {
-        Set<KafkaConsumerGroupMember> groupMembers = description.members().stream()
+    private ConsumerGroup getKafkaConsumerGroup(Map<org.apache.kafka.common.TopicPartition, OffsetAndMetadata> topicPartitionOffsets, ConsumerGroupDescription description) {
+        Set<ConsumerGroupMember> groupMembers = description.members().stream()
                 .map(member -> getKafkaConsumerGroupMember(topicPartitionOffsets, member)).collect(toSet());
 
-        return new KafkaConsumerGroup(description.groupId(), description.state().toString(), groupMembers);
+        return new ConsumerGroup(description.groupId(), description.state().toString(), groupMembers);
     }
 
-    private KafkaConsumerGroupMember getKafkaConsumerGroupMember(Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsets, MemberDescription member) {
-        Set<KafkaTopicPartition> kafkaTopicPartitions = member.assignment().topicPartitions().stream().map(
+    private ConsumerGroupMember getKafkaConsumerGroupMember(Map<org.apache.kafka.common.TopicPartition, OffsetAndMetadata> topicPartitionOffsets, MemberDescription member) {
+        Set<TopicPartition> kafkaTopicPartitions = member.assignment().topicPartitions().stream().map(
                 topicPartition -> {
-                    OffsetAndMetadata offset = topicPartitionOffsets.get(topicPartition);
-                    return new KafkaTopicPartition(topicPartition.partition(), topicPartition.topic(), offset.offset(), logEndOffsetChecker.check(topicPartition), offset.metadata());}
+                    Optional<OffsetAndMetadata> offset = Optional.ofNullable(topicPartitionOffsets.get(topicPartition));
+                    return new TopicPartition(topicPartition.partition(),
+                            topicPartition.topic(),
+                            offset.map(OffsetAndMetadata::offset).orElse(0L),
+                            logEndOffsetChecker.check(topicPartition),
+                            offset.map(OffsetAndMetadata::metadata).orElse(""));
+                }
         ).collect(toSet());
-        return new KafkaConsumerGroupMember(member.consumerId(), member.clientId(), member.host(), kafkaTopicPartitions);
+        return new ConsumerGroupMember(member.consumerId(), member.clientId(), member.host(), kafkaTopicPartitions);
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {

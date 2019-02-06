@@ -6,6 +6,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
@@ -344,19 +345,25 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnConsumerGroupDescription() {
+    public void shouldReturnConsumerGroupDescription() throws InterruptedException {
         // given
-        Topic topic = operations.buildTopic("suspendSubscriptionGroup", "topic");
+        Topic topic = operations.buildTopic("topicGroup", "topic");
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-        wait.untilSubscriptionIsActivated(topic, "subscription");
+      //  wait.untilSubscriptionIsActivated(topic, "subscription");
+
+        TestMessage message = TestMessage.of("hello", "world");
+        remoteService.expectMessages(message.body());
+        publisher.publish(topic.getQualifiedName(), message.body());
+        remoteService.waitUntilReceived();
+        Thread.sleep(10000);
 
         // when
-        Response response = management.subscription().describeConsumerGroups(
+        List<ConsumerGroup> response =  management.subscription().describeConsumerGroups(
                 topic.getQualifiedName(),
                 "subscription");
 
         // then
-        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(response.size()).isGreaterThan(0);
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {

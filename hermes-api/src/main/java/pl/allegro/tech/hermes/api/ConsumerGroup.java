@@ -1,16 +1,22 @@
-package pl.allegro.tech.hermes.common.kafka;
+package pl.allegro.tech.hermes.api;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 import java.util.Set;
 
-public class KafkaConsumerGroup {
+public class ConsumerGroup {
 
     private final String groupId;
     private final String state;
 
-    private final Set<KafkaConsumerGroupMember> members;
+    private final Set<ConsumerGroupMember> members;
 
-    public KafkaConsumerGroup(String groupId, String state, Set<KafkaConsumerGroupMember> members) {
+    @JsonCreator
+    public ConsumerGroup(@JsonProperty("groupId") String groupId,
+                         @JsonProperty("state") String state,
+                         @JsonProperty("members") Set<ConsumerGroupMember> members) {
         this.groupId = groupId;
         this.state = state;
         this.members = members;
@@ -24,7 +30,7 @@ public class KafkaConsumerGroup {
         return state;
     }
 
-    public Set<KafkaConsumerGroupMember> getMembers() {
+    public Set<ConsumerGroupMember> getMembers() {
         return members;
     }
 
@@ -32,7 +38,7 @@ public class KafkaConsumerGroup {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        KafkaConsumerGroup that = (KafkaConsumerGroup) o;
+        ConsumerGroup that = (ConsumerGroup) o;
         return Objects.equals(groupId, that.groupId) &&
                 Objects.equals(state, that.state) &&
                 Objects.equals(members, that.members);
