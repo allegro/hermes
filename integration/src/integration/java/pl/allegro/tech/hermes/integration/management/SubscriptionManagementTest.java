@@ -363,7 +363,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
                 "subscription");
 
         // then
-        assertThat(response.size()).isGreaterThan(0);
+        assertThat(response.size()).isEqualTo(1);
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
