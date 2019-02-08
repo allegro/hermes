@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.filtering.avro;
 
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericRecord;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -9,19 +10,27 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import static java.util.Optional.empty;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.apache.commons.lang.StringUtils.strip;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
 import static pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException.check;
 
 public class AvroPathPredicate implements Predicate<Message> {
+    private static final String WILDCARD_IDX = "*";
+    private static final String GROUP_SELECTOR = "selector";
+    private static final String GROUP_IDX = "index";
+    private static final String ARRAY_PATTERN_SELECTOR_PART = "(?<"+GROUP_SELECTOR+">..*)";
+    private static final String ARRAY_PATTERN_IDX_PART = "\\[(?<"+GROUP_IDX+">\\"+ WILDCARD_IDX +"|\\d+)]";
+    private static final Pattern ARRAY_PATTERN = Pattern.compile(ARRAY_PATTERN_SELECTOR_PART + ARRAY_PATTERN_IDX_PART);
     private static final String NULL_AS_STRING = "null";
     private List<String> path;
     private Pattern pattern;
@@ -35,23 +44,46 @@ public class AvroPathPredicate implements Predicate<Message> {
     public boolean test(final Message message) {
         check(message.getContentType() == ContentType.AVRO, "This filter supports only AVRO contentType.");
         try {
-            return select(message).map(this::matches).orElse(false);
+            return select(message).stream().anyMatch(this::matches);
         } catch (Exception exception) {
             throw new FilteringException(exception);
         }
     }
 
-    private Optional<Object> select(final Message message) throws IOException {
+    private List<Object> select(final Message message) throws IOException {
         CompiledSchema<Schema> compiledSchema = message.<Schema>getSchema().get();
         return select(bytesToRecord(message.getData(), compiledSchema.getSchema()));
     }
 
-    private Optional<Object> select(GenericRecord record) {
+    private List<Object> select(GenericRecord record) {
+        ListIterator<String> iter = path.listIterator();
+        return select(record, iter);
+    }
+
+    private List<Object> select(GenericRecord record, ListIterator<String> iter) {
         Object current = record;
-        Iterator<String> iter = path.iterator();
         while (iter.hasNext()) {
             String selector = iter.next();
+            GenericRecord prevSelect = (GenericRecord) current;
             current = ((GenericRecord) current).get(selector);
+
+            if (current instanceof GenericRecord) {
+                continue;
+            }
+
+            Matcher arrayMatcher = ARRAY_PATTERN.matcher(selector);
+            if (arrayMatcher.matches()) {
+                String idx = arrayMatcher.group(GROUP_IDX);
+                selector = arrayMatcher.group(GROUP_SELECTOR);
+
+                if (idx.equals(WILDCARD_IDX)) {
+                    return selectMultipleArrayItems(iter, selector, prevSelect);
+                } else {
+                    current = selectSingleArrayItem(Integer.valueOf(idx), selector, prevSelect);
+                }
+
+            }
+
             if (!(current instanceof GenericRecord)) {
                 if (current == null) {
                     current = NULL_AS_STRING;
@@ -59,7 +91,52 @@ public class AvroPathPredicate implements Predicate<Message> {
                 break;
             }
         }
-        return iter.hasNext() ? empty() : Optional.ofNullable(current);
+        return iter.hasNext() ? emptyList() : singletonList(current);
+    }
+
+    private List<Object> selectMultipleArrayItems(ListIterator<String> iter, String selector, GenericRecord prevSelect) {
+        Object current = prevSelect.get(selector);
+
+        if (!(current instanceof GenericArray)) {
+            return null;
+        }
+
+        GenericArray<Object> currentArray = ((GenericArray) current);
+        if (iter.hasNext()) {
+            return currentArray.stream()
+                .map(item -> {
+                    if (!(item instanceof GenericRecord)) {
+                        return emptyList();
+                    }
+                    return select((GenericRecord) item, path.listIterator(iter.nextIndex()));
+                })
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+        } else {
+            return currentArray.stream()
+                .map(item -> {
+                    if (item == null) {
+                        return NULL_AS_STRING;
+                    }
+                    return item;
+                })
+                .collect(Collectors.toList());
+        }
+    }
+
+    private Object selectSingleArrayItem(int idx, String selector, GenericRecord prevSelect) {
+        Object current = prevSelect.get(selector);
+
+        if (!(current instanceof GenericArray)) {
+            return null;
+        }
+
+        GenericArray currentArray = ((GenericArray) current);
+        if (currentArray.size() <= idx) {
+            return null;
+        }
+
+        return currentArray.get(idx);
     }
 
     private boolean matches(Object value) {

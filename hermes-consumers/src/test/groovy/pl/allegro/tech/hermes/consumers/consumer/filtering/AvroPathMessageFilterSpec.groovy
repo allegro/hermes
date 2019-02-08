@@ -66,6 +66,65 @@ class AvroPathMessageFilterSpec extends Specification {
         ".topping.ingredients"    | ".*syrup.*" | true
     }
 
+    @Unroll
+    def "array paths"(String path, String matcher, boolean result) {
+        given:
+        def schema = AvroUserSchemaLoader.load("/movie.avsc")
+
+        def json = '''
+            {
+                "id": "0001",
+                "title": {
+                    "main": "The Godfather",
+                    "aliases": ["Godfather, The", "Godfather", "El padrino" ]
+                },
+                "type": "drama",
+                "cast": [
+                    {
+                        "id": "31",
+                        "firstName": "Marlon",
+                        "lastName": "Brando",
+                        "character": "Don Vito Corleone",
+                        "awards": ["Oscar for Best Actor in a Leading Role", "Golden Globe for Best Actor in a Motion Picture - Drama"]
+                    },
+                    {
+                        "id": "22",
+                        "firstName": "Al",
+                        "lastName": "Pacino",
+                        "character": "Michael Corleone",
+                        "awards": ["NSFC Award for Best Actor", "NBR Award for Best Supporting Actor"]
+                    }
+                ]
+            }
+        '''
+
+        def avro = new JsonAvroConverter().convertToAvro(json.bytes, schema)
+        def spec = new MessageFilterSpecification([path: path, matcher: matcher])
+        def msg = MessageBuilder
+            .withTestMessage()
+            .withContent(avro)
+            .withSchema(schema, 0)
+            .withContentType(ContentType.AVRO)
+            .build()
+
+        expect:
+        result == new AvroPathSubscriptionMessageFilterCompiler().compile(spec).test(msg)
+
+        where:
+        path                 | matcher        | result
+        ".cast[*].lastName"  | "Pacino"       | true
+        ".cast[*].character" | ".*Corleone.*" | true
+        ".cast[*].firstName" | "unknown"      | false
+        ".cast[0].lastName"  | "Brando"       | true
+        ".cast[1].lastName"  | "Pacino"       | true
+        ".cast[*].awards[*]" | ".*Best.*"     | true
+        ".cast[1].awards[*]" | ".*Best.*"     | true
+        ".cast[10]"          | "null"         | true
+        ".title.aliases[5]"  | "null"         | true
+        ".title.aliases[1]"  | "Godfather"    | true
+        ".title.aliases[*]"  | "El padrino"   | true
+    }
+
     def "should throw exception for malformed message"() {
         given:
         def schema = AvroUserSchemaLoader.load("/cake.avsc")
