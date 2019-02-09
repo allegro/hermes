@@ -240,10 +240,7 @@ public class SubscriptionsEndpoint {
     public List<ConsumerGroup> describeConsumerGroups(@PathParam("topicName") String qualifiedTopicName,
                                                       @PathParam("subscriptionName") String subscriptionName) {
 
-        List<ConsumerGroup> kafkaConsumerGroups =
-                multiDCAwareService.describeConsumerGroups(fromQualifiedName(qualifiedTopicName), subscriptionName);
-        return kafkaConsumerGroups;
-
+        return multiDCAwareService.describeConsumerGroups(fromQualifiedName(qualifiedTopicName), subscriptionName);
     }
 
     private Response responseStatus(Response.Status responseStatus) {
