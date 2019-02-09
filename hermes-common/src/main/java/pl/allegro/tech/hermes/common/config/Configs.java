@@ -168,7 +168,7 @@ public enum Configs {
     CONSUMER_RECEIVER_INITIAL_IDLE_TIME("consumer.receiver.initial.idle.time", 10),
     CONSUMER_RECEIVER_MAX_IDLE_TIME("consumer.receiver.max.idle.time", 1000),
 
-    CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 1),
+    CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 60),
     CONSUMER_COMMIT_OFFSET_QUEUES_SIZE("consumer.commit.offset.queues.size", 200_000),
 
     CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),
