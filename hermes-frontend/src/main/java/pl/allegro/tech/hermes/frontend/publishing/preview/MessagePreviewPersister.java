@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
@@ -29,7 +30,8 @@ public class MessagePreviewPersister {
         this.period = configFactory.getIntProperty(Configs.FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD);
 
         boolean previewEnabled = configFactory.getBooleanProperty(FRONTEND_MESSAGE_PREVIEW_ENABLED);
-        this.scheduledExecutorService = previewEnabled ? Optional.of(Executors.newSingleThreadScheduledExecutor()) : Optional.empty();
+        this.scheduledExecutorService = previewEnabled ? Optional.of(Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder().setNameFormat("message-preview-persister-%d").build())) : Optional.empty();
     }
 
     public void start() {

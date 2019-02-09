@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper.cache;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import pl.allegro.tech.hermes.common.cache.queue.LinkedHashSetBlockingQueue;
@@ -7,6 +8,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -26,9 +28,9 @@ public class ModelAwareZookeeperNotifyingCache {
         List<String> levelPrefixes = Arrays.asList(
                 ZookeeperPaths.GROUPS_PATH, ZookeeperPaths.TOPICS_PATH, ZookeeperPaths.SUBSCRIPTIONS_PATH
         );
-
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(rootPath + "-zk-cache-%d").build();
         executor = new ThreadPoolExecutor(1, processingThreadPoolSize,
-                Integer.MAX_VALUE, TimeUnit.SECONDS, new LinkedHashSetBlockingQueue<>());
+                Integer.MAX_VALUE, TimeUnit.SECONDS, new LinkedHashSetBlockingQueue<>(), threadFactory);
         this.cache = new HierarchicalCache(
                 curator,
                 executor,

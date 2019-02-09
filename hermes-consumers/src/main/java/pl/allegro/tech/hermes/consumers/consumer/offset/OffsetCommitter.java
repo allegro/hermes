@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.offset;
 
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jctools.queues.MessagePassingQueue;
 import org.jctools.queues.MpscArrayQueue;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -62,9 +64,11 @@ import java.util.function.Function;
  */
 public class OffsetCommitter implements Runnable {
 
+
     private static final Logger logger = LoggerFactory.getLogger(OffsetCommitter.class);
 
-    private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
+            new ThreadFactoryBuilder().setNameFormat("offset-committer-%d").build());
 
     private final int offsetCommitPeriodSeconds;
 

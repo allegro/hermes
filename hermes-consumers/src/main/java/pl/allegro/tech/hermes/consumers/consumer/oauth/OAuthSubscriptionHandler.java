@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.oauth;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class OAuthSubscriptionHandler {
@@ -31,7 +33,8 @@ public class OAuthSubscriptionHandler {
         this.providerName = providerName;
         this.accessTokens = accessTokens;
         this.rateLimiter = rateLimiter;
-        this.executorService = Executors.newScheduledThreadPool(1);
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(subscriptionName.getQualifiedName() + "-oauth-handler-%d").build();
+        this.executorService = Executors.newScheduledThreadPool(1, threadFactory);
     }
 
     public void initialize() {

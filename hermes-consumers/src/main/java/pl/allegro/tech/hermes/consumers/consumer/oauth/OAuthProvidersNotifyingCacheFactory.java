@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.oauth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
@@ -10,6 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 public class OAuthProvidersNotifyingCacheFactory implements Factory<OAuthProvidersNotifyingCache> {
 
@@ -29,7 +31,8 @@ public class OAuthProvidersNotifyingCacheFactory implements Factory<OAuthProvide
     @Override
     public OAuthProvidersNotifyingCache provide() {
         String path = paths.oAuthProvidersPath();
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("oauth-providers-notifying-cache-%d").build();
+        ExecutorService executorService = Executors.newSingleThreadExecutor(threadFactory);
         OAuthProvidersNotifyingCache cache = new OAuthProvidersNotifyingCache(curator, path, executorService, objectMapper);
         try {
             cache.start();
