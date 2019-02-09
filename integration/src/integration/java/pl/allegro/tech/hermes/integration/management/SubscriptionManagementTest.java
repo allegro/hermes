@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicPartition;
 import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
@@ -43,6 +44,7 @@ import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class SubscriptionManagementTest extends IntegrationTest {
@@ -347,23 +349,28 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnConsumerGroupDescription() throws InterruptedException {
         // given
-        Topic topic = operations.buildTopic("topicGroup", "topic");
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-      //  wait.untilSubscriptionIsActivated(topic, "subscription");
+        String subscriptionName = "subscription";
+        Topic topic = operations.buildTopic(randomTopic("topicGroup", "test").build());
+        operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
 
         TestMessage message = TestMessage.of("hello", "world");
         remoteService.expectMessages(message.body());
         publisher.publish(topic.getQualifiedName(), message.body());
         remoteService.waitUntilReceived();
-        Thread.sleep(10000);
 
         // when
         List<ConsumerGroup> response =  management.subscription().describeConsumerGroups(
-                topic.getQualifiedName(),
-                "subscription");
+                topic.getQualifiedName(), subscriptionName);
 
         // then
-        assertThat(response.size()).isEqualTo(1);
+        wait.until(() -> {
+            assertThat(response.size()).isGreaterThan(0);
+            assertThat(response)
+                    .flatExtracting("members")
+                    .flatExtracting("partitions")
+                    .usingElementComparatorIgnoringFields("partition", "topic", "offsetMetadata")
+                    .containsOnlyOnce(new TopicPartition(-1, "any", 1, 1, "any"));
+        });
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {

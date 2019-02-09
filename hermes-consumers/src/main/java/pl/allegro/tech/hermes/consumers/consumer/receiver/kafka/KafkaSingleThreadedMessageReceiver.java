@@ -166,7 +166,9 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     @Override
     public void commit(Set<SubscriptionPartitionOffset> offsets) {
         try {
+            logger.info("Commiting offset to partition:" + offsets);
             consumer.commitSync(createOffset(offsets));
+            logger.info("Commited offset to partition:" + offsets);
         } catch (InterruptException ex ) {
             logger.info("Kafka consumer thread interrupted", ex);
             Thread.currentThread().interrupt();
