@@ -9,10 +9,6 @@ public class MetricsProperties {
 
     private String prefix = "stats.tech.hermes";
     
-    private int cacheTtlInSeconds = 55;
-
-    private int cacheSize = 100_000;
-
     public String getGraphiteHttpUri() {
         return graphiteHttpUri;
     }
@@ -27,21 +23,5 @@ public class MetricsProperties {
 
     public void setPrefix(String prefix) {
         this.prefix = prefix;
-    }
-
-    public int getCacheTtlInSeconds() {
-        return cacheTtlInSeconds;
-    }
-
-    public void setCacheTtlInSeconds(int cacheTtlInSeconds) {
-        this.cacheTtlInSeconds = cacheTtlInSeconds;
-    }
-
-    public int getCacheSize() {
-        return cacheSize;
-    }
-
-    public void setCacheSize(int cacheSize) {
-        this.cacheSize = cacheSize;
     }
 }

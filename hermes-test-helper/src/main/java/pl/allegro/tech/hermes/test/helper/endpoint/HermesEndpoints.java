@@ -9,7 +9,9 @@ import pl.allegro.tech.hermes.api.endpoints.OwnerEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.UnhealthyEndpoint;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 import pl.allegro.tech.hermes.test.helper.client.Hermes;
 
@@ -22,6 +24,8 @@ public class HermesEndpoints {
     private final TopicEndpoint topicEndpoint;
 
     private final SubscriptionEndpoint subscriptionEndpoint;
+
+    private final SubscriptionOwnershipEndpoint subscriptionOwnershipEndpoint;
 
     private final SchemaEndpoint schemaEndpoint;
 
@@ -37,10 +41,13 @@ public class HermesEndpoints {
 
     private final MigrationEndpoint migrationEndpoint;
 
+    public final UnhealthyEndpoint unhealthyEndpoint;
+
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
         this.subscriptionEndpoint = hermes.createSubscriptionEndpoint();
+        this.subscriptionOwnershipEndpoint = hermes.createSubscriptionOwnershipEndpoint();
         this.schemaEndpoint = hermes.createSchemaEndpoint();
         this.queryEndpoint = hermes.createQueryEndpoint();
         this.blacklistEndpoint = hermes.createBlacklistEndpoint();
@@ -48,6 +55,7 @@ public class HermesEndpoints {
         this.consumerEndpoint = hermes.createConsumerEndpoint();
         this.ownerEndpoint = hermes.createOwnerEndpoint();
         this.migrationEndpoint = hermes.createMigrationEndpoint();
+        this.unhealthyEndpoint = hermes.unhealthyEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
@@ -72,6 +80,10 @@ public class HermesEndpoints {
         return subscriptionEndpoint;
     }
 
+    public SubscriptionOwnershipEndpoint subscriptionOwnershipEndpoint() {
+        return subscriptionOwnershipEndpoint;
+    }
+
     public SchemaEndpoint schema() {
         return schemaEndpoint;
     }
@@ -86,6 +98,10 @@ public class HermesEndpoints {
 
     public MigrationEndpoint migration() {
         return migrationEndpoint;
+    }
+
+    public UnhealthyEndpoint unhealthyEndpoint() {
+        return unhealthyEndpoint;
     }
 
     public BlacklistEndpoint blacklist() {

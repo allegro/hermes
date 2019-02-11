@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.schema.schemarepo
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
-import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.matching.UrlPattern
 import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.schema.BadSchemaRequestException
@@ -195,23 +195,23 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         schema.get().value() == "{}"
     }
 
-    private UrlMatchingStrategy subjectUrl(TopicName topic) {
+    private UrlPattern subjectUrl(TopicName topic) {
         urlEqualTo("/schema-repo/${topic.qualifiedName()}")
     }
 
-    private UrlMatchingStrategy latestSchemaUrl(TopicName topic) {
+    private UrlPattern latestSchemaUrl(TopicName topic) {
         urlEqualTo("/schema-repo/${topic.qualifiedName()}/latest")
     }
 
-    private UrlMatchingStrategy schemaVersionUrl(TopicName topic, int version) {
+    private UrlPattern schemaVersionUrl(TopicName topic, int version) {
         urlEqualTo("/schema-repo/${topic.qualifiedName()}/id/$version")
     }
 
-    private UrlMatchingStrategy allSchemasUrl(TopicName topic) {
+    private UrlPattern allSchemasUrl(TopicName topic) {
         urlEqualTo("/schema-repo/${topic.qualifiedName()}/all")
     }
 
-    private UrlMatchingStrategy registerSchemaUrl(TopicName topic) {
+    private UrlPattern registerSchemaUrl(TopicName topic) {
         urlEqualTo("/schema-repo/${topic.qualifiedName()}/register")
     }
 

@@ -5,7 +5,9 @@ site_author: Skylab
 repo_url: https://github.com/allegro/hermes
 
 docs_dir: docs/docs
-theme_dir: docs/theme
+theme: 
+  name: null
+  custom_dir: docs/theme
 
 extra_css:
     - styles.css
@@ -15,7 +17,7 @@ markdown_extensions:
         anchorlink: true
 
 extra:
-    version: '0.12.1'
+    version: '0.15.7'
     brand_image: 'img/hermes-mini.png'
 
 pages:
@@ -32,6 +34,7 @@ pages:
     - 'Topic Preview': 'user/topic-preview.md'
     - 'Ownership and permissions': 'user/permissions.md'
     - 'Java Client': 'user/java-client.md'
+    - 'Hermes mock': 'user/hermes-mock.md'
   - Deployment:
       - 'Packaging': 'deployment/packaging.md'
       - 'Deployment': 'deployment/deployment.md'

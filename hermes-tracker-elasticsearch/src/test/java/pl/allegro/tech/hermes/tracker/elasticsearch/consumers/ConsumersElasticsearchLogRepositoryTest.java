@@ -1,11 +1,9 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.consumers;
 
 import com.codahale.metrics.MetricRegistry;
-import org.apache.commons.lang.ArrayUtils;
-import org.assertj.core.util.Arrays;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
@@ -25,25 +23,24 @@ import java.time.ZoneOffset;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
-import static org.elasticsearch.index.query.FilterBuilders.andFilter;
-import static org.elasticsearch.index.query.QueryBuilders.filteredQuery;
-import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
 public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest implements LogSchemaAware {
 
     private static final String CLUSTER_NAME = "primary";
 
-    private static final Clock clock = Clock.fixed(LocalDate.of(2000, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
+    private static final Clock clock = Clock.fixed(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
     private static final ConsumersIndexFactory indexFactory = new ConsumersDailyIndexFactory(clock);
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
 
-    public static ElasticsearchResource elasticsearch = new ElasticsearchResource(indexFactory);
+    private static ElasticsearchResource elasticsearch = new ElasticsearchResource();
     private SchemaManager schemaManager;
 
     @BeforeSuite
     public void before() throws Throwable {
         elasticsearch.before();
-        schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, indexFactory);
+        schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, indexFactory, false);
     }
 
     @AfterSuite
@@ -60,34 +57,38 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     }
 
     @Override
-    protected void awaitUntilMessageIsPersisted(String topic, String subscription, String id, SentMessageTraceStatus status) throws Exception {
+    protected void awaitUntilMessageIsPersisted(String topic, String subscription, String id,
+                                                SentMessageTraceStatus status) {
         awaitUntilPersisted(getMessageFilter(topic, subscription, id, status));
     }
 
-    protected void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId, SentMessageTraceStatus status) throws Exception {
+    protected void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId,
+                                                     SentMessageTraceStatus status) {
         awaitUntilPersisted(getMessageBatchFilter(topic, subscription, messageId, batchId, status));
     }
 
-    private void awaitUntilPersisted(FilterBuilder[] filter) throws Exception {
+    private void awaitUntilPersisted(QueryBuilder query) {
         await().atMost(ONE_MINUTE).until(() -> {
             SearchResponse response = elasticsearch.client().prepareSearch(indexFactory.createIndex())
                     .setTypes(SchemaManager.SENT_TYPE)
-                    .setQuery(filteredQuery(matchAllQuery(), andFilter(filter)))
+                    .setQuery(query)
                     .execute().get();
             return response.getHits().getTotalHits() == 1;
         });
     }
 
-    private FilterBuilder[] getMessageFilter(String topic, String subscription, String id, SentMessageTraceStatus status) {
-        return new FilterBuilder[]{FilterBuilders.termFilter(TOPIC_NAME, topic),
-                FilterBuilders.termFilter(SUBSCRIPTION, subscription),
-                FilterBuilders.termFilter(MESSAGE_ID, id),
-                FilterBuilders.termFilter(STATUS, status.toString()),
-                FilterBuilders.termFilter(CLUSTER, CLUSTER_NAME)};
+    private BoolQueryBuilder getMessageFilter(String topic, String subscription, String id,
+                                              SentMessageTraceStatus status) {
+        return boolQuery()
+                .must(termQuery(TOPIC_NAME, topic))
+                .must(termQuery(SUBSCRIPTION, subscription))
+                .must(termQuery(MESSAGE_ID, id))
+                .must(termQuery(STATUS, status.toString()))
+                .must(termQuery(CLUSTER, CLUSTER_NAME));
     }
 
-    private FilterBuilder[] getMessageBatchFilter(String topic, String subscription, String messageId, String batchId, SentMessageTraceStatus status) {
-        return (FilterBuilder[]) ArrayUtils.addAll(getMessageFilter(topic, subscription, messageId, status),
-                                                   Arrays.array(FilterBuilders.termFilter(BATCH_ID, batchId)));
+    private QueryBuilder getMessageBatchFilter(String topic, String subscription, String messageId, String batchId,
+                                               SentMessageTraceStatus status) {
+        return getMessageFilter(topic, subscription, messageId, status).must(termQuery(BATCH_ID, batchId));
     }
 }

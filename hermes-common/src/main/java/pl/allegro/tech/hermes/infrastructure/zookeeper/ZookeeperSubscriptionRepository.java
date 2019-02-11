@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collection;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
@@ -103,6 +104,13 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     @Override
     public Subscription getSubscriptionDetails(SubscriptionName name) {
         return getSubscriptionDetails(name.getTopicName(), name.getName());
+    }
+
+    @Override
+    public List<Subscription> getSubscriptionDetails(Collection<SubscriptionName> subscriptionNames) {
+        return subscriptionNames.stream()
+                .map(n -> getSubscriptionDetails(n.getTopicName(), n.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override

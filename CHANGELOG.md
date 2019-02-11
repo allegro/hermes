@@ -1,3 +1,313 @@
+## 0.15.7 (25.01.2018)
+
+### Enhancements
+
+#### ([979](https://github.com/allegro/hermes/pull/979)) Hermes Mock predicates
+#### ([977](https://github.com/allegro/hermes/pull/977)) Hermes Mock with ClassRule and JUnit 5 extension
+#### ([972](https://github.com/allegro/hermes/pull/972)) Improved subscription health problem indicator
+
+### Bugfixes
+
+#### ([978](https://github.com/allegro/hermes/issues/978)) Fix stale retransmission bug
+#### ([968](https://github.com/allegro/hermes/pull/968)) Subscription delivery type can be updated from batch to serial
+#### ([967](https://github.com/allegro/hermes/pull/967)) Fixes version replacement pattern
+#### ([974](https://github.com/allegro/hermes/pull/974)) Setting kafka consumer max.poll.interval.ms to Integer.MAX_VALUE
+#### ([973](https://github.com/allegro/hermes/pull/973)) Handling deprecated owner sources
+
+## 0.15.6 (21.01.2018)
+
+### Enhancements
+
+#### ([966](https://github.com/allegro/hermes/pull/966)) Adds endpoint returning description of unhealthy subscriptions
+#### ([971](https://github.com/allegro/hermes/pull/971)) Use OpenJDK8 instead of OracleJDK8
+
+### Bugfixes
+
+#### ([976](https://github.com/allegro/hermes/pull/976)) Make HermesMock API public
+#### ([970](https://github.com/allegro/hermes/pull/970)) Fixes metrics for batch and filtered subscriptions
+
+## 0.15.5 (16.01.2018)
+
+### Bugfixes
+
+#### ([969](https://github.com/allegro/hermes/pull/969)) Temporary retransmission fix
+
+## 0.15.4 (14.01.2018)
+
+### Enhancements
+
+#### ([963](https://github.com/allegro/hermes/pull/963)) Disabling not used graphite metrics attributes
+#### ([965](https://github.com/allegro/hermes/pull/965)) Updating kafka version to 2.0.0 in Vagrant
+
+## 0.15.3 (09.01.2018)
+
+### Enhancements
+
+#### ([960](https://github.com/allegro/hermes/pull/960)) Multi Elasticsearch log repository
+#### ([959](https://github.com/allegro/hermes/pull/959)) Write test output in Junit format
+
+## 0.15.2 (5.12.2018)
+
+### Enhancements
+
+#### ([957](https://github.com/allegro/hermes/pull/957)) Optimized elasticsearch template mapping
+
+## 0.15.1 (28.11.2018)
+
+### Enhancements
+
+#### ([956](https://github.com/allegro/hermes/pull/956)) Updated elasticsearch to 6.1.4 version in hermes-tracker
+#### ([955](https://github.com/allegro/hermes/pull/955)) Changed format for subscription healthcheck endpoint
+
+From now on we can list unhealthy subscriptions via following endpoint on hermes-management:
+
+```
+POST `/unhealthy
+```
+
+We can also provide parameters:
+```
+POST /unhealthy?ownerSourceName={ownerSourceName}&ownerId={service_id}&respectMonitoringSeverity=true
+```
+
+Thanks the first two parameters you can narrow down search results to unhealthy subscriptions owned by provided
+{ownerId} from {ownerSourceName}. 
+
+The last flag decides whether monitoring severity flag on subscription should be respected. If true then only
+unhealthy subscriptions with severity monitor set to `Important` or `Critical` will be returned by unhealthy endpoint.
+
+## 0.15.0 (06.11.2018)
+
+### Enhancements
+
+8 changes were merged in this release which were done during Allegro Hacktoberfest event.
+
+#### ([919](https://github.com/allegro/hermes/pull/919)) Test case for lowercase header by @adididas122
+#### ([935](https://github.com/allegro/hermes/pull/935)) Added log ready debug message to hermes response interface by @mictyd 
+#### ([937](https://github.com/allegro/hermes/pull/937)) 503 response without Retry-After does not ignore rate limiting by @spooz
+#### ([938](https://github.com/allegro/hermes/pull/938)) Introduce randomTopic test helper method creating topic with random  name by @Theer108
+#### ([940](https://github.com/allegro/hermes/pull/940)) Added message filter type validation against topic by @klacia
+#### ([942](https://github.com/allegro/hermes/pull/942)) Passing max message size to kafka by @mictyd
+#### ([943](https://github.com/allegro/hermes/pull/943)) Added content type validation disabling AVRO for BATCH delivery mode by @pwolaq
+#### ([949](https://github.com/allegro/hermes/pull/949)) Added clone action for topics and subscriptions by @pwolaq
+
+## 0.14.0 (25.10.2018)
+
+### Enhancements
+
+#### ([914](https://github.com/allegro/hermes/pull/914)) Upgrading kafka to version 2.0
+
+This version of Hermes is safe and backward compatible, so no additional actions are required to be performed on kafka brokers.
+
+#### ([944](https://github.com/allegro/hermes/pull/944)) Updating info about simplified release flow
+
+## 0.13.5 (22.10.2018)
+
+### Bugfixes
+
+#### ([947](https://github.com/allegro/hermes/pull/947)) Fix subscription page
+
+## 0.13.4 (22.10.2018)
+
+### Bugfixes
+
+#### ([933](https://github.com/allegro/hermes/pull/933)) Fix trackingmode mapping
+
+Fix improper mapping for tracking mode in subsription edit page.
+
+## 0.13.3 (18.10.2018)
+
+### Features
+
+#### ([918](https://github.com/allegro/hermes/pull/918)) Trace only discarded messages
+
+Added options to trace only discarded messages for subscription and error for topic.
+
+### Enhancements
+
+#### ([916](https://github.com/allegro/hermes/pull/916)) Subscription filter on UI
+
+Now we support editing filters via UI. Filters can be added/edited during creation or editing a subscription.
+
+#### ([923](https://github.com/allegro/hermes/pull/923)) Avro filter supports null value
+
+Now using avro filter we are able to filter fields with a null value.
+
+#### ([924](https://github.com/allegro/hermes/pull/924)) Adding health status endpoint to hermes-management
+
+#### ([925](https://github.com/allegro/hermes/pull/925)) Updating wiremock and switching it to standalone version
+
+Updating wiremock to the latest version (2.19.0) and using standalone version where it is possible to avoid conflicts of its dependencies.
+
+## 0.13.2 (20.09.2018)
+
+### Enhancements
+
+#### ([909](https://github.com/allegro/hermes/pull/909)) Schema update improvements
+
+From now on when topic schema is updated via hermes-console then all Hermes instances are notified to load latest schema
+from schema-registry as soon as possible (by default they should be notified in 2 minutes).
+
+#### ([906](https://github.com/allegro/hermes/pull/906)) Docs for adding subscription's filters
+
+### Bugfixes
+
+#### ([872](https://github.com/allegro/hermes/pull/872)) Fix for reading Graphite stats in Management
+
+## 0.13.1 (30.08.2018)
+
+Small fix in config.properties.
+
+Property `messages.local.buffered.storage.size.bytes` from 0.13.0 now becomes
+`frontend.messages.local.buffered.storage.size.bytes`.
+
+## 0.13.0 (28.08.2018)
+
+All issues and pull requests: [0.13.0 milestone](https://github.com/allegro/hermes/milestone/48)
+
+### Features
+
+#### ([899](https://github.com/allegro/hermes/pull/899)) ChronicleMap v3
+
+Starting from this version Hermes will use [ChronicleMap v3](https://github.com/OpenHFT/Chronicle-Map) as a temporary
+buffer for messages (before that Hermes was using ChronicleMap v2).
+
+Now there are 2 new config properties:
+- `frontend.messages.local.buffered.storage.size.bytes` - describes default size for a delayed messages queue in bytes
+in internal Kafka Producer Queue and Hermes Frontend Buffer. 
+  
+- `frontend.messages.local.storage.average.message.size.in.bytes` - describes average message size for better performance
+for delayed messages in Hermes Frontend Buffer.
+
+And also `kafka.producer.buffer.memory` was removed from a config, now `frontend.messages.local.buffered.storage.size.bytes`
+is responsible for that parameter.
+
+
+#### ([898](https://github.com/allegro/hermes/pull/898)) Sending Delay is not required in batch subscription
+
+#### ([896](https://github.com/allegro/hermes/pull/896)) Make BackupMessage serializable
+
+#### ([900](https://github.com/allegro/hermes/pull/900)) Hermes Mock documentation  
+
+### Bugfixes
+
+#### ([897](https://github.com/allegro/hermes/pull/897)) Fix label from `seconds` to `milliseconds`
+In Hermes console there were an inconsistency regarding `requestTimeout` and `sendingDelay` labels. Label stated that
+those values are in seconds, but they are in milliseconds. 
+
+## 0.12.10 (14.08.2018)
+
+All issues and pull requests: [0.12.10 milestone](https://github.com/allegro/hermes/milestone/47)
+
+### Features
+
+#### ([894](https://github.com/allegro/hermes/pull/894)) Sending delay
+
+Sending delay feature. We want to give users possibility to postpone sending an event for given time (max 5 seconds) 
+so if there are multiple topics that sends messages at the same time, then can increase chance of receiving an event 
+from one topic before an event from another topic.
+
+#### ([894](https://github.com/allegro/hermes/pull/871)) Improved processes signals management
+
+Improve processes management to be more predictable and easy to understand.
+
+## 0.12.9 (12.07.2018)
+
+All issues and pull requests: [0.12.9 milestone](https://github.com/allegro/hermes/milestone/46)
+
+### Features
+
+#### ([886](https://github.com/allegro/hermes/pull/886)) Listing topics by their owner 
+
+Endpoint in hermes-management to list topics by their owner with lower latency than using QueryEndpoint.
+
+#### ([888](https://github.com/allegro/hermes/pull/888)) Listing subscriptions by their owner
+
+Endpoint in hermes-management to list subscriptions by their owner with lower latency than using QueryEndpoint.
+
+#### ([887](https://github.com/allegro/hermes/pull/887)) Waiting between unsuccessful polls to reduce cpu utilization
+
+In a previous releases subscribing to topics with low rps is very cpu intensive because when polling KafkaConsumer
+implementation is constantly looping until timeout is reached. We introduced simple exponentially growing strategy
+to wait between unsuccessful polls which reduces cpu utilization by a significant margin in those cases.
+
+## 0.12.8 (29.06.2018)
+
+All issues and pull requests: [0.12.8 milestone](https://github.com/allegro/hermes/milestone/45)
+
+## 0.12.7 (21.06.2018)
+
+All issues and pull requests: [0.12.7 milestone](https://github.com/allegro/hermes/milestone/44)
+
+## 0.12.5 (01.06.2018)
+
+All issues and pull requests: [0.12.5 milestone](https://github.com/allegro/hermes/milestone/42)
+
+## 0.12.4 (17.04.2018)
+
+All issues and pull requests: [0.12.4 milestone](https://github.com/allegro/hermes/milestone/41)
+
+## 0.12.3 (11.01.2018)
+
+All issues and pull requests: [0.12.3 milestone](https://github.com/allegro/hermes/milestone/40)
+
+## 0.12.2 (25.10.2017)
+
+All issues and pull requests: [0.12.2 milestone](https://github.com/allegro/hermes/milestone/39)
+
+### Features
+
+#### ([814](https://github.com/allegro/hermes/pull/814)) Offline storage metadata
+
+Add new metadata to topic entity. From now on it is possible to specify if data from the topic
+should be persisted into any kind of offline store (like HDFS). Metadata is not used by Hermes,
+but is part of the API and can be consumed by tools like [Gobblin](https://github.com/apache/incubator-gobblin)
+to choose which data should be moved to HDFS and for how long should it be kept.
+
+#### ([821](https://github.com/allegro/hermes/issues/821)) Avro message preview in human-readable form
+
+[Topic message preview](http://hermes-pubsub.readthedocs.io/en/latest/user/topic-preview/) for Avro messages
+now shows data transformed to JSON instead of raw Avro bytes.
+
+Contributed by @mictyd
+
+#### ([822](https://github.com/allegro/hermes/issues/822)) Detailed message when Avro validation fails
+
+`400 Bad Message` status now returns much more meaningful information when Avro validation fails.
+
+Contributed by @janisz.
+
+#### ([824](https://github.com/allegro/hermes/pull/824)) Bum dependencies versions
+
+Upgraded the following dependencies:
+
+* Metrics to 3.2.5 
+* Guava to 23.0
+* Apache Curator to 2.12.0 (forced by Guava upgrade)
+
+#### ([756](https://github.com/allegro/hermes/issues/756)) Display owner source in Console
+
+Console now displays the source of topic and subscription owner next to the owner name.
+
+### Bugfixes
+
+#### ([769](https://github.com/allegro/hermes/issues/769)) Deleted topics come back to life
+
+Fixed by upgrading Kafka client to 0.10.1.0.
+
+#### ([812](https://github.com/allegro/hermes/pull/812)) Fixed Elasticsearch trace repo bug introduced in 0.12.0
+
+#### ([809](https://github.com/allegro/hermes/pull/809)) Fixed Hermes Console retransmit button
+
+Contributed by @piorkowskiprzemyslaw.
+
+#### ([834](https://github.com/allegro/hermes/issues/834)) Max-rate Zookeeper structure cleanup script
+
+Max-rate Zookeeper structure is not cleaned up when subscription is deleted. This, in time, leads to building
+up a huge structure with lots of watches. We observed that due to the amount of watches, Consumers startup time
+degrades significantly (up to 10 minutes). There is no fix for the lack of cleanup, but we created the script
+that can be run once in a while to keep the structure in desired size.
+
 ## 0.12.1 (04.08.2017)
 
 All issues and pull requests: [0.12.1 milestone](https://github.com/allegro/hermes/milestone/37)

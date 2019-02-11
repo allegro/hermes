@@ -16,6 +16,7 @@ public enum Configs {
     ZOOKEEPER_MAX_RETRIES("zookeeper.max.retries", 29),
     ZOOKEEPER_CONNECTION_TIMEOUT("zookeeper.connection.timeout", 10000),
     ZOOKEEPER_SESSION_TIMEOUT("zookeeper.session.timeout", 10000),
+    ZOOKEEPER_MAX_INFLIGHT_REQUESTS("zookeeper.max.inflight.requests", 10),
 
     ZOOKEEPER_AUTHORIZATION_ENABLED("zookeeper.authorization.enabled", false),
     ZOOKEEPER_AUTHORIZATION_SCHEME("zookeeper.authorization.scheme", "digest"),
@@ -54,6 +55,7 @@ public enum Configs {
     KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG("kafka.consumer.request.timeout.ms", 250_000),
     KAFKA_CONSUMER_CONNECTIONS_MAX_IDLE_MS_CONFIG("kafka.consumer.connections.max.idle.ms", 9 * 60 * 1000),
     KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG("kafka.consumer.max.poll.records", 1),
+    KAFKA_CONSUMER_MAX_POLL_INTERVAL_CONFIG("kafka.consumer.max.poll.interval.ms", Integer.MAX_VALUE),
 
     KAFKA_SIMPLE_CONSUMER_TIMEOUT_MS("kafka.simple.consumer.timeout.ms", 5000),
     KAFKA_SIMPLE_CONSUMER_BUFFER_SIZE("kafka.simple.consumer.buffer.size", 64 * 1024),
@@ -64,7 +66,6 @@ public enum Configs {
     KAFKA_PRODUCER_METADATA_MAX_AGE("kafka.producer.metadata.max.age.ms", 5 * 60 * 1000),
     KAFKA_PRODUCER_COMPRESSION_CODEC("kafka.producer.compression.codec", "none"),
     KAFKA_PRODUCER_RETRIES("kafka.producer.retries", Integer.MAX_VALUE),
-    KAFKA_PRODUCER_BUFFER_MEMORY("kafka.producer.buffer.memory", 256 * 1024 * 1024L),
     KAFKA_PRODUCER_RETRY_BACKOFF_MS("kafka.producer.retry.backoff.ms", 256),
     // In the current version of kafka-producer (0.10.1) request.timeout.ms parameter is also used as a timeout
     // for dropping batches from internal accumulator. Therefore, it is better to increase this timeout to very high value,
@@ -148,16 +149,24 @@ public enum Configs {
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT("frontend.startup.topic.schema.loading.retry.count", 3),
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.schema.loading.thread.pool.size", 16),
 
+    MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE("frontend.messages.local.buffered.storage.size.bytes", 256 * 1024 * 1024L),
+    MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED("frontend.messages.local.storage.v2.migration.enabled", true),
     MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", false),
     MESSAGES_LOCAL_STORAGE_DIRECTORY("frontend.messages.local.storage.directory", Files.createTempDir().getAbsolutePath()),
+    MESSAGES_LOCAL_STORAGE_TEMPORARY_DIRECTORY("frontend.messages.local.storage.temporary.directory", Files.createTempDir().getAbsolutePath()),
+    MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE("frontend.messages.local.storage.average.message.size.in.bytes", 600),
     MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS("frontend.messages.local.storage.max.age.hours", 72),
     MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES("frontend.messages.local.storage.max.resend.retries", 5),
     MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS("frontend.messages.loading.pause.between.resend", 30),
     MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO("frontend.messages.loading.wait.for.broker.topic.info", 5),
     MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED("frontend.messages.local.storage.size.reporting.enabled", true),
 
-    CONSUMER_RECEIVER_POOL_TIMEOUT("consumer.receiver.pool.timeout", 100),
+    CONSUMER_RECEIVER_POOL_TIMEOUT("consumer.receiver.pool.timeout", 30),
     CONSUMER_RECEIVER_READ_QUEUE_CAPACITY("consumer.receiver.read.queue.capacity", 1000),
+
+    CONSUMER_RECEIVER_WAIT_BETWEEN_UNSUCCESSFUL_POLLS("consumer.receiver.wait.between.unsuccessful.polls", true),
+    CONSUMER_RECEIVER_INITIAL_IDLE_TIME("consumer.receiver.initial.idle.time", 10),
+    CONSUMER_RECEIVER_MAX_IDLE_TIME("consumer.receiver.max.idle.time", 1000),
 
     CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 60),
     CONSUMER_COMMIT_OFFSET_QUEUES_SIZE("consumer.commit.offset.queues.size", 200_000),
@@ -174,7 +183,6 @@ public enum Configs {
     CONSUMER_HTTP_CLIENT_ENABLE_CRLDP("consumer.http.client.enable.crldp", true),
 
 
-
     CONSUMER_HTTP2_ENABLED("consumer.http2.enabled", true),
     CONSUMER_HTTP2_CLIENT_THREAD_POOL_SIZE("consumer.http2.client.thread.pool.size", 10),
     CONSUMER_HTTP2_CLIENT_THREAD_POOL_MONITORING("consumer.http2.client.thread.pool.monitoring", false),
@@ -188,7 +196,7 @@ public enum Configs {
     CONSUMER_RATE_CONVERGENCE_FACTOR("consumer.rate.convergence.factor", 0.2),
     CONSUMER_RATE_FAILURES_NOCHANGE_TOLERANCE_RATIO("consumer.rate.failures.nochange.tolerance.ratio", 0.05),
     CONSUMER_RATE_FAILURES_SPEEDUP_TOLERANCE_RATIO("consumer.rate.failures.speedup.tolerance.ratio", 0.01),
-    CONSUMER_MAXRATE_STRATEGY("consumer.maxrate.strategy", "strict"),
+    CONSUMER_MAXRATE_STRATEGY("consumer.maxrate.strategy", "negotiated"),
     CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS("consumer.maxrate.balance.interval.seconds", 30),
     CONSUMER_MAXRATE_UPDATE_INTERVAL_SECONDS("consumer.maxrate.update.interval.seconds", 15),
     CONSUMER_MAXRATE_HISTORY_SIZE("consumer.maxrate.history.size", 1),
@@ -209,7 +217,7 @@ public enum Configs {
     CONSUMER_WORKLOAD_AUTO_REBALANCE("consumer.workload.rebalance.auto", true),
     CONSUMER_WORKLOAD_DEAD_AFTER_SECONDS("consumer.workload.dead.after.seconds", 120),
     CONSUMER_BATCH_POOLABLE_SIZE("consumer.batch.poolable.size", 1024),
-    CONSUMER_BATCH_MAX_POOL_SIZE("consumer.batch.max.pool.size", 64*1024*1024),
+    CONSUMER_BATCH_MAX_POOL_SIZE("consumer.batch.max.pool.size", 64 * 1024 * 1024),
     CONSUMER_BATCH_CONNECTION_TIMEOUT("consumer.batch.connection.timeout", 500),
     CONSUMER_BATCH_SOCKET_TIMEOUT("consumer.batch.socket.timeout", 500),
     CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),

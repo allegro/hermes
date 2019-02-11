@@ -14,10 +14,12 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     },
                     deliveryType: 'SERIAL',
                     mode: 'ANYCAST',
+                    filters: [],
                     contentType: 'JSON',
                     subscriptionPolicy: {
                         messageTtl: 3600,
                         messageBackoff: 100,
+                        sendingDelay: 0
                     },
                     monitoringDetails: {
                         severity: 'NON_IMPORTANT',

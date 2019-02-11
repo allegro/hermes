@@ -1,16 +1,16 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
-import kafka.api.FetchRequestBuilder;
-import kafka.javaapi.FetchResponse;
-import kafka.javaapi.consumer.SimpleConsumer;
-import kafka.message.MessageAndOffset;
+import java.time.Duration;
+import java.util.Collections;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
-import pl.allegro.tech.hermes.common.kafka.SimpleConsumerPool;
+import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
-
-import java.nio.ByteBuffer;
 
 import static java.lang.String.format;
 
@@ -18,47 +18,49 @@ public class KafkaRawMessageReader {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaRawMessageReader.class);
 
-    private final SimpleConsumerPool simpleConsumerPool;
+    private final KafkaConsumerPool consumerPool;
+    private final int pollTimeoutMillis;
 
-    public KafkaRawMessageReader(SimpleConsumerPool simpleConsumerPool) {
-        this.simpleConsumerPool = simpleConsumerPool;
+    public KafkaRawMessageReader(KafkaConsumerPool consumerPool,
+                                 int pollTimeoutMillis) {
+        this.consumerPool = consumerPool;
+        this.pollTimeoutMillis = pollTimeoutMillis;
     }
 
-    public byte[] readMessage(KafkaTopic topic, int partition, long offset) {
-        FetchResponse fetchResponse = fetch(topic, partition, offset);
-        for (MessageAndOffset messageAndOffset : fetchResponse.messageSet(topic.name().asString(), partition)) {
-            if (messageAndOffset.offset() == offset) {
-                return readPayloadAsBytes(messageAndOffset);
+    byte[] readMessage(KafkaTopic topic, int partition, long offset) {
+        KafkaConsumer<byte[], byte[]> kafkaConsumer = consumerPool.get(topic, partition);
+        TopicPartition topicPartition = new TopicPartition(topic.name().asString(), partition);
+
+        try {
+            kafkaConsumer.assign(Collections.singleton(topicPartition));
+            kafkaConsumer.seek(topicPartition, offset);
+            ConsumerRecords<byte[], byte[]> records = kafkaConsumer.poll(Duration.ofMillis(pollTimeoutMillis));
+            for (ConsumerRecord<byte[], byte[]> record : records.records(topicPartition)) {
+                if (record.offset() == offset) {
+                    return record.value();
+                }
+                logger.info("Found an old offset: {} Expecting: {}", record.offset(), offset);
             }
-            logger.info("Found an old offset: {} Expecting: {}", messageAndOffset.offset(), offset);
+            throw messageNotFoundException(topic, partition, offset);
+        } catch (Exception e) {
+            throw pollingException(topic, partition, offset, e);
         }
-        throw messageReaderException(topic, partition, offset, fetchResponse, "Cannot find message");
     }
 
-    private byte[] readPayloadAsBytes(MessageAndOffset messageAndOffset) {
-        ByteBuffer payload = messageAndOffset.message().payload();
-        byte[] bytes = new byte[payload.limit()];
-        payload.get(bytes);
-        return bytes;
-    }
-
-    private FetchResponse fetch(KafkaTopic topic, int partition, long offset) {
-        SimpleConsumer simpleConsumer = simpleConsumerPool.get(topic, partition);
-        FetchResponse fetchResponse = simpleConsumer.fetch(new FetchRequestBuilder()
-                .clientId(simpleConsumer.clientId())
-                .addFetch(topic.name().asString(), partition, offset, simpleConsumerPool.getBufferSize())
-                .build()
-        );
-        if (fetchResponse.hasError()) {
-            throw messageReaderException(topic, partition, offset, fetchResponse, "Cannot read offset");
-        }
-        return fetchResponse;
-    }
-
-    private SingleMessageReaderException messageReaderException(KafkaTopic topic, int partition, long offset, FetchResponse response, String message) {
-        String cause = message + format("[offset %d, kafka_topic %s, partition %d, kafka_response_code: %d]",
-                offset, topic.name().asString(), partition, response.errorCode(topic.name().asString(), partition));
+    private static SingleMessageReaderException messageNotFoundException(KafkaTopic topic, int partition, long offset) {
+        String cause = buildErrorMessage(topic, partition, offset, "Cannot find message");
         logger.error(cause);
         return new SingleMessageReaderException(cause);
+    }
+
+    private static SingleMessageReaderException pollingException(KafkaTopic topic, int partition, long offset, Throwable throwable) {
+        String cause = buildErrorMessage(topic, partition, offset, "Error during polling kafka message");
+        logger.error(cause, throwable);
+        return new SingleMessageReaderException(cause, throwable);
+    }
+
+    private static String buildErrorMessage(KafkaTopic topic, int partition, long offset, String message) {
+        return format("%s [offset %d, kafka_topic %s, partition %d]", message, offset,
+                topic.name().asString(), partition);
     }
 }

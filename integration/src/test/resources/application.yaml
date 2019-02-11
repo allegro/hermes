@@ -1,0 +1,61 @@
+owner:
+  crowd:
+    enabled: true
+    path: http://localhost:18222/crowd
+    connect-timeout: 2000
+    socket-timeout: 2000
+
+application:
+  name: hermes-management
+
+zookeeper:
+  enabled: false
+
+kafka:
+  clusters:
+    -
+      clusterName: primary
+      connectionString: localhost:14192/kafka
+      connectionTimeout: 10000
+      namespace: 'itTest'
+    -
+      clusterName: secondary
+      connectionString: localhost:14192/secondaryKafka
+      connectionTimeout: 10000
+      namespace: 'itTest'
+
+topic:
+  replicationFactor: 1
+  partitions: 2
+  allowRemoval: true
+  defaultContentType: AVRO
+  touchSchedulerEnabled: false
+
+storage:
+  pathPrefix: /hermes
+  connectionString: localhost:14192
+
+auth:
+  oauthServerUrl: http://localhost:19999
+
+metrics:
+  graphiteHttpUri: http://localhost:18089/
+
+graphite:
+  client:
+    cacheTtlSeconds: 1
+
+spring:
+  jersey:
+    type: filter
+
+spring.groovy.template.check-template-location: false
+
+schema.repository:
+  type: schema_registry
+
+topicOwnerCache:
+  refreshRateInSeconds: 300 # 5 minutes
+
+subscriptionOwnerCache:
+  refreshRateInSeconds: 300

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.google.common.io.Files;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -47,7 +48,8 @@ public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
         ConfigFactory configFactory = new MutableConfigFactory()
                 .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
                 .overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, "http://localhost:" + emptySchemaRegistryMock.port())
-                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
+                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
+                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         hermesFrontend = HermesFrontend.frontend()
                 .withBinding(configFactory, ConfigFactory.class)

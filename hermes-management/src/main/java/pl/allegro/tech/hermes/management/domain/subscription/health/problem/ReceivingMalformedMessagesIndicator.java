@@ -1,13 +1,14 @@
 package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
-import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionMetrics;
+import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
 
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem.RECEIVING_MALFORMED_MESSAGES;
+import java.util.Optional;
 
-public class ReceivingMalformedMessagesIndicator extends AbstractSubscriptionHealthProblemIndicator {
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.receivingMalformedMessages;
+
+public class ReceivingMalformedMessagesIndicator implements SubscriptionHealthProblemIndicator {
     private final double max4xxErrorsRatio;
     private final double minSubscriptionRateForReliableMetrics;
 
@@ -17,34 +18,22 @@ public class ReceivingMalformedMessagesIndicator extends AbstractSubscriptionHea
     }
 
     @Override
-    public boolean problemOccurs(SubscriptionHealthContext context) {
-        Subscription subscription = context.getSubscription();
-        SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
-        return hasClientErrorRetry(subscription)
-                && areSubscriptionMetricsReliable(subscriptionMetrics)
-                && isCode4xxErrorsRateHigh(subscriptionMetrics);
-    }
-
-    private boolean hasClientErrorRetry(Subscription subscription) {
-        if (subscription.isBatchSubscription()) {
-            return subscription.getBatchSubscriptionPolicy().isRetryClientErrors();
-        } else {
-            return subscription.getSerialSubscriptionPolicy().isRetryClientErrors();
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
+        if (context.subscriptionHasRetryOnError()
+                && areSubscriptionMetricsReliable(context)
+                && isCode4xxErrorsRateHigh(context)) {
+            return Optional.of(receivingMalformedMessages(context.getCode4xxErrorsRate()));
         }
+        return Optional.empty();
     }
 
-    private boolean areSubscriptionMetricsReliable(SubscriptionMetrics subscriptionMetrics) {
-        return subscriptionMetrics.getRate() > minSubscriptionRateForReliableMetrics;
+    private boolean areSubscriptionMetricsReliable(SubscriptionHealthContext context) {
+        return context.getSubscriptionRateRespectingDeliveryType() > minSubscriptionRateForReliableMetrics;
     }
 
-    private boolean isCode4xxErrorsRateHigh(SubscriptionMetrics subscriptionMetrics) {
-        double code4xxErrorsRate = subscriptionMetrics.getCode4xxErrorsRate();
-        double rate = subscriptionMetrics.getRate();
+    private boolean isCode4xxErrorsRateHigh(SubscriptionHealthContext context) {
+        double code4xxErrorsRate = context.getCode4xxErrorsRate();
+        double rate = context.getSubscriptionRateRespectingDeliveryType();
         return code4xxErrorsRate > max4xxErrorsRatio * rate;
-    }
-
-    @Override
-    public SubscriptionHealth.Problem getProblem() {
-        return RECEIVING_MALFORMED_MESSAGES;
     }
 }

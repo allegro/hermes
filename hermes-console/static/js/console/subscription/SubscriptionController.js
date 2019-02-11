@@ -27,7 +27,8 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         $scope.metricsUrls = subscriptionMetrics.metricsUrls(groupName, topicName, subscriptionName);
 
         topicRepository.get(topicName).then(function(topic) {
-            initRetransmissionCalendar(topic.topic.retentionTime.duration);
+            $scope.topicContentType = topic.contentType;
+            initRetransmissionCalendar(topic.retentionTime.duration);
         });
 
         subscriptionMetrics.metrics(topicName, subscriptionName).then(function(metrics) {
@@ -81,8 +82,41 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     },
                     endpointAddressResolverMetadataConfig: function() {
                         return config.endpointAddressResolverMetadata;
+                    },
+                    topicContentType: function () {
+                        return $scope.topicContentType;
                     }
                 }
+            }).result.then(function(response){
+                $scope.subscription = response.subscription;
+            });
+        };
+
+        $scope.clone = function () {
+            $modal.open({
+                templateUrl: 'partials/modal/editSubscription.html',
+                controller: 'SubscriptionEditController',
+                size: 'lg',
+                resolve: {
+                    subscription: function () {
+                        return $scope.subscription;
+                    },
+                    topicName: function () {
+                        return topicName;
+                    },
+                    operation: function () {
+                        return 'ADD';
+                    },
+                    endpointAddressResolverMetadataConfig: function() {
+                        return config.endpointAddressResolverMetadata;
+                    },
+                    topicContentType: function () {
+                        return $scope.topicContentType;
+                    }
+                }
+            }).result.then(function(response){
+                var subscriptionName = response.subscription.name;
+                $location.path('/groups/' + groupName + '/topics/' + topicName + '/subscriptions/' + subscriptionName);
             });
         };
 
@@ -193,29 +227,30 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                         });
                 });
         };
+
+        $scope.trackingModeName = {"trackingOff": "No tracking", "discardedOnly": "Track message discarding only", "trackingAll": "Track everything"};
+
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
-    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig',
+    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'topicContentType',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
-              endpointAddressResolverMetadataConfig) {
+              endpointAddressResolverMetadataConfig, topicContentType) {
         $scope.topicName = topicName;
-        $scope.subscription = subscription;
+        $scope.topicContentType = topicContentType;
+        $scope.subscription = _.cloneDeep(subscription);
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
 
-        var subscriptionBeforeChanges = _.cloneDeep(subscription);
-
         $scope.save = function () {
             var promise;
+            var subscriptionToSave = _.cloneDeep($scope.subscription);
             passwordService.setRoot($scope.rootPassword);
 
             if (operation === 'ADD') {
-                promise = subscriptionRepository.add(topicName, $scope.subscription).$promise;
-            }
-            else {
-                var subscriptionToSave = _.cloneDeep(subscription);
-                if(subscription.endpoint === subscriptionBeforeChanges.endpoint) {
+                promise = subscriptionRepository.add(topicName, subscriptionToSave).$promise;
+            } else {
+                if(subscription.endpoint === subscriptionToSave.endpoint) {
                     delete subscriptionToSave.endpoint;
                 }
                 delete subscriptionToSave['oAuthPolicy']; // prevent from resetting password
@@ -225,7 +260,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
             promise
                     .then(function () {
                         toaster.pop('success', 'Success', 'Subscription has been saved');
-                        $modal.close();
+                        $modal.close({ subscription: $scope.subscription });
                     })
                     .catch(function (response) {
                         toaster.pop('error', 'Error ' + response.status, response.data.message);
@@ -233,6 +268,23 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
                     .finally(function () {
                         passwordService.reset();
                     });
+        };
+
+        $scope.addFilter = function () {
+            if (!$scope.filter.path || !$scope.filter.matcher) {
+                return;
+            }
+
+            $scope.subscription.filters.push({
+                type: $scope.topicContentType === "JSON" ? "jsonpath" : "avropath",
+                path: $scope.filter.path,
+                matcher: $scope.filter.matcher
+            });
+            $scope.filter = {};
+        };
+
+        $scope.delFilter = function (index) {
+            $scope.subscription.filters.splice(index, 1);
         };
 
     }]);
@@ -248,6 +300,6 @@ function initRetransmissionCalendar(daysBack) {
         showMeridian: true,
         autoclose: true,
         startDate: startDate,
-        endDate: new Date(),
+        endDate: new Date()
     });
 }

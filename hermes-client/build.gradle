@@ -1,5 +1,5 @@
 dependencies {
-    compileOnly group: 'io.dropwizard.metrics', name: 'metrics-core', version: '3.1.1'
+    compileOnly group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.metrics
     compileOnly group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     compileOnly group: 'org.springframework', name: 'spring-web', version: '4.1.4.RELEASE'
     compileOnly group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.2.0'
@@ -8,11 +8,11 @@ dependencies {
     compile group: 'net.jodah', name: 'failsafe', version: '0.9.3'
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
-    testCompile group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock
+    testCompile group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: versions.wiremock
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
     testCompile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
 
-    testCompile group: 'io.dropwizard.metrics', name: 'metrics-core', version: '3.1.1'
+    testCompile group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.metrics
     testCompile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     testCompile group: 'org.springframework', name: 'spring-web', version: '4.1.4.RELEASE'
     testCompile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.2.0'

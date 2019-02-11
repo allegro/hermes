@@ -1,10 +1,13 @@
 package pl.allegro.tech.hermes.management.domain.topic;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTextPreview;
+import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.RawSchema;
@@ -28,8 +31,12 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareServic
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
@@ -52,6 +59,11 @@ public class TopicService {
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
     private final Clock clock;
     private final Auditor auditor;
+    private final TopicOwnerCache topicOwnerCache;
+    private final ScheduledExecutorService scheduledTopicExecutor = Executors.newSingleThreadScheduledExecutor(
+            new ThreadFactoryBuilder()
+                    .setNameFormat("scheduled-topic-executor-%d")
+                    .build());
 
     @Autowired
     public TopicService(MultiDCAwareService multiDCAwareService,
@@ -63,7 +75,8 @@ public class TopicService {
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
                         MessagePreviewRepository messagePreviewRepository,
                         Clock clock,
-                        Auditor auditor) {
+                        Auditor auditor,
+                        TopicOwnerCache topicOwnerCache) {
         this.multiDCAwareService = multiDCAwareService;
         this.topicRepository = topicRepository;
         this.groupService = groupService;
@@ -75,6 +88,7 @@ public class TopicService {
         this.messagePreviewRepository = messagePreviewRepository;
         this.clock = clock;
         this.auditor = auditor;
+        this.topicOwnerCache = topicOwnerCache;
     }
 
     public void createTopicWithSchema(TopicWithSchema topicWithSchema, String createdBy, CreatorRights isAllowedToManage) {
@@ -86,8 +100,8 @@ public class TopicService {
                 && topicWithSchema.getSchema() != null);
 
         validateSchema(validateAndRegisterSchema, topicWithSchema, topic);
-        createTopic(topic, createdBy, isAllowedToManage);
         registerAvroSchema(validateAndRegisterSchema, topicWithSchema, createdBy);
+        createTopic(topic, createdBy);
     }
 
     private void ensureTopicDoesNotExist(Topic topic) {
@@ -118,13 +132,13 @@ public class TopicService {
         }
     }
 
-    private void createTopic(Topic topic, String createdBy, CreatorRights creatorRights) {
-        topicValidator.ensureCreatedTopicIsValid(topic, creatorRights);
+    private void createTopic(Topic topic, String createdBy) {
         topicRepository.createTopic(topic);
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
             auditor.objectCreated(createdBy, topic);
+            topicOwnerCache.onCreatedTopic(topic);
         } else {
             logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
         }
@@ -163,13 +177,17 @@ public class TopicService {
         topicRepository.removeTopic(topic.getName());
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
         auditor.objectRemoved(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
+        topicOwnerCache.onRemovedTopic(topic);
     }
 
     public void updateTopicWithSchema(TopicName topicName, PatchData patch, String modifiedBy) {
         Topic topic = getTopicDetails(topicName);
         boolean validateAvroSchema = AVRO.equals(topic.getContentType());
         extractSchema(patch)
-                .ifPresent(schema -> schemaService.registerSchema(topic, schema, validateAvroSchema));
+                .ifPresent(schema -> {
+                    schemaService.registerSchema(topic, schema, validateAvroSchema);
+                    scheduleTouchTopic(topicName);
+                });
         updateTopic(topicName, patch, modifiedBy);
     }
 
@@ -193,14 +211,38 @@ public class TopicService {
                 );
             }
             topicRepository.updateTopic(modified);
+
             if (!retrieved.wasMigratedFromJsonType() && modified.wasMigratedFromJsonType()) {
+                logger.info("Waiting until all subscriptions have consumers assigned during topic {} content type migration...", topicName.qualifiedName());
+                topicContentTypeMigrationService.waitUntilAllSubscriptionsHasConsumersAssigned(modified,
+                        Duration.ofSeconds(topicProperties.getSubscriptionsAssignmentsCompletedTimeoutSeconds()));
+                logger.info("Notifying subscriptions' consumers about changes in topic {} content type...", topicName.qualifiedName());
                 topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
             }
             auditor.objectUpdated(modifiedBy, retrieved, modified);
+            topicOwnerCache.onUpdatedTopic(retrieved, modified);
         }
     }
 
-    public void touchTopic(TopicName topicName) {
+    /**
+     * Topic is touched so other Hermes instances are notified to read latest topic schema from schema-registry.
+     * However, schema-registry can be distributed so when schema is written there then it can not be available on all nodes immediately.
+     * This is the reason why we delay touch of topic here, to wait until schema is distributed on schema-registry nodes.
+     */
+    public void scheduleTouchTopic(TopicName topicName) {
+        if (topicProperties.isTouchSchedulerEnabled()) {
+            logger.info("Scheduling touch of topic {}", topicName.qualifiedName());
+            scheduledTopicExecutor.schedule(() -> touchTopic(topicName),
+                    topicProperties.getTouchDelayInSeconds(),
+                    TimeUnit.SECONDS
+            );
+        } else {
+            touchTopic(topicName);
+        }
+    }
+
+    private void touchTopic(TopicName topicName) {
+        logger.info("Touching topic {}", topicName.qualifiedName());
         topicRepository.touchTopic(topicName);
     }
 
@@ -232,7 +274,9 @@ public class TopicService {
         if (AVRO.equals(topic.getContentType())) {
             schema = schemaService.getSchema(topicName.qualifiedName());
         }
-        return schema.map(s -> topicWithSchema(topic, s.value())).orElse(topicWithSchema(topic));
+        return schema
+                .map(s -> topicWithSchema(topic, s.value()))
+                .orElseGet(() -> topicWithSchema(topic));
     }
 
     public TopicMetrics getTopicMetrics(TopicName topicName) {
@@ -317,5 +361,10 @@ public class TopicService {
                     return TopicNameWithMetrics.from(metrics, t.getQualifiedName());
                 })
                 .collect(toList());
+    }
+
+    public List<Topic> listForOwnerId(OwnerId ownerId) {
+        Collection<TopicName> topicNames = topicOwnerCache.get(ownerId);
+        return topicRepository.getTopicsDetails(topicNames);
     }
 }

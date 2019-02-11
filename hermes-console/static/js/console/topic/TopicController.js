@@ -91,6 +91,31 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             });
         };
 
+        $scope.clone = function() {
+            $modal.open({
+                templateUrl: 'partials/modal/editTopic.html',
+                controller: 'TopicEditController',
+                size: 'lg',
+                resolve: {
+                    operation: function () {
+                        return 'ADD';
+                    },
+                    groupName: function () {
+                        return groupName;
+                    },
+                    topic: function () {
+                        return $scope.topic;
+                    },
+                    messageSchema: function() {
+                        return $scope.messageSchema;
+                    }
+                }
+            }).result.then(function(response){
+                var topicName = response.topic.name;
+                $location.path('/groups/' + groupName + '/topics/' + topicName);
+            });
+        };
+
         $scope.remove = function () {
             confirmationModal.open({
                 action: 'Remove',
@@ -177,6 +202,9 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                     },
                     endpointAddressResolverMetadataConfig: function() {
                         return subscriptionConfig.endpointAddressResolverMetadata;
+                    },
+                    topicContentType: function () {
+                        return $scope.topic.contentType;
                     }
                 }
             }).result.then(function () {
@@ -205,6 +233,7 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
 
             if (operation === 'ADD') {
                 topic.name = groupName + '.' + $scope.topic.shortName;
+                $scope.topic.name = topic.name;
                 promise = topicRepository.add(topic, $scope.messageSchema);
             }
             else {

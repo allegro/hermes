@@ -11,13 +11,13 @@ jmh {
     humanOutputFile = null
     jmhVersion = '1.12'
     zip64 = true
-    verbosity = 'EXTRA'
+    verbosity = 'SILENT'
     iterations = intProperty('jmh.iterations', 4)
     timeOnIteration = stringProperty('jmh.timeOnIteration', '80s')
     fork = intProperty('jmh.fork', 1)
     warmupIterations = intProperty('jmh.warmupIterations', 4)
     warmup = stringProperty('jmh.timeOnWarmupIteration', '80s')
-    jvmArgs = listProperty('jmh.jvmArgs', ['-Xmx1g', '-Xms1g', '-XX:+UseConcMarkSweepGC', '-XX:+CMSIncrementalMode'])
+    jvmArgs = listProperty('jmh.jvmArgs', ['-Xmx1g', '-Xms1g', '-XX:+UseConcMarkSweepGC'])
     failOnError = booleanProperty('jmh.failOnError', true)
     threads = intProperty('jmh.threads', 4)
     synchronizeIterations = false

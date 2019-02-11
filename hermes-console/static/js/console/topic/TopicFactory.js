@@ -14,6 +14,11 @@ topics.factory('TopicFactory', ['TOPIC_CONFIG',
                     owner: {
                         id: '',
                         source: ''
+                    },
+                    offlineStorage: {
+                        retentionTime: {
+                            duration: 60
+                        }
                     }
                 };
                 _.merge(defaults, topicConfig.defaults);

@@ -22,6 +22,7 @@ import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesC
 import static pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException.check;
 
 public class AvroPathPredicate implements Predicate<Message> {
+    private static final String NULL_AS_STRING = "null";
     private List<String> path;
     private Pattern pattern;
 
@@ -52,6 +53,9 @@ public class AvroPathPredicate implements Predicate<Message> {
             String selector = iter.next();
             current = ((GenericRecord) current).get(selector);
             if (!(current instanceof GenericRecord)) {
+                if (current == null) {
+                    current = NULL_AS_STRING;
+                }
                 break;
             }
         }

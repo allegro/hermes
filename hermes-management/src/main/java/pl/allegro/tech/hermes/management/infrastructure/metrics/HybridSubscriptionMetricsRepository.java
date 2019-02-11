@@ -1,8 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.metrics;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
@@ -13,16 +16,24 @@ import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics;
 import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
+import java.util.function.Supplier;
+
+import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 @Component
 public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsRepository {
 
-    private static final String SUBSCRIPTION_RATE_PATTERN = "sumSeries(%s.consumer.*.meter.%s.%s.%s.m1_rate)";
-    private static final String SUBSCRIPTION_THROUGHPUT_PATTERN = "sumSeries(%s.consumer.*.throughput.%s.%s.%s.m1_rate)";
-    private static final String SUBSCRIPTION_HTTP_STATUSES_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.%s.m1_rate)";
-    private static final String SUBSCRIPTION_ERROR_TIMEOUT_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.errors.timeout.m1_rate)";
-    private static final String SUBSCRIPTION_ERROR_OTHER_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.%s.errors.other.m1_rate)";
+    private static final Logger logger = LoggerFactory.getLogger(HybridSubscriptionMetricsRepository.class);
+
+    private static final String SUBSCRIPTION_PATH = "%s.%s.%s";
+
+    private static final String SUBSCRIPTION_RATE_PATTERN = "sumSeries(%s.consumer.*.meter.%s.m1_rate)";
+    private static final String SUBSCRIPTION_THROUGHPUT_PATTERN = "sumSeries(%s.consumer.*.throughput.%s.m1_rate)";
+    private static final String SUBSCRIPTION_HTTP_STATUSES_PATTERN = "sumSeries(%s.consumer.*.status.%s.%s.m1_rate)";
+    private static final String SUBSCRIPTION_ERROR_TIMEOUT_PATTERN = "sumSeries(%s.consumer.*.status.%s.errors.timeout.m1_rate)";
+    private static final String SUBSCRIPTION_ERROR_OTHER_PATTERN = "sumSeries(%s.consumer.*.status.%s.errors.other.m1_rate)";
+    private static final String SUBSCRIPTION_BATCH_RATE_PATTERN = "sumSeries(%s.consumer.*.meter.%s.batch.m1_rate)";
 
     private final GraphiteClient graphiteClient;
 
@@ -50,61 +61,114 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
     @Override
     public SubscriptionMetrics loadMetrics(TopicName topicName, String subscriptionName) {
-        String rateMetric = metricPath(topicName, subscriptionName);
-        String timeouts = metricPathTimeouts(topicName, subscriptionName);
-        String throughput = metricPathThroughput(topicName, subscriptionName);
-        String otherErrors = metricPathOtherErrors(topicName, subscriptionName);
-        String codes2xxPath = metricPathHttpStatuses(topicName, subscriptionName, "2xx");
-        String codes4xxPath = metricPathHttpStatuses(topicName, subscriptionName, "4xx");
-        String codes5xxPath = metricPathHttpStatuses(topicName, subscriptionName, "5xx");
+        SubscriptionName name = new SubscriptionName(subscriptionName, topicName);
 
-        GraphiteMetrics metrics = graphiteClient.readMetrics(codes2xxPath, codes4xxPath, codes5xxPath, rateMetric, timeouts, otherErrors);
+        String rateMetric = metricPath(name);
+        String timeouts = metricPathTimeouts(name);
+        String throughput = metricPathThroughput(name);
+        String otherErrors = metricPathOtherErrors(name);
+        String codes2xxPath = metricPathHttpStatuses(name, "2xx");
+        String codes4xxPath = metricPathHttpStatuses(name, "4xx");
+        String codes5xxPath = metricPathHttpStatuses(name, "5xx");
+        String batchPath = metricPathBatchRate(name);
+
+        GraphiteMetrics graphiteMetrics = graphiteClient.readMetrics(codes2xxPath, codes4xxPath, codes5xxPath,
+                rateMetric, timeouts, otherErrors, batchPath);
+        ZookeeperMetrics zookeeperMetrics = readZookeeperMetrics(name);
 
         return SubscriptionMetrics.Builder.subscriptionMetrics()
-                .withRate(metrics.metricValue(rateMetric))
-                .withDelivered(sharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(topicName, subscriptionName, "delivered")))
-                .withDiscarded(sharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(topicName, subscriptionName, "discarded")))
-                .withInflight(distributedCounter.getValue(
-                        zookeeperPaths.consumersPath(),
-                        zookeeperPaths.subscriptionMetricPathWithoutBasePath(topicName, subscriptionName, "inflight")
-                ))
-                .withCodes2xx(metrics.metricValue(codes2xxPath))
-                .withCodes4xx(metrics.metricValue(codes4xxPath))
-                .withCodes5xx(metrics.metricValue(codes5xxPath))
-                .withTimeouts(metrics.metricValue(timeouts))
-                .withOtherErrors(metrics.metricValue(otherErrors))
+                .withRate(graphiteMetrics.metricValue(rateMetric))
+                .withDelivered(zookeeperMetrics.delivered)
+                .withDiscarded(zookeeperMetrics.discarded)
+                .withInflight(zookeeperMetrics.inflight)
+                .withCodes2xx(graphiteMetrics.metricValue(codes2xxPath))
+                .withCodes4xx(graphiteMetrics.metricValue(codes4xxPath))
+                .withCodes5xx(graphiteMetrics.metricValue(codes5xxPath))
+                .withTimeouts(graphiteMetrics.metricValue(timeouts))
+                .withOtherErrors(graphiteMetrics.metricValue(otherErrors))
                 .withLag(lagSource.getLag(topicName, subscriptionName))
-                .withThroughput(metrics.metricValue(throughput))
+                .withThroughput(graphiteMetrics.metricValue(throughput))
+                .withBatchRate(graphiteMetrics.metricValue(batchPath))
                 .build();
     }
 
-    private String metricPath(TopicName topicName, String subscriptionName) {
+    private ZookeeperMetrics readZookeeperMetrics(SubscriptionName name) {
+        return new ZookeeperMetrics(
+                readZookeeperMetric(() -> sharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "delivered")), name),
+                readZookeeperMetric(() -> sharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "discarded")), name),
+                readZookeeperMetric(() -> distributedCounter.getValue(
+                        zookeeperPaths.consumersPath(),
+                        zookeeperPaths.subscriptionMetricPathWithoutBasePath(name, "inflight")
+                ), name)
+        );
+    }
+
+    private long readZookeeperMetric(Supplier<Long> supplier, SubscriptionName name) {
+        try {
+            return supplier.get();
+        } catch (Exception exception) {
+            logger.warn(
+                    "Failed to read Zookeeper metrics for subscription: {}; root cause: {}",
+                    name.getQualifiedName(), getRootCauseMessage(exception)
+            );
+            return -1;
+        }
+    }
+
+    private String metricPath(SubscriptionName name) {
         return String.format(SUBSCRIPTION_RATE_PATTERN,
-                metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
+                metricsPaths.prefix(), subscriptionNameToPath(name)
         );
     }
 
-    private String metricPathThroughput(TopicName topicName, String subscriptionName) {
+    private String metricPathThroughput(SubscriptionName name) {
         return String.format(SUBSCRIPTION_THROUGHPUT_PATTERN,
-                metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
+                metricsPaths.prefix(), subscriptionNameToPath(name)
         );
     }
 
-    private String metricPathHttpStatuses(TopicName topicName, String subscriptionName, String statusCodeClass) {
+    private String metricPathHttpStatuses(SubscriptionName name, String statusCodeClass) {
         return String.format(SUBSCRIPTION_HTTP_STATUSES_PATTERN,
-                metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName), statusCodeClass
+                metricsPaths.prefix(), subscriptionNameToPath(name), statusCodeClass
         );
     }
 
-    private String metricPathTimeouts(TopicName topicName, String subscriptionName) {
+    private String metricPathTimeouts(SubscriptionName name) {
         return String.format(SUBSCRIPTION_ERROR_TIMEOUT_PATTERN,
-                metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
+                metricsPaths.prefix(), subscriptionNameToPath(name)
         );
     }
 
-    private String metricPathOtherErrors(TopicName topicName, String subscriptionName) {
+    private String metricPathOtherErrors(SubscriptionName name) {
         return String.format(SUBSCRIPTION_ERROR_OTHER_PATTERN,
-                metricsPaths.prefix(), escapeDots(topicName.getGroupName()), topicName.getName(), escapeDots(subscriptionName)
+                metricsPaths.prefix(), subscriptionNameToPath(name)
         );
+    }
+
+    private String metricPathBatchRate(SubscriptionName name) {
+        return String.format(SUBSCRIPTION_BATCH_RATE_PATTERN,
+                metricsPaths.prefix(), subscriptionNameToPath(name)
+        );
+    }
+
+    private String subscriptionNameToPath(SubscriptionName name) {
+        return String.format(SUBSCRIPTION_PATH,
+                escapeDots(name.getTopicName().getGroupName()), name.getTopicName().getName(), escapeDots(name.getName())
+        );
+    }
+
+    private static class ZookeeperMetrics {
+
+        final long delivered;
+
+        final long discarded;
+
+        final long inflight;
+
+        ZookeeperMetrics(long delivered, long discarded, long inflight) {
+            this.delivered = delivered;
+            this.discarded = discarded;
+            this.inflight = inflight;
+        }
     }
 }

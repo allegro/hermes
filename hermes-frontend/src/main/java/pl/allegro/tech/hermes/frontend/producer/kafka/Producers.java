@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
+import java.util.Collections;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
@@ -62,15 +63,15 @@ public class Producers {
     }
 
     private void registerCompressionRateGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("compression-rate-avg", "producer-metrics"), gauge);
+        registerProducerGauge(producer, metrics, new MetricName("compression-rate-avg", "producer-metrics", "average compression rate", Collections.emptyMap()), gauge);
     }
 
     private void registerTotalBytesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("buffer-total-bytes", "producer-metrics"), gauge);
+        registerProducerGauge(producer, metrics, new MetricName("buffer-total-bytes", "producer-metrics", "buffer total bytes", Collections.emptyMap()), gauge);
     }
 
     private void registerAvailableBytesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("buffer-available-bytes", "producer-metrics"), gauge);
+        registerProducerGauge(producer, metrics, new MetricName("buffer-available-bytes", "producer-metrics", "buffer available bytes", Collections.emptyMap()), gauge);
     }
 
     private void registerProducerGauge(final Producer<byte[], byte[]> producer,

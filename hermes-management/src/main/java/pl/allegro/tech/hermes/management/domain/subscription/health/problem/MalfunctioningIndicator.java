@@ -1,12 +1,14 @@
 package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
-import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionMetrics;
+import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
 
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem.MALFUNCTIONING;
+import java.util.Optional;
 
-public class MalfunctioningIndicator extends AbstractSubscriptionHealthProblemIndicator {
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
+
+public class MalfunctioningIndicator implements SubscriptionHealthProblemIndicator {
     private final double max5xxErrorsRatio;
     private final double minSubscriptionRateForReliableMetrics;
 
@@ -16,23 +18,20 @@ public class MalfunctioningIndicator extends AbstractSubscriptionHealthProblemIn
     }
 
     @Override
-    public boolean problemOccurs(SubscriptionHealthContext context) {
-        SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
-        return areSubscriptionMetricsReliable(subscriptionMetrics) && isCode5xxErrorsRateHigh(subscriptionMetrics);
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
+        if (areSubscriptionMetricsReliable(context) && isCode5xxErrorsRateHigh(context)) {
+            return Optional.of(malfunctioning(context.getCode5xxErrorsRate()));
+        }
+        return Optional.empty();
     }
 
-    private boolean areSubscriptionMetricsReliable(SubscriptionMetrics subscriptionMetrics) {
-        return subscriptionMetrics.getRate() > minSubscriptionRateForReliableMetrics;
+    private boolean areSubscriptionMetricsReliable(SubscriptionHealthContext context) {
+        return context.getSubscriptionRateRespectingDeliveryType() > minSubscriptionRateForReliableMetrics;
     }
 
-    private boolean isCode5xxErrorsRateHigh(SubscriptionMetrics subscriptionMetrics) {
-        double code5xxErrorsRate = subscriptionMetrics.getCode5xxErrorsRate();
-        double rate = subscriptionMetrics.getRate();
+    private boolean isCode5xxErrorsRateHigh(SubscriptionHealthContext context) {
+        double code5xxErrorsRate = context.getCode5xxErrorsRate();
+        double rate = context.getSubscriptionRateRespectingDeliveryType();
         return code5xxErrorsRate > max5xxErrorsRatio * rate;
-    }
-
-    @Override
-    public SubscriptionHealth.Problem getProblem() {
-        return MALFUNCTIONING;
     }
 }

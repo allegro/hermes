@@ -17,6 +17,10 @@
     margin-top: 35px;
 }
 
+.borderless td {
+    border: none;
+}
+
 span.helpme {
     color: #428bca;
     padding: .2em .6em .2em;
@@ -24,6 +28,12 @@ span.helpme {
     white-space: nowrap;
     vertical-align: baseline;
     border-radius: .25em;
+}
+
+span.helpme-addon {
+    color: #428bca;
+    text-align: center;
+    font-weight: bold;
 }
 
 .panel-body.collapsing:not(.in) {
@@ -65,4 +75,17 @@ a.navbar-brand.console-title {
 #toast-container > div {
     width: auto;
     max-width: 800px;
+}
+
+.tooltip .tooltip-inner {
+    color: #333;
+    background-color: #fff;
+    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    padding: 9px 14px;
+    border: 1px solid rgba(0,0,0,.2);
+    border-radius: 6px;
 }

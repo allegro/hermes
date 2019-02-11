@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 
@@ -81,5 +82,10 @@ public interface TopicEndpoint {
                    @PathParam("brokersClusterName") String brokersClusterName,
                    @PathParam("partition") Integer partition,
                    @PathParam("offset") Long offset);
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/owner/{ownerSourceName}/{ownerId}")
+    List<Topic> listForOwner(@PathParam("ownerSourceName") String ownerSourceName, @PathParam("ownerId") String ownerId);
 
 }

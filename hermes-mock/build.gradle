@@ -1,0 +1,20 @@
+plugins {
+    id 'groovy'
+    id 'java'
+}
+
+dependencies {
+    compile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock
+    compile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
+    compile group: 'org.apache.avro', name: 'avro', version: versions.avro
+    compile group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.1'
+
+    testCompile project(':hermes-test-helper')
+    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testCompile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: versions.jetty
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
+}

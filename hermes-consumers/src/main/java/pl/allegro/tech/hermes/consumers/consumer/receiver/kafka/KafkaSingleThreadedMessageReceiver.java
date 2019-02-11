@@ -7,6 +7,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.InterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ContentType;
@@ -22,9 +23,11 @@ import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.KafkaConsumerOffsetMover;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,6 +46,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private final Clock clock;
 
     private final BlockingQueue<Message> readQueue;
+    private final KafkaConsumerOffsetMover offsetMover;
 
     private final HermesMetrics metrics;
     private Topic topic;
@@ -70,7 +74,8 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
         this.consumer = consumer;
         this.messageContentWrapper = messageContentWrapper;
         this.clock = clock;
-        this.readQueue = new ArrayBlockingQueue<Message>(readQueueCapacity);
+        this.readQueue = new ArrayBlockingQueue<>(readQueueCapacity);
+        this.offsetMover = new KafkaConsumerOffsetMover(consumer);
         this.consumer.subscribe(topics.keySet());
     }
 
@@ -85,7 +90,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     public Optional<Message> next() {
         try {
             if (readQueue.isEmpty()) {
-                ConsumerRecords<byte[], byte[]> records = consumer.poll(pollTimeout);
+                ConsumerRecords<byte[], byte[]> records = consumer.poll(Duration.ofMillis(pollTimeout));
                 try {
                     for (ConsumerRecord<byte[], byte[]> record : records) {
                         readQueue.add(convertToMessage(record));
@@ -99,6 +104,12 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                 }
             }
             return Optional.ofNullable(readQueue.poll());
+        } catch (InterruptException ex ) {
+            // Despite that Thread.currentThread().interrupt() is called in InterruptException's constructor
+            // Thread.currentThread().isInterrupted() somehow returns false so we reset it.
+            logger.info("Kafka consumer thread interrupted", ex);
+            Thread.currentThread().interrupt();
+            return Optional.empty();
         } catch (KafkaException ex) {
             logger.error("Error while reading message for subscription {}", subscription.getQualifiedName(), ex);
             return Optional.empty();
@@ -112,8 +123,8 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     }
 
     private Message convertToMessage(ConsumerRecord<byte[], byte[]> record) {
-        UnwrappedMessageContent unwrappedContent = getUnwrappedMessageContent(record);
         KafkaTopic kafkaTopic = topics.get(record.topic());
+        UnwrappedMessageContent unwrappedContent = getUnwrappedMessageContent(record, kafkaTopic.contentType());
         return new Message(
                 unwrappedContent.getMessageMetadata().getId(),
                 topic.getQualifiedName(),
@@ -128,10 +139,11 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
         );
     }
 
-    private UnwrappedMessageContent getUnwrappedMessageContent(ConsumerRecord<byte[], byte[]> message) {
-        if (topic.getContentType() == ContentType.AVRO) {
+    private UnwrappedMessageContent getUnwrappedMessageContent(ConsumerRecord<byte[], byte[]> message,
+                                                               ContentType contentType) {
+        if (contentType == ContentType.AVRO) {
             return messageContentWrapper.unwrapAvro(message.value(), topic);
-        } else if (topic.getContentType() == ContentType.JSON) {
+        } else if (contentType == ContentType.JSON) {
             return messageContentWrapper.unwrapJson(message.value());
         }
         throw new UnsupportedContentTypeException(topic);
@@ -139,7 +151,11 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
     @Override
     public void stop() {
-        consumer.close();
+        try {
+            consumer.close();
+        } catch (IllegalStateException ex) {
+            // means it was already closed
+        }
     }
 
     @Override
@@ -151,6 +167,9 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     public void commit(Set<SubscriptionPartitionOffset> offsets) {
         try {
             consumer.commitSync(createOffset(offsets));
+        } catch (InterruptException ex ) {
+            logger.info("Kafka consumer thread interrupted", ex);
+            Thread.currentThread().interrupt();
         } catch (Exception ex) {
             logger.error("Error while committing offset for subscription {}", subscription.getQualifiedName(), ex);
             metrics.counter("offset-committer.failed").inc();
@@ -172,8 +191,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public void moveOffset(SubscriptionPartitionOffset offset) {
-        logger.info("Moving offset for subscription {} {}", subscription.getQualifiedName(), offset.toString());
-        consumer.seek(new TopicPartition(offset.getKafkaTopicName().asString(), offset.getPartition()), offset.getOffset());
+    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+        return offsetMover.move(offset);
     }
 }

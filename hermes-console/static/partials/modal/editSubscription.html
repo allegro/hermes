@@ -15,7 +15,7 @@
             <div class="form-group {{subscriptionForm.subscriptionName.$valid ? '' : 'has-error'}} " ng-show="operation === 'ADD'">
                 <label for="subscriptionName" class="col-md-3 control-label">Name</label>
                 <div class="col-md-9">
-                    <input class="form-control" id="subscriptionName" name="subscriptionName" required placeholder="name of subscription" ng-model="subscription.name" ng-pattern="/^[a-zA-Z0-9.-]+$/"/>
+                    <input class="form-control" id="subscriptionName" name="subscriptionName" required placeholder="name of subscription" ng-model="subscription.name" ng-pattern="/^[a-zA-Z0-9._-]+$/"/>
                 </div>
             </div>
 
@@ -39,7 +39,7 @@
                 <div class="col-md-9">
                     <select required class="form-control" id="subscriptionType" name="subscriptionType" ng-model="subscription.contentType">
                         <option value="JSON">JSON</option>
-                        <option value="AVRO">AVRO</option>
+                        <option value="AVRO" ng-disabled="subscription.deliveryType === 'BATCH'">AVRO (not supported in BATCH delivery mode)</option>
                     </select>
                 </div>
             </div>
@@ -47,19 +47,25 @@
             <div class="form-group">
                 <label for="subscriptionType" class="col-md-3 control-label">Delivery type</label>
                 <div class="col-md-9">
-                    <select required class="form-control" id="deliveryType" name="deliveryType" ng-model="subscription.deliveryType">
-                        <option value="SERIAL">SERIAL</option>
-                        <option value="BATCH">BATCH (incubating feature)</option>
-                    </select>
+                    <div class="input-group">
+                        <select required class="form-control" id="deliveryType" name="deliveryType" ng-model="subscription.deliveryType">
+                            <option value="SERIAL">SERIAL</option>
+                            <option value="BATCH" ng-disabled="subscription.subscriptionType === 'AVRO'">BATCH (incubating feature)</option>
+                        </select>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Hermes can deliver messages in SERIAL (one message at a time) or in BATCH (group of messages at a time).">?</span>
+                    </div>
                 </div>
             </div>
             <div class="form-group">
                 <label for="mode" class="col-md-3 control-label">Mode</label>
                 <div class="col-md-9">
-                    <select required class="form-control" id="mode" name="mode" ng-model="subscription.mode">
-                        <option value="ANYCAST">ANYCAST</option>
-                        <option value="BROADCAST">BROADCAST (incubating feature)</option>
-                    </select>
+                    <div class="input-group">
+                        <select required class="form-control" id="mode" name="mode" ng-model="subscription.mode">
+                            <option value="ANYCAST">ANYCAST</option>
+                            <option value="BROADCAST">BROADCAST (incubating feature)</option>
+                        </select>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Hermes can deliver messages in ANYCAST (to one of subscribed hosts) or in BROADCAST (to all subscribed hosts) mode.">?</span>
+                    </div>
                 </div>
             </div>
 
@@ -69,6 +75,7 @@
                     <div class="input-group">
                         <input type="number" min="0" max="5000" step="10" ng-required="subscription.deliveryType === 'SERIAL'" class="form-control" id="subscriptionRateLimit" name="subscriptionRateLimit" placeholder="limit of messages sent by Hermes" ng-model="subscription.subscriptionPolicy.rate"/>
                         <span class="input-group-addon">messages/second</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Maximum rate defined by user (per data center). Maximum rate calculated by algorithm can be observed in 'Output rate' metric.">?</span>
                     </div>
                 </div>
             </div>
@@ -108,17 +115,27 @@
                 <div class="col-md-9">
                     <div class="input-group">
                         <input type="number" min="0" max="1000000" step="1" ng-required="subscription.deliveryType === 'BATCH'" class="form-control" id="subscriptionRequestTimeout" name="subscriptionRequestTimeout" placeholder="Max time for processing message by subscriber." ng-model="subscription.subscriptionPolicy.requestTimeout"/>
-                        <span class="input-group-addon">seconds</span>
+                        <span class="input-group-addon">milliseconds</span>
                     </div>
                 </div>
             </div>
-
+            <div class="form-group {{subscriptionForm.subscriptionSendingDelay.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'SERIAL'">
+                <label for="subscriptionSendingDelay" class="col-md-3 control-label">Sending delay</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" min="0" max="5000" step="1" ng-required="subscription.deliveryType === 'SERIAL'" class="form-control" id="subscriptionSendingDelay" name="subscriptionSendingDelay" placeholder="Delay after which an event will be send" ng-model="subscription.subscriptionPolicy.sendingDelay"/>
+                        <span class="input-group-addon">milliseconds</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Amount of time in ms after which an event will be send. Useful if events from two topics are sent at the same time and you want to increase chance that events from one topic will be deliver after events from other topic.">?</span>
+                    </div>
+                </div>
+            </div>
             <div class="form-group {{subscriptionForm.subscriptionMessageTtl.$valid ? '' : 'has-error'}}">
                 <label for="subscriptionMessageTtl" class="col-md-3 control-label">Inflight message TTL</label>
                 <div class="col-md-9">
                     <div class="input-group">
                         <input type="number" min="0" max="7200" step="1" required class="form-control" id="subscriptionMessageTtl" name="subscriptionMessageTtl" placeholder="Time when message can be resent to endpoint after failed sending attempts" ng-model="subscription.subscriptionPolicy.messageTtl"/>
                         <span class="input-group-addon">seconds</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.">?</span>
                     </div>
                 </div>
             </div>
@@ -138,19 +155,81 @@
                     <div class="input-group">
                         <input type="number" min="0" max="1000000" step="1" required class="form-control" id="subscriptionMessageBackoff" name="subscriptionMessageBackoff" placeholder="Delay between send attempts of failed requests" ng-model="subscription.subscriptionPolicy.messageBackoff"/>
                         <span class="input-group-addon">milliseconds</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Minimum amount of time between consecutive message retries.">?</span>
                     </div>
                 </div>
             </div>
+
             <div class="form-group">
-                <label for="trackingEnabled" class="col-md-3 control-label">Tracking enabled</label>
+                <label for="trackingMode" class="col-md-3 control-label">Message delivery tracking mode</label>
                 <div class="col-md-9">
-                    <div class="input-group checkbox">
-                        <label>
-                            <input type="checkbox" id="trackingEnabled" name="trackingEnabled" ng-model="subscription.trackingEnabled"/>
-                        </label>
+                    <div class="input-group">
+                        <select class="form-control" id="trackingMode" name="trackingMode" ng-model="subscription.trackingMode">
+                            <option value="trackingOff">No tracking</option>
+                            <option value="discardedOnly">Track message discarding only</option>
+                            <option value="trackingAll">Track everything</option>
+                        </select>
                     </div>
                 </div>
             </div>
+
+
+            <div class="form-group">
+                <label class="col-md-3 control-label">Filter</label>
+                <div class="col-md-9">
+                    <table class="table borderless" ng-show="subscription.filters.length > 0">
+                        <tr>
+                            <th>Type</th>
+                            <th>Path</th>
+                            <th>Matcher</th>
+                        </tr>
+                        <tr ng-repeat="filter in subscription.filters">
+                            <td>
+                                <label readonly ng-model="filter.type" style="top: 8px;"
+                                       class="col-sm-2 col-form-label form-control-plaintext">{{filter.type}}</label>
+                            </td>
+                            <td>
+                                <input ng-model="filter.path"
+                                       class="form-control col-md-1 {{filter.path.$valid ? '' : 'has-error'}}"
+                                       id="subscriptionFilterPathEdit"
+                                       name="subscriptionFilterPathInput" placeholder="{{filter.path}}"/>
+                            </td>
+                            <td>
+                                <input ng-model="filter.matcher"
+                                       class="form-control col-md-1 {{filter.matcher.$valid ? '' : 'has-error'}}"
+                                       id="subscriptionFilterMatcherEdit"
+                                       name="subscriptionFilterMatcherInput" placeholder="{{filter.matcher}}"/>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger" ng-click="delFilter($index)">Delete</button>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table class="table borderless">
+                        <tr>
+                            <td>
+                                <input ng-model="filter.path"
+                                       class="form-control col-md-1 {{filter.path.$valid ? '' : 'has-error'}}"
+                                       id="subscriptionFilterPath"
+                                       name="subscriptionFilterPathInput" placeholder="Path for filter"/>
+                            </td>
+                            <td>
+                                <input ng-model="filter.matcher"
+                                       class="form-control col-md-1 {{filter.matcher.$valid ? '' : 'has-error'}}"
+                                       id="subscriptionFilterMatcher"
+                                       name="subscriptionFilterMatcherInput" placeholder="Matcher for filter"/>
+                            </td>
+                            <td>
+                                <div class="col-md-1 subscription-add-subscription-filter">
+                                    <button class="btn btn-success" ng-click="addFilter()">Add</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <hr/>
 
             <div class="form-group">
                 <label for="monitoringSeverity" class="col-md-3 control-label">Monitoring severity</label>

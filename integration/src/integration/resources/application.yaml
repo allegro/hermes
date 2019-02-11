@@ -1,9 +1,0 @@
-management:
-  restTemplate:
-    connect-timeout: 2000
-    read-timeout: 2000
-
-owner:
-  crowd:
-    enabled: true
-    path: http://localhost:18222/crowd

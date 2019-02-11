@@ -32,7 +32,7 @@ public class MirroringSupervisorController implements SupervisorController {
 
     private final ConsumersSupervisor supervisor;
     private final InternalNotificationsBus notificationsBus;
-    private final SubscriptionAssignmentRegistry assignementRegistry;
+    private final SubscriptionAssignmentRegistry assignmentRegistry;
     private final SubscriptionsCache subscriptionsCache;
     private final WorkTracker workTracker;
     private final ZookeeperAdminCache adminCache;
@@ -42,7 +42,7 @@ public class MirroringSupervisorController implements SupervisorController {
 
     public MirroringSupervisorController(ConsumersSupervisor supervisor,
                                          InternalNotificationsBus notificationsBus,
-                                         SubscriptionAssignmentRegistry assignementRegistry,
+                                         SubscriptionAssignmentRegistry assignmentRegistry,
                                          SubscriptionsCache subscriptionsCache,
                                          WorkTracker workTracker,
                                          ZookeeperAdminCache adminCache,
@@ -51,7 +51,7 @@ public class MirroringSupervisorController implements SupervisorController {
 
         this.supervisor = supervisor;
         this.notificationsBus = notificationsBus;
-        this.assignementRegistry = assignementRegistry;
+        this.assignmentRegistry = assignmentRegistry;
         this.subscriptionsCache = subscriptionsCache;
         this.workTracker = workTracker;
         this.adminCache = adminCache;
@@ -117,16 +117,16 @@ public class MirroringSupervisorController implements SupervisorController {
 
         notificationsBus.registerSubscriptionCallback(this);
         notificationsBus.registerTopicCallback(this);
-        assignementRegistry.registerAssignmentCallback(this);
+        assignmentRegistry.registerAssignmentCallback(this);
 
         supervisor.start();
-        assignementRegistry.start();
+        assignmentRegistry.start();
         logger.info("Consumer boot complete. Workload config: [{}]", configFactory.print(CONSUMER_WORKLOAD_NODE_ID, CONSUMER_WORKLOAD_ALGORITHM));
     }
 
     @Override
     public Set<SubscriptionName> assignedSubscriptions() {
-        return assignementRegistry.createSnapshot().getSubscriptionsForConsumerNode(consumerNodeId);
+        return assignmentRegistry.createSnapshot().getSubscriptionsForConsumerNode(consumerNodeId);
     }
 
     @Override
@@ -137,11 +137,6 @@ public class MirroringSupervisorController implements SupervisorController {
     @Override
     public void onRetransmissionStarts(SubscriptionName subscription) throws Exception {
         supervisor.retransmit(subscription);
-    }
-
-    @Override
-    public void restartConsumer(SubscriptionName subscription) throws Exception {
-        supervisor.restartConsumer(subscription);
     }
 
     @Override

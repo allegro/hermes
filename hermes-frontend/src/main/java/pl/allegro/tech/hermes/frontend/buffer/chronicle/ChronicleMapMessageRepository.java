@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessage;
 import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,25 +20,27 @@ public class ChronicleMapMessageRepository implements MessageRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ChronicleMapMessageRepository.class);
 
+    private static final boolean SAME_BUILDER_CONFIG = false;
+
     private ChronicleMap<String, ChronicleMapEntryValue> map;
 
-    public ChronicleMapMessageRepository(File file, HermesMetrics hermesMetrics) {
-        this(file);
-        hermesMetrics.registerMessageRepositorySizeGauge(() -> map.size());
-    }
-
-    public ChronicleMapMessageRepository(File file) {
+    public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize) {
+        logger.info("Creating backup storage in path: {}", file.getAbsolutePath());
         try {
-            logger.info("Creating backup storage in path: {}", file.getAbsolutePath());
-            map = ChronicleMapBuilder.of(String.class, ChronicleMapEntryValue.class).createPersistedTo(file);
+            map = ChronicleMapBuilder.of(String.class, ChronicleMapEntryValue.class)
+                    .constantKeySizeBySample(MessageIdGenerator.generate())
+                    .averageValueSize(averageMessageSize)
+                    .entries(entries)
+                    .createOrRecoverPersistedTo(file, SAME_BUILDER_CONFIG);
         } catch (IOException e) {
             logger.error("Failed to load backup storage file from path {}", file.getAbsoluteFile(), e);
             throw new ChronicleMapCreationException(e);
         }
+    }
 
-        if(map == null) {
-            logger.error("Backup file could not be read - check if it was not corrupted.");
-        }
+    public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize, HermesMetrics hermesMetrics) {
+        this(file, entries, averageMessageSize);
+        hermesMetrics.registerMessageRepositorySizeGauge(() -> map.size());
     }
 
     @Override

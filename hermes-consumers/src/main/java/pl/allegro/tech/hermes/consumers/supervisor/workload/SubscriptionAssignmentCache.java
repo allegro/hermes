@@ -1,18 +1,29 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCache;
 
+import javax.inject.Inject;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.stream.Collectors;
+
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
+import static pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 
 public class SubscriptionAssignmentCache {
 
@@ -38,16 +49,18 @@ public class SubscriptionAssignmentCache {
 
     private volatile boolean started = false;
 
+    @Inject
     public SubscriptionAssignmentCache(CuratorFramework curator,
-                                       String basePath,
-                                       SubscriptionsCache subscriptionsCache,
-                                       SubscriptionAssignmentPathSerializer pathSerializer) {
+                                       ConfigFactory configFactory,
+                                       ZookeeperPaths zookeeperPaths,
+                                       SubscriptionsCache subscriptionsCache) {
         this.curator = curator;
-        this.basePath = basePath;
+        this.basePath = zookeeperPaths.consumersRuntimePath(configFactory.getStringProperty(KAFKA_CLUSTER_NAME));
         this.subscriptionsCache = subscriptionsCache;
-        this.pathSerializer = pathSerializer;
+        this.pathSerializer = new SubscriptionAssignmentPathSerializer(basePath, AUTO_ASSIGNED_MARKER);
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("subscription-assignment-cache-%d").build();
         this.cache = new HierarchicalCache(
-                curator, Executors.newSingleThreadScheduledExecutor(), basePath, 2, Collections.emptyList()
+                curator, Executors.newSingleThreadScheduledExecutor(threadFactory), basePath, 2, Collections.emptyList()
         );
 
         cache.registerCallback(ASSIGNMENT_LEVEL, (e) -> {
@@ -65,6 +78,8 @@ public class SubscriptionAssignmentCache {
     }
 
     public void start() throws Exception {
+        long startNanos = System.nanoTime();
+
         logger.info("Starting assignment cache for {}", basePath);
 
         List<SubscriptionAssignment> currentAssignments = readExistingAssignments();
@@ -74,7 +89,10 @@ public class SubscriptionAssignmentCache {
 
         started = true;
 
-        logger.info("Started assignment cache for {}. Read {} assignments", basePath, currentAssignments.size());
+        long elapsedMillis = Duration.ofNanos(System.nanoTime() - startNanos).toMillis();
+
+        logger.info("Started assignment cache for {}. Read {} assignments. Took {}ms",
+                basePath, currentAssignments.size(), elapsedMillis);
     }
 
     public void stop() throws Exception {
@@ -151,5 +169,10 @@ public class SubscriptionAssignmentCache {
                 || callback.watchedConsumerId().get().equals(assignment.getConsumerNodeId());
     }
 
-
+    public Map<SubscriptionName, Set<String>> getSubscriptionConsumers() {
+        return createSnapshot().getAllAssignments().stream()
+                .collect(Collectors.groupingBy(
+                        SubscriptionAssignment::getSubscriptionName,
+                        Collectors.mapping(SubscriptionAssignment::getConsumerNodeId, Collectors.toSet())));
+    }
 }

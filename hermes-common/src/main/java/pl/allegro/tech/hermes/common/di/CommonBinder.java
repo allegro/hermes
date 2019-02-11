@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.common.di.factories.OAuthProviderRepositoryFactory
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.common.di.factories.PathsCompilerFactory;
 import pl.allegro.tech.hermes.common.di.factories.SharedCounterFactory;
-import pl.allegro.tech.hermes.common.di.factories.SimpleConsumerPoolFactory;
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionOffsetChangeIndicatorFactory;
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
@@ -53,9 +52,7 @@ public class CommonBinder extends AbstractBinder {
     @Override
     protected void configure() {
         bind(ZookeeperCounterStorage.class).to(CounterStorage.class).in(Singleton.class);
-        bind(ZookeeperBrokerStorage.class).to(BrokerStorage.class).in(Singleton.class);
         bindFactory(ClockFactory.class).in(Singleton.class).to(Clock.class);
-        bind(ZookeeperBrokerStorage.class).to(BrokerStorage.class).in(Singleton.class);
         bind(InetAddressHostnameResolver.class).in(Singleton.class).to(HostnameResolver.class);
         bindSingletonFactory(RawSchemaClientFactory.class);
         bindSingletonFactory(SchemaVersionsRepositoryFactory.class);
@@ -83,7 +80,6 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(GroupRepositoryFactory.class);
         bindSingletonFactory(TopicRepositoryFactory.class);
         bindSingletonFactory(SubscriptionRepositoryFactory.class);
-        bindSingletonFactory(SimpleConsumerPoolFactory.class);
         bindSingletonFactory(SubscriptionOffsetChangeIndicatorFactory.class);
         bindSingletonFactory(PathsCompilerFactory.class);
         bindSingletonFactory(KafkaNamesMapperFactory.class);

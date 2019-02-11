@@ -8,15 +8,14 @@ health.factory('SubscriptionHealth', ['DiscoveryService', '$resource',
             health: function (topicName, subscriptionName) {
                 return health.get({topicName: topicName, subscriptionName: subscriptionName})
                     .$promise.then(function (health) {
-                        var problemOccurs = function (problem) {
-                            return _.include(health.problems, problem)
+                        var problemOccurs = function (problemCode) {
+                            return _.some(health.problems, {code: problemCode})
                         };
 
                         return {
                             status: health.status,
                             problems: {
                                 lagging: problemOccurs('LAGGING'),
-                                slow: problemOccurs('SLOW'),
                                 malfunctioning: problemOccurs('MALFUNCTIONING'),
                                 receivingMalformedMessages: problemOccurs('RECEIVING_MALFORMED_MESSAGES'),
                                 timingOut: problemOccurs('TIMING_OUT'),

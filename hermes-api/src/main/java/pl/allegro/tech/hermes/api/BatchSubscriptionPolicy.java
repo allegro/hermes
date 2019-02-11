@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public class BatchSubscriptionPolicy {
 
-    private static final int DEFAULT_MESSAGE_TTL = 60 * 1000;
+    private static final int DEFAULT_MESSAGE_TTL = 60;
     private static final int DEFAULT_MESSAGE_BACKOFF = 500;
     private static final int DEFAULT_REQUEST_TIMEOUT = 30 * 1000;
     private static final int DEFAULT_BATCH_SIZE = 100;

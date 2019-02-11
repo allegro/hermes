@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.schema.confluent
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
-import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.matching.UrlPattern
 import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.schema.BadSchemaRequestException
@@ -36,10 +36,12 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     @Shared WireMockServer wireMock
 
+    @Shared int port
+
     @Shared @Subject RawSchemaClient client
 
     def setupSpec() {
-        def port = Ports.nextAvailable()
+        port = Ports.nextAvailable()
         wireMock = new WireMockServer(port)
         wireMock.start()
         client = new SchemaRegistryRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port"), new ObjectMapper())
@@ -202,9 +204,9 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         thrown(BadSchemaRequestException)
     }
 
-    def "should validate schema"() {
+    def "should verify schema compatibility"() {
         given:
-        wireMock.stubFor(post(schemaValidationUrl(topicName))
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
                 .willReturn(okResponse()
                 .withHeader("Content-type", "application/json")
                 .withBody("""{"is_compatible":true}""")))
@@ -214,14 +216,14 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
         then:
         noExceptionThrown()
-        wireMock.verify(1, postRequestedFor(schemaValidationUrl(topicName))
+        wireMock.verify(1, postRequestedFor(schemaCompatibilityUrl(topicName))
                 .withHeader("Content-type", equalTo(schemaRegistryContentType))
                 .withRequestBody(equalTo("""{"schema":"{}"}""")))
     }
 
     def "should throw exception for incompatible schema"() {
         given:
-        wireMock.stubFor(post(schemaValidationUrl(topicName))
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
                 .willReturn(okResponse()
                 .withHeader("Content-type", "application/json")
                 .withBody("""{"is_compatible":false}""")))
@@ -235,7 +237,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should throw exception for 422 unprocessable entity response"() {
         given:
-        wireMock.stubFor(post(schemaValidationUrl(topicName))
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
                 .willReturn(unprocessableEntityResponse()))
 
         when:
@@ -247,7 +249,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should accept subject not found response as if schema is valid"() {
         given:
-        wireMock.stubFor(post(schemaValidationUrl(topicName))
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
                 .willReturn(notFoundResponse()))
 
         when:
@@ -257,20 +259,78 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         noExceptionThrown()
     }
 
-    private UrlMatchingStrategy versionsUrl(TopicName topic) {
+    def "should successfully validate schema against validation endpoint"() {
+        boolean validationEnabled = true
+        client = new SchemaRegistryRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port"),
+                new ObjectMapper(), validationEnabled)
+
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
+                .willReturn(okResponse()
+                .withHeader("Content-type", "application/json")
+                .withBody("""{"is_compatible":true}""")))
+
+        wireMock.stubFor(post(schemaValidationUrl(topicName))
+                .willReturn(okResponse()
+                .withHeader("Content-type", "application/json")
+                .withBody("""{ "is_valid": true}""")))
+
+        when:
+        client.validateSchema(topicName, rawSchema)
+
+        then:
+        noExceptionThrown()
+    }
+
+    def "should receive errors from validation endpoint"() {
+        given:
+        boolean validationEnabled = true
+        client = new SchemaRegistryRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port"),
+                new ObjectMapper(), validationEnabled)
+
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
+                .willReturn(okResponse()
+                .withHeader("Content-type", "application/json")
+                .withBody("""{"is_compatible":true}""")))
+
+        wireMock.stubFor(post(schemaValidationUrl(topicName))
+                .willReturn(okResponse()
+                .withHeader("Content-type", "application/json")
+                .withBody(
+                """
+{ "is_valid": false,
+  "errors": [
+    {"message": "missing doc field", "ignoredField": true},
+    {"message": "name should start with uppercase"}
+  ]
+}""")))
+
+        when:
+        client.validateSchema(topicName, rawSchema)
+
+        then:
+        def e = thrown(BadSchemaRequestException)
+        e.message.contains("missing doc field")
+        e.message.contains("name should start with uppercase")
+    }
+
+    private UrlPattern versionsUrl(TopicName topic) {
         urlEqualTo("/subjects/${topic.qualifiedName()}/versions")
     }
 
-    private UrlMatchingStrategy schemaVersionUrl(TopicName topic, int version) {
+    private UrlPattern schemaVersionUrl(TopicName topic, int version) {
         urlEqualTo("/subjects/${topic.qualifiedName()}/versions/$version")
     }
 
-    private UrlMatchingStrategy schemaLatestVersionUrl(TopicName topic) {
+    private UrlPattern schemaLatestVersionUrl(TopicName topic) {
         urlEqualTo("/subjects/${topic.qualifiedName()}/versions/latest")
     }
 
-    private UrlMatchingStrategy schemaValidationUrl(TopicName topic) {
+    private UrlPattern schemaCompatibilityUrl(TopicName topic) {
         urlEqualTo("/compatibility/subjects/${topic.qualifiedName()}/versions/latest")
+    }
+
+    private UrlPattern schemaValidationUrl(TopicName topic) {
+        urlEqualTo("/subjects/${topic.qualifiedName()}/validation")
     }
 
     private ResponseDefinitionBuilder okResponse() {

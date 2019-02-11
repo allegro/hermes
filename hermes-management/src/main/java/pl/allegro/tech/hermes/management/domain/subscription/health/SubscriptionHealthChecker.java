@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 
@@ -16,7 +17,6 @@ import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
 @Component
 public class SubscriptionHealthChecker {
     private final Set<SubscriptionHealthProblemIndicator> problemIndicators;
-    private final SubscriptionHealthContextCreator contextCreator = new SubscriptionHealthContextCreator();
 
     @Autowired
     public SubscriptionHealthChecker(Set<SubscriptionHealthProblemIndicator> problemIndicators) {
@@ -37,17 +37,17 @@ public class SubscriptionHealthChecker {
 
     private SubscriptionHealth getActiveSubscriptionHealth(Subscription subscription, TopicMetrics topicMetrics, SubscriptionMetrics subscriptionMetrics) {
         try {
-            SubscriptionHealthContext healthContext = contextCreator.createContext(subscription, topicMetrics, subscriptionMetrics);
-            Set<SubscriptionHealth.Problem> healthProblems = getHealthProblems(healthContext);
+            SubscriptionHealthContext healthContext = new SubscriptionHealthContext(subscription, topicMetrics, subscriptionMetrics);
+            Set<SubscriptionHealthProblem> healthProblems = getHealthProblems(healthContext);
             return SubscriptionHealth.of(healthProblems);
         } catch (NumberFormatException e) {
             return SubscriptionHealth.NO_DATA;
         }
     }
 
-    private Set<SubscriptionHealth.Problem> getHealthProblems(SubscriptionHealthContext healthContext) {
+    private Set<SubscriptionHealthProblem> getHealthProblems(SubscriptionHealthContext healthContext) {
         return problemIndicators.stream()
-                .map(indicator -> indicator.getProblemIfPresent(healthContext))
+                .map(indicator -> indicator.getProblem(healthContext))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toSet());

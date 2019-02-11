@@ -36,6 +36,7 @@ import java.util.Set;
 
 import static com.github.rholder.retry.WaitStrategies.fixedWait;
 import static java.util.Optional.of;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class BatchConsumer implements Consumer {
@@ -172,26 +173,38 @@ public class BatchConsumer implements Consumer {
     }
 
     @Override
-    public void moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
+    public boolean moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
         if (receiver != null) {
-            receiver.moveOffset(subscriptionPartitionOffset);
+            return receiver.moveOffset(subscriptionPartitionOffset);
         }
+        return false;
+    }
+
+    @Override
+    public Subscription getSubscription() {
+        return subscription;
     }
 
     private Retryer<MessageSendingResult> createRetryer(MessageBatch batch, BatchSubscriptionPolicy policy) {
-        return createRetryer(batch, policy.getMessageBackoff(), policy.getMessageTtl(), policy.isRetryClientErrors());
+        return createRetryer(batch,
+                policy.getMessageBackoff(),
+                SECONDS.toMillis(policy.getMessageTtl()),
+                policy.isRetryClientErrors());
     }
 
-    private Retryer<MessageSendingResult> createRetryer(final MessageBatch batch, int messageBackoff, int messageTtl, boolean retryClientErrors) {
+    private Retryer<MessageSendingResult> createRetryer(final MessageBatch batch,
+                                                        int messageBackoff,
+                                                        long messageTtlMillis,
+                                                        boolean retryClientErrors) {
         return RetryerBuilder.<MessageSendingResult>newBuilder()
                 .retryIfExceptionOfType(IOException.class)
                 .retryIfRuntimeException()
                 .retryIfResult(result -> consuming && !result.succeeded() && shouldRetryOnClientError(retryClientErrors, result))
                 .withWaitStrategy(fixedWait(messageBackoff, MILLISECONDS))
-                .withStopStrategy(attempt -> attempt.getDelaySinceFirstAttempt() > messageTtl)
+                .withStopStrategy(attempt -> attempt.getDelaySinceFirstAttempt() > messageTtlMillis)
                 .withRetryListener(getRetryListener(result -> {
                     batch.incrementRetryCounter();
-                    monitoring.markFailed(batch, subscription, result);
+                    monitoring.markSendingResult(batch, subscription, result);
                 }))
                 .build();
     }
@@ -202,7 +215,7 @@ public class BatchConsumer implements Consumer {
 
     private void deliver(Runnable signalsInterrupt, MessageBatch batch, Retryer<MessageSendingResult> retryer) {
         try (Timer.Context timer = hermesMetrics.subscriptionLatencyTimer(subscription).time()) {
-            MessageSendingResult result = retryer.call(() -> {
+            retryer.call(() -> {
                 signalsInterrupt.run();
                 return sender.send(
                         batch,
@@ -211,7 +224,6 @@ public class BatchConsumer implements Consumer {
                         subscription.getBatchSubscriptionPolicy().getRequestTimeout()
                 );
             });
-            monitoring.markSendingResult(batch, subscription, result);
         } catch (Exception e) {
             logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.getQualifiedName(), e);
             monitoring.markDiscarded(batch, subscription, e.getMessage());

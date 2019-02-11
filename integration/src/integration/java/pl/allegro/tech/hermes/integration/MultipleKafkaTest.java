@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import com.google.common.io.Files;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -53,7 +54,6 @@ public class MultipleKafkaTest extends IntegrationTest {
         Topic topic = operations.buildTopic("secondaryKafka", "topic");
         Subscription subscription = operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         wait.untilSubscriptionIsActivated(topic, subscription.getName());
-        wait.waitUntilConsumerMetadataAvailable(subscription, "localhost", SECONDARY_KAFKA_PORT);
         remoteService.expectMessages("message");
 
         // when
@@ -88,6 +88,8 @@ public class MultipleKafkaTest extends IntegrationTest {
         frontend.overrideProperty(Configs.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         frontend.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
         frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
+        frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_ENABLED, false);
+        frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         frontend.start();
 

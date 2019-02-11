@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
+import com.codahale.metrics.MetricRegistry;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -8,15 +9,17 @@ import pl.allegro.tech.hermes.api.PublishedMessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.consumers.TestMessageMetadata;
-import pl.allegro.tech.hermes.tracker.elasticsearch.DataInitializer;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
 import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
 import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersDailyIndexFactory;
+import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersElasticsearchLogRepository;
 import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersIndexFactory;
 import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendDailyIndexFactory;
+import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendElasticsearchLogRepository;
 import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactory;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
@@ -37,21 +40,33 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private static final String CLUSTER_NAME = "primary";
     private static final String REASON_MESSAGE = "Bad Request";
 
-    private static final Clock clock = Clock.fixed(LocalDate.of(2000, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
+    private static final Clock clock = Clock.fixed(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
 
-    public static final ElasticsearchResource elasticsearch = new ElasticsearchResource(frontendIndexFactory, consumersIndexFactory);
+    private static final ElasticsearchResource elasticsearch = new ElasticsearchResource();
 
-    private DataInitializer dataInitializer;
     private LogRepository logRepository;
+    private FrontendElasticsearchLogRepository frontendLogRepository;
+    private ConsumersElasticsearchLogRepository consumersLogRepository;
 
     @BeforeSuite
     public void before() throws Throwable {
         elasticsearch.before();
-        dataInitializer = new DataInitializer(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, CLUSTER_NAME);
-        SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory);
+        SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, false);
         logRepository = new ElasticsearchLogRepository(elasticsearch.client(), schemaManager);
+
+        PathsCompiler pathsCompiler = new PathsCompiler("localhost");
+        MetricRegistry metricRegistry = new MetricRegistry();
+        frontendLogRepository = new FrontendElasticsearchLogRepository.Builder(
+                elasticsearch.client(), pathsCompiler, metricRegistry)
+                .withIndexFactory(frontendIndexFactory)
+                .build();
+
+        consumersLogRepository = new ConsumersElasticsearchLogRepository.Builder(
+                elasticsearch.client(), pathsCompiler, metricRegistry)
+                .withIndexFactory(consumersIndexFactory)
+                .build();
     }
 
     @AfterSuite
@@ -69,24 +84,25 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
         long firstTimestamp = System.currentTimeMillis();
 
         MessageMetadata secondDiscarded = TestMessageMetadata.of("5678", topic, subscription);
-        long secondTimestamp = firstTimestamp + 1;
+        // difference between first and second timestamp must be bigger than 1000ms as query sorts by seconds
+        long secondTimestamp = firstTimestamp + 2000;
 
         // when
-        dataInitializer.indexSentMessage(firstDiscarded, firstTimestamp, DISCARDED, REASON_MESSAGE);
-        dataInitializer.indexSentMessage(secondDiscarded, secondTimestamp, DISCARDED, REASON_MESSAGE);
+        consumersLogRepository.logDiscarded(firstDiscarded, firstTimestamp, REASON_MESSAGE);
+        consumersLogRepository.logDiscarded(secondDiscarded, secondTimestamp, REASON_MESSAGE);
 
         // then
         assertThat(fetchLastUndelivered(topic, subscription)).containsExactly(sentMessageTrace(secondDiscarded, secondTimestamp, DISCARDED));
     }
 
     @Test
-    public void shouldGetMessageStatus() throws Exception {
+    public void shouldGetMessageStatus() {
         //given
         MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch.messageStatus", "subscription");
         long timestamp = System.currentTimeMillis();
 
-        dataInitializer.indexPublishedMessage(messageMetadata, timestamp, PublishedMessageTraceStatus.SUCCESS);
-        dataInitializer.indexSentMessage(messageMetadata, timestamp, SentMessageTraceStatus.SUCCESS, REASON_MESSAGE);
+        frontendLogRepository.logPublished("1234", timestamp, "elasticsearch.messageStatus", "localhost");
+        consumersLogRepository.logSuccessful(messageMetadata, "localhost", timestamp);
 
         //when
         assertThat(fetchMessageStatus(messageMetadata))
@@ -110,7 +126,8 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
 
         await().atMost(ONE_MINUTE).until(() -> {
             status.clear();
-            status.addAll(logRepository.getMessageStatus(messageMetadata.getTopic(), messageMetadata.getSubscription(), messageMetadata.getMessageId()));
+            status.addAll(logRepository.getMessageStatus(messageMetadata.getTopic(), messageMetadata.getSubscription(),
+                    messageMetadata.getMessageId()));
             return status.size() == 2;
         });
 

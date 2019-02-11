@@ -37,14 +37,17 @@ HEARTBEAT_DELAY    | consumer.rate.limiter.hearbeat.mode.delay       | 60
 
 ## Maximum rate negotiation
 
-By default, if your hermes cluster runs N consumers per subscription, the maximum global rate
+The rate limit is applied to a particular data center and tries to divide the rate among assigned consumers.
+It tries to work on the basis of consumers' needs by tracking actual delivery rate.
+Use *ALGORITHM*=**negotiated** to enable it (that's the default).
+
+A deprecated algorithm is also available (although not recommended), which works as follows:
+if your hermes cluster runs N consumers per subscription (in all data centers), the maximum global rate
 for this subscription will be divided as *{subscriptionPolicy.rate} / N*
-for each consumer (*ALGORITHM*=**strict**)
+for each consumer (*ALGORITHM*=**strict**). This algorithm should be avoided, as it changes the rate limit semantics
+to be global instead of data center based.
 
-An incubating feature has been added in version **0.10.6**, which allows consumers to negotiate
-rate among consumer instances for each subscription. Use *ALGORITHM*=**negotiated** to enable it.
-
-### How it works
+### How the negotiated algorithm works
 
 By tracking latest *RATE_HISTORY_SIZE* *DELIVERY_ATTEMPT_RATE* samples,
 the algorithm is able to determine busy and non-busy consumers and balance the available global rate among them over time.

@@ -1,12 +1,14 @@
 package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 
-import pl.allegro.tech.hermes.api.SubscriptionHealth;
+import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
-import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionMetrics;
+import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
 
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Problem.UNREACHABLE;
+import java.util.Optional;
 
-public class UnreachableIndicator extends AbstractSubscriptionHealthProblemIndicator {
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.unreachable;
+
+public class UnreachableIndicator implements SubscriptionHealthProblemIndicator {
     private final double maxOtherErrorsRatio;
     private final double minSubscriptionRateForReliableMetrics;
 
@@ -16,23 +18,19 @@ public class UnreachableIndicator extends AbstractSubscriptionHealthProblemIndic
     }
 
     @Override
-    public boolean problemOccurs(SubscriptionHealthContext context) {
-        SubscriptionMetrics subscriptionMetrics = context.getSubscriptionMetrics();
-        return areSubscriptionMetricsReliable(subscriptionMetrics) && isOtherErrorsRateHigh(subscriptionMetrics);
+    public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
+        if (areSubscriptionMetricsReliable(context) && isOtherErrorsRateHigh(context)) {
+            return Optional.of(unreachable(context.getOtherErrorsRate()));
+        }
+        return Optional.empty();
     }
 
-    private boolean areSubscriptionMetricsReliable(SubscriptionMetrics subscriptionMetrics) {
-        return subscriptionMetrics.getRate() > minSubscriptionRateForReliableMetrics;
+    private boolean areSubscriptionMetricsReliable(SubscriptionHealthContext context) {
+        return context.getSubscriptionRateRespectingDeliveryType() > minSubscriptionRateForReliableMetrics;
     }
 
-    private boolean isOtherErrorsRateHigh(SubscriptionMetrics subscriptionMetrics) {
-        double otherErrorsRate = subscriptionMetrics.getOtherErrorsRate();
-        double rate = subscriptionMetrics.getRate();
-        return otherErrorsRate > maxOtherErrorsRatio * rate;
-    }
-
-    @Override
-    public SubscriptionHealth.Problem getProblem() {
-        return UNREACHABLE;
+    private boolean isOtherErrorsRateHigh(SubscriptionHealthContext context) {
+        double otherErrorsRate = context.getOtherErrorsRate();
+        return otherErrorsRate > maxOtherErrorsRatio * context.getSubscriptionRateRespectingDeliveryType();
     }
 }

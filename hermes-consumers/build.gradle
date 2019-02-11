@@ -27,19 +27,13 @@ dependencies {
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
 
-    testCompile(group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock) {
-        exclude group: 'org.mortbay.jetty', module: 'servlet-api'
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
-        exclude group: 'net.sf.jopt-simple'
-    }
-
     testCompile project(':hermes-common')
 
     testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
         exclude group: 'com.jayway.jsonpath', module: 'json-path'
     }
 
-    testCompile group: 'tech.allegro.schema.json2avro', name: 'converter', version: '0.2.2'
+    testCompile group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
 }

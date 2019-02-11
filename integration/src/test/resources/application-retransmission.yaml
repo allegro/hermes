@@ -1,0 +1,7 @@
+kafka:
+  clusters:
+    -
+      clusterName: primary
+      connectionString: localhost:14192/kafka
+      connectionTimeout: 10000
+      namespace: 'itTest'

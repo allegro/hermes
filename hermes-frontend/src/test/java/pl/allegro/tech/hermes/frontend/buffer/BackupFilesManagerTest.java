@@ -35,23 +35,23 @@ public class BackupFilesManagerTest {
     @Test
     public void shouldRolloverExistingBackupFile() throws IOException {
         // given
-        new File(tempDir, "hermes-buffer.dat").createNewFile();
+        new File(tempDir, "hermes-buffer-v3.dat").createNewFile();
         BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
 
         // when
         Optional<File> backupFile = backupFilesManager.rolloverBackupFileIfExists();
 
         // then
-        assertThat(backupFile.get().getName()).isEqualTo("hermes-buffer-12345.dat");
+        assertThat(backupFile.get().getName()).isEqualTo("hermes-buffer-v3-12345.dat");
     }
 
     @Test
     public void shouldReadBackupFilesList() throws IOException {
         // given
         BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
-        File timestampedBackup1 = new File(tempDir, "hermes-buffer-001.dat");
-        File timestampedBackup2 = new File(tempDir, "hermes-buffer-002.dat");
-        File customBackup = new File(tempDir, "hermes-buffer-old.dat");
+        File timestampedBackup1 = new File(tempDir, "hermes-buffer-v3-001.dat");
+        File timestampedBackup2 = new File(tempDir, "hermes-buffer-v3-002.dat");
+        File customBackup = new File(tempDir, "hermes-buffer-v3-old.dat");
 
         // and
         timestampedBackup1.createNewFile();
@@ -66,7 +66,7 @@ public class BackupFilesManagerTest {
     }
 
     @Test
-    public void shouldReadEmptyBackupFileList() throws IOException {
+    public void shouldReadEmptyBackupFileList() {
         // given
         BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
 
@@ -83,13 +83,13 @@ public class BackupFilesManagerTest {
         BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
         // when
         Optional<File> backupFile = backupFilesManager.rolloverBackupFileIfExists();
-        
+
         // when & then
         assertThat(backupFile.isPresent()).isFalse();
     }
 
     @Test
-    public void shouldUseNewNamingSchemeWhenNoFilesAvailable() throws IOException {
+    public void shouldUseNewNamingSchemeWhenNoFilesAvailable() {
         // given
         BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
 
@@ -97,6 +97,26 @@ public class BackupFilesManagerTest {
         File file = backupFilesManager.getCurrentBackupFile();
 
         // then
-        assertThat(file.getName()).isEqualTo("hermes-buffer.dat");
+        assertThat(file.getName()).isEqualTo("hermes-buffer-v3.dat");
+    }
+
+    @Test
+    public void shouldLoadAllTemporaryBackupV2Files() throws IOException {
+        // given
+        BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
+        File temporaryBackup1 = new File(tempDir, "hermes-buffer-v2-old.tmp");
+        File temporaryBackup2 = new File(tempDir, "hermes-buffer-002-v2-old.tmp");
+        File customBackup = new File(tempDir, "hermes-buffer.dat");
+
+        // and
+        temporaryBackup1.createNewFile();
+        temporaryBackup2.createNewFile();
+        customBackup.createNewFile();
+
+        // when
+        List<File> files = backupFilesManager.getTemporaryBackupV2Files(tempDir.getAbsolutePath());
+
+        // then
+        assertThat(files.size()).isEqualTo(2);
     }
 }

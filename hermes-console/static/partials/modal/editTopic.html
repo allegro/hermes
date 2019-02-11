@@ -1,6 +1,6 @@
 <section>
     <div class="modal-header">
-        <h3 class="modal-title" ng-show="operation === 'ADD'"><small>Create topic:</small> {{topic.name.indexOf(groupName) === 0 ? '' : groupName}}.{{topic.shortName}}</h3>
+        <h3 class="modal-title" ng-show="operation === 'ADD'"><small>Create topic:</small> {{groupName}}.{{topic.shortName}}</h3>
         <h3 class="modal-title" ng-show="operation === 'EDIT'"><small>Edit topic:</small> {{topic.name}}</h3>
     </div>
     <div class="modal-body">
@@ -64,16 +64,20 @@
                     <div class="input-group">
                         <input type="number" min="0" max="7" required class="form-control" id="topicRetention" name="topicRetention" ng-model="topic.retentionTime.duration" placeholder="how long should we keep them for subscribers?"/>
                         <span class="input-group-addon">days</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip='For how many days message is available for subscribers after being published.'>?</span>
                     </div>
                 </div>
             </div>
             <div class="form-group">
                 <label for="topicAck" class="col-md-3 control-label">Kafka ACK Level</label>
                 <div class="col-md-9">
-                    <select id="topicAck" class="form-control" ng-model="topic.ack">
-                        <option>LEADER</option>
-                        <option>ALL</option>
-                    </select>
+                    <div class="input-group">
+                        <select id="topicAck" class="form-control" ng-model="topic.ack">
+                            <option>LEADER</option>
+                            <option>ALL</option>
+                        </select>
+                        <span class="input-group-addon helpme-addon" uib-tooltip='Specifies the strength of guarantees that acknowledged message was indeed persisted. In "Leader" mode ACK is required only from topic leader, which is fast and gives 99.99999% guarantee. It might be not enough when cluster is unstable. "All" mode means message needs to be saved on all replicas before sending ACK, which is quite slow but gives 100% guarantee that message has been persisted.'>?</span>
+                    </div>
                 </div>
             </div>
             <div class="form-group">
@@ -101,6 +105,39 @@
                     </div>
                 </div>
             </div>
+
+            <hr />
+            <div class="form-group {{topicForm.topicStoreOffline.$valid ? '' : 'has-error'}}">
+                <label for="topicStoreOffline" class="col-md-3 control-label">Store offline</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <select id="topicStoreOffline" name="topicStoreOffline" ng-model="topic.offlineStorage.enabled" class="form-control"
+                            ng-options="(item ? 'yes':'no') for item in [true, false]"
+                            required unknown-value-required/>
+                        <span class="input-group-addon helpme-addon" uib-tooltip='Should data from this topic be stored in offline storage (e.g. HDFS).'>?</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group {{topicForm.topicOfflineRetention.$valid ? '' : 'has-error'}}" ng-show="topic.offlineStorage.enabled && !topic.offlineStorage.retentionTime.infinite">
+                <label for="topicOfflineRetention" class="col-md-3 control-label">Offline retention time</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" ng-min="topic.offlineStorage.enabled && !topic.offlineStorage.retentionTime.infinite ? 1 : false" max="120"
+                               ng-required="topic.offlineStorage.enabled && !topic.offlineStorage.retentionTime.infinite" class="form-control"
+                               id="topicOfflineRetention" name="topicOfflineRetention" ng-model="topic.offlineStorage.retentionTime.duration"
+                               placeholder="how long should it be stored in offline storage?"/>
+                        <span class="input-group-addon">days</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" ng-show="topic.offlineStorage.enabled">
+                <label for="topicOfflineRetentionInfinity" class="col-md-3 control-label">Keep forever</label>
+                <div class="col-md-9">
+                    <input type="checkbox" id="topicOfflineRetentionInfinity" name="topicOfflineRetentionInfinity" ng-model="topic.offlineStorage.retentionTime.infinite"/>
+                </div>
+            </div>
+
+            <hr />
             <div class="form-group {{topicForm.messageSchema.$valid ? '' : 'has-error'}}" ng-show="topic.contentType === 'AVRO'">
                 <label for="messageSchema" class="col-md-3 control-label">
                     <a href="http://hermes-pubsub.rtfd.org/en/latest/user/publishing-avro/" target="_blank">AVRO schema</a>

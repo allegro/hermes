@@ -70,7 +70,7 @@ public class MessageBatchReceiver {
         }
         List<MessageMetadata> discarded = new ArrayList<>();
 
-        while (isReceiving() && !batch.isReadyForDelivery()) {
+        while (isReceiving() && !batch.isReadyForDelivery() && !Thread.currentThread().isInterrupted()) {
             signalsInterrupt.run();
             Optional<Message> maybeMessage = inflight.isEmpty() ?
                     readAndTransform(subscription, batch.getId()) : Optional.ofNullable(inflight.poll());
@@ -150,7 +150,7 @@ public class MessageBatchReceiver {
         receiver.commit(offsets);
     };
 
-    public void moveOffset(SubscriptionPartitionOffset offset) {
-        receiver.moveOffset(offset);
+    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+        return receiver.moveOffset(offset);
     };
 }

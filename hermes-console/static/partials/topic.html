@@ -10,6 +10,7 @@
     <div class="pull-right">
         <span bind-html="config.buttonsExtension"></span>
         <button class="btn btn-primary" ng-click="edit()">Edit</button>
+        <button class="btn btn-primary" ng-click="clone()">Clone</button>
         <button class="btn btn-warning" ng-click="blacklist()" ng-show="!isBlacklisted">Blacklist</button>
         <button class="btn btn-default" ng-click="unblacklist()" ng-show="isBlacklisted">Unblacklist</button>
         <button class="btn btn-danger" ng-click="remove()">Remove</button>
@@ -28,7 +29,7 @@
         </div>
     </div>
 
-    <h3><small>Owner:</small> <owner-name owner="topic.owner"/></h3>
+    <h3><small>Owner ({{topic.owner.source}}):</small> <owner-name owner="topic.owner"/></h3>
 
     <p class="lead">{{topic.description}}</p>
 
@@ -90,6 +91,16 @@
                     <p>
                         <strong>Restrict subscribing:</strong> {{topic.subscribingRestricted}}
                         <span uib-popover='When subscribing is restricted, only owner of this topic can create new subscriptions.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+
+                    <hr />
+                    <p>
+                        <strong>Store offline:</strong> {{topic.offlineStorage.enabled}}
+                        <span uib-popover='Should data from this topic be stored in offline storage (e.g. HDFS).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p ng-show="topic.offlineStorage.enabled">
+                        <strong>Offline retention:</strong> {{topic.offlineStorage.retentionTime.infinite ? 'infinite' : topic.offlineStorage.retentionTime.duration + ' days'}}
+                        <span uib-popover='For how long should this topic be stored in offline storage.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
 
                 </div>

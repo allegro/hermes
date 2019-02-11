@@ -82,6 +82,10 @@ public class ZookeeperPaths {
         return subscriptionPath(topicName, subscriptionName, METRICS_PATH, metricName);
     }
 
+    public String subscriptionMetricPath(SubscriptionName subscriptionName, String metricName) {
+        return subscriptionPath(subscriptionName.getTopicName(), subscriptionName.getName(), METRICS_PATH, metricName);
+    }
+
     public String offsetPath(TopicName topicName, String subscriptionName, KafkaTopicName kafkaTopicName, String brokersClusterName, int partitionId) {
         return Joiner.on(URL_SEPARATOR).join(offsetsPath(topicName, subscriptionName, kafkaTopicName, brokersClusterName), partitionId);
     }
@@ -110,24 +114,30 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH);
     }
 
-    public String consumersRateRuntimePath() {
-        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "runtime");
+    public String consumersRateRuntimePath(String cluster) {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, cluster, "runtime");
     }
 
-    public String consumersRatePath(SubscriptionName subscription, String consumerId) {
-        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId);
+    public String consumersRateSubscriptionPath(String cluster, SubscriptionName subscription) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(cluster), subscription);
     }
 
-    public String consumersRateHistoryPath(SubscriptionName subscription, String consumerId) {
-        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, MAX_RATE_HISTORY_PATH);
+    public String consumersRatePath(String cluster, SubscriptionName subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(cluster), subscription, consumerId);
     }
 
-    public String consumersMaxRatePath(SubscriptionName subscription, String consumerId) {
-        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(), subscription, consumerId, MAX_RATE_PATH);
+    public String consumersRateHistoryPath(String cluster, SubscriptionName subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(cluster), subscription, consumerId,
+                MAX_RATE_HISTORY_PATH);
     }
 
-    public String maxRateLeaderPath() {
-        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, "leader");
+    public String consumersMaxRatePath(String cluster, SubscriptionName subscription, String consumerId) {
+        return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(cluster), subscription, consumerId,
+                MAX_RATE_PATH);
+    }
+
+    public String maxRateLeaderPath(String cluster) {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, cluster, "leader");
     }
 
     public String topicsBlacklistPath() {
@@ -136,6 +146,10 @@ public class ZookeeperPaths {
 
     public String blacklistedTopicPath(String qualifiedTopicName) {
         return Joiner.on(URL_SEPARATOR).join(topicsBlacklistPath(), qualifiedTopicName);
+    }
+
+    public String subscriptionMetricPathWithoutBasePath(SubscriptionName subscriptionName, String metricName) {
+        return subscriptionMetricPathWithoutBasePath(subscriptionName.getTopicName(), subscriptionName.getName(), metricName);
     }
 
     public String subscriptionMetricPathWithoutBasePath(TopicName topicName, String subscriptionName, String metricName) {

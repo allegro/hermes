@@ -21,7 +21,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
 
     def rawSchemaClient = Stub(RawSchemaClient)
     def ticker = new FakeTicker()
-    def versionsRepository = new CachedSchemaVersionsRepository(rawSchemaClient, MoreExecutors.sameThreadExecutor(),
+    def versionsRepository = new CachedSchemaVersionsRepository(rawSchemaClient, MoreExecutors.newDirectExecutorService(),
             (int) REFRESH_TIME.toMinutes(), (int) EXPIRE_TIME.toMinutes(), ticker)
 
     def topic = topic("group", "topic").build()
@@ -116,5 +116,19 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         expect:
         versionsRepository.schemaVersionExists(topic, v1)
         versionsRepository.latestSchemaVersion(topic).get() == v1
+    }
+
+    def "should remove schema version from cache on topic removal"() {
+        given:
+        rawSchemaClient.getVersions(topic.getName()) >>> [[v1], [v0]]
+
+        expect:
+        versionsRepository.versions(topic, false) == [v1]
+
+        when:
+        versionsRepository.removeFromCache(topic)
+
+        then:
+        versionsRepository.versions(topic, false) == [v0]
     }
 }

@@ -1,8 +1,11 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import org.apache.curator.framework.CuratorFramework;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
@@ -13,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionOffsetChangeIndicator {
+
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperSubscriptionOffsetChangeIndicator.class);
 
     private final CuratorFramework zookeeper;
 
@@ -57,6 +62,36 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
                 allOffsets.addAll(getOffsetsForKafkaTopic(topic, kafkaTopic, subscriptionName, brokersClusterName))
         );
         return allOffsets;
+    }
+
+    @Override
+    public boolean areOffsetsMoved(TopicName topicName, String subscriptionName, String brokersClusterName,
+                                   KafkaTopic kafkaTopic, List<Integer> partitionIds) {
+        return partitionIds.stream().allMatch(partitionId -> offsetDoesNotExist(topicName, subscriptionName, brokersClusterName, partitionId, kafkaTopic));
+    }
+
+    @Override
+    public void removeOffset(TopicName topicName, String subscriptionName, String brokersClusterName, KafkaTopicName kafkaTopicName, int partitionId) {
+        String offsetPath = paths.offsetPath(topicName, subscriptionName, kafkaTopicName, brokersClusterName, partitionId);
+
+        try {
+            zookeeper.delete().guaranteed().deletingChildrenIfNeeded().forPath(offsetPath);
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
+    }
+
+    private boolean offsetDoesNotExist(TopicName topicName, String subscriptionName, String brokersClusterName, Integer partitionId,  KafkaTopic kafkaTopic) {
+        String offsetPath = paths.offsetPath(topicName, subscriptionName, kafkaTopic.name(), brokersClusterName, partitionId);
+        try {
+            boolean result = zookeeper.checkExists().forPath(offsetPath) == null;
+            if (!result) {
+                logger.info("Leftover on path {}", offsetPath);
+            }
+            return result;
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
     private PartitionOffsets getOffsetsForKafkaTopic(TopicName topic, KafkaTopicName kafkaTopicName, String subscriptionName, String brokersClusterName) {

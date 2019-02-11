@@ -38,7 +38,7 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
 
     def "should return group details"() {
         given:
-        Group group = group('groupDetails').withSupportTeam('team').build()
+        Group group = group('groupDetails').build()
         repository.createGroup(group)
         wait.untilGroupCreated('groupDetails')
 
@@ -46,21 +46,7 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
         Group retrievedGroup = repository.getGroupDetails('groupDetails')
 
         then:
-        retrievedGroup.supportTeam == 'team'
-    }
-
-    def "should update group"() {
-        given:
-        repository.createGroup(group('updateGroup').withSupportTeam('team1').build())
-        wait.untilGroupCreated('updateGroup')
-
-        Group modifiedGroup  = group('updateGroup').withSupportTeam('skylab').build()
-
-        when:
-        repository.updateGroup(modifiedGroup)
-
-        then:
-        repository.getGroupDetails('updateGroup').supportTeam == 'skylab'
+        retrievedGroup.groupName == 'groupDetails'
     }
 
     def "should throw group not exists exception when trying to update unknown group"() {
@@ -103,7 +89,7 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
         wait.untilGroupCreated('malformedGroup')
 
         when:
-        List<Group> groups = repository.listGroups()
+        repository.listGroups()
 
         then:
         notThrown(MalformedDataException)

@@ -10,7 +10,7 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'pl.allegro.tech.build.axion-release' version '1.7.0'
+    id 'pl.allegro.tech.build.axion-release' version '1.7.2'
     id 'io.codearte.nexus-staging' version '0.9.0'
 }
 
@@ -24,7 +24,11 @@ scmVersion {
     versionCreator 'versionWithBranch'
 
     hooks {
-        pre 'fileUpdate', [files: ['mkdocs.yml', 'hermes-console/package.json'], pattern: {v, p -> /$v/ }, replacement: {v, p -> "$v"}]
+        pre 'fileUpdate', [
+                files: ['mkdocs.yml', 'hermes-console/package.json'],
+                pattern: { v, p -> /("?version"?): (['"])$v(['"])/ },
+                replacement: { v, p -> "\$1: \$2$v\$3" }
+        ]
         pre 'commit'
     }
 }
@@ -40,15 +44,19 @@ allprojects {
     targetCompatibility = 1.8
 
     project.ext.versions = [
-            guava       : '20.0',
-            jackson     : '2.8.3',
-            jersey      : '2.23.2',
-            jetty       : '9.3.18.v20170406',
-            curator     : '2.11.1',
-            wiremock    : '1.58',
-            fongo       : '1.6.1',
-            spock       : '1.0-groovy-2.4',
-            alpn_api    : '1.1.2.v20150522'
+            kafka    : '2.0.0',
+            guava    : '23.0',
+            jackson  : '2.8.3',
+            jersey   : '2.23.2',
+            jetty    : '9.3.18.v20170406',
+            curator  : '2.12.0',
+            metrics  : '3.2.5',
+            wiremock : '2.19.0',
+            fongo    : '1.6.1',
+            spock    : '1.2-groovy-2.4',
+            alpn_api : '1.1.2.v20150522',
+            avro     : '1.8.1',
+            json2avro: '0.2.5'
     ]
 
     repositories {
@@ -67,7 +75,7 @@ allprojects {
     }
 
     test {
-        if(project.hasProperty('tests.timeout.multiplier')) {
+        if (project.hasProperty('tests.timeout.multiplier')) {
             jvmArgs = ["-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"]
         }
     }
@@ -123,6 +131,12 @@ subprojects {
     }
 
     test {
+        reports {
+            html.enabled = false
+            junitXml.enabled = true
+            junitXml.destination = file("$buildDir/test-results/$name")
+        }
+
         testLogging {
             exceptionFormat = 'full'
             events 'passed', 'skipped', 'failed'
@@ -142,5 +156,5 @@ nexusStaging {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.0'
+    gradleVersion = '4.2.1'
 }

@@ -13,12 +13,26 @@ class ConsumerStub implements Consumer {
 
     boolean consumptionStarted
 
-    Subscription modifiedSubscription
+    Subscription subscription
+
+    boolean updated = false
+
+    boolean healthy = true
+
+    boolean wasInterrupted = false
+
+    boolean blockOnTeardown = false
+
+    ConsumerStub(Subscription subscription) {
+        this.subscription = subscription
+    }
 
     @Override
     void consume(Runnable signalsInterrupt) {
         consumptionStarted = true
-        signalsInterrupt.run()
+        if (healthy) {
+            signalsInterrupt.run()
+        }
     }
 
     @Override
@@ -29,11 +43,24 @@ class ConsumerStub implements Consumer {
     @Override
     void tearDown() {
         tearDownCount++
+        while (blockOnTeardown) {
+            try {
+                Thread.sleep(50)
+            } catch (InterruptedException ex) {
+                wasInterrupted = true
+            }
+        }
     }
 
     @Override
     void updateSubscription(Subscription subscription) {
-        modifiedSubscription = subscription
+        this.subscription = subscription
+        this.updated = true
+    }
+
+    @Override
+    Subscription getSubscription() {
+        return subscription
     }
 
     @Override
@@ -45,8 +72,8 @@ class ConsumerStub implements Consumer {
     }
 
     @Override
-    void moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
-
+    boolean moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
+        return true
     }
 
     boolean getInitialized() {
@@ -54,10 +81,28 @@ class ConsumerStub implements Consumer {
     }
 
     boolean getTearDown() {
-        return tearDownCount > 0
+        return tearDownCount.intValue() > 0
     }
 
     boolean getUpdated() {
-        return modifiedSubscription != null
+        return updated
+    }
+
+    void whenUnhealthy(Closure closure) {
+        try {
+            healthy = false
+            closure.run()
+        } finally {
+            healthy = true
+        }
+    }
+
+    void whenBlockedOnTeardown(Closure closure) {
+        try {
+            blockOnTeardown = true
+            closure.run()
+        } finally {
+            blockOnTeardown = false
+        }
     }
 }

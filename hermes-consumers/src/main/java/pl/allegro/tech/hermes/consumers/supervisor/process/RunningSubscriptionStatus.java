@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class RunningSubscriptionStatus {
     private final String qualifiedName;
-
     private final Map<Signal.SignalType, Long> signalTimesheet;
 
     @JsonCreator

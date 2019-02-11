@@ -42,9 +42,9 @@ public class FilteredMessageHandler {
 
             offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
 
-            updateMetrics(message, subscription);
+            updateMetrics(subscription);
 
-            if (subscription.isTrackingEnabled()) {
+            if(subscription.isTrackingEnabled()) {
                 trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
             }
 
@@ -52,8 +52,8 @@ public class FilteredMessageHandler {
         }
     }
 
-    protected void updateMetrics(Message message, Subscription subscription) {
-        metrics.meter(Meters.FILTERED_METER).mark();
+    private void updateMetrics(Subscription subscription) {
+        metrics.meter(Meters.FILTERED_METER, subscription.getTopicName(), subscription.getName()).mark();
         metrics.counter(Counters.FILTERED, subscription.getTopicName(), subscription.getName()).inc();
     }
 }

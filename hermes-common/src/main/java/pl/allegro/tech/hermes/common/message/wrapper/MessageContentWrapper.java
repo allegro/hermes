@@ -97,8 +97,8 @@ public class MessageContentWrapper {
                         schemaRepository.getAvroSchema(topic, version);
                 return avroMessageContentWrapper.unwrapContent(data, schema);
             } catch (Exception ex) {
-                logger.debug("Failed to match schema for message for topic {}, schema version {}, fallback to previous.",
-                        topic.getQualifiedName(), version.value());
+                logger.error("Failed to match schema for message for topic {}, schema version {}, fallback to previous.",
+                        topic.getQualifiedName(), version.value(), ex);
             }
         }
         logger.error("Could not match schema {} for message of topic {} {}",

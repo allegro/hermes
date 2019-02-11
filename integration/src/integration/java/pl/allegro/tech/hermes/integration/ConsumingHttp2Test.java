@@ -17,12 +17,10 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Response;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class ConsumingHttp2Test extends IntegrationTest {

@@ -1,6 +1,10 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview
 
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview
+import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
+import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage
+import pl.allegro.tech.hermes.frontend.publishing.message.Message
+import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
@@ -13,15 +17,15 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName
 class MessagePreviewLogTest extends Specification {
 
     private MessagePreviewFactory factory = Stub(MessagePreviewFactory) {
-        create(_ as byte[]) >> { args -> new MessagePreview(args[0]) }
+        create(_ as Message) >> { args -> new MessagePreview(args[0].data) }
     }
 
     private MessagePreviewLog log = new MessagePreviewLog(factory, 2)
 
-    def "should persist messages for topics"() {
+    def "should persist JSON messages for topics"() {
         given:
-        log.add(fromQualifiedName('group.topic-1'), [1] as byte[])
-        log.add(fromQualifiedName('group.topic-2'), [2] as byte[])
+        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [1] as byte[], 0L))
+        log.add(fromQualifiedName('group.topic-2'), new JsonMessage('id', [2] as byte[], 0L))
 
         when:
         def messages = log.snapshotAndClean()
@@ -30,11 +34,25 @@ class MessagePreviewLogTest extends Specification {
         messages.topics() as Set == [fromQualifiedName('group.topic-1'), fromQualifiedName('group.topic-2')] as Set
     }
 
+    def "should persist Avro messages for topics"() {
+        given:
+        def avroUser = new AvroUser()
+        def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema)
+
+        log.add(fromQualifiedName('group.topic-1'), message)
+
+        when:
+        def messages = log.snapshotAndClean()
+
+        then:
+        messages.topics() as Set == [fromQualifiedName('group.topic-1')] as Set
+    }
+
     def "should persist no more than two messages for topic"() {
         given:
-        log.add(fromQualifiedName('group.topic-1'), [1] as byte[])
-        log.add(fromQualifiedName('group.topic-1'), [2] as byte[])
-        log.add(fromQualifiedName('group.topic-1'), [3] as byte[])
+        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [1] as byte[], 0L))
+        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [2] as byte[], 0L))
+        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [3] as byte[], 0L))
 
         when:
         def messages = log.snapshotAndClean()
@@ -52,13 +70,13 @@ class MessagePreviewLogTest extends Specification {
         threads.times {
             int executor = it
             executorService.submit({
-                1000.times { log.add(fromQualifiedName("group.topic"), [executor, it] as byte[]) }
+                1000.times { log.add(fromQualifiedName("group.topic"), new JsonMessage('id', [executor, it] as byte[], 0L)) }
                 latch.countDown()
             })
         }
 
         if (!latch.await(10, TimeUnit.SECONDS)) {
-            throw new IllegalStateException('Faild to commit all testing threads within specified timeout')
+            throw new IllegalStateException('Failed to commit all testing threads within specified timeout')
         }
 
         when:

@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.UrlPattern;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.testng.annotations.AfterClass;
@@ -18,10 +18,16 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static java.util.Comparator.comparingLong;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class BatchRetryPolicyTest extends IntegrationTest {
@@ -102,7 +108,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     public void shouldRetryUntilTtlExceeded() throws Throwable {
         //given
         Topic topic = operations.buildTopic("group", "retryUntilTtlExceeded");
-        createSingleMessageBatchSubscription(topic, 100, 20);
+        createSingleMessageBatchSubscription(topic, 1, 10);
 
         wireMock.register(post(topicUrl(topic))
                 .withRequestBody(containing("failed"))
@@ -184,11 +190,11 @@ public class BatchRetryPolicyTest extends IntegrationTest {
         wait.until(() -> assertThat(recordedRequests(topic).size()).isPositive());
     }
 
-    private UrlMatchingStrategy topicUrl(Topic topic) {
+    private UrlPattern topicUrl(Topic topic) {
         return topicUrl(topic.getName().getName());
     }
 
-    private UrlMatchingStrategy topicUrl(String topicName) {
+    private UrlPattern topicUrl(String topicName) {
         return urlEqualTo("/" + topicName);
     }
 
@@ -211,7 +217,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     }
 
     private void createSingleMessageBatchSubscription(Topic topic, boolean retryOnClientErrors) {
-        operations.createBatchSubscription(topic, subscriptionEndpoint(topic.getName().getName()), 100, 10, 1, 1, 500, retryOnClientErrors);
+        operations.createBatchSubscription(topic, subscriptionEndpoint(topic.getName().getName()), 1, 10, 1, 1, 500, retryOnClientErrors);
     }
 
     private String subscriptionEndpoint(String topicName) {
