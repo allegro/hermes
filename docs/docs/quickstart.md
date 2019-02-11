@@ -81,7 +81,7 @@ curl -v -d '{"id": 12345, "page": "main"}' http://10.10.10.10:8080/topics/com.ex
 (the first time you publish something you might see 408 Request Time-out status: a lot of machinery needs to warm up,
 just hit retry)
 
-Congratulations! The message should be delivered to your service or visible via e.g. `https://postb.in/RrZgu9Lc` (don't forget to refresh the page).
+Congratulations! The message should be delivered to your service or visible via e.g. `https://postb.in/b/RrZgu9Lc` (don't forget to refresh the page).
 
 ## Stopping the system
 
