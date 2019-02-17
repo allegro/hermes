@@ -369,7 +369,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
                     .flatExtracting("members")
                     .flatExtracting("partitions")
                     .usingElementComparatorIgnoringFields("partition", "topic", "offsetMetadata")
-                    .containsOnlyOnce(new TopicPartition(-1, "any", 1, 1, "any"));
+                    .containsOnlyOnce(new TopicPartition(-1, "any", 0, 1, "any"));
         });
     }
 

@@ -40,7 +40,7 @@ public class ConsumerGroupsDescriber {
         try {
             return describeConsumerGroup(consumerGroupId);
         } catch (Exception e) {
-            logger.error("Failed to describe group with id: " + consumerGroupId.asString(), e);
+            logger.error("Failed to describe group with id: {}", consumerGroupId.asString(), e);
             return Optional.empty();
         }
     }
