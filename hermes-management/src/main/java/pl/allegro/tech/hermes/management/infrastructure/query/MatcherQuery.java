@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.Matcher;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.MatcherException;
+import pl.allegro.tech.hermes.management.infrastructure.query.matcher.MatcherInputException;
 
 import java.util.Map;
 import java.util.function.Predicate;
@@ -35,6 +36,9 @@ public class MatcherQuery<T> implements Query<T> {
             } catch (MatcherException e) {
                 logger.info("Failed to match {}, skipping", value, e);
                 return false;
+            } catch (MatcherInputException e) {
+                logger.error("Not existing query property", e);
+                throw new IllegalArgumentException(e);
             }
         };
     }
