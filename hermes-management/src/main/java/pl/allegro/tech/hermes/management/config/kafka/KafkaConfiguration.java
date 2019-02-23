@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
-import java.util.Properties;
 import kafka.zk.AdminZkClient;
 import kafka.zk.KafkaZkClient;
 import kafka.zookeeper.ZooKeeperClient;
@@ -28,9 +27,11 @@ import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.service.ConsumerGroupsDescriber;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.service.LogEndOffsetChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.OffsetsAvailableChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -40,6 +41,7 @@ import javax.annotation.PreDestroy;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
@@ -99,7 +101,10 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
             return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,
-                    retransmissionService, brokerTopicManagement, kafkaNamesMapper, new OffsetsAvailableChecker(consumerPool, storage), brokerAdminClient);
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper,
+                    new OffsetsAvailableChecker(consumerPool, storage),
+                    new ConsumerGroupsDescriber(kafkaNamesMapper, brokerAdminClient, new LogEndOffsetChecker(consumerPool)),
+                    brokerAdminClient);
         }).collect(toList());
 
         return new MultiDCAwareService(
@@ -131,7 +136,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     }
 
     private ZooKeeperClient zooKeeperClient(KafkaProperties kafkaProperties) {
-        ZooKeeperClient zooKeeperClient =  new ZooKeeperClient(
+        ZooKeeperClient zooKeeperClient = new ZooKeeperClient(
                 kafkaProperties.getConnectionString(),
                 kafkaProperties.getSessionTimeoutMillis(),
                 kafkaProperties.getConnectionTimeoutMillis(),
