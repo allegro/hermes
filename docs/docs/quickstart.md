@@ -10,7 +10,7 @@ In order to go through this tutorial you need to have:
 * [Vagrant 1.7.3+](https://www.vagrantup.com/)
 * [VirtualBox](https://www.virtualbox.org/) (4.0.x, 4.1.x, 4.2.x, 4.3.x, 5.0.x)
 * curl
-* some running receiver service (in this guide we'll use [RequestBin](http://requestb.in))
+* some running receiver service (in this guide we'll use [PostBin](https://postb.in))
 
 ## Setting up an environment
 
@@ -64,7 +64,7 @@ So let's create a `clicks-receiver` subscription:
 * click the topic header ([direct link to com.example.events.clicks group](http://10.10.10.10/#/groups/com.example.events/topics/com.example.events.clicks))
 * click the blue plus button
 * enter subscription name: `clicks-receiver`
-* set the endpoint to which messages will be sent, in this example we can use `http://requestb.in/1isy54g1`
+* set the endpoint to which messages will be sent, in this example we can use `https://postb.in/RrZgu9Lc`
 * enter some description and contact data
 
 Now it's time for a grand finale. Let's publish a message on our topic (note that default Hermes publishing port is `8080`):
@@ -81,7 +81,7 @@ curl -v -d '{"id": 12345, "page": "main"}' http://10.10.10.10:8080/topics/com.ex
 (the first time you publish something you might see 408 Request Time-out status: a lot of machinery needs to warm up,
 just hit retry)
 
-Congratulations! The message should be delivered to your service or visible via e.g. `http://requestb.in/1isy54g1?inspect`.
+Congratulations! The message should be delivered to your service or visible via e.g. `https://postb.in/b/RrZgu9Lc` (don't forget to refresh the page).
 
 ## Stopping the system
 
