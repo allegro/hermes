@@ -1,12 +1,13 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
-import java.util.stream.Stream;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
@@ -16,9 +17,11 @@ import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BrokersClusterService {
 
@@ -30,12 +33,13 @@ public class BrokersClusterService {
     private final BrokerTopicManagement brokerTopicManagement;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final OffsetsAvailableChecker offsetsAvailableChecker;
+    private final ConsumerGroupsDescriber consumerGroupsDescriber;
     private final AdminClient adminClient;
 
     public BrokersClusterService(String clusterName, SingleMessageReader singleMessageReader,
                                  RetransmissionService retransmissionService, BrokerTopicManagement brokerTopicManagement,
                                  KafkaNamesMapper kafkaNamesMapper, OffsetsAvailableChecker offsetsAvailableChecker,
-                                 AdminClient adminClient) {
+                                 ConsumerGroupsDescriber consumerGroupsDescriber, AdminClient adminClient) {
 
         this.clusterName = clusterName;
         this.singleMessageReader = singleMessageReader;
@@ -43,6 +47,7 @@ public class BrokersClusterService {
         this.brokerTopicManagement = brokerTopicManagement;
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.offsetsAvailableChecker = offsetsAvailableChecker;
+        this.consumerGroupsDescriber = consumerGroupsDescriber;
         this.adminClient = adminClient;
     }
 
@@ -86,6 +91,10 @@ public class BrokersClusterService {
             logger.error("Failed to check assignments for topic " + topic.getQualifiedName() + " subscriptions", e);
             return false;
         }
+    }
+
+    public Optional<ConsumerGroup> describeConsumerGroup(SubscriptionName subscription) {
+        return consumerGroupsDescriber.describeConsumerGroup(subscription);
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {
