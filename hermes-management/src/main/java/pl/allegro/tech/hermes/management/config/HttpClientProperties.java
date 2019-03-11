@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "httpClient")
+@ConfigurationProperties(prefix = "http-client")
 public class HttpClientProperties {
 
     private int readTimeout = 3000;
