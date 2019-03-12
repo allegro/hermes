@@ -15,16 +15,20 @@ storage:
 spring:
   jersey:
     type: servlet
+  mvc:
+    servlet:
+      path: /status
 
 server:
   port: 8090
-  servlet-path: /status
 
 management:
-  context-path: /
-  restTemplate:
+  rest-template:
     connect-timeout: 2000
     read-timeout: 2000
+  server:
+    servlet:
+      context-path: /
 
 schema.repository.type: schema_registry
 

@@ -24,7 +24,7 @@ import pl.allegro.tech.hermes.management.infrastructure.crowd.RestCrowdClient;
 public class CrowdConfiguration {
 
     @Bean("managementRequestFactory")
-    @ConfigurationProperties(prefix = "management.restTemplate")
+    @ConfigurationProperties(prefix = "management.rest-template")
     public ClientHttpRequestFactory clientHttpRequestFactory() {
         return new HttpComponentsClientHttpRequestFactory();
     }
