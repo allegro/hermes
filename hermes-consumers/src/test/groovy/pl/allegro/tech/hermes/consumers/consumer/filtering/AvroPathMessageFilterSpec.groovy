@@ -117,10 +117,13 @@ class AvroPathMessageFilterSpec extends Specification {
         ".cast[*].firstName" | "unknown"      | false
         ".cast[0].lastName"  | "Brando"       | true
         ".cast[1].lastName"  | "Pacino"       | true
+        ".cast[2].lastName"  | "Pacino"       | false
         ".cast[*].awards[*]" | ".*Best.*"     | true
         ".cast[1].awards[*]" | ".*Best.*"     | true
         ".cast[10]"          | "null"         | true
+        ".cast[10]"          | "dummy string" | false
         ".title.aliases[5]"  | "null"         | true
+        ".title.aliases[5]"  | "some title"   | false
         ".title.aliases[1]"  | "Godfather"    | true
         ".title.aliases[*]"  | "El padrino"   | true
     }

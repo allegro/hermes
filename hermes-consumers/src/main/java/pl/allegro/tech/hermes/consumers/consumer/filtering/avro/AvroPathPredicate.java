@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyListIterator;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang.StringUtils.strip;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
@@ -60,78 +61,45 @@ public class AvroPathPredicate implements Predicate<Message> {
         return select(record, iter);
     }
 
-    private List<Object> select(GenericRecord record, ListIterator<String> iter) {
+    private List<Object> select(Object record, ListIterator<String> iter) {
         Object current = record;
-        while (iter.hasNext()) {
+        while (iter.hasNext() && current instanceof GenericRecord) {
+            GenericRecord currentRecord = (GenericRecord) current;
             String selector = iter.next();
-            GenericRecord prevSelect = (GenericRecord) current;
-            current = ((GenericRecord) current).get(selector);
-
-            if (current instanceof GenericRecord) {
-                continue;
-            }
-
             Matcher arrayMatcher = ARRAY_PATTERN.matcher(selector);
+
             if (arrayMatcher.matches()) {
                 String idx = arrayMatcher.group(GROUP_IDX);
                 selector = arrayMatcher.group(GROUP_SELECTOR);
 
+                current = currentRecord.get(selector);
+                if (! (current instanceof GenericArray)) {
+                    return emptyList();
+                }
+
+                GenericArray<Object> currentArray = (GenericArray) current;
                 if (idx.equals(WILDCARD_IDX)) {
-                    return selectMultipleArrayItems(iter, selector, prevSelect);
+                    return selectMultipleArrayItems(iter, currentArray);
                 } else {
-                    current = selectSingleArrayItem(Integer.valueOf(idx), selector, prevSelect);
+                    current = selectSingleArrayItem(Integer.valueOf(idx), currentArray);
                 }
 
-            }
-
-            if (!(current instanceof GenericRecord)) {
-                if (current == null) {
-                    current = NULL_AS_STRING;
-                }
-                break;
+            } else {
+                current = currentRecord.get(selector);
             }
         }
-        return iter.hasNext() ? emptyList() : singletonList(current);
+
+        return iter.hasNext() ? emptyList() : singletonList(current == null ? NULL_AS_STRING : current);
     }
 
-    private List<Object> selectMultipleArrayItems(ListIterator<String> iter, String selector, GenericRecord prevSelect) {
-        Object current = prevSelect.get(selector);
-
-        if (!(current instanceof GenericArray)) {
-            return null;
-        }
-
-        GenericArray<Object> currentArray = ((GenericArray) current);
-        if (iter.hasNext()) {
-            return currentArray.stream()
-                .map(item -> {
-                    if (!(item instanceof GenericRecord)) {
-                        return emptyList();
-                    }
-                    return select((GenericRecord) item, path.listIterator(iter.nextIndex()));
-                })
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
-        } else {
-            return currentArray.stream()
-                .map(item -> {
-                    if (item == null) {
-                        return NULL_AS_STRING;
-                    }
-                    return item;
-                })
-                .collect(Collectors.toList());
-        }
+    private List<Object> selectMultipleArrayItems(ListIterator<String> iter, GenericArray<Object> currentArray) {
+        return currentArray.stream()
+            .map(item -> select(item, iter.hasNext() ? path.listIterator(iter.nextIndex()) : emptyListIterator()))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
     }
 
-    private Object selectSingleArrayItem(int idx, String selector, GenericRecord prevSelect) {
-        Object current = prevSelect.get(selector);
-
-        if (!(current instanceof GenericArray)) {
-            return null;
-        }
-
-        GenericArray currentArray = ((GenericArray) current);
+    private Object selectSingleArrayItem(int idx, GenericArray<Object> currentArray) {
         if (currentArray.size() <= idx) {
             return null;
         }
