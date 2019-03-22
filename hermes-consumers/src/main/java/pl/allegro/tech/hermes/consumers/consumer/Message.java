@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import org.apache.commons.lang.ArrayUtils;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
@@ -56,7 +55,9 @@ public class Message {
                    long readingTimestamp,
                    PartitionOffset partitionOffset,
                    Map<String, String> externalMetadata,
-                   Subscription subscription) {
+                   List<Header> additionalHeaders,
+                   String subscription,
+                   boolean hasSubscriptionIdentityHeaders) {
         this.id = id;
         this.data = content;
         this.topic = topic;
@@ -66,9 +67,9 @@ public class Message {
         this.readingTimestamp = readingTimestamp;
         this.partitionOffset = partitionOffset;
         this.externalMetadata = ImmutableMap.copyOf(externalMetadata);
-        this.additionalHeaders = ImmutableList.copyOf(subscription.getHeaders());
-        this.subscription = subscription.getName();
-        this.hasSubscriptionIdentityHeaders = subscription.isSubscriptionIdentityHeadersEnabled();
+        this.additionalHeaders = ImmutableList.copyOf(additionalHeaders);
+        this.subscription = subscription;
+        this.hasSubscriptionIdentityHeaders = hasSubscriptionIdentityHeaders;
     }
 
     public long getPublishingTimestamp() {
