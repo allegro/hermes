@@ -44,11 +44,17 @@ public class KafkaConsumerPool {
     }
 
     public KafkaConsumer<byte[], byte[]> get(KafkaTopic topic, int partition) {
+        return get(topic.name().asString(), partition);
+    }
+
+    public KafkaConsumer<byte[], byte[]> get(String topicName, int partition) {
         try {
-            int leaderId = brokerStorage.readLeaderForPartition(new TopicAndPartition(topic.name().asString(), partition));
-            return kafkaConsumers.get(leaderId);
+            int leaderId = brokerStorage.readLeaderForPartition(new TopicAndPartition(topicName, partition));
+            KafkaConsumer<byte[], byte[]> kafkaConsumer = kafkaConsumers.get(leaderId);
+            return kafkaConsumer;
+
         } catch (ExecutionException e) {
-            String message = String.format("Cannot get KafkaConsumer for topic %s and partition %d", topic.name().asString(), partition);
+            String message = String.format("Cannot get KafkaConsumer for topic %s and partition %d", topicName, partition);
             throw new KafkaConsumerPoolException(message, e);
         } catch (UncheckedExecutionException e) {
             if (e.getCause() instanceof BrokerNotFoundForPartitionException) {

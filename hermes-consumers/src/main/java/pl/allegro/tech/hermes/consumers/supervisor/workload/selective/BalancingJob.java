@@ -90,6 +90,7 @@ public class BalancingJob implements Runnable {
                             initialState);
 
                     if (consumersRegistry.isLeader()) {
+                        logger.info("Applying workload balance changes {}", work.toString());
                         WorkTracker.WorkDistributionChanges changes =
                                 workTracker.apply(initialState, work.getAssignmentsView());
 

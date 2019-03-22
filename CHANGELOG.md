@@ -1,4 +1,13 @@
-## 0.15.7 (25.01.2018)
+## 0.15.8 (11.03.2019)
+
+### Enhancements
+
+#### ([982](https://github.com/allegro/hermes/pull/982)) Giving names to all anonymous thread pools
+#### ([986](https://github.com/allegro/hermes/pull/986)) Consumer groups description
+#### ([985](https://github.com/allegro/hermes/pull/985)) Replacing no longerworking recycleb.in url with other online requests service
+#### ([990](https://github.com/allegro/hermes/pull/990)) More logging on writing to consumer assignment registry
+
+## 0.15.7 (25.01.2019)
 
 ### Enhancements
 

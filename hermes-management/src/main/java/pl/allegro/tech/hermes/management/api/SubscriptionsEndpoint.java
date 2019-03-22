@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
@@ -231,6 +232,15 @@ public class SubscriptionsEndpoint {
         List<MessageTrace> status = subscriptionService.getMessageStatus(qualifiedTopicName, subscriptionName, messageId);
 
         return Response.status(OK).entity(status).build();
+    }
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/{subscriptionName}/consumer-groups")
+    public List<ConsumerGroup> describeConsumerGroups(@PathParam("topicName") String qualifiedTopicName,
+                                                      @PathParam("subscriptionName") String subscriptionName) {
+
+        return multiDCAwareService.describeConsumerGroups(fromQualifiedName(qualifiedTopicName), subscriptionName);
     }
 
     private Response responseStatus(Response.Status responseStatus) {
