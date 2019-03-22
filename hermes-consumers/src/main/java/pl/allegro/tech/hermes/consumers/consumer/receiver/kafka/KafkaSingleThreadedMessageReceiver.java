@@ -135,7 +135,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                 clock.millis(),
                 new PartitionOffset(kafkaTopic.name(), record.offset(), record.partition()),
                 unwrappedContent.getMessageMetadata().getExternalMetadata(),
-                subscription.getHeaders()
+                subscription
         );
     }
 

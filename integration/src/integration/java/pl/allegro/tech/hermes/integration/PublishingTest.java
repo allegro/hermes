@@ -402,4 +402,48 @@ public class PublishingTest extends IntegrationTest {
         long receivedTime = System.currentTimeMillis();
         assertThat(receivedTime - publishedTime).isGreaterThan(delay);
     }
+
+    @Test
+    public void shouldAttachSubscriptionIdentityHeadersWhenItIsEnabled() {
+        // given
+        String message = "abcd";
+        Topic topic = operations.buildTopic("deliverWithSubscriptionIdentityHeaders", "topic");
+        Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withAttachingIdentityHeadersEnabled(true)
+                .build();
+        operations.createSubscription(topic, subscription);
+        remoteService.expectMessages(message);
+
+        // when
+        publisher.publish(topic.getQualifiedName(), message);
+
+        // then
+        remoteService.waitUntilRequestReceived(request -> {
+            assertThat(request.getHeader("Hermes-Topic-Name")).isEqualTo("deliverWithSubscriptionIdentityHeaders.topic");
+            assertThat(request.getHeader("Hermes-Subscription-Name")).isEqualTo("subscription");
+        });
+    }
+
+    @Test
+    public void shouldNotAttachSubscriptionIdentityHeadersWhenItIsDisabled() {
+        // given
+        String message = "abcd";
+        Topic topic = operations.buildTopic("deliverWithoutSubscriptionIdentityHeaders", "topic");
+        Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withAttachingIdentityHeadersEnabled(false)
+                .build();
+        operations.createSubscription(topic, subscription);
+        remoteService.expectMessages(message);
+
+        // when
+        publisher.publish(topic.getQualifiedName(), message);
+
+        // then
+        remoteService.waitUntilRequestReceived(request -> {
+            assertThat(request.getHeader("Hermes-Topic-Name")).isNull();
+            assertThat(request.getHeader("Hermes-Subscription-Name")).isNull();
+        });
+    }
 }

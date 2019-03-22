@@ -6,12 +6,19 @@ import com.google.common.collect.Sets;
 import org.apache.commons.lang.ArrayUtils;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
@@ -21,6 +28,8 @@ public class Message {
     private PartitionOffset partitionOffset;
 
     private String topic;
+    private String subscription;
+    private boolean hasSubscriptionIdentityHeaders;
     private ContentType contentType;
     private Optional<CompiledSchema<Object>> schema;
 
@@ -47,7 +56,7 @@ public class Message {
                    long readingTimestamp,
                    PartitionOffset partitionOffset,
                    Map<String, String> externalMetadata,
-                   List<Header> additionalHeaders) {
+                   Subscription subscription) {
         this.id = id;
         this.data = content;
         this.topic = topic;
@@ -57,7 +66,9 @@ public class Message {
         this.readingTimestamp = readingTimestamp;
         this.partitionOffset = partitionOffset;
         this.externalMetadata = ImmutableMap.copyOf(externalMetadata);
-        this.additionalHeaders = ImmutableList.copyOf(additionalHeaders);
+        this.additionalHeaders = ImmutableList.copyOf(subscription.getHeaders());
+        this.subscription = subscription.getName();
+        this.hasSubscriptionIdentityHeaders = subscription.isSubscriptionIdentityHeadersEnabled();
     }
 
     public long getPublishingTimestamp() {
@@ -156,6 +167,14 @@ public class Message {
         return ArrayUtils.getLength(data);
     }
 
+    public boolean hasSubscriptionIdentityHeaders() {
+        return hasSubscriptionIdentityHeaders;
+    }
+
+    public String getSubscription() {
+        return subscription;
+    }
+
     public static class Builder {
 
         private final Message message;
@@ -169,6 +188,8 @@ public class Message {
             this.message.data = message.getData();
             this.message.contentType = message.getContentType();
             this.message.topic = message.getTopic();
+            this.message.subscription = message.getSubscription();
+            this.message.hasSubscriptionIdentityHeaders = message.hasSubscriptionIdentityHeaders();
             this.message.publishingTimestamp = message.getPublishingTimestamp();
             this.message.readingTimestamp = message.getReadingTimestamp();
             this.message.partitionOffset = message.partitionOffset;

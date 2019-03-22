@@ -163,7 +163,12 @@
                     </p>
                     <p>
                         <strong>Deliver using http/2:</strong> {{subscription.http2Enabled}}
-                        <span uib-popover='If true hermes will deliver messages using http/2 protocol.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                        <span uib-popover='If true Hermes will deliver messages using http/2 protocol.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p>
+                        <strong>Attach subscription identity headers:</strong> {{subscription.subscriptionIdentityHeadersEnabled}}
+                        <span uib-popover='If true Hermes will attach HTTP headers with subscription identity.'
+                              popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p ng-repeat="(key, entry) in endpointAddressResolverMetadataConfig">
                         <strong>{{entry.title}}:</strong>

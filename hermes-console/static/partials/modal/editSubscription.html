@@ -259,6 +259,19 @@
                 </div>
             </div>
 
+            <div class="form-group {{subscriptionForm.subscriptionIdentityHeadersEnabled.$valid ? '' : 'has-error'}}">
+                <label for="subscriptionIdentityHeadersEnabled" class="col-md-3 control-label">Attach subscription identity headers</label>
+                <div class="col-md-9">
+                    <div class="input-group checkbox">
+                        <label>
+                            <input type="checkbox" id="subscriptionIdentityHeadersEnabled"
+                                   name="subscriptionIdentityHeadersEnabled"
+                                   ng-model="subscription.subscriptionIdentityHeadersEnabled"/>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-group" ng-repeat="(key, entry) in endpointAddressResolverMetadataConfig">
                 <label for="{{key}}" class="col-md-3 control-label">{{entry.title}}</label>
                 <div class="col-md-9" ng-switch on="entry.type">
