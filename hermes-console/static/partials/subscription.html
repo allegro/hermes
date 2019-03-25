@@ -216,8 +216,7 @@
                     <p><strong>Reason:</strong> {{lastUndelivered.reason}}</p>
                     <p>
                         <strong>Message:</strong>
-                        <pre class="pre-scrollable">
-{{lastUndelivered.message}}
+                    <pre class="pre-scrollable">{{lastUndelivered.message}}
                         </pre>
                     </p>
                 </div>
@@ -322,6 +321,23 @@
 
                 </table>
 
+            </div>
+        </div>
+    </div>
+
+    <div class="row" ng-show="isAuthorized">
+        <div class="col-md-6">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Diagnostics</h3>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        <strong><a ng-href="{{diagnosticUrls.consumerGroups}}">Consumer groups</a></strong>
+                        <span uib-popover='List of consumers and partitions for the given subscription'
+                              popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                </div>
             </div>
         </div>
     </div>

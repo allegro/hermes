@@ -245,18 +245,20 @@ Example:
 
 AvroPath is our custom filter that works with avro documents. Currently there are no commonly used query languages for
 avro so we decided to introduce very simple dotted path format without any advanced features. It is very easy to
-understand if you're familiar with JsonPath. Right now only basic selectors that point to specific fields are
+understand if you're familiar with JsonPath. Right now array and basic selectors that point to specific fields are
 supported.
 
 Option                | Description
 --------------------- | ---------------------------------------------------
 type                  | type of filter
-path                  | dotted expression to query avro document
+path                  | dotted expression to query avro document. When array selector is used then wildcard sign `*` can be used as index 
 matcher               | regexp expression to match value from avro document
 
 Example:
 ```
 {"type": "avropath", "path": ".user.name", "matcher": "^abc.*"}
+{"type": "avropath", "path": ".user.addresses[1].city", "matcher": "^abc.*"}
+{"type": "avropath", "path": ".user.addresses[*].city", "matcher": "^abc.*"}
 ```
 
 ### Adding filters

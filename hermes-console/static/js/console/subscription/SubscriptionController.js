@@ -26,6 +26,12 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
 
         $scope.metricsUrls = subscriptionMetrics.metricsUrls(groupName, topicName, subscriptionName);
 
+        $scope.diagnosticUrls = function () {
+            var urls = {};
+            urls.consumerGroups = discovery.resolve('/topics/' + groupName + '.' + topicName + '/subscriptions/' + subscriptionName + '/consumer-groups');
+            return urls;
+        };
+
         topicRepository.get(topicName).then(function(topic) {
             $scope.topicContentType = topic.contentType;
             initRetransmissionCalendar(topic.retentionTime.duration);
