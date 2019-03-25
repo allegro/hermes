@@ -45,7 +45,11 @@ public class AvroPathPredicate implements Predicate<Message> {
     public boolean test(final Message message) {
         check(message.getContentType() == ContentType.AVRO, "This filter supports only AVRO contentType.");
         try {
-            return select(message).stream().anyMatch(this::matches);
+            List<Object> result = select(message);
+
+            return !result.isEmpty() && result.stream()
+                .map(Object::toString)
+                .allMatch(this::matches);
         } catch (Exception exception) {
             throw new FilteringException(exception);
         }

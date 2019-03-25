@@ -112,7 +112,7 @@ class AvroPathMessageFilterSpec extends Specification {
 
         where:
         path                 | matcher        | result
-        ".cast[*].lastName"  | "Pacino"       | true
+        ".cast[*].lastName"  | "Pacino"       | false
         ".cast[*].character" | ".*Corleone.*" | true
         ".cast[*].firstName" | "unknown"      | false
         ".cast[0].lastName"  | "Brando"       | true
@@ -125,7 +125,7 @@ class AvroPathMessageFilterSpec extends Specification {
         ".title.aliases[5]"  | "null"         | true
         ".title.aliases[5]"  | "some title"   | false
         ".title.aliases[1]"  | "Godfather"    | true
-        ".title.aliases[*]"  | "El padrino"   | true
+        ".title.aliases[*]"  | "^[GTE].*"     | true
     }
 
     def "should throw exception for malformed message"() {
