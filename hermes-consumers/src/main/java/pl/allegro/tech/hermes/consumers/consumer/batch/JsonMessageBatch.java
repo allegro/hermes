@@ -27,6 +27,9 @@ public class JsonMessageBatch implements MessageBatch {
     private final int batchSize;
 
     private final String id;
+    private final String topic;
+    private final String subscription;
+    private final boolean hasSubscriptionIdentityHeaders;
     private final ByteBuffer byteBuffer;
     private final List<MessageMetadata> metadata = new ArrayList<>();
     private final List<Header> additionalHeaders;
@@ -36,21 +39,16 @@ public class JsonMessageBatch implements MessageBatch {
     private boolean closed = false;
     private int retryCounter = 0;
 
-    public JsonMessageBatch(String id, ByteBuffer buffer, int size, int batchTime, Clock clock, List<Header> additionalHeaders) {
+    JsonMessageBatch(String id, ByteBuffer buffer, Subscription subscription, Clock clock) {
         this.id = id;
         this.clock = clock;
-        this.maxBatchTime = batchTime;
-        this.batchSize = size;
+        this.maxBatchTime = subscription.getBatchSubscriptionPolicy().getBatchTime();
+        this.batchSize = subscription.getBatchSubscriptionPolicy().getBatchSize();
         this.byteBuffer = buffer;
-        this.additionalHeaders = additionalHeaders;
-    }
-
-    public JsonMessageBatch(String id, ByteBuffer buffer, Subscription subscription, Clock clock) {
-        this(id, buffer,
-                subscription.getBatchSubscriptionPolicy().getBatchSize(),
-                subscription.getBatchSubscriptionPolicy().getBatchTime(),
-                clock,
-                subscription.getHeaders());
+        this.additionalHeaders = subscription.getHeaders();
+        this.topic = subscription.getQualifiedTopicName();
+        this.subscription = subscription.getName();
+        this.hasSubscriptionIdentityHeaders = subscription.isSubscriptionIdentityHeadersEnabled();
     }
 
     @Override
@@ -164,5 +162,20 @@ public class JsonMessageBatch implements MessageBatch {
     @Override
     public int getRetryCounter() {
         return retryCounter;
+    }
+
+    @Override
+    public boolean hasSubscriptionIdentityHeaders() {
+        return hasSubscriptionIdentityHeaders;
+    }
+
+    @Override
+    public String getTopic() {
+        return topic;
+    }
+
+    @Override
+    public String getSubscription() {
+        return subscription;
     }
 }

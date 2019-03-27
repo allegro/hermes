@@ -151,6 +151,62 @@ public class BatchDeliveryTest extends IntegrationTest {
         });
     }
 
+    @Test
+    public void shouldAttachSubscriptionIdentityHeadersWhenItIsEnabled() {
+        // given
+        Topic topic = operations.buildTopic("deliverBatchWithSubscriptionIdentityHeaders", "topic");
+        BatchSubscriptionPolicy policy = buildBatchPolicy()
+                .withBatchSize(100)
+                .withBatchTime(1)
+                .withBatchVolume(1024)
+                .build();
+        Subscription subscription = subscription(topic, "batchSubscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withContentType(ContentType.JSON)
+                .withSubscriptionPolicy(policy)
+                .withAttachingIdentityHeadersEnabled(true)
+                .build();
+        operations.createSubscription(topic, subscription);
+        remoteService.expectMessages(SINGLE_MESSAGE);
+
+        // when
+        publish(topic, SINGLE_MESSAGE);
+
+        // then
+        remoteService.waitUntilRequestReceived(request -> {
+            assertThat(request.getHeader("Hermes-Topic-Name")).isEqualTo("deliverBatchWithSubscriptionIdentityHeaders.topic");
+            assertThat(request.getHeader("Hermes-Subscription-Name")).isEqualTo("batchSubscription");
+        });
+    }
+
+    @Test
+    public void shouldNotAttachSubscriptionIdentityHeadersWhenItIsDisabled() {
+        // given
+        Topic topic = operations.buildTopic("deliverBatchWithoutSubscriptionIdentityHeaders", "topic");
+        BatchSubscriptionPolicy policy = buildBatchPolicy()
+                .withBatchSize(100)
+                .withBatchTime(1)
+                .withBatchVolume(1024)
+                .build();
+        Subscription subscription = subscription(topic, "batchSubscription")
+                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withContentType(ContentType.JSON)
+                .withSubscriptionPolicy(policy)
+                .withAttachingIdentityHeadersEnabled(false)
+                .build();
+        operations.createSubscription(topic, subscription);
+        remoteService.expectMessages(SINGLE_MESSAGE);
+
+        // when
+        publish(topic, SINGLE_MESSAGE);
+
+        // then
+        remoteService.waitUntilRequestReceived(request -> {
+            assertThat(request.getHeader("Hermes-Topic-Name")).isNull();
+            assertThat(request.getHeader("Hermes-Subscription-Name")).isNull();
+        });
+    }
+
     private void publish(Topic topic, TestMessage m) {
         assertThat(publisher.publish(topic.getQualifiedName(), m.body())).hasStatus(CREATED);
     }

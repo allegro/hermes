@@ -46,6 +46,8 @@ public class SubscriptionBuilder {
     private EndpointAddressResolverMetadata metadata = EndpointAddressResolverMetadata.empty();
     private SubscriptionOAuthPolicy oAuthPolicy;
 
+    private boolean attachingIdentityHeadersEnabled = false;
+
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
         this.name = subscriptionName;
@@ -91,14 +93,14 @@ public class SubscriptionBuilder {
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy, trackingEnabled,
                     trackingMode, owner, supportTeam, monitoringDetails, contentType,
-                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled
+                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled, attachingIdentityHeadersEnabled
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy, trackingEnabled,
                     trackingMode, owner, supportTeam, monitoringDetails, contentType,
-                    filters, headers, metadata, oAuthPolicy, http2Enabled
+                    filters, headers, metadata, oAuthPolicy, http2Enabled, attachingIdentityHeadersEnabled
             );
         }
     }
@@ -202,6 +204,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withOAuthPolicy(SubscriptionOAuthPolicy oAuthPolicy) {
         this.oAuthPolicy = oAuthPolicy;
+        return this;
+    }
+
+    public SubscriptionBuilder withAttachingIdentityHeadersEnabled(boolean attachingIdentityHeadersEnabled) {
+        this.attachingIdentityHeadersEnabled = attachingIdentityHeadersEnabled;
         return this;
     }
 }

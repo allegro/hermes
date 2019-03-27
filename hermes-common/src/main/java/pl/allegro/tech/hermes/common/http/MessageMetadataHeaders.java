@@ -5,6 +5,7 @@ public enum MessageMetadataHeaders {
     MESSAGE_ID("Hermes-Message-Id"),
     BATCH_ID("Hermes-Batch-Id"),
     TOPIC_NAME("Hermes-Topic-Name"),
+    SUBSCRIPTION_NAME("Hermes-Subscription-Name"),
     RETRY_COUNT("Hermes-Retry-Count"),
     SCHEMA_VERSION("Schema-Version");
 

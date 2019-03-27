@@ -88,6 +88,8 @@ public class Subscription implements Anonymizable {
     @Valid
     private SubscriptionOAuthPolicy oAuthPolicy;
 
+    private boolean subscriptionIdentityHeadersEnabled;
+
     public enum State {
         PENDING, ACTIVE, SUSPENDED
     }
@@ -110,7 +112,8 @@ public class Subscription implements Anonymizable {
                          List<Header> headers,
                          EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                          SubscriptionOAuthPolicy oAuthPolicy,
-                         boolean http2Enabled) {
+                         boolean http2Enabled,
+                         boolean subscriptionIdentityHeadersEnabled) {
         this.topicName = topicName;
         this.name = name;
         this.endpoint = endpoint;
@@ -132,6 +135,7 @@ public class Subscription implements Anonymizable {
         this.headers = headers;
         this.endpointAddressResolverMetadata = endpointAddressResolverMetadata;
         this.oAuthPolicy = oAuthPolicy;
+        this.subscriptionIdentityHeadersEnabled = subscriptionIdentityHeadersEnabled;
     }
 
     public static Subscription createSerialSubscription(TopicName topicName,
@@ -151,10 +155,11 @@ public class Subscription implements Anonymizable {
                                                         List<Header> headers,
                                                         EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                         SubscriptionOAuthPolicy oAuthPolicy,
-                                                        boolean http2Enabled) {
+                                                        boolean http2Enabled,
+                                                        boolean subscriptionIdentityHeadersEnabled) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
                 owner, supportTeam, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
-                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
+                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, subscriptionIdentityHeadersEnabled);
     }
 
     public static Subscription createBatchSubscription(TopicName topicName,
@@ -173,10 +178,11 @@ public class Subscription implements Anonymizable {
                                                        List<Header> headers,
                                                        EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                        SubscriptionOAuthPolicy oAuthPolicy,
-                                                       boolean http2Enabled) {
+                                                       boolean http2Enabled,
+                                                       boolean subscriptionIdentityHeadersEnabled) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
                 owner, supportTeam, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
-                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
+                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, subscriptionIdentityHeadersEnabled);
     }
 
     @JsonCreator
@@ -199,7 +205,8 @@ public class Subscription implements Anonymizable {
             @JsonProperty("headers") List<Header> headers,
             @JsonProperty("endpointAddressResolverMetadata") EndpointAddressResolverMetadata endpointAddressResolverMetadata,
             @JsonProperty("oAuthPolicy") SubscriptionOAuthPolicy oAuthPolicy,
-            @JsonProperty("http2Enabled") boolean http2Enabled) {
+            @JsonProperty("http2Enabled") boolean http2Enabled,
+            @JsonProperty("subscriptionIdentityHeadersEnabled") boolean subscriptionIdentityHeadersEnabled) {
 
         DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
         SubscriptionMode subscriptionMode = mode == null ? SubscriptionMode.ANYCAST : mode;
@@ -229,7 +236,8 @@ public class Subscription implements Anonymizable {
                 headers == null ? Collections.emptyList() : headers,
                 endpointAddressResolverMetadata == null ? EndpointAddressResolverMetadata.empty() : endpointAddressResolverMetadata,
                 oAuthPolicy,
-                http2Enabled
+                http2Enabled,
+                subscriptionIdentityHeadersEnabled
         );
     }
 
@@ -237,7 +245,7 @@ public class Subscription implements Anonymizable {
     public int hashCode() {
         return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy,
                 trackingEnabled, trackingMode, owner, supportTeam, monitoringDetails, contentType, filters, mode, headers,
-                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled);
+                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, subscriptionIdentityHeadersEnabled);
     }
 
     @Override
@@ -267,7 +275,8 @@ public class Subscription implements Anonymizable {
                 && Objects.equals(this.headers, other.headers)
                 && Objects.equals(this.endpointAddressResolverMetadata, other.endpointAddressResolverMetadata)
                 && Objects.equals(this.http2Enabled, other.http2Enabled)
-                && Objects.equals(this.oAuthPolicy, other.oAuthPolicy);
+                && Objects.equals(this.oAuthPolicy, other.oAuthPolicy)
+                && Objects.equals(this.subscriptionIdentityHeadersEnabled, other.subscriptionIdentityHeadersEnabled);
     }
 
     @JsonIgnore
@@ -407,6 +416,10 @@ public class Subscription implements Anonymizable {
         return http2Enabled;
     }
 
+    public boolean isSubscriptionIdentityHeadersEnabled() {
+        return subscriptionIdentityHeadersEnabled;
+    }
+
     @Override
     public Subscription anonymize() {
         if (getEndpoint().containsCredentials() || hasOAuthPolicy()) {
@@ -429,7 +442,8 @@ public class Subscription implements Anonymizable {
                     headers,
                     endpointAddressResolverMetadata,
                     oAuthPolicy != null ? oAuthPolicy.anonymize() : null,
-                    http2Enabled
+                    http2Enabled,
+                    subscriptionIdentityHeadersEnabled
             );
         }
         return this;

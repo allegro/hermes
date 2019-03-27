@@ -32,6 +32,8 @@ public final class MessageBuilder {
     private Map<String, String> externalMetadata;
     private List<Header> additionalHeaders;
     private Optional<CompiledSchema<Object>> schema = Optional.empty();
+    private String subscription;
+    private boolean hasSubscriptionIdentityHeaders;
 
     private MessageBuilder() {
     }
@@ -50,12 +52,15 @@ public final class MessageBuilder {
                 .withReadingTimestamp(123L)
                 .withPartitionOffset(new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 123, 1))
                 .withExternalMetadata(of("Trace-Id", "traceId"))
-                .withAdditionalHeaders(Collections.emptyList());
+                .withAdditionalHeaders(Collections.emptyList())
+                .withSubscription("subscriptionId")
+                .withHasSubscriptionIdentityHeaders(true);
     }
 
     public Message build() {
         return new Message(id, topic, content, contentType, schema, publishingTimestamp,
-                readingTimestamp, partitionOffset, externalMetadata, additionalHeaders);
+                readingTimestamp, partitionOffset, externalMetadata, additionalHeaders,
+                subscription, hasSubscriptionIdentityHeaders);
     }
 
     public MessageBuilder withId(String id) {
@@ -115,6 +120,16 @@ public final class MessageBuilder {
 
     public MessageBuilder withAdditionalHeaders(List<Header> additionalHeaders) {
         this.additionalHeaders = additionalHeaders;
+        return this;
+    }
+
+    public MessageBuilder withSubscription(String subscription) {
+        this.subscription = subscription;
+        return this;
+    }
+
+    public MessageBuilder withHasSubscriptionIdentityHeaders(boolean hasSubscriptionIdentityHeaders) {
+        this.hasSubscriptionIdentityHeaders = hasSubscriptionIdentityHeaders;
         return this;
     }
 }

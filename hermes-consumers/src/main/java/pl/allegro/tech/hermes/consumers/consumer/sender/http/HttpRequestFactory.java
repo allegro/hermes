@@ -5,7 +5,6 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
-import org.eclipse.jetty.http.HttpVersion;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
@@ -18,11 +17,13 @@ import java.util.function.Function;
 
 import static java.lang.String.valueOf;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.RETRY_COUNT;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SCHEMA_VERSION;
-import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SUBSCRIPTION_NAME;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
 
 class HttpRequestFactory {
 
@@ -51,6 +52,11 @@ class HttpRequestFactory {
                 .header(HttpHeader.CONTENT_TYPE.toString(), contentTypeToMediaType.apply(message.getContentType()))
                 .timeout(timeout, TimeUnit.MILLISECONDS)
                 .content(new BytesContentProvider(message.getData()));
+
+        if (message.hasSubscriptionIdentityHeaders()) {
+            request.header(TOPIC_NAME.getName(), message.getTopic());
+            request.header(SUBSCRIPTION_NAME.getName(), message.getSubscription());
+        }
 
         message.getSchema().ifPresent(schema -> request.header(SCHEMA_VERSION.getName(), valueOf(schema.getVersion().value())));
         authorizationProvider.ifPresent(p -> p.authorizationToken()

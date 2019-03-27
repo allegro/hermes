@@ -51,6 +51,7 @@ subscriptionPolicy.inflightSize      | max number of pending requests           
 headers                              | additional HTTP request headers                 | [] (array of headers)
 filters                              | used for skipping unwanted messages             | [] (array of filters)
 endpointAddressResolverMetadata      | additional address resolver metadata            | {} (map)
+subscriptionIdentityHeadersEnabled   | attach HTTP headers with subscription identity  | false
 
 Possible values for **trackingMode** are:
 
@@ -91,7 +92,8 @@ Request that specifies all available options:
     "endpointAddressResolverMetadata": {
         "ignoreMessageHeaders": true,
         "serviceInstanceId": 123 
-    }
+    },
+    "subscriptionIdentityHeadersEnabled": false
 }
 ```
 
