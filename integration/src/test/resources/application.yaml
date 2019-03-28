@@ -47,7 +47,18 @@ graphite:
 
 spring:
   jersey:
-    type: filter
+    type: servlet
+  mvc:
+    servlet:
+      path: /status
+
+management:
+  endpoints:
+    web:
+      base-path: /
+  server:
+    servlet:
+      context-path: /
 
 spring.groovy.template.check-template-location: false
 
