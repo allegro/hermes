@@ -23,6 +23,9 @@ server:
   port: 8090
 
 management:
+  endpoints:
+    web:
+      base-path: /
   rest-template:
     connect-timeout: 2000
     read-timeout: 2000
