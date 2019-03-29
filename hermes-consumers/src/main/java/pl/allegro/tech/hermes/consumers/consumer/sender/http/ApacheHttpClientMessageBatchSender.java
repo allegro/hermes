@@ -17,24 +17,22 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 import java.io.IOException;
 import java.net.URI;
 
+import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.BATCH_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.RETRY_COUNT;
-import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SUBSCRIPTION_NAME;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
 
 public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
     private final int connectionTimeout;
-    private final int socketTimeout;
     private final EndpointAddressResolver resolver;
 
     private CloseableHttpClient client = HttpClients.createMinimal();
 
-    public ApacheHttpClientMessageBatchSender(int connectionTimeout, int socketTimeout, EndpointAddressResolver resolver) {
+    public ApacheHttpClientMessageBatchSender(int connectionTimeout, EndpointAddressResolver resolver) {
         this.connectionTimeout = connectionTimeout;
-        this.socketTimeout = socketTimeout;
         this.resolver = resolver;
     }
 
@@ -55,8 +53,8 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(connectionTimeout)
-                .setConnectionRequestTimeout(requestTimeout)
-                .setSocketTimeout(socketTimeout)
+                .setConnectionRequestTimeout(connectionTimeout)
+                .setSocketTimeout(requestTimeout)
                 .build();
 
         httpPost.setConfig(requestConfig);
