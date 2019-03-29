@@ -1,3 +1,42 @@
+## 0.15.9 (29.03.2019)
+
+### Features
+
+#### ([996](https://github.com/allegro/hermes/pull/996)) Attaching HTTP headers with subscription identity
+
+Added subscription flag `subscriptionIdentityHeadersEnabled`. When you set it to true, then
+Hermes for each message send to subscriber will attach headers like `Hermes-Topic-Name`, `Hermes-Subscription-Name`.
+Thanks to this headers subscriber can verify whether message comes from expected topic and subscription.
+This feature is related to security. 
+
+#### ([995](https://github.com/allegro/hermes/pull/995)) Consumer groups in console
+
+Subscription view in Hermes-console received new panel called `Diagnostics`. The panel contains only single button
+redirecting to consumers-group endpoint. It reveals internal information about Kafka topic, for example current offset,
+lag or which consumer is attached to which partition.
+These kind of information sometimes are helpful for Hermes administrator to analyze subscription. 
+So for we read them manually via Kafka scripts, now we can use consumer-group endpoint which is much simple way.
+
+The view of `Diagnostics` panel is very basic now, in the future we can improve it.
+
+### Enhancements
+ 
+#### ([991](https://github.com/allegro/hermes/pull/991)) Spring-boot upgrade in hermes-management
+
+Spring-boot in hermes-management was upgraded from `1.4.1` to `2.1.3`. Thanks @alasun for contribution.
+
+#### ([984](https://github.com/allegro/hermes/pull/984)) Extend avropath filter with array support
+
+Thanks this enhancement we can use array selectors in avropath filters. For example we can use:
+
+- name[5]
+- name[\*], where \* is as wildcard for matching all array items 
+
+Thanks @karolhor for contribution.
+
+#### ([997](https://github.com/allegro/hermes/pull/997)) Additional logging for MatcherQuery
+#### ([1000](https://github.com/allegro/hermes/pull/1000)) Added Apache License, Version 2.0
+
 ## 0.15.8 (11.03.2019)
 
 ### Enhancements
