@@ -182,7 +182,6 @@ public enum Configs {
     CONSUMER_HTTP_CLIENT_VALIDATE_PEER_CERTS("consumer.http.client.validate.peer.certs", true),
     CONSUMER_HTTP_CLIENT_ENABLE_CRLDP("consumer.http.client.enable.crldp", true),
 
-
     CONSUMER_HTTP2_ENABLED("consumer.http2.enabled", true),
     CONSUMER_HTTP2_CLIENT_THREAD_POOL_SIZE("consumer.http2.client.thread.pool.size", 10),
     CONSUMER_HTTP2_CLIENT_THREAD_POOL_MONITORING("consumer.http2.client.thread.pool.monitoring", false),

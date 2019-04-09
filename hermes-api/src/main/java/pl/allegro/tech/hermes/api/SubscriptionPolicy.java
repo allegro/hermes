@@ -15,6 +15,7 @@ public class SubscriptionPolicy {
     private static final int DEFAULT_MESSAGE_TTL = 3600;
     private static final int DEFAULT_MESSAGE_BACKOFF = 100;
     private static final int DEFAULT_REQUEST_TIMEOUT = 1000;
+    private static final int DEFAULT_SOCKET_TIMEOUT = 0;
     private static final int DEFAULT_INFLIGHT_SIZE = 100;
     private static final int DEFAULT_SENDING_DELAY = 0;
 
@@ -32,6 +33,10 @@ public class SubscriptionPolicy {
     @Max(300_000)
     private int requestTimeout = DEFAULT_REQUEST_TIMEOUT;
 
+    @Min(0)
+    @Max(300_000)
+    private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
+
     @Min(1)
     private int inflightSize = DEFAULT_INFLIGHT_SIZE;
 
@@ -47,6 +52,7 @@ public class SubscriptionPolicy {
     public SubscriptionPolicy(int rate,
                               int messageTtl,
                               int requestTimeout,
+                              int socketTimeout,
                               boolean retryClientErrors,
                               int messageBackoff,
                               Integer inflightSize,
@@ -54,6 +60,7 @@ public class SubscriptionPolicy {
         this.rate = rate;
         this.messageTtl = messageTtl;
         this.requestTimeout = requestTimeout;
+        this.socketTimeout = socketTimeout;
         this.retryClientErrors = retryClientErrors;
         this.messageBackoff = messageBackoff;
         this.inflightSize = inflightSize;
@@ -66,6 +73,7 @@ public class SubscriptionPolicy {
                 (Integer) properties.getOrDefault("rate", DEFAULT_RATE),
                 (Integer) properties.getOrDefault("messageTtl", DEFAULT_MESSAGE_TTL),
                 (Integer) properties.getOrDefault("requestTimeout", DEFAULT_REQUEST_TIMEOUT),
+                (Integer) properties.getOrDefault("socketTimeout", DEFAULT_SOCKET_TIMEOUT),
                 (Boolean) properties.getOrDefault("retryClientErrors", false),
                 (Integer) properties.getOrDefault("messageBackoff", DEFAULT_MESSAGE_BACKOFF),
                 (Integer) properties.getOrDefault("inflightSize", DEFAULT_INFLIGHT_SIZE),
@@ -75,7 +83,8 @@ public class SubscriptionPolicy {
 
     @Override
     public int hashCode() {
-        return Objects.hash(rate, messageTtl, messageBackoff, retryClientErrors, requestTimeout, inflightSize, sendingDelay);
+        return Objects.hash(rate, messageTtl, messageBackoff, retryClientErrors,
+                requestTimeout, socketTimeout, inflightSize, sendingDelay);
     }
 
     @Override
@@ -92,6 +101,7 @@ public class SubscriptionPolicy {
                 && Objects.equals(this.messageBackoff, other.messageBackoff)
                 && Objects.equals(this.retryClientErrors, other.retryClientErrors)
                 && Objects.equals(this.requestTimeout, other.requestTimeout)
+                && Objects.equals(this.socketTimeout, other.socketTimeout)
                 && Objects.equals(this.inflightSize, other.inflightSize)
                 && Objects.equals(this.sendingDelay, other.sendingDelay);
     }
@@ -102,6 +112,7 @@ public class SubscriptionPolicy {
                 .add("rate", rate)
                 .add("messageTtl", messageTtl)
                 .add("requestTimeout", requestTimeout)
+                .add("socketTimeout", socketTimeout)
                 .add("messageBackoff", messageBackoff)
                 .add("retryClientErrors", retryClientErrors)
                 .add("inflightSize", inflightSize)
@@ -131,6 +142,10 @@ public class SubscriptionPolicy {
 
     public Integer getRequestTimeout() {
         return requestTimeout;
+    }
+
+    public Integer getSocketTimeout() {
+        return socketTimeout;
     }
 
     public Integer getInflightSize() {
@@ -167,6 +182,11 @@ public class SubscriptionPolicy {
 
         public Builder withRequestTimeout(int timeout) {
             subscriptionPolicy.requestTimeout = timeout;
+            return this;
+        }
+
+        public Builder withSocketTimeout(int timeout) {
+            subscriptionPolicy.socketTimeout = timeout;
             return this;
         }
 

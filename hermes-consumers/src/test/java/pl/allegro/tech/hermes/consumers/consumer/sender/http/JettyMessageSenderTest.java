@@ -17,7 +17,6 @@ import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -66,7 +65,7 @@ public class JettyMessageSenderTest {
     public void setUp() throws Exception {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
         address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver(), METADATA);
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, new DefaultHttpMetadataAppender(), Optional.empty());
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), Optional.empty());
         messageSender = new JettyMessageSender(httpRequestFactory, address);
     }
 
@@ -154,7 +153,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldSendAuthorizationHeaderIfAuthorizationProviderAttached() {
         // given
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, new DefaultHttpMetadataAppender(),
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(),
                 Optional.of(() -> Optional.of("Basic Auth Hello!")));
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
@@ -170,14 +169,35 @@ public class JettyMessageSenderTest {
     }
 
     @Test
-    public void shouldUseSuppliedTimeout() throws ExecutionException, InterruptedException, TimeoutException {
+    public void shouldUseSuppliedRequestTimeout() throws ExecutionException, InterruptedException, TimeoutException {
         // given
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client,
-                100,
+                100,1000,
                 new DefaultHttpMetadataAppender(),
                 Optional.empty()
         );
         remoteServiceEndpoint.setDelay(500);
+
+        JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
+        Message message = MessageBuilder.withTestMessage().build();
+        remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
+
+        // when
+        MessageSendingResult messageSendingResult = messageSender.send(message).get(1000, TimeUnit.MILLISECONDS);
+
+        // then
+        assertThat(messageSendingResult.isTimeout()).isTrue();
+    }
+
+    @Test
+    public void shouldUseSuppliedSocketTimeout() throws ExecutionException, InterruptedException, TimeoutException {
+        // given
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client,
+                1000, 100,
+                new DefaultHttpMetadataAppender(),
+                Optional.empty()
+        );
+        remoteServiceEndpoint.setDelay(200);
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
         Message message = MessageBuilder.withTestMessage().build();
