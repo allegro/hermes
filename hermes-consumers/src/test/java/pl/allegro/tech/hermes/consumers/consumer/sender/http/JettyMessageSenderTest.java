@@ -172,7 +172,7 @@ public class JettyMessageSenderTest {
     public void shouldUseSuppliedRequestTimeout() throws ExecutionException, InterruptedException, TimeoutException {
         // given
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client,
-                100,1000,
+                100, 1000,
                 new DefaultHttpMetadataAppender(),
                 Optional.empty()
         );
