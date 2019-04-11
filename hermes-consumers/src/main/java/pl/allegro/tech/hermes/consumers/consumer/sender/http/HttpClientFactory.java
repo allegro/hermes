@@ -44,6 +44,7 @@ public class HttpClientFactory implements Factory<HttpClient> {
         client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE));
         client.setExecutor(executor);
         client.setCookieStore(new HttpCookieStore.Empty());
+        client.setIdleTimeout(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_IDLE_TIMEOUT));
         return client;
     }
 
@@ -60,6 +61,7 @@ public class HttpClientFactory implements Factory<HttpClient> {
         HttpClient client = new HttpClient(transport, createSslContextFactory());
         client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE));
         client.setCookieStore(new HttpCookieStore.Empty());
+        client.setIdleTimeout(configFactory.getIntProperty(CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT));
         return client;
     }
 
