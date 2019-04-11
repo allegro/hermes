@@ -27,12 +27,14 @@ import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NA
 public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
     private final int connectionTimeout;
+    private final int connectionRequestTimeout;
     private final EndpointAddressResolver resolver;
 
     private CloseableHttpClient client = HttpClients.createMinimal();
 
-    public ApacheHttpClientMessageBatchSender(int connectionTimeout, EndpointAddressResolver resolver) {
+    public ApacheHttpClientMessageBatchSender(int connectionTimeout, int connectionRequestTimeout, EndpointAddressResolver resolver) {
         this.connectionTimeout = connectionTimeout;
+        this.connectionRequestTimeout = connectionRequestTimeout;
         this.resolver = resolver;
     }
 
@@ -53,7 +55,7 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(connectionTimeout)
-                .setConnectionRequestTimeout(connectionTimeout)
+                .setConnectionRequestTimeout(connectionRequestTimeout)
                 .setSocketTimeout(requestTimeout)
                 .build();
 

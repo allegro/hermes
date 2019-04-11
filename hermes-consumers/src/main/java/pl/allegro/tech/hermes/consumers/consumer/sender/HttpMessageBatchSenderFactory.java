@@ -23,6 +23,7 @@ public class HttpMessageBatchSenderFactory implements MessageBatchSenderFactory 
         checkState(subscription.getEndpoint().getProtocol().contains("http"), "Batching is only supported for http/s currently.");
         return new ApacheHttpClientMessageBatchSender(
                 configFactory.getIntProperty(Configs.CONSUMER_BATCH_CONNECTION_TIMEOUT),
+                configFactory.getIntProperty(Configs.CONSUMER_BATCH_CONNECTION_REQUEST_TIMEOUT),
                 new SimpleEndpointAddressResolver());
     }
 }
