@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import pl.allegro.tech.hermes.infrastructure.zookeeper.OAuthProviderWithOptionalSocketTimeout
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -47,7 +46,7 @@ class OAuthProviderTest extends Specification {
         """
 
         when:
-        def deserialized = objectMapper.readValue(json, OAuthProviderWithOptionalSocketTimeout.class).toBasicOAuthProvider()
+        def deserialized = objectMapper.readValue(json, OAuthProvider.class)
 
         then:
         deserialized.tokenEndpoint == "http://example.com/token"

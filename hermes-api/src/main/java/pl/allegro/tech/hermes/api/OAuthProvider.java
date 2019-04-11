@@ -15,6 +15,7 @@ import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 public class OAuthProvider implements Anonymizable {
 
     private static final String ANONYMIZED_CLIENT_SECRET = "******";
+    private static final int DEFAULT_SOCKET_TIMEOUT = 0;
 
     @NotEmpty
     @Pattern(regexp = ALLOWED_NAME_REGEX)
@@ -65,7 +66,7 @@ public class OAuthProvider implements Anonymizable {
         this.tokenRequestInitialDelay = tokenRequestInitialDelay;
         this.tokenRequestMaxDelay = tokenRequestMaxDelay;
         this.requestTimeout = requestTimeout;
-        this.socketTimeout = socketTimeout;
+        this.socketTimeout = socketTimeout != null ? socketTimeout : DEFAULT_SOCKET_TIMEOUT;
     }
 
     public String getName() {

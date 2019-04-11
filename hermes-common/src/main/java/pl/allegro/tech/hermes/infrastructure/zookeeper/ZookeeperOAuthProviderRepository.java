@@ -40,8 +40,7 @@ public class ZookeeperOAuthProviderRepository extends ZookeeperBasedRepository i
     @Override
     public OAuthProvider getOAuthProviderDetails(String oAuthProviderName) {
         ensureOAuthProviderExists(oAuthProviderName);
-        return readFrom(paths.oAuthProviderPath(oAuthProviderName), OAuthProviderWithOptionalSocketTimeout.class)
-                .toBasicOAuthProvider();
+        return readFrom(paths.oAuthProviderPath(oAuthProviderName), OAuthProvider.class);
     }
 
     @Override
