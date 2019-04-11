@@ -80,7 +80,7 @@ class LoggingAuditorSpec extends Specification {
 
     def "should log anonymized data when object is created"() {
         given:
-            OAuthProvider toBeCreated = new OAuthProvider("name", "endpoint", "clientId", CLIENT_SECRET, 1, 1, 1)
+            OAuthProvider toBeCreated = new OAuthProvider("name", "endpoint", "clientId", CLIENT_SECRET, 1, 1, 1, 1)
 
         when:
             auditor.objectCreated(TEST_USER, toBeCreated)
@@ -93,8 +93,8 @@ class LoggingAuditorSpec extends Specification {
 
     def "should log anonymized data when object is updated"() {
         given:
-            OAuthProvider toBeUpdated = new OAuthProvider("name", "endpoint", "clientId", CLIENT_SECRET, 1, 1, 1)
-            OAuthProvider updated = new OAuthProvider("name", "endpoint", "clientId", UPDATED_CLIENT_SECRET, 1, 1, 1)
+            OAuthProvider toBeUpdated = new OAuthProvider("name", "endpoint", "clientId", CLIENT_SECRET, 1, 1, 1, 1)
+            OAuthProvider updated = new OAuthProvider("name", "endpoint", "clientId", UPDATED_CLIENT_SECRET, 1, 1, 1, 1)
 
         when:
             auditor.objectUpdated(TEST_USER, toBeUpdated, updated)

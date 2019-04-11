@@ -20,14 +20,16 @@ public class OAuthProviderManagementTest extends IntegrationTest {
     @Test
     public void shouldCreateOAuthProvider() {
         // given
-        OAuthProvider oAuthProvider = oAuthProvider("myProvider").build();
+        OAuthProvider oAuthProvider = oAuthProvider("myProvider").withSocketTimeout(200).build();
 
         // when
         Response response = management.oAuthProvider().create(oAuthProvider);
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        Assertions.assertThat(management.oAuthProvider().list()).contains(oAuthProvider.getName());
+        OAuthProvider createdProvider = management.oAuthProvider().get(oAuthProvider.getName());
+        Assertions.assertThat(createdProvider.getSocketTimeout()).isNotNull();
+        Assertions.assertThat(createdProvider.getSocketTimeout()).isEqualTo(200);
     }
 
     @Test
@@ -53,13 +55,16 @@ public class OAuthProviderManagementTest extends IntegrationTest {
         assertThat(response).hasStatus(Response.Status.CREATED);
 
         // when
-        PatchData patch = patchData().set("tokenEndpoint", "http://other.example.com/other").build();
+        PatchData patch = patchData()
+                .set("tokenEndpoint", "http://other.example.com/other")
+                .set("socketTimeout", 100).build();
         Response updateResponse = management.oAuthProvider().update(oAuthProvider.getName(), patch);
 
         // then
         assertThat(updateResponse).hasStatus(Response.Status.OK);
         OAuthProvider updatedProvider = management.oAuthProvider().get(oAuthProvider.getName());
         assertThat(updatedProvider.getTokenEndpoint()).isEqualTo("http://other.example.com/other");
+        assertThat(updatedProvider.getSocketTimeout()).isEqualTo(100);
     }
 
     @Test

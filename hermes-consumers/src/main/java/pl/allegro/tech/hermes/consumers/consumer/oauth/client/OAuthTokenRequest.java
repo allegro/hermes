@@ -34,8 +34,10 @@ public class OAuthTokenRequest {
 
     private final Integer requestTimeout;
 
+    private final Integer socketTimeout;
+
     private OAuthTokenRequest(String url, String grantType, String scope, String clientId, String clientSecret,
-                              String username, String password, Integer requestTimeout) {
+                              String username, String password, Integer requestTimeout, Integer socketTimeout) {
         this.url = url;
         this.grantType = grantType;
         this.scope = scope;
@@ -44,6 +46,7 @@ public class OAuthTokenRequest {
         this.username = username;
         this.password = password;
         this.requestTimeout = requestTimeout;
+        this.socketTimeout = socketTimeout;
     }
 
     public String getUrl() {
@@ -78,6 +81,10 @@ public class OAuthTokenRequest {
         return requestTimeout;
     }
 
+    public Integer getSocketTimeout() {
+        return socketTimeout;
+    }
+
     public static OAuthTokenRequestBuilder oAuthTokenRequest() {
         return new OAuthTokenRequestBuilder();
     }
@@ -99,6 +106,8 @@ public class OAuthTokenRequest {
         private String password;
 
         private Integer requestTimeout;
+
+        private Integer socketTimeout;
 
         public OAuthTokenRequestBuilder withUrl(String url) {
             this.url = url;
@@ -140,8 +149,14 @@ public class OAuthTokenRequest {
             return this;
         }
 
+        public OAuthTokenRequestBuilder withSocketTimeout(Integer socketTimeout) {
+            this.socketTimeout = socketTimeout;
+            return this;
+        }
+
         public OAuthTokenRequest build() {
-            return new OAuthTokenRequest(url, grantType, scope, clientId, clientSecret, username, password, requestTimeout);
+            return new OAuthTokenRequest(url, grantType, scope, clientId, clientSecret, username,
+                    password, requestTimeout, socketTimeout);
         }
     }
 }

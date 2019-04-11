@@ -41,6 +41,7 @@ public class OAuthHttpClient implements OAuthClient {
     private Request createHttpRequest(OAuthTokenRequest request) {
         Request httpRequest = httpClient.newRequest(request.getUrl())
                 .timeout(request.getRequestTimeout(), TimeUnit.MILLISECONDS)
+                .idleTimeout(request.getSocketTimeout(), TimeUnit.MILLISECONDS)
                 .method(HttpMethod.POST)
                 .header(HttpHeader.KEEP_ALIVE, "true")
                 .header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.toString())
