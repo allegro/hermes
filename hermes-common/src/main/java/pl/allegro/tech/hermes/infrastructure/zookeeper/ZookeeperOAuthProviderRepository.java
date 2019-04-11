@@ -6,7 +6,6 @@ import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.OAuthProvider;
-import pl.allegro.tech.hermes.api.OAuthProviderWithOptionalSocketTimeout;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderNotExistsException;

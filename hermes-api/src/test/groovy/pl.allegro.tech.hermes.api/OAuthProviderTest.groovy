@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import pl.allegro.tech.hermes.infrastructure.zookeeper.OAuthProviderWithOptionalSocketTimeout
 import spock.lang.Shared
 import spock.lang.Specification
 

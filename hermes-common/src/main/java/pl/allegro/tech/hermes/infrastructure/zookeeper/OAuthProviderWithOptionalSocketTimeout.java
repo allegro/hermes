@@ -1,8 +1,9 @@
-package pl.allegro.tech.hermes.api;
+package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Optional;
+import pl.allegro.tech.hermes.api.OAuthProvider;
 
 public class OAuthProviderWithOptionalSocketTimeout {
 
