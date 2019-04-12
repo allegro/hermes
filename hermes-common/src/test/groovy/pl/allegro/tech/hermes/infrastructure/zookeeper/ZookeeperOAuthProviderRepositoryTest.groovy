@@ -32,7 +32,7 @@ class ZookeeperOAuthProviderRepositoryTest extends IntegrationTest {
 
         when:
         def updatedProvider = new OAuthProvider("myProvider", "http://example.com/token-updated", "client123",
-                "pass123-updated", 1000, 2000, 1000)
+                "pass123-updated", 1000, 2000, 1000, 1000)
         repository.updateOAuthProvider(updatedProvider)
 
         then:
@@ -70,7 +70,23 @@ class ZookeeperOAuthProviderRepositoryTest extends IntegrationTest {
         !repository.oAuthProviderExists(myProvider.name)
     }
 
-    private getOAuthProvider(String name) {
-        return new OAuthProvider(name, "http://example.com/token", "client123", "pass123", 1000, 2000, 1000)
+    def "should get oauth provider created without socket timeout and set it default value"() {
+        given:
+        def myProvider = getOAuthProvider("myProvider")
+        def provider = new OAuthProvider(myProvider.name, "http://example.com/token", "client123",
+                "pass123", 1000, 2000, 1000, null)
+
+        repository.createOAuthProvider(provider)
+        wait.untilOAuthProviderCreated(myProvider.name)
+
+        when:
+        def fetchedProvider = repository.getOAuthProviderDetails(provider.name)
+
+        then:
+        fetchedProvider.socketTimeout == 0
+    }
+
+    private static getOAuthProvider(String name) {
+        return new OAuthProvider(name, "http://example.com/token", "client123", "pass123", 1000, 2000, 1000, 1000)
     }
 }

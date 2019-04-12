@@ -15,6 +15,7 @@ import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 public class OAuthProvider implements Anonymizable {
 
     private static final String ANONYMIZED_CLIENT_SECRET = "******";
+    private static final int DEFAULT_SOCKET_TIMEOUT = 0;
 
     @NotEmpty
     @Pattern(regexp = ALLOWED_NAME_REGEX)
@@ -44,6 +45,11 @@ public class OAuthProvider implements Anonymizable {
     @NotNull
     private Integer requestTimeout;
 
+    @Min(0)
+    @Max(60_000)
+    @NotNull
+    private Integer socketTimeout;
+
     @JsonCreator
     public OAuthProvider(@JsonProperty("name") String name,
                          @JsonProperty("tokenEndpoint") String tokenEndpoint,
@@ -51,7 +57,8 @@ public class OAuthProvider implements Anonymizable {
                          @JsonProperty("clientSecret") String clientSecret,
                          @JsonProperty("tokenRequestInitialDelay") Integer tokenRequestInitialDelay,
                          @JsonProperty("tokenRequestMaxDelay") Integer tokenRequestMaxDelay,
-                         @JsonProperty("requestTimeout") Integer requestTimeout) {
+                         @JsonProperty("requestTimeout") Integer requestTimeout,
+                         @JsonProperty("socketTimeout") Integer socketTimeout) {
         this.name = name;
         this.tokenEndpoint = tokenEndpoint;
         this.clientId = clientId;
@@ -59,6 +66,7 @@ public class OAuthProvider implements Anonymizable {
         this.tokenRequestInitialDelay = tokenRequestInitialDelay;
         this.tokenRequestMaxDelay = tokenRequestMaxDelay;
         this.requestTimeout = requestTimeout;
+        this.socketTimeout = socketTimeout != null ? socketTimeout : DEFAULT_SOCKET_TIMEOUT;
     }
 
     public String getName() {
@@ -89,9 +97,13 @@ public class OAuthProvider implements Anonymizable {
         return requestTimeout;
     }
 
+    public Integer getSocketTimeout() {
+        return socketTimeout;
+    }
+
     public OAuthProvider anonymize() {
         return new OAuthProvider(name, tokenEndpoint, clientId, ANONYMIZED_CLIENT_SECRET,
-                tokenRequestInitialDelay, tokenRequestMaxDelay, requestTimeout);
+                tokenRequestInitialDelay, tokenRequestMaxDelay, requestTimeout, socketTimeout);
     }
 
     @Override
