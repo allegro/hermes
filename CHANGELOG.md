@@ -1,3 +1,10 @@
+## 0.16.0 (12.04.2019)
+
+### Enhancements
+
+#### ([1006](https://github.com/allegro/hermes/pull/1006)) Enable setting idle timeout for jetty client
+#### ([1003](https://github.com/allegro/hermes/pull/1003)) Fix apache client settings used for batch subscriptions
+
 ## 0.15.9 (29.03.2019)
 
 ### Features
