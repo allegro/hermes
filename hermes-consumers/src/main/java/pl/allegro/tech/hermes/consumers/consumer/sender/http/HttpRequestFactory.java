@@ -29,13 +29,16 @@ class HttpRequestFactory {
 
     private final HttpClient client;
     private final long timeout;
+    private final long socketTimeout;
     private final MetadataAppender<Request> metadataAppender;
     private final Optional<HttpAuthorizationProvider>  authorizationProvider;
 
-    HttpRequestFactory(HttpClient client, long timeout, MetadataAppender<Request> metadataAppender,
+    HttpRequestFactory(HttpClient client, long timeout, long socketTimeout,
+                       MetadataAppender<Request> metadataAppender,
                        Optional<HttpAuthorizationProvider> authorizationProvider) {
         this.client = client;
         this.timeout = timeout;
+        this.socketTimeout = socketTimeout;
         this.metadataAppender = metadataAppender;
         this.authorizationProvider = authorizationProvider;
     }
@@ -51,6 +54,7 @@ class HttpRequestFactory {
                 .header(RETRY_COUNT.getName(), Integer.toString(message.getRetryCounter()))
                 .header(HttpHeader.CONTENT_TYPE.toString(), contentTypeToMediaType.apply(message.getContentType()))
                 .timeout(timeout, TimeUnit.MILLISECONDS)
+                .idleTimeout(socketTimeout, TimeUnit.MILLISECONDS)
                 .content(new BytesContentProvider(message.getData()));
 
         if (message.hasSubscriptionIdentityHeaders()) {

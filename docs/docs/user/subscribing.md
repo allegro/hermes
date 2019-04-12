@@ -39,19 +39,20 @@ Minimal request:
 
 All options:
 
-Option                               | Description                                     | Default value
------------------------------------- | ----------------------------------------------  | -------------
-trackingMode                         | track outgoing messages                         | trackingOff
-subscriptionPolicy.rate              | maximum sending speed in rps (per DC)           | 400
-subscriptionPolicy.messageTtl        | inflight Time To Live in seconds                | 3600
-subscriptionPolicy.messageBackoff    | backoff time between retry attempts in millis   | 100
-subscriptionPolicy.retryClientErrors | retry on receiving 4xx status                   | false
-subscriptionPolicy.requestTimeout    | request timeout in millis                       | 1000
-subscriptionPolicy.inflightSize      | max number of pending requests                  | 100
-headers                              | additional HTTP request headers                 | [] (array of headers)
-filters                              | used for skipping unwanted messages             | [] (array of filters)
-endpointAddressResolverMetadata      | additional address resolver metadata            | {} (map)
-subscriptionIdentityHeadersEnabled   | attach HTTP headers with subscription identity  | false
+Option                               | Description                                         | Default value
+------------------------------------ | ----------------------------------------------------| -------------
+trackingMode                         | track outgoing messages                             | trackingOff
+subscriptionPolicy.rate              | maximum sending speed in rps (per DC)               | 400
+subscriptionPolicy.messageTtl        | inflight Time To Live in seconds                    | 3600
+subscriptionPolicy.messageBackoff    | backoff time between retry attempts in millis       | 100
+subscriptionPolicy.retryClientErrors | retry on receiving 4xx status                       | false
+subscriptionPolicy.requestTimeout    | request timeout in millis                           | 1000
+subscriptionPolicy.socketTimeout     | maximum time of inactivity between two data packets | infinity
+subscriptionPolicy.inflightSize      | max number of pending requests                      | 100
+headers                              | additional HTTP request headers                     | [] (array of headers)
+filters                              | used for skipping unwanted messages                 | [] (array of filters)
+endpointAddressResolverMetadata      | additional address resolver metadata                | {} (map)
+subscriptionIdentityHeadersEnabled   | attach HTTP headers with subscription identity      | false
 
 Possible values for **trackingMode** are:
 
@@ -79,6 +80,7 @@ Request that specifies all available options:
         "retryClientErrors": false,
         "messageBackoff": 100,
         "requestTimeout": 1000,
+        "socketTimeout": 500,
         "inflightSize": 100
     },
     "headers": [
@@ -310,7 +312,8 @@ To register an OAuth provider in Hermes send `POST` request with to `/oauth/prov
     "clientSecret": "abc123",
     "tokenRequestInitialDelay": 1000,
     "tokenRequestMaxDelay": 30000,
-    "requestTimeout": 1000
+    "requestTimeout": 1000,
+    "socketTimeout": 500
 }
 ```
 
@@ -323,6 +326,7 @@ clientSecret             | OAuth client secret of Hermes
 tokenRequestInitialDelay | Min delay between possible token requests
 tokenRequestMaxDelay     | Max delay between possible token requests
 requestTimeout           | HTTP timeout for token request
+socketTimeout            | Maximum time of inactivity between two data packets
 
 Verify the OAuth provider is registered by calling `GET` on `/oauth/providers` and `/oauth/providers/{providerName}` endpoints.
 Hermes HTTP endpoints return asterisks (`******`) in place of the actual secrets.

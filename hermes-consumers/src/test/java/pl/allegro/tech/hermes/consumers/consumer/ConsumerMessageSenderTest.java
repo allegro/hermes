@@ -346,14 +346,14 @@ public class ConsumerMessageSenderTest {
     public void shouldDeliverToNewSenderAfterModifiedTimeout() {
         // given
         Message message = message();
-        Subscription subscriptionWithModfiedTimeout = subscriptionWithRequestTimeout(2000);
+        Subscription subscriptionWithModifiedTimeout = subscriptionWithRequestTimeout(2000);
         MessageSender otherMessageSender = mock(MessageSender.class);
 
-        when(messageSenderFactory.create(subscriptionWithModfiedTimeout)).thenReturn(otherMessageSender);
+        when(messageSenderFactory.create(subscriptionWithModifiedTimeout)).thenReturn(otherMessageSender);
         when(otherMessageSender.send(message)).thenReturn(success());
 
         // when
-        sender.updateSubscription(subscriptionWithModfiedTimeout);
+        sender.updateSubscription(subscriptionWithModifiedTimeout);
         sender.sendAsync(message);
 
         // then

@@ -149,6 +149,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
                     .put("messageTtl", 3600)
                     .put("rate", 300)
                     .put("requestTimeout", 1000)
+                    .put("socketTimeout", 3000)
                     .put("retryClientErrors", false)
                     .put("sendingDelay", 1000)
                     .build())
@@ -169,6 +170,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         assertThat(policy.getMessageTtl()).isEqualTo(3600);
         assertThat(policy.getRate()).isEqualTo(300);
         assertThat(policy.getRequestTimeout()).isEqualTo(1000);
+        assertThat(policy.getSocketTimeout()).isEqualTo(3000);
         assertThat(policy.isRetryClientErrors()).isFalse();
         assertThat(policy.getSendingDelay()).isEqualTo(1000);
     }

@@ -18,6 +18,8 @@ public class OAuthProviderBuilder {
 
     private int requestTimeout = 500;
 
+    private int socketTimeout = 0;
+
     public OAuthProviderBuilder(String name) {
         this.name = name;
     }
@@ -28,7 +30,7 @@ public class OAuthProviderBuilder {
 
     public OAuthProvider build() {
         return new OAuthProvider(name, tokenEndpoint, clientId, clientSecret, tokenRequestInitialDelay,
-                tokenRequestMaxDelay, requestTimeout);
+                tokenRequestMaxDelay, requestTimeout, socketTimeout);
     }
 
     public OAuthProviderBuilder withTokenEndpoint(String tokenEndpoint) {
@@ -58,6 +60,11 @@ public class OAuthProviderBuilder {
 
     public OAuthProviderBuilder withRequestTimeout(int requestTimeout) {
         this.requestTimeout = requestTimeout;
+        return this;
+    }
+
+    public OAuthProviderBuilder withSocketTimeout(int socketTimeout) {
+        this.socketTimeout = socketTimeout;
         return this;
     }
 }

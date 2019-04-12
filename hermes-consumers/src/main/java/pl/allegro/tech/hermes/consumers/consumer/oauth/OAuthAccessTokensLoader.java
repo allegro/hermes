@@ -67,6 +67,7 @@ public class OAuthAccessTokensLoader extends CacheLoader<SubscriptionName, OAuth
                 .withUsername(policy.getUsername())
                 .withPassword(policy.getPassword())
                 .withRequestTimeout(provider.getRequestTimeout())
+                .withSocketTimeout(provider.getSocketTimeout())
                 .build();
     }
 
@@ -78,6 +79,7 @@ public class OAuthAccessTokensLoader extends CacheLoader<SubscriptionName, OAuth
                 .withClientId(provider.getClientId())
                 .withClientSecret(provider.getClientSecret())
                 .withRequestTimeout(provider.getRequestTimeout())
+                .withSocketTimeout(provider.getSocketTimeout())
                 .build();
     }
 }
