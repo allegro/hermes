@@ -1,3 +1,9 @@
+## 0.16.1 (23.04.2019)
+
+### Enhancements
+
+#### ([1016](https://github.com/allegro/hermes/pull/1016)) Moved parameter max.message.bytes to global configuration
+
 ## 0.16.0 (12.04.2019)
 
 ### Enhancements
