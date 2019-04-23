@@ -32,7 +32,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     @Override
     public void createTopic(Topic topic) {
-        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties, topic);
+        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
 
         kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
                 adminZkClient.createTopic(
@@ -52,7 +52,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     @Override
     public void updateTopic(Topic topic) {
-        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties, topic);
+        Properties config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
         KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
 
         if (isMigrationToNewKafkaTopic(kafkaTopics)) {
@@ -83,11 +83,11 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
                 !kafkaZkClient.topicExists(kafkaTopics.getPrimary().name().asString());
     }
 
-    private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties, Topic topic) {
+    private Properties createTopicConfig(int retentionPolicy, TopicProperties topicProperties) {
         Properties props = new Properties();
         props.put(LogConfig.RetentionMsProp(), String.valueOf(TimeUnit.DAYS.toMillis(retentionPolicy)));
         props.put(LogConfig.UncleanLeaderElectionEnableProp(), Boolean.toString(topicProperties.isUncleanLeaderElectionEnabled()));
-        props.put(LogConfig.MaxMessageBytesProp(), String.valueOf(topic.getMaxMessageSize()));
+        props.put(LogConfig.MaxMessageBytesProp(), String.valueOf(topicProperties.getMaxMessageSize()));
 
         return props;
     }

@@ -21,6 +21,19 @@ public class TopicProperties {
 
     private int subscriptionsAssignmentsCompletedTimeoutSeconds = 30;
 
+    /**
+     * Introduced in Kafka 0.11.0.0 mechanism of splitting oversized batches does not respect configuration of maximum
+     * message size which broker can accept. It can cause an infinite loop of resending the same records in one batch.
+     * To avoid the issue this parameter should be greater than or equal to maximum size of request that the producer
+     * can send (parameter kafka.producer.max.request.size). Note that if you change this setting, it is necessary to
+     * manually update max.message.bytes for existing topics on broker side.
+     *
+     * For more information see:
+     * https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=68715855
+     * https://issues.apache.org/jira/browse/KAFKA-8202
+     */
+    private int maxMessageSize = 1024 * 1024;
+
     public int getReplicationFactor() {
         return replicationFactor;
     }
@@ -83,5 +96,13 @@ public class TopicProperties {
 
     public void setSubscriptionsAssignmentsCompletedTimeoutSeconds(int subscriptionsAssignmentsCompletedTimeoutSeconds) {
         this.subscriptionsAssignmentsCompletedTimeoutSeconds = subscriptionsAssignmentsCompletedTimeoutSeconds;
+    }
+
+    public int getMaxMessageSize() {
+        return maxMessageSize;
+    }
+
+    public void setMaxMessageSize(int maxMessageSize) {
+        this.maxMessageSize = maxMessageSize;
     }
 }
