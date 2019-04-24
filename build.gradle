@@ -153,6 +153,8 @@ subprojects {
 
 nexusStaging {
     packageGroup = "pl.allegro"
+
+    delayBetweenRetriesInMillis = 5000
 }
 
 task wrapper(type: Wrapper) {
