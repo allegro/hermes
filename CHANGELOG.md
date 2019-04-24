@@ -1,3 +1,9 @@
+## 0.16.2 (24.04.2019)
+
+### Enhancements
+
+#### ([1019](https://github.com/allegro/hermes/pull/1019)) Extended offline clients by 'owners' field
+
 ## 0.16.1 (23.04.2019)
 
 ### Enhancements
