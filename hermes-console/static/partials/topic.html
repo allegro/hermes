@@ -181,6 +181,7 @@
                         <th></th>
                         <th>User</th>
                         <th>Last access date</th>
+                        <th>Owners</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -188,6 +189,7 @@
                         <td>{{$index + 1}}</td>
                         <td>{{client.user}}</td>
                         <td>{{client.lastAccess}}</td>
+                        <td>{{client.owners.join(", ")}}</td>
                     </tr>
                 </tbody>
             </table>
