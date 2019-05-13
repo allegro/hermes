@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-KAFKA_VERSION=2.0.0
+KAFKA_VERSION=2.2.0
 SCALA_VERSION=2.11
 
 if [ ! -d /opt/kafka ]; then
