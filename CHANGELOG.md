@@ -1,3 +1,11 @@
+## 1.0.0 (16.05.2019)
+
+After 5 years of developing and maintaining Hermes, we are very excited to announce that version 1.0
+has been released. 🎊 🥳 🎂
+
+Version 1.0 is symbolic. It doesn’t contain any changes in Hermes in comparison to the previous one.
+It’s a cut-off from stable and mature code.
+
 ## 0.16.2 (24.04.2019)
 
 ### Enhancements
