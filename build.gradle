@@ -156,7 +156,3 @@ nexusStaging {
 
     delayBetweenRetriesInMillis = 5000
 }
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.2.1'
-}
