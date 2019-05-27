@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.graphite;
 
 import com.google.common.base.Strings;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -9,13 +8,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import pl.allegro.tech.hermes.api.MetricDecimalValue;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -53,7 +50,7 @@ public class RestTemplateGraphiteClient implements GraphiteClient {
         }
     }
 
-    private String getFirstValue(GraphiteResponse graphiteResponse) {
+    private MetricDecimalValue getFirstValue(GraphiteResponse graphiteResponse) {
         checkArgument(hasDatapoints(graphiteResponse), "Graphite format changed. Reexamine implementation.");
 
         String firstNotNullValue = DEFAULT_VALUE;
@@ -63,7 +60,7 @@ public class RestTemplateGraphiteClient implements GraphiteClient {
                 break;
             }
         }
-        return firstNotNullValue;
+        return MetricDecimalValue.of(firstNotNullValue);
     }
 
     private boolean datapointValid(List<String> value) {

@@ -2,24 +2,24 @@ package pl.allegro.tech.hermes.api;
 
 import java.util.Objects;
 
-public class TopicMetrics {
-    public static final String UNAVAILABLE_RATE = "unavailable";
+import static pl.allegro.tech.hermes.api.MetricDecimalValue.of;
 
+public class TopicMetrics {
     private long published;
-    private String rate = "0.0";
-    private String deliveryRate = "0.0";
+    private MetricDecimalValue rate = of("0.0");
+    private MetricDecimalValue deliveryRate = of("0.0");
     private int subscriptions;
-    private String throughput = "0.0";
+    private MetricDecimalValue throughput = of("0.0");
 
     public long getPublished() {
         return published;
     }
 
-    public String getRate() {
+    public MetricDecimalValue getRate() {
         return rate;
     }
 
-    public String getDeliveryRate() {
+    public MetricDecimalValue getDeliveryRate() {
         return deliveryRate;
     }
 
@@ -27,7 +27,7 @@ public class TopicMetrics {
         return subscriptions;
     }
 
-    public String getThroughput() {
+    public MetricDecimalValue getThroughput() {
         return throughput;
     }
 
@@ -53,11 +53,11 @@ public class TopicMetrics {
     }
 
     public static TopicMetrics unavailable() {
-        return Builder.topicMetrics().withRate(UNAVAILABLE_RATE)
-                                     .withDeliveryRate(UNAVAILABLE_RATE)
+        return Builder.topicMetrics().withRate(MetricDecimalValue.unavailable())
+                                     .withDeliveryRate(MetricDecimalValue.unavailable())
                                      .withPublished(0)
                                      .withSubscriptions(0)
-                                     .withThroughput(UNAVAILABLE_RATE)
+                                     .withThroughput(MetricDecimalValue.unavailable())
                                      .build();
     }
 
@@ -73,12 +73,12 @@ public class TopicMetrics {
             return this;
         }
 
-        public Builder withRate(String rate) {
+        public Builder withRate(MetricDecimalValue rate) {
             topicMetrics.rate = rate;
             return this;
         }
 
-        public Builder withDeliveryRate(String deliveryRate) {
+        public Builder withDeliveryRate(MetricDecimalValue deliveryRate) {
             topicMetrics.deliveryRate = deliveryRate;
             return this;
         }
@@ -88,7 +88,7 @@ public class TopicMetrics {
             return this;
         }
 
-        public Builder withThroughput(String throughput) {
+        public Builder withThroughput(MetricDecimalValue throughput) {
             topicMetrics.throughput = throughput;
             return this;
         }

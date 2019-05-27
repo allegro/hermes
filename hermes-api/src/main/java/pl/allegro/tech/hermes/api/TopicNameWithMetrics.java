@@ -8,20 +8,20 @@ import java.util.Objects;
 public class TopicNameWithMetrics {
 
     private final long published;
-    private final String rate;
-    private final String deliveryRate;
+    private final MetricDecimalValue rate;
+    private final MetricDecimalValue deliveryRate;
     private final int subscriptions;
-    private final String throughput;
+    private final MetricDecimalValue throughput;
 
     private final TopicName topicName;
 
     @JsonCreator
     public TopicNameWithMetrics(
             @JsonProperty("published") long published,
-            @JsonProperty("rate") String rate,
-            @JsonProperty("deliveryRate") String deliveryRate,
+            @JsonProperty("rate") MetricDecimalValue rate,
+            @JsonProperty("deliveryRate") MetricDecimalValue deliveryRate,
             @JsonProperty("subscriptions") int subscriptions,
-            @JsonProperty("throughput") String throughput,
+            @JsonProperty("throughput") MetricDecimalValue throughput,
             @JsonProperty("qualifiedName") String qualifiedName
     ) {
         this.published = published;
@@ -47,11 +47,11 @@ public class TopicNameWithMetrics {
         return published;
     }
 
-    public String getRate() {
+    public MetricDecimalValue getRate() {
         return rate;
     }
 
-    public String getDeliveryRate() {
+    public MetricDecimalValue getDeliveryRate() {
         return deliveryRate;
     }
 
@@ -59,12 +59,18 @@ public class TopicNameWithMetrics {
         return subscriptions;
     }
 
-    public String getThroughput() {
+    public MetricDecimalValue getThroughput() {
         return throughput;
     }
 
     public String getQualifiedName() {
         return topicName.qualifiedName();
+    }
+
+    public boolean allMetricsAreAvailable() {
+        return rate.isAvailable()
+                && deliveryRate.isAvailable()
+                && throughput.isAvailable();
     }
 
     @Override

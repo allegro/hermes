@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.subscription
 
+import pl.allegro.tech.hermes.api.MetricLongValue
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionHealth
 import pl.allegro.tech.hermes.api.SubscriptionMetrics
@@ -15,6 +16,8 @@ import spock.lang.Subject
 
 import static java.lang.Integer.MAX_VALUE
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy
+import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
+import static pl.allegro.tech.hermes.api.MetricDecimalValue.unavailable
 import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE
 import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.HEALTHY
@@ -48,14 +51,14 @@ class SubscriptionHealthCheckerTest extends Specification {
         given:
         def topicMetrics = topicMetricsWithRate("123.45")
         def subscriptionMetrics = subscriptionMetrics()
-                .withRate("123.45")
-                .withCodes2xx("100.0")
-                .withCodes4xx("1.2345")
-                .withCodes5xx("1.2345")
-                .withTimeouts("1.2345")
-                .withOtherErrors("1.2345")
-                .withLag(789)
-                .withBatchRate("0.0")
+                .withRate(of("123.45"))
+                .withCodes2xx(of("100.0"))
+                .withCodes4xx(of("1.2345"))
+                .withCodes5xx(of("1.2345"))
+                .withTimeouts(of("1.2345"))
+                .withOtherErrors(of("1.2345"))
+                .withLag(MetricLongValue.of(789))
+                .withBatchRate(of("0.0"))
                 .build()
 
         when:
@@ -69,7 +72,7 @@ class SubscriptionHealthCheckerTest extends Specification {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withLag(60100)
+                .withLag(MetricLongValue.of(60100))
                 .build()
 
         when:
@@ -84,7 +87,7 @@ class SubscriptionHealthCheckerTest extends Specification {
         given:
         def topicMetrics = topicMetricsWithRate("0.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withLag(60100)
+                .withLag(MetricLongValue.of(60100))
                 .build()
 
         when:
@@ -98,8 +101,8 @@ class SubscriptionHealthCheckerTest extends Specification {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("100.0")
-                .withOtherErrors("51.0")
+                .withRate(of("100.0"))
+                .withOtherErrors(of("51.0"))
                 .build()
 
         when:
@@ -114,9 +117,9 @@ class SubscriptionHealthCheckerTest extends Specification {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("40.0")
-                .withBatchRate("4.0")
-                .withOtherErrors("6.0")
+                .withRate(of("40.0"))
+                .withBatchRate(of("4.0"))
+                .withOtherErrors(of("6.0"))
                 .build()
 
         when:
@@ -131,8 +134,8 @@ class SubscriptionHealthCheckerTest extends Specification {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("100.0")
-                .withTimeouts("11.0")
+                .withRate(of("100.0"))
+                .withTimeouts(of("11.0"))
                 .build()
 
         when:
@@ -147,9 +150,9 @@ class SubscriptionHealthCheckerTest extends Specification {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("80.0")
-                .withBatchRate("8.0")
-                .withTimeouts("2.0")
+                .withRate(of("80.0"))
+                .withBatchRate(of("8.0"))
+                .withTimeouts(of("2.0"))
                 .build()
 
         when:
@@ -164,8 +167,8 @@ class SubscriptionHealthCheckerTest extends Specification {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("100.0")
-                .withCodes5xx("11.0")
+                .withRate(of("100.0"))
+                .withCodes5xx(of("11.0"))
                 .build()
 
         when:
@@ -180,9 +183,9 @@ class SubscriptionHealthCheckerTest extends Specification {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("80.0")
-                .withBatchRate("8.0")
-                .withCodes5xx("2.0")
+                .withRate(of("80.0"))
+                .withBatchRate(of("8.0"))
+                .withCodes5xx(of("2.0"))
                 .build()
 
         when:
@@ -203,8 +206,8 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("100.0")
-                .withCodes4xx("11.0")
+                .withRate(of("100.0"))
+                .withCodes4xx(of("11.0"))
                 .build()
 
         when:
@@ -225,9 +228,9 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("100.0")
-                .withBatchRate("8.0")
-                .withCodes4xx("2.0")
+                .withRate(of("100.0"))
+                .withBatchRate(of("8.0"))
+                .withCodes4xx(of("2.0"))
                 .build()
 
         when:
@@ -243,8 +246,8 @@ class SubscriptionHealthCheckerTest extends Specification {
         def subscriptionWithoutRetry = ACTIVE_SERIAL_SUBSCRIPTION
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("100.0")
-                .withCodes4xx("11.0")
+                .withRate(of("100.0"))
+                .withCodes4xx(of("11.0"))
                 .build()
 
         when:
@@ -264,9 +267,9 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("100.0")
-                .withBatchRate("8.0")
-                .withCodes4xx("2.0")
+                .withRate(of("100.0"))
+                .withBatchRate(of("8.0"))
+                .withCodes4xx(of("2.0"))
                 .build()
 
         when:
@@ -283,13 +286,13 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .build()
         def topicMetrics = topicMetricsWithRate("1000.0")
         def subscriptionMetrics = subscriptionMetrics()
-                .withRate("160.0")
-                .withCodes2xx("0.0")
-                .withCodes4xx("20.0")
-                .withCodes5xx("20.0")
-                .withTimeouts("20.0")
-                .withOtherErrors("100.0")
-                .withLag(1_000_000)
+                .withRate(of("160.0"))
+                .withCodes2xx(of("0.0"))
+                .withCodes4xx(of("20.0"))
+                .withCodes5xx(of("20.0"))
+                .withTimeouts(of("20.0"))
+                .withOtherErrors(of("100.0"))
+                .withLag(MetricLongValue.of(1_000_000))
                 .build()
 
         when:
@@ -315,8 +318,8 @@ class SubscriptionHealthCheckerTest extends Specification {
         given:
         def topicMetrics = topicMetricsWithRate("100.0")
         def subscriptionMetrics = otherwiseHealthySubscriptionMetrics()
-                .withRate("unavailable")
-                .withLag(60100)
+                .withRate(unavailable())
+                .withLag(MetricLongValue.of(60100))
                 .build()
 
         when:
@@ -328,20 +331,20 @@ class SubscriptionHealthCheckerTest extends Specification {
 
     static TopicMetrics topicMetricsWithRate(String rate) {
         TopicMetrics.Builder.topicMetrics()
-                .withRate(rate)
+                .withRate(of(rate))
                 .build()
     }
 
     static SubscriptionMetrics.Builder otherwiseHealthySubscriptionMetrics() {
         subscriptionMetrics()
-                .withRate("100.0")
-                .withCodes2xx("100.0")
-                .withCodes4xx("0.0")
-                .withCodes5xx("0.0")
-                .withTimeouts("0.0")
-                .withOtherErrors("0.0")
-                .withLag(0)
-                .withBatchRate("0.0")
+                .withRate(of("100.0"))
+                .withCodes2xx(of("100.0"))
+                .withCodes4xx(of("0.0"))
+                .withCodes5xx(of("0.0"))
+                .withTimeouts(of("0.0"))
+                .withOtherErrors(of("0.0"))
+                .withLag(MetricLongValue.of(0))
+                .withBatchRate(of("0.0"))
     }
 
     private static Subscription batchSubscriptionWithSize(int batchSize) {

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.infrastructure.metrics
 
-import org.apache.avro.generic.GenericData
 import pl.allegro.tech.hermes.api.TopicMetrics
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository
@@ -10,6 +9,8 @@ import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics
 import pl.allegro.tech.hermes.management.stub.MetricsPaths
 import spock.lang.Specification
+
+import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 
 class HybridTopicMetricsRepositoryTest extends Specification {
     
@@ -33,8 +34,8 @@ class HybridTopicMetricsRepositoryTest extends Specification {
         TopicName topic = new TopicName('group', 'topic')
         
         client.readMetrics(rate, deliveryRate) >> new GraphiteMetrics()
-            .addMetricValue(rate, '10')
-            .addMetricValue(deliveryRate, '20')
+            .addMetricValue(rate, of('10'))
+            .addMetricValue(deliveryRate, of('20'))
         sharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/published') >> 100
         subscriptionRepository.listSubscriptionNames(topic) >> ["subscription1", "subscription2"]
 
@@ -42,8 +43,8 @@ class HybridTopicMetricsRepositoryTest extends Specification {
         TopicMetrics metrics = repository.loadMetrics(topic)
         
         then:
-        metrics.rate == '10'
-        metrics.deliveryRate == '20'
+        metrics.rate == of('10')
+        metrics.deliveryRate == of('20')
         metrics.published == 100
         metrics.subscriptions == 2
     }

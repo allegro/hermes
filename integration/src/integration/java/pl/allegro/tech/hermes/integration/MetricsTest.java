@@ -4,6 +4,7 @@ import com.googlecode.catchexception.CatchException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
+import pl.allegro.tech.hermes.api.MetricDecimalValue;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
@@ -63,8 +64,8 @@ public class MetricsTest extends IntegrationTest {
             TopicMetrics metrics = management.topic().getMetrics("pl.group.topic_metrics");
 
             // then
-            assertThat(metrics.getRate()).isEqualTo("10");
-            assertThat(metrics.getDeliveryRate()).isEqualTo("15");
+            assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("10"));
+            assertThat(metrics.getDeliveryRate()).isEqualTo(MetricDecimalValue.of("15"));
             assertThat(metrics.getPublished()).isEqualTo(1);
         });
     }
@@ -87,7 +88,7 @@ public class MetricsTest extends IntegrationTest {
             SubscriptionMetrics metrics = management.subscription().getMetrics("pl.group.topic", "subscription");
 
             // then
-            assertThat(metrics.getRate()).isEqualTo("15");
+            assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15"));
             assertThat(metrics.getDelivered()).isEqualTo(1);
             assertThat(metrics.getDiscarded()).isEqualTo(0);
             assertThat(metrics.getInflight()).isEqualTo(0);
@@ -126,7 +127,7 @@ public class MetricsTest extends IntegrationTest {
                     "pl.allegro.tech.hermes.subscription");
 
             // then
-            assertThat(metrics.getRate()).isEqualTo("15");
+            assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15"));
         });
     }
 
