@@ -168,7 +168,7 @@ public class ConsumerMessageSender {
         message.incrementRetryCounter(succeededUris);
 
         long retryDelay = extractRetryDelay(result);
-        if (running && shouldAttemptResending(message, result, retryDelay)) {
+        if (shouldAttemptResending(message, result, retryDelay)) {
             retrySingleThreadExecutor.schedule(() -> resend(message, result), retryDelay, TimeUnit.MILLISECONDS);
         } else {
             handleMessageDiscarding(message, result);
@@ -241,10 +241,12 @@ public class ConsumerMessageSender {
         @Override
         public void accept(MessageSendingResult result) {
             timer.stop();
-            if (result.succeeded()) {
-                handleMessageSendingSuccess(message, result);
-            } else {
-                handleFailedSending(message, result);
+            if (running) {
+                if (result.succeeded()) {
+                    handleMessageSendingSuccess(message, result);
+                } else {
+                    handleFailedSending(message, result);
+                }
             }
         }
     }
