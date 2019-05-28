@@ -9,13 +9,13 @@ import static java.lang.Double.parseDouble;
 
 public class MetricDecimalValue {
     private static final String UNAVAILABLE_STRING = "unavailable";
-    private static final MetricDecimalValue UNAVAILABLE = new MetricDecimalValue(true, "-1.0");
+    private static final MetricDecimalValue UNAVAILABLE = new MetricDecimalValue(false, "-1.0");
 
-    private final boolean unavailable;
+    private final boolean available;
     private final String value;
 
-    private MetricDecimalValue(boolean unavailable, String value) {
-        this.unavailable = unavailable;
+    private MetricDecimalValue(boolean available, String value) {
+        this.available = available;
         this.value = value;
     }
 
@@ -24,7 +24,7 @@ public class MetricDecimalValue {
     }
 
     public static MetricDecimalValue of(String value) {
-        return new MetricDecimalValue(false, value);
+        return new MetricDecimalValue(true, value);
     }
 
     @JsonCreator
@@ -37,7 +37,7 @@ public class MetricDecimalValue {
 
     @JsonValue
     public String asString() {
-        return unavailable ? UNAVAILABLE_STRING : value;
+        return available ? value : UNAVAILABLE_STRING;
     }
 
     public double toDouble() {
@@ -45,7 +45,7 @@ public class MetricDecimalValue {
     }
 
     public boolean isAvailable() {
-        return !unavailable;
+        return available;
     }
 
     @Override
@@ -57,12 +57,12 @@ public class MetricDecimalValue {
             return false;
         }
         MetricDecimalValue that = (MetricDecimalValue) o;
-        return unavailable == that.unavailable &&
+        return available == that.available &&
                 Objects.equals(value, that.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(unavailable, value);
+        return Objects.hash(available, value);
     }
 }

@@ -7,13 +7,13 @@ import java.util.Objects;
 
 public class MetricLongValue {
     private static final String UNAVAILABLE_STRING = "unavailable";
-    private static final MetricLongValue UNAVAILABLE = new MetricLongValue(true, -1);
+    private static final MetricLongValue UNAVAILABLE = new MetricLongValue(false, -1);
 
-    private final boolean unavailable;
+    private final boolean available;
     private final long value;
 
-    private MetricLongValue(boolean unavailable, long value) {
-        this.unavailable = unavailable;
+    private MetricLongValue(boolean available, long value) {
+        this.available = available;
         this.value = value;
     }
 
@@ -21,8 +21,8 @@ public class MetricLongValue {
         return UNAVAILABLE;
     }
 
-    public static MetricLongValue of(long lag) {
-        return new MetricLongValue(false, lag);
+    public static MetricLongValue of(long value) {
+        return new MetricLongValue(true, value);
     }
 
     @JsonCreator
@@ -35,7 +35,7 @@ public class MetricLongValue {
 
     @JsonValue
     public String asString() {
-        return unavailable ? UNAVAILABLE_STRING : String.valueOf(value);
+        return available ? String.valueOf(value) : UNAVAILABLE_STRING;
     }
 
     public long toLong() {
@@ -43,7 +43,7 @@ public class MetricLongValue {
     }
 
     public boolean isAvailable() {
-        return !unavailable;
+        return available;
     }
 
     @Override
@@ -55,12 +55,12 @@ public class MetricLongValue {
             return false;
         }
         MetricLongValue that = (MetricLongValue) o;
-        return unavailable == that.unavailable &&
+        return available == that.available &&
                 value == that.value;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(unavailable, value);
+        return Objects.hash(available, value);
     }
 }

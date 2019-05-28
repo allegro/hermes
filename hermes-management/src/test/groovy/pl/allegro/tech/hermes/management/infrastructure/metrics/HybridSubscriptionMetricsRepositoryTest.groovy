@@ -37,8 +37,10 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
         String timeouts = 'sumSeries(stats.consumer.*.status.group.topic.subscription.errors.timeout.m1_rate)'
         String otherErrors = 'sumSeries(stats.consumer.*.status.group.topic.subscription.errors.other.m1_rate)'
 
-        client.readMetrics(_ as String, _ as String, _ as String, rate, timeouts, otherErrors, _ as String) >> new GraphiteMetrics()
-                .addMetricValue(rate, of('10')).addMetricValue(timeouts, of('100')).addMetricValue(otherErrors, of('1000'))
+        client.readMetrics(_ as String, _ as String, _ as String, rate, _ as String, timeouts, otherErrors, _ as String) >> new GraphiteMetrics()
+                .addMetricValue(rate, of('10'))
+                .addMetricValue(timeouts, of('100'))
+                .addMetricValue(otherErrors, of('1000'))
         sharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 100
         sharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 1
         distributedCounter.getValue('/hermes/consumers', '/groups/group/topics/topic/subscriptions/subscription/metrics/inflight') >> 5
@@ -59,7 +61,7 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
     def "should read subscription metrics for all http status codes"() {
         given:
         client.readMetrics(getHttpStatusCodeForFamily(2), getHttpStatusCodeForFamily(4), getHttpStatusCodeForFamily(5),
-                _ as String, _ as String, _ as String, _ as String) >> new GraphiteMetrics()
+                _ as String, _ as String, _ as String, _ as String, _ as String) >> new GraphiteMetrics()
                 .addMetricValue(getHttpStatusCodeForFamily(2), of('2'))
                 .addMetricValue(getHttpStatusCodeForFamily(4), of('4'))
                 .addMetricValue(getHttpStatusCodeForFamily(5), of('5'))
