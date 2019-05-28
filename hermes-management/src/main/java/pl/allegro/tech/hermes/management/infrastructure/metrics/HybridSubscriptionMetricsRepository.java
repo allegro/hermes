@@ -73,7 +73,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
         String batchPath = metricPathBatchRate(name);
 
         GraphiteMetrics graphiteMetrics = graphiteClient.readMetrics(codes2xxPath, codes4xxPath, codes5xxPath,
-                rateMetric, timeouts, otherErrors, batchPath);
+                rateMetric, throughput, timeouts, otherErrors, batchPath);
         ZookeeperMetrics zookeeperMetrics = readZookeeperMetrics(name);
 
         return SubscriptionMetrics.Builder.subscriptionMetrics()

@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
+import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -27,6 +28,7 @@ import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
+import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -37,9 +39,12 @@ public class QueryEndpointTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
 
+    private GraphiteEndpoint graphiteEndpoint;
+
     @BeforeClass
     public void initialize() {
         remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
+        graphiteEndpoint = new GraphiteEndpoint(SharedServices.services().graphiteHttpMock());
     }
 
     @AfterClass
@@ -207,29 +212,81 @@ public class QueryEndpointTest extends IntegrationTest {
     @Test
     public void shouldQuerySubscriptionsMetrics() {
         // given
-        Topic topic1 = operations.buildTopic("subscriptionsMetricsTestGroup1", "subscriptionsMetricsTestTopic1");
-        Topic topic2 = operations.buildTopic("subscriptionsMetricsTestGroup2", "subscriptionsMetricsTestTopic2");
+        Topic topic1 = operations.buildTopic("subscriptionsMetricsTestGroup1", "topic");
+        Topic topic2 = operations.buildTopic("subscriptionsMetricsTestGroup2", "topic");
 
         Subscription subscription1 = operations.createSubscription(topic1, "subscription1", HTTP_ENDPOINT_URL);
         Subscription subscription2 = operations.createSubscription(topic2, "subscription2", HTTP_ENDPOINT_URL);
 
         String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
-        String queryGetSubscriptionsMetricsWithPositiveDelivered = "{\"query\": {\"delivered\": {\"gt\": 0}}}";
+        String queryGetSubscriptionsMetricsWithPositiveThroughput = "{\"query\": {\"throughput\": {\"gt\": 0}}}";
+        String queryGetSubscriptionsMetricsWithRateInRange = "{\"query\": {\"or\": [{\"rate\": {\"gt\": 10}}, {\"rate\": {\"lt\": 50}}]}}";
+        String queryGetSubscriptionsMetricsWithLagNegative = "{\"query\": {\"lag\": {\"lt\": 0}}}";
 
-        remoteService.expectMessages("testing subscription metrics");
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub("subscriptionsMetricsTestGroup1.topic.subscription1")
+                .withRate(100)
+                .withThroughput(0)
+                .build()
+        );
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub("subscriptionsMetricsTestGroup2.topic.subscription2")
+                .withRate(40)
+                .withThroughput(10)
+                .build()
+        );
 
-        // when
-        publisher.publish(topic1.getQualifiedName(), "testing subscription metrics");
-        remoteService.waitUntilReceived();
-
-        // then
         wait.until(() -> {
-            subscriptionsMatchesToNamesAndTheirTopicsNames(management.query().querySubscriptionsMetrics(queryGetAllSubscriptionsMetrics),
-                    asList(subscription1, subscription2));
+            // when
+            List<SubscriptionNameWithMetrics> allSubscriptions = management.query()
+                    .querySubscriptionsMetrics(queryGetAllSubscriptionsMetrics);
+            List<SubscriptionNameWithMetrics> subscriptionsWithPositiveThroughput = management.query()
+                    .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithPositiveThroughput);
+            List<SubscriptionNameWithMetrics> subscriptionsWithRateInRange = management.query()
+                    .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithRateInRange);
+            List<SubscriptionNameWithMetrics> subscriptionsWithNegativeLag = management.query()
+                    .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithLagNegative);
 
-            subscriptionsMatchesToNamesAndTheirTopicsNames(management.query().querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithPositiveDelivered),
-                    asList(subscription1));
+            // then
+            subscriptionsMatchesToNamesAndTheirTopicsNames(allSubscriptions, subscription1, subscription2);
+            subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithPositiveThroughput, subscription2);
+            subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithRateInRange, subscription2);
+            subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithNegativeLag, subscription1, subscription2);
         });
+    }
+
+    @Test
+    public void shouldHandleUnavailableSubscriptionsMetrics() {
+        // given
+        Topic topic = operations.buildTopic("unavailableMetricsGroup", "topic");
+        Subscription subscription = operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+
+        String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
+        String queryGetSubscriptionsMetricsWithPositiveRate = "{\"query\": {\"rate\": {\"gt\": 0}}}";
+
+        int graphiteResponseDelay = 10 * 60 * 1000;
+        graphiteEndpoint.returnMetricWithDelay(subscriptionMetricsStub("unavailableMetricsGroup.topic.subscription")
+                .withRate(100)
+                .build(),
+                graphiteResponseDelay
+        );
+
+        wait.until(() -> {
+            // when
+            List<SubscriptionNameWithMetrics> allSubscriptions = management.query()
+                    .querySubscriptionsMetrics(queryGetAllSubscriptionsMetrics);
+            List<SubscriptionNameWithMetrics> subscriptionsWithPositiveRate = management.query()
+                    .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithPositiveRate);
+
+            // then
+            assertThatRateIsUnavailable(allSubscriptions, subscription);
+            assertThatRateIsUnavailable(subscriptionsWithPositiveRate, subscription);
+        });
+    }
+
+    private static void assertThatRateIsUnavailable(List<SubscriptionNameWithMetrics> allSubscriptions, Subscription ... subscriptions) {
+        subscriptionsMatchesToNamesAndTheirTopicsNames(allSubscriptions, subscriptions);
+        for (SubscriptionNameWithMetrics metrics : allSubscriptions) {
+            assertThat(metrics.getRate().asString()).isEqualTo("unavailable");
+        }
     }
 
     private Subscription enrichSubscription(SubscriptionBuilder subscription, String endpoint) {
@@ -254,8 +311,8 @@ public class QueryEndpointTest extends IntegrationTest {
         assertThat(foundQualifiedNames).containsAll(expectedQualifiedNames);
     }
 
-    private void subscriptionsMatchesToNamesAndTheirTopicsNames(List<SubscriptionNameWithMetrics> found,
-                                                                List<Subscription> expectedSubscriptions) {
+    private static void subscriptionsMatchesToNamesAndTheirTopicsNames(List<SubscriptionNameWithMetrics> found,
+                                                                       Subscription ... expectedSubscriptions) {
 
         Map<String, String> foundSubscriptionsAndTheirTopicNames = found.stream()
                 .collect(Collectors.toMap(SubscriptionNameWithMetrics::getName, SubscriptionNameWithMetrics::getTopicQualifiedName));

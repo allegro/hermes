@@ -35,14 +35,15 @@ public class SubscriptionHealthChecker {
         return subscription.getState() == SUSPENDED;
     }
 
-    private SubscriptionHealth getActiveSubscriptionHealth(Subscription subscription, TopicMetrics topicMetrics, SubscriptionMetrics subscriptionMetrics) {
-        try {
-            SubscriptionHealthContext healthContext = new SubscriptionHealthContext(subscription, topicMetrics, subscriptionMetrics);
-            Set<SubscriptionHealthProblem> healthProblems = getHealthProblems(healthContext);
-            return SubscriptionHealth.of(healthProblems);
-        } catch (NumberFormatException e) {
-            return SubscriptionHealth.NO_DATA;
-        }
+    private SubscriptionHealth getActiveSubscriptionHealth(Subscription subscription,
+                                                           TopicMetrics topicMetrics,
+                                                           SubscriptionMetrics subscriptionMetrics) {
+        return SubscriptionHealthContext.createIfAllMetricsExist(subscription, topicMetrics, subscriptionMetrics)
+                .map(healthContext -> {
+                    Set<SubscriptionHealthProblem> healthProblems = getHealthProblems(healthContext);
+                    return SubscriptionHealth.of(healthProblems);
+                })
+                .orElse(SubscriptionHealth.NO_DATA);
     }
 
     private Set<SubscriptionHealthProblem> getHealthProblems(SubscriptionHealthContext healthContext) {

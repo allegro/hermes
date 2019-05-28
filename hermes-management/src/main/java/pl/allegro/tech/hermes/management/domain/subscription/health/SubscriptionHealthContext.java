@@ -4,7 +4,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 
-import static java.lang.Double.parseDouble;
+import java.util.Optional;
 
 public final class SubscriptionHealthContext {
     private final Subscription subscription;
@@ -17,16 +17,34 @@ public final class SubscriptionHealthContext {
     private final double batchRate;
     private final long lag;
 
-    SubscriptionHealthContext(Subscription subscription, TopicMetrics topicMetrics, SubscriptionMetrics subscriptionMetrics) {
+    private SubscriptionHealthContext(Subscription subscription,
+                                      TopicMetrics topicMetrics,
+                                      SubscriptionMetrics subscriptionMetrics) {
         this.subscription = subscription;
-        this.topicRate = parseDouble(topicMetrics.getRate());
-        this.subscriptionRate = parseDouble(subscriptionMetrics.getRate());
-        this.timeoutsRate = parseDouble(subscriptionMetrics.getTimeouts());
-        this.otherErrorsRate = parseDouble(subscriptionMetrics.getOtherErrors());
-        this.code4xxErrorsRate = parseDouble(subscriptionMetrics.getCodes4xx());
-        this.code5xxErrorsRate = parseDouble(subscriptionMetrics.getCodes5xx());
-        this.batchRate = parseDouble(subscriptionMetrics.getBatchRate());
-        this.lag = subscriptionMetrics.getLag();
+        this.topicRate = topicMetrics.getRate().toDouble();
+        this.subscriptionRate = subscriptionMetrics.getRate().toDouble();
+        this.timeoutsRate = subscriptionMetrics.getTimeouts().toDouble();
+        this.otherErrorsRate = subscriptionMetrics.getOtherErrors().toDouble();
+        this.code4xxErrorsRate = subscriptionMetrics.getCodes4xx().toDouble();
+        this.code5xxErrorsRate = subscriptionMetrics.getCodes5xx().toDouble();
+        this.batchRate = subscriptionMetrics.getBatchRate().toDouble();
+        this.lag = subscriptionMetrics.getLag().toLong();
+    }
+
+    static Optional<SubscriptionHealthContext> createIfAllMetricsExist(Subscription subscription,
+                                                                       TopicMetrics topicMetrics,
+                                                                       SubscriptionMetrics subscriptionMetrics) {
+        if (topicMetrics.getRate().isAvailable()
+                && subscriptionMetrics.getRate().isAvailable()
+                && subscriptionMetrics.getTimeouts().isAvailable()
+                && subscriptionMetrics.getOtherErrors().isAvailable()
+                && subscriptionMetrics.getCodes4xx().isAvailable()
+                && subscriptionMetrics.getCodes5xx().isAvailable()
+                && subscriptionMetrics.getBatchRate().isAvailable()
+                && subscriptionMetrics.getLag().isAvailable()) {
+            return Optional.of(new SubscriptionHealthContext(subscription, topicMetrics, subscriptionMetrics));
+        }
+        return Optional.empty();
     }
 
     public boolean subscriptionHasRetryOnError() {
