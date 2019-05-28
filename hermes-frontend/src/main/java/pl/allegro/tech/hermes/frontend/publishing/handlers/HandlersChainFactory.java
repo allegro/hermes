@@ -23,6 +23,8 @@ import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationPredicateAwareC
 import javax.inject.Inject;
 
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_AUTHENTICATION_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_KEEP_ALIVE_HEADER_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS;
 
 public class HandlersChainFactory implements Factory<HttpHandler> {
 
@@ -65,9 +67,16 @@ public class HandlersChainFactory implements Factory<HttpHandler> {
         HttpHandler readHandler = new MessageReadHandler(handlerAfterRead, timeoutHandler, configFactory,
                                                                 messageErrorProcessor, throughputLimiter);
         TopicHandler topicHandler = new TopicHandler(readHandler, topicsCache, messageErrorProcessor);
+        boolean keepAliveHeaderEnabled = configFactory.getBooleanProperty(FRONTEND_KEEP_ALIVE_HEADER_ENABLED);
+        HttpHandler rootPublishingHandler = keepAliveHeaderEnabled ? withKeepAliveHeaderHandler(topicHandler) : topicHandler;
 
         boolean authenticationEnabled = configFactory.getBooleanProperty(FRONTEND_AUTHENTICATION_ENABLED);
-        return authenticationEnabled ? withAuthenticationHandlersChain(topicHandler) : topicHandler;
+        return authenticationEnabled ? withAuthenticationHandlersChain(rootPublishingHandler) : rootPublishingHandler;
+    }
+
+    private HttpHandler withKeepAliveHeaderHandler(HttpHandler next) {
+        int keepAliveTimeout = configFactory.getIntProperty(FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS);
+        return new KeepAliveHeaderHandler(next, keepAliveTimeout);
     }
 
     private HttpHandler withAuthenticationHandlersChain(HttpHandler next) {
