@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.endpoints.BlacklistEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.MigrationEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.ModeEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OAuthProviderEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OwnerEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
@@ -41,7 +42,9 @@ public class HermesEndpoints {
 
     private final MigrationEndpoint migrationEndpoint;
 
-    public final UnhealthyEndpoint unhealthyEndpoint;
+    private final UnhealthyEndpoint unhealthyEndpoint;
+
+    private final ModeEndpoint modeEndpoint;
 
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
@@ -56,6 +59,7 @@ public class HermesEndpoints {
         this.ownerEndpoint = hermes.createOwnerEndpoint();
         this.migrationEndpoint = hermes.createMigrationEndpoint();
         this.unhealthyEndpoint = hermes.unhealthyEndpoint();
+        this.modeEndpoint = hermes.modeEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
@@ -106,6 +110,10 @@ public class HermesEndpoints {
 
     public BlacklistEndpoint blacklist() {
         return blacklistEndpoint;
+    }
+
+    public ModeEndpoint modeEndpoint() {
+        return modeEndpoint;
     }
 
     public List<String> findTopics(Topic topic, boolean tracking) {
