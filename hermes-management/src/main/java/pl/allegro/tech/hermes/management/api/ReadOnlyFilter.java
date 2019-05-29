@@ -22,7 +22,6 @@ public class ReadOnlyFilter extends GenericFilterBean {
 
     private static final Logger logger = LoggerFactory.getLogger(ReadOnlyFilter.class);
     private static final String READ_ONLY_ERROR_MESSAGE = "Action forbidden due to read-only mode";
-    private static final Set<String> whitelist = new HashSet<>();
 
     private final ModeService modeService;
 
