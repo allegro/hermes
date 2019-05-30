@@ -6,6 +6,8 @@ import spock.lang.Subject
 
 import java.time.Duration
 
+import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
+
 class CachingGraphiteClientTest extends Specification {
     static final CACHE_TTL_IN_SECONDS = 30
     static final CACHE_SIZE = 100_000
@@ -19,14 +21,14 @@ class CachingGraphiteClientTest extends Specification {
 
     def "should return metrics from the underlying client"() {
         given:
-        underlyingClient.readMetrics("metric_1", "metric_2") >> new GraphiteMetrics([metric_1: "1", metric_2: "2"])
+        underlyingClient.readMetrics("metric_1", "metric_2") >> new GraphiteMetrics([metric_1: of("1"), metric_2: of("2")])
 
         when:
         def metrics = cachingClient.readMetrics("metric_1", "metric_2")
 
         then:
-        metrics.metricValue("metric_1") == "1"
-        metrics.metricValue("metric_2") == "2"
+        metrics.metricValue("metric_1") == of("1")
+        metrics.metricValue("metric_2") == of("2")
     }
 
     def "should return metrics from cache while TTL has not expired"() {
@@ -36,7 +38,7 @@ class CachingGraphiteClientTest extends Specification {
         cachingClient.readMetrics("metric_1", "metric_2")
 
         then:
-        1 * underlyingClient.readMetrics("metric_1", "metric_2") >> new GraphiteMetrics([metric_1: "1", metric_2: "2"])
+        1 * underlyingClient.readMetrics("metric_1", "metric_2") >> new GraphiteMetrics([metric_1: of("1"), metric_2: of("2")])
     }
 
     def "should get metrics from the underlying client after TTL expires"() {
@@ -46,6 +48,6 @@ class CachingGraphiteClientTest extends Specification {
         cachingClient.readMetrics("metric_1", "metric_2")
 
         then:
-        2 * underlyingClient.readMetrics("metric_1", "metric_2") >> new GraphiteMetrics([metric_1: "1", metric_2: "2"])
+        2 * underlyingClient.readMetrics("metric_1", "metric_2") >> new GraphiteMetrics([metric_1: of("1"), metric_2: of("2")])
     }
 }

@@ -7,16 +7,16 @@ public class SubscriptionMetrics {
     private long delivered;
     private long discarded;
     private long inflight;
-    private String timeouts;
-    private String otherErrors;
-    private String codes2xx;
-    private String codes4xx;
-    private String codes5xx;
-    private long lag;
+    private MetricDecimalValue timeouts;
+    private MetricDecimalValue otherErrors;
+    private MetricDecimalValue codes2xx;
+    private MetricDecimalValue codes4xx;
+    private MetricDecimalValue codes5xx;
+    private MetricLongValue lag;
     private Subscription.State state;
-    private String rate;
-    private String throughput;
-    private String batchRate;
+    private MetricDecimalValue rate;
+    private MetricDecimalValue throughput;
+    private MetricDecimalValue batchRate;
 
     private SubscriptionMetrics() {
     }
@@ -25,15 +25,15 @@ public class SubscriptionMetrics {
     public SubscriptionMetrics(@JsonProperty("delivered") long delivered,
                                @JsonProperty("discarded") long discarded,
                                @JsonProperty("inflight") long inflight,
-                               @JsonProperty("timeouts") String timeouts,
-                               @JsonProperty("otherErrors") String otherErrors,
-                               @JsonProperty("codes2xx") String codes2xx,
-                               @JsonProperty("codes4xx") String codes4xx,
-                               @JsonProperty("codes5xx") String codes5xx,
+                               @JsonProperty("timeouts") MetricDecimalValue timeouts,
+                               @JsonProperty("otherErrors") MetricDecimalValue otherErrors,
+                               @JsonProperty("codes2xx") MetricDecimalValue codes2xx,
+                               @JsonProperty("codes4xx") MetricDecimalValue codes4xx,
+                               @JsonProperty("codes5xx") MetricDecimalValue codes5xx,
                                @JsonProperty("Subscription") Subscription.State state,
-                               @JsonProperty("rate") String rate,
-                               @JsonProperty("throughput") String throughput,
-                               @JsonProperty("batchRate") String batchRate) {
+                               @JsonProperty("rate") MetricDecimalValue rate,
+                               @JsonProperty("throughput") MetricDecimalValue throughput,
+                               @JsonProperty("batchRate") MetricDecimalValue batchRate) {
         this.delivered = delivered;
         this.discarded = discarded;
         this.inflight = inflight;
@@ -60,31 +60,31 @@ public class SubscriptionMetrics {
         return inflight;
     }
 
-    public String getTimeouts() {
+    public MetricDecimalValue getTimeouts() {
         return timeouts;
     }
 
-    public long getLag() {
+    public MetricLongValue getLag() {
         return lag;
     }
 
-    public String getRate() {
+    public MetricDecimalValue getRate() {
         return rate;
     }
     
-    public String getOtherErrors() {
+    public MetricDecimalValue getOtherErrors() {
         return otherErrors;
     }
 
-    public String getCodes2xx() {
+    public MetricDecimalValue getCodes2xx() {
         return codes2xx;
     }
 
-    public String getCodes4xx() {
+    public MetricDecimalValue getCodes4xx() {
         return codes4xx;
     }
 
-    public String getCodes5xx() {
+    public MetricDecimalValue getCodes5xx() {
         return codes5xx;
     }
 
@@ -92,11 +92,11 @@ public class SubscriptionMetrics {
         return state;
     }
 
-    public String getThroughput() {
+    public MetricDecimalValue getThroughput() {
         return throughput;
     }
 
-    public String getBatchRate() {
+    public MetricDecimalValue getBatchRate() {
         return batchRate;
     }
 
@@ -122,32 +122,32 @@ public class SubscriptionMetrics {
             return this;
         }
 
-        public Builder withOtherErrors(String otherErrors) {
+        public Builder withOtherErrors(MetricDecimalValue otherErrors) {
             subscriptionMetrics.otherErrors = otherErrors;
             return this;
         }
 
-        public Builder withTimeouts(String timeouts) {
+        public Builder withTimeouts(MetricDecimalValue timeouts) {
             subscriptionMetrics.timeouts = timeouts;
             return this;
         }
 
-        public Builder withCodes2xx(String count) {
+        public Builder withCodes2xx(MetricDecimalValue count) {
             subscriptionMetrics.codes2xx = count;
             return this;
         }
 
-        public Builder withCodes4xx(String count) {
+        public Builder withCodes4xx(MetricDecimalValue count) {
             subscriptionMetrics.codes4xx = count;
             return this;
         }
 
-        public Builder withCodes5xx(String count) {
+        public Builder withCodes5xx(MetricDecimalValue count) {
             subscriptionMetrics.codes5xx = count;
             return this;
         }
 
-        public Builder withRate(String rate) {
+        public Builder withRate(MetricDecimalValue rate) {
             subscriptionMetrics.rate = rate;
             return this;
         }
@@ -157,17 +157,17 @@ public class SubscriptionMetrics {
             return this;
         }
 
-        public Builder withLag(long lag) {
+        public Builder withLag(MetricLongValue lag) {
             subscriptionMetrics.lag = lag;
             return this;
         }
 
-        public Builder withThroughput(String throughput) {
+        public Builder withThroughput(MetricDecimalValue throughput) {
             subscriptionMetrics.throughput = throughput;
             return this;
         }
 
-        public Builder withBatchRate(String batchRate) {
+        public Builder withBatchRate(MetricDecimalValue batchRate) {
             subscriptionMetrics.batchRate = batchRate;
             return this;
         }

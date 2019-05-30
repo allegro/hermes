@@ -4,6 +4,7 @@ import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import pl.allegro.tech.hermes.api.MetricDecimalValue;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -19,7 +20,7 @@ import static java.util.stream.Collectors.toMap;
 public class CachingGraphiteClient implements GraphiteClient {
 
     private final GraphiteClient underlyingGraphiteClient;
-    private final LoadingCache<String, String> graphiteMetricsCache;
+    private final LoadingCache<String, MetricDecimalValue> graphiteMetricsCache;
 
     public CachingGraphiteClient(GraphiteClient underlyingGraphiteClient, Ticker ticker, long cacheTtlInSeconds, long cacheSize) {
         this.underlyingGraphiteClient = underlyingGraphiteClient;
@@ -33,7 +34,7 @@ public class CachingGraphiteClient implements GraphiteClient {
     @Override
     public GraphiteMetrics readMetrics(String... metricPaths) {
         try {
-            Map<String, String> graphiteMetrics = graphiteMetricsCache.getAll(asList(metricPaths));
+            Map<String, MetricDecimalValue> graphiteMetrics = graphiteMetricsCache.getAll(asList(metricPaths));
             return new GraphiteMetrics(graphiteMetrics);
         } catch (ExecutionException e) {
             // should never happen because the loader does not throw any checked exceptions
@@ -41,14 +42,14 @@ public class CachingGraphiteClient implements GraphiteClient {
         }
     }
 
-    private class GraphiteMetricsCacheLoader extends CacheLoader<String, String> {
+    private class GraphiteMetricsCacheLoader extends CacheLoader<String, MetricDecimalValue> {
         @Override
-        public String load(String metricPath) {
+        public MetricDecimalValue load(String metricPath) {
             return loadAll(singleton(metricPath)).get(metricPath);
         }
 
         @Override
-        public Map<String, String> loadAll(Iterable<? extends String> metricPaths) {
+        public Map<String, MetricDecimalValue> loadAll(Iterable<? extends String> metricPaths) {
             String[] metricPathsArray = toArray(metricPaths, String.class);
             GraphiteMetrics graphiteMetrics = underlyingGraphiteClient.readMetrics(metricPathsArray);
             return stream(metricPathsArray).collect(toMap(

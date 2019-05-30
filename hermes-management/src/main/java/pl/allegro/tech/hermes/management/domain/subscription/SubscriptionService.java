@@ -1,8 +1,5 @@
 package pl.allegro.tech.hermes.management.domain.subscription;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Stream.empty;
-import static java.util.stream.Stream.of;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTrace;
@@ -12,7 +9,6 @@ import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
@@ -32,6 +28,12 @@ import pl.allegro.tech.hermes.tracker.management.LogRepository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.empty;
+import static java.util.stream.Stream.of;
+import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status;
 
 @Component
 public class SubscriptionService {
@@ -172,8 +174,12 @@ public class SubscriptionService {
     }
 
     public List<SubscriptionNameWithMetrics> querySubscriptionsMetrics(Query<SubscriptionNameWithMetrics> query) {
-        return query.filter(getSubscriptionsMetrics())
-                .collect(toList());
+        List<SubscriptionNameWithMetrics> allMetrics = getSubscriptionsMetrics();
+        Stream<SubscriptionNameWithMetrics> availableMetrics = allMetrics.stream()
+                .filter(SubscriptionNameWithMetrics::allMetricsAreAvailable);
+        Stream<SubscriptionNameWithMetrics> unavailableMetrics = allMetrics.stream()
+                .filter(metrics -> !metrics.allMetricsAreAvailable());
+        return Stream.concat(query.filter(availableMetrics), unavailableMetrics).collect(toList());
     }
 
     public List<Subscription> getAllSubscriptions() {

@@ -1,3 +1,17 @@
+## 1.0.1 (29.05.2019)
+
+### Enhancements
+
+#### ([1029](https://github.com/allegro/hermes/pull/1029)) Attaching Keep-Alive header to frontend responses
+
+Added option `frontend.keep.alive.header.enabled` (default false) to enable attaching Keep-Alive header with timeout
+parameter (defined by `frontend.keep.alive.header.timeout.seconds`) to Hermes Frontend responses.
+
+### Bugfixes
+
+#### ([1027](https://github.com/allegro/hermes/pull/1027)) Message sending handlers triggered only when consumer is running
+#### ([1028](https://github.com/allegro/hermes/pull/1028)) Improved handling unavailable metrics
+
 ## 1.0.0 (16.05.2019)
 
 After 5 years of developing and maintaining Hermes, we are very excited to announce that version 1.0

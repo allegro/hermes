@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -37,6 +38,7 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
@@ -349,8 +351,12 @@ public class TopicService {
     }
 
     public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
-        return query.filter(getTopicsMetrics())
-                .collect(toList());
+        List<TopicNameWithMetrics> allMetrics = getTopicsMetrics();
+        Stream<TopicNameWithMetrics> availableMetrics = allMetrics.stream()
+                .filter(TopicNameWithMetrics::allMetricsAreAvailable);
+        Stream<TopicNameWithMetrics> unavailableMetrics = allMetrics.stream()
+                .filter(metrics -> !metrics.allMetricsAreAvailable());
+        return Stream.concat(query.filter(availableMetrics), unavailableMetrics).collect(toList());
     }
 
     private List<TopicNameWithMetrics> getTopicsMetrics() {

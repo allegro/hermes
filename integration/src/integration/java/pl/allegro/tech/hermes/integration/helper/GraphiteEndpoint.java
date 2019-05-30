@@ -67,6 +67,15 @@ public class GraphiteEndpoint implements EnvironmentAware {
                         .withBody(metricsStubDefinition.toBody())));
     }
 
+    public void returnMetricWithDelay(SubscriptionMetricsStubDefinition metricsStubDefinition, int responseDelayInMs) {
+        graphiteListener.register(get(urlMatching(metricsStubDefinition.toUrlPattern()))
+                .willReturn(aResponse()
+                        .withFixedDelay(responseDelayInMs)
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(metricsStubDefinition.toBody())));
+    }
+
     private static class GraphiteStubResponse {
         private final String target;
         private final List<List<Object>> datapoints;
@@ -117,6 +126,12 @@ public class GraphiteEndpoint implements EnvironmentAware {
 
         public SubscriptionMetricsStubDefinitionBuilder withRate(int rate) {
             String target = "sumSeries(stats.tech.hermes.consumer.*.meter." + subscription + ".m1_rate)";
+            response.add(new GraphiteStubResponse(target, dataPointOf(rate)));
+            return this;
+        }
+
+        public SubscriptionMetricsStubDefinitionBuilder withThroughput(int rate) {
+            String target = "sumSeries(stats.tech.hermes.consumer.*.throughput." + subscription + ".m1_rate)";
             response.add(new GraphiteStubResponse(target, dataPointOf(rate)));
             return this;
         }

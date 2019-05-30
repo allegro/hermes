@@ -11,10 +11,10 @@ public class SubscriptionNameWithMetrics {
     private final long delivered;
     private final long discarded;
     private final long inflight;
-    private final String timeouts;
-    private final long lag;
-    private final String rate;
-    private final String throughput;
+    private final MetricDecimalValue timeouts;
+    private final MetricLongValue lag;
+    private final MetricDecimalValue rate;
+    private final MetricDecimalValue throughput;
 
     @JsonCreator
     public SubscriptionNameWithMetrics(
@@ -23,10 +23,10 @@ public class SubscriptionNameWithMetrics {
             @JsonProperty("delivered") long delivered,
             @JsonProperty("discarded") long discarded,
             @JsonProperty("inflight") long inflight,
-            @JsonProperty("timeouts") String timeouts,
-            @JsonProperty("lag") long lag,
-            @JsonProperty("rate") String rate,
-            @JsonProperty("throughput") String throughput
+            @JsonProperty("timeouts") MetricDecimalValue timeouts,
+            @JsonProperty("lag") MetricLongValue lag,
+            @JsonProperty("rate") MetricDecimalValue rate,
+            @JsonProperty("throughput") MetricDecimalValue throughput
     ) {
         this.topicQualifiedName = topicQualifiedName;
         this.name = name;
@@ -65,20 +65,27 @@ public class SubscriptionNameWithMetrics {
         return inflight;
     }
 
-    public String getTimeouts() {
+    public MetricDecimalValue getTimeouts() {
         return timeouts;
     }
 
-    public long getLag() {
+    public MetricLongValue getLag() {
         return lag;
     }
 
-    public String getRate() {
+    public MetricDecimalValue getRate() {
         return rate;
     }
 
-    public String getThroughput() {
+    public MetricDecimalValue getThroughput() {
         return throughput;
+    }
+
+    public boolean allMetricsAreAvailable() {
+        return timeouts.isAvailable()
+                && lag.isAvailable()
+                && rate.isAvailable()
+                && throughput.isAvailable();
     }
 
     @Override

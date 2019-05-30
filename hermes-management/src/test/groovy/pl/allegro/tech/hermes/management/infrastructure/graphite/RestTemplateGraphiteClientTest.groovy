@@ -9,6 +9,8 @@ import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
 
+import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
+
 class RestTemplateGraphiteClientTest extends Specification {
 
     private static final int GRAPHITE_HTTP_PORT = Ports.nextAvailable()
@@ -34,8 +36,8 @@ class RestTemplateGraphiteClientTest extends Specification {
         GraphiteMetrics metrics = client.readMetrics("metric1", "metric2")
 
         then:
-        metrics.metricValue("metric1") == "10"
-        metrics.metricValue("metric2") == "20"
+        metrics.metricValue("metric1") == of("10")
+        metrics.metricValue("metric2") == of("20")
     }
 
     def "should return default value when metric has no value"() {
@@ -46,7 +48,7 @@ class RestTemplateGraphiteClientTest extends Specification {
         GraphiteMetrics metrics = client.readMetrics("metric");
         
         then:
-        metrics.metricValue("metric1") == "0.0"
+        metrics.metricValue("metric1") == of("0.0")
     }
 
     def "should return first notnull value"() {
@@ -59,7 +61,7 @@ class RestTemplateGraphiteClientTest extends Specification {
         GraphiteMetrics metrics = client.readMetrics("metric");
 
         then:
-        metrics.metricValue("metric") == "13"
+        metrics.metricValue("metric") == of("13")
     }
 
     def "should properly encode metric query strings"() {
@@ -72,7 +74,7 @@ class RestTemplateGraphiteClientTest extends Specification {
         GraphiteMetrics metrics = client.readMetrics('sumSeries(stats.tech.hermes.*.m1_rate)');
 
         then:
-        metrics.metricValue('sumSeries%28stats.tech.hermes.%2A.m1_rate%29') == "13"
+        metrics.metricValue('sumSeries%28stats.tech.hermes.%2A.m1_rate%29') == of("13")
     }
 
     private void mockGraphite(List queries) {
