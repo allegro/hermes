@@ -23,6 +23,8 @@ class JsonQueryParserTest extends Specification {
 
     List<StatefulObject> states
 
+    List<MultifieldObject> metrics
+
     void setup() {
         colors = [
                 new SimpleObject(field: "red"),
@@ -46,6 +48,12 @@ class JsonQueryParserTest extends Specification {
                 new StatefulObject(state: State.DELETED),
                 new StatefulObject(state: State.DELETED)
         ] as List<StatefulObject>
+
+        metrics = [
+                new MultifieldObject(firstField: "10", secondField: "30"),
+                new MultifieldObject(firstField: "unavailable", secondField: "unavailable"),
+                new MultifieldObject(firstField: "unavailable", secondField: "15"),
+        ] as List<MultifieldObject>
 
         queryParser = new JsonQueryParser(new ObjectMapper())
     }
@@ -372,6 +380,33 @@ class JsonQueryParserTest extends Specification {
         thrown(ParseException)
     }
 
+    def "should apply query to parsable fields"() {
+        given:
+        def query = "{\"query\": {\"secondField\": {\"gt\": 15}}}"
+
+        when:
+        def result = parse(query, MultifieldObject)
+                .filter(metrics)
+                .collect(Collectors.<MultifieldObject>toList())
+
+        then:
+        result.size() == 2
+        result*.secondField == ["30", "unavailable"]
+    }
+
+    def "should match object when filed is not parsable"() {
+        given:
+        def query = "{\"query\": {\"firstField\": {\"gt\": 5}}}"
+
+        when:
+        def result = parse(query, MultifieldObject)
+                .filter(metrics)
+                .collect(Collectors.<MultifieldObject>toList())
+
+        then:
+        result == metrics
+    }
+
     private <T> Query<T> parse(String query, Class<T> object) {
         queryParser.parse(query, object)
     }
@@ -379,6 +414,11 @@ class JsonQueryParserTest extends Specification {
     class SimpleObject {
 
         String field
+    }
+
+    class MultifieldObject {
+        String firstField
+        String secondField
     }
 
     class ComplexObject {

@@ -3,6 +3,10 @@ package pl.allegro.tech.hermes.management.infrastructure.query.matcher;
 import org.apache.commons.jxpath.JXPathException;
 import pl.allegro.tech.hermes.management.infrastructure.query.graph.ObjectGraph;
 
+import java.util.Optional;
+
+import static java.lang.Double.parseDouble;
+
 public class ComparisonMatcher implements Matcher {
 
     private final String attribute;
@@ -18,34 +22,38 @@ public class ComparisonMatcher implements Matcher {
     }
 
     @Override
-    public boolean match(Object value) {
-        Object leftSideValue = getUserInput(value);
+    public boolean match(Object object) {
+        Object leftSideValue = extractAttributeValue(object);
 
-        double leftSideValueAsNumber = parseToNumber(leftSideValue);
-        double rightSideValueAsNumber = parseToNumber(rightSideValue);
+        Optional<Double> leftSideValueAsNumber = tryParseNumber(leftSideValue);
+        Optional<Double> rightSideValueAsNumber = tryParseNumber(rightSideValue);
 
-        return makeComparison(leftSideValueAsNumber, rightSideValueAsNumber);
+        if (!leftSideValueAsNumber.isPresent()) {
+            return true;
+        }
+        if (!rightSideValueAsNumber.isPresent()) {
+            throw new MatcherInputException("Comparison operator requires numerical data");
+        }
+        return makeComparison(leftSideValueAsNumber.get(), rightSideValueAsNumber.get());
     }
 
-    private Object getUserInput(Object value) {
+    private Object extractAttributeValue(Object object) {
         try {
-            Object userInput = ObjectGraph.from(value).navigate(attribute).value();
+            Object value = ObjectGraph.from(object).navigate(attribute).value();
 
-            if (userInput == null)
+            if (value == null)
                 throw new MatcherInputException(String.format("Cannot find '%s' attribute", this.attribute));
-            return userInput;
-        }
-        catch (JXPathException e) {
+            return value;
+        } catch (JXPathException e) {
             throw new MatcherException(String.format("Could not navigate to specific path: '%s'", attribute), e);
         }
     }
 
-    private Double parseToNumber(Object value){
+    private Optional<Double> tryParseNumber(Object value){
         try {
-            return Double.parseDouble(asString(value));
-        }
-        catch (NumberFormatException e) {
-            throw new MatcherInputException("Comparison operator requires numerical data");
+            return Optional.of(parseDouble(asString(value)));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
         }
     }
 
