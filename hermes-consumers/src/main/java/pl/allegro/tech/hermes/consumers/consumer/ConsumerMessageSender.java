@@ -114,7 +114,12 @@ public class ConsumerMessageSender {
                 messageSender.send(message),
                 Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs)
         );
-        response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor);
+        response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor)
+                .exceptionally(e -> {
+                    logger.error("An error occurred while handling message sending response of subscription {} [partition={}, offset={}]",
+                            subscription.getQualifiedName(), message.getPartition(), message.getOffset(), e);
+                    return null;
+                });
     }
 
     public void updateSubscription(Subscription newSubscription) {
@@ -247,6 +252,10 @@ public class ConsumerMessageSender {
                 } else {
                     handleFailedSending(message, result);
                 }
+            } else {
+                logger.warn("Process of subscription {} is not running. " +
+                                "Ignoring sending message result [successful={}, partition={}, offset={}]",
+                        subscription.getQualifiedName(), result.succeeded(), message.getPartition(), message.getOffset());
             }
         }
     }
