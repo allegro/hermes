@@ -187,6 +187,8 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
             if (consumer.position(topicAndPartition) >= partitionOffset.getOffset()) {
                 offsetsData.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset()));
+            } else {
+                metrics.counter("offset-committer.skipped").inc();
             }
         }
         return offsetsData;
