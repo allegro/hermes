@@ -51,7 +51,7 @@ public class ConsumerProcess implements Runnable {
         this.healthcheckRefreshTime = clock.millis();
         this.unhealthyAfter = unhealthyAfter;
 
-        this.signals.add(startSignal);
+        addSignal(startSignal);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class ConsumerProcess implements Runnable {
     }
 
     public ConsumerProcess accept(Signal signal) {
-        this.signals.add(signal);
+        addSignal(signal);
         return this;
     }
 
@@ -198,5 +198,11 @@ public class ConsumerProcess implements Runnable {
 
     SubscriptionName getSubscriptionName() {
         return getSubscription().getQualifiedName();
+    }
+
+    private void addSignal(Signal signal) {
+        if (!this.signals.add(signal)) {
+            logger.error("[Queue: consumerProcessSignals] Unable to add item: queue is full. Offered item: {}", signal);
+        }
     }
 }

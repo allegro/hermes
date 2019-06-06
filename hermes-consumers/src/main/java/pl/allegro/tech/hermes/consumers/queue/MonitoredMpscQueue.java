@@ -20,7 +20,7 @@ public class MonitoredMpscQueue<T> {
         this.queue = new MpscArrayQueue<>(capacity);
         this.name = name;
         this.metrics = metrics;
-        metrics.registerGauge("queue." + name + ".utilization", () -> queue.size() / queue.capacity());
+        metrics.registerGauge("queue." + name + ".utilization", () -> (double) queue.size() / queue.capacity());
     }
 
     public boolean offer(T element) {
