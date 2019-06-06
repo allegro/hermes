@@ -116,8 +116,8 @@ public class ConsumerMessageSender {
         );
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor)
                 .exceptionally(e -> {
-                    logger.error("An error occurred while handling message sending response of subscription {} [partition={}, offset={}]",
-                            subscription.getQualifiedName(), message.getPartition(), message.getOffset(), e);
+                    logger.error("An error occurred while handling message sending response of subscription {} [partition={}, offset={}, id={}]",
+                            subscription.getQualifiedName(), message.getPartition(), message.getOffset(), message.getId(), e);
                     return null;
                 });
     }
@@ -254,8 +254,9 @@ public class ConsumerMessageSender {
                 }
             } else {
                 logger.warn("Process of subscription {} is not running. " +
-                                "Ignoring sending message result [successful={}, partition={}, offset={}]",
-                        subscription.getQualifiedName(), result.succeeded(), message.getPartition(), message.getOffset());
+                                "Ignoring sending message result [successful={}, partition={}, offset={}, id={}]",
+                        subscription.getQualifiedName(), result.succeeded(), message.getPartition(),
+                        message.getOffset(), message.getId());
             }
         }
     }
