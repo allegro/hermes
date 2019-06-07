@@ -8,6 +8,8 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
+import pl.allegro.tech.hermes.consumers.queue.MpscQueue;
+import pl.allegro.tech.hermes.consumers.queue.WaitFreeDrainMpscQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 
 import java.time.Clock;
@@ -24,7 +26,7 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerProcessSupervisor.class);
 
-    private final MonitoredMpscQueue<Signal> taskQueue;
+    private final MpscQueue<Signal> taskQueue;
 
     private final RunningConsumerProcesses runningConsumerProcesses;
 
@@ -48,8 +50,8 @@ public class ConsumerProcessSupervisor implements Runnable {
         this.executor = executor;
         this.clock = clock;
         this.metrics = metrics;
-        this.taskQueue = new MonitoredMpscQueue<>(metrics, "signalQueue",
-                configs.getIntProperty(Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE));
+        int signalQueueSize = configs.getIntProperty(Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE);
+        this.taskQueue = new MonitoredMpscQueue<>(new WaitFreeDrainMpscQueue<>(signalQueueSize), metrics, "signalQueue");
         this.signalsFilter = new SignalsFilter(taskQueue, clock);
         this.runningConsumerProcesses = new RunningConsumerProcesses(clock);
         this.processKiller = new ConsumerProcessKiller(
