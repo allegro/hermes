@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
 import com.google.common.collect.ImmutableMap;
-import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
+import pl.allegro.tech.hermes.consumers.queue.MpscQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType;
 
 import java.time.Clock;
@@ -20,9 +20,9 @@ class SignalsFilter {
 
     private final Clock clock;
 
-    private final MonitoredMpscQueue<Signal> taskQueue;
+    private final MpscQueue<Signal> taskQueue;
 
-    SignalsFilter(MonitoredMpscQueue<Signal> taskQueue, Clock clock) {
+    SignalsFilter(MpscQueue<Signal> taskQueue, Clock clock) {
         this.taskQueue = taskQueue;
         this.clock = clock;
     }

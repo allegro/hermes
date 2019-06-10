@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process
 
 import pl.allegro.tech.hermes.api.SubscriptionName
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
-import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue
+import pl.allegro.tech.hermes.consumers.queue.MpscQueue
+import pl.allegro.tech.hermes.consumers.queue.WaitFreeDrainMpscQueue
 import pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType
 import spock.lang.Specification
 
@@ -14,7 +14,7 @@ class SignalsFilterTest extends Specification {
 
     private final Clock clock = Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault())
 
-    private final MonitoredMpscQueue<Signal> taskQueue = new MonitoredMpscQueue<>(Mock(HermesMetrics), "queue", 10)
+    private final MpscQueue<Signal> taskQueue = new WaitFreeDrainMpscQueue<>(10)
 
     private final SignalsFilter filter = new SignalsFilter(taskQueue, clock)
 
