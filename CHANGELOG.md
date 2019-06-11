@@ -1,3 +1,28 @@
+## [Unreleased]
+
+### ...
+
+## 1.0.3 (10.06.2019)
+
+### Enhancements
+
+#### ([1032](https://github.com/allegro/hermes/pull/1032)) Fixing MPSC queue's `drain` method to return all items
+
+## 1.0.2 (06.06.2019)
+
+### Enhancements
+
+#### ([1031](https://github.com/allegro/hermes/pull/1031)) Added logging related to offsets committing
+#### ([1025](https://github.com/allegro/hermes/pull/1025)) ReadOnly mode for Management
+
+This feature allows to manually switch Hermes Management to ReadOnly mode. 
+During maintenance mode this protects Hermes from any unexpected changes.
+Switch is done at runtime via `/mode` admin endpoint.
+
+### Bugfixes
+
+#### ([1031](https://github.com/allegro/hermes/pull/1031)) Fixed monitored MPSC queue utilization meter 
+
 ## 1.0.1 (29.05.2019)
 
 ### Enhancements
