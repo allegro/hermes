@@ -24,6 +24,7 @@ import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndica
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.management.config.SubscriptionProperties;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
+import pl.allegro.tech.hermes.management.domain.dc.DcBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -34,6 +35,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingl
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.LogEndOffsetChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.OffsetsAvailableChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
+import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
@@ -42,6 +44,8 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
@@ -67,7 +71,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     MessageContentWrapper messageContentWrapper;
 
     @Autowired
-    SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
+    ZookeeperRepositoryManager zookeeperRepositoryManager;
 
     @Autowired
     AdminTool adminTool;
@@ -81,6 +85,9 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @Bean
     MultiDCAwareService multiDCAwareService(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
                                             Clock clock) {
+        List<DcBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repostories =
+                zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
+
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
             KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getClusterName());
 
@@ -96,12 +103,22 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage);
             KafkaRawMessageReader kafkaRawMessageReader =
                     new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
+
+            SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = repostories.stream()
+                    .filter(x -> kafkaProperties.getClusterName().contains(x.getDcName()))
+                    .findFirst().orElseThrow(() ->
+                            new IllegalArgumentException(String.format("Kafka brokers cluster name %s not matched with Zookeeper cluster name %s",
+                                    kafkaProperties.getClusterName(),
+                                    repostories.stream().map(x -> x.getDcName()).collect(Collectors.joining(",")))
+                            )
+                    )
+                    .getRepository();
+
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                     storage,
                     subscriptionOffsetChangeIndicator,
                     consumerPool,
-                    kafkaNamesMapper,
-                    multiDcExecutor
+                    kafkaNamesMapper
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
             return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,

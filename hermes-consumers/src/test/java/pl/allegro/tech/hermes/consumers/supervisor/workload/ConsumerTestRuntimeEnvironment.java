@@ -63,7 +63,7 @@ import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 class ConsumerTestRuntimeEnvironment {
 
     private static final int DEATH_OF_CONSUMER_AFTER_SECONDS = 300;
-    private final static String CLUSTER_NAME = "primary";
+    private final static String CLUSTER_NAME = "primary_dc";
 
     private int consumerIdSequence = 0;
 

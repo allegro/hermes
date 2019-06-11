@@ -32,7 +32,7 @@ public enum Configs {
     ENVIRONMENT_NAME("environment.name", "dev"),
     HOSTNAME("hostname", new InetAddressHostnameResolver().resolve()),
 
-    KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary"),
+    KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary_dc"),
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
     KAFKA_NAMESPACE("kafka.namespace", ""),
 

@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config.kafka;
 
 public class KafkaProperties {
 
-    private String clusterName = "primary";
+    private String clusterName = "primary_dc";
 
     private String connectionString = "localhost:2181";
 

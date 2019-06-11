@@ -29,7 +29,7 @@ import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
 public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositoryTest implements LogSchemaAware {
 
-    private static final String CLUSTER_NAME = "primary";
+    private static final String CLUSTER_NAME = "primary_dc";
 
     private static final Clock clock = Clock.fixed(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);

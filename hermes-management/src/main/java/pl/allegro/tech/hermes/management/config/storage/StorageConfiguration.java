@@ -133,13 +133,6 @@ public class StorageConfiguration {
     }
 
     @Bean
-    SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
-        return new ZookeeperSubscriptionOffsetChangeIndicator(localClient.getCuratorFramework(), zookeeperPaths(),
-                subscriptionRepository());
-    }
-
-    @Bean
     AdminTool adminTool() {
         ZookeeperClient localClient = clientManager().getLocalClient();
         return new ZookeeperAdminTool(zookeeperPaths(), localClient.getCuratorFramework(),
