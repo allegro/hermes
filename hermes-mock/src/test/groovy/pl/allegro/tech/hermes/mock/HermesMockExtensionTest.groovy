@@ -2,14 +2,19 @@ package pl.allegro.tech.hermes.mock
 
 import org.junit.jupiter.api.extension.RegisterExtension
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
+import pl.allegro.tech.hermes.test.helper.util.Ports
+import spock.lang.Shared
 import spock.lang.Specification
 
 class HermesMockExtensionTest extends Specification {
 
-    @RegisterExtension
-    HermesMockExtension hermes = new HermesMockExtension(56789)
+    @Shared
+    int port = Ports.nextAvailable()
 
-    HermesPublisher publisher = new HermesPublisher("http://localhost:56789")
+    @RegisterExtension
+    HermesMockExtension hermes = new HermesMockExtension(port)
+
+    HermesPublisher publisher = new HermesPublisher("http://localhost:$port")
 
     def 'simple publish-expect test'() {
         given:

@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
@@ -17,6 +16,7 @@ import java.time.Clock;
 
 import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler {
 
@@ -41,7 +41,8 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     public void handleDiscarded(Message message, Subscription subscription, MessageSendingResult result) {
         logResult(message, subscription, result);
 
-        offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
+        offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
+                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
         updateMeters(subscription);
         updateMetrics(Counters.DISCARDED, message, subscription);

@@ -30,6 +30,7 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthSubscriptionHandlerF
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthTokenRequestRateLimiterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClient;
+import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
@@ -110,6 +111,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(AvroToJsonMessageConverter.class);
         bindSingleton(MessageConverterResolver.class);
         bindSingleton(OffsetQueue.class);
+        bindSingleton(ConsumerPartitionAssignmentState.class);
         bindSingleton(ActiveConsumerCounter.class);
         bindSingleton(Retransmitter.class);
         bindSingleton(ConsumerMonitor.class);

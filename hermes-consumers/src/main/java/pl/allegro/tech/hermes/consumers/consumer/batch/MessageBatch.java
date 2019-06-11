@@ -2,7 +2,8 @@ package pl.allegro.tech.hermes.consumers.consumer.batch;
 
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
 import java.nio.BufferOverflowException;
@@ -31,7 +32,7 @@ public interface MessageBatch {
 
     ByteBuffer getContent();
 
-    List<PartitionOffset> getPartitionOffsets();
+    List<SubscriptionPartitionOffset> getPartitionOffsets();
 
     List<MessageMetadata> getMessagesMetadata();
 
@@ -57,5 +58,5 @@ public interface MessageBatch {
 
     String getTopic();
 
-    String getSubscription();
+    SubscriptionName getSubscription();
 }

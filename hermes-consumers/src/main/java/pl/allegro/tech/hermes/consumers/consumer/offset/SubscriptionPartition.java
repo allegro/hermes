@@ -9,22 +9,17 @@ public class SubscriptionPartition {
 
     private final KafkaTopicName kafkaTopicName;
 
-    private final SubscriptionName subscription;
+    private final SubscriptionName subscriptionName;
 
     private final int partition;
 
-    public SubscriptionPartition(KafkaTopicName kafkaTopicName, SubscriptionName subscription, int partition) {
-        this.kafkaTopicName = kafkaTopicName;
-        this.subscription = subscription;
-        this.partition = partition;
-    }
+    private final long partitionAssignmentTerm;
 
-    public static SubscriptionPartition subscriptionPartition(String kafkaTopicName, String subscriptionName, int partition) {
-        return new SubscriptionPartition(
-                KafkaTopicName.valueOf(kafkaTopicName),
-                SubscriptionName.fromString(subscriptionName),
-                partition
-        );
+    public SubscriptionPartition(KafkaTopicName kafkaTopicName, SubscriptionName subscriptionName, int partition, long partitionAssignmentTerm) {
+        this.kafkaTopicName = kafkaTopicName;
+        this.subscriptionName = subscriptionName;
+        this.partition = partition;
+        this.partitionAssignmentTerm = partitionAssignmentTerm;
     }
 
     public KafkaTopicName getKafkaTopicName() {
@@ -32,11 +27,15 @@ public class SubscriptionPartition {
     }
 
     public SubscriptionName getSubscriptionName() {
-        return subscription;
+        return subscriptionName;
     }
 
     public int getPartition() {
         return partition;
+    }
+
+    public long getPartitionAssignmentTerm() {
+        return partitionAssignmentTerm;
     }
 
     @Override
@@ -45,19 +44,21 @@ public class SubscriptionPartition {
         if (o == null || getClass() != o.getClass()) return false;
         SubscriptionPartition that = (SubscriptionPartition) o;
         return partition == that.partition &&
-                Objects.equals(subscription, that.subscription);
+                partitionAssignmentTerm == that.partitionAssignmentTerm &&
+                Objects.equals(subscriptionName, that.subscriptionName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(subscription, partition);
+        return Objects.hash(subscriptionName, partition, partitionAssignmentTerm);
     }
 
     @Override
     public String toString() {
         return "SubscriptionPartition{" +
-                "subscription=" + subscription +
+                "subscriptionName=" + subscriptionName +
                 ", partition=" + partition +
+                ", partitionAssignmentTerm=" + partitionAssignmentTerm +
                 '}';
     }
 }

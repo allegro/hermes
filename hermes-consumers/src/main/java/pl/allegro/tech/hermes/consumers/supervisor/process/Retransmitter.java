@@ -19,6 +19,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 public class Retransmitter {
 
     private static final Logger logger = LoggerFactory.getLogger(Retransmitter.class);
+    private static final long NON_EXISTENT_PARTITION_ASSIGNMENT_TERM = -1; // real one not needed for retransmission purposes
 
     private SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
     private String brokersClusterName;
@@ -38,7 +39,8 @@ public class Retransmitter {
 
             for (PartitionOffset partitionOffset : offsets) {
                 SubscriptionPartitionOffset subscriptionPartitionOffset = new SubscriptionPartitionOffset(
-                        new SubscriptionPartition(partitionOffset.getTopic(), subscriptionName, partitionOffset.getPartition()),
+                        new SubscriptionPartition(partitionOffset.getTopic(), subscriptionName,
+                                partitionOffset.getPartition(), NON_EXISTENT_PARTITION_ASSIGNMENT_TERM),
                         partitionOffset.getOffset());
 
                 if (moveOffset(subscriptionName, consumer, subscriptionPartitionOffset)) {

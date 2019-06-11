@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_INTERVAL;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class SerialConsumer implements Consumer {
 
@@ -114,7 +115,7 @@ public class SerialConsumer implements Consumer {
     }
 
     private void sendMessage(Message message) {
-        offsetQueue.offerInflightOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
+        offsetQueue.offerInflightOffset(subscriptionPartitionOffset(subscription.getQualifiedName(), message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
         hermesMetrics.incrementInflightCounter(subscription);
         trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));

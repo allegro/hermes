@@ -3,8 +3,10 @@ package pl.allegro.tech.hermes.consumers.consumer.batch;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkState;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 @NotThreadSafe
 public class JsonMessageBatch implements MessageBatch {
@@ -28,7 +31,7 @@ public class JsonMessageBatch implements MessageBatch {
 
     private final String id;
     private final String topic;
-    private final String subscription;
+    private final SubscriptionName subscription;
     private final boolean hasSubscriptionIdentityHeaders;
     private final ByteBuffer byteBuffer;
     private final List<MessageMetadata> metadata = new ArrayList<>();
@@ -47,7 +50,7 @@ public class JsonMessageBatch implements MessageBatch {
         this.byteBuffer = buffer;
         this.additionalHeaders = subscription.getHeaders();
         this.topic = subscription.getQualifiedTopicName();
-        this.subscription = subscription.getName();
+        this.subscription = subscription.getQualifiedName();
         this.hasSubscriptionIdentityHeaders = subscription.isSubscriptionIdentityHeadersEnabled();
     }
 
@@ -108,9 +111,10 @@ public class JsonMessageBatch implements MessageBatch {
     }
 
     @Override
-    public List<PartitionOffset> getPartitionOffsets() {
+    public List<SubscriptionPartitionOffset> getPartitionOffsets() {
         return metadata.stream()
-                .map(m -> new PartitionOffset(KafkaTopicName.valueOf(m.getKafkaTopic()), m.getOffset(), m.getPartition()))
+                .map(m -> subscriptionPartitionOffset(this.subscription,
+                        new PartitionOffset(KafkaTopicName.valueOf(m.getKafkaTopic()), m.getOffset(), m.getPartition()), m.getPartitionAssignmentTerm()))
                 .collect(Collectors.toList());
     }
 
@@ -175,7 +179,7 @@ public class JsonMessageBatch implements MessageBatch {
     }
 
     @Override
-    public String getSubscription() {
+    public SubscriptionName getSubscription() {
         return subscription;
     }
 }

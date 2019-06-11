@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.batch.BatchMonitoring;
@@ -36,8 +35,8 @@ import java.util.Set;
 
 import static com.github.rholder.retry.WaitStrategies.fixedWait;
 import static java.util.Optional.of;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class BatchConsumer implements Consumer {
 
@@ -115,15 +114,11 @@ public class BatchConsumer implements Consumer {
     }
 
     private void offerInflightOffsets(MessageBatch batch) {
-        for (PartitionOffset offset : batch.getPartitionOffsets()) {
-            offsetQueue.offerInflightOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(offset, subscription));
-        }
+        batch.getPartitionOffsets().forEach(offsetQueue::offerInflightOffset);
     }
 
     private void offerCommittedOffsets(MessageBatch batch) {
-        for (PartitionOffset offset : batch.getPartitionOffsets()) {
-            offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(offset, subscription));
-        }
+        batch.getPartitionOffsets().forEach(offsetQueue::offerCommittedOffset);
     }
 
     @Override

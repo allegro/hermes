@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
@@ -80,6 +81,7 @@ class ConsumerTestRuntimeEnvironment {
     private Supplier<HermesMetrics> metricsSupplier;
     private ConsumerNodesRegistry consumersRegistry;
     private CuratorFramework curator;
+    private final ConsumerPartitionAssignmentState partitionAssignmentState;
 
     private Map<String, CuratorFramework> consumerZookeeperConnections = Maps.newHashMap();
     private List<SubscriptionsCache> subscriptionsCaches = new ArrayList<>();
@@ -88,6 +90,7 @@ class ConsumerTestRuntimeEnvironment {
         this.paths = new ZookeeperPaths("/hermes");
         this.curatorSupplier = curatorSupplier;
         this.curator = curatorSupplier.get();
+        this.partitionAssignmentState = new ConsumerPartitionAssignmentState();
         this.groupRepository = new ZookeeperGroupRepository(curator, objectMapper, paths);
         this.topicRepository = new ZookeeperTopicRepository(curator, objectMapper, paths, groupRepository);
         this.subscriptionRepository = new ZookeeperSubscriptionRepository(
@@ -170,6 +173,7 @@ class ConsumerTestRuntimeEnvironment {
                 new ConsumersExecutorService(configFactory, metrics),
                 consumerFactory,
                 mock(OffsetQueue.class),
+                partitionAssignmentState,
                 mock(Retransmitter.class),
                 mock(UndeliveredMessageLogPersister.class),
                 subscriptionRepository,

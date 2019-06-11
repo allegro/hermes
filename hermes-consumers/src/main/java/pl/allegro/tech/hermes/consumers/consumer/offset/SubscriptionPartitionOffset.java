@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.util.Objects;
 
@@ -19,37 +17,15 @@ public class SubscriptionPartitionOffset {
         this.offset = offset;
     }
 
-    public static SubscriptionPartitionOffset subscriptionPartitionOffset(String kafkaTopicName, String subscriptionName, int partition, long offset) {
-        return new SubscriptionPartitionOffset(
-                SubscriptionPartition.subscriptionPartition(kafkaTopicName, subscriptionName, partition),
-                offset
-        );
-    }
-
-    public static SubscriptionPartitionOffset subscriptionPartitionOffset(Message message, Subscription subscription) {
-        return subscriptionPartitionOffset(message.getPartitionOffset(), subscription);
-    }
-
-    public static SubscriptionPartitionOffset subscriptionPartitionOffset(PartitionOffset partitionOffset, Subscription subscription) {
+    public static SubscriptionPartitionOffset subscriptionPartitionOffset(SubscriptionName subscriptionName, PartitionOffset partitionOffset, long partitionAssignmentTerm) {
         return new SubscriptionPartitionOffset(
                 new SubscriptionPartition(
                         partitionOffset.getTopic(),
-                        subscription.getQualifiedName(),
-                        partitionOffset.getPartition()
+                        subscriptionName,
+                        partitionOffset.getPartition(),
+                        partitionAssignmentTerm
                 ),
-                partitionOffset.getOffset()
-        );
-    }
-
-    public static SubscriptionPartitionOffset subscriptionPartitionOffset(PartitionOffset partitionOffset, SubscriptionName subscription) {
-        return new SubscriptionPartitionOffset(
-                new SubscriptionPartition(
-                        partitionOffset.getTopic(),
-                        subscription,
-                        partitionOffset.getPartition()
-                ),
-                partitionOffset.getOffset()
-        );
+                partitionOffset.getOffset());
     }
 
     public SubscriptionName getSubscriptionName() {
@@ -68,8 +44,20 @@ public class SubscriptionPartitionOffset {
         return offset;
     }
 
+    public long getPartitionAssignmentTerm() {
+        return subscriptionPartition.getPartitionAssignmentTerm();
+    }
+
     public SubscriptionPartition getSubscriptionPartition() {
         return subscriptionPartition;
+    }
+
+    @Override
+    public String toString() {
+        return "SubscriptionPartitionOffset{" +
+                "subscriptionPartition=" + subscriptionPartition +
+                ", offset=" + offset +
+                '}';
     }
 
     @Override
@@ -84,13 +72,5 @@ public class SubscriptionPartitionOffset {
     @Override
     public int hashCode() {
         return Objects.hash(subscriptionPartition, offset);
-    }
-
-    @Override
-    public String toString() {
-        return "SubscriptionPartitionOffset{" +
-                "subscriptionPartition=" + subscriptionPartition +
-                ", offset=" + offset +
-                '}';
     }
 }

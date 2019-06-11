@@ -128,7 +128,7 @@ public class MessageBatchReceiver {
     }
 
     private MessageMetadata messageMetadata(Subscription subscription, String batchId, Message message) {
-        return new MessageMetadata(message.getId(), batchId, message.getOffset(), message.getPartition(),
+        return new MessageMetadata(message.getId(), batchId, message.getOffset(), message.getPartition(), message.getPartitionAssignmentTerm(),
                 subscription.getQualifiedTopicName(), subscription.getName(), message.getKafkaTopic().asString(),
                 message.getPublishingTimestamp(), message.getReadingTimestamp());
     }

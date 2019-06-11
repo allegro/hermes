@@ -6,11 +6,11 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class DefaultSuccessHandler extends AbstractHandler implements SuccessHandler {
 
@@ -23,7 +23,8 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
 
     @Override
     public void handleSuccess(Message message, Subscription subscription, MessageSendingResult result) {
-        offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
+        offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
+                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
         updateMeters(message, subscription, result);
         updateMetrics(Counters.DELIVERED, message, subscription);
