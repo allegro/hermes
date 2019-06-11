@@ -1,8 +1,5 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
-import static java.time.Duration.ofMillis;
-import static java.time.Duration.ofSeconds;
-import static java.util.stream.Collectors.toList;
 import kafka.zk.AdminZkClient;
 import kafka.zk.KafkaZkClient;
 import kafka.zookeeper.ZooKeeperClient;
@@ -45,6 +42,10 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
+import static java.util.stream.Collectors.toList;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
