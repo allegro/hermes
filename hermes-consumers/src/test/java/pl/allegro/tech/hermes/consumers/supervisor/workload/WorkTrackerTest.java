@@ -30,7 +30,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 
 public class WorkTrackerTest extends ZookeeperBaseTest {
 
-    private final String basePath = "/hermes/consumers-workload/primary/runtime";
+    private final String basePath = "/hermes/consumers-workload/primary_dc/runtime";
     private final String supervisorId = "c1";
 
     private final TopicRepository topicRepository = mock(TopicRepository.class);
