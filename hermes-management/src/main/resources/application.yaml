@@ -12,6 +12,7 @@ storage:
 kafka:
   clusters:
     -
+      dc: dc
       clusterName: primary_dc
       connectionString: localhost:2181
       connectionTimeout: 3000

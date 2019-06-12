@@ -14,11 +14,13 @@ zookeeper:
 kafka:
   clusters:
     -
+      dc: dc
       clusterName: primary_dc
       connectionString: localhost:14192/kafka
       connectionTimeout: 10000
       namespace: 'itTest'
     -
+      dc: dc
       clusterName: secondary_dc
       connectionString: localhost:14192/secondaryKafka
       connectionTimeout: 10000
@@ -35,6 +37,7 @@ storage:
   pathPrefix: /hermes
   clusters:
     - dc: dc
+      clusterName: zk
       connectionString: localhost:14192
 
 auth:
