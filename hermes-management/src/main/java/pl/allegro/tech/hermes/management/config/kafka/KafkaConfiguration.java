@@ -85,7 +85,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @Bean
     MultiDCAwareService multiDCAwareService(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
                                             Clock clock) {
-        List<DcBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repostories =
+        List<DcBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
                 zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
 
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
@@ -104,15 +104,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             KafkaRawMessageReader kafkaRawMessageReader =
                     new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
 
-            SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = repostories.stream()
-                    .filter(x -> kafkaProperties.getClusterName().contains(x.getDcName()))
-                    .findFirst().orElseThrow(() ->
-                            new IllegalArgumentException(String.format("Kafka brokers cluster name %s not matched with Zookeeper cluster name %s",
-                                    kafkaProperties.getClusterName(),
-                                    repostories.stream().map(x -> x.getDcName()).collect(Collectors.joining(",")))
-                            )
-                    )
-                    .getRepository();
+            SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = getRepository(repositories, kafkaProperties);
 
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                     storage,
@@ -134,6 +126,22 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 clock,
                 ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
                 ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()));
+    }
+
+    private SubscriptionOffsetChangeIndicator getRepository(
+            List<DcBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repostories,
+            KafkaProperties kafkaProperties) {
+        return repostories.stream()
+                .filter(x -> kafkaProperties.getDc().equals(x.getDcName()))
+                .findFirst().orElseThrow(() ->
+                        new IllegalArgumentException(
+                                String.format("Kafka brokers cluster name %s not matched with Zookeeper cluster name %s",
+                                        kafkaProperties.getClusterName(),
+                                        repostories.stream().map(x -> x.getDcName()).collect(Collectors.joining(","))
+                                )
+                        )
+                )
+                .getRepository();
     }
 
     @Bean
