@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.client;
 
 import java.net.SocketTimeoutException;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import static java.net.HttpURLConnection.HTTP_CLIENT_TIMEOUT;
@@ -12,7 +11,7 @@ public class HermesClientBasicRetryCondition implements Predicate<HermesResponse
         return response == null
             || isClientTimeoutOrServerError(response)
             || isFailedExceptionally(response)
-            || isSocketTimeoutException(response.getFailureCause());
+            || isSocketTimeoutException(response);
     }
 
     private boolean isClientTimeoutOrServerError(HermesResponse response) {
@@ -23,8 +22,9 @@ public class HermesClientBasicRetryCondition implements Predicate<HermesResponse
         return response.isFailure() && response.getFailureCause().isPresent();
     }
 
-    private boolean isSocketTimeoutException(Optional<Throwable> failureCause) {
+    private boolean isSocketTimeoutException(HermesResponse failureCause) {
         return failureCause
+            .getFailureCause()
             .map(exception -> exception instanceof SocketTimeoutException)
             .orElse(false);
     }
