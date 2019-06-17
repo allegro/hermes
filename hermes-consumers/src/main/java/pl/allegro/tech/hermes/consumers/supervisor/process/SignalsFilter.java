@@ -32,7 +32,7 @@ class SignalsFilter {
             boolean merged = merge(filteredSignals, signal);
             if (!merged) {
                 if (signal.canExecuteNow(clock.millis())) {
-                    filteredSignals.add(signal);
+                    addWithoutDuplicationMergeableSignals(filteredSignals, signal);
                 } else {
                     taskQueue.offer(signal);
                 }
@@ -40,6 +40,16 @@ class SignalsFilter {
         }
 
         return filteredSignals;
+    }
+
+    private void addWithoutDuplicationMergeableSignals(List<Signal> filteredSignals, Signal signal) {
+        if (MERGEABLE_SIGNALS.containsKey(signal.getType())) {
+            if (!filteredSignals.contains(signal)) {
+                filteredSignals.add(signal);
+            }
+        } else {
+            filteredSignals.add(signal);
+        }
     }
 
     private boolean merge(List<Signal> filteredSignals, Signal signal) {

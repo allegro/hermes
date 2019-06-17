@@ -50,6 +50,28 @@ class SignalsFilterTest extends Specification {
     }
 
     @Unroll
+    def "should remove duplicated signals #signalType"() {
+        given:
+        List<Signal> signals = [
+                Signal.of(signalType, subscription('A')),
+                Signal.of(signalType, subscription('A')),
+                Signal.of(signalType, subscription('B'))
+        ]
+
+        when:
+        List<Signal> filteredSignals = filter.filterSignals(signals)
+
+        then:
+        filteredSignals == [
+                Signal.of(signalType, subscription('A')),
+                Signal.of(signalType, subscription('B'))
+        ]
+
+        where:
+        signalType << [STOP, START]
+    }
+
+    @Unroll
     def "should not remove duplicated #signalType signals"() {
         given:
         List<Signal> signals = [
