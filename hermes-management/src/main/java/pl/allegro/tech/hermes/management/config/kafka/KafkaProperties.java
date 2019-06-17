@@ -4,7 +4,7 @@ public class KafkaProperties {
 
     private String dc = "dc";
 
-    private String clusterName = "primary_dc";
+    private String clusterName = "primary";
 
     private String connectionString = "localhost:2181";
 
