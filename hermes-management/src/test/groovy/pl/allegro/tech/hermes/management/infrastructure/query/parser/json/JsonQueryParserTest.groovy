@@ -394,7 +394,7 @@ class JsonQueryParserTest extends Specification {
         result*.secondField == ["30", "unavailable"]
     }
 
-    def "should match object when filed is not parsable"() {
+    def "should match object when field is not parsable"() {
         given:
         def query = "{\"query\": {\"firstField\": {\"gt\": 5}}}"
 
