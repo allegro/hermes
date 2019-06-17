@@ -27,15 +27,15 @@ public class MultiDcRepositoryCommandExecutor {
         }
 
         List<DcBoundRepositoryHolder<T>> repositories = repositoryManager.getRepositories(command.getRepositoryType());
-        List<DcBoundRepositoryHolder<T>> succeededRepositories = new ArrayList<>();
+        List<DcBoundRepositoryHolder<T>> executedRepositories = new ArrayList<>();
 
         for (DcBoundRepositoryHolder<T> repository : repositories) {
             try {
+                executedRepositories.add(repository);
                 command.execute(repository.getRepository());
-                succeededRepositories.add(repository);
             } catch (Exception e) {
                 if (rollbackEnabled) {
-                    rollback(succeededRepositories, command);
+                    rollback(executedRepositories, command);
                 }
                 throw wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repository.getDcName());
             }
@@ -45,9 +45,6 @@ public class MultiDcRepositoryCommandExecutor {
     private RuntimeException wrapInInternalProcessingExceptionIfNeeded(Exception toWrap,
                                                                        String command,
                                                                        String dcName) {
-        if (toWrap instanceof HermesException) {
-            return (HermesException)toWrap;
-        }
         return new InternalProcessingException("Execution of command '" + command + "' failed on DC '" +
                 dcName + "'.", toWrap);
     }
@@ -57,8 +54,7 @@ public class MultiDcRepositoryCommandExecutor {
             try {
                 command.rollback(repository.getRepository());
             } catch (Exception e) {
-                throw new InternalProcessingException("Rollback procedure failed for command '" + command +
-                        "' on DC '" + repository.getDcName() + "'.");
+                logger.error("Rollback procedure failed for command {} on DC {}", command, repository.getDcName(), e);
             }
         }
     }

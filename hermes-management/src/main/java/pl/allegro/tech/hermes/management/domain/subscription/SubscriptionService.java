@@ -128,6 +128,10 @@ public class SubscriptionService {
     private Subscription.State getEffectiveState(TopicName topicName, String subscriptionName) {
         Set<Subscription.State> states = loadSubscriptionStatesFromAllDc(topicName, subscriptionName);
 
+        if (states.size() > 1) {
+            logger.warn("Some states are out of sync: {}", states);
+        }
+
         if (states.contains(Subscription.State.ACTIVE)) {
             return Subscription.State.ACTIVE;
         } else if (states.contains(Subscription.State.SUSPENDED)) {

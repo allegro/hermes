@@ -170,7 +170,7 @@ public class KafkaProperties {
     }
 
     public String getQualifiedClusterName() {
-        return clusterName + dc;
+        return clusterName + "-" + dc;
     }
 
     public String getOffsetsStorage() {
