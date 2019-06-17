@@ -28,7 +28,6 @@ import pl.allegro.tech.hermes.tracker.management.LogRepository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
@@ -174,12 +173,8 @@ public class SubscriptionService {
     }
 
     public List<SubscriptionNameWithMetrics> querySubscriptionsMetrics(Query<SubscriptionNameWithMetrics> query) {
-        List<SubscriptionNameWithMetrics> allMetrics = getSubscriptionsMetrics();
-        Stream<SubscriptionNameWithMetrics> availableMetrics = allMetrics.stream()
-                .filter(SubscriptionNameWithMetrics::allMetricsAreAvailable);
-        Stream<SubscriptionNameWithMetrics> unavailableMetrics = allMetrics.stream()
-                .filter(metrics -> !metrics.allMetricsAreAvailable());
-        return Stream.concat(query.filter(availableMetrics), unavailableMetrics).collect(toList());
+        return query.filter(getSubscriptionsMetrics())
+                .collect(toList());
     }
 
     public List<Subscription> getAllSubscriptions() {

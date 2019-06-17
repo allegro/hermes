@@ -81,13 +81,6 @@ public class SubscriptionNameWithMetrics {
         return throughput;
     }
 
-    public boolean allMetricsAreAvailable() {
-        return timeouts.isAvailable()
-                && lag.isAvailable()
-                && rate.isAvailable()
-                && throughput.isAvailable();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {

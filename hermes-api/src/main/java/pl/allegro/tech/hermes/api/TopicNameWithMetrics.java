@@ -67,12 +67,6 @@ public class TopicNameWithMetrics {
         return topicName.qualifiedName();
     }
 
-    public boolean allMetricsAreAvailable() {
-        return rate.isAvailable()
-                && deliveryRate.isAvailable()
-                && throughput.isAvailable();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
