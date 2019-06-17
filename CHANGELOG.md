@@ -2,6 +2,10 @@
 
 ### ...
 
+### Bugfixes
+
+#### ([1038](https://github.com/allegro/hermes/pull/1038)) Fix to filtering duplicated signals
+
 ## 1.0.3 (10.06.2019)
 
 ### Enhancements
