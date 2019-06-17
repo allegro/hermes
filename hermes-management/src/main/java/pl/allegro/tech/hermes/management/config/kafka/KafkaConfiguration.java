@@ -44,7 +44,6 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static java.time.Duration.ofMillis;
@@ -135,8 +134,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 .filter(x -> kafkaProperties.getDc().equals(x.getDcName()))
                 .findFirst().orElseThrow(() ->
                         new IllegalArgumentException(
-                                String.format("Kafka brokers cluster name %s not matched with Zookeeper cluster name %s",
-                                        kafkaProperties.getClusterName(),
+                                String.format("Kafka cluster dc name '%s' not matched with Zookeeper dc names: %s",
+                                        kafkaProperties.getDc(),
                                         repostories.stream().map(x -> x.getDcName()).collect(Collectors.joining(","))
                                 )
                         )
