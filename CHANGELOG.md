@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### ...
+
+## 1.0.4 (17.06.2019)
+
 ### Enhancements
 
 #### ([1035](https://github.com/allegro/hermes/pull/1035)) Handling unparsable values in queries
