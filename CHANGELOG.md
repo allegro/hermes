@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Enhancements
+
+#### ([1035](https://github.com/allegro/hermes/pull/1035)) Handling unparsable values in queries
+
 ### Bugfixes
 
 #### ([1038](https://github.com/allegro/hermes/pull/1038)) Fix to filtering duplicated signals
