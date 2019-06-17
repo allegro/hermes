@@ -1,14 +1,24 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process
 
 import pl.allegro.tech.hermes.api.SubscriptionName
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset
 import pl.allegro.tech.hermes.consumers.queue.MpscQueue
 import pl.allegro.tech.hermes.consumers.queue.WaitFreeDrainMpscQueue
-import pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
+
+import static pl.allegro.tech.hermes.api.SubscriptionName.fromString
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.RETRANSMIT
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_SUBSCRIPTION
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_TOPIC
 
 class SignalsFilterTest extends Specification {
 
@@ -21,57 +31,88 @@ class SignalsFilterTest extends Specification {
     def "should filter out contradicting signals like START & STOP or STOP & START for the same subscription"() {
         given:
         List<Signal> signals = [
-                Signal.of(SignalType.STOP, subscription('A')),
-                Signal.of(SignalType.STOP, subscription('B')),
-                Signal.of(SignalType.STOP, subscription('C')),
-                Signal.of(SignalType.START, subscription('D')),
-                Signal.of(SignalType.START, subscription('A'))
+                Signal.of(STOP, subscription('A')),
+                Signal.of(STOP, subscription('B')),
+                Signal.of(STOP, subscription('C')),
+                Signal.of(START, subscription('D')),
+                Signal.of(START, subscription('A'))
         ]
 
         when:
-        Set<Signal> filteredSignals = filter.filterSignals(signals)
+        List<Signal> filteredSignals = filter.filterSignals(signals)
 
         then:
         filteredSignals == [
-                Signal.of(SignalType.STOP, subscription('B')),
-                Signal.of(SignalType.STOP, subscription('C')),
-                Signal.of(SignalType.START, subscription('D'))
-        ] as Set
+                Signal.of(STOP, subscription('B')),
+                Signal.of(STOP, subscription('C')),
+                Signal.of(START, subscription('D'))
+        ]
     }
 
-    def "should remove duplicate signals keeping the most recent one"() {
+    @Unroll
+    def "should remove duplicated signals #signalType"() {
         given:
         List<Signal> signals = [
-                Signal.of(SignalType.UPDATE_TOPIC, subscription('A'), 'first-update'),
-                Signal.of(SignalType.UPDATE_TOPIC, subscription('A'), 'second-update'),
+                Signal.of(signalType, subscription('A')),
+                Signal.of(signalType, subscription('A')),
+                Signal.of(signalType, subscription('B'))
         ]
 
         when:
-        Set<Signal> filteredSignals = filter.filterSignals(signals)
+        List<Signal> filteredSignals = filter.filterSignals(signals)
 
         then:
         filteredSignals == [
-                Signal.of(SignalType.UPDATE_TOPIC, subscription('A')),
-        ] as Set
-        filteredSignals
+                Signal.of(signalType, subscription('A')),
+                Signal.of(signalType, subscription('B'))
+        ]
+
+        where:
+        signalType << [STOP, START]
+    }
+
+    @Unroll
+    def "should not remove duplicated #signalType signals"() {
+        given:
+        List<Signal> signals = [
+                Signal.of(signalType, subscription('A'), firstSignalPayload),
+                Signal.of(signalType, subscription('A'), secondSignalPayload)
+        ]
+
+        when:
+        List<Signal> filteredSignals = filter.filterSignals(signals)
+
+        then:
+        filteredSignals == signals
+
+        where:
+        signalType          | firstSignalPayload             | secondSignalPayload
+        UPDATE_TOPIC        | 'first-update'                 | 'second-update'
+        UPDATE_SUBSCRIPTION | 'first-update'                 | 'second-update'
+        COMMIT              | [offset(1, 10), offset(2, 11)] | [offset(1, 11)]
+        RETRANSMIT          | null                           | null
     }
 
     def "should remove signals that should be executed later and put them back on task queue"() {
         given:
         Object payload = null
         List<Signal> signals = [
-                Signal.of(SignalType.START, subscription('A'), payload, 2048),
+                Signal.of(START, subscription('A'), payload, 2048),
         ]
 
         when:
-        Set<Signal> filteredSignals = filter.filterSignals(signals)
+        List<Signal> filteredSignals = filter.filterSignals(signals)
 
         then:
-        filteredSignals == [] as Set
-        taskQueue.drain({ s -> s == Signal.of(SignalType.START, subscription('A')) })
+        filteredSignals == []
+        taskQueue.drain({ s -> s == Signal.of(START, subscription('A')) })
     }
 
-    private SubscriptionName subscription(String suffix) {
-        return SubscriptionName.fromString("group.topic\$sub$suffix")
+    private static SubscriptionName subscription(String suffix) {
+        return fromString("group.topic\$sub$suffix")
+    }
+
+    private static SubscriptionPartitionOffset offset(int partition, long offset) {
+        return subscriptionPartitionOffset("group_topic", 'group.topic$sub', partition, offset)
     }
 }

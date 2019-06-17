@@ -5,11 +5,9 @@ import pl.allegro.tech.hermes.consumers.queue.MpscQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType;
 
 import java.time.Clock;
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 class SignalsFilter {
 
@@ -27,14 +25,14 @@ class SignalsFilter {
         this.clock = clock;
     }
 
-    Set<Signal> filterSignals(List<Signal> signals) {
-        Set<Signal> filteredSignals = Collections.newSetFromMap(new LinkedHashMap<>(signals.size()));
+    List<Signal> filterSignals(List<Signal> signals) {
+        List<Signal> filteredSignals = new ArrayList<>(signals.size());
 
         for (Signal signal : signals) {
             boolean merged = merge(filteredSignals, signal);
             if (!merged) {
                 if (signal.canExecuteNow(clock.millis())) {
-                    filteredSignals.add(signal);
+                    addWithoutDuplicationMergeableSignals(filteredSignals, signal);
                 } else {
                     taskQueue.offer(signal);
                 }
@@ -44,7 +42,17 @@ class SignalsFilter {
         return filteredSignals;
     }
 
-    private boolean merge(Set<Signal> filteredSignals, Signal signal) {
+    private void addWithoutDuplicationMergeableSignals(List<Signal> filteredSignals, Signal signal) {
+        if (MERGEABLE_SIGNALS.containsKey(signal.getType())) {
+            if (!filteredSignals.contains(signal)) {
+                filteredSignals.add(signal);
+            }
+        } else {
+            filteredSignals.add(signal);
+        }
+    }
+
+    private boolean merge(List<Signal> filteredSignals, Signal signal) {
         SignalType signalTypeToMerge = MERGEABLE_SIGNALS.get(signal.getType());
         if (signalTypeToMerge != null) {
             return filteredSignals.remove(signal.createChild(signalTypeToMerge));
