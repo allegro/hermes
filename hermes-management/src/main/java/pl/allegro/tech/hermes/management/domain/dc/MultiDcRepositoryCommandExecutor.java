@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.dc;
 
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.HermesException;
@@ -34,6 +35,7 @@ public class MultiDcRepositoryCommandExecutor {
                 executedRepositories.add(repository);
                 command.execute(repository.getRepository());
             } catch (Exception e) {
+                logger.warn("Execute failed with an error", e);
                 if (rollbackEnabled) {
                     rollback(executedRepositories, command);
                 }
@@ -45,12 +47,15 @@ public class MultiDcRepositoryCommandExecutor {
     private RuntimeException wrapInInternalProcessingExceptionIfNeeded(Exception toWrap,
                                                                        String command,
                                                                        String dcName) {
+        if (toWrap instanceof HermesException) {
+            return (HermesException) toWrap;
+        }
         return new InternalProcessingException("Execution of command '" + command + "' failed on DC '" +
                 dcName + "'.", toWrap);
     }
 
     private <T> void rollback(List<DcBoundRepositoryHolder<T>> repositories, RepositoryCommand<T> command) {
-        for (DcBoundRepositoryHolder<T> repository : repositories) {
+        for (DcBoundRepositoryHolder<T> repository :  Lists.reverse(repositories)) {
             try {
                 command.rollback(repository.getRepository());
             } catch (Exception e) {
