@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.supervisor.process
 
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset
 import pl.allegro.tech.hermes.consumers.consumer.Consumer
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset
 
@@ -72,7 +73,7 @@ class ConsumerStub implements Consumer {
     }
 
     @Override
-    boolean moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
+    boolean moveOffset(PartitionOffset partitionOffset) {
         return true
     }
 

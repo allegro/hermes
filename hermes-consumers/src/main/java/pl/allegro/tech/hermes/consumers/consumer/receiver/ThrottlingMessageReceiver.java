@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver;
 
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.IdleTimeCalculator;
@@ -56,7 +57,7 @@ public class ThrottlingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+    public boolean moveOffset(PartitionOffset offset) {
         return receiver.moveOffset(offset);
     }
 

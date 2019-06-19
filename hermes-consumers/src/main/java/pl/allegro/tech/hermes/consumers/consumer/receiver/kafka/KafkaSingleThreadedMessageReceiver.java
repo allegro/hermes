@@ -80,7 +80,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
         this.messageContentWrapper = messageContentWrapper;
         this.clock = clock;
         this.readQueue = new ArrayBlockingQueue<>(readQueueCapacity);
-        this.offsetMover = new KafkaConsumerOffsetMover(consumer);
+        this.offsetMover = new KafkaConsumerOffsetMover(subscription.getQualifiedName(), consumer);
         this.consumer.subscribe(topics.keySet(),
                 new OffsetCommitterConsumerRebalanceListener(subscription.getQualifiedName(), partitionAssignmentState));
     }
@@ -189,29 +189,30 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     }
 
     private Map<TopicPartition, OffsetAndMetadata> createOffset(Set<SubscriptionPartitionOffset> partitionOffsets) {
-        Set<TopicPartition> assignments = consumer.assignment();
         Map<TopicPartition, OffsetAndMetadata> offsetsData = new LinkedHashMap<>();
         for (SubscriptionPartitionOffset partitionOffset : partitionOffsets) {
             TopicPartition topicAndPartition = new TopicPartition(
                     partitionOffset.getKafkaTopicName().asString(),
                     partitionOffset.getPartition());
 
-            if (assignments.contains(topicAndPartition)) {
+            if (partitionAssignmentState.isAssignedPartitionAtCurrentTerm(partitionOffset.getSubscriptionPartition())) {
                 if (consumer.position(topicAndPartition) >= partitionOffset.getOffset()) {
                     offsetsData.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset()));
                 } else {
                     metrics.counter("offset-committer.skipped").inc();
                 }
             } else {
-                logger.warn("Consumer is not assigned to partition {} of topic {}, ignoring offset {} to commit",
-                        topicAndPartition.partition(), topicAndPartition.topic(), partitionOffset.getOffset());
+                logger.warn("Consumer is not assigned to partition {} of subscription {} at current term {}, ignoring offset {} from term {} to commit",
+                        partitionOffset.getPartition(), partitionOffset.getSubscriptionName(),
+                        partitionAssignmentState.currentTerm(partitionOffset.getSubscriptionName()),
+                        partitionOffset.getOffset(), partitionOffset.getPartitionAssignmentTerm());
             }
         }
         return offsetsData;
     }
 
     @Override
-    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+    public boolean moveOffset(PartitionOffset offset) {
         return offsetMover.move(offset);
     }
 }

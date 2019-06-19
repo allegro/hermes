@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.batch.BatchMonitoring;
@@ -168,9 +169,9 @@ public class BatchConsumer implements Consumer {
     }
 
     @Override
-    public boolean moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
+    public boolean moveOffset(PartitionOffset partitionOffset) {
         if (receiver != null) {
-            return receiver.moveOffset(subscriptionPartitionOffset);
+            return receiver.moveOffset(partitionOffset);
         }
         return false;
     }

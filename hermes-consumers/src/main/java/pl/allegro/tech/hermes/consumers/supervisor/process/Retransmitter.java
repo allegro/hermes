@@ -9,8 +9,6 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 
 import javax.inject.Inject;
 
@@ -19,7 +17,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 public class Retransmitter {
 
     private static final Logger logger = LoggerFactory.getLogger(Retransmitter.class);
-    private static final long NON_EXISTENT_PARTITION_ASSIGNMENT_TERM = -1; // real one not needed for retransmission purposes
 
     private SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
     private String brokersClusterName;
@@ -38,12 +35,7 @@ public class Retransmitter {
                     subscriptionName.getTopicName(), subscriptionName.getName(), brokersClusterName);
 
             for (PartitionOffset partitionOffset : offsets) {
-                SubscriptionPartitionOffset subscriptionPartitionOffset = new SubscriptionPartitionOffset(
-                        new SubscriptionPartition(partitionOffset.getTopic(), subscriptionName,
-                                partitionOffset.getPartition(), NON_EXISTENT_PARTITION_ASSIGNMENT_TERM),
-                        partitionOffset.getOffset());
-
-                if (moveOffset(subscriptionName, consumer, subscriptionPartitionOffset)) {
+                if (moveOffset(subscriptionName, consumer, partitionOffset)) {
                     subscriptionOffsetChangeIndicator.removeOffset(
                         subscriptionName.getTopicName(),
                         subscriptionName.getName(),
@@ -52,7 +44,7 @@ public class Retransmitter {
                         partitionOffset.getPartition()
                     );
                     logger.info("Removed offset indicator for subscription={} and partition={}",
-                            subscriptionName, subscriptionPartitionOffset.getPartition());
+                            subscriptionName, partitionOffset.getPartition());
                 }
             }
         } catch (Exception ex) {
@@ -62,12 +54,12 @@ public class Retransmitter {
 
     private boolean moveOffset(SubscriptionName subscriptionName,
                             Consumer consumer,
-                            SubscriptionPartitionOffset subscriptionPartitionOffset) {
+                            PartitionOffset partitionOffset) {
         try {
-            return consumer.moveOffset(subscriptionPartitionOffset);
+            return consumer.moveOffset(partitionOffset);
         } catch (IllegalStateException ex) {
             logger.warn("Cannot move offset for subscription={} and partition={} , possibly owned by different node",
-                    subscriptionName, subscriptionPartitionOffset.getPartition(), ex);
+                    subscriptionName, partitionOffset.getPartition(), ex);
             return false;
         }
     }

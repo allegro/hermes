@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver;
 
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 
@@ -17,5 +18,5 @@ public interface MessageReceiver {
 
     void commit(Set<SubscriptionPartitionOffset> offsets);
 
-    boolean moveOffset(SubscriptionPartitionOffset offset);
+    boolean moveOffset(PartitionOffset offset);
 }

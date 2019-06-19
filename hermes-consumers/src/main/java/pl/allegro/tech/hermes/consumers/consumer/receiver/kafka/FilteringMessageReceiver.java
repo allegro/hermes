@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChain;
@@ -65,7 +66,7 @@ public class FilteringMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+    public boolean moveOffset(PartitionOffset offset) {
         return receiver.moveOffset(offset);
     }
 }

@@ -16,13 +16,13 @@ public class ConsumerPartitionAssignmentState {
 
     private static final Logger logger = getLogger(ConsumerPartitionAssignmentState.class);
 
-    Map<SubscriptionName, Set<Integer>> assigned = new ConcurrentHashMap<>();
+    private final Map<SubscriptionName, Set<Integer>> assigned = new ConcurrentHashMap<>();
 
-    Map<SubscriptionName, Long> terms = new ConcurrentHashMap<>();
+    private final Map<SubscriptionName, Long> terms = new ConcurrentHashMap<>();
 
     public void assign(SubscriptionName name, Collection<Integer> partitions) {
         incrementTerm(name);
-        logger.info("Assigning partitions {} to {}, term={}", partitions, name, currentTerm(name));
+        logger.info("Assigning partitions {} of {}, term={}", partitions, name, currentTerm(name));
         assigned.compute(name, ((subscriptionName, assigned) -> {
             HashSet<Integer> extended = new HashSet<>(partitions);
             if (assigned == null) {
@@ -34,8 +34,12 @@ public class ConsumerPartitionAssignmentState {
         }));
     }
 
+    private void incrementTerm(SubscriptionName name) {
+        terms.compute(name, ((subscriptionName, term) -> term == null ? 0L : term + 1L));
+    }
+
     public void revoke(SubscriptionName name, Collection<Integer> partitions) {
-        logger.info("Revoking partitions {} from {}", partitions, name);
+        logger.info("Revoking partitions {} of {}", partitions, name);
         assigned.computeIfPresent(name, (subscriptionName, assigned) -> {
             Set<Integer> filtered = assigned.stream().filter(p -> !partitions.contains(p)).collect(toSet());
             return filtered.isEmpty() ? null : filtered;
@@ -43,12 +47,8 @@ public class ConsumerPartitionAssignmentState {
     }
 
     public void revokeAll(SubscriptionName name) {
-        logger.info("Revoking all partitions from {}", name);
+        logger.info("Revoking all partitions of {}", name);
         assigned.remove(name);
-    }
-
-    private void incrementTerm(SubscriptionName name) {
-        terms.compute(name, ((subscriptionName, term) -> term == null ? 0L : term + 1L));
     }
 
     public long currentTerm(SubscriptionName name) {

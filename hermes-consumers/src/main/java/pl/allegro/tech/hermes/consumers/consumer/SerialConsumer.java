@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
@@ -182,7 +183,7 @@ public class SerialConsumer implements Consumer {
     }
 
     @Override
-    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+    public boolean moveOffset(PartitionOffset offset) {
         return messageReceiver.moveOffset(offset);
     }
 
