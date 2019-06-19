@@ -4,9 +4,13 @@ import java.util.Optional;
 
 class CounterMatcher {
 
+    private static final int TOPIC_METRICS_PARTS = 3;
+    private static final int SUBSCRIPTION_METRIC_PARTS = 4;
+
     private final String counterName;
     private String topicName;
     private Optional<String> subscription;
+    private int metricParts;
 
     public CounterMatcher(String counterName) {
         this.counterName = counterName;
@@ -15,11 +19,13 @@ class CounterMatcher {
 
     private void parseCounter(String counterName) {
         String[] splitted = counterName.split("\\.");
-        if (isTopicPublished()) {
+        metricParts = splitted.length;
+        if (isTopicPublished() || isTopicThroughput()) {
             topicName = splitted[splitted.length - 2] + "." + splitted[splitted.length - 1];
             subscription = Optional.empty();
         } else if (
                 isSubscriptionDelivered()
+                        || isSubscriptionThroughput()
                         || isSubscriptionDiscarded()
                         || isSubscriptionInflight()
                         || isSubscriptionFiltered()
@@ -31,6 +37,14 @@ class CounterMatcher {
 
     public boolean isTopicPublished() {
         return counterName.startsWith("published.");
+    }
+
+    public boolean isTopicThroughput() {
+        return counterName.startsWith("throughput.") && metricParts == TOPIC_METRICS_PARTS;
+    }
+
+    public boolean isSubscriptionThroughput() {
+        return counterName.startsWith("throughput.") && metricParts == SUBSCRIPTION_METRIC_PARTS;
     }
 
     public boolean isSubscriptionDelivered() {

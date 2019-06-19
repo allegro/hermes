@@ -322,5 +322,6 @@ public class HermesMetrics {
     public void registerDyingConsumerProcessesCountGauge(Gauge<Integer> gauge) {
         metricRegistry.register(metricRegistryName(Gauges.DYING_CONSUMER_PROCESSES_COUNT), gauge);
     }
+
 }
 

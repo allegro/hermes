@@ -37,6 +37,7 @@ class HybridTopicMetricsRepositoryTest extends Specification {
             .addMetricValue(rate, of('10'))
             .addMetricValue(deliveryRate, of('20'))
         sharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/published') >> 100
+        sharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/volume') >> 1024
         subscriptionRepository.listSubscriptionNames(topic) >> ["subscription1", "subscription2"]
 
         when:
@@ -47,6 +48,7 @@ class HybridTopicMetricsRepositoryTest extends Specification {
         metrics.deliveryRate == of('20')
         metrics.published == 100
         metrics.subscriptions == 2
+        metrics.volume == 1024
     }
     
 }

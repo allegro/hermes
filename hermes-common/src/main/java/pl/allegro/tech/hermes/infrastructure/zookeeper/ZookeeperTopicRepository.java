@@ -5,6 +5,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -56,8 +57,16 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     @Override
     public List<Topic> listTopics(String groupName) {
         return listTopicNames(groupName).stream()
-                .map(name -> getTopicDetails(new TopicName(groupName, name), true))
-                .filter(Optional::isPresent)
+                .map(name -> {
+                    Optional<Topic> topicDetails = getTopicDetails(new TopicName(groupName, name), true);
+                    if (!topicDetails.isPresent()) {
+                        List<Group> groups = groupRepository.listGroups();
+                        List<String> topicNames = listTopicNames(groupName);
+                        System.out.println("asa");
+                    }
+                    return topicDetails;
+                })
+                .filter(topic -> topic.isPresent())
                 .map(Optional::get)
                 .collect(Collectors.toList());
     }
