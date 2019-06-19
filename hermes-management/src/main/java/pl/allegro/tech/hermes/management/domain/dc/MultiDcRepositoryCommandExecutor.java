@@ -55,7 +55,7 @@ public class MultiDcRepositoryCommandExecutor {
     }
 
     private <T> void rollback(List<DcBoundRepositoryHolder<T>> repositories, RepositoryCommand<T> command) {
-        for (DcBoundRepositoryHolder<T> repository :  Lists.reverse(repositories)) {
+        for (DcBoundRepositoryHolder<T> repository :  repositories) {
             try {
                 command.rollback(repository.getRepository());
             } catch (Exception e) {

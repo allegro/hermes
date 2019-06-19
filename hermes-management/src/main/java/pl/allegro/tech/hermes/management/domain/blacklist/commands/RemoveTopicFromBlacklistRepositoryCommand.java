@@ -5,13 +5,16 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class RemoveTopicFromBlacklistRepositoryCommand extends RepositoryCommand<TopicBlacklistRepository> {
     private final String qualifiedTopicName;
+    private boolean exists = false;
 
     public RemoveTopicFromBlacklistRepositoryCommand(String qualifiedTopicName) {
         this.qualifiedTopicName = qualifiedTopicName;
     }
 
     @Override
-    public void backup(TopicBlacklistRepository repository) {}
+    public void backup(TopicBlacklistRepository repository) {
+        exists = repository.isBlacklisted(qualifiedTopicName);
+    }
 
     @Override
     public void execute(TopicBlacklistRepository repository) {
@@ -20,7 +23,9 @@ public class RemoveTopicFromBlacklistRepositoryCommand extends RepositoryCommand
 
     @Override
     public void rollback(TopicBlacklistRepository repository) {
-        repository.add(qualifiedTopicName);
+        if (exists) {
+            repository.add(qualifiedTopicName);
+        }
     }
 
     @Override
