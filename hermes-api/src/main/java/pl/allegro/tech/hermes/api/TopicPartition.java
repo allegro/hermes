@@ -12,18 +12,21 @@ public class TopicPartition {
     private final long logEndOffset;
     private final long lag;
     private final String offsetMetadata;
+    private final ContentType contentType;
 
     @JsonCreator
     public TopicPartition(@JsonProperty("partition") int partition,
                           @JsonProperty("topic") String topic,
                           @JsonProperty("currentOffset") long currentOffset,
                           @JsonProperty("logEndOffset") long logEndOffset,
-                          @JsonProperty("offsetMetadata") String offsetMetadata) {
+                          @JsonProperty("offsetMetadata") String offsetMetadata,
+                          @JsonProperty("contentType") ContentType contentType) {
         this.partition = partition;
         this.topic = topic;
         this.currentOffset = currentOffset;
         this.logEndOffset = logEndOffset;
         this.offsetMetadata = offsetMetadata;
+        this.contentType = contentType;
 
         this.lag = calculateLag(currentOffset, logEndOffset);
     }
@@ -56,6 +59,10 @@ public class TopicPartition {
         return lag;
     }
 
+    public ContentType getContentType() {
+        return contentType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -64,6 +71,7 @@ public class TopicPartition {
         return partition == that.partition &&
                 currentOffset == that.currentOffset &&
                 logEndOffset == that.logEndOffset &&
+                contentType == that.contentType &&
                 lag == that.lag &&
                 Objects.equals(topic, that.topic) &&
                 Objects.equals(offsetMetadata, that.offsetMetadata);
@@ -71,6 +79,6 @@ public class TopicPartition {
 
     @Override
     public int hashCode() {
-        return Objects.hash(partition, topic, currentOffset, logEndOffset, lag, offsetMetadata);
+        return Objects.hash(partition, topic, currentOffset, logEndOffset, contentType, lag, offsetMetadata);
     }
 }

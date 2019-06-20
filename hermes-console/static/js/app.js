@@ -10,7 +10,8 @@ var hermes = angular.module('hermes', [
     'hermes.messagePreview',
     'hermes.auth',
     'hermes.search',
-    'hermes.stats'
+    'hermes.stats',
+    'hermes.diagnostics'
 ]);
 
 hermes.constant('DASHBOARD_CONFIG', config.dashboard);
@@ -48,6 +49,10 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
                 .state('subscription', {
                     url: '/groups/:groupName/topics/:topicName/subscriptions/:subscriptionName',
                     templateUrl: 'partials/subscription.html'
+                })
+                .state('diagnostics', {
+                    url: '/groups/:groupName/topics/:topicName/subscriptions/:subscriptionName/diagnostics',
+                    templateUrl: 'partials/diagnostics.html'
                 })
                 .state('search', {
                     url: '/search?entity&property&operator&pattern',

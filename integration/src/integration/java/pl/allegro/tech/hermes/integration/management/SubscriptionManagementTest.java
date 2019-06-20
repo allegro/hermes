@@ -370,8 +370,8 @@ public class SubscriptionManagementTest extends IntegrationTest {
             assertThat(response)
                     .flatExtracting("members")
                     .flatExtracting("partitions")
-                    .usingElementComparatorIgnoringFields("partition", "topic", "offsetMetadata")
-                    .containsOnlyOnce(new TopicPartition(-1, "any", 0, 1, "any"));
+                    .usingElementComparatorIgnoringFields("partition", "topic", "offsetMetadata", "contentType")
+                    .containsOnlyOnce(new TopicPartition(-1, "any", 0, 1, "any", topic.getContentType()));
         });
     }
 
