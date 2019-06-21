@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
@@ -89,21 +90,30 @@ public abstract class ZookeeperBasedRepository {
     private <T> Optional<T> readFrom(String path, ThrowingReader<T> supplier, boolean quiet) {
         try {
             byte[] data = zookeeper.getData().forPath(path);
-            return Optional.of(supplier.read(data));
+            if (ArrayUtils.isNotEmpty(data)) {
+                return Optional.of(supplier.read(data));
+            }
         } catch (JsonMappingException malformedException) {
             if (quiet) {
                 logger.warn("Unable to read data from path {}", path, malformedException);
+                return Optional.empty();
             } else {
                 throw new MalformedDataException(path, malformedException);
             }
         } catch (Exception exception) {
             if (quiet) {
                 logger.warn("Unable to read data from path {}", path, exception);
+                return Optional.empty();
             } else {
                 throw new InternalProcessingException(exception);
             }
         }
-        return Optional.empty();
+        if (quiet) {
+            logger.warn("No data at path {}", path);
+            return Optional.empty();
+        } else {
+            throw new InternalProcessingException("No data at path " + path);
+        }
     }
 
     protected void overwrite(String path, Object value) {
