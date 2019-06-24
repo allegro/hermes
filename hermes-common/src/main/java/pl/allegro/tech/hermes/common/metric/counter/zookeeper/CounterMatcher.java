@@ -40,11 +40,11 @@ class CounterMatcher {
     }
 
     public boolean isTopicThroughput() {
-        return counterName.startsWith("throughput.") && metricParts == TOPIC_METRICS_PARTS;
+        return metricParts == TOPIC_METRICS_PARTS && counterName.startsWith("throughput.");
     }
 
     public boolean isSubscriptionThroughput() {
-        return counterName.startsWith("throughput.") && metricParts == SUBSCRIPTION_METRIC_PARTS;
+        return metricParts == SUBSCRIPTION_METRIC_PARTS && counterName.startsWith("throughput.");
     }
 
     public boolean isSubscriptionDelivered() {

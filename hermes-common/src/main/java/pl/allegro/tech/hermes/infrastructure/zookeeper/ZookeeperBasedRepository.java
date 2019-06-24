@@ -92,27 +92,28 @@ public abstract class ZookeeperBasedRepository {
             byte[] data = zookeeper.getData().forPath(path);
             if (ArrayUtils.isNotEmpty(data)) {
                 return Optional.of(supplier.read(data));
+            } else {
+                logWarnOrThrowException("No data at path " + path,
+                        new InternalProcessingException("No data at path " + path),
+                        quiet);
             }
         } catch (JsonMappingException malformedException) {
-            if (quiet) {
-                logger.warn("Unable to read data from path {}", path, malformedException);
-                return Optional.empty();
-            } else {
-                throw new MalformedDataException(path, malformedException);
-            }
+            logWarnOrThrowException("Unable to read data from path " + path,
+                    new MalformedDataException(path, malformedException), quiet);
+        } catch (InternalProcessingException e) {
+            throw e;
         } catch (Exception exception) {
-            if (quiet) {
-                logger.warn("Unable to read data from path {}", path, exception);
-                return Optional.empty();
-            } else {
-                throw new InternalProcessingException(exception);
-            }
+            logWarnOrThrowException("Unable to read data from path " + path, new InternalProcessingException(exception),
+                    quiet);
         }
+        return Optional.empty();
+    }
+
+    private void logWarnOrThrowException(String message, RuntimeException e, Boolean quiet) {
         if (quiet) {
-            logger.warn("No data at path {}", path);
-            return Optional.empty();
+            logger.warn(message, e);
         } else {
-            throw new InternalProcessingException("No data at path " + path);
+            throw e;
         }
     }
 

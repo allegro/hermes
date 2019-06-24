@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
@@ -51,9 +50,7 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
                        SortedMap<String, Meter> meters,
                        SortedMap<String, Timer> timers) {
 
-        for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-            reportCounter(entry.getKey(), entry.getValue());
-        }
+        counters.forEach((name, counter) -> reportCounter(name, counter));
 
         meters
                 .entrySet()

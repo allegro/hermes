@@ -38,7 +38,7 @@ public class TopicMetrics {
 
     @Override
     public int hashCode() {
-        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput);
+        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput, volume);
     }
 
     @Override
