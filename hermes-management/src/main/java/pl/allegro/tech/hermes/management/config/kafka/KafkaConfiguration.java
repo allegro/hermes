@@ -130,6 +130,10 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     private SubscriptionOffsetChangeIndicator getRepository(
             List<DcBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repostories,
             KafkaProperties kafkaProperties) {
+        if (repostories.size() == 1) {
+            return repostories.get(0).getRepository();
+        }
+
         return repostories.stream()
                 .filter(x -> kafkaProperties.getDc().equals(x.getDcName()))
                 .findFirst().orElseThrow(() ->
