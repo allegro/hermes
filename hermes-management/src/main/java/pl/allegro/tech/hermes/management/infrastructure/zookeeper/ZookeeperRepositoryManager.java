@@ -11,13 +11,13 @@ import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
+import pl.allegro.tech.hermes.management.config.storage.zookeeper.ZookeeperGroupRepositoryFactory;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DcBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
@@ -35,6 +35,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final ObjectMapper mapper;
     private final ZookeeperPaths paths;
     private final ZookeeperClientManager clientManager;
+    private ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
 
     private final Map<Class<?>, Object> repositoryByType = new HashMap<>();
 
@@ -49,11 +50,14 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
 
     public ZookeeperRepositoryManager(ZookeeperClientManager clientManager,
                                       DcNameProvider dcNameProvider,
-                                      ObjectMapper mapper, ZookeeperPaths paths) {
+                                      ObjectMapper mapper,
+                                      ZookeeperPaths paths,
+                                      ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
         this.dcNameProvider = dcNameProvider;
         this.mapper = mapper;
         this.paths = paths;
         this.clientManager = clientManager;
+        this.zookeeperGroupRepositoryFactory = zookeeperGroupRepositoryFactory;
         initRepositoryTypeMap();
     }
 
@@ -62,7 +66,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             String dcName = client.getDcName();
             CuratorFramework zookeeper = client.getCuratorFramework();
 
-            GroupRepository groupRepository = new ZookeeperGroupRepository(zookeeper, mapper, paths);
+            GroupRepository groupRepository = zookeeperGroupRepositoryFactory.create(zookeeper, mapper, paths);
             TopicRepository topicRepository = new ZookeeperTopicRepository(zookeeper, mapper, paths, groupRepository);
             SubscriptionRepository subscriptionRepository = new ZookeeperSubscriptionRepository(zookeeper, mapper,
                     paths, topicRepository);

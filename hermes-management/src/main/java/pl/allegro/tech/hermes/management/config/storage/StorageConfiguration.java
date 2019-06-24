@@ -9,9 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminTool;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
-import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
@@ -21,11 +18,12 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
+import pl.allegro.tech.hermes.management.config.storage.zookeeper.DefaultZookeeperGroupRepositoryFactory;
+import pl.allegro.tech.hermes.management.config.storage.zookeeper.ZookeeperGroupRepositoryFactory;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
@@ -63,10 +61,15 @@ public class StorageConfiguration {
         return new ZookeeperClientManager(storageClustersProperties, dcNameProvider());
     }
 
+    @Bean
+    ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory() {
+        return new DefaultZookeeperGroupRepositoryFactory();
+    }
+
     @Bean(initMethod = "start")
-    ZookeeperRepositoryManager repositoryManager() {
+    ZookeeperRepositoryManager repositoryManager(ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
         return new ZookeeperRepositoryManager(clientManager(), dcNameProvider(), objectMapper,
-                zookeeperPaths());
+                zookeeperPaths(), zookeeperGroupRepositoryFactory);
     }
 
     @Bean
@@ -75,8 +78,10 @@ public class StorageConfiguration {
     }
 
     @Bean
-    MultiDcRepositoryCommandExecutor multiDcRepositoryCommandExecutor() {
-        return new MultiDcRepositoryCommandExecutor(repositoryManager(), storageClustersProperties.isTransactional());
+    MultiDcRepositoryCommandExecutor multiDcRepositoryCommandExecutor(
+            ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
+        return new MultiDcRepositoryCommandExecutor(repositoryManager(zookeeperGroupRepositoryFactory),
+                storageClustersProperties.isTransactional());
     }
 
     @Bean
