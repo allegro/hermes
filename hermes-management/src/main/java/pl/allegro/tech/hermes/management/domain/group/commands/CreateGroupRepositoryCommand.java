@@ -7,13 +7,16 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 public class CreateGroupRepositoryCommand extends RepositoryCommand<GroupRepository> {
 
     private final Group group;
+    private boolean exists;
 
     public CreateGroupRepositoryCommand(Group group) {
         this.group = group;
     }
 
     @Override
-    public void backup(GroupRepository repository) {}
+    public void backup(GroupRepository repository) {
+        exists = repository.groupExists(group.getGroupName());
+    }
 
     @Override
     public void execute(GroupRepository repository) {
@@ -22,7 +25,9 @@ public class CreateGroupRepositoryCommand extends RepositoryCommand<GroupReposit
 
     @Override
     public void rollback(GroupRepository repository) {
-        repository.removeGroup(group.getGroupName());
+        if (!exists) {
+            repository.removeGroup(group.getGroupName());
+        }
     }
 
     @Override
