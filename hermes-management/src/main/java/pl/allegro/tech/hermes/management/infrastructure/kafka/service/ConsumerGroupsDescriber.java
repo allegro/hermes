@@ -106,9 +106,9 @@ class ConsumerGroupsDescriber {
     }
 
     private static String toHostName(String inetAddressStringRepresentation) {
+        String[] parts = inetAddressStringRepresentation.split("/");
+        String ip = parts[parts.length - 1];
         try {
-            String[] parts = inetAddressStringRepresentation.split("/");
-            String ip = parts[parts.length - 1];
             InetAddress addr = InetAddress.getByName(ip);
             return addr.getHostName();
         } catch (UnknownHostException e) {
