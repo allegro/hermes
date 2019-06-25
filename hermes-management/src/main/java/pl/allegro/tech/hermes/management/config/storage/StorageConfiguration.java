@@ -61,8 +61,13 @@ public class StorageConfiguration {
         return new ZookeeperClientManager(storageClustersProperties, dcNameProvider());
     }
 
+    @Bean
+    ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory() {
+        return new DefaultZookeeperGroupRepositoryFactory();
+    }
+
     @Bean(initMethod = "start")
-    ZookeeperRepositoryManager repositoryManager() {
+    ZookeeperRepositoryManager repositoryManager(ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
         return new ZookeeperRepositoryManager(clientManager(), dcNameProvider(), objectMapper, zookeeperPaths());
     }
 
@@ -72,8 +77,9 @@ public class StorageConfiguration {
     }
 
     @Bean
-    MultiDcRepositoryCommandExecutor multiDcRepositoryCommandExecutor() {
-        return new MultiDcRepositoryCommandExecutor(repositoryManager(),
+    MultiDcRepositoryCommandExecutor multiDcRepositoryCommandExecutor(
+            ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
+        return new MultiDcRepositoryCommandExecutor(repositoryManager(zookeeperGroupRepositoryFactory),
                 storageClustersProperties.isTransactional());
     }
 
