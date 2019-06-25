@@ -25,8 +25,10 @@ import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 public class ZookeeperCounterStorage implements CounterStorage {
 
     static final String TOPIC_PUBLISHED = "/groups/" + GROUP + "/topics/" + TOPIC + "/metrics/published";
+    static final String TOPIC_VOLUME_COUNTER = "/groups/" + GROUP + "/topics/" + TOPIC + "/metrics/volume";
     static final String SUBSCRIPTION_DELIVERED = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/delivered";
     static final String SUBSCRIPTION_DISCARDED = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/discarded";
+    static final String SUBSCRIPTION_VOLUME_COUNTER = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/volume";
     static final String CONSUMER_BASE_PATH = "/consumers";
     static final String SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH = "/groups/" + GROUP + "/topics/" + TOPIC + "/subscriptions/" + SUBSCRIPTION + "/metrics/inflight";
     static final String SUBSCRIPTION_INFLIGHT_FULL_PATH = CONSUMER_BASE_PATH + "/" + HOSTNAME + SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH;
@@ -118,6 +120,21 @@ public class ZookeeperCounterStorage implements CounterStorage {
         }
     }
 
+    @Override
+    public void incrementVolumeCounter(TopicName topicName, String subscriptionName, long value) {
+        try {
+            subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
+            incrementSharedCounter(volumeCounterPath(topicName, subscriptionName), value);
+        } catch (SubscriptionNotExistsException e) {
+            LOGGER.debug("Trying to report metric on not existing subscription {} {}", topicName, subscriptionName);
+        }
+    }
+
+    @Override
+    public void incrementVolumeCounter(TopicName topicName, long value) {
+        incrementSharedCounter(topicVolumeCounter(topicName), value);
+    }
+
     private void incrementSharedCounter(String metricPath, long count) {
         long delta = deltaCalculator.calculateDelta(metricPath, count);
 
@@ -139,6 +156,16 @@ public class ZookeeperCounterStorage implements CounterStorage {
     private String subscriptionDiscardedCounter(TopicName topicName, String subscriptionName) {
         PathContext pathContext = subscriptionPathContext(topicName, subscriptionName);
         return pathsCompiler.compile(appendRootPath(SUBSCRIPTION_DISCARDED), pathContext);
+    }
+
+    private String volumeCounterPath(TopicName topicName, String subscriptionName) {
+        PathContext pathContext = subscriptionPathContext(topicName, subscriptionName);
+        return pathsCompiler.compile(appendRootPath(SUBSCRIPTION_VOLUME_COUNTER), pathContext);
+    }
+
+    private String topicVolumeCounter(TopicName topicName) {
+        PathContext pathContext = pathContext().withGroup(topicName.getGroupName()).withTopic(topicName.getName()).build();
+        return pathsCompiler.compile(appendRootPath(TOPIC_VOLUME_COUNTER), pathContext);
     }
 
     private PathContext subscriptionPathContext(TopicName topicName, String subscriptionName) {

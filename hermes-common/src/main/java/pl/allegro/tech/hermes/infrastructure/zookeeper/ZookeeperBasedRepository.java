@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
@@ -89,21 +90,31 @@ public abstract class ZookeeperBasedRepository {
     private <T> Optional<T> readFrom(String path, ThrowingReader<T> supplier, boolean quiet) {
         try {
             byte[] data = zookeeper.getData().forPath(path);
-            return Optional.of(supplier.read(data));
+            if (ArrayUtils.isNotEmpty(data)) {
+                return Optional.of(supplier.read(data));
+            } else {
+                logWarnOrThrowException("No data at path " + path,
+                        new InternalProcessingException("No data at path " + path),
+                        quiet);
+            }
         } catch (JsonMappingException malformedException) {
-            if (quiet) {
-                logger.warn("Unable to read data from path {}", path, malformedException);
-            } else {
-                throw new MalformedDataException(path, malformedException);
-            }
+            logWarnOrThrowException("Unable to read data from path " + path,
+                    new MalformedDataException(path, malformedException), quiet);
+        } catch (InternalProcessingException e) {
+            throw e;
         } catch (Exception exception) {
-            if (quiet) {
-                logger.warn("Unable to read data from path {}", path, exception);
-            } else {
-                throw new InternalProcessingException(exception);
-            }
+            logWarnOrThrowException("Unable to read data from path " + path, new InternalProcessingException(exception),
+                    quiet);
         }
         return Optional.empty();
+    }
+
+    private void logWarnOrThrowException(String message, RuntimeException e, Boolean quiet) {
+        if (quiet) {
+            logger.warn(message, e);
+        } else {
+            throw e;
+        }
     }
 
     protected void overwrite(String path, Object value) {

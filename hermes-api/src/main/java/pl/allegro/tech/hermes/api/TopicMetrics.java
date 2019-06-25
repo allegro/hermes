@@ -6,6 +6,7 @@ import static pl.allegro.tech.hermes.api.MetricDecimalValue.of;
 
 public class TopicMetrics {
     private long published;
+    private long volume;
     private MetricDecimalValue rate = of("0.0");
     private MetricDecimalValue deliveryRate = of("0.0");
     private int subscriptions;
@@ -13,6 +14,10 @@ public class TopicMetrics {
 
     public long getPublished() {
         return published;
+    }
+
+    public long getVolume() {
+        return volume;
     }
 
     public MetricDecimalValue getRate() {
@@ -33,7 +38,7 @@ public class TopicMetrics {
 
     @Override
     public int hashCode() {
-        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput);
+        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput, volume);
     }
 
     @Override
@@ -49,13 +54,15 @@ public class TopicMetrics {
             && Objects.equals(this.rate, other.rate)
             && Objects.equals(this.deliveryRate, other.deliveryRate)
             && Objects.equals(this.subscriptions, other.subscriptions)
-            && Objects.equals(this.throughput, other.throughput);
+            && Objects.equals(this.throughput, other.throughput)
+            && Objects.equals(this.volume, other.volume);
     }
 
     public static TopicMetrics unavailable() {
         return Builder.topicMetrics().withRate(MetricDecimalValue.unavailable())
                                      .withDeliveryRate(MetricDecimalValue.unavailable())
                                      .withPublished(0)
+                                     .withVolume(0)
                                      .withSubscriptions(0)
                                      .withThroughput(MetricDecimalValue.unavailable())
                                      .build();
@@ -99,6 +106,11 @@ public class TopicMetrics {
 
         public TopicMetrics build() {
             return topicMetrics;
+        }
+
+        public Builder withVolume(long volume) {
+            topicMetrics.volume = volume;
+            return this;
         }
     }
 }

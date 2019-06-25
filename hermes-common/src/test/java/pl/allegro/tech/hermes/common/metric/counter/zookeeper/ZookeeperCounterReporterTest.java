@@ -14,9 +14,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -26,14 +26,17 @@ import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.common.metric.Counters.DELIVERED;
 import static pl.allegro.tech.hermes.common.metric.Counters.DISCARDED;
 import static pl.allegro.tech.hermes.common.metric.Counters.PUBLISHED;
+import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_THROUGHPUT_BYTES;
+import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_THROUGHPUT_BYTES;
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZookeeperCounterReporterTest {
 
-    public static final SortedMap<String, Timer> EMPTY_TIMERS = null;
-    public static final SortedMap<String, Meter> EMPTY_METERS = null;
-    public static final SortedMap<String, Histogram> EMPTY_HISTOGRAMS = null;
+    public static final SortedMap<String, Timer> EMPTY_TIMERS = new TreeMap<>();
+    public static final SortedMap<String, Meter> EMPTY_METERS = new TreeMap<>();
+    public static final SortedMap<String, Counter> EMPTY_COUNTERS = new TreeMap<>();
+    public static final SortedMap<String, Histogram> EMPTY_HISTOGRAMS = new TreeMap<>();
     public static final SortedMap<String, Gauge> EMPTY_GAUGES = null;
     public static final String GROUP_NAME_UNDERSCORE = "pl_allegro_tech_skylab";
     public static final String GROUP_NAME = "pl.allegro.tech.skylab";
@@ -55,6 +58,12 @@ public class ZookeeperCounterReporterTest {
     public static final String METRIC_NAME_FOR_DISCARDED = pathsCompiler.compile(DISCARDED, pathContext()
             .withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME_UNDERSCORE).withSubscription(SUBSCRIPTION_NAME_UNDERSCORE).build());
 
+    public static final String METRIC_NAME_FOR_SUBSCRIPTION_THROUGHPUT = pathsCompiler.compile(SUBSCRIPTION_THROUGHPUT_BYTES, pathContext()
+            .withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME_UNDERSCORE).withSubscription(SUBSCRIPTION_NAME_UNDERSCORE).build());
+
+    public static final String METRIC_NAME_FOR_TOPIC_THRESHOLD = pathsCompiler.compile(TOPIC_THROUGHPUT_BYTES, pathContext()
+                    .withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME_UNDERSCORE).build());
+
     @Mock
     private CounterStorage counterStorage;
 
@@ -65,14 +74,15 @@ public class ZookeeperCounterReporterTest {
     private Counter counter;
 
     @Mock
+    private Meter meter;
+
+    @Mock
     private ConfigFactory configFactory;
 
     @Mock
     private HostnameResolver hostnameResolver;
 
     private ZookeeperCounterReporter zookeeperCounterReporter;
-
-
 
     @Before
     public void before() {
@@ -110,6 +120,32 @@ public class ZookeeperCounterReporterTest {
 
         verify(counterStorage).setSubscriptionDiscardedCounter(
                 QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME, COUNT
+        );
+    }
+
+    @Test
+    public void shouldReportSubscriptionVolumeCounter() {
+        SortedMap<String, Meter> meters = new TreeMap<>();
+        meters.put(METRIC_NAME_FOR_SUBSCRIPTION_THROUGHPUT, meter);
+        when(meter.getCount()).thenReturn(COUNT);
+
+        zookeeperCounterReporter.report(EMPTY_GAUGES, EMPTY_COUNTERS, EMPTY_HISTOGRAMS, meters, EMPTY_TIMERS);
+
+        verify(counterStorage).incrementVolumeCounter(
+                QUALIFIED_TOPIC_NAME, SUBSCRIPTION_NAME, COUNT
+        );
+    }
+
+    @Test
+    public void shouldReportTopicVolumeCounter() {
+        SortedMap<String, Meter> meters = new TreeMap<>();
+        meters.put(METRIC_NAME_FOR_TOPIC_THRESHOLD, meter);
+        when(meter.getCount()).thenReturn(COUNT);
+
+        zookeeperCounterReporter.report(EMPTY_GAUGES, EMPTY_COUNTERS, EMPTY_HISTOGRAMS, meters, EMPTY_TIMERS);
+
+        verify(counterStorage).incrementVolumeCounter(
+                QUALIFIED_TOPIC_NAME, COUNT
         );
     }
 

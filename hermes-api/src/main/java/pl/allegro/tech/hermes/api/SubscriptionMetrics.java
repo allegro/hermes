@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SubscriptionMetrics {
     private long delivered;
     private long discarded;
+    private long volume;
     private long inflight;
     private MetricDecimalValue timeouts;
     private MetricDecimalValue otherErrors;
@@ -24,6 +25,7 @@ public class SubscriptionMetrics {
     @JsonCreator
     public SubscriptionMetrics(@JsonProperty("delivered") long delivered,
                                @JsonProperty("discarded") long discarded,
+                               @JsonProperty("volume") long volume,
                                @JsonProperty("inflight") long inflight,
                                @JsonProperty("timeouts") MetricDecimalValue timeouts,
                                @JsonProperty("otherErrors") MetricDecimalValue otherErrors,
@@ -36,6 +38,7 @@ public class SubscriptionMetrics {
                                @JsonProperty("batchRate") MetricDecimalValue batchRate) {
         this.delivered = delivered;
         this.discarded = discarded;
+        this.volume = volume;
         this.inflight = inflight;
         this.timeouts = timeouts;
         this.otherErrors = otherErrors;
@@ -100,6 +103,10 @@ public class SubscriptionMetrics {
         return batchRate;
     }
 
+    public long getVolume() {
+        return volume;
+    }
+
     public static class Builder {
         private SubscriptionMetrics subscriptionMetrics;
 
@@ -114,6 +121,11 @@ public class SubscriptionMetrics {
 
         public Builder withDiscarded(long discarded) {
             subscriptionMetrics.discarded = discarded;
+            return this;
+        }
+
+        public Builder withVolume(long volume) {
+            subscriptionMetrics.volume = volume;
             return this;
         }
 

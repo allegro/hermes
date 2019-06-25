@@ -13,9 +13,9 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
@@ -32,11 +32,11 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
     public ZookeeperCounterReporter(MetricRegistry registry,
                                     CounterStorage counterStorage,
                                     ConfigFactory config
-                                    ) {
+    ) {
         super(
                 registry,
                 ZOOKEEPER_REPORTER_NAME,
-                new CountersExceptOffsetsFilter(config.getStringProperty(Configs.GRAPHITE_PREFIX)),
+                new ZookeeperMetricsFilter(config.getStringProperty(Configs.GRAPHITE_PREFIX)),
                 RATE_UNIT,
                 DURATION_UNIT
         );
@@ -50,8 +50,28 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
                        SortedMap<String, Meter> meters,
                        SortedMap<String, Timer> timers) {
 
-        for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-            reportCounter(entry.getKey(), entry.getValue());
+        counters.forEach((name, counter) -> reportCounter(name, counter));
+
+        meters
+                .entrySet()
+                .stream()
+                .filter(meterEntry -> meterEntry.getKey().startsWith(Meters.THROUGHPUT_BYTES))
+                .forEach(meterEntry -> reportVolumeCounter(meterEntry.getKey(), meterEntry.getValue().getCount()));
+    }
+
+    private void reportVolumeCounter(String metricName, long value) {
+        CounterMatcher matcher = new CounterMatcher(metricName);
+        if (matcher.isTopicThroughput()) {
+            counterStorage.incrementVolumeCounter(
+                    escapedTopicName(matcher.getTopicName()),
+                    value
+            );
+        } else if (matcher.isSubscriptionThroughput()) {
+            counterStorage.incrementVolumeCounter(
+                    escapedTopicName(matcher.getTopicName()),
+                    escapeMetricsReplacementChar(matcher.getSubscriptionName()),
+                    value
+            );
         }
     }
 
@@ -101,16 +121,17 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
         return value.replaceAll(HermesMetrics.REPLACEMENT_CHAR, "\\.");
     }
 
-    private static final class CountersExceptOffsetsFilter implements MetricFilter {
+    private static final class ZookeeperMetricsFilter implements MetricFilter {
         private final String offsetPrefix;
 
-        private CountersExceptOffsetsFilter(String graphitePrefix) {
+        private ZookeeperMetricsFilter(String graphitePrefix) {
             offsetPrefix = graphitePrefix + "." + "consumer.offset";
         }
 
         @Override
         public boolean matches(String name, Metric metric) {
-            return metric instanceof Counter && !name.startsWith(offsetPrefix);
+            return (metric instanceof Counter && !name.startsWith(offsetPrefix)) ||
+                    (metric instanceof Meter && name.startsWith(Meters.THROUGHPUT_BYTES + "."));
         }
     }
 }
