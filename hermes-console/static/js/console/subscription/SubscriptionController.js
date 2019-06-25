@@ -11,10 +11,10 @@ var subscriptions = angular.module('hermes.subscription', [
 
 subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'SubscriptionHealth', 'SubscriptionMetrics',
     'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', '$q', 'ConfirmationModal',
-    'toaster', 'PasswordService', 'MessagePreviewModal', 'DiscoveryService', 'SUBSCRIPTION_CONFIG',
+    'toaster', 'PasswordService', 'MessagePreviewModal', 'SUBSCRIPTION_CONFIG',
     function (subscriptionRepository, subscriptionHealth, subscriptionMetrics, topicRepository, topicMetrics,
               $scope, $location, $stateParams, $modal, $q, confirmationModal, toaster, passwordService,
-              messagePreviewModal, discovery, config) {
+              messagePreviewModal, config) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
@@ -25,12 +25,6 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         $scope.endpointAddressResolverMetadataConfig = config.endpointAddressResolverMetadata;
 
         $scope.metricsUrls = subscriptionMetrics.metricsUrls(groupName, topicName, subscriptionName);
-
-        $scope.diagnosticUrls = function () {
-            var urls = {};
-            urls.consumerGroups = discovery.resolve('/topics/' + topicName + '/subscriptions/' + subscriptionName + '/consumer-groups');
-            return urls;
-        }();
 
         topicRepository.get(topicName).then(function(topic) {
             $scope.topicContentType = topic.contentType;
