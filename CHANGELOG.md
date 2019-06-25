@@ -2,6 +2,17 @@
 
 ### ...
 
+## 1.0.5 (25.06.2019)
+
+### Enhancements
+
+#### ([1042](https://github.com/allegro/hermes/pull/1042)) Consumer group diagnostics tab in console
+#### ([1041](https://github.com/allegro/hermes/pull/1041)) Added volume counter
+
+### Bugfixes
+
+#### ([1040](https://github.com/allegro/hermes/pull/1040)) Clearing stale offsets, partition assignment term introduced
+
 ## 1.0.4 (17.06.2019)
 
 ### Enhancements
