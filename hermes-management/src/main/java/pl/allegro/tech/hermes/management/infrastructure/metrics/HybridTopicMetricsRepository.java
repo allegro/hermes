@@ -56,6 +56,7 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
                 .withRate(metrics.metricValue(rateMetric))
                 .withDeliveryRate(metrics.metricValue(deliveryRateMetric))
                 .withPublished(sharedCounter.getValue(zookeeperPaths.topicMetricPath(topicName, "published")))
+                .withVolume(sharedCounter.getValue(zookeeperPaths.topicMetricPath(topicName, "volume")))
                 .withSubscriptions(subscriptionRepository.listSubscriptionNames(topicName).size())
                 .withThroughput(metrics.metricValue(throughputMetric))
                 .build();

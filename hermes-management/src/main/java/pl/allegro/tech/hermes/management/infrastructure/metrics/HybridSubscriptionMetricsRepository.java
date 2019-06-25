@@ -80,6 +80,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
                 .withRate(graphiteMetrics.metricValue(rateMetric))
                 .withDelivered(zookeeperMetrics.delivered)
                 .withDiscarded(zookeeperMetrics.discarded)
+                .withVolume(zookeeperMetrics.volume)
                 .withInflight(zookeeperMetrics.inflight)
                 .withCodes2xx(graphiteMetrics.metricValue(codes2xxPath))
                 .withCodes4xx(graphiteMetrics.metricValue(codes4xxPath))
@@ -96,6 +97,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
         return new ZookeeperMetrics(
                 readZookeeperMetric(() -> sharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "delivered")), name),
                 readZookeeperMetric(() -> sharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "discarded")), name),
+                readZookeeperMetric(() -> sharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "volume")), name),
                 readZookeeperMetric(() -> distributedCounter.getValue(
                         zookeeperPaths.consumersPath(),
                         zookeeperPaths.subscriptionMetricPathWithoutBasePath(name, "inflight")
@@ -163,11 +165,14 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
         final long discarded;
 
+        final long volume;
+
         final long inflight;
 
-        ZookeeperMetrics(long delivered, long discarded, long inflight) {
+        ZookeeperMetrics(long delivered, long discarded, long volume, long inflight) {
             this.delivered = delivered;
             this.discarded = discarded;
+            this.volume = volume;
             this.inflight = inflight;
         }
     }

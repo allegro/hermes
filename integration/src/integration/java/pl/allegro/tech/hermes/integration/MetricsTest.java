@@ -26,10 +26,10 @@ import static com.googlecode.catchexception.CatchException.catchException;
 import static java.lang.Integer.MAX_VALUE;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
-import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class MetricsTest extends IntegrationTest {
 
@@ -50,23 +50,24 @@ public class MetricsTest extends IntegrationTest {
     @Test
     public void shouldIncreaseTopicMetricsAfterMessageHasBeenPublished() {
         // given
-        Topic topic = operations.buildTopic("pl.group", "topic_metrics");
+        Topic topic = operations.buildTopic(randomTopic("group", "topic_metrics").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetricForTopic("pl_group", "topic_metrics", 10, 15);
+        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 10, 15);
 
         remoteService.expectMessages(TestMessage.simple().body());
-        assertThat(publisher.publish("pl.group.topic_metrics", TestMessage.simple().body()).getStatus())
+        assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
                 .isEqualTo(CREATED.getStatusCode());
         remoteService.waitUntilReceived();
 
         wait.until(() -> {
             // when
-            TopicMetrics metrics = management.topic().getMetrics("pl.group.topic_metrics");
+            TopicMetrics metrics = management.topic().getMetrics(topic.getQualifiedName());
 
             // then
             assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("10"));
             assertThat(metrics.getDeliveryRate()).isEqualTo(MetricDecimalValue.of("15"));
             assertThat(metrics.getPublished()).isEqualTo(1);
+            assertThat(metrics.getVolume()).isGreaterThan(1);
         });
     }
 
@@ -74,24 +75,26 @@ public class MetricsTest extends IntegrationTest {
     @Test
     public void shouldIncreaseSubscriptionDeliveredMetricsAfterMessageDelivered() {
         // given
-        Topic topic = operations.buildTopic("pl.group", "topic");
+        Topic topic = operations.buildTopic(randomTopic("pl.group", "topic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("pl_group.topic.subscription").withRate(15).build());
+        graphiteEndpoint.returnMetric(
+                subscriptionMetricsStub("pl_group." + topic.getName().getName() + ".subscription").withRate(15).build());
 
         remoteService.expectMessages(TestMessage.simple().body());
-        assertThat(publisher.publish("pl.group.topic", TestMessage.simple().body()).getStatus())
+        assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
                 .isEqualTo(CREATED.getStatusCode());
         remoteService.waitUntilReceived();
 
         wait.until(() -> {
             // when
-            SubscriptionMetrics metrics = management.subscription().getMetrics("pl.group.topic", "subscription");
+            SubscriptionMetrics metrics = management.subscription().getMetrics(topic.getQualifiedName(), "subscription");
 
             // then
             assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15"));
             assertThat(metrics.getDelivered()).isEqualTo(1);
             assertThat(metrics.getDiscarded()).isEqualTo(0);
             assertThat(metrics.getInflight()).isEqualTo(0);
+            assertThat(metrics.getVolume()).isGreaterThan(1);
         });
     }
 

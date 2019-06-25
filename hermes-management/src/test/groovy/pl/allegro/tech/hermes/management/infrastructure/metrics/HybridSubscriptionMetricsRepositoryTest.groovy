@@ -43,6 +43,7 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
                 .addMetricValue(otherErrors, of('1000'))
         sharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 100
         sharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 1
+        sharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/volume') >> 16
         distributedCounter.getValue('/hermes/consumers', '/groups/group/topics/topic/subscriptions/subscription/metrics/inflight') >> 5
 
         when:
@@ -52,6 +53,7 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
         metrics.rate == of('10')
         metrics.delivered == 100
         metrics.discarded == 1
+        metrics.volume == 16
         metrics.inflight == 5
         metrics.timeouts == of("100")
         metrics.otherErrors == of("1000")

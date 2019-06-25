@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper.notifications;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.curator.framework.recipes.cache.ChildData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -13,6 +15,10 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeper
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Optional;
+
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 public class ZookeeperInternalNotificationBus implements InternalNotificationsBus {
 
@@ -33,13 +39,13 @@ public class ZookeeperInternalNotificationBus implements InternalNotificationsBu
         modelNotifyingCache.registerSubscriptionCallback((e) -> {
             switch (e.getType()) {
                 case CHILD_ADDED:
-                    callback.onSubscriptionCreated(readSilently(e.getData().getPath(), e.getData().getData(), Subscription.class));
+                    readSilently(e.getData(), Subscription.class).ifPresent(sub -> callback.onSubscriptionCreated(sub));
                     break;
                 case CHILD_UPDATED:
-                    callback.onSubscriptionChanged(readSilently(e.getData().getPath(), e.getData().getData(), Subscription.class));
+                    readSilently(e.getData(), Subscription.class).ifPresent(sub -> callback.onSubscriptionChanged(sub));
                     break;
                 case CHILD_REMOVED:
-                    callback.onSubscriptionRemoved(readSilently(e.getData().getPath(), e.getData().getData(), Subscription.class));
+                    readSilently(e.getData(), Subscription.class).ifPresent(sub -> callback.onSubscriptionRemoved(sub));
                     break;
                 default:
                     break;
@@ -52,13 +58,13 @@ public class ZookeeperInternalNotificationBus implements InternalNotificationsBu
         modelNotifyingCache.registerTopicCallback((e) -> {
             switch (e.getType()) {
                 case CHILD_ADDED:
-                    callback.onTopicCreated(readSilently(e.getData().getPath(), e.getData().getData(), Topic.class));
+                    readSilently(e.getData(), Topic.class).ifPresent(topic -> callback.onTopicCreated(topic));
                     break;
                 case CHILD_UPDATED:
-                    callback.onTopicChanged(readSilently(e.getData().getPath(), e.getData().getData(), Topic.class));
+                    readSilently(e.getData(), Topic.class).ifPresent(topic -> callback.onTopicChanged(topic));
                     break;
                 case CHILD_REMOVED:
-                    callback.onTopicRemoved(readSilently(e.getData().getPath(), e.getData().getData(), Topic.class));
+                    readSilently(e.getData(), Topic.class).ifPresent(topic -> callback.onTopicRemoved(topic));
                     break;
                 default:
                     break;
@@ -71,12 +77,16 @@ public class ZookeeperInternalNotificationBus implements InternalNotificationsBu
         // TODO we should move admin callbacks here in favor of AdminTool
     }
 
-    private <T> T readSilently(String path, byte[] data, Class<T> clazz) {
+    private <T> Optional<T> readSilently(ChildData data, Class<T> clazz) {
+        if (ArrayUtils.isEmpty(data.getData())) {
+            logger.warn("No data at path {}", data.getPath());
+            return empty();
+        }
         try {
-            return objectMapper.readValue(data, clazz);
+            return of(objectMapper.readValue(data.getData(), clazz));
         } catch (IOException exception) {
-            logger.warn("Failed to parse object at path {}", path, exception);
-            return null;
+            logger.warn("Failed to parse object at path {}", data.getPath(), exception);
+            return empty();
         }
     }
 }
