@@ -22,8 +22,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepo
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
-import pl.allegro.tech.hermes.management.config.storage.zookeeper.DefaultZookeeperGroupRepositoryFactory;
-import pl.allegro.tech.hermes.management.config.storage.zookeeper.ZookeeperGroupRepositoryFactory;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
@@ -49,7 +47,7 @@ public class StorageConfiguration {
 
     @Bean
     DcNameProvider dcNameProvider() {
-        if(storageClustersProperties.getDcNameSource() == DcNameSource.ENV) {
+        if (storageClustersProperties.getDcNameSource() == DcNameSource.ENV) {
             return new EnvironmentVariableDcNameProvider(storageClustersProperties.getDcNameSourceEnv());
         } else {
             return new DefaultDcNameProvider();
@@ -61,15 +59,9 @@ public class StorageConfiguration {
         return new ZookeeperClientManager(storageClustersProperties, dcNameProvider());
     }
 
-    @Bean
-    ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory() {
-        return new DefaultZookeeperGroupRepositoryFactory();
-    }
-
     @Bean(initMethod = "start")
-    ZookeeperRepositoryManager repositoryManager(ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
-        return new ZookeeperRepositoryManager(clientManager(), dcNameProvider(), objectMapper,
-                zookeeperPaths(), zookeeperGroupRepositoryFactory);
+    ZookeeperRepositoryManager repositoryManager() {
+        return new ZookeeperRepositoryManager(clientManager(), dcNameProvider(), objectMapper, zookeeperPaths());
     }
 
     @Bean
@@ -78,9 +70,8 @@ public class StorageConfiguration {
     }
 
     @Bean
-    MultiDcRepositoryCommandExecutor multiDcRepositoryCommandExecutor(
-            ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
-        return new MultiDcRepositoryCommandExecutor(repositoryManager(zookeeperGroupRepositoryFactory),
+    MultiDcRepositoryCommandExecutor multiDcRepositoryCommandExecutor() {
+        return new MultiDcRepositoryCommandExecutor(repositoryManager(),
                 storageClustersProperties.isTransactional());
     }
 
