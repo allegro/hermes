@@ -27,7 +27,6 @@ import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.service.ConsumerGroupsDescriber;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
@@ -84,7 +83,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             ZooKeeperClient zooKeeperClient = zooKeeperClient(kafkaProperties);
             KafkaZkClient kafkaZkClient = kafkaZkClient(zooKeeperClient);
             AdminZkClient adminZkClient = adminZkClient(kafkaZkClient);
-            AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties.getBootstrapKafkaServer());
+            AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
 
             BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties), kafkaZkClient);
 
@@ -103,7 +102,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper,
                     new OffsetsAvailableChecker(consumerPool, storage),
-                    new ConsumerGroupsDescriber(kafkaNamesMapper, brokerAdminClient, new LogEndOffsetChecker(consumerPool)),
+                    new LogEndOffsetChecker(consumerPool),
                     brokerAdminClient);
         }).collect(toList());
 
@@ -176,9 +175,10 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
         return new KafkaConsumerPool(config, brokerStorage);
     }
 
-    private AdminClient brokerAdminClient(String bootstrapServers) {
+    private AdminClient brokerAdminClient(KafkaProperties kafkaProperties) {
         Properties props = new Properties();
-        props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapKafkaServer());
+        props.put(CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getKafkaServerRequestTimeoutMillis());
         return AdminClient.create(props);
     }
 
