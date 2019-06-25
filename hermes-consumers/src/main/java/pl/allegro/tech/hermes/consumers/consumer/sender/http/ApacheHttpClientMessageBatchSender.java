@@ -68,7 +68,7 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
         if (batch.hasSubscriptionIdentityHeaders()) {
             httpPost.addHeader(TOPIC_NAME.getName(), batch.getTopic());
-            httpPost.addHeader(SUBSCRIPTION_NAME.getName(), batch.getSubscription());
+            httpPost.addHeader(SUBSCRIPTION_NAME.getName(), batch.getSubscription().getName());
         }
 
         batch.getAdditionalHeaders().forEach(header -> httpPost.addHeader(header.getName(), header.getValue()));

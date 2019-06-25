@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process
 
 import pl.allegro.tech.hermes.api.SubscriptionName
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset
 import pl.allegro.tech.hermes.consumers.queue.MpscQueue
 import pl.allegro.tech.hermes.consumers.queue.WaitFreeDrainMpscQueue
@@ -113,6 +115,7 @@ class SignalsFilterTest extends Specification {
     }
 
     private static SubscriptionPartitionOffset offset(int partition, long offset) {
-        return subscriptionPartitionOffset("group_topic", 'group.topic$sub', partition, offset)
+        return subscriptionPartitionOffset(fromString('group.topic$sub'),
+                new PartitionOffset(KafkaTopicName.valueOf('group_topic'), offset, partition), -1)
     }
 }

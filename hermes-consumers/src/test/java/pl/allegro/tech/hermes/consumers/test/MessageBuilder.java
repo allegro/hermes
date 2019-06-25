@@ -28,6 +28,7 @@ public final class MessageBuilder {
     private long publishingTimestamp;
     private long readingTimestamp;
     private PartitionOffset partitionOffset;
+    private long partitionAssignmentTerm = -1L;
     private byte[] content;
     private Map<String, String> externalMetadata;
     private List<Header> additionalHeaders;
@@ -59,7 +60,7 @@ public final class MessageBuilder {
 
     public Message build() {
         return new Message(id, topic, content, contentType, schema, publishingTimestamp,
-                readingTimestamp, partitionOffset, externalMetadata, additionalHeaders,
+                readingTimestamp, partitionOffset, partitionAssignmentTerm, externalMetadata, additionalHeaders,
                 subscription, hasSubscriptionIdentityHeaders);
     }
 
@@ -105,6 +106,11 @@ public final class MessageBuilder {
 
     public MessageBuilder withPartitionOffset(PartitionOffset partitionOffset) {
         this.partitionOffset = partitionOffset;
+        return this;
+    }
+
+    public MessageBuilder withPartitionAssignmentTerm(long term) {
+        this.partitionAssignmentTerm = term;
         return this;
     }
 

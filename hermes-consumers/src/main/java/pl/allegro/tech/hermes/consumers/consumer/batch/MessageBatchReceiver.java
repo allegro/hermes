@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -128,7 +129,7 @@ public class MessageBatchReceiver {
     }
 
     private MessageMetadata messageMetadata(Subscription subscription, String batchId, Message message) {
-        return new MessageMetadata(message.getId(), batchId, message.getOffset(), message.getPartition(),
+        return new MessageMetadata(message.getId(), batchId, message.getOffset(), message.getPartition(), message.getPartitionAssignmentTerm(),
                 subscription.getQualifiedTopicName(), subscription.getName(), message.getKafkaTopic().asString(),
                 message.getPublishingTimestamp(), message.getReadingTimestamp());
     }
@@ -150,7 +151,7 @@ public class MessageBatchReceiver {
         receiver.commit(offsets);
     };
 
-    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+    public boolean moveOffset(PartitionOffset offset) {
         return receiver.moveOffset(offset);
     };
 }

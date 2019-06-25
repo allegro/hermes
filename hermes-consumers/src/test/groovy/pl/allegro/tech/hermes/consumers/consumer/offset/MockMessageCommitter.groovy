@@ -10,6 +10,10 @@ class MockMessageCommitter implements MessageCommitter {
 
     private int iteration = -1
 
+    boolean nothingCommitted(int iteration) {
+        return wereCommitted(iteration)
+    }
+
     boolean wereCommitted(int iteration, SubscriptionPartitionOffset... expectedOffsets) {
         OffsetsToCommit offsetsToCommit = recordedValues[iteration - 1]
         Set<SubscriptionPartitionOffset> allOffsets = [] as Set

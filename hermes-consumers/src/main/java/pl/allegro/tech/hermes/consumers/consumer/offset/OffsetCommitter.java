@@ -4,16 +4,13 @@ import com.codahale.metrics.Timer;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jctools.queues.MessagePassingQueue;
-import org.jctools.queues.MpscArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -73,21 +70,22 @@ public class OffsetCommitter implements Runnable {
 
     private final OffsetQueue offsetQueue;
 
+    private final ConsumerPartitionAssignmentState partitionAssignmentState;
     private final MessageCommitter messageCommitter;
 
     private final HermesMetrics metrics;
 
     private final Set<SubscriptionPartitionOffset> inflightOffsets = new HashSet<>();
 
-    private final MpscArrayQueue<SubscriptionName> subscriptionsToCleanup = new MpscArrayQueue<>(1000);
-
     public OffsetCommitter(
             OffsetQueue offsetQueue,
+            ConsumerPartitionAssignmentState partitionAssignmentState,
             MessageCommitter messageCommitter,
             int offsetCommitPeriodSeconds,
             HermesMetrics metrics
     ) {
         this.offsetQueue = offsetQueue;
+        this.partitionAssignmentState = partitionAssignmentState;
         this.messageCommitter = messageCommitter;
         this.offsetCommitPeriodSeconds = offsetCommitPeriodSeconds;
         this.metrics = metrics;
@@ -107,13 +105,17 @@ public class OffsetCommitter implements Runnable {
             int scheduledToCommit = 0;
             OffsetsToCommit offsetsToCommit = new OffsetsToCommit();
             for (SubscriptionPartition partition : Sets.union(minInflightOffsets.keySet(), maxCommittedOffsets.keySet())) {
-                long offset = Math.min(
-                        minInflightOffsets.getOrDefault(partition, Long.MAX_VALUE),
-                        maxCommittedOffsets.getOrDefault(partition, Long.MAX_VALUE)
-                );
-                if (offset >= 0 && offset < Long.MAX_VALUE) {
-                    scheduledToCommit++;
-                    offsetsToCommit.add(new SubscriptionPartitionOffset(partition, offset));
+                if (partitionAssignmentState.isAssignedPartitionAtCurrentTerm(partition)) {
+                    long offset = Math.min(
+                            minInflightOffsets.getOrDefault(partition, Long.MAX_VALUE),
+                            maxCommittedOffsets.getOrDefault(partition, Long.MAX_VALUE)
+                    );
+                    if (offset >= 0 && offset < Long.MAX_VALUE) {
+                        scheduledToCommit++;
+                        offsetsToCommit.add(new SubscriptionPartitionOffset(partition, offset));
+                    }
+                } else {
+                    metrics.counter("offset-committer.obsolete").inc();
                 }
             }
 
@@ -121,7 +123,7 @@ public class OffsetCommitter implements Runnable {
 
             metrics.counter("offset-committer.committed").inc(scheduledToCommit);
 
-            cleanupUnusedSubscriptions();
+            cleanupInflightOffsetsWithObsoleteTerms();
         } catch (Exception exception) {
             logger.error("Failed to run offset committer: {}", exception.getMessage(), exception);
         }
@@ -153,18 +155,8 @@ public class OffsetCommitter implements Runnable {
         }
     }
 
-    public void removeUncommittedOffsets(SubscriptionName subscriptionName) {
-        subscriptionsToCleanup.offer(subscriptionName);
-    }
-
-    private void cleanupUnusedSubscriptions() {
-        Set<SubscriptionName> subscriptionNames = new HashSet<>();
-        subscriptionsToCleanup.drain(subscriptionNames::add);
-        for (Iterator<SubscriptionPartitionOffset> iterator = inflightOffsets.iterator(); iterator.hasNext(); ) {
-            if (subscriptionNames.contains(iterator.next().getSubscriptionName())) {
-                iterator.remove();
-            }
-        }
+    private void cleanupInflightOffsetsWithObsoleteTerms() {
+        inflightOffsets.removeIf(o -> !partitionAssignmentState.isAssignedPartitionAtCurrentTerm(o.getSubscriptionPartition()));
     }
 
     public void start() {

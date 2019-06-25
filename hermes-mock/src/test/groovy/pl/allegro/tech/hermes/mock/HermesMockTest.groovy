@@ -2,15 +2,20 @@ package pl.allegro.tech.hermes.mock
 
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
+import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
 
 class HermesMockTest extends Specification {
+
+    @Shared
+    int port = Ports.nextAvailable()
+
     @ClassRule
     @Shared
-    HermesMockRule hermes = new HermesMockRule(5678)
+    HermesMockRule hermes = new HermesMockRule(port)
 
-    HermesPublisher publisher = new HermesPublisher("http://localhost:5678")
+    HermesPublisher publisher = new HermesPublisher("http://localhost:$port")
 
     def setup() {
         hermes.resetReceivedRequest()

@@ -9,8 +9,6 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 
 import javax.inject.Inject;
 
@@ -37,11 +35,7 @@ public class Retransmitter {
                     subscriptionName.getTopicName(), subscriptionName.getName(), brokersClusterName);
 
             for (PartitionOffset partitionOffset : offsets) {
-                SubscriptionPartitionOffset subscriptionPartitionOffset = new SubscriptionPartitionOffset(
-                        new SubscriptionPartition(partitionOffset.getTopic(), subscriptionName, partitionOffset.getPartition()),
-                        partitionOffset.getOffset());
-
-                if (moveOffset(subscriptionName, consumer, subscriptionPartitionOffset)) {
+                if (moveOffset(subscriptionName, consumer, partitionOffset)) {
                     subscriptionOffsetChangeIndicator.removeOffset(
                         subscriptionName.getTopicName(),
                         subscriptionName.getName(),
@@ -50,7 +44,7 @@ public class Retransmitter {
                         partitionOffset.getPartition()
                     );
                     logger.info("Removed offset indicator for subscription={} and partition={}",
-                            subscriptionName, subscriptionPartitionOffset.getPartition());
+                            subscriptionName, partitionOffset.getPartition());
                 }
             }
         } catch (Exception ex) {
@@ -60,12 +54,12 @@ public class Retransmitter {
 
     private boolean moveOffset(SubscriptionName subscriptionName,
                             Consumer consumer,
-                            SubscriptionPartitionOffset subscriptionPartitionOffset) {
+                            PartitionOffset partitionOffset) {
         try {
-            return consumer.moveOffset(subscriptionPartitionOffset);
+            return consumer.moveOffset(partitionOffset);
         } catch (IllegalStateException ex) {
             logger.warn("Cannot move offset for subscription={} and partition={} , possibly owned by different node",
-                    subscriptionName, subscriptionPartitionOffset.getPartition(), ex);
+                    subscriptionName, partitionOffset.getPartition(), ex);
             return false;
         }
     }

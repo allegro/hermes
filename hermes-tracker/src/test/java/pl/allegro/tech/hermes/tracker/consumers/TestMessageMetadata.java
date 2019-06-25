@@ -7,7 +7,7 @@ public class TestMessageMetadata {
     }
 
     public static MessageMetadata of(String messageId, String topic, String subscription, long offset, int partition) {
-        return new MessageMetadata(messageId, offset, partition, topic, subscription, topic, 123456L, 123456L);
+        return new MessageMetadata(messageId, offset, partition, 123L, topic, subscription, topic, 123456L, 123456L);
     }
 
     public static MessageMetadata of(String messageId,String batchId, String topic, String subscription) {
@@ -15,6 +15,6 @@ public class TestMessageMetadata {
     }
 
     public static MessageMetadata of(String messageId, String batchId, String topic, String subscription, long offset, int partition) {
-        return new MessageMetadata(messageId, batchId, offset, partition, topic, subscription, topic, 123456L, 123456L);
+        return new MessageMetadata(messageId, batchId, offset, partition, 123L, topic, subscription, topic, 123456L, 123456L);
     }
 }

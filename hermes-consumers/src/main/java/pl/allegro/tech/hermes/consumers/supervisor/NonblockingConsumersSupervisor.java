@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
@@ -49,6 +50,7 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                                           ConsumersExecutorService executor,
                                           ConsumerFactory consumerFactory,
                                           OffsetQueue offsetQueue,
+                                          ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
                                           Retransmitter retransmitter,
                                           UndeliveredMessageLogPersister undeliveredMessageLogPersister,
                                           SubscriptionRepository subscriptionRepository,
@@ -63,6 +65,7 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
         this.scheduledExecutor = createExecutorForSupervision();
         this.offsetCommitter = new OffsetCommitter(
                 offsetQueue,
+                consumerPartitionAssignmentState,
                 (offsets) -> offsets.subscriptionNames().forEach(subscription ->
                         backgroundProcess.accept(Signal.of(COMMIT, subscription, offsets.batchFor(subscription)))
                 ),
@@ -102,7 +105,6 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
         Signal stop = Signal.of(Signal.SignalType.STOP, subscription);
         logger.info("Deleting consumer for {}. {}", subscription, stop.getLogWithIdAndType());
         backgroundProcess.accept(stop);
-        offsetCommitter.removeUncommittedOffsets(subscription);
     }
 
     @Override

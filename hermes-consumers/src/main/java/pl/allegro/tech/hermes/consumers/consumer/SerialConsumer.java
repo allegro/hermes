@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_INTERVAL;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class SerialConsumer implements Consumer {
 
@@ -114,7 +116,7 @@ public class SerialConsumer implements Consumer {
     }
 
     private void sendMessage(Message message) {
-        offsetQueue.offerInflightOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(message, subscription));
+        offsetQueue.offerInflightOffset(subscriptionPartitionOffset(subscription.getQualifiedName(), message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
         hermesMetrics.incrementInflightCounter(subscription);
         trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));
@@ -181,7 +183,7 @@ public class SerialConsumer implements Consumer {
     }
 
     @Override
-    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+    public boolean moveOffset(PartitionOffset offset) {
         return messageReceiver.moveOffset(offset);
     }
 

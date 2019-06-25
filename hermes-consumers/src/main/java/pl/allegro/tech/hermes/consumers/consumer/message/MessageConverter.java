@@ -10,6 +10,7 @@ public class MessageConverter {
         return new MessageMetadata(message.getId(),
                 message.getOffset(),
                 message.getPartition(),
+                message.getPartitionAssignmentTerm(),
                 message.getTopic(),
                 subscription.getName(),
                 message.getKafkaTopic().asString(),

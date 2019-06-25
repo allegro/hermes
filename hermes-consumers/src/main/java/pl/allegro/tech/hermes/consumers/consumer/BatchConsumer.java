@@ -36,8 +36,8 @@ import java.util.Set;
 
 import static com.github.rholder.retry.WaitStrategies.fixedWait;
 import static java.util.Optional.of;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class BatchConsumer implements Consumer {
 
@@ -115,15 +115,11 @@ public class BatchConsumer implements Consumer {
     }
 
     private void offerInflightOffsets(MessageBatch batch) {
-        for (PartitionOffset offset : batch.getPartitionOffsets()) {
-            offsetQueue.offerInflightOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(offset, subscription));
-        }
+        batch.getPartitionOffsets().forEach(offsetQueue::offerInflightOffset);
     }
 
     private void offerCommittedOffsets(MessageBatch batch) {
-        for (PartitionOffset offset : batch.getPartitionOffsets()) {
-            offsetQueue.offerCommittedOffset(SubscriptionPartitionOffset.subscriptionPartitionOffset(offset, subscription));
-        }
+        batch.getPartitionOffsets().forEach(offsetQueue::offerCommittedOffset);
     }
 
     @Override
@@ -173,9 +169,9 @@ public class BatchConsumer implements Consumer {
     }
 
     @Override
-    public boolean moveOffset(SubscriptionPartitionOffset subscriptionPartitionOffset) {
+    public boolean moveOffset(PartitionOffset partitionOffset) {
         if (receiver != null) {
-            return receiver.moveOffset(subscriptionPartitionOffset);
+            return receiver.moveOffset(partitionOffset);
         }
         return false;
     }

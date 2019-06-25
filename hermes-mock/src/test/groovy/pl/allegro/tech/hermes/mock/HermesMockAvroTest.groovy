@@ -6,20 +6,25 @@ import org.apache.avro.reflect.ReflectData
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
+import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 
 class HermesMockAvroTest extends Specification {
+
+    @Shared
+    int port = Ports.nextAvailable()
+
     @ClassRule
     @Shared
-    HermesMockRule hermes = new HermesMockRule(56789)
+    HermesMockRule hermes = new HermesMockRule(port)
 
     Schema schema = ReflectData.get().getSchema(TestMessage)
 
     JsonAvroConverter jsonAvroConverter = new JsonAvroConverter()
 
-    HermesPublisher publisher = new HermesPublisher("http://localhost:56789")
+    HermesPublisher publisher = new HermesPublisher("http://localhost:$port")
 
     def setup() {
         hermes.resetReceivedRequest()

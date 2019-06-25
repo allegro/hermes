@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver;
 
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 
@@ -18,7 +19,7 @@ public class UninitializedMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    public boolean moveOffset(SubscriptionPartitionOffset offset) {
+    public boolean moveOffset(PartitionOffset offset) {
         throw new ConsumerNotInitializedException();
     }
 }

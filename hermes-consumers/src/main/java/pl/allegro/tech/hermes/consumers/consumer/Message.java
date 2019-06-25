@@ -37,7 +37,7 @@ public class Message {
     private byte[] data;
 
     private int retryCounter = 0;
-
+    private long partitionAssignmentTerm = -1;
     private Map<String, String> externalMetadata = Collections.emptyMap();
 
     private List<Header> additionalHeaders = Collections.emptyList();
@@ -54,6 +54,7 @@ public class Message {
                    long publishingTimestamp,
                    long readingTimestamp,
                    PartitionOffset partitionOffset,
+                   long partitionAssignmentTerm,
                    Map<String, String> externalMetadata,
                    List<Header> additionalHeaders,
                    String subscription,
@@ -66,6 +67,7 @@ public class Message {
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
         this.partitionOffset = partitionOffset;
+        this.partitionAssignmentTerm = partitionAssignmentTerm;
         this.externalMetadata = ImmutableMap.copyOf(externalMetadata);
         this.additionalHeaders = ImmutableList.copyOf(additionalHeaders);
         this.subscription = subscription;
@@ -82,6 +84,10 @@ public class Message {
 
     public long getOffset() {
         return partitionOffset.getOffset();
+    }
+
+    public long getPartitionAssignmentTerm() {
+        return partitionAssignmentTerm;
     }
 
     public byte[] getData() {
@@ -194,6 +200,7 @@ public class Message {
             this.message.publishingTimestamp = message.getPublishingTimestamp();
             this.message.readingTimestamp = message.getReadingTimestamp();
             this.message.partitionOffset = message.partitionOffset;
+            this.message.partitionAssignmentTerm = message.partitionAssignmentTerm;
             this.message.externalMetadata = message.getExternalMetadata();
             this.message.additionalHeaders = message.getAdditionalHeaders();
             this.message.schema = message.getSchema();
