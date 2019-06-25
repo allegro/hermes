@@ -333,7 +333,9 @@
                 </div>
                 <div class="panel-body">
                     <p>
-                        <strong><a ng-href="{{diagnosticUrls.consumerGroups}}">Consumer groups</a></strong>
+                        <strong>
+                            <a ng-href="#/groups/{{groupName}}/topics/{{topicName}}/subscriptions/{{subscriptionName}}/diagnostics">Consumer groups</a>
+                        </strong>
                         <span uib-popover='List of consumers and partitions for the given subscription'
                               popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>

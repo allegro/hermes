@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
@@ -239,8 +240,8 @@ public class SubscriptionsEndpoint {
     @Path("/{subscriptionName}/consumer-groups")
     public List<ConsumerGroup> describeConsumerGroups(@PathParam("topicName") String qualifiedTopicName,
                                                       @PathParam("subscriptionName") String subscriptionName) {
-
-        return multiDCAwareService.describeConsumerGroups(fromQualifiedName(qualifiedTopicName), subscriptionName);
+        Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
+        return multiDCAwareService.describeConsumerGroups(topic, subscriptionName);
     }
 
     private Response responseStatus(Response.Status responseStatus) {

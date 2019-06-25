@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
@@ -39,7 +38,7 @@ public class BrokersClusterService {
     public BrokersClusterService(String clusterName, SingleMessageReader singleMessageReader,
                                  RetransmissionService retransmissionService, BrokerTopicManagement brokerTopicManagement,
                                  KafkaNamesMapper kafkaNamesMapper, OffsetsAvailableChecker offsetsAvailableChecker,
-                                 ConsumerGroupsDescriber consumerGroupsDescriber, AdminClient adminClient) {
+                                 LogEndOffsetChecker logEndOffsetChecker, AdminClient adminClient) {
 
         this.clusterName = clusterName;
         this.singleMessageReader = singleMessageReader;
@@ -47,7 +46,12 @@ public class BrokersClusterService {
         this.brokerTopicManagement = brokerTopicManagement;
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.offsetsAvailableChecker = offsetsAvailableChecker;
-        this.consumerGroupsDescriber = consumerGroupsDescriber;
+        this.consumerGroupsDescriber = new ConsumerGroupsDescriber(
+                kafkaNamesMapper,
+                adminClient,
+                logEndOffsetChecker,
+                clusterName
+        );
         this.adminClient = adminClient;
     }
 
@@ -93,8 +97,8 @@ public class BrokersClusterService {
         }
     }
 
-    public Optional<ConsumerGroup> describeConsumerGroup(SubscriptionName subscription) {
-        return consumerGroupsDescriber.describeConsumerGroup(subscription);
+    public Optional<ConsumerGroup> describeConsumerGroup(Topic topic, String subscriptionName) {
+        return consumerGroupsDescriber.describeConsumerGroup(topic, subscriptionName);
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {

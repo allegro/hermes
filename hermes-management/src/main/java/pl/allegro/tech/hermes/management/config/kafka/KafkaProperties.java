@@ -8,6 +8,8 @@ public class KafkaProperties {
 
     private String bootstrapKafkaServer = "localhost:9093";
 
+    private int kafkaServerRequestTimeoutMillis = 3000;
+
     private int sessionTimeoutMillis = 10000;
 
     private int connectionTimeoutMillis = 3000;
@@ -195,5 +197,13 @@ public class KafkaProperties {
 
     public void setBootstrapKafkaServer(String bootstrapKafkaServer) {
         this.bootstrapKafkaServer = bootstrapKafkaServer;
+    }
+
+    public int getKafkaServerRequestTimeoutMillis() {
+        return kafkaServerRequestTimeoutMillis;
+    }
+
+    public void setKafkaServerRequestTimeoutMillis(int kafkaServerRequestTimeoutMillis) {
+        this.kafkaServerRequestTimeoutMillis = kafkaServerRequestTimeoutMillis;
     }
 }
