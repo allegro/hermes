@@ -68,7 +68,8 @@ public class StorageConfiguration {
 
     @Bean(initMethod = "start")
     ZookeeperRepositoryManager repositoryManager(ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
-        return new ZookeeperRepositoryManager(clientManager(), dcNameProvider(), objectMapper, zookeeperPaths());
+        return new ZookeeperRepositoryManager(clientManager(), dcNameProvider(), objectMapper,
+                zookeeperPaths(), zookeeperGroupRepositoryFactory);
     }
 
     @Bean
