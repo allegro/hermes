@@ -6,11 +6,13 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
+import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperCredentialsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -40,6 +42,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final Map<Class<?>, Object> repositoryByType = new HashMap<>();
 
     private final Map<String, GroupRepository> groupRepositoriesByDc = new HashMap<>();
+    private final Map<String, CredentialsRepository> credentialsRepositoriesByDc = new HashMap<>();
     private final Map<String, TopicRepository> topicRepositoriesByDc = new HashMap<>();
     private final Map<String, SubscriptionRepository> subscriptionRepositoriesByDc = new HashMap<>();
     private final Map<String, OAuthProviderRepository> oAuthProviderRepositoriesByDc = new HashMap<>();
@@ -67,6 +70,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             CuratorFramework zookeeper = client.getCuratorFramework();
 
             GroupRepository groupRepository = zookeeperGroupRepositoryFactory.create(zookeeper, mapper, paths);
+            CredentialsRepository credentialsRepository = new ZookeeperCredentialsRepository(zookeeper, mapper, paths);
             TopicRepository topicRepository = new ZookeeperTopicRepository(zookeeper, mapper, paths, groupRepository);
             SubscriptionRepository subscriptionRepository = new ZookeeperSubscriptionRepository(zookeeper, mapper,
                     paths, topicRepository);
@@ -81,6 +85,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             UndeliveredMessageLog undeliveredMessageLog = new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
 
             groupRepositoriesByDc.put(dcName, groupRepository);
+            credentialsRepositoriesByDc.put(dcName, credentialsRepository);
             topicRepositoriesByDc.put(dcName, topicRepository);
             subscriptionRepositoriesByDc.put(dcName, subscriptionRepository);
             oAuthProviderRepositoriesByDc.put(dcName, oAuthProviderRepository);
@@ -122,6 +127,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
 
     private void initRepositoryTypeMap() {
         repositoryByType.put(GroupRepository.class, groupRepositoriesByDc);
+        repositoryByType.put(CredentialsRepository.class, credentialsRepositoriesByDc);
         repositoryByType.put(TopicRepository.class, topicRepositoriesByDc);
         repositoryByType.put(SubscriptionRepository.class, subscriptionRepositoriesByDc);
         repositoryByType.put(OAuthProviderRepository.class, oAuthProviderRepositoriesByDc);
