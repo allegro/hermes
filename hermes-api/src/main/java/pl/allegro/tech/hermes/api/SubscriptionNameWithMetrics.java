@@ -11,6 +11,7 @@ public class SubscriptionNameWithMetrics {
     private final long delivered;
     private final long discarded;
     private final long inflight;
+    private final long volume;
     private final MetricDecimalValue timeouts;
     private final MetricLongValue lag;
     private final MetricDecimalValue rate;
@@ -23,6 +24,7 @@ public class SubscriptionNameWithMetrics {
             @JsonProperty("delivered") long delivered,
             @JsonProperty("discarded") long discarded,
             @JsonProperty("inflight") long inflight,
+            @JsonProperty("volume") long volume,
             @JsonProperty("timeouts") MetricDecimalValue timeouts,
             @JsonProperty("lag") MetricLongValue lag,
             @JsonProperty("rate") MetricDecimalValue rate,
@@ -33,6 +35,7 @@ public class SubscriptionNameWithMetrics {
         this.delivered = delivered;
         this.discarded = discarded;
         this.inflight = inflight;
+        this.volume = volume;
         this.timeouts = timeouts;
         this.lag = lag;
         this.rate = rate;
@@ -41,7 +44,7 @@ public class SubscriptionNameWithMetrics {
 
     public static SubscriptionNameWithMetrics from(SubscriptionMetrics metrics, String name, String topicQualifiedName) {
         return new SubscriptionNameWithMetrics(topicQualifiedName, name, metrics.getDelivered(),
-                metrics.getDiscarded(), metrics.getInflight(), metrics.getTimeouts(), metrics.getLag(),
+                metrics.getDiscarded(), metrics.getInflight(), metrics.getVolume(), metrics.getTimeouts(), metrics.getLag(),
                 metrics.getRate(), metrics.getThroughput());
     }
 
@@ -81,6 +84,10 @@ public class SubscriptionNameWithMetrics {
         return throughput;
     }
 
+    public long getVolume() {
+        return volume;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -100,12 +107,13 @@ public class SubscriptionNameWithMetrics {
                 && Objects.equals(this.timeouts, that.timeouts)
                 && Objects.equals(this.lag, that.lag)
                 && Objects.equals(this.rate, that.rate)
-                && Objects.equals(this.throughput, that.throughput);
+                && Objects.equals(this.throughput, that.throughput)
+                && Objects.equals(this.volume, that.volume);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(this.topicQualifiedName, this.name, this.delivered, this.discarded, this.inflight,
-                this.timeouts, this.lag, this.rate, this.throughput);
+                this.timeouts, this.lag, this.rate, this.throughput, this.volume);
     }
 }
