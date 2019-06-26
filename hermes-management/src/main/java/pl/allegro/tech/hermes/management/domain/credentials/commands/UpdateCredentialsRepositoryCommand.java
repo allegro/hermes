@@ -30,6 +30,6 @@ public class UpdateCredentialsRepositoryCommand extends RepositoryCommand<Creden
 
     @Override
     public Class<CredentialsRepository> getRepositoryType() {
-        return null;
+        return CredentialsRepository.class;
     }
 }
