@@ -4,8 +4,6 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter
 
 class MockMessageCommitter implements MessageCommitter {
 
-    private final List<FailedToCommitOffsets> returnedValues = []
-
     private final List<OffsetsToCommit> recordedValues = []
 
     private int iteration = -1
@@ -25,10 +23,6 @@ class MockMessageCommitter implements MessageCommitter {
         expectedOffsets.each { expectedOffsetsSet.add(it) }
 
         allOffsets == expectedOffsetsSet
-    }
-
-    void returnValue(FailedToCommitOffsets failedOffsets) {
-        returnedValues.add(failedOffsets)
     }
 
     @Override
