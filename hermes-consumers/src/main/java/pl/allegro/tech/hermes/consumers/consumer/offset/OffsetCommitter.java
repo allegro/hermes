@@ -102,7 +102,9 @@ public class OffsetCommitter implements Runnable {
             ReducingConsumer inflightOffsetReducer = processInflightOffsets(committedOffsetsReducer.all);
             Map<SubscriptionPartition, Long> minInflightOffsets = inflightOffsetReducer.reduced;
 
-            int scheduledToCommit = 0;
+            int scheduledToCommitCount = 0;
+            int obsoleteCount = 0;
+
             OffsetsToCommit offsetsToCommit = new OffsetsToCommit();
             for (SubscriptionPartition partition : Sets.union(minInflightOffsets.keySet(), maxCommittedOffsets.keySet())) {
                 if (partitionAssignmentState.isAssignedPartitionAtCurrentTerm(partition)) {
@@ -111,17 +113,18 @@ public class OffsetCommitter implements Runnable {
                             maxCommittedOffsets.getOrDefault(partition, Long.MAX_VALUE)
                     );
                     if (offset >= 0 && offset < Long.MAX_VALUE) {
-                        scheduledToCommit++;
+                        scheduledToCommitCount++;
                         offsetsToCommit.add(new SubscriptionPartitionOffset(partition, offset));
                     }
                 } else {
-                    metrics.counter("offset-committer.obsolete").inc();
+                    obsoleteCount++;
                 }
             }
 
             messageCommitter.commitOffsets(offsetsToCommit);
 
-            metrics.counter("offset-committer.committed").inc(scheduledToCommit);
+            metrics.counter("offset-committer.obsolete").inc(obsoleteCount);
+            metrics.counter("offset-committer.committed").inc(scheduledToCommitCount);
 
             cleanupInflightOffsetsWithObsoleteTerms();
         } catch (Exception exception) {
