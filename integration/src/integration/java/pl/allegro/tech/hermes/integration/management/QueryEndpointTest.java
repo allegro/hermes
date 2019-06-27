@@ -205,6 +205,8 @@ public class QueryEndpointTest extends IntegrationTest {
 
             // then
             assertTopicMetricsMatchesToNames(found, qualifiedNames);
+
+            found.forEach(it -> assertThat(it.getVolume()).isGreaterThanOrEqualTo(0));
         });
 
     }
@@ -222,6 +224,7 @@ public class QueryEndpointTest extends IntegrationTest {
         String queryGetSubscriptionsMetricsWithPositiveThroughput = "{\"query\": {\"throughput\": {\"gt\": 0}}}";
         String queryGetSubscriptionsMetricsWithRateInRange = "{\"query\": {\"or\": [{\"rate\": {\"gt\": 10}}, {\"rate\": {\"lt\": 50}}]}}";
         String queryGetSubscriptionsMetricsWithLagNegative = "{\"query\": {\"lag\": {\"lt\": 0}}}";
+        String queryGetSubscriptionsMetricsWithVolume = "{\"query\": {\"volume\": {\"gt\": -1}}}";
 
         graphiteEndpoint.returnMetric(subscriptionMetricsStub("subscriptionsMetricsTestGroup1.topic.subscription1")
                 .withRate(100)
@@ -244,12 +247,15 @@ public class QueryEndpointTest extends IntegrationTest {
                     .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithRateInRange);
             List<SubscriptionNameWithMetrics> subscriptionsWithNegativeLag = management.query()
                     .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithLagNegative);
+            List<SubscriptionNameWithMetrics> subscriptionsWithVolume = management.query()
+                    .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithVolume);
 
             // then
             subscriptionsMatchesToNamesAndTheirTopicsNames(allSubscriptions, subscription1, subscription2);
             subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithPositiveThroughput, subscription2);
             subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithRateInRange, subscription2);
             subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithNegativeLag, subscription1, subscription2);
+            subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithVolume, subscription1, subscription2);
         });
     }
 

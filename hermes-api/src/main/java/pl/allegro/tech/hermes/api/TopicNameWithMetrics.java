@@ -12,6 +12,7 @@ public class TopicNameWithMetrics {
     private final MetricDecimalValue deliveryRate;
     private final int subscriptions;
     private final MetricDecimalValue throughput;
+    private final long volume;
 
     private final TopicName topicName;
 
@@ -22,6 +23,7 @@ public class TopicNameWithMetrics {
             @JsonProperty("deliveryRate") MetricDecimalValue deliveryRate,
             @JsonProperty("subscriptions") int subscriptions,
             @JsonProperty("throughput") MetricDecimalValue throughput,
+            @JsonProperty("volume") long volume,
             @JsonProperty("qualifiedName") String qualifiedName
     ) {
         this.published = published;
@@ -29,6 +31,7 @@ public class TopicNameWithMetrics {
         this.deliveryRate = deliveryRate;
         this.subscriptions = subscriptions;
         this.throughput = throughput;
+        this.volume = volume;
         this.topicName = TopicName.fromQualifiedName(qualifiedName);
     }
 
@@ -39,12 +42,17 @@ public class TopicNameWithMetrics {
                 metrics.getDeliveryRate(),
                 metrics.getSubscriptions(),
                 metrics.getThroughput(),
+                metrics.getVolume(),
                 qualifiedName
         );
     }
 
     public long getPublished() {
         return published;
+    }
+
+    public long getVolume() {
+        return volume;
     }
 
     public MetricDecimalValue getRate() {
@@ -83,11 +91,12 @@ public class TopicNameWithMetrics {
                 && Objects.equals(this.deliveryRate, that.deliveryRate)
                 && Objects.equals(this.subscriptions, that.subscriptions)
                 && Objects.equals(this.throughput, that.throughput)
+                && Objects.equals(this.volume, that.volume)
                 && Objects.equals(this.topicName, that.topicName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput, topicName);
+        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput, topicName, volume);
     }
 }
