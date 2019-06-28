@@ -33,7 +33,9 @@ topic:
 
 storage:
   pathPrefix: /hermes
-  connectionString: localhost:14192
+  clusters:
+    - dc: default
+      connectionString: localhost:14192
 
 auth:
   oauthServerUrl: http://localhost:19999

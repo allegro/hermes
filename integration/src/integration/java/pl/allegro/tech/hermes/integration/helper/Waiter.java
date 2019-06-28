@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration.helper;
 
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionFactory;
 import org.apache.curator.framework.CuratorFramework;
@@ -14,17 +15,18 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionStatus;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_SUBSCRIPTION;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_TOPIC;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-
-import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.*;
-import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 

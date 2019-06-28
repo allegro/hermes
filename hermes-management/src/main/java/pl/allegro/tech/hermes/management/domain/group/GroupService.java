@@ -12,6 +12,10 @@ import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
 import pl.allegro.tech.hermes.management.domain.Auditor;
+import pl.allegro.tech.hermes.management.domain.group.commands.CreateGroupRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.group.commands.RemoveGroupRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.group.commands.UpdateGroupRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,11 +27,14 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final Auditor auditor;
+    private final MultiDcRepositoryCommandExecutor multiDcExecutor;
 
     @Autowired
-    public GroupService(GroupRepository groupRepository, Auditor auditor) {
+    public GroupService(GroupRepository groupRepository, Auditor auditor,
+                        MultiDcRepositoryCommandExecutor multiDcExecutor) {
         this.groupRepository = groupRepository;
         this.auditor = auditor;
+        this.multiDcExecutor = multiDcExecutor;
     }
 
     public List<Group> listGroups() {
@@ -43,12 +50,12 @@ public class GroupService {
     }
 
     public void createGroup(Group group, String createdBy) {
-        groupRepository.createGroup(group);
+        multiDcExecutor.execute(new CreateGroupRepositoryCommand(group));
         auditor.objectCreated(createdBy, group);
     }
 
     public void removeGroup(String groupName, String removedBy) {
-        groupRepository.removeGroup(groupName);
+        multiDcExecutor.execute(new RemoveGroupRepositoryCommand(groupName));
         auditor.objectRemoved(removedBy, Group.class.getSimpleName(), groupName);
     }
 
@@ -62,6 +69,7 @@ public class GroupService {
         try {
             Group retrieved = groupRepository.getGroupDetails(groupName);
             Group modified = Patch.apply(retrieved, patch);
+            multiDcExecutor.execute(new UpdateGroupRepositoryCommand(modified));
             groupRepository.updateGroup(modified);
             auditor.objectUpdated(modifiedBy, retrieved, modified);
         } catch (MalformedDataException exception) {

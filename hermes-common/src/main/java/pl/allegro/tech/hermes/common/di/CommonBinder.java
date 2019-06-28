@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.DcNameProviderFactory;
 import pl.allegro.tech.hermes.common.di.factories.DistributedEphemeralCounterFactory;
 import pl.allegro.tech.hermes.common.di.factories.GraphiteWebTargetFactory;
 import pl.allegro.tech.hermes.common.di.factories.GroupRepositoryFactory;
@@ -59,7 +58,6 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(SchemaVersionsRepositoryFactory.class);
         bindFactory(AvroCompiledSchemaRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<CompiledSchemaRepository<Schema>>() {});
         bindSingletonFactory(SchemaRepositoryFactory.class);
-        bindSingletonFactory(DcNameProviderFactory.class);
 
         bindSingleton(CuratorClientFactory.class);
         bindSingleton(HermesMetrics.class);

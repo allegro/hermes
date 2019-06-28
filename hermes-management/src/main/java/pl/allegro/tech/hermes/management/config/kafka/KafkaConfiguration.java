@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
+import static java.util.stream.Collectors.toList;
 import kafka.zk.AdminZkClient;
 import kafka.zk.KafkaZkClient;
 import kafka.zookeeper.ZooKeeperClient;
@@ -24,6 +27,7 @@ import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndica
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.management.config.SubscriptionProperties;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
@@ -41,10 +45,6 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import static java.time.Duration.ofMillis;
-import static java.time.Duration.ofSeconds;
-import static java.util.stream.Collectors.toList;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
@@ -71,6 +71,9 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @Autowired
     AdminTool adminTool;
 
+    @Autowired
+    MultiDcRepositoryCommandExecutor multiDcExecutor;
+
     private final List<ZooKeeperClient> zkClients = new ArrayList<>();
     private final List<CuratorFramework> curators = new ArrayList<>();
 
@@ -96,7 +99,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     storage,
                     subscriptionOffsetChangeIndicator,
                     consumerPool,
-                    kafkaNamesMapper
+                    kafkaNamesMapper,
+                    multiDcExecutor
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
             return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,
@@ -181,5 +185,4 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
         props.put(CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getKafkaServerRequestTimeoutMillis());
         return AdminClient.create(props);
     }
-
 }

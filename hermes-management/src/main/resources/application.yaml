@@ -1,6 +1,14 @@
 zookeeper:
   enabled: false
 
+
+storage:
+  dcNameSource: env
+  dcNameSourceEnv: DC
+  clusters:
+    - dc: dc1
+      connectionString: localhost:2181
+
 kafka:
   clusters:
     -
@@ -8,10 +16,6 @@ kafka:
       connectionString: localhost:2181
       connectionTimeout: 3000
       bootstrapKafkaServer: localhost:9092
-
-storage:
-  connectionString: localhost:2181
-  connectionTimeout: 3000
 
 spring:
   jersey:

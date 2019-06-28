@@ -9,6 +9,8 @@ import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 
@@ -24,17 +26,20 @@ public class KafkaRetransmissionService implements RetransmissionService {
     private final SubscriptionOffsetChangeIndicator subscriptionOffsetChange;
     private final KafkaConsumerPool consumerPool;
     private final KafkaNamesMapper kafkaNamesMapper;
+    private final MultiDcRepositoryCommandExecutor multiDcExecutor;
 
     public KafkaRetransmissionService(
             BrokerStorage brokerStorage,
             SubscriptionOffsetChangeIndicator subscriptionOffsetChange,
             KafkaConsumerPool consumerPool,
-            KafkaNamesMapper kafkaNamesMapper) {
+            KafkaNamesMapper kafkaNamesMapper,
+            MultiDcRepositoryCommandExecutor multiDcExecutor) {
 
         this.brokerStorage = brokerStorage;
         this.subscriptionOffsetChange = subscriptionOffsetChange;
         this.consumerPool = consumerPool;
         this.kafkaNamesMapper = kafkaNamesMapper;
+        this.multiDcExecutor = multiDcExecutor;
     }
 
     @Override
@@ -51,7 +56,10 @@ public class KafkaRetransmissionService implements RetransmissionService {
                 PartitionOffset partitionOffset = new PartitionOffset(k.name(), offset, partitionId);
                 partitionOffsetList.add(partitionOffset);
                 if (!dryRun) {
-                    subscriptionOffsetChange.setSubscriptionOffset(topic.getName(), subscription, brokersClusterName, partitionOffset);
+                    multiDcExecutor.execute(new SetSubscriptionOffsetRepositoryCommand(topic.getName(), subscription,
+                            brokersClusterName, partitionOffset));
+//                    subscriptionOffsetChange.setSubscriptionOffset(topic.getName(), subscription, brokersClusterName, partitionOffset);
+
                 }
             }
         });

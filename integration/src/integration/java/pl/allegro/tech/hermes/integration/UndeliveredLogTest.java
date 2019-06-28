@@ -1,17 +1,16 @@
 package pl.allegro.tech.hermes.integration;
 
+import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
+import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
-
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
-import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 
 public class UndeliveredLogTest extends IntegrationTest {
 
