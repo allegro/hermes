@@ -93,6 +93,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             UndeliveredMessageLog undeliveredMessageLog = new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
             AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(),
                     mapper, adminReaperInterval);
+            adminTool.start();
 
             groupRepositoriesByDc.put(dcName, groupRepository);
             credentialsRepositoriesByDc.put(dcName, credentialsRepository);

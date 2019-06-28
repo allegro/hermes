@@ -14,7 +14,6 @@ public class RetransmitCommand extends RepositoryCommand<AdminTool> {
 
     @Override
     public void backup(AdminTool repository) {
-        repository.start();
     }
 
     @Override
