@@ -60,12 +60,16 @@ public class ZookeeperClientManager {
     }
 
     private void selectLocalClient() {
-        String localDcName = dcNameProvider.getDcName();
-        localClient = clients
-                .stream()
-                .filter(client -> client.getDcName().equals(localDcName))
-                .findFirst()
-                .orElseThrow(() -> new ZookeeperClientNotFoundException(localDcName));
+        if (clients.size() == 1) {
+            localClient = clients.get(0);
+        } else {
+            String localDcName = dcNameProvider.getDcName();
+            localClient = clients
+                    .stream()
+                    .filter(client -> client.getDcName().equals(localDcName))
+                    .findFirst()
+                    .orElseThrow(() -> new ZookeeperClientNotFoundException(localDcName));
+        }
     }
 
     private ZookeeperClient buildZookeeperClient(StorageProperties clusterProperties,
