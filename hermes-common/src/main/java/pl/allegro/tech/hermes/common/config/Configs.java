@@ -32,7 +32,7 @@ public enum Configs {
     ENVIRONMENT_NAME("environment.name", "dev"),
     HOSTNAME("hostname", new InetAddressHostnameResolver().resolve()),
 
-    KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary"),
+    KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary-dc"),
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
     KAFKA_NAMESPACE("kafka.namespace", ""),
 
@@ -253,7 +253,6 @@ public enum Configs {
     METRICS_CONSOLE_REPORTER("metrics.console.reporter", false),
     METRICS_COUNTER_EXPIRE_AFTER_ACCESS("metrics.counter.expire.after.access", 72),
 
-    ADMIN_REAPER_INTERAL_MS("admin.reaper.interval.ms", 180000),
     GLOBAL_SHUTDOWN_HOOK_REGISTERED("global.shutdown.hook.registered", true),
 
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),

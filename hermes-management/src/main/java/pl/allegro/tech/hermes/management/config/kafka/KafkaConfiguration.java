@@ -14,7 +14,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
 import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
@@ -73,9 +72,6 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     ZookeeperRepositoryManager zookeeperRepositoryManager;
 
     @Autowired
-    AdminTool adminTool;
-
-    @Autowired
     MultiDcRepositoryCommandExecutor multiDcExecutor;
 
     private final List<ZooKeeperClient> zkClients = new ArrayList<>();
@@ -121,10 +117,10 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
         return new MultiDCAwareService(
                 clusters,
-                adminTool,
                 clock,
                 ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
-                ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()));
+                ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()),
+                multiDcExecutor);
     }
 
     private SubscriptionOffsetChangeIndicator getRepository(

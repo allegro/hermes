@@ -8,6 +8,8 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.retransmit.RetransmitCommand;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService;
 import pl.allegro.tech.hermes.management.domain.topic.UnableToMoveOffsetsException;
@@ -27,18 +29,19 @@ public class MultiDCAwareService {
     private static final Logger logger = LoggerFactory.getLogger(TopicContentTypeMigrationService.class);
 
     private final List<BrokersClusterService> clusters;
-    private final AdminTool adminTool;
     private final Clock clock;
     private final Duration intervalBetweenCheckingIfOffsetsMoved;
     private final Duration offsetsMovedTimeout;
+    private MultiDcRepositoryCommandExecutor multiDcExecutor;
 
-    public MultiDCAwareService(List<BrokersClusterService> clusters, AdminTool adminTool, Clock clock,
-                               Duration intervalBetweenCheckingIfOffsetsMoved, Duration offsetsMovedTimeout) {
+    public MultiDCAwareService(List<BrokersClusterService> clusters, Clock clock,
+                               Duration intervalBetweenCheckingIfOffsetsMoved, Duration offsetsMovedTimeout,
+                               MultiDcRepositoryCommandExecutor multiDcExecutor) {
         this.clusters = clusters;
-        this.adminTool = adminTool;
         this.clock = clock;
         this.intervalBetweenCheckingIfOffsetsMoved = intervalBetweenCheckingIfOffsetsMoved;
         this.offsetsMovedTimeout = offsetsMovedTimeout;
+        this.multiDcExecutor = multiDcExecutor;
     }
 
     public void manageTopic(Consumer<BrokerTopicManagement> manageFunction) {
@@ -62,7 +65,7 @@ public class MultiDCAwareService {
 
         if (!dryRun) {
             logger.info("Preparing retransmission for subscription {}", topic.getQualifiedName() + "$" + subscriptionName);
-            adminTool.retransmit(new SubscriptionName(subscriptionName, topic.getName()));
+            multiDcExecutor.execute(new RetransmitCommand(new SubscriptionName(subscriptionName, topic.getName())));
             clusters.forEach(clusters -> waitUntilOffsetsAreMoved(topic, subscriptionName));
         }
 

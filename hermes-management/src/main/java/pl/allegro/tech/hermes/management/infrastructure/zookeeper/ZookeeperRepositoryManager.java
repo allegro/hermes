@@ -2,6 +2,10 @@ package pl.allegro.tech.hermes.management.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
+import pl.allegro.tech.hermes.common.admin.AdminTool;
+import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminTool;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
@@ -38,6 +42,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final ZookeeperPaths paths;
     private final ZookeeperClientManager clientManager;
     private ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
+    private Integer adminReaperInterval;
 
     private final Map<Class<?>, Object> repositoryByType = new HashMap<>();
 
@@ -50,17 +55,20 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final Map<String, MessagePreviewRepository> messagePreviewRepositoriesByDc = new HashMap<>();
     private final Map<String, TopicBlacklistRepository> topicBlacklistRepositoriesByDc = new HashMap<>();
     private final Map<String, UndeliveredMessageLog> undeliveredMessageLogsByDc = new HashMap<>();
+    private final Map<String, AdminTool> adminToolByDc = new HashMap<>();
 
     public ZookeeperRepositoryManager(ZookeeperClientManager clientManager,
                                       DcNameProvider dcNameProvider,
                                       ObjectMapper mapper,
                                       ZookeeperPaths paths,
-                                      ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
+                                      ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory,
+                                      Integer adminReaperInterval) {
         this.dcNameProvider = dcNameProvider;
         this.mapper = mapper;
         this.paths = paths;
         this.clientManager = clientManager;
         this.zookeeperGroupRepositoryFactory = zookeeperGroupRepositoryFactory;
+        this.adminReaperInterval = adminReaperInterval;
         initRepositoryTypeMap();
     }
 
@@ -83,6 +91,8 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             TopicBlacklistRepository topicBlacklistRepository = new ZookeeperTopicBlacklistRepository(zookeeper, mapper,
                     paths);
             UndeliveredMessageLog undeliveredMessageLog = new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
+            AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(),
+                    mapper, adminReaperInterval);
 
             groupRepositoriesByDc.put(dcName, groupRepository);
             credentialsRepositoriesByDc.put(dcName, credentialsRepository);
@@ -93,6 +103,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             messagePreviewRepositoriesByDc.put(dcName, messagePreviewRepository);
             topicBlacklistRepositoriesByDc.put(dcName, topicBlacklistRepository);
             undeliveredMessageLogsByDc.put(dcName, undeliveredMessageLog);
+            adminToolByDc.put(dcName, adminTool);
         }
     }
 
@@ -135,5 +146,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
         repositoryByType.put(MessagePreviewRepository.class, messagePreviewRepositoriesByDc);
         repositoryByType.put(TopicBlacklistRepository.class, topicBlacklistRepositoriesByDc);
         repositoryByType.put(UndeliveredMessageLog.class, undeliveredMessageLogsByDc);
+        repositoryByType.put(AdminTool.class, adminToolByDc);
     }
 }

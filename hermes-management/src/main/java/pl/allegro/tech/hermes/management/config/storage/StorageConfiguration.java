@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminTool;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -69,7 +70,7 @@ public class StorageConfiguration {
     @Bean(initMethod = "start")
     ZookeeperRepositoryManager repositoryManager(ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
         return new ZookeeperRepositoryManager(clientManager(), dcNameProvider(), objectMapper,
-                zookeeperPaths(), zookeeperGroupRepositoryFactory);
+                zookeeperPaths(), zookeeperGroupRepositoryFactory, storageClustersProperties.getAdminReaperInterval());
     }
 
     @Bean
@@ -143,17 +144,9 @@ public class StorageConfiguration {
         return new ZookeeperTopicBlacklistRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
-    @Bean
-    AdminTool adminTool() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
-        return new ZookeeperAdminTool(zookeeperPaths(), localClient.getCuratorFramework(),
-                objectMapper, Configs.ADMIN_REAPER_INTERAL_MS.getDefaultValue());
-    }
-
     @PostConstruct
     public void init() {
         ensureInitPathExists();
-        adminTool().start();
     }
 
     private void ensureInitPathExists() {

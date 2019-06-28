@@ -16,7 +16,7 @@ public class JerseyClientFactory {
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.property(ClientProperties.ASYNC_THREADPOOL_SIZE, 10);
         clientConfig.property(ClientProperties.CONNECT_TIMEOUT, 5000);
-        clientConfig.property(ClientProperties.READ_TIMEOUT, 20000);
+        clientConfig.property(ClientProperties.READ_TIMEOUT, 80000);
         return clientConfig;
     }
 

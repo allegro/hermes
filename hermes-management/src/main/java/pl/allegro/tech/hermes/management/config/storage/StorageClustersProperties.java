@@ -21,6 +21,7 @@ public class StorageClustersProperties {
     private String connectionString = "localhost:2181";
     private int sessionTimeout = 10000;
     private int connectTimeout = 1000;
+    private int adminReaperInterval = 180000;
     private List<StorageProperties> clusters = new ArrayList<>();
 
     @NestedConfigurationProperty
@@ -128,5 +129,13 @@ public class StorageClustersProperties {
 
     public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
+    }
+
+    public int getAdminReaperInterval() {
+        return adminReaperInterval;
+    }
+
+    public void setAdminReaperInterval(int adminReaperInterval) {
+        this.adminReaperInterval = adminReaperInterval;
     }
 }
