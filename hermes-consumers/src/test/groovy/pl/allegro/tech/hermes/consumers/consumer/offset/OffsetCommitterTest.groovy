@@ -249,6 +249,74 @@ class OffsetCommitterTest extends Specification {
         messageCommitter.nothingCommitted(3)
     }
 
+    def "should commit maximum commited offset no matter what order committed offset return"() {
+        given:
+        assignPartitions(1)
+        queue.offerInflightOffset(offset(1, 3))
+        queue.offerInflightOffset(offset(1, 4))
+        queue.offerInflightOffset(offset(1, 5))
+
+        when:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(1, offset(1, 3))
+
+        when:
+        queue.offerCommittedOffset(offset(1, 4))
+        queue.offerCommittedOffset(offset(1, 5))
+
+        and:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(2, offset(1, 3))
+
+        when:
+        queue.offerCommittedOffset(offset(1, 3))
+
+        and:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(3, offset(1, 6))
+    }
+
+    def "should drop maximum committed offset when lost partition assignment"() {
+        given:
+        assignPartitions(1)
+        queue.offerInflightOffset(offset(1, 3))
+        queue.offerInflightOffset(offset(1, 4))
+        queue.offerInflightOffset(offset(1, 5))
+
+        when:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(1, offset(1, 3))
+
+        when:
+        queue.offerCommittedOffset(offset(1, 4))
+        queue.offerCommittedOffset(offset(1, 5))
+
+        and:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(2, offset(1, 3))
+
+        when:
+        queue.offerCommittedOffset(offset(1, 3))
+        revokePartitions(1)
+        assignPartitions(1)
+
+        and:
+        committer.run()
+
+        then:
+        messageCommitter.nothingCommitted(3)
+    }
+
     private SubscriptionPartitionOffset offset(int partition, long offset) {
         offsetFromTerm(partition, offset, state.currentTerm(SUBSCRIPTION_NAME))
     }
