@@ -67,9 +67,15 @@ public class ConsumerProcess implements Runnable {
         } finally {
             logger.info("Releasing consumer process thread of subscription {}", getSubscriptionName());
             refreshHealthcheck();
-            stop();
-            onConsumerStopped.accept(getSubscriptionName());
-            Thread.currentThread().setName("consumer-released-thread");
+            try {
+                stop();
+            } catch (Exception exceptionWhileStopping) {
+                logger.error("An error occurred while stopping consumer process of subscription {}",
+                        getSubscriptionName(), exceptionWhileStopping);
+            } finally {
+                onConsumerStopped.accept(getSubscriptionName());
+                Thread.currentThread().setName("consumer-released-thread");
+            }
         }
     }
 
