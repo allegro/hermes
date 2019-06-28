@@ -161,10 +161,6 @@ public class KafkaProperties {
         this.dc = dc;
     }
 
-    public String getClusterName() {
-        return clusterName;
-    }
-
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
     }

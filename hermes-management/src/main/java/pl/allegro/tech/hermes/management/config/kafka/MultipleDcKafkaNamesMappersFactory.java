@@ -17,12 +17,12 @@ public interface MultipleDcKafkaNamesMappersFactory {
     default KafkaNamesMappers createKafkaNamesMapper(KafkaClustersProperties clustersProperties, Function<String, KafkaNamesMapper> factoryFunction) {
         Map<String, KafkaNamesMapper> mappers = clustersProperties.getClusters().stream()
                 .filter(c -> c.getNamespace().isEmpty())
-                .collect(toMap(KafkaProperties::getClusterName,
+                .collect(toMap(KafkaProperties::getQualifiedClusterName,
                         kafkaProperties -> factoryFunction.apply(clustersProperties.getDefaultNamespace())));
 
         mappers.putAll(clustersProperties.getClusters().stream()
                 .filter(c -> !c.getNamespace().isEmpty())
-                .collect(toMap(KafkaProperties::getClusterName,
+                .collect(toMap(KafkaProperties::getQualifiedClusterName,
                         kafkaProperties -> factoryFunction.apply(kafkaProperties.getNamespace()))));
 
         return new KafkaNamesMappers(mappers);

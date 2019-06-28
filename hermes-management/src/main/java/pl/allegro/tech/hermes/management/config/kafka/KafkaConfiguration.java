@@ -88,7 +88,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
 
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
-            KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getClusterName());
+            KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
 
             ZooKeeperClient zooKeeperClient = zooKeeperClient(kafkaProperties);
             KafkaZkClient kafkaZkClient = kafkaZkClient(zooKeeperClient);
@@ -112,7 +112,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     kafkaNamesMapper
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
-            return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,
+            return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper,
                     new OffsetsAvailableChecker(consumerPool, storage),
                     new LogEndOffsetChecker(consumerPool),
