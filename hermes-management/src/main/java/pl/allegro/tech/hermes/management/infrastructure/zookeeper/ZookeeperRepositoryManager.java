@@ -36,6 +36,8 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final ZookeeperPaths paths;
     private final ZookeeperClientManager clientManager;
 
+    private final Map<Class<?>, Object> repositoryByType = new HashMap<>();
+
     private final Map<String, GroupRepository> groupRepositoriesByDc = new HashMap<>();
     private final Map<String, TopicRepository> topicRepositoriesByDc = new HashMap<>();
     private final Map<String, SubscriptionRepository> subscriptionRepositoriesByDc = new HashMap<>();
@@ -45,12 +47,14 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final Map<String, TopicBlacklistRepository> topicBlacklistRepositoriesByDc = new HashMap<>();
     private final Map<String, UndeliveredMessageLog> undeliveredMessageLogsByDc = new HashMap<>();
 
-    public ZookeeperRepositoryManager(ZookeeperClientManager clientManager, DcNameProvider dcNameProvider,
+    public ZookeeperRepositoryManager(ZookeeperClientManager clientManager,
+                                      DcNameProvider dcNameProvider,
                                       ObjectMapper mapper, ZookeeperPaths paths) {
         this.dcNameProvider = dcNameProvider;
         this.mapper = mapper;
         this.paths = paths;
         this.clientManager = clientManager;
+        initRepositoryTypeMap();
     }
 
     public void start() {
@@ -105,24 +109,21 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
 
     @SuppressWarnings("unchecked")
     private <T> Map<String, T> getRepositoriesByType(Class<T> type) {
-        if (type == GroupRepository.class) {
-            return (Map<String, T>) groupRepositoriesByDc;
-        } else if (type == TopicRepository.class) {
-            return (Map<String, T>) topicRepositoriesByDc;
-        } else if (type == SubscriptionRepository.class) {
-            return (Map<String, T>) subscriptionRepositoriesByDc;
-        } else if (type == OAuthProviderRepository.class) {
-            return (Map<String, T>) oAuthProviderRepositoriesByDc;
-        } else if (type == SubscriptionOffsetChangeIndicator.class) {
-            return (Map<String, T>) offsetChangeIndicatorsByDc;
-        } else if (type == MessagePreviewRepository.class) {
-            return (Map<String, T>) messagePreviewRepositoriesByDc;
-        } else if (type == TopicBlacklistRepository.class) {
-            return (Map<String, T>) topicBlacklistRepositoriesByDc;
-        } else if (type == UndeliveredMessageLog.class) {
-            return (Map<String, T>) undeliveredMessageLogsByDc;
-        } else {
+        Object repository = repositoryByType.get(type);
+        if (repository == null) {
             throw new InternalProcessingException("Could not provide repository of type: " + type.getName());
         }
+        return (Map<String, T>) repository;
+    }
+
+    private void initRepositoryTypeMap() {
+        repositoryByType.put(GroupRepository.class, groupRepositoriesByDc);
+        repositoryByType.put(TopicRepository.class, topicRepositoriesByDc);
+        repositoryByType.put(SubscriptionRepository.class, subscriptionRepositoriesByDc);
+        repositoryByType.put(OAuthProviderRepository.class, oAuthProviderRepositoriesByDc);
+        repositoryByType.put(SubscriptionOffsetChangeIndicator.class, offsetChangeIndicatorsByDc);
+        repositoryByType.put(MessagePreviewRepository.class, messagePreviewRepositoriesByDc);
+        repositoryByType.put(TopicBlacklistRepository.class, topicBlacklistRepositoriesByDc);
+        repositoryByType.put(UndeliveredMessageLog.class, undeliveredMessageLogsByDc);
     }
 }

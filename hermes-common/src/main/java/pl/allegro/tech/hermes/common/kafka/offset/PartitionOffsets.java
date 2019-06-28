@@ -25,12 +25,4 @@ public class PartitionOffsets implements Iterable<PartitionOffset> {
     public Iterator<PartitionOffset> iterator() {
         return offsets.iterator();
     }
-
-    public Optional<PartitionOffset> findForTopicAndPartition(KafkaTopicName topicName, int partition) {
-        return offsets
-                .stream()
-                .filter( offset -> topicName.equals(offset.getTopic()) && partition == offset.getPartition())
-                .findFirst();
-    }
-
 }

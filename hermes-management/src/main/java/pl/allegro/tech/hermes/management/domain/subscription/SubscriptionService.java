@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.dc.DcBoundRepositoryHolder;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.subscription.commands.CreateSubscriptionRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.subscription.commands.RemoveSubscriptionRepositoryCommand;
@@ -35,10 +36,12 @@ import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
@@ -58,7 +61,6 @@ public class SubscriptionService {
     private final TopicService topicService;
     private final SubscriptionMetricsRepository metricsRepository;
     private final SubscriptionHealthChecker subscriptionHealthChecker;
-    private final UndeliveredMessageLog undeliveredMessageLog;
     private final LogRepository logRepository;
     private final SubscriptionValidator subscriptionValidator;
     private final Auditor auditor;
@@ -71,7 +73,6 @@ public class SubscriptionService {
                                TopicService topicService,
                                SubscriptionMetricsRepository metricsRepository,
                                SubscriptionHealthChecker subscriptionHealthChecker,
-                               UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
                                SubscriptionValidator subscriptionValidator,
                                Auditor auditor,
@@ -82,7 +83,6 @@ public class SubscriptionService {
         this.topicService = topicService;
         this.metricsRepository = metricsRepository;
         this.subscriptionHealthChecker = subscriptionHealthChecker;
-        this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
         this.subscriptionValidator = subscriptionValidator;
         this.auditor = auditor;
@@ -128,9 +128,9 @@ public class SubscriptionService {
     private Subscription.State getEffectiveState(TopicName topicName, String subscriptionName) {
         Set<Subscription.State> states = loadSubscriptionStatesFromAllDc(topicName, subscriptionName);
 
-        if(states.contains(Subscription.State.ACTIVE)) {
+        if (states.contains(Subscription.State.ACTIVE)) {
             return Subscription.State.ACTIVE;
-        } else if(states.contains(Subscription.State.SUSPENDED)) {
+        } else if (states.contains(Subscription.State.SUSPENDED)) {
             return Subscription.State.SUSPENDED;
         } else {
             return Subscription.State.PENDING;
@@ -141,7 +141,7 @@ public class SubscriptionService {
         List<DcBoundRepositoryHolder<SubscriptionRepository>> holders =
                 repositoryManager.getRepositories(SubscriptionRepository.class);
         Set<Subscription.State> states = new HashSet<>();
-        for(DcBoundRepositoryHolder<SubscriptionRepository> holder : holders) {
+        for (DcBoundRepositoryHolder<SubscriptionRepository> holder : holders) {
             try {
                 Subscription.State state = holder.getRepository().getSubscriptionDetails(topicName, subscriptionName)
                         .getState();
@@ -210,7 +210,7 @@ public class SubscriptionService {
         List<DcBoundRepositoryHolder<UndeliveredMessageLog>> holders =
                 repositoryManager.getRepositories(UndeliveredMessageLog.class);
         List<SentMessageTrace> traces = new ArrayList<>();
-        for(DcBoundRepositoryHolder<UndeliveredMessageLog> holder : holders) {
+        for (DcBoundRepositoryHolder<UndeliveredMessageLog> holder : holders) {
             try {
                 holder.getRepository().last(topicName, subscriptionName).ifPresent(traces::add);
             } catch (Exception e) {
@@ -218,7 +218,6 @@ public class SubscriptionService {
             }
         }
         return traces.stream().max(Comparator.comparing(SentMessageTrace::getTimestamp));
-//        return undeliveredMessageLog.last(topicName, subscriptionName);
     }
 
     public List<SentMessageTrace> getLatestUndeliveredMessagesTrackerLogs(TopicName topicName, String subscriptionName) {

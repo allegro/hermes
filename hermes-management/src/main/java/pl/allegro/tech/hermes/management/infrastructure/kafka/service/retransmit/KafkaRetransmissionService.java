@@ -56,10 +56,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
                 PartitionOffset partitionOffset = new PartitionOffset(k.name(), offset, partitionId);
                 partitionOffsetList.add(partitionOffset);
                 if (!dryRun) {
-                    multiDcExecutor.execute(new SetSubscriptionOffsetRepositoryCommand(topic.getName(), subscription,
-                            brokersClusterName, partitionOffset));
-//                    subscriptionOffsetChange.setSubscriptionOffset(topic.getName(), subscription, brokersClusterName, partitionOffset);
-
+                    subscriptionOffsetChange.setSubscriptionOffset(topic.getName(), subscription, brokersClusterName, partitionOffset);
                 }
             }
         });

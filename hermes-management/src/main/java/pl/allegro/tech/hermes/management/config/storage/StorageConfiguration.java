@@ -146,12 +146,6 @@ public class StorageConfiguration {
                 objectMapper, Configs.ADMIN_REAPER_INTERAL_MS.getDefaultValue());
     }
 
-    @Bean
-    UndeliveredMessageLog undeliveredMessageLog() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
-        return new ZookeeperUndeliveredMessageLog(localClient.getCuratorFramework(), zookeeperPaths(), objectMapper);
-    }
-
     @PostConstruct
     public void init() {
         ensureInitPathExists();
