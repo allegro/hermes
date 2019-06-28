@@ -2,6 +2,17 @@
 
 ### ...
 
+## 1.0.6 (28.06.2019)
+
+### Enhancements
+
+#### ([1048](https://github.com/allegro/hermes/pull/1048)) Exposed volume metric in metrics query endpoint
+#### ([1045](https://github.com/allegro/hermes/pull/1045)) Enabled caching for dependencies on Travis
+
+### Bugfixes
+
+#### ([1050](https://github.com/allegro/hermes/pull/1050)) Catch exceptions thrown while stopping kafka consumers
+
 ## 1.0.5 (25.06.2019)
 
 ### Enhancements
