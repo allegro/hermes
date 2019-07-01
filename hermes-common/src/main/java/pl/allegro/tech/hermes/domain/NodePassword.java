@@ -21,6 +21,10 @@ public class NodePassword {
         this.hashedPassword = NodePassword.hashString(password);
     }
 
+    public byte[] getHashedPassword() {
+        return Arrays.copyOf(hashedPassword, hashedPassword.length);
+    }
+
     private static byte[] hashString(String string) {
         return DigestUtils.sha256(string);
     }
