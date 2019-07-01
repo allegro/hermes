@@ -6,19 +6,19 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 public class ZookeeperClient {
 
     private final CuratorFramework curatorFramework;
-    private final String dcName;
+    private final String datacenterName;
 
-    public ZookeeperClient(CuratorFramework curatorFramework, String dcName) {
+    public ZookeeperClient(CuratorFramework curatorFramework, String datacenterName) {
         this.curatorFramework = curatorFramework;
-        this.dcName = dcName;
+        this.datacenterName = datacenterName;
     }
 
     public CuratorFramework getCuratorFramework() {
         return curatorFramework;
     }
 
-    public String getDcName() {
-        return dcName;
+    public String getDatacenterName() {
+        return datacenterName;
     }
 
     public void ensurePathExists(String path) {

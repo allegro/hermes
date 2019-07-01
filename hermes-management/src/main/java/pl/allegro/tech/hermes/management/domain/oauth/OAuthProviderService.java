@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.Auditor;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.oauth.commands.CreateOAuthProviderRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.oauth.commands.RemoveOAuthProviderRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.oauth.commands.UpdateOAuthProviderRepositoryCommand;
@@ -21,11 +21,11 @@ public class OAuthProviderService {
     private final OAuthProviderRepository repository;
     private final ApiPreconditions preconditions;
     private final Auditor auditor;
-    private final MultiDcRepositoryCommandExecutor multiDcExecutor;
+    private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
     @Autowired
     public OAuthProviderService(OAuthProviderRepository repository, ApiPreconditions preconditions, Auditor auditor,
-                                MultiDcRepositoryCommandExecutor multiDcExecutor) {
+                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
         this.repository = repository;
         this.preconditions = preconditions;
         this.auditor = auditor;

@@ -23,8 +23,8 @@ import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndica
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.management.config.SubscriptionProperties;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
-import pl.allegro.tech.hermes.management.domain.dc.DcBoundRepositoryHolder;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
@@ -72,7 +72,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     ZookeeperRepositoryManager zookeeperRepositoryManager;
 
     @Autowired
-    MultiDcRepositoryCommandExecutor multiDcExecutor;
+    MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
     private final List<ZooKeeperClient> zkClients = new ArrayList<>();
     private final List<CuratorFramework> curators = new ArrayList<>();
@@ -80,7 +80,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @Bean
     MultiDCAwareService multiDCAwareService(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
                                             Clock clock) {
-        List<DcBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
+        List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
                 zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
 
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
@@ -124,19 +124,19 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     }
 
     private SubscriptionOffsetChangeIndicator getRepository(
-            List<DcBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repostories,
+            List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repostories,
             KafkaProperties kafkaProperties) {
         if (repostories.size() == 1) {
             return repostories.get(0).getRepository();
         }
 
         return repostories.stream()
-                .filter(x -> kafkaProperties.getDc().equals(x.getDcName()))
+                .filter(x -> kafkaProperties.getDatacenter().equals(x.getDatacenterName()))
                 .findFirst().orElseThrow(() ->
                         new IllegalArgumentException(
                                 String.format("Kafka cluster dc name '%s' not matched with Zookeeper dc names: %s",
-                                        kafkaProperties.getDc(),
-                                        repostories.stream().map(x -> x.getDcName()).collect(Collectors.joining(","))
+                                        kafkaProperties.getDatacenter(),
+                                        repostories.stream().map(x -> x.getDatacenterName()).collect(Collectors.joining(","))
                                 )
                         )
                 )

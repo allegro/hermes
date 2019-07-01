@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface RepositoryManager {
 
-    <T> DcBoundRepositoryHolder<T> getLocalRepository(Class<T> repositoryType);
+    <T> DatacenterBoundRepositoryHolder<T> getLocalRepository(Class<T> repositoryType);
 
-    <T> List<DcBoundRepositoryHolder<T>> getRepositories(Class<T> repositoryType);
+    <T> List<DatacenterBoundRepositoryHolder<T>> getRepositories(Class<T> repositoryType);
 }

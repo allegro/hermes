@@ -14,8 +14,8 @@ public class StorageClustersProperties {
     private int retryTimes = 3;
     private int retrySleep = 1000;
     private int sharedCountersExpiration = 72;
-    private DcNameSource dcNameSource;
-    private String dcNameSourceEnv = "DC";
+    private DcNameSource datacenterNameSource;
+    private String datacenterNameSourceEnv = "DC";
     private boolean transactional = true;
     private int maxConcurrentOperations = 100;
     private String connectionString = "localhost:2181";
@@ -75,20 +75,20 @@ public class StorageClustersProperties {
         this.clusters = clusters;
     }
 
-    public DcNameSource getDcNameSource() {
-        return dcNameSource;
+    public DcNameSource getDatacenterNameSource() {
+        return datacenterNameSource;
     }
 
-    public void setDcNameSource(DcNameSource dcNameSource) {
-        this.dcNameSource = dcNameSource;
+    public void setDatacenterNameSource(DcNameSource datacenterNameSource) {
+        this.datacenterNameSource = datacenterNameSource;
     }
 
-    public String getDcNameSourceEnv() {
-        return dcNameSourceEnv;
+    public String getDatacenterNameSourceEnv() {
+        return datacenterNameSourceEnv;
     }
 
-    public void setDcNameSourceEnv(String dcNameSourceEnv) {
-        this.dcNameSourceEnv = dcNameSourceEnv;
+    public void setDatacenterNameSourceEnv(String datacenterNameSourceEnv) {
+        this.datacenterNameSourceEnv = datacenterNameSourceEnv;
     }
 
     public boolean isTransactional() {

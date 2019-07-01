@@ -6,10 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.NodePassword;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperCredentialsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.credentials.commands.UpdateCredentialsRepositoryCommand;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 
 @Component
 public class CredentialsService {
@@ -17,12 +16,12 @@ public class CredentialsService {
     private static final Logger logger = LoggerFactory.getLogger(CredentialsService.class);
 
     private final ZookeeperPaths paths;
-    private final MultiDcRepositoryCommandExecutor multiDcExecutor;
+    private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
     private final CredentialsRepository credentialsRepository;
 
     @Autowired
     public CredentialsService(ZookeeperPaths paths,
-                              MultiDcRepositoryCommandExecutor multiDcExecutor,
+                              MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
                               CredentialsRepository credentialsRepository) {
         this.paths = paths;
         this.multiDcExecutor = multiDcExecutor;

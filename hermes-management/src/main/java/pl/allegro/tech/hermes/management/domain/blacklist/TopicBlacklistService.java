@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.domain.blacklist.commands.AddTopicToBlacklistRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.blacklist.commands.RemoveTopicFromBlacklistRepositoryCommand;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 
 import java.util.List;
 
@@ -12,11 +12,11 @@ import java.util.List;
 public class TopicBlacklistService {
 
     private final TopicBlacklistRepository repository;
-    private final MultiDcRepositoryCommandExecutor multiDcExecutor;
+    private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
     @Autowired
     public TopicBlacklistService(TopicBlacklistRepository repository,
-                                 MultiDcRepositoryCommandExecutor multiDcExecutor) {
+                                 MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
         this.repository = repository;
         this.multiDcExecutor = multiDcExecutor;
     }

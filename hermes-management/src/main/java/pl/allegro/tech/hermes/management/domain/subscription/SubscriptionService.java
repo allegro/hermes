@@ -22,8 +22,8 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.Auditor;
-import pl.allegro.tech.hermes.management.domain.dc.DcBoundRepositoryHolder;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.subscription.commands.CreateSubscriptionRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.subscription.commands.RemoveSubscriptionRepositoryCommand;
@@ -31,24 +31,20 @@ import pl.allegro.tech.hermes.management.domain.subscription.commands.UpdateSubs
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.Collection;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 public class SubscriptionService {
@@ -64,7 +60,7 @@ public class SubscriptionService {
     private final LogRepository logRepository;
     private final SubscriptionValidator subscriptionValidator;
     private final Auditor auditor;
-    private final MultiDcRepositoryCommandExecutor multiDcExecutor;
+    private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
     private final RepositoryManager repositoryManager;
 
     @Autowired
@@ -76,7 +72,7 @@ public class SubscriptionService {
                                LogRepository logRepository,
                                SubscriptionValidator subscriptionValidator,
                                Auditor auditor,
-                               MultiDcRepositoryCommandExecutor multiDcExecutor,
+                               MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
                                RepositoryManager repositoryManager) {
         this.subscriptionRepository = subscriptionRepository;
         this.subscriptionOwnerCache = subscriptionOwnerCache;
@@ -142,17 +138,17 @@ public class SubscriptionService {
     }
 
     private Set<Subscription.State> loadSubscriptionStatesFromAllDc(TopicName topicName, String subscriptionName) {
-        List<DcBoundRepositoryHolder<SubscriptionRepository>> holders =
+        List<DatacenterBoundRepositoryHolder<SubscriptionRepository>> holders =
                 repositoryManager.getRepositories(SubscriptionRepository.class);
         Set<Subscription.State> states = new HashSet<>();
-        for (DcBoundRepositoryHolder<SubscriptionRepository> holder : holders) {
+        for (DatacenterBoundRepositoryHolder<SubscriptionRepository> holder : holders) {
             try {
                 Subscription.State state = holder.getRepository().getSubscriptionDetails(topicName, subscriptionName)
                         .getState();
                 states.add(state);
             } catch (Exception e) {
                 logger.warn("Could not load state of subscription (topic: {}, name: {}) from DC {}.",
-                        topicName, subscriptionName, holder.getDcName());
+                        topicName, subscriptionName, holder.getDatacenterName());
             }
         }
         return states;
@@ -211,14 +207,14 @@ public class SubscriptionService {
     }
 
     public Optional<SentMessageTrace> getLatestUndeliveredMessage(TopicName topicName, String subscriptionName) {
-        List<DcBoundRepositoryHolder<UndeliveredMessageLog>> holders =
+        List<DatacenterBoundRepositoryHolder<UndeliveredMessageLog>> holders =
                 repositoryManager.getRepositories(UndeliveredMessageLog.class);
         List<SentMessageTrace> traces = new ArrayList<>();
-        for (DcBoundRepositoryHolder<UndeliveredMessageLog> holder : holders) {
+        for (DatacenterBoundRepositoryHolder<UndeliveredMessageLog> holder : holders) {
             try {
                 holder.getRepository().last(topicName, subscriptionName).ifPresent(traces::add);
             } catch (Exception e) {
-                logger.warn("Could not load latest undelivered message from DC: {}", holder.getDcName());
+                logger.warn("Could not load latest undelivered message from DC: {}", holder.getDatacenterName());
             }
         }
         return traces.stream().max(Comparator.comparing(SentMessageTrace::getTimestamp));

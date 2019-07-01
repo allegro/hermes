@@ -77,11 +77,11 @@ the schematics provided above:
 kafka:
   clusters:
     -
-      dc: dc1
+      datacenter: dc1
       clusterName: kafka_primary
       connectionString: kafka-zookeeper:2181/clusters/dc1
     -
-      dc: dc1
+      datacenter: dc1
       clusterName: kafka_secondary
       connectionString: kafka-zookeeper:2181/clusters/dc2
 ```

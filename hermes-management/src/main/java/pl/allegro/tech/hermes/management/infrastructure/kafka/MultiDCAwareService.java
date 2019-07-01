@@ -6,9 +6,8 @@ import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.retransmit.RetransmitCommand;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService;
@@ -32,11 +31,11 @@ public class MultiDCAwareService {
     private final Clock clock;
     private final Duration intervalBetweenCheckingIfOffsetsMoved;
     private final Duration offsetsMovedTimeout;
-    private MultiDcRepositoryCommandExecutor multiDcExecutor;
+    private MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
     public MultiDCAwareService(List<BrokersClusterService> clusters, Clock clock,
                                Duration intervalBetweenCheckingIfOffsetsMoved, Duration offsetsMovedTimeout,
-                               MultiDcRepositoryCommandExecutor multiDcExecutor) {
+                               MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
         this.clusters = clusters;
         this.clock = clock;
         this.intervalBetweenCheckingIfOffsetsMoved = intervalBetweenCheckingIfOffsetsMoved;

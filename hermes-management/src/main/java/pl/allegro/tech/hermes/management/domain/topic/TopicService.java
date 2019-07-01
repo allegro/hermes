@@ -22,8 +22,8 @@ import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.Auditor;
-import pl.allegro.tech.hermes.management.domain.dc.DcBoundRepositoryHolder;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.topic.commands.CreateTopicRepositoryCommand;
@@ -66,7 +66,7 @@ public class TopicService {
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
     private final Clock clock;
     private final Auditor auditor;
-    private final MultiDcRepositoryCommandExecutor multiDcExecutor;
+    private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
     private final RepositoryManager repositoryManager;
     private final TopicOwnerCache topicOwnerCache;
     private final ScheduledExecutorService scheduledTopicExecutor = Executors.newSingleThreadScheduledExecutor(
@@ -84,7 +84,7 @@ public class TopicService {
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
                         Clock clock,
                         Auditor auditor,
-                        MultiDcRepositoryCommandExecutor multiDcExecutor,
+                        MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
                         RepositoryManager repositoryManager,
                         TopicOwnerCache topicOwnerCache) {
         this.multiDCAwareService = multiDCAwareService;
@@ -361,14 +361,14 @@ public class TopicService {
     }
 
     private List<MessagePreview> loadMessagePreviewsFromAllDc(TopicName topicName) {
-        List<DcBoundRepositoryHolder<MessagePreviewRepository>> repositories =
+        List<DatacenterBoundRepositoryHolder<MessagePreviewRepository>> repositories =
                 repositoryManager.getRepositories(MessagePreviewRepository.class);
         List<MessagePreview> previews = new ArrayList<>();
-        for (DcBoundRepositoryHolder<MessagePreviewRepository> holder : repositories) {
+        for (DatacenterBoundRepositoryHolder<MessagePreviewRepository> holder : repositories) {
             try {
                 previews.addAll(holder.getRepository().loadPreview(topicName));
             } catch (Exception e) {
-                logger.warn("Could not load message preview for DC: {}", holder.getDcName());
+                logger.warn("Could not load message preview for DC: {}", holder.getDatacenterName());
             }
         }
         return previews;

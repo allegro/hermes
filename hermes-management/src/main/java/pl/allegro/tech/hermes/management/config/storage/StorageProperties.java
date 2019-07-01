@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config.storage;
 
 
 public class StorageProperties {
-    private String dc;
+    private String datacenter;
     private String clusterName;
     private String connectionString = "localhost:2181";
     private int sessionTimeout = 10000;
@@ -32,12 +32,12 @@ public class StorageProperties {
         this.connectTimeout = connectTimeout;
     }
 
-    public String getDc() {
-        return dc;
+    public String getDatacenter() {
+        return datacenter;
     }
 
-    public void setDc(String dc) {
-        this.dc = dc;
+    public void setDatacenter(String datacenter) {
+        this.datacenter = datacenter;
     }
 
     public String getClusterName() {

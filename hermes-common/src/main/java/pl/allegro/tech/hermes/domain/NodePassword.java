@@ -21,14 +21,6 @@ public class NodePassword {
         this.hashedPassword = NodePassword.hashString(password);
     }
 
-    public byte[] getHashedPassword() {
-        return Arrays.copyOf(hashedPassword, hashedPassword.length);
-    }
-
-    public boolean matches(String password) {
-        return this.equals(NodePassword.fromString(password));
-    }
-
     private static byte[] hashString(String string) {
         return DigestUtils.sha256(string);
     }
@@ -63,9 +55,5 @@ public class NodePassword {
 
     public static NodePassword fromString(String string) {
         return new NodePassword(string);
-    }
-
-    public static String getRandomPassword() {
-        return RandomStringUtils.randomAlphanumeric(DEFAULT_STRING_LENGTH);
     }
 }

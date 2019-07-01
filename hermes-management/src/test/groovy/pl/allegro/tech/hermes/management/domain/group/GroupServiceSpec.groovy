@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.api.PatchData
 import pl.allegro.tech.hermes.api.helpers.Patch
 import pl.allegro.tech.hermes.domain.group.GroupRepository
 import pl.allegro.tech.hermes.management.domain.Auditor
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
 import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
 import spock.lang.Specification
 
@@ -17,7 +17,7 @@ class GroupServiceSpec extends Specification {
 
     GroupRepository groupRepository = Stub()
     Auditor auditor = Mock()
-    MultiDcRepositoryCommandExecutor executor = Stub()
+    MultiDatacenterRepositoryCommandExecutor executor = Stub()
     GroupService groupService = new GroupService(groupRepository, auditor, executor)
 
     def "should audit group creation"() {

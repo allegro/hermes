@@ -6,13 +6,13 @@ storage:
   dcNameSource: env
   dcNameSourceEnv: DC
   clusters:
-    - dc: dc1
+    - datacenter: dc1
       connectionString: localhost:2181
 
 kafka:
   clusters:
     -
-      dc: dc
+      datacenter: dc
       clusterName: primary
       connectionString: localhost:2181
       connectionTimeout: 3000

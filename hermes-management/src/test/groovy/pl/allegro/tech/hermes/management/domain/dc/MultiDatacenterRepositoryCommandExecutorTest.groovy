@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.domain.group.GroupRepository
 import spock.lang.Specification
 
 
-class MultiDcRepositoryCommandExecutorTest extends Specification {
+class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
 
     def "should execute backup if rollback is enabled"() {
         given:
@@ -88,14 +88,14 @@ class MultiDcRepositoryCommandExecutorTest extends Specification {
 
     private buildExecutor(boolean rollbackEnabled) {
         def repositoryManager = Stub(RepositoryManager)
-        return new MultiDcRepositoryCommandExecutor(repositoryManager, rollbackEnabled)
+        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager, rollbackEnabled)
     }
 
     private buildExecutor(List repositories, boolean rollbackEnabled) {
         def repositoryManager = Stub(RepositoryManager)
         repositoryManager.getRepositories(_) >>
-            repositories.collect({ new DcBoundRepositoryHolder(it, "dc-name") })
-        return new MultiDcRepositoryCommandExecutor(repositoryManager, rollbackEnabled)
+            repositories.collect({ new DatacenterBoundRepositoryHolder(it, "datacenter-name") })
+        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager, rollbackEnabled)
     }
 
 }

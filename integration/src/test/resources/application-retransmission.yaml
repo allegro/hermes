@@ -1,7 +1,7 @@
 kafka:
   clusters:
     -
-      dc: dc
+      datacenter: dc
       clusterName: primary
       connectionString: localhost:14192/kafka
       connectionTimeout: 10000

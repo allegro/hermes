@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.management.utils
 
 import org.apache.curator.test.TestingServer
-import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameProvider
+import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvider
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient
 import spock.lang.Specification
 
@@ -33,16 +33,16 @@ abstract class MultiZookeeperIntegrationTest extends Specification {
         return !client.getCuratorFramework().getZookeeperClient().isConnected()
     }
 
-    static class TestDcNameProvider implements DcNameProvider {
+    static class TestDatacenterNameProvider implements DatacenterNameProvider {
 
         private String dcName
 
-        TestDcNameProvider(String dcName) {
+        TestDatacenterNameProvider(String dcName) {
             this.dcName = dcName
         }
 
         @Override
-        String getDcName() {
+        String getDatacenterName() {
             return dcName
         }
     }

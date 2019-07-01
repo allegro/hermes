@@ -4,7 +4,7 @@ application:
 kafka:
   clusters:
     -
-      dc: dc
+      datacenter: dc
       clusterName: primary
       connectionString: zk:2181
       connectionTimeout: 3000

@@ -3,17 +3,17 @@ package pl.allegro.tech.hermes.management.infrastructure.dc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EnvironmentVariableDcNameProvider implements DcNameProvider {
-    private static final Logger logger = LoggerFactory.getLogger(EnvironmentVariableDcNameProvider.class);
+public class EnvironmentVariableDatacenterNameProvider implements DatacenterNameProvider {
+    private static final Logger logger = LoggerFactory.getLogger(EnvironmentVariableDatacenterNameProvider.class);
 
     private String variableName;
 
-    public EnvironmentVariableDcNameProvider(String variableName) {
+    public EnvironmentVariableDatacenterNameProvider(String variableName) {
         this.variableName = variableName;
     }
 
     @Override
-    public String getDcName() {
+    public String getDatacenterName() {
         String dcName = System.getenv(variableName);
         if(dcName == null) {
             throw new DcNameProvisionException("Undefined environment variable: " + variableName);

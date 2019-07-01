@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config.kafka;
 
 public class KafkaProperties {
 
-    private String dc = "dc";
+    private String datacenter = "datacenter";
 
     private String clusterName = "primary";
 
@@ -153,12 +153,12 @@ public class KafkaProperties {
         this.kafkaConsumer = kafkaConsumer;
     }
 
-    public String getDc() {
-        return dc;
+    public String getDatacenter() {
+        return datacenter;
     }
 
-    public void setDc(String dc) {
-        this.dc = dc;
+    public void setDatacenter(String datacenter) {
+        this.datacenter = datacenter;
     }
 
     public void setClusterName(String clusterName) {
@@ -166,7 +166,7 @@ public class KafkaProperties {
     }
 
     public String getQualifiedClusterName() {
-        return clusterName + "-" + dc;
+        return clusterName + "-" + datacenter;
     }
 
     public String getOffsetsStorage() {

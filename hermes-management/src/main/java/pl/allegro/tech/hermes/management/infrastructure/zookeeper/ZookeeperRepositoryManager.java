@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminTool;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
@@ -25,10 +23,10 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepo
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.management.config.storage.ZookeeperGroupRepositoryFactory;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
-import pl.allegro.tech.hermes.management.domain.dc.DcBoundRepositoryHolder;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
-import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvider;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +35,7 @@ import java.util.stream.Collectors;
 
 public class ZookeeperRepositoryManager implements RepositoryManager {
 
-    private final DcNameProvider dcNameProvider;
+    private final DatacenterNameProvider datacenterNameProvider;
     private final ObjectMapper mapper;
     private final ZookeeperPaths paths;
     private final ZookeeperClientManager clientManager;
@@ -58,12 +56,12 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final Map<String, AdminTool> adminToolByDc = new HashMap<>();
 
     public ZookeeperRepositoryManager(ZookeeperClientManager clientManager,
-                                      DcNameProvider dcNameProvider,
+                                      DatacenterNameProvider datacenterNameProvider,
                                       ObjectMapper mapper,
                                       ZookeeperPaths paths,
                                       ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory,
                                       Integer adminReaperInterval) {
-        this.dcNameProvider = dcNameProvider;
+        this.datacenterNameProvider = datacenterNameProvider;
         this.mapper = mapper;
         this.paths = paths;
         this.clientManager = clientManager;
@@ -74,7 +72,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
 
     public void start() {
         for (ZookeeperClient client : clientManager.getClients()) {
-            String dcName = client.getDcName();
+            String dcName = client.getDatacenterName();
             CuratorFramework zookeeper = client.getCuratorFramework();
 
             GroupRepository groupRepository = zookeeperGroupRepositoryFactory.create(zookeeper, mapper, paths);
@@ -108,8 +106,8 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
         }
     }
 
-    public <T> DcBoundRepositoryHolder<T> getLocalRepository(Class<T> repositoryType) {
-        String dcName = dcNameProvider.getDcName();
+    public <T> DatacenterBoundRepositoryHolder<T> getLocalRepository(Class<T> repositoryType) {
+        String dcName = datacenterNameProvider.getDatacenterName();
         T repository = getRepositoriesByType(repositoryType).get(dcName);
 
         if (repository == null) {
@@ -117,14 +115,14 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
                     "' bound with DC '" + dcName + "'.");
         }
 
-        return new DcBoundRepositoryHolder<>(repository, dcName);
+        return new DatacenterBoundRepositoryHolder<>(repository, dcName);
     }
 
-    public <T> List<DcBoundRepositoryHolder<T>> getRepositories(Class<T> repositoryType) {
+    public <T> List<DatacenterBoundRepositoryHolder<T>> getRepositories(Class<T> repositoryType) {
         return getRepositoriesByType(repositoryType)
                 .entrySet()
                 .stream()
-                .map(entry -> new DcBoundRepositoryHolder<>(entry.getValue(), entry.getKey()))
+                .map(entry -> new DatacenterBoundRepositoryHolder<>(entry.getValue(), entry.getKey()))
                 .collect(Collectors.toList());
     }
 

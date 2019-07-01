@@ -6,10 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.admin.AdminTool;
-import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminTool;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
@@ -26,12 +22,12 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
-import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameSource;
-import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDcNameProvider;
-import pl.allegro.tech.hermes.management.infrastructure.dc.EnvironmentVariableDcNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
@@ -49,11 +45,11 @@ public class StorageConfiguration {
     ObjectMapper objectMapper;
 
     @Bean
-    DcNameProvider dcNameProvider() {
-        if (storageClustersProperties.getDcNameSource() == DcNameSource.ENV) {
-            return new EnvironmentVariableDcNameProvider(storageClustersProperties.getDcNameSourceEnv());
+    DatacenterNameProvider dcNameProvider() {
+        if (storageClustersProperties.getDatacenterNameSource() == DcNameSource.ENV) {
+            return new EnvironmentVariableDatacenterNameProvider(storageClustersProperties.getDatacenterNameSourceEnv());
         } else {
-            return new DefaultDcNameProvider();
+            return new DefaultDatacenterNameProvider();
         }
     }
 
@@ -79,9 +75,9 @@ public class StorageConfiguration {
     }
 
     @Bean
-    MultiDcRepositoryCommandExecutor multiDcRepositoryCommandExecutor(
+    MultiDatacenterRepositoryCommandExecutor multiDcRepositoryCommandExecutor(
             ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
-        return new MultiDcRepositoryCommandExecutor(repositoryManager(zookeeperGroupRepositoryFactory),
+        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager(zookeeperGroupRepositoryFactory),
                 storageClustersProperties.isTransactional());
     }
 

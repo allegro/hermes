@@ -15,7 +15,7 @@ import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.group.commands.CreateGroupRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.group.commands.RemoveGroupRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.group.commands.UpdateGroupRepositoryCommand;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDcRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,11 +27,11 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final Auditor auditor;
-    private final MultiDcRepositoryCommandExecutor multiDcExecutor;
+    private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
     @Autowired
     public GroupService(GroupRepository groupRepository, Auditor auditor,
-                        MultiDcRepositoryCommandExecutor multiDcExecutor) {
+                        MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
         this.groupRepository = groupRepository;
         this.auditor = auditor;
         this.multiDcExecutor = multiDcExecutor;

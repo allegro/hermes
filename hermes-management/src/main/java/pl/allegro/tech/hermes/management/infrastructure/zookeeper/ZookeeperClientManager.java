@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties;
 import pl.allegro.tech.hermes.management.config.storage.StorageProperties;
-import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameProvider;
-import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDcNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,13 +21,13 @@ public class ZookeeperClientManager {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperClientManager.class);
 
     private final StorageClustersProperties properties;
-    private final DcNameProvider dcNameProvider;
+    private final DatacenterNameProvider datacenterNameProvider;
     private List<ZookeeperClient> clients;
     private ZookeeperClient localClient;
 
-    public ZookeeperClientManager(StorageClustersProperties properties, DcNameProvider dcNameProvider) {
+    public ZookeeperClientManager(StorageClustersProperties properties, DatacenterNameProvider datacenterNameProvider) {
         this.properties = properties;
-        this.dcNameProvider = dcNameProvider;
+        this.datacenterNameProvider = datacenterNameProvider;
     }
 
     public void start() {
@@ -55,7 +55,7 @@ public class ZookeeperClientManager {
         clusterProperties.setConnectionString(properties.getConnectionString());
         clusterProperties.setConnectTimeout(properties.getConnectTimeout());
         clusterProperties.setSessionTimeout(properties.getSessionTimeout());
-        clusterProperties.setDc(DefaultDcNameProvider.DEFAULT_DC_NAME);
+        clusterProperties.setDatacenter(DefaultDatacenterNameProvider.DEFAULT_DC_NAME);
         return clusterProperties;
     }
 
@@ -63,10 +63,10 @@ public class ZookeeperClientManager {
         if (clients.size() == 1) {
             localClient = clients.get(0);
         } else {
-            String localDcName = dcNameProvider.getDcName();
+            String localDcName = datacenterNameProvider.getDatacenterName();
             localClient = clients
                     .stream()
-                    .filter(client -> client.getDcName().equals(localDcName))
+                    .filter(client -> client.getDatacenterName().equals(localDcName))
                     .findFirst()
                     .orElseThrow(() -> new ZookeeperClientNotFoundException(localDcName));
         }
@@ -76,7 +76,7 @@ public class ZookeeperClientManager {
                                                  StorageClustersProperties commonProperties) {
         return new ZookeeperClient(
                 buildCuratorFramework(clusterProperties, commonProperties),
-                clusterProperties.getDc()
+                clusterProperties.getDatacenter()
         );
     }
 
@@ -119,7 +119,7 @@ public class ZookeeperClientManager {
             try {
                 client.getCuratorFramework().close();
             } catch (Exception e) {
-                logger.warn("Failed to close Zookeeper client on DC: " + client.getDcName());
+                logger.warn("Failed to close Zookeeper client on DC: " + client.getDatacenterName());
             }
         }
     }

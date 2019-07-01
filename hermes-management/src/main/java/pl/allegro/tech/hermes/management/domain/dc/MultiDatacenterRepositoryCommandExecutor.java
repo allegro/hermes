@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.domain.dc;
 
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.HermesException;
@@ -10,14 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MultiDcRepositoryCommandExecutor {
+public class MultiDatacenterRepositoryCommandExecutor {
 
-    private static final Logger logger = LoggerFactory.getLogger(MultiDcRepositoryCommandExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(MultiDatacenterRepositoryCommandExecutor.class);
 
     private final RepositoryManager repositoryManager;
     private final boolean rollbackEnabled;
 
-    public MultiDcRepositoryCommandExecutor(RepositoryManager repositoryManager, boolean rollbackEnabled) {
+    public MultiDatacenterRepositoryCommandExecutor(RepositoryManager repositoryManager, boolean rollbackEnabled) {
         this.repositoryManager = repositoryManager;
         this.rollbackEnabled = rollbackEnabled;
     }
@@ -27,10 +26,10 @@ public class MultiDcRepositoryCommandExecutor {
             backup(command);
         }
 
-        List<DcBoundRepositoryHolder<T>> repositories = repositoryManager.getRepositories(command.getRepositoryType());
-        List<DcBoundRepositoryHolder<T>> executedRepositories = new ArrayList<>();
+        List<DatacenterBoundRepositoryHolder<T>> repositories = repositoryManager.getRepositories(command.getRepositoryType());
+        List<DatacenterBoundRepositoryHolder<T>> executedRepositories = new ArrayList<>();
 
-        for (DcBoundRepositoryHolder<T> repository : repositories) {
+        for (DatacenterBoundRepositoryHolder<T> repository : repositories) {
             try {
                 executedRepositories.add(repository);
                 command.execute(repository.getRepository());
@@ -39,7 +38,7 @@ public class MultiDcRepositoryCommandExecutor {
                 if (rollbackEnabled) {
                     rollback(executedRepositories, command);
                 }
-                throw wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repository.getDcName());
+                throw wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repository.getDatacenterName());
             }
         }
     }
@@ -54,24 +53,24 @@ public class MultiDcRepositoryCommandExecutor {
                 dcName + "'.", toWrap);
     }
 
-    private <T> void rollback(List<DcBoundRepositoryHolder<T>> repositories, RepositoryCommand<T> command) {
-        for (DcBoundRepositoryHolder<T> repository :  repositories) {
+    private <T> void rollback(List<DatacenterBoundRepositoryHolder<T>> repositories, RepositoryCommand<T> command) {
+        for (DatacenterBoundRepositoryHolder<T> repository :  repositories) {
             try {
                 command.rollback(repository.getRepository());
             } catch (Exception e) {
-                logger.error("Rollback procedure failed for command {} on DC {}", command, repository.getDcName(), e);
+                logger.error("Rollback procedure failed for command {} on DC {}", command, repository.getDatacenterName(), e);
             }
         }
     }
 
     private <T> void backup(RepositoryCommand<T> command) {
-        DcBoundRepositoryHolder<T> repository = repositoryManager.getLocalRepository(command.getRepositoryType());
+        DatacenterBoundRepositoryHolder<T> repository = repositoryManager.getLocalRepository(command.getRepositoryType());
         try {
             logger.debug("Creating backup for command: {}", command);
             command.backup(repository.getRepository());
         } catch (Exception e) {
             throw new InternalProcessingException("Backup procedure for command '" + command +
-                    "' failed on DC '" + repository.getDcName() + "'.", e);
+                    "' failed on DC '" + repository.getDatacenterName() + "'.", e);
         }
     }
 }
