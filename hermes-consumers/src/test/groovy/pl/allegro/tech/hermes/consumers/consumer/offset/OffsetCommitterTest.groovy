@@ -35,6 +35,33 @@ class OffsetCommitterTest extends Specification {
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
     }
 
+    def "should not commit offsets with negative values"() {
+        given:
+        assignPartitions(1)
+        queue.offerInflightOffset(offset(1, -123))
+        queue.offerCommittedOffset(offset(1, -123))
+
+        when:
+        committer.run()
+
+        then:
+        messageCommitter.nothingCommitted(1)
+    }
+
+    def "should not commit offset with long max value"() {
+        given:
+        assignPartitions(1)
+        def offsetTooLarge = Long.MAX_VALUE - 1 // we actually commit the offset we want to read next, so it'll be +1
+        queue.offerInflightOffset(offset(1, offsetTooLarge))
+        queue.offerCommittedOffset(offset(1, offsetTooLarge))
+
+        when:
+        committer.run()
+
+        then:
+        messageCommitter.nothingCommitted(1)
+    }
+
     def "should commit smallest offset of uncommitted message"() {
         given:
         assignPartitions(1)

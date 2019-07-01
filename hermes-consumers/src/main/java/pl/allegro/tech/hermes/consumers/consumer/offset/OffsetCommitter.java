@@ -127,6 +127,9 @@ public class OffsetCommitter implements Runnable {
                         if (maxCommitted == offsetToBeCommitted) {
                             committedOffsetToBeRemoved.add(partition);
                         }
+                    } else {
+                        logger.warn("Skipping offset out of bounds for subscription {}: partition={}, offset={}",
+                                partition.getSubscriptionName(), partition.getPartition(), offsetToBeCommitted);
                     }
                 } else {
                     obsoleteCount++;
