@@ -2,6 +2,12 @@
 
 ### ...
 
+## 1.0.7 (01.07.2019)
+
+### Bugfixes
+
+#### ([1053](https://github.com/allegro/hermes/pull/1053)) Maximum possible offset to be committed for partition
+
 ## 1.0.6 (28.06.2019)
 
 ### Enhancements
