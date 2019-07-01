@@ -35,6 +35,33 @@ class OffsetCommitterTest extends Specification {
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
     }
 
+    def "should not commit offsets with negative values"() {
+        given:
+        assignPartitions(1)
+        queue.offerInflightOffset(offset(1, -123))
+        queue.offerCommittedOffset(offset(1, -123))
+
+        when:
+        committer.run()
+
+        then:
+        messageCommitter.nothingCommitted(1)
+    }
+
+    def "should not commit offset with long max value"() {
+        given:
+        assignPartitions(1)
+        def offsetTooLarge = Long.MAX_VALUE - 1 // we actually commit the offset we want to read next, so it'll be +1
+        queue.offerInflightOffset(offset(1, offsetTooLarge))
+        queue.offerCommittedOffset(offset(1, offsetTooLarge))
+
+        when:
+        committer.run()
+
+        then:
+        messageCommitter.nothingCommitted(1)
+    }
+
     def "should commit smallest offset of uncommitted message"() {
         given:
         assignPartitions(1)
@@ -241,6 +268,74 @@ class OffsetCommitterTest extends Specification {
 
         when:
         queue.offerCommittedOffset(offsetFromTerm(1, 4, 0)) // message from previous term=0
+
+        and:
+        committer.run()
+
+        then:
+        messageCommitter.nothingCommitted(3)
+    }
+
+    def "should commit maximum commited offset no matter what order committed offset return"() {
+        given:
+        assignPartitions(1)
+        queue.offerInflightOffset(offset(1, 3))
+        queue.offerInflightOffset(offset(1, 4))
+        queue.offerInflightOffset(offset(1, 5))
+
+        when:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(1, offset(1, 3))
+
+        when:
+        queue.offerCommittedOffset(offset(1, 4))
+        queue.offerCommittedOffset(offset(1, 5))
+
+        and:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(2, offset(1, 3))
+
+        when:
+        queue.offerCommittedOffset(offset(1, 3))
+
+        and:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(3, offset(1, 6))
+    }
+
+    def "should drop maximum committed offset when lost partition assignment"() {
+        given:
+        assignPartitions(1)
+        queue.offerInflightOffset(offset(1, 3))
+        queue.offerInflightOffset(offset(1, 4))
+        queue.offerInflightOffset(offset(1, 5))
+
+        when:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(1, offset(1, 3))
+
+        when:
+        queue.offerCommittedOffset(offset(1, 4))
+        queue.offerCommittedOffset(offset(1, 5))
+
+        and:
+        committer.run()
+
+        then:
+        messageCommitter.wereCommitted(2, offset(1, 3))
+
+        when:
+        queue.offerCommittedOffset(offset(1, 3))
+        revokePartitions(1)
+        assignPartitions(1)
 
         and:
         committer.run()
