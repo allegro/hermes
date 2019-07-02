@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.subscription;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTrace;
@@ -20,12 +22,21 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.Auditor;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
+import pl.allegro.tech.hermes.management.domain.subscription.commands.CreateSubscriptionRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.subscription.commands.RemoveSubscriptionRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.subscription.commands.UpdateSubscriptionRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,9 +44,11 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status;
+import java.util.Set;
 
 @Component
 public class SubscriptionService {
+    private static final Logger logger = LoggerFactory.getLogger(SubscriptionService.class);
 
     private static final int LAST_MESSAGE_COUNT = 100;
 
@@ -44,10 +57,11 @@ public class SubscriptionService {
     private final TopicService topicService;
     private final SubscriptionMetricsRepository metricsRepository;
     private final SubscriptionHealthChecker subscriptionHealthChecker;
-    private final UndeliveredMessageLog undeliveredMessageLog;
     private final LogRepository logRepository;
     private final SubscriptionValidator subscriptionValidator;
     private final Auditor auditor;
+    private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
+    private final RepositoryManager repositoryManager;
 
     @Autowired
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
@@ -55,19 +69,21 @@ public class SubscriptionService {
                                TopicService topicService,
                                SubscriptionMetricsRepository metricsRepository,
                                SubscriptionHealthChecker subscriptionHealthChecker,
-                               UndeliveredMessageLog undeliveredMessageLog,
                                LogRepository logRepository,
                                SubscriptionValidator subscriptionValidator,
-                               Auditor auditor) {
+                               Auditor auditor,
+                               MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+                               RepositoryManager repositoryManager) {
         this.subscriptionRepository = subscriptionRepository;
         this.subscriptionOwnerCache = subscriptionOwnerCache;
         this.topicService = topicService;
         this.metricsRepository = metricsRepository;
         this.subscriptionHealthChecker = subscriptionHealthChecker;
-        this.undeliveredMessageLog = undeliveredMessageLog;
         this.logRepository = logRepository;
         this.subscriptionValidator = subscriptionValidator;
         this.auditor = auditor;
+        this.multiDcExecutor = multiDcExecutor;
+        this.repositoryManager = repositoryManager;
     }
 
     public List<String> listSubscriptionNames(TopicName topicName) {
@@ -93,17 +109,53 @@ public class SubscriptionService {
 
     public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights) {
         subscriptionValidator.checkCreation(subscription, creatorRights);
-        subscriptionRepository.createSubscription(subscription);
+        multiDcExecutor.execute(new CreateSubscriptionRepositoryCommand(subscription));
         auditor.objectCreated(createdBy, subscription);
         subscriptionOwnerCache.onCreatedSubscription(subscription);
     }
 
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
-        return subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName).anonymize();
+        Subscription subscription = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName)
+                .anonymize();
+        subscription.setState(getEffectiveState(topicName, subscriptionName));
+        return subscription;
+    }
+
+    private Subscription.State getEffectiveState(TopicName topicName, String subscriptionName) {
+        Set<Subscription.State> states = loadSubscriptionStatesFromAllDc(topicName, subscriptionName);
+
+        if (states.size() > 1) {
+            logger.warn("Some states are out of sync: {}", states);
+        }
+
+        if (states.contains(Subscription.State.ACTIVE)) {
+            return Subscription.State.ACTIVE;
+        } else if (states.contains(Subscription.State.SUSPENDED)) {
+            return Subscription.State.SUSPENDED;
+        } else {
+            return Subscription.State.PENDING;
+        }
+    }
+
+    private Set<Subscription.State> loadSubscriptionStatesFromAllDc(TopicName topicName, String subscriptionName) {
+        List<DatacenterBoundRepositoryHolder<SubscriptionRepository>> holders =
+                repositoryManager.getRepositories(SubscriptionRepository.class);
+        Set<Subscription.State> states = new HashSet<>();
+        for (DatacenterBoundRepositoryHolder<SubscriptionRepository> holder : holders) {
+            try {
+                Subscription.State state = holder.getRepository().getSubscriptionDetails(topicName, subscriptionName)
+                        .getState();
+                states.add(state);
+            } catch (Exception e) {
+                logger.warn("Could not load state of subscription (topic: {}, name: {}) from DC {}.",
+                        topicName, subscriptionName, holder.getDatacenterName());
+            }
+        }
+        return states;
     }
 
     public void removeSubscription(TopicName topicName, String subscriptionName, String removedBy) {
-        subscriptionRepository.removeSubscription(topicName, subscriptionName);
+        multiDcExecutor.execute(new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName));
         auditor.objectRemoved(removedBy, Subscription.class.getSimpleName(), subscriptionName);
         subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
     }
@@ -120,7 +172,7 @@ public class SubscriptionService {
         subscriptionOwnerCache.onUpdatedSubscription(retrieved, updated);
 
         if (!retrieved.equals(updated)) {
-            subscriptionRepository.updateSubscription(updated);
+            multiDcExecutor.execute(new UpdateSubscriptionRepositoryCommand(updated));
             auditor.objectUpdated(modifiedBy, retrieved, updated);
         }
     }
@@ -135,7 +187,7 @@ public class SubscriptionService {
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         if (state != Subscription.State.PENDING && !retrieved.getState().equals(state)) {
             Subscription updated = Patch.apply(retrieved, PatchData.patchData().set("state", state).build());
-            subscriptionRepository.updateSubscription(updated);
+            multiDcExecutor.execute(new UpdateSubscriptionRepositoryCommand(updated));
             auditor.objectUpdated(modifiedBy, retrieved, updated);
         }
     }
@@ -155,7 +207,17 @@ public class SubscriptionService {
     }
 
     public Optional<SentMessageTrace> getLatestUndeliveredMessage(TopicName topicName, String subscriptionName) {
-        return undeliveredMessageLog.last(topicName, subscriptionName);
+        List<DatacenterBoundRepositoryHolder<UndeliveredMessageLog>> holders =
+                repositoryManager.getRepositories(UndeliveredMessageLog.class);
+        List<SentMessageTrace> traces = new ArrayList<>();
+        for (DatacenterBoundRepositoryHolder<UndeliveredMessageLog> holder : holders) {
+            try {
+                holder.getRepository().last(topicName, subscriptionName).ifPresent(traces::add);
+            } catch (Exception e) {
+                logger.warn("Could not load latest undelivered message from DC: {}", holder.getDatacenterName());
+            }
+        }
+        return traces.stream().max(Comparator.comparing(SentMessageTrace::getTimestamp));
     }
 
     public List<SentMessageTrace> getLatestUndeliveredMessagesTrackerLogs(TopicName topicName, String subscriptionName) {

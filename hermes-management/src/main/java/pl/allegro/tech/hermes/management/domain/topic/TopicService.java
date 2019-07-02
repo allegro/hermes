@@ -22,7 +22,14 @@ import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.Auditor;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
+import pl.allegro.tech.hermes.management.domain.topic.commands.CreateTopicRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.topic.commands.RemoveTopicRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.topic.commands.TouchTopicRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.topic.commands.UpdateTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -32,6 +39,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -53,12 +61,13 @@ public class TopicService {
     private final SchemaService schemaService;
 
     private final TopicMetricsRepository metricRepository;
-    private final MessagePreviewRepository messagePreviewRepository;
     private final MultiDCAwareService multiDCAwareService;
     private final TopicValidator topicValidator;
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
     private final Clock clock;
     private final Auditor auditor;
+    private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
+    private final RepositoryManager repositoryManager;
     private final TopicOwnerCache topicOwnerCache;
     private final ScheduledExecutorService scheduledTopicExecutor = Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder()
@@ -73,9 +82,10 @@ public class TopicService {
                         SchemaService schemaService, TopicMetricsRepository metricRepository,
                         TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
-                        MessagePreviewRepository messagePreviewRepository,
                         Clock clock,
                         Auditor auditor,
+                        MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+                        RepositoryManager repositoryManager,
                         TopicOwnerCache topicOwnerCache) {
         this.multiDCAwareService = multiDCAwareService;
         this.topicRepository = topicRepository;
@@ -85,9 +95,10 @@ public class TopicService {
         this.metricRepository = metricRepository;
         this.topicValidator = topicValidator;
         this.topicContentTypeMigrationService = topicContentTypeMigrationService;
-        this.messagePreviewRepository = messagePreviewRepository;
         this.clock = clock;
         this.auditor = auditor;
+        this.multiDcExecutor = multiDcExecutor;
+        this.repositoryManager = repositoryManager;
         this.topicOwnerCache = topicOwnerCache;
     }
 
@@ -101,7 +112,7 @@ public class TopicService {
 
         validateSchema(validateAndRegisterSchema, topicWithSchema, topic);
         registerAvroSchema(validateAndRegisterSchema, topicWithSchema, createdBy);
-        createTopic(topic, createdBy);
+        createTopic(topic, createdBy, isAllowedToManage);
     }
 
     private void ensureTopicDoesNotExist(Topic topic) {
@@ -132,8 +143,9 @@ public class TopicService {
         }
     }
 
-    private void createTopic(Topic topic, String createdBy) {
-        topicRepository.createTopic(topic);
+    private void createTopic(Topic topic, String createdBy, CreatorRights creatorRights) {
+        topicValidator.ensureCreatedTopicIsValid(topic, creatorRights);
+        multiDcExecutor.execute(new CreateTopicRepositoryCommand(topic));
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
@@ -154,7 +166,7 @@ public class TopicService {
                     String.format("Could not create topic %s, rollback topic creation.", topic.getQualifiedName()),
                     exception
             );
-            topicRepository.removeTopic(topic.getName());
+            multiDcExecutor.execute(new RemoveTopicRepositoryCommand(topic.getName()));
         }
     }
 
@@ -174,7 +186,7 @@ public class TopicService {
     }
 
     private void removeTopic(Topic topic, String removedBy) {
-        topicRepository.removeTopic(topic.getName());
+        multiDcExecutor.execute(new RemoveTopicRepositoryCommand(topic.getName()));
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
         auditor.objectRemoved(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
         topicOwnerCache.onRemovedTopic(topic);
@@ -210,7 +222,7 @@ public class TopicService {
                         brokerTopicManagement.updateTopic(modified)
                 );
             }
-            topicRepository.updateTopic(modified);
+            multiDcExecutor.execute(new UpdateTopicRepositoryCommand(modified));
 
             if (!retrieved.wasMigratedFromJsonType() && modified.wasMigratedFromJsonType()) {
                 logger.info("Waiting until all subscriptions have consumers assigned during topic {} content type migration...", topicName.qualifiedName());
@@ -222,6 +234,11 @@ public class TopicService {
             auditor.objectUpdated(modifiedBy, retrieved, modified);
             topicOwnerCache.onUpdatedTopic(retrieved, modified);
         }
+    }
+
+    public void touchTopic(TopicName topicName) {
+        logger.info("Touching topic {}", topicName.qualifiedName());
+        multiDcExecutor.execute(new TouchTopicRepositoryCommand(topicName));
     }
 
     /**
@@ -239,11 +256,6 @@ public class TopicService {
         } else {
             touchTopic(topicName);
         }
-    }
-
-    private void touchTopic(TopicName topicName) {
-        logger.info("Touching topic {}", topicName.qualifiedName());
-        topicRepository.touchTopic(topicName);
     }
 
     public List<String> listQualifiedTopicNames(String groupName) {
@@ -332,7 +344,7 @@ public class TopicService {
     }
 
     public Optional<byte[]> preview(TopicName topicName, int idx) {
-        List<byte[]> result = messagePreviewRepository.loadPreview(topicName)
+        List<byte[]> result = loadMessagePreviewsFromAllDc(topicName)
                 .stream()
                 .map(MessagePreview::getContent)
                 .collect(toList());
@@ -343,9 +355,23 @@ public class TopicService {
     }
 
     public List<MessageTextPreview> previewText(TopicName topicName) {
-        return messagePreviewRepository.loadPreview(topicName).stream()
+        return loadMessagePreviewsFromAllDc(topicName).stream()
                 .map(p -> new MessageTextPreview(new String(p.getContent(), StandardCharsets.UTF_8), p.isTruncated()))
                 .collect(toList());
+    }
+
+    private List<MessagePreview> loadMessagePreviewsFromAllDc(TopicName topicName) {
+        List<DatacenterBoundRepositoryHolder<MessagePreviewRepository>> repositories =
+                repositoryManager.getRepositories(MessagePreviewRepository.class);
+        List<MessagePreview> previews = new ArrayList<>();
+        for (DatacenterBoundRepositoryHolder<MessagePreviewRepository> holder : repositories) {
+            try {
+                previews.addAll(holder.getRepository().loadPreview(topicName));
+            } catch (Exception e) {
+                logger.warn("Could not load message preview for DC: {}", holder.getDatacenterName());
+            }
+        }
+        return previews;
     }
 
     public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {

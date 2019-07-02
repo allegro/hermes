@@ -23,7 +23,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.*;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_SUBSCRIPTION;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_TOPIC;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {

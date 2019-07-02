@@ -14,7 +14,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.broker.ZookeeperBrokerStorage;
 import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
@@ -24,6 +23,8 @@ import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndica
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.management.config.SubscriptionProperties;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
@@ -33,6 +34,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingl
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.LogEndOffsetChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.OffsetsAvailableChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
+import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
@@ -41,6 +43,7 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
@@ -66,10 +69,10 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     MessageContentWrapper messageContentWrapper;
 
     @Autowired
-    SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
+    ZookeeperRepositoryManager zookeeperRepositoryManager;
 
     @Autowired
-    AdminTool adminTool;
+    MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
     private final List<ZooKeeperClient> zkClients = new ArrayList<>();
     private final List<CuratorFramework> curators = new ArrayList<>();
@@ -77,8 +80,11 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @Bean
     MultiDCAwareService multiDCAwareService(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
                                             Clock clock) {
+        List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
+                zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
+
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
-            KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getClusterName());
+            KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
 
             ZooKeeperClient zooKeeperClient = zooKeeperClient(kafkaProperties);
             KafkaZkClient kafkaZkClient = kafkaZkClient(zooKeeperClient);
@@ -92,6 +98,9 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage);
             KafkaRawMessageReader kafkaRawMessageReader =
                     new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
+
+            SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = getRepository(repositories, kafkaProperties);
+
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                     storage,
                     subscriptionOffsetChangeIndicator,
@@ -99,7 +108,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     kafkaNamesMapper
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
-            return new BrokersClusterService(kafkaProperties.getClusterName(), messageReader,
+            return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper,
                     new OffsetsAvailableChecker(consumerPool, storage),
                     new LogEndOffsetChecker(consumerPool),
@@ -108,10 +117,30 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
         return new MultiDCAwareService(
                 clusters,
-                adminTool,
                 clock,
                 ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
-                ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()));
+                ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()),
+                multiDcExecutor);
+    }
+
+    private SubscriptionOffsetChangeIndicator getRepository(
+            List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repostories,
+            KafkaProperties kafkaProperties) {
+        if (repostories.size() == 1) {
+            return repostories.get(0).getRepository();
+        }
+
+        return repostories.stream()
+                .filter(x -> kafkaProperties.getDatacenter().equals(x.getDatacenterName()))
+                .findFirst().orElseThrow(() ->
+                        new IllegalArgumentException(
+                                String.format("Kafka cluster dc name '%s' not matched with Zookeeper dc names: %s",
+                                        kafkaProperties.getDatacenter(),
+                                        repostories.stream().map(x -> x.getDatacenterName()).collect(Collectors.joining(","))
+                                )
+                        )
+                )
+                .getRepository();
     }
 
     @Bean
@@ -181,5 +210,4 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
         props.put(CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getKafkaServerRequestTimeoutMillis());
         return AdminClient.create(props);
     }
-
 }

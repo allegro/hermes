@@ -22,5 +22,4 @@ public class PartitionOffsets implements Iterable<PartitionOffset> {
     public Iterator<PartitionOffset> iterator() {
         return offsets.iterator();
     }
-
 }
