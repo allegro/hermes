@@ -2,6 +2,27 @@
 
 ### ...
 
+## 1.1.1 (05.07.2019)
+
+### Enhancements
+
+#### ([1052](https://github.com/allegro/hermes/issues/1052)) Auto switching to read only mode in hermes-management 
+
+Hermes-management verifies whether all zookeeper clusters are available. 
+
+It writes periodically a timestamp to each one of them. 
+
+When the timestamp write fails on one of the zk clusters then management switches into ReadOnly mode.
+
+This feature is disabled by default. Enable with:
+
+```yaml
+management:
+  health:
+    periodSeconds: 30
+    enabled: true
+```
+
 ## 1.1.0 (02.07.2019)
 
 ### Enhancements
