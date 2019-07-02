@@ -8,11 +8,11 @@
 
 #### ([1033](https://github.com/allegro/hermes/pull/1033)) Zookeeper multi datacenter
 
-Starting from this release it's possible to run Hermes on multiple independent Zookeeper clusters.
+Changes are only in hermes-management module which from now on can operate on multiple Zookeeper clusters.
 
-To match Kafka clusters with Zookeeper clusters we've an additional field in a config called `datacenter`.
+To match Kafka clusters with Zookeeper clusters we've an additional field in a hermes-config called `datacenter`.
 
-This field allows you to tell Hermes which Zookeeper clusters belong to which Kafka.
+This field allows you to tell Hermes which Zookeeper cluster belongs to which Kafka cluster and when there is only one Zookeeper cluster then it will be used for every Kafka cluster.
 
 Example:
 ```yaml
