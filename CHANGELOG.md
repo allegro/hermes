@@ -2,6 +2,48 @@
 
 ### ...
 
+## 1.1.0 (02.07.2019)
+
+### Enhancements
+
+#### ([1033](https://github.com/allegro/hermes/pull/1033)) Zookeeper multi datacenter
+
+With the multi Zookeeper clusters, it's possible to increase Hermes isolation between data-centres.
+
+In the end this change increase high-availability of Hermes.
+
+Changes are only in hermes-management module which from now on can operate on multiple Zookeeper clusters.
+
+To match Kafka clusters with Zookeeper clusters we have an additional field in a hermes-config called `datacenter`.
+
+This field allows you to tell Hermes which Zookeeper cluster belongs to which Kafka cluster.
+
+When there is only one Zookeeper cluster then it will be used for every Kafka cluster.
+
+If you're migrating from previous version you need to add `storage.clusters` field in hermes-config and move `storage.connectionString` inside it (`datacenter` field is irrelevant when you have only 1 Zookeeper cluster).
+
+Example:
+```yaml
+kafka:
+  clusters:
+    -
+      datacenter: dc1
+      clusterName: kafka_primary
+      connectionString: kafka-zookeeper:2181/clusters/dc1
+    -
+      datacenter: dc2
+      clusterName: kafka_secondary
+      connectionString: kafka-zookeeper:2181/clusters/dc2
+
+storage:
+  pathPrefix: /run/hermes
+  clusters:
+    - 
+      datacenter: dc
+      clusterName: zk
+      connectionString: zookeeper:2181
+```
+
 ## 1.0.7 (01.07.2019)
 
 ### Bugfixes
