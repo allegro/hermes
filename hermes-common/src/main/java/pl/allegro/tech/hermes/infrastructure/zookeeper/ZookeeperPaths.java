@@ -23,7 +23,7 @@ public class ZookeeperPaths {
     public static final String BLACKLIST_PATH = "blacklist";
     public static final String MAX_RATE_PATH = "max-rate";
     public static final String MAX_RATE_HISTORY_PATH = "history";
-    public static final String STORAGE_HEALTH_PATH = "storage/health";
+    public static final String STORAGE_HEALTH_PATH = "storage-health";
 
     private final String basePath;
 

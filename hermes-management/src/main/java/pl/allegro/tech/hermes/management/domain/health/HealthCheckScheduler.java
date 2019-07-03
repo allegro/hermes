@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,10 +23,9 @@ public class HealthCheckScheduler {
     private final HealthCheckTask healthCheckTask;
     private final Long period;
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder().setNameFormat("health-check-scheduler-%d").build()
+            new ThreadFactoryBuilder().setNameFormat("storage-health-check-scheduler-%d").build()
     );
 
-    @Inject
     public HealthCheckScheduler(ZookeeperClientManager zookeeperClientManager,
                                 ZookeeperPaths zookeeperPaths,
                                 NodeDataProvider nodeDataProvider,

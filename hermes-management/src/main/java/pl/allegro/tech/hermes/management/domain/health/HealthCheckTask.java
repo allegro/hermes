@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 class HealthCheckTask implements Runnable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HealthCheckTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(HealthCheckTask.class);
 
     private final Collection<ZookeeperClient> zookeeperClients;
     private final String healthCheckPath;
@@ -42,10 +42,10 @@ class HealthCheckTask implements Runnable {
             zookeeperClient.getCuratorFramework()
                     .setData()
                     .forPath(healthCheckPath, objectMapper.writeValueAsBytes(timestamp));
-            LOGGER.info("ZooKeeper {} healthy.", zookeeperClient.getDatacenterName());
+            logger.info("ZooKeeper {} healthy.", zookeeperClient.getDatacenterName());
             return HealthCheckResult.HEALTHY;
         } catch (Exception e) {
-            LOGGER.error("Cannot connect to ZooKeeper {}.", zookeeperClient.getDatacenterName(), e);
+            logger.error("Cannot connect to ZooKeeper {}.", zookeeperClient.getDatacenterName(), e);
             return HealthCheckResult.UNHEALTHY;
         }
     }
