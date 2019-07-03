@@ -8,86 +8,56 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClien
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
 import pl.allegro.tech.hermes.management.utils.MultiZookeeperIntegrationTest
 
-import java.util.concurrent.TimeUnit
-
 class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
 
     def healthCheckPath = '/hermes/management/health/hostname:8080'
     def modeService = new ModeService()
+    ZookeeperClientManager manager
+    HealthCheckTask healthCheckTask
 
-    def "should not change mode on successful health check"() {
-        given:
-        def manager = buildZookeeperClientManager()
+    def setup() {
+        manager = buildZookeeperClientManager()
         manager.start()
-
-        and:
         assertZookeeperClientsConnected(manager.clients)
-
-        and:
         manager.clients.each { client -> setupZookeeperPath(client, healthCheckPath) }
+        healthCheckTask = new HealthCheckTask(manager.clients, healthCheckPath, new ObjectMapper(), modeService)
+    }
 
-        and:
+    def cleanup() {
+        manager.stop()
+    }
+
+    def "should not change mode in case of successful health check"() {
+        given:
         assert !modeService.readOnlyEnabled
-
-        def healthCheckTask = new HealthCheckTask(manager.clients, healthCheckPath, new ObjectMapper(), modeService)
 
         when:
         healthCheckTask.run()
 
         then:
         !modeService.readOnlyEnabled
-
-        cleanup:
-        manager.stop()
     }
 
-    def "should change mode to READ_ONLY on failed health check"() {
+    def "should change mode to READ_ONLY in case of failed health check"() {
         given:
-        def manager = buildZookeeperClientManager()
-        manager.start()
-
-        and:
-        assertZookeeperClientsConnected(manager.clients)
-
-        and:
-        manager.clients.each { client -> setupZookeeperPath(client, healthCheckPath) }
-
-        and:
         assert !modeService.readOnlyEnabled
 
         and:
         zookeeper1.stop()
-
-        def healthCheckTask = new HealthCheckTask(manager.clients, healthCheckPath, new ObjectMapper(), modeService)
 
         when:
         healthCheckTask.run()
 
         then:
         modeService.readOnlyEnabled
-
-        cleanup:
-        manager.stop()
     }
 
-    def "should change mode to READ_ONLY on failed health check and set READ_WRITE back again on successful next connection"() {
+    def "should change mode to READ_ONLY in case of failed health check and set READ_WRITE back again in case of successful next connection"() {
         given:
-        def manager = buildZookeeperClientManager()
-        manager.start()
-
-        and:
-        assertZookeeperClientsConnected(manager.clients)
-
-        and:
-        manager.clients.each { client -> setupZookeeperPath(client, healthCheckPath) }
-
-        and:
         assert !modeService.readOnlyEnabled
 
         and:
         zookeeper1.stop()
-
-        def healthCheckTask = new HealthCheckTask(manager.clients, healthCheckPath, new ObjectMapper(), modeService)
 
         when:
         healthCheckTask.run()
@@ -97,16 +67,12 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
 
         and:
         zookeeper1.restart()
-        manager.clients.each { client -> client.curatorFramework.blockUntilConnected(1, TimeUnit.SECONDS) }
 
         and:
         healthCheckTask.run()
 
         and:
         !modeService.readOnlyEnabled
-
-        cleanup:
-        manager.stop()
     }
 
     static buildZookeeperClientManager(String dc = "dc1") {
