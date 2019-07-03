@@ -33,7 +33,7 @@ class HealthCheckTask implements Runnable {
         final List<HealthCheckResult> healthChecks = zookeeperClients.stream()
                 .map(this::doHealthCheck)
                 .collect(Collectors.toList());
-        if (healthChecks.contains(HealthCheckResult.UNHEALTHY)) {
+        if (!modeService.isReadOnlyEnabled() && healthChecks.contains(HealthCheckResult.UNHEALTHY)) {
             modeService.setMode(ModeService.ManagementMode.READ_ONLY);
         } else if (modeService.isReadOnlyEnabled() && !healthChecks.contains(HealthCheckResult.UNHEALTHY)) {
             modeService.setMode(ModeService.ManagementMode.READ_WRITE);

@@ -7,17 +7,14 @@ import pl.allegro.tech.hermes.management.domain.mode.ModeService
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
 import pl.allegro.tech.hermes.management.utils.MultiZookeeperIntegrationTest
-import spock.lang.Ignore
 
 import java.util.concurrent.TimeUnit
 
-@Ignore
 class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
 
     def healthCheckPath = '/hermes/management/health/hostname:8080'
     def modeService = new ModeService()
 
-    @Ignore
     def "should not change mode on successful health check"() {
         given:
         def manager = buildZookeeperClientManager()
@@ -44,7 +41,6 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         manager.stop()
     }
 
-    @Ignore
     def "should change mode to READ_ONLY on failed health check"() {
         given:
         def manager = buildZookeeperClientManager()
@@ -74,7 +70,6 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         manager.stop()
     }
 
-    @Ignore
     def "should change mode to READ_ONLY on failed health check and set READ_WRITE back again on successful next connection"() {
         given:
         def manager = buildZookeeperClientManager()
@@ -101,7 +96,7 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         modeService.readOnlyEnabled
 
         and:
-        zookeeper1.start()
+        zookeeper1.restart()
         manager.clients.each { client -> client.curatorFramework.blockUntilConnected(1, TimeUnit.SECONDS) }
 
         and:
@@ -139,8 +134,6 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
     }
 
     static assertZookeeperClientsConnected(List<ZookeeperClient> clients) {
-        assert clients.size() == 2
-
         def dc1Client = findClientByDc(clients, DC_1_NAME)
         assert assertClientConnected(dc1Client)
 

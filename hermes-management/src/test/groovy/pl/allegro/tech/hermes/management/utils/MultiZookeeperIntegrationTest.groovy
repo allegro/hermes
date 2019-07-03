@@ -12,15 +12,17 @@ abstract class MultiZookeeperIntegrationTest extends Specification {
     static final int DC_2_ZOOKEEPER_PORT = 9501
     static final String DC_2_NAME = "dc2"
 
-    static zookeeper1 = new TestingServer(DC_1_ZOOKEEPER_PORT, false)
-    static zookeeper2 = new TestingServer(DC_2_ZOOKEEPER_PORT, false)
+    TestingServer zookeeper1
+    TestingServer zookeeper2
 
-    def setupSpec() {
+    def setup() {
+        zookeeper1 = new TestingServer(DC_1_ZOOKEEPER_PORT, false)
+        zookeeper2 = new TestingServer(DC_2_ZOOKEEPER_PORT, false)
         zookeeper1.start()
         zookeeper2.start()
     }
 
-    def cleanupSpec(){
+    def cleanup() {
         zookeeper1.stop()
         zookeeper2.stop()
     }
