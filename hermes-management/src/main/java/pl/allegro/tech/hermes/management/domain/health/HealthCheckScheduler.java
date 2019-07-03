@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 
@@ -26,14 +27,14 @@ public class HealthCheckScheduler {
 
     @Inject
     public HealthCheckScheduler(ZookeeperClientManager zookeeperClientManager,
+                                ZookeeperPaths zookeeperPaths,
                                 NodeDataProvider nodeDataProvider,
                                 ObjectMapper objectMapper,
                                 ModeService modeService,
-                                @Value("${management.health.zk-health-path-prefix}") String healthCheckPathPrefix,
-                                @Value("${management.health.period}") Long period) {
+                                @Value("${management.health.periodSeconds}") Long periodSeconds) {
         this.zookeeperClientManager = zookeeperClientManager;
-        this.healthCheckPath = String.format("%s/%s:%s", healthCheckPathPrefix, nodeDataProvider.getHostname(), nodeDataProvider.getServerPort());
-        this.period = period;
+        this.healthCheckPath = zookeeperPaths.nodeHealthPathForManagementHost(nodeDataProvider.getHostname(), nodeDataProvider.getServerPort());
+        this.period = periodSeconds;
         this.healthCheckTask = new HealthCheckTask(zookeeperClientManager.getClients(), this.healthCheckPath, objectMapper, modeService);
     }
 

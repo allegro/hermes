@@ -39,8 +39,7 @@ management:
     servlet:
       context-path: /
   health:
-    zk-health-path-prefix: /hermes/management/health
-    period: 30 # sec
+    periodSeconds: 30
 
 schema.repository.type: schema_registry
 

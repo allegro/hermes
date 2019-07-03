@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.management.utils.MultiZookeeperIntegrationTest
 
 class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
 
-    def healthCheckPath = '/hermes/management/health/hostname:8080'
+    def healthCheckPath = '/hermes/storage/health/hostname_8080'
     def modeService = new ModeService()
     ZookeeperClientManager manager
     HealthCheckTask healthCheckTask
