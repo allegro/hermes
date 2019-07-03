@@ -33,23 +33,23 @@ class HealthCheckTask implements Runnable {
         final List<HealthCheckResult> healthChecks = zookeeperClients.stream()
                 .map(this::doHealthCheck)
                 .collect(Collectors.toList());
-        if (!modeService.isReadOnlyEnabled() && healthChecks.contains(HealthCheckResult.UNHEALTHY)) {
+        if (healthChecks.contains(HealthCheckResult.UNHEALTHY)) {
             modeService.setMode(ModeService.ManagementMode.READ_ONLY);
-        } else if (modeService.isReadOnlyEnabled() && !healthChecks.contains(HealthCheckResult.UNHEALTHY)) {
+        } else {
             modeService.setMode(ModeService.ManagementMode.READ_WRITE);
         }
     }
 
     private HealthCheckResult doHealthCheck(ZookeeperClient zookeeperClient) {
+        final String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         try {
-            final String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             zookeeperClient.getCuratorFramework()
                     .setData()
                     .forPath(healthCheckPath, objectMapper.writeValueAsBytes(timestamp));
-            LOGGER.info("ZooKeeper {} healthy.", zookeeperClient.getDcName());
+            LOGGER.info("ZooKeeper {} healthy.", zookeeperClient.getDatacenterName());
             return HealthCheckResult.HEALTHY;
         } catch (Exception e) {
-            LOGGER.error("Cannot connect to ZooKeeper {}.", zookeeperClient.getDcName(), e);
+            LOGGER.error("Cannot connect to ZooKeeper {}.", zookeeperClient.getDatacenterName(), e);
             return HealthCheckResult.UNHEALTHY;
         }
     }

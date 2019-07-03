@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.health;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
@@ -19,11 +20,15 @@ public class HealthCheckScheduler {
     private final String healthCheckPath;
     private final HealthCheckTask healthCheckTask;
     private final Long period;
-    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(
+            new ThreadFactoryBuilder().setNameFormat("health-check-scheduler-%d").build()
+    );
 
     @Inject
-    public HealthCheckScheduler(ZookeeperClientManager zookeeperClientManager, NodeDataProvider nodeDataProvider,
-                                ObjectMapper objectMapper, ModeService modeService,
+    public HealthCheckScheduler(ZookeeperClientManager zookeeperClientManager,
+                                NodeDataProvider nodeDataProvider,
+                                ObjectMapper objectMapper,
+                                ModeService modeService,
                                 @Value("${management.health.zk-health-path-prefix}") String healthCheckPathPrefix,
                                 @Value("${management.health.period}") Long period) {
         this.zookeeperClientManager = zookeeperClientManager;

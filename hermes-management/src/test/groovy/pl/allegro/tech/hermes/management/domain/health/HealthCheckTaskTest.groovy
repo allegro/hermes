@@ -77,14 +77,14 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
 
     static buildZookeeperClientManager(String dc = "dc1") {
         def properties = new StorageClustersProperties(clusters: [
-                new StorageProperties(connectionString: "localhost:$DC_1_ZOOKEEPER_PORT", dc: DC_1_NAME),
-                new StorageProperties(connectionString: "localhost:$DC_2_ZOOKEEPER_PORT", dc: DC_2_NAME)
+                new StorageProperties(connectionString: "localhost:$DC_1_ZOOKEEPER_PORT", datacenter: DC_1_NAME),
+                new StorageProperties(connectionString: "localhost:$DC_2_ZOOKEEPER_PORT", datacenter: DC_2_NAME)
         ])
-        new ZookeeperClientManager(properties, new TestDcNameProvider(dc))
+        new ZookeeperClientManager(properties, new TestDatacenterNameProvider(dc))
     }
 
     static findClientByDc(List<ZookeeperClient> clients, String dcName) {
-        clients.find { it.dcName == dcName }
+        clients.find { it.datacenterName == dcName }
     }
 
     static setupZookeeperPath(ZookeeperClient zookeeperClient, String path) {

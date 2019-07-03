@@ -21,7 +21,7 @@ class NodeDataProvider {
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+            throw new CouldNotResolveHostNameException(e);
         }
     }
 
