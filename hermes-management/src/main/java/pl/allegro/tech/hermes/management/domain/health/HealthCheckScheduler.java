@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.health;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
@@ -15,6 +16,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@ConditionalOnProperty(name = "management.health.enabled", havingValue = "true")
 public class HealthCheckScheduler {
 
     private final ZookeeperClientManager zookeeperClientManager;

@@ -30,14 +30,10 @@ class HealthCheckTask implements Runnable {
 
     @Override
     public void run() {
-        final List<HealthCheckResult> healthChecks = zookeeperClients.stream()
+        final List<HealthCheckResult> healthCheckResults = zookeeperClients.stream()
                 .map(this::doHealthCheck)
                 .collect(Collectors.toList());
-        if (healthChecks.contains(HealthCheckResult.UNHEALTHY)) {
-            modeService.setMode(ModeService.ManagementMode.READ_ONLY);
-        } else {
-            modeService.setMode(ModeService.ManagementMode.READ_WRITE);
-        }
+        updateMode(healthCheckResults);
     }
 
     private HealthCheckResult doHealthCheck(ZookeeperClient zookeeperClient) {
@@ -51,6 +47,14 @@ class HealthCheckTask implements Runnable {
         } catch (Exception e) {
             LOGGER.error("Cannot connect to ZooKeeper {}.", zookeeperClient.getDatacenterName(), e);
             return HealthCheckResult.UNHEALTHY;
+        }
+    }
+
+    private void updateMode(List<HealthCheckResult> healthCheckResults) {
+        if (healthCheckResults.contains(HealthCheckResult.UNHEALTHY)) {
+            modeService.setMode(ModeService.ManagementMode.READ_ONLY);
+        } else {
+            modeService.setMode(ModeService.ManagementMode.READ_WRITE);
         }
     }
 
