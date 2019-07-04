@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.management.domain.health;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 @ConditionalOnProperty(name = "management.health.enabled", havingValue = "true")
 public class HealthCheckScheduler {
+
+    private static final Logger logger = LoggerFactory.getLogger(HealthCheckScheduler.class);
 
     private final HealthCheckTask healthCheckTask;
     private final Long period;
@@ -37,6 +41,7 @@ public class HealthCheckScheduler {
 
     @PostConstruct
     public void scheduleHealthCheck() {
+        logger.info("Starting the storage health check scheduler");
         executorService.scheduleAtFixedRate(healthCheckTask, 0, period, TimeUnit.SECONDS);
     }
 }
