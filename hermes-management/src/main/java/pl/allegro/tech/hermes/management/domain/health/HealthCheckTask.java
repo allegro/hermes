@@ -59,7 +59,7 @@ class HealthCheckTask implements Runnable {
         }
     }
 
-    enum HealthCheckResult {
+    private enum HealthCheckResult {
         HEALTHY, UNHEALTHY
     }
 }
