@@ -3,10 +3,10 @@ zookeeper:
 
 
 storage:
-  dcNameSource: env
-  dcNameSourceEnv: DC
+  datacenterNameSource: env
+  datacenterNameSourceEnv: DC
   clusters:
-    - datacenter: dc1
+    - datacenter: dc
       connectionString: localhost:2181
 
 kafka:
