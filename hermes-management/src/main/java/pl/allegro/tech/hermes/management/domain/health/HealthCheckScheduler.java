@@ -18,8 +18,6 @@ import java.util.concurrent.TimeUnit;
 @ConditionalOnProperty(name = "management.health.enabled", havingValue = "true")
 public class HealthCheckScheduler {
 
-    private final ZookeeperClientManager zookeeperClientManager;
-    private final String healthCheckPath;
     private final HealthCheckTask healthCheckTask;
     private final Long period;
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(
@@ -32,15 +30,13 @@ public class HealthCheckScheduler {
                                 ObjectMapper objectMapper,
                                 ModeService modeService,
                                 @Value("${management.health.periodSeconds}") Long periodSeconds) {
-        this.zookeeperClientManager = zookeeperClientManager;
-        this.healthCheckPath = zookeeperPaths.nodeHealthPathForManagementHost(nodeDataProvider.getHostname(), nodeDataProvider.getServerPort());
+        String healthCheckPath = zookeeperPaths.nodeHealthPathForManagementHost(nodeDataProvider.getHostname(), nodeDataProvider.getServerPort());
         this.period = periodSeconds;
-        this.healthCheckTask = new HealthCheckTask(zookeeperClientManager.getClients(), this.healthCheckPath, objectMapper, modeService);
+        this.healthCheckTask = new HealthCheckTask(zookeeperClientManager.getClients(), healthCheckPath, objectMapper, modeService);
     }
 
     @PostConstruct
     public void scheduleHealthCheck() {
-        zookeeperClientManager.getClients().forEach(client -> client.ensurePathExists(healthCheckPath));
         executorService.scheduleAtFixedRate(healthCheckTask, 0, period, TimeUnit.SECONDS);
     }
 }

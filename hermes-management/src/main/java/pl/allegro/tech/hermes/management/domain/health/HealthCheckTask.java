@@ -39,13 +39,14 @@ class HealthCheckTask implements Runnable {
     private HealthCheckResult doHealthCheck(ZookeeperClient zookeeperClient) {
         final String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         try {
+            zookeeperClient.ensurePathExists(healthCheckPath);
             zookeeperClient.getCuratorFramework()
                     .setData()
                     .forPath(healthCheckPath, objectMapper.writeValueAsBytes(timestamp));
-            logger.info("ZooKeeper {} healthy.", zookeeperClient.getDatacenterName());
+            logger.info("Storage healthy for datacenter {}", zookeeperClient.getDatacenterName());
             return HealthCheckResult.HEALTHY;
         } catch (Exception e) {
-            logger.error("Cannot connect to ZooKeeper {}.", zookeeperClient.getDatacenterName(), e);
+            logger.error("Storage health check failed for datacenter {}", zookeeperClient.getDatacenterName(), e);
             return HealthCheckResult.UNHEALTHY;
         }
     }
