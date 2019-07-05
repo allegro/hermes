@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.management.config.storage;
 
 
 public class StorageProperties {
-    private String datacenter;
-    private String clusterName;
+    private String datacenter = "dc";
+    private String clusterName = "zk";
     private String connectionString = "localhost:2181";
     private int sessionTimeout = 10000;
     private int connectTimeout = 1000;
