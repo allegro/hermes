@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Response;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicInteger;
 

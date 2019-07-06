@@ -5,6 +5,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -32,9 +33,21 @@ public class JvmKeystoreSslContextFactory implements SslContextFactory {
     @Override
     public SSLContext create() {
         try {
-            return createSSLContext(loadKeyStore(keyStoreProperties), loadKeyStore(trustStoreProperties));
+            return createSSLContext(loadKeyStore(keyStoreProperties));
         } catch (Exception e) {
             throw new IllegalStateException("Something went wrong with setting up SSL context.", e);
+        }
+    }
+
+    @Override
+    public TrustManager[] getTrustManagers() {
+        try {
+            KeyStore trustStore = loadKeyStore(trustStoreProperties);
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(trustStore);
+            return trustManagerFactory.getTrustManagers();
+        } catch (Exception e) {
+            throw new IllegalStateException("Something went wrong with setting up TrustManagers.", e);
         }
     }
 
@@ -48,12 +61,12 @@ public class JvmKeystoreSslContextFactory implements SslContextFactory {
 
     private InputStream getResourceAsInputStream(URI location) throws FileNotFoundException {
         if ("classpath".equalsIgnoreCase(location.getScheme())) {
-             return JvmKeystoreSslContextFactory.class.getClassLoader().getResourceAsStream(location.getSchemeSpecificPart());
+            return JvmKeystoreSslContextFactory.class.getClassLoader().getResourceAsStream(location.getSchemeSpecificPart());
         }
         return new FileInputStream(isNullOrEmpty(location.getPath()) ? location.getSchemeSpecificPart() : location.getPath());
     }
 
-    private SSLContext createSSLContext(final KeyStore keyStore, final KeyStore trustStore)
+    private SSLContext createSSLContext(final KeyStore keyStore)
             throws NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, KeyManagementException {
 
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -61,9 +74,7 @@ public class JvmKeystoreSslContextFactory implements SslContextFactory {
         keyManagerFactory.init(keyStore, pass);
         KeyManager[] keyManagers = keyManagerFactory.getKeyManagers();
 
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        trustManagerFactory.init(trustStore);
-        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+        TrustManager[] trustManagers = getTrustManagers();
 
         SSLContext sslContext = SSLContext.getInstance(protocol);
         sslContext.init(keyManagers, trustManagers, new SecureRandom());
