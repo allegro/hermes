@@ -2,6 +2,8 @@
 
 ### ...
 
+## 1.1.2 (08.07.2019)
+
 ### Enhancements
 #### ([1061](https://github.com/allegro/hermes/pull/1061)) Introduced HdrHistogram-based metrics reservoir
 
