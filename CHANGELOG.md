@@ -5,10 +5,13 @@
 ### Enhancements
 #### ([1061](https://github.com/allegro/hermes/pull/1061)) Introduced HdrHistogram-based metrics reservoir
 
-Introduced [HdrHistogram](http://hdrhistogram.org/)–based implementation of reservoir in metrics.
+Introduced [HdrHistogram](http://hdrhistogram.org/)–based implementation of reservoir in metrics. HdrHistogram-based 
+reservoir has much less memory footprint than exponentially decaying (previous implementation). Because of this GC in 
+Hermes has less job to do which leads to better Hermes performance. In the near future it will be default Hermes metrics reservoir.
+
 To switch between implementations, use `metrics.reservoir.type` option:
 
-* `exponentially_decaying` - exponentially decaying reservoir (previous version, currently default)
+* `exponentially_decaying` - exponentially decaying reservoir (default)
 * `hdr` - HdrHistogram–based reservoir 
 
 ## 1.1.1 (05.07.2019)
