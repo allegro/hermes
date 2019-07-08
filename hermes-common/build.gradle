@@ -32,6 +32,7 @@ dependencies {
 
     compile group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: versions.metrics
     compile group: 'io.dropwizard.metrics', name: 'metrics-jvm', version: versions.metrics
+    compile group: 'org.mpierce.metrics.reservoir', name: 'hdrhistogram-metrics-reservoir', version: '1.1.0'
 
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.0'
 
