@@ -65,7 +65,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         int requestTimeout = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
         int socketTimeout = subscription.getSerialSubscriptionPolicy().getSocketTimeout();
         return new HttpRequestFactory(getHttpClient(subscription), requestTimeout, socketTimeout,
-                metadataAppender, authorizationProviderFactory.create(subscription));
+                metadataAppender, authorizationProviderFactory.create(subscription), subscription.isHttp2Enabled());
     }
 
     private HttpClient getHttpClient(Subscription subscription) {

@@ -1,8 +1,7 @@
 package pl.allegro.tech.hermes.integration;
 
 import io.undertow.Undertow;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import io.undertow.server.HttpHandler;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -15,39 +14,66 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Response;
-
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static org.assertj.core.api.Assertions.fail;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class ConsumingHttp2Test extends IntegrationTest {
-    static final int HTTPS_PORT = Ports.nextAvailable();
-    static final String HTTPS_ENDPOINT = "https://localhost:" + HTTPS_PORT;
+
+    private final static String MESSAGE_BODY = TestMessage.of("hello", "h2").body();
 
     private AtomicInteger incomingCounter = new AtomicInteger(0);
-    private Undertow http2Server;
 
     @Test
-    public void shouldDeliverMessageUsingHttp2() throws InterruptedException {
+    public void shouldDeliverMessageUsingHttp2() {
         // given
-        Topic topic = operations.buildTopic("deliverHttp2", "topic");
+        int httpsPort = Ports.nextAvailable();
+        String httpsEndpoint = "https://localhost:" + httpsPort;
 
-        Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
-                .withEndpoint(HTTPS_ENDPOINT)
-                .withHttp2Enabled(true)
-                .build();
+        Undertow http2Server = http2Server(httpsPort,
+                exchange -> exchange.getResponseSender().send(Integer.toString(incomingCounter.incrementAndGet())));
 
-        operations.createSubscription(topic, subscription);
+        http2Server.start();
+
+        Topic topic = createTopicAndSubscription(httpsEndpoint);
 
         // when
-        Response response = publisher.publish(topic.getQualifiedName(), TestMessage.of("hello", "h2").body());
+        Response response = publisher.publish(topic.getQualifiedName(), MESSAGE_BODY);
 
         // then
         assertThat(response).hasStatus(CREATED);
         wait.until(() -> assertThat(incomingCounter.intValue()).isPositive());
+    }
+
+    @Test
+    public void shouldDeliverMessageWithoutKeepAliveHeaderUsingHttp2() {
+        // given
+        int httpsPort = Ports.nextAvailable();
+        String httpsEndpoint = "https://localhost:" + httpsPort;
+
+        Undertow http2Server = http2Server(httpsPort, exchange -> {
+            if (exchange.getRequestHeaders().contains("keep-alive")) {
+                fail("Keep-Alive header should not be present in HTTP/2 request headers");
+            } else {
+                exchange.getResponseSender().send(Integer.toString(incomingCounter.incrementAndGet()));
+            }
+        });
+
+        http2Server.start();
+
+        Topic topic = createTopicAndSubscription(httpsEndpoint);
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), MESSAGE_BODY);
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+        wait.until(() -> assertThat(incomingCounter.intValue()).isPositive());
+
+        http2Server.stop();
     }
 
     @BeforeMethod
@@ -55,16 +81,24 @@ public class ConsumingHttp2Test extends IntegrationTest {
         incomingCounter.set(0);
     }
 
-    @BeforeClass
-    public void before() throws NoSuchAlgorithmException {
-        this.http2Server = Undertow.builder()
-                .addHttpsListener(HTTPS_PORT, "localhost", getSslContext())
+    private Undertow http2Server(int httpsPort, HttpHandler handler) {
+        return Undertow.builder()
+                .addHttpsListener(httpsPort, "localhost", getSslContext())
                 .setServerOption(ENABLE_HTTP2, true)
-                .setHandler(exchange -> {
-                    exchange.getResponseSender().send(Integer.toString(incomingCounter.incrementAndGet()));
-                })
+                .setHandler(handler)
                 .build();
-        http2Server.start();
+    }
+
+    private Topic createTopicAndSubscription(String httpsEndpoint) {
+        Topic topic = operations.buildTopic("deliverHttp2", "topic");
+
+        Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
+                .withEndpoint(httpsEndpoint)
+                .withHttp2Enabled(true)
+                .build();
+
+        operations.createSubscription(topic, subscription);
+        return topic;
     }
 
     private SSLContext getSslContext() {
@@ -73,8 +107,4 @@ public class ConsumingHttp2Test extends IntegrationTest {
         return new JvmKeystoreSslContextFactory("TLS", keystore, truststore).create();
     }
 
-    @AfterClass
-    public void after() {
-        http2Server.stop();
-    }
 }

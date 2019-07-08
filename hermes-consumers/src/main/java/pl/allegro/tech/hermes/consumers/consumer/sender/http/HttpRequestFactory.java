@@ -32,15 +32,17 @@ class HttpRequestFactory {
     private final long socketTimeout;
     private final MetadataAppender<Request> metadataAppender;
     private final Optional<HttpAuthorizationProvider>  authorizationProvider;
+    private final boolean http2Enabled;
 
     HttpRequestFactory(HttpClient client, long timeout, long socketTimeout,
                        MetadataAppender<Request> metadataAppender,
-                       Optional<HttpAuthorizationProvider> authorizationProvider) {
+                       Optional<HttpAuthorizationProvider> authorizationProvider, boolean http2Enabled) {
         this.client = client;
         this.timeout = timeout;
         this.socketTimeout = socketTimeout;
         this.metadataAppender = metadataAppender;
         this.authorizationProvider = authorizationProvider;
+        this.http2Enabled = http2Enabled;
     }
 
     private final Function<ContentType, String> contentTypeToMediaType = contentType ->
@@ -49,13 +51,16 @@ class HttpRequestFactory {
     Request buildRequest(Message message, URI uri) {
         Request request = client.newRequest(uri)
                 .method(HttpMethod.POST)
-                .header(HttpHeader.KEEP_ALIVE.toString(), "true")
                 .header(MESSAGE_ID.getName(), message.getId())
                 .header(RETRY_COUNT.getName(), Integer.toString(message.getRetryCounter()))
                 .header(HttpHeader.CONTENT_TYPE.toString(), contentTypeToMediaType.apply(message.getContentType()))
                 .timeout(timeout, TimeUnit.MILLISECONDS)
                 .idleTimeout(socketTimeout, TimeUnit.MILLISECONDS)
                 .content(new BytesContentProvider(message.getData()));
+
+        if (!http2Enabled) {
+            request.header(HttpHeader.KEEP_ALIVE.toString(), "true");
+        }
 
         if (message.hasSubscriptionIdentityHeaders()) {
             request.header(TOPIC_NAME.getName(), message.getTopic());

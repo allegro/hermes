@@ -65,7 +65,7 @@ public class JettyMessageSenderTest {
     public void setUp() throws Exception {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
         address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver(), METADATA);
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), Optional.empty());
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), Optional.empty(), false);
         messageSender = new JettyMessageSender(httpRequestFactory, address);
     }
 
@@ -154,7 +154,7 @@ public class JettyMessageSenderTest {
     public void shouldSendAuthorizationHeaderIfAuthorizationProviderAttached() {
         // given
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(),
-                Optional.of(() -> Optional.of("Basic Auth Hello!")));
+                Optional.of(() -> Optional.of("Basic Auth Hello!")), false);
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
         Message message = MessageBuilder.withTestMessage().build();
@@ -174,7 +174,8 @@ public class JettyMessageSenderTest {
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client,
                 100, 1000,
                 new DefaultHttpMetadataAppender(),
-                Optional.empty()
+                Optional.empty(),
+                false
         );
         remoteServiceEndpoint.setDelay(500);
 
@@ -195,7 +196,8 @@ public class JettyMessageSenderTest {
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client,
                 1000, 100,
                 new DefaultHttpMetadataAppender(),
-                Optional.empty()
+                Optional.empty(),
+                false
         );
         remoteServiceEndpoint.setDelay(200);
 

@@ -304,6 +304,24 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldConsumeMessageWithKeepAliveHeader() {
+        // given
+        Topic topic = operations.buildTopic("group", "topic");
+        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+
+        TestMessage message = TestMessage.of("hello", "world");
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), message.body());
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+
+        remoteService.expectMessages(message.body());
+        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("Keep-Alive", "true");
+    }
+
+    @Test
     public void shouldRetryWithDelayOnRetryAfterEndpointResponse() {
         // given
         int retryAfterSeconds = 1;
