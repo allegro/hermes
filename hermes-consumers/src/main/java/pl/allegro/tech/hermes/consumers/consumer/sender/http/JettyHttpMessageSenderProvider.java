@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
@@ -64,8 +65,21 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private HttpRequestFactory httpRequestFactory(Subscription subscription) {
         int requestTimeout = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
         int socketTimeout = subscription.getSerialSubscriptionPolicy().getSocketTimeout();
-        return new HttpRequestFactory(getHttpClient(subscription), requestTimeout, socketTimeout,
-                metadataAppender, authorizationProviderFactory.create(subscription), subscription.isHttp2Enabled());
+
+        return new HttpRequestFactory(
+                getHttpClient(subscription),
+                requestTimeout,
+                socketTimeout,
+                metadataAppender,
+                getHttpRequestHeadersProvider(subscription)
+        );
+    }
+
+    private HttpRequestHeadersProvider getHttpRequestHeadersProvider(Subscription subscription) {
+        Optional<HttpAuthorizationProvider> authorizationProvider = authorizationProviderFactory.create(subscription);
+        Http1RequestHeadersProvider http1RequestHeadersProvider = new Http1RequestHeadersProvider(authorizationProvider);
+
+        return subscription.isHttp2Enabled() ? new Http2RequestHeadersProvider(http1RequestHeadersProvider) : http1RequestHeadersProvider;
     }
 
     private HttpClient getHttpClient(Subscription subscription) {
