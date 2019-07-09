@@ -252,6 +252,7 @@ public enum Configs {
     METRICS_GRAPHITE_REPORTER("metrics.graphite.reporter", false),
     METRICS_CONSOLE_REPORTER("metrics.console.reporter", false),
     METRICS_COUNTER_EXPIRE_AFTER_ACCESS("metrics.counter.expire.after.access", 72),
+    METRICS_RESERVOIR_TYPE("metrics.reservoir.type", "exponentially_decaying"),
 
     GLOBAL_SHUTDOWN_HOOK_REGISTERED("global.shutdown.hook.registered", true),
 

@@ -11,12 +11,14 @@ import com.codahale.metrics.jvm.FileDescriptorRatioGauge;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricRegistryWithExponentiallyDecayingReservoir;
+import pl.allegro.tech.hermes.common.metric.MetricRegistryWithHdrHistogramReservoir;
+import pl.allegro.tech.hermes.common.metric.MetricsReservoirType;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
@@ -24,7 +26,6 @@ import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.net.InetSocketAddress;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +51,7 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
 
     @Override
     public MetricRegistry provide() {
-        MetricRegistry registry = new MetricRegistry();
+        MetricRegistry registry = createMetricsRegistry();
 
         if (configFactory.getBooleanProperty(Configs.METRICS_GRAPHITE_REPORTER)) {
 
@@ -94,6 +95,17 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
         registerJvmMetrics(registry);
 
         return registry;
+    }
+
+    private MetricRegistry createMetricsRegistry() {
+        String metricsReservoirType = configFactory.getStringProperty(Configs.METRICS_RESERVOIR_TYPE).toUpperCase();
+        switch (MetricsReservoirType.valueOf(metricsReservoirType)) {
+            case HDR:
+                return new MetricRegistryWithHdrHistogramReservoir();
+            case EXPONENTIALLY_DECAYING:
+            default:
+                return new MetricRegistryWithExponentiallyDecayingReservoir();
+        }
     }
 
     private void registerJvmMetrics(MetricRegistry metricRegistry) {
