@@ -79,7 +79,9 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         Optional<HttpAuthorizationProvider> authorizationProvider = authorizationProviderFactory.create(subscription);
         Http1RequestHeadersProvider http1RequestHeadersProvider = new Http1RequestHeadersProvider(authorizationProvider);
 
-        return subscription.isHttp2Enabled() ? new Http2RequestHeadersProvider(http1RequestHeadersProvider) : http1RequestHeadersProvider;
+        return subscription.isHttp2Enabled() ?
+                new Http2RequestHeadersProvider(http1RequestHeadersProvider) :
+                http1RequestHeadersProvider;
     }
 
     private HttpClient getHttpClient(Subscription subscription) {

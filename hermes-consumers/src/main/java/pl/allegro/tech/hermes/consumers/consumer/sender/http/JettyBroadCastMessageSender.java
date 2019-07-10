@@ -48,7 +48,7 @@ public class JettyBroadCastMessageSender implements MessageSender {
         return endpoint.resolveAllFor(message).stream()
                 .filter(uri -> message.hasNotBeenSentTo(uri.toString()))
                 .map(uri -> requestFactory.buildRequest(message, uri))
-                .map(request -> handleResponse(request))
+                .map(this::processResponse)
                 .collect(Collectors.toList());
     }
 
@@ -63,7 +63,7 @@ public class JettyBroadCastMessageSender implements MessageSender {
                         ).build());
     }
 
-    private CompletableFuture<SingleMessageSendingResult> handleResponse(Request request) {
+    private CompletableFuture<SingleMessageSendingResult> processResponse(Request request) {
         CompletableFuture<SingleMessageSendingResult> future = new CompletableFuture<>();
         Response.CompleteListener completeListener = result -> future.complete(MessageSendingResult.of(result));
         request.send(completeListener);

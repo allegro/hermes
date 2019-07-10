@@ -4,6 +4,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.util.HashMap;
+import java.util.Map;
 
 final class Http2RequestHeadersProvider implements HttpRequestHeadersProvider {
 
@@ -15,7 +16,7 @@ final class Http2RequestHeadersProvider implements HttpRequestHeadersProvider {
 
     @Override
     public HttpRequestHeaders getHeaders(Message message) {
-        HashMap<String, String> headers = new HashMap<>(baseRequestHeadersProvider.getHeaders(message).asMap());
+        Map<String, String> headers = new HashMap<>(baseRequestHeadersProvider.getHeaders(message).asMap());
         headers.remove(HttpHeader.KEEP_ALIVE.toString());
 
         return new HttpRequestHeaders(headers);
