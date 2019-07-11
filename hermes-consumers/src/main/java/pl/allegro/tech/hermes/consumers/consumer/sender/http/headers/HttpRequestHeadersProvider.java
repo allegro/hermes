@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.http;
+package pl.allegro.tech.hermes.consumers.consumer.sender.http.headers;
 
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 

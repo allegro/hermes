@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import org.apache.zookeeper.proto.RequestHeader
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.util.HttpCookieStore
 import pl.allegro.tech.hermes.api.EndpointAddress
@@ -9,6 +8,8 @@ import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1RequestHeadersProvider
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress
 import pl.allegro.tech.hermes.test.helper.endpoint.MultiUrlEndpointAddressResolver
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint

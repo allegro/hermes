@@ -14,6 +14,9 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1RequestHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http2RequestHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
@@ -77,11 +80,10 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
 
     private HttpRequestHeadersProvider getHttpRequestHeadersProvider(Subscription subscription) {
         Optional<HttpAuthorizationProvider> authorizationProvider = authorizationProviderFactory.create(subscription);
-        Http1RequestHeadersProvider http1RequestHeadersProvider = new Http1RequestHeadersProvider(authorizationProvider);
 
         return subscription.isHttp2Enabled() ?
-                new Http2RequestHeadersProvider(http1RequestHeadersProvider) :
-                http1RequestHeadersProvider;
+                new Http2RequestHeadersProvider(authorizationProvider) :
+                new Http1RequestHeadersProvider(authorizationProvider);
     }
 
     private HttpClient getHttpClient(Subscription subscription) {

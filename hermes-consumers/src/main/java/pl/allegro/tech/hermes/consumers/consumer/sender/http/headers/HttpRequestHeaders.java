@@ -1,10 +1,10 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.http;
+package pl.allegro.tech.hermes.consumers.consumer.sender.http.headers;
 
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
 
-final class HttpRequestHeaders {
+public final class HttpRequestHeaders {
 
     private final Map<String, String> headers;
 
@@ -12,7 +12,7 @@ final class HttpRequestHeaders {
         this.headers = headers;
     }
 
-    Map<String, String> asMap() {
+    public Map<String, String> asMap() {
         return ImmutableMap.copyOf(headers);
     }
 

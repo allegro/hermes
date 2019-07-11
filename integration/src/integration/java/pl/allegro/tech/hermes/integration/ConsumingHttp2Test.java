@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integration;
 
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
+import io.undertow.util.HttpString;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -52,10 +53,11 @@ public class ConsumingHttp2Test extends IntegrationTest {
     public void shouldDeliverMessageWithoutKeepAliveHeaderUsingHttp2() {
         // given
         int httpsPort = Ports.nextAvailable();
+        HttpString keepAliveHeader = new HttpString("Keep-Alive");
         String httpsEndpoint = "https://localhost:" + httpsPort;
 
         Undertow http2Server = http2Server(httpsPort, exchange -> {
-            if (exchange.getRequestHeaders().contains("keep-alive")) {
+            if (exchange.getRequestHeaders().contains(keepAliveHeader)) {
                 fail("Keep-Alive header should not be present in HTTP/2 request headers");
             } else {
                 exchange.getResponseSender().send(Integer.toString(incomingCounter.incrementAndGet()));
