@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Listeners({RetryListener.class})
 public class HermesIntegrationEnvironment implements EnvironmentAware {
@@ -85,9 +86,15 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         ArrayList<Starter<?>> reversedStarters = new ArrayList<>(STARTERS.values());
         Collections.reverse(reversedStarters);
 
-        for (Starter<?> starter : reversedStarters) {
-            starter.stop();
-        }
+        reversedStarters.stream()
+                .filter(Objects::nonNull)
+                .forEach(x -> {
+                    try {
+                        x.stop();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
         zookeeper.close();
     }
 
