@@ -47,7 +47,9 @@ class HttpRequestFactory {
 
         Request build() {
             Request request = baseRequest();
-            requestHeadersProvider.getHeaders(message).asMap().forEach(request::header);
+            requestHeadersProvider.getHeaders(message)
+                    .asMap()
+                    .forEach(request::header);
 
             return request;
         }

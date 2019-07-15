@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
+import static io.undertow.util.Protocols.HTTP_2_0;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.fail;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -39,7 +40,7 @@ public class ConsumingHttp2Test extends IntegrationTest {
 
         http2Server.start();
 
-        Topic topic = createTopicAndSubscription(httpsEndpoint);
+        Topic topic = createTopicAndSubscriptionWithHttp2Enabled(httpsEndpoint);
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), MESSAGE_BODY);
@@ -57,6 +58,10 @@ public class ConsumingHttp2Test extends IntegrationTest {
         String httpsEndpoint = "https://localhost:" + httpsPort;
 
         Undertow http2Server = http2Server(httpsPort, exchange -> {
+            if (!exchange.getProtocol().equals(HTTP_2_0)) {
+                fail("Exchange protocol should be set to HTTP/2");
+            }
+
             if (exchange.getRequestHeaders().contains(keepAliveHeader)) {
                 fail("Keep-Alive header should not be present in HTTP/2 request headers");
             } else {
@@ -66,7 +71,7 @@ public class ConsumingHttp2Test extends IntegrationTest {
 
         http2Server.start();
 
-        Topic topic = createTopicAndSubscription(httpsEndpoint);
+        Topic topic = createTopicAndSubscriptionWithHttp2Enabled(httpsEndpoint);
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), MESSAGE_BODY);
@@ -91,7 +96,7 @@ public class ConsumingHttp2Test extends IntegrationTest {
                 .build();
     }
 
-    private Topic createTopicAndSubscription(String httpsEndpoint) {
+    private Topic createTopicAndSubscriptionWithHttp2Enabled(String httpsEndpoint) {
         Topic topic = operations.buildTopic("deliverHttp2", "topic");
 
         Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
