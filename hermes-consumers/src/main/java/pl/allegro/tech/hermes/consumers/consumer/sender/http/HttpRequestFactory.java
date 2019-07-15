@@ -5,7 +5,7 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import java.net.URI;
@@ -17,13 +17,13 @@ class HttpRequestFactory {
     private final long timeout;
     private final long socketTimeout;
     private final MetadataAppender<Request> metadataAppender;
-    private final HttpRequestHeadersProvider requestHeadersProvider;
+    private final HttpHeadersProvider requestHeadersProvider;
 
     HttpRequestFactory(HttpClient client,
                        long timeout,
                        long socketTimeout,
                        MetadataAppender<Request> metadataAppender,
-                       HttpRequestHeadersProvider requestHeadersProvider) {
+                       HttpHeadersProvider requestHeadersProvider) {
         this.client = client;
         this.timeout = timeout;
         this.socketTimeout = socketTimeout;

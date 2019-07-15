@@ -2,36 +2,82 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http.headers
 
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import spock.lang.Specification
+import spock.lang.Unroll
 
-import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.createMessageWithSchema
-import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.createMessageWithSubscriptionData
+import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.message
+import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.messageWithAdditionalHeaders
+import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.messageWithSchemaVersion
+import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.messageWithSubscriptionData
 
 class HermesHeadersProviderTest extends Specification {
 
-    HermesHeadersProvider headersProvider = HermesHeadersProvider.INSTANCE
-
-    def "should contain topic and subscription name headers when message has subscription identity headers"() {
+    @Unroll
+    def "should produce #header header with correct value"() {
         given:
-        Message message = createMessageWithSubscriptionData()
+        HttpHeadersProvider hermesHeadersProvider = new HermesHeadersProvider(null)
 
         when:
-        HttpRequestHeaders headers = headersProvider.getHeaders(message)
+        Map<String, String> headers = hermesHeadersProvider.getHeaders(message()).asMap()
 
         then:
-        def headersAsMap = headers.asMap()
-        headersAsMap.get("Hermes-Topic-Name") == "topic1"
-        headersAsMap.get("Hermes-Subscription-Name") == "subscription1"
+        headers.size() == 2
+        headers.get("Hermes-Message-Id") == "123"
+        headers.get("Hermes-Retry-Count") == "0"
     }
 
-    def "should contain schema version header when message has schema"() {
+    def "should contain subscription-specific headers when message has subscription identity headers"() {
         given:
-        Message message = createMessageWithSchema()
+        HttpHeadersProvider hermesHeadersProvider = new HermesHeadersProvider(null)
 
         when:
-        HttpRequestHeaders headers = headersProvider.getHeaders(message)
+        Map<String, String> headers = hermesHeadersProvider.getHeaders(messageWithSubscriptionData()).asMap()
 
         then:
-        headers.asMap().get("Schema-Version") == "1"
+        headers.size() == 4
+        headers.get("Hermes-Topic-Name") == "topic1"
+        headers.get("Hermes-Subscription-Name") == "subscription1"
+    }
+
+    def "should contain schema version header when schema is present"() {
+        given:
+        HttpHeadersProvider hermesHeadersProvider = new HermesHeadersProvider(null)
+
+        when:
+        Map<String, String> headers = hermesHeadersProvider.getHeaders(messageWithSchemaVersion()).asMap()
+
+        then:
+        headers.size() == 3
+        headers.get("Schema-Version") == "1"
+    }
+
+    def "should contain additional headers when they are present"() {
+        given:
+        HttpHeadersProvider hermesHeadersProvider = new HermesHeadersProvider(null)
+
+        when:
+        Map<String, String> headers = hermesHeadersProvider.getHeaders(messageWithAdditionalHeaders()).asMap()
+
+        then:
+        headers.size() == 3
+        headers.get("additional-header") == "v"
+    }
+
+    def "should forward headers from nested provider"() {
+        given:
+        HttpHeadersProvider nestedHeadersProvider = new HttpHeadersProvider() {
+            @Override
+            HttpRequestHeaders getHeaders(Message message) {
+                return new HttpRequestHeaders(Collections.singletonMap("k", "v"))
+            }
+        }
+
+        HttpHeadersProvider hermesHeadersProvider = new HermesHeadersProvider(nestedHeadersProvider)
+
+        when:
+        Map<String, String> headers = hermesHeadersProvider.getHeaders(message()).asMap()
+
+        then:
+        headers.get("k") == "v"
     }
 
 }

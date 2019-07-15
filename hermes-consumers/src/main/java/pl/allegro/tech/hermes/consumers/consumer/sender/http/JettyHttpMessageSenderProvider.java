@@ -14,9 +14,11 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1RequestHeadersProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http2RequestHeadersProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HermesHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1HeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http2HeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
@@ -27,7 +29,11 @@ import java.util.Optional;
 import static java.util.Optional.empty;
 
 public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProvider {
+
     private static final Logger logger = LoggerFactory.getLogger(JettyHttpMessageSenderProvider.class);
+
+    private static final HttpHeadersProvider http1HeadersProvider = new Http1HeadersProvider();
+    private static final HttpHeadersProvider http2HeadersProvider = new Http2HeadersProvider();
 
     private final HttpClient httpClient;
     private final Optional<HttpClient> http2Client;
@@ -78,12 +84,16 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         );
     }
 
-    private HttpRequestHeadersProvider getHttpRequestHeadersProvider(Subscription subscription) {
+    private HttpHeadersProvider getHttpRequestHeadersProvider(Subscription subscription) {
         Optional<HttpAuthorizationProvider> authorizationProvider = authorizationProviderFactory.create(subscription);
+        HttpHeadersProvider httpHeadersProvider = subscription.isHttp2Enabled() ? http2HeadersProvider : http1HeadersProvider;
 
-        return subscription.isHttp2Enabled() ?
-                new Http2RequestHeadersProvider(authorizationProvider) :
-                new Http1RequestHeadersProvider(authorizationProvider);
+        return new HermesHeadersProvider(
+                new AuthHeadersProvider(
+                        httpHeadersProvider,
+                        authorizationProvider.orElse(null)
+                )
+        );
     }
 
     private HttpClient getHttpClient(Subscription subscription) {
