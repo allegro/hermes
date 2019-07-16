@@ -10,18 +10,17 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
-import pl.allegro.tech.hermes.test.helper.retry.Retry;
 import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.test.helper.environment.WireMockStarter;
 import pl.allegro.tech.hermes.test.helper.environment.ZookeeperStarter;
+import pl.allegro.tech.hermes.test.helper.retry.Retry;
+import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @Listeners({RetryListener.class})
 public class HermesIntegrationEnvironment implements EnvironmentAware {
@@ -86,16 +85,12 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         ArrayList<Starter<?>> reversedStarters = new ArrayList<>(STARTERS.values());
         Collections.reverse(reversedStarters);
 
-        reversedStarters.stream()
-                .filter(Objects::nonNull)
-                .forEach(x -> {
-                    try {
-                        x.stop();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-        zookeeper.close();
+        for (Starter<?> starter : reversedStarters) {
+            starter.stop();
+        }
+        if (zookeeper != null) {
+            zookeeper.close();
+        }
     }
 
     @Test
