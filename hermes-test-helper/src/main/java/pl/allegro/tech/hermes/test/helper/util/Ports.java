@@ -12,7 +12,9 @@ public final class Ports {
     public static int nextAvailable() {
         try {
             try (ServerSocket socket = new ServerSocket(0)) {
-                return socket.getLocalPort();
+                int port = socket.getLocalPort();
+                socket.close();
+                return port;
             }
         } catch (IOException exception) {
             throw new NoAvailablePortException(exception);
@@ -47,6 +49,7 @@ public final class Ports {
         public NoAvailablePortException(Throwable cause) {
             super(cause);
         }
+
         public NoAvailablePortException(String message) {
             super(message);
         }

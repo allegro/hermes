@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.integration.env;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
 import org.testng.annotations.AfterSuite;
@@ -24,6 +26,8 @@ import java.util.Map;
 
 @Listeners({RetryListener.class})
 public class HermesIntegrationEnvironment implements EnvironmentAware {
+
+    private static final Logger logger = LoggerFactory.getLogger(HermesIntegrationEnvironment.class);
 
     private static final Map<Class<?>, Starter<?>> STARTERS = new LinkedHashMap<>();
 
@@ -47,18 +51,24 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     @BeforeSuite
     public void prepareEnvironment(ITestContext context) throws Exception {
-        for (ITestNGMethod method : context.getAllTestMethods()) {
-            method.setRetryAnalyzer(new Retry());
+        try {
+            logger.info("Preparing environment");
+
+            for (ITestNGMethod method : context.getAllTestMethods()) {
+                method.setRetryAnalyzer(new Retry());
+            }
+
+            for (Starter<?> starter : STARTERS.values()) {
+                starter.start();
+            }
+
+            this.zookeeper = startZookeeperClient();
+            CuratorFramework kafkaZookeeper = startKafkaZookeeperClient();
+
+            SharedServices.initialize(STARTERS, zookeeper, kafkaZookeeper);
+        } catch (Exception e) {
+            logger.error("Exception on prepareEnvironment", e);
         }
-
-        for (Starter<?> starter : STARTERS.values()) {
-            starter.start();
-        }
-
-        this.zookeeper = startZookeeperClient();
-        CuratorFramework kafkaZookeeper = startKafkaZookeeperClient();
-
-        SharedServices.initialize(STARTERS, zookeeper, kafkaZookeeper);
     }
 
     private CuratorFramework startZookeeperClient() throws InterruptedException {
@@ -82,14 +92,18 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     @AfterSuite(alwaysRun = true)
     public void cleanEnvironment() throws Exception {
-        ArrayList<Starter<?>> reversedStarters = new ArrayList<>(STARTERS.values());
-        Collections.reverse(reversedStarters);
+        try {
+            logger.info("Cleaning environment");
 
-        for (Starter<?> starter : reversedStarters) {
-            starter.stop();
-        }
-        if (zookeeper != null) {
+            ArrayList<Starter<?>> reversedStarters = new ArrayList<>(STARTERS.values());
+            Collections.reverse(reversedStarters);
+
+            for (Starter<?> starter : reversedStarters) {
+                starter.stop();
+            }
             zookeeper.close();
+        } catch (Exception e) {
+            logger.error("Exception on cleanEnvironment", e);
         }
     }
 
