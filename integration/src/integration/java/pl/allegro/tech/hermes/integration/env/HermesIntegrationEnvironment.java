@@ -66,10 +66,10 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             CuratorFramework kafkaZookeeper = startKafkaZookeeperClient();
 
             SharedServices.initialize(STARTERS, zookeeper, kafkaZookeeper);
+
+            logger.info("Environment is prepared");
         } catch (Exception e) {
             logger.error("Exception on prepareEnvironment", e);
-        } finally {
-            logger.info("Environment is prepared");
         }
     }
 
@@ -104,10 +104,10 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
                 starter.stop();
             }
             zookeeper.close();
+
+            logger.info("Environment is cleaned");
         } catch (Exception e) {
             logger.error("Exception on cleanEnvironment", e);
-        } finally {
-            logger.info("Environment is cleaned");
         }
     }
 
