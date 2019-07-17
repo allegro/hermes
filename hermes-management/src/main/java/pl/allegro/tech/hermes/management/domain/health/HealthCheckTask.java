@@ -39,7 +39,7 @@ class HealthCheckTask implements Runnable {
     private HealthCheckResult doHealthCheck(ZookeeperClient zookeeperClient) {
         final String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         try {
-            zookeeperClient.ensurePathExists(healthCheckPath);
+            zookeeperClient.ensureEphemeralNodeExists(healthCheckPath);
             zookeeperClient.getCuratorFramework()
                     .setData()
                     .forPath(healthCheckPath, objectMapper.writeValueAsBytes(timestamp));
