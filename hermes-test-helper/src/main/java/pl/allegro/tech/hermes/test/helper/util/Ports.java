@@ -12,6 +12,7 @@ public final class Ports {
     public static int nextAvailable() {
         try {
             try (ServerSocket socket = new ServerSocket(0)) {
+                socket.setReuseAddress(true);
                 return socket.getLocalPort();
             }
         } catch (IOException exception) {
