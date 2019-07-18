@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.management.domain.health
 
+import com.codahale.metrics.Counter
 import com.fasterxml.jackson.databind.ObjectMapper
+import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties
 import pl.allegro.tech.hermes.management.config.storage.StorageProperties
 import pl.allegro.tech.hermes.management.domain.mode.ModeService
@@ -14,13 +16,18 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
     def modeService = new ModeService()
     ZookeeperClientManager manager
     HealthCheckTask healthCheckTask
+    def metrics = Stub(HermesMetrics)
+    def successfulCounter = Mock(Counter)
+    def failedCounter = Mock(Counter)
 
     def setup() {
         manager = buildZookeeperClientManager()
         manager.start()
         assertZookeeperClientsConnected(manager.clients)
         manager.clients.each { client -> setupZookeeperPath(client, healthCheckPath) }
-        healthCheckTask = new HealthCheckTask(manager.clients, healthCheckPath, new ObjectMapper(), modeService)
+        healthCheckTask = new HealthCheckTask(manager.clients, healthCheckPath, new ObjectMapper(), modeService, metrics)
+        metrics.counter('storage-health-check.successful') >> successfulCounter
+        metrics.counter('storage-health-check.failed') >> failedCounter
     }
 
     def cleanup() {
@@ -36,6 +43,9 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
 
         then:
         !modeService.readOnlyEnabled
+
+        and:
+        2 * successfulCounter.inc()
     }
 
     def "should change mode to READ_ONLY in case of failed health check"() {
@@ -50,29 +60,36 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
 
         then:
         modeService.readOnlyEnabled
+
+        and:
+        1 * successfulCounter.inc()
+        1 * failedCounter.inc()
     }
 
     def "should change mode to READ_ONLY in case of failed health check and set READ_WRITE back again in case of successful next connection"() {
         given:
         assert !modeService.readOnlyEnabled
 
-        and:
-        zookeeper1.stop()
-
         when:
+        zookeeper1.stop()
         healthCheckTask.run()
 
         then:
         modeService.readOnlyEnabled
 
         and:
-        zookeeper1.restart()
+        1 * successfulCounter.inc()
+        1 * failedCounter.inc()
 
-        and:
+        when:
+        zookeeper1.restart()
         healthCheckTask.run()
 
-        and:
+        then:
         !modeService.readOnlyEnabled
+
+        and:
+        2 * successfulCounter.inc()
     }
 
     static buildZookeeperClientManager(String dc = "dc1") {
