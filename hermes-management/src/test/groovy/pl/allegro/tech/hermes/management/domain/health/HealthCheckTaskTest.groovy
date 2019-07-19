@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.health
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties
 import pl.allegro.tech.hermes.management.config.storage.StorageProperties
@@ -16,6 +17,8 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
     ZookeeperClientManager manager
     HealthCheckTask healthCheckTask
     def meterRegistry = new SimpleMeterRegistry()
+    Counter successfulCounter
+    Counter failedCounter
 
     def setup() {
         manager = buildZookeeperClientManager()
@@ -23,6 +26,8 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         assertZookeeperClientsConnected(manager.clients)
         manager.clients.each { client -> setupZookeeperPath(client, healthCheckPath) }
         healthCheckTask = new HealthCheckTask(manager.clients, healthCheckPath, new ObjectMapper(), modeService, meterRegistry)
+        successfulCounter = meterRegistry.counter('storage-health-check.successful')
+        failedCounter = meterRegistry.counter('storage-health-check.failed')
     }
 
     def cleanup() {
@@ -40,7 +45,7 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         !modeService.readOnlyEnabled
 
         and:
-        meterRegistry.counter('storage-health-check.successful').count() == 2
+        successfulCounter.count() == 2
     }
 
     def "should change mode to READ_ONLY in case of failed health check"() {
@@ -57,8 +62,8 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         modeService.readOnlyEnabled
 
         and:
-        meterRegistry.counter('storage-health-check.successful').count() == 1
-        meterRegistry.counter('storage-health-check.failed').count() == 1
+        successfulCounter.count() == 1
+        failedCounter.count() == 1
     }
 
     def "should change mode to READ_ONLY in case of failed health check and set READ_WRITE back again in case of successful next connection"() {
@@ -73,8 +78,8 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         modeService.readOnlyEnabled
 
         and:
-        meterRegistry.counter('storage-health-check.successful').count() == 1
-        meterRegistry.counter('storage-health-check.failed').count() == 1
+        successfulCounter.count() == 1
+        failedCounter.count() == 1
 
         when:
         zookeeper1.restart()
@@ -84,7 +89,7 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         !modeService.readOnlyEnabled
 
         and:
-        meterRegistry.counter('storage-health-check.successful').count() == 3
+        successfulCounter.count() == 3
     }
 
     static buildZookeeperClientManager(String dc = "dc1") {
