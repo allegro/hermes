@@ -48,7 +48,6 @@ class HealthCheckTask implements Runnable {
                     .setData()
                     .forPath(healthCheckPath, objectMapper.writeValueAsBytes(timestamp));
             meterRegistry.counter("storage-health-check.successful").increment();
-            logger.info("Storage healthy for datacenter {}", zookeeperClient.getDatacenterName());
             return HealthCheckResult.HEALTHY;
         } catch (Exception e) {
             meterRegistry.counter("storage-health-check.failed").increment();
