@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.management.domain.health;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 
@@ -21,15 +21,15 @@ class HealthCheckTask implements Runnable {
     private final String healthCheckPath;
     private final ObjectMapper objectMapper;
     private final ModeService modeService;
-    private final HermesMetrics metrics;
+    private final MeterRegistry meterRegistry;
 
     HealthCheckTask(Collection<ZookeeperClient> zookeeperClients, String healthCheckPath, ObjectMapper objectMapper,
-                    ModeService modeService, HermesMetrics metrics) {
+                    ModeService modeService, MeterRegistry meterRegistry) {
         this.zookeeperClients = zookeeperClients;
         this.healthCheckPath = healthCheckPath;
         this.objectMapper = objectMapper;
         this.modeService = modeService;
-        this.metrics = metrics;
+        this.meterRegistry = meterRegistry;
     }
 
     @Override
@@ -47,11 +47,11 @@ class HealthCheckTask implements Runnable {
             zookeeperClient.getCuratorFramework()
                     .setData()
                     .forPath(healthCheckPath, objectMapper.writeValueAsBytes(timestamp));
-            metrics.counter("storage-health-check.successful").inc();
+            meterRegistry.counter("storage-health-check.successful").increment();
             logger.info("Storage healthy for datacenter {}", zookeeperClient.getDatacenterName());
             return HealthCheckResult.HEALTHY;
         } catch (Exception e) {
-            metrics.counter("storage-health-check.failed").inc();
+            meterRegistry.counter("storage-health-check.failed").increment();
             logger.error("Storage health check failed for datacenter {}", zookeeperClient.getDatacenterName(), e);
             return HealthCheckResult.UNHEALTHY;
         }
