@@ -75,7 +75,7 @@ public class HttpClientFactory implements Factory<HttpClient> {
     private SslContextFactory createSslContextFactory() {
         SslContextFactory sslCtx = new SslContextFactory();
         sslCtx.setEndpointIdentificationAlgorithm("HTTPS");
-        sslCtx.setSslContext(sslContextFactory.create());
+        sslCtx.setSslContext(sslContextFactory.create().getSslContext());
         return sslCtx;
     }
 

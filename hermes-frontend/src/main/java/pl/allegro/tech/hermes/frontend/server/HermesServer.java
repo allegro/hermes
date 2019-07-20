@@ -121,7 +121,7 @@ public class HermesServer {
                 .setHandler(gracefulShutdown);
 
         if (configFactory.getBooleanProperty(FRONTEND_SSL_ENABLED)) {
-            builder.addHttpsListener(sslPort, host, sslContextFactoryProvider.getSslContextFactory().create())
+            builder.addHttpsListener(sslPort, host, sslContextFactoryProvider.getSslContextFactory().create().getSslContext())
                     .setSocketOption(SSL_CLIENT_AUTH_MODE,
                             SslClientAuthMode.valueOf(configFactory.getStringProperty(FRONTEND_SSL_CLIENT_AUTH_MODE).toUpperCase()))
                     .setServerOption(ENABLE_HTTP2, configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED));

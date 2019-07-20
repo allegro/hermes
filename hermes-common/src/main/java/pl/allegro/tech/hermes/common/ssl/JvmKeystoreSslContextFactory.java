@@ -31,23 +31,11 @@ public class JvmKeystoreSslContextFactory implements SslContextFactory {
     }
 
     @Override
-    public SSLContext create() {
+    public SSLContextHolder create() {
         try {
-            return createSSLContext(loadKeyStore(keyStoreProperties));
+            return createSSLContext(loadKeyStore(keyStoreProperties), loadKeyStore(trustStoreProperties));
         } catch (Exception e) {
             throw new IllegalStateException("Something went wrong with setting up SSL context.", e);
-        }
-    }
-
-    @Override
-    public TrustManager[] getTrustManagers() {
-        try {
-            KeyStore trustStore = loadKeyStore(trustStoreProperties);
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init(trustStore);
-            return trustManagerFactory.getTrustManagers();
-        } catch (Exception e) {
-            throw new IllegalStateException("Something went wrong with setting up TrustManagers.", e);
         }
     }
 
@@ -66,7 +54,7 @@ public class JvmKeystoreSslContextFactory implements SslContextFactory {
         return new FileInputStream(isNullOrEmpty(location.getPath()) ? location.getSchemeSpecificPart() : location.getPath());
     }
 
-    private SSLContext createSSLContext(final KeyStore keyStore)
+    private SSLContextHolder createSSLContext(final KeyStore keyStore, final KeyStore trustStore)
             throws NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, KeyManagementException {
 
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -74,10 +62,12 @@ public class JvmKeystoreSslContextFactory implements SslContextFactory {
         keyManagerFactory.init(keyStore, pass);
         KeyManager[] keyManagers = keyManagerFactory.getKeyManagers();
 
-        TrustManager[] trustManagers = getTrustManagers();
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(trustStore);
+        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
 
         SSLContext sslContext = SSLContext.getInstance(protocol);
         sslContext.init(keyManagers, trustManagers, new SecureRandom());
-        return sslContext;
+        return new SSLContextHolder(sslContext, trustManagers);
     }
 }

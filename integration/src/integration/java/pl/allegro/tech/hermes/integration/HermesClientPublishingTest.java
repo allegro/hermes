@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender;
 import pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender;
 import pl.allegro.tech.hermes.common.ssl.JvmKeystoreSslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
+import pl.allegro.tech.hermes.common.ssl.SSLContextHolder;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.net.ssl.X509TrustManager;
@@ -114,9 +115,12 @@ public class HermesClientPublishingTest extends IntegrationTest {
         KeystoreProperties keystore = new KeystoreProperties("classpath:client.keystore", "JKS", "password");
         KeystoreProperties truststore = new KeystoreProperties("classpath:client.truststore", "JKS", "password");
         JvmKeystoreSslContextFactory sslContextFactory = new JvmKeystoreSslContextFactory("TLS", keystore, truststore);
-
+        SSLContextHolder sslContextHolder = sslContextFactory.create();
         return new OkHttpClient.Builder()
-                .sslSocketFactory(sslContextFactory.create().getSocketFactory(), (X509TrustManager) sslContextFactory.getTrustManagers()[0])
+                .sslSocketFactory(
+                        sslContextHolder.getSslContext().getSocketFactory(),
+                        (X509TrustManager) sslContextHolder.getTrustManagers()[0]
+                )
                 .build();
     }
 }
