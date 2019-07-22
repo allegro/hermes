@@ -8,10 +8,6 @@ public final class SSLContextHolder {
     private final SSLContext sslContext;
     private final TrustManager[] trustManagers;
 
-    public SSLContextHolder(SSLContext sslContext) {
-        this(sslContext, null);
-    }
-
     public SSLContextHolder(SSLContext sslContext, TrustManager[] trustManagers) {
         this.sslContext = sslContext;
         this.trustManagers = trustManagers;
