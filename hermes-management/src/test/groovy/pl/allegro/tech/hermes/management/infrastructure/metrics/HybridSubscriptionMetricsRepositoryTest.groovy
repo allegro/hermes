@@ -5,7 +5,6 @@ import pl.allegro.tech.hermes.api.SubscriptionMetrics
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics
@@ -20,7 +19,7 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
 
     private MetricsPaths paths = new MetricsPaths("stats")
 
-    private SharedCounter sharedCounter = Stub(SharedCounter)
+    private SummedSharedCounter summedSharedCounter = Stub(SummedSharedCounter)
 
     private DistributedEphemeralCounter distributedCounter = Stub(DistributedEphemeralCounter)
 
@@ -29,7 +28,7 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
     private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
 
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(client, paths,
-            sharedCounter, distributedCounter, zookeeperPaths, lagSource)
+            summedSharedCounter, distributedCounter, zookeeperPaths, lagSource)
 
     def "should read subscription metrics from multiple places"() {
         given:
@@ -41,9 +40,9 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
                 .addMetricValue(rate, of('10'))
                 .addMetricValue(timeouts, of('100'))
                 .addMetricValue(otherErrors, of('1000'))
-        sharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 100
-        sharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 1
-        sharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/volume') >> 16
+        summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 100
+        summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 1
+        summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/volume') >> 16
         distributedCounter.getValue('/hermes/consumers', '/groups/group/topics/topic/subscriptions/subscription/metrics/inflight') >> 5
 
         when:

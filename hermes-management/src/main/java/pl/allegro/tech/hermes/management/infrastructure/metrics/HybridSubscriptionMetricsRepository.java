@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionMetricsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
@@ -39,7 +38,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
     private final MetricsPaths metricsPaths;
 
-    private final SharedCounter sharedCounter;
+    private final SummedSharedCounter summedSharedCounter;
 
     private final DistributedEphemeralCounter distributedCounter;
 
@@ -49,11 +48,11 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
     @Autowired
     public HybridSubscriptionMetricsRepository(GraphiteClient graphiteClient, MetricsPaths metricsPaths,
-                                               SharedCounter sharedCounter, DistributedEphemeralCounter distributedCounter,
+                                               SummedSharedCounter summedSharedCounter, DistributedEphemeralCounter distributedCounter,
                                                ZookeeperPaths zookeeperPaths, SubscriptionLagSource lagSource) {
         this.graphiteClient = graphiteClient;
         this.metricsPaths = metricsPaths;
-        this.sharedCounter = sharedCounter;
+        this.summedSharedCounter = summedSharedCounter;
         this.distributedCounter = distributedCounter;
         this.zookeeperPaths = zookeeperPaths;
         this.lagSource = lagSource;
@@ -95,9 +94,9 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
     private ZookeeperMetrics readZookeeperMetrics(SubscriptionName name) {
         return new ZookeeperMetrics(
-                readZookeeperMetric(() -> sharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "delivered")), name),
-                readZookeeperMetric(() -> sharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "discarded")), name),
-                readZookeeperMetric(() -> sharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "volume")), name),
+                readZookeeperMetric(() -> summedSharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "delivered")), name),
+                readZookeeperMetric(() -> summedSharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "discarded")), name),
+                readZookeeperMetric(() -> summedSharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "volume")), name),
                 readZookeeperMetric(() -> distributedCounter.getValue(
                         zookeeperPaths.consumersPath(),
                         zookeeperPaths.subscriptionMetricPathWithoutBasePath(name, "inflight")

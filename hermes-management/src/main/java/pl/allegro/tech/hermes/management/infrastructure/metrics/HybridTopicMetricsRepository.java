@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.management.domain.topic.TopicMetricsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics;
@@ -27,7 +26,7 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
 
     private final MetricsPaths metricsPaths;
 
-    private final SharedCounter sharedCounter;
+    private final SummedSharedCounter summedSharedCounter;
 
     private final ZookeeperPaths zookeeperPaths;
 
@@ -35,11 +34,11 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
 
     @Autowired
     public HybridTopicMetricsRepository(GraphiteClient graphiteClient, MetricsPaths metricsPaths,
-                                        SharedCounter sharedCounter, ZookeeperPaths zookeeperPaths,
+                                        SummedSharedCounter summedSharedCounter, ZookeeperPaths zookeeperPaths,
                                         SubscriptionRepository subscriptionRepository) {
         this.graphiteClient = graphiteClient;
         this.metricsPaths = metricsPaths;
-        this.sharedCounter = sharedCounter;
+        this.summedSharedCounter = summedSharedCounter;
         this.zookeeperPaths = zookeeperPaths;
         this.subscriptionRepository = subscriptionRepository;
     }
@@ -55,8 +54,8 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
         return TopicMetrics.Builder.topicMetrics()
                 .withRate(metrics.metricValue(rateMetric))
                 .withDeliveryRate(metrics.metricValue(deliveryRateMetric))
-                .withPublished(sharedCounter.getValue(zookeeperPaths.topicMetricPath(topicName, "published")))
-                .withVolume(sharedCounter.getValue(zookeeperPaths.topicMetricPath(topicName, "volume")))
+                .withPublished(summedSharedCounter.getValue(zookeeperPaths.topicMetricPath(topicName, "published")))
+                .withVolume(summedSharedCounter.getValue(zookeeperPaths.topicMetricPath(topicName, "volume")))
                 .withSubscriptions(subscriptionRepository.listSubscriptionNames(topicName).size())
                 .withThroughput(metrics.metricValue(throughputMetric))
                 .build();
