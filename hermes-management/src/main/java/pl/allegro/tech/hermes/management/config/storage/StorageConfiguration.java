@@ -19,7 +19,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRep
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
@@ -27,6 +26,7 @@ import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvide
 import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameSource;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider;
 import pl.allegro.tech.hermes.management.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedDistributedEphemeralCounter;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
@@ -98,9 +98,11 @@ public class StorageConfiguration {
     }
 
     @Bean
-    public DistributedEphemeralCounter distributedCounter() {
-        CuratorFramework curatorFramework = clientManager().getLocalClient().getCuratorFramework();
-        return new DistributedEphemeralCounter(curatorFramework);
+    SummedDistributedEphemeralCounter summedDistributedEphemeralCounter(ZookeeperClientManager manager) {
+        List<CuratorFramework> curatorClients = manager.getClients().stream()
+                .map(ZookeeperClient::getCuratorFramework)
+                .collect(toList());
+        return new SummedDistributedEphemeralCounter(curatorClients);
     }
 
     @Bean
