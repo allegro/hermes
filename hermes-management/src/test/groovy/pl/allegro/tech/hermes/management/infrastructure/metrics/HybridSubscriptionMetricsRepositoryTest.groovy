@@ -4,7 +4,6 @@ import pl.allegro.tech.hermes.api.MetricLongValue
 import pl.allegro.tech.hermes.api.SubscriptionMetrics
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics
@@ -21,14 +20,14 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
 
     private SummedSharedCounter summedSharedCounter = Stub(SummedSharedCounter)
 
-    private DistributedEphemeralCounter distributedCounter = Stub(DistributedEphemeralCounter)
+    private SummedDistributedEphemeralCounter summedDistributedCounter = Stub(SummedDistributedEphemeralCounter)
 
     private ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes")
 
     private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
 
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(client, paths,
-            summedSharedCounter, distributedCounter, zookeeperPaths, lagSource)
+            summedSharedCounter, summedDistributedCounter, zookeeperPaths, lagSource)
 
     def "should read subscription metrics from multiple places"() {
         given:
@@ -43,7 +42,7 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 100
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 1
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/volume') >> 16
-        distributedCounter.getValue('/hermes/consumers', '/groups/group/topics/topic/subscriptions/subscription/metrics/inflight') >> 5
+        summedDistributedCounter.getValue('/hermes/consumers', '/groups/group/topics/topic/subscriptions/subscription/metrics/inflight') >> 5
 
         when:
         SubscriptionMetrics metrics = repository.loadMetrics(new TopicName('group', 'topic'), 'subscription')
