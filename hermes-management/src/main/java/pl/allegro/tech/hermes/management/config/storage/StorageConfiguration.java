@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
@@ -28,11 +27,16 @@ import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvide
 import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameSource;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider;
 import pl.allegro.tech.hermes.management.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 
 import javax.annotation.PostConstruct;
+
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Configuration
 @EnableConfigurationProperties(StorageClustersProperties.class)
@@ -82,9 +86,12 @@ public class StorageConfiguration {
     }
 
     @Bean
-    public SharedCounter sharedCounter() {
-        CuratorFramework curatorFramework = clientManager().getLocalClient().getCuratorFramework();
-        return new SharedCounter(curatorFramework,
+    SummedSharedCounter summedSharedCounter(ZookeeperClientManager manager) {
+        List<CuratorFramework> curatorClients = manager.getClients().stream()
+                .map(ZookeeperClient::getCuratorFramework)
+                .collect(toList());
+        return new SummedSharedCounter(
+                curatorClients,
                 storageClustersProperties.getSharedCountersExpiration(),
                 storageClustersProperties.getRetrySleep(),
                 storageClustersProperties.getRetryTimes());
