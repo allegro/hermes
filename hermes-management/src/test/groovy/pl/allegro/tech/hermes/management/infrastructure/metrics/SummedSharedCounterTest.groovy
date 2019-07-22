@@ -36,15 +36,12 @@ class SummedSharedCounterTest extends MultiZookeeperIntegrationTest {
         manager.stop()
     }
 
-    def "should return summed shared counters"() {
+    def "should return sum of shared counters"() {
         given:
         sharedCounterDc1.increment(COUNTER_PATH, 1)
         sharedCounterDc2.increment(COUNTER_PATH, 1)
 
-        when:
-        def summedCounter = summedSharedCounter.getValue(COUNTER_PATH)
-
-        then:
-        summedCounter == 2
+        expect:
+        summedSharedCounter.getValue(COUNTER_PATH) == 2
     }
 }
