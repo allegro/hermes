@@ -26,14 +26,16 @@ public class SummedSharedCounter {
 
     public long getValue(String path) {
         return distributedAtomicLongCaches.stream()
-                .map(distAtomicLong -> {
-                    try {
-                        return distAtomicLong.get(path).get().preValue();
-                    } catch (Exception e) {
-                        throw new ZookeeperCounterException(path, e);
-                    }
-                })
+                .map(distAtomicLong -> getValue(distAtomicLong, path))
                 .reduce(0L, (a, b) -> a + b);
+    }
+
+    private long getValue(LoadingCache<String, DistributedAtomicLong> distAtomicLong, String path) {
+        try {
+            return distAtomicLong.get(path).get().preValue();
+        } catch (Exception e) {
+            throw new ZookeeperCounterException(path, e);
+        }
     }
 
     private LoadingCache<String, DistributedAtomicLong> buildLoadingCache(CuratorFramework curatorClient, int expireAfter,
