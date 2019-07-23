@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.client;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
@@ -122,6 +124,23 @@ public class HermesMessage {
 
     public void consumeHeaders(BiConsumer<String, String> consumer) {
         headers.forEach(consumer);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        HermesMessage that = (HermesMessage) o;
+        return Objects.equals(topic, that.topic) &&
+                Arrays.equals(body, that.body) &&
+                Objects.equals(headers, that.headers);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(topic, headers);
+        result = 31 * result + Arrays.hashCode(body);
+        return result;
     }
 
     @Override

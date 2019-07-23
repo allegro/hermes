@@ -42,6 +42,7 @@ class HermesClientTest extends Specification {
         response.success
         !response.failure
         response.httpStatus == 201
+        !response.failedMessage.isPresent()
     }
 
     def "should interpret message as accepted when sender returns 202"() {
@@ -92,6 +93,25 @@ class HermesClientTest extends Specification {
 
         where:
         status << [408, 500, 501, 502, 503, 504, 505]
+    }
+
+    def "should return failed message in case of failed sending"() {
+        given:
+        CountDownLatch latch = new CountDownLatch(5)
+        HermesClient client = hermesClient(getExceptionallyFailingCountDownSender(latch))
+                .withRetries(5)
+                .withRetrySleep(0)
+                .build()
+
+        when:
+        def response = client.publish(TOPIC, CONTENT_TYPE, CONTENT).join()
+
+        then:
+        latch.count == 0
+        response.failedMessage.get().body == CONTENT
+        response.failedMessage.get().contentType == CONTENT_TYPE
+        response.failedMessage.get().topic == TOPIC
+        response.failureCause.get().message == "Sending failed"
     }
 
     def "should retry on sender exception"() {

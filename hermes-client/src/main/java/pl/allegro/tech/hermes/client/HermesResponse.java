@@ -35,6 +35,10 @@ public interface HermesResponse {
         return Optional.empty();
     }
 
+    default Optional<HermesMessage> getFailedMessage() {
+        return Optional.empty();
+    }
+
     default String getBody() {
         return "";
     }
