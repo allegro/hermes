@@ -87,11 +87,8 @@ public class StorageConfiguration {
 
     @Bean
     SummedSharedCounter summedSharedCounter(ZookeeperClientManager manager) {
-        List<CuratorFramework> curatorClients = manager.getClients().stream()
-                .map(ZookeeperClient::getCuratorFramework)
-                .collect(toList());
         return new SummedSharedCounter(
-                curatorClients,
+                getCuratorClients(manager),
                 storageClustersProperties.getSharedCountersExpiration(),
                 storageClustersProperties.getRetrySleep(),
                 storageClustersProperties.getRetryTimes());
@@ -99,10 +96,7 @@ public class StorageConfiguration {
 
     @Bean
     SummedDistributedEphemeralCounter summedDistributedEphemeralCounter(ZookeeperClientManager manager) {
-        List<CuratorFramework> curatorClients = manager.getClients().stream()
-                .map(ZookeeperClient::getCuratorFramework)
-                .collect(toList());
-        return new SummedDistributedEphemeralCounter(curatorClients);
+        return new SummedDistributedEphemeralCounter(getCuratorClients(manager));
     }
 
     @Bean
@@ -159,5 +153,11 @@ public class StorageConfiguration {
         for (ZookeeperClient client : clientManager.getClients()) {
             client.ensurePathExists(zookeeperPaths().groupsPath());
         }
+    }
+
+    private List<CuratorFramework> getCuratorClients(ZookeeperClientManager manager) {
+        return manager.getClients().stream()
+                .map(ZookeeperClient::getCuratorFramework)
+                .collect(toList());
     }
 }

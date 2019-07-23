@@ -45,7 +45,6 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
     private final SubscriptionLagSource lagSource;
 
-    @Autowired
     public HybridSubscriptionMetricsRepository(GraphiteClient graphiteClient, MetricsPaths metricsPaths,
                                                SummedSharedCounter summedSharedCounter, SummedDistributedEphemeralCounter summedDistributedCounter,
                                                ZookeeperPaths zookeeperPaths, SubscriptionLagSource lagSource) {

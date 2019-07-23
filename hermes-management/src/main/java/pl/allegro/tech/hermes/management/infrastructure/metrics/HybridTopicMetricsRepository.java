@@ -32,7 +32,6 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
 
     private final SubscriptionRepository subscriptionRepository;
 
-    @Autowired
     public HybridTopicMetricsRepository(GraphiteClient graphiteClient, MetricsPaths metricsPaths,
                                         SummedSharedCounter summedSharedCounter, ZookeeperPaths zookeeperPaths,
                                         SubscriptionRepository subscriptionRepository) {
