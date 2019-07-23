@@ -10,11 +10,12 @@ import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender;
 import pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender;
-import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
 import pl.allegro.tech.hermes.common.ssl.JvmKeystoreSslContextFactory;
+import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
+import pl.allegro.tech.hermes.common.ssl.SSLContextHolder;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import java.net.URI;
 
 import static java.net.URI.create;
@@ -111,14 +112,15 @@ public class HermesClientPublishingTest extends IntegrationTest {
     }
 
     private OkHttpClient getOkHttpClientWithSslContextConfigured() {
-        return new OkHttpClient.Builder()
-                .sslSocketFactory(getSslContext().getSocketFactory())
-                .build();
-    }
-
-    private SSLContext getSslContext() {
         KeystoreProperties keystore = new KeystoreProperties("classpath:client.keystore", "JKS", "password");
         KeystoreProperties truststore = new KeystoreProperties("classpath:client.truststore", "JKS", "password");
-        return new JvmKeystoreSslContextFactory("TLS", keystore, truststore).create();
+        JvmKeystoreSslContextFactory sslContextFactory = new JvmKeystoreSslContextFactory("TLS", keystore, truststore);
+        SSLContextHolder sslContextHolder = sslContextFactory.create();
+        return new OkHttpClient.Builder()
+                .sslSocketFactory(
+                        sslContextHolder.getSslContext().getSocketFactory(),
+                        (X509TrustManager) sslContextHolder.getTrustManagers()[0]
+                )
+                .build();
     }
 }

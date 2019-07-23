@@ -86,8 +86,9 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         }
         SchemaVersionsRepository schemaVersionsRepositoryForTopicsWithoutSchema = Mock()
         SchemaVersionsRepository schemaVersionsRepository = [
-                versions: { Topic topic, boolean online -> topic == avroTopic1 ? [version]
-                        : schemaVersionsRepositoryForTopicsWithoutSchema.versions(topic, online) }
+                versions: { Topic topic ->
+                    topic == avroTopic1 ?[version] : schemaVersionsRepositoryForTopicsWithoutSchema.versions(topic)
+                }
         ] as SchemaVersionsRepository
         def schemaRepository = new SchemaRepository(schemaVersionsRepository, compiledSchemaRepository)
         def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
@@ -99,7 +100,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         1 * compiledSchemaRepository.getSchema(avroTopic1, version) >> schema
         0 * compiledSchemaRepository.getSchema(avroTopic3, version) >> schema
 
-        1 * schemaVersionsRepositoryForTopicsWithoutSchema.versions(avroTopic3, _) >> []
+        1 * schemaVersionsRepositoryForTopicsWithoutSchema.versions(avroTopic3) >> []
     }
 
     def "should fail to load after reaching max retries count"() {
@@ -137,7 +138,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
 
     private SchemaVersionsRepository schemaVersionsRepositoryForAvroTopics() {
         [
-            versions: { Topic topic, boolean online ->
+            versions: { Topic topic ->
                 topic.contentType == ContentType.AVRO ? [version] : []
             }
         ] as SchemaVersionsRepository

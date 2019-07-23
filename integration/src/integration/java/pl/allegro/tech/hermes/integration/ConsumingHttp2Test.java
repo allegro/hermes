@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Response;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -70,7 +69,7 @@ public class ConsumingHttp2Test extends IntegrationTest {
     private SSLContext getSslContext() {
         KeystoreProperties keystore = new KeystoreProperties("classpath:server.keystore", "JKS", "password");
         KeystoreProperties truststore = new KeystoreProperties("classpath:server.truststore", "JKS", "password");
-        return new JvmKeystoreSslContextFactory("TLS", keystore, truststore).create();
+        return new JvmKeystoreSslContextFactory("TLS", keystore, truststore).create().getSslContext();
     }
 
     @AfterClass

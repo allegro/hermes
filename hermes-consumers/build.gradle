@@ -4,7 +4,12 @@ dependencies {
     compile project(':hermes-metrics')
     compile project(':hermes-schema')
 
-    compile group: 'org.eclipse.jetty', name: 'jetty-client', version: versions.jetty
+    if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
+        compile group: 'org.eclipse.jetty', name: 'jetty-client', version: versions.jetty
+        compile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-client', version: versions.jetty
+    } else {
+        compile group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
+    }
     compile group: 'org.eclipse.jetty.http2', name: 'http2-http-client-transport', version: versions.jetty
 
     compile group: 'org.jctools', name: 'jctools-core', version: '1.2'
