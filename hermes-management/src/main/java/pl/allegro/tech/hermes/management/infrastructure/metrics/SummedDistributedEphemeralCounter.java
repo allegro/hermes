@@ -27,21 +27,24 @@ public class SummedDistributedEphemeralCounter {
     }
 
     private long getValue(CuratorFramework curatorClient, String basePath, String childrenPath) {
-        Long sum = 0L;
         try {
-            for (String child : curatorClient.getChildren().forPath(basePath)) {
-                try {
-                    sum += Longs.fromByteArray(curatorClient.getData().forPath(basePath + "/" + child + childrenPath));
-                } catch (KeeperException.NoNodeException e) {
-                    // this is fine, trust me - there is no other way to know if it exists for sure
-                    // and i don't care if it doesn't, i want to sum it all
-                    logger.trace("Someone removed node " + basePath + "/" + child + childrenPath + " while we were iterating", e);
-                }
-            }
+            return curatorClient.getChildren().forPath(basePath).stream()
+                    .map(child -> getValueForChild(curatorClient, basePath, childrenPath, child))
+                    .reduce(0L, (a, b) -> a + b);
         } catch (Exception e) {
             logger.warn("Error while reading value for base path: {} and child path: {}; {}", basePath, childrenPath, getRootCauseMessage(e));
-        } finally {
-            return sum;
         }
+        return 0;
+    }
+
+    private long getValueForChild(CuratorFramework curatorClient, String basePath, String childrenPath, String child) {
+        try {
+            return Longs.fromByteArray(curatorClient.getData().forPath(basePath + "/" + child + childrenPath));
+        } catch (KeeperException.NoNodeException e) {
+            logger.trace("Someone removed node " + basePath + "/" + child + childrenPath + " while we were iterating", e);
+        } catch (Exception e) {
+            logger.warn("Error while reading value for base path: {} and child path: {}; {}", basePath, childrenPath, getRootCauseMessage(e));
+        }
+        return 0;
     }
 }
