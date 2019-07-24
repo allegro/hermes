@@ -2,9 +2,29 @@
 
 ### ...
 
+## 1.2.0 (24.07.2019)
+
+### Enhancements
+
+#### ([1071](https://github.com/allegro/hermes/pull/1071)) Counter values summed from all zookeeper clusters
+
+Counters published, delivered, discarded and volume are kept in zookeeper. Thanks to this their values aren't reset after Hermes restart. 
+However, recently multi-zookeeper feature was introduced in Hermes allowing to have independent Hermes Zookeeper clusters per DC. 
+Because of this when a client sends a request about some topic or subscription metrics to hermes-management then it receives 
+metrics summed from all zookeeper clusters.
+
+#### ([1069](https://github.com/allegro/hermes/pull/1069)) Added health check metrics
+
+Since we have #1052, the next step was to introduce metrics for health checks.
+hermes-management use default implementation of io.micrometer.core.instrument.MeterRegistry provided by Spring Boot Actuator 
+to collect metrics.
+
+#### ([1060](https://github.com/allegro/hermes/pull/1060)) Added support for java 11
+
 ## 1.1.2 (08.07.2019)
 
 ### Enhancements
+
 #### ([1061](https://github.com/allegro/hermes/pull/1061)) Introduced HdrHistogram-based metrics reservoir
 
 Introduced [HdrHistogram](http://hdrhistogram.org/)–based implementation of reservoir in metrics. HdrHistogram-based 
