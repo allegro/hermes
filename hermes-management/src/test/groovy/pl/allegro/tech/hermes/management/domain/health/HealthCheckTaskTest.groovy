@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.management.domain.health
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties
-import pl.allegro.tech.hermes.management.config.storage.StorageProperties
 import pl.allegro.tech.hermes.management.domain.mode.ModeService
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
@@ -92,18 +90,6 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         successfulCounter.count() == 3
     }
 
-    static buildZookeeperClientManager(String dc = "dc1") {
-        def properties = new StorageClustersProperties(clusters: [
-                new StorageProperties(connectionString: "localhost:$DC_1_ZOOKEEPER_PORT", datacenter: DC_1_NAME),
-                new StorageProperties(connectionString: "localhost:$DC_2_ZOOKEEPER_PORT", datacenter: DC_2_NAME)
-        ])
-        new ZookeeperClientManager(properties, new TestDatacenterNameProvider(dc))
-    }
-
-    static findClientByDc(List<ZookeeperClient> clients, String dcName) {
-        clients.find { it.datacenterName == dcName }
-    }
-
     static setupZookeeperPath(ZookeeperClient zookeeperClient, String path) {
         def healthCheckPathExists = zookeeperClient.curatorFramework
                 .checkExists()
@@ -114,13 +100,5 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
                     .creatingParentContainersIfNeeded()
                     .forPath(path)
         }
-    }
-
-    static assertZookeeperClientsConnected(List<ZookeeperClient> clients) {
-        def dc1Client = findClientByDc(clients, DC_1_NAME)
-        assert assertClientConnected(dc1Client)
-
-        def dc2Client = findClientByDc(clients, DC_2_NAME)
-        assert assertClientConnected(dc2Client)
     }
 }
