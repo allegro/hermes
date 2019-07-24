@@ -16,7 +16,7 @@ metrics summed from all zookeeper clusters.
 #### ([1069](https://github.com/allegro/hermes/pull/1069)) Added health check metrics
 
 Since we have #1052, the next step was to introduce metrics for health checks.
-hermes-management use default implementation of io.micrometer.core.instrument.MeterRegistry provided by Spring Boot Actuator 
+hermes-management uses default implementation of io.micrometer.core.instrument.MeterRegistry provided by Spring Boot Actuator 
 to collect metrics.
 
 #### ([1060](https://github.com/allegro/hermes/pull/1060)) Added support for java 11
