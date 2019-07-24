@@ -6,6 +6,8 @@
 
 ### Enhancements
 
+#### ([1060](https://github.com/allegro/hermes/pull/1060)) Added support for JDK 11
+
 #### ([1071](https://github.com/allegro/hermes/pull/1071)) Counter values summed from all zookeeper clusters
 
 Counters published, delivered, discarded and volume are kept in zookeeper. Thanks to this their values aren't reset after Hermes restart. 
@@ -13,13 +15,11 @@ However, recently multi-zookeeper feature was introduced in Hermes allowing to h
 Because of this when a client sends a request about some topic or subscription metrics to hermes-management then it receives 
 metrics summed from all zookeeper clusters.
 
-#### ([1069](https://github.com/allegro/hermes/pull/1069)) Added health check metrics
+#### ([1069](https://github.com/allegro/hermes/pull/1069)) Added storage health check metrics
 
-Since we have #1052, the next step was to introduce metrics for health checks.
-hermes-management uses default implementation of io.micrometer.core.instrument.MeterRegistry provided by Spring Boot Actuator 
-to collect metrics.
-
-#### ([1060](https://github.com/allegro/hermes/pull/1060)) Added support for java 11
+Since we have [#1052](https://github.com/allegro/hermes/issues/1052), the next step was to introduce metrics 
+for storage (zookeeper clusters) health checks. They are added to MeterRegistry as `storage-health-check.successful` 
+and `storage-health-check.failed` counters.
 
 ## 1.1.2 (08.07.2019)
 
