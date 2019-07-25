@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.schema.BadSchemaRequestException
 import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException
 import pl.allegro.tech.hermes.schema.RawSchemaClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
+import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRegistryInstanceResolver
+import pl.allegro.tech.hermes.schema.resolver.SchemaRegistryInstanceResolver
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
@@ -38,13 +40,16 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     @Shared int port
 
+    @Shared SchemaRegistryInstanceResolver resolver
+
     @Shared @Subject RawSchemaClient client
 
     def setupSpec() {
         port = Ports.nextAvailable()
         wireMock = new WireMockServer(port)
         wireMock.start()
-        client = new SchemaRegistryRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port"), new ObjectMapper())
+        resolver = new DefaultSchemaRegistryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
+        client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper())
     }
 
     def cleanupSpec() {
@@ -261,8 +266,8 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should successfully validate schema against validation endpoint"() {
         boolean validationEnabled = true
-        client = new SchemaRegistryRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port"),
-                new ObjectMapper(), validationEnabled)
+        resolver = new DefaultSchemaRegistryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
+        client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled)
 
         wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
                 .willReturn(okResponse()
@@ -284,8 +289,8 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
     def "should receive errors from validation endpoint"() {
         given:
         boolean validationEnabled = true
-        client = new SchemaRegistryRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port"),
-                new ObjectMapper(), validationEnabled)
+        resolver = new DefaultSchemaRegistryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
+        client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled)
 
         wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
                 .willReturn(okResponse()

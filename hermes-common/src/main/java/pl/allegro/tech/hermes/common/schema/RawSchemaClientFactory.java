@@ -9,6 +9,8 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
+import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRegistryInstanceResolver;
+import pl.allegro.tech.hermes.schema.resolver.SchemaRegistryInstanceResolver;
 import pl.allegro.tech.hermes.schema.schemarepo.SchemaRepoRawSchemaClient;
 
 import javax.inject.Inject;
@@ -43,11 +45,12 @@ public class RawSchemaClientFactory implements Factory<RawSchemaClient> {
         Client client = ClientBuilder.newClient(config);
         URI schemaRepositoryServerUri = URI.create(configFactory.getStringProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL));
         SchemaRepositoryType repoType = SchemaRepositoryType.valueOf(schemaRepositoryType);
+        SchemaRegistryInstanceResolver resolver = new DefaultSchemaRegistryInstanceResolver(client, schemaRepositoryServerUri);
         switch (repoType) {
             case SCHEMA_REPO:
-                return createMetricsTrackingClient(new SchemaRepoRawSchemaClient(client, schemaRepositoryServerUri), repoType);
+                return createMetricsTrackingClient(new SchemaRepoRawSchemaClient(resolver), repoType);
             case SCHEMA_REGISTRY:
-                return createMetricsTrackingClient(new SchemaRegistryRawSchemaClient(client, schemaRepositoryServerUri, objectMapper), repoType);
+                return createMetricsTrackingClient(new SchemaRegistryRawSchemaClient(resolver, objectMapper), repoType);
             default:
                 throw new IllegalStateException("Unknown schema repository type " + schemaRepositoryType);
         }

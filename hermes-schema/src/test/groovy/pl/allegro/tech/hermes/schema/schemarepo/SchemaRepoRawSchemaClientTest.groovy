@@ -10,6 +10,8 @@ import pl.allegro.tech.hermes.schema.BadSchemaRequestException
 import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException
 import pl.allegro.tech.hermes.schema.RawSchemaClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
+import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRegistryInstanceResolver
+import pl.allegro.tech.hermes.schema.resolver.SchemaRegistryInstanceResolver
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
@@ -34,13 +36,16 @@ class SchemaRepoRawSchemaClientTest extends Specification {
 
     @Shared WireMockServer wireMock
 
+    @Shared SchemaRegistryInstanceResolver resolver
+
     @Shared @Subject RawSchemaClient client
 
     def setupSpec() {
         def port = Ports.nextAvailable()
         wireMock = new WireMockServer(new WireMockConfiguration().port(port).usingFilesUnderClasspath("schema-repo-stub"))
         wireMock.start()
-        client = new SchemaRepoRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port/schema-repo"))
+        resolver = new DefaultSchemaRegistryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port/schema-repo"))
+        client = new SchemaRepoRawSchemaClient(resolver)
     }
 
     def cleanupSpec() {

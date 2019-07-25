@@ -9,14 +9,12 @@ import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
 import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
+import pl.allegro.tech.hermes.schema.resolver.SchemaRegistryInstanceResolver;
 
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,45 +35,46 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
     private static final String SCHEMA_REPO_CONTENT_TYPE = "application/vnd.schemaregistry.v1+json";
 
-    private final WebTarget target;
+    private final SchemaRegistryInstanceResolver schemaRegistryInstanceResolver;
 
     private final ObjectMapper objectMapper;
     private final boolean validationEndpointEnabled;
 
-    public SchemaRegistryRawSchemaClient(Client client, URI schemaRegistryUri, ObjectMapper objectMapper) {
-        this(client, schemaRegistryUri, objectMapper, false);
+    public SchemaRegistryRawSchemaClient(SchemaRegistryInstanceResolver schemaRegistryInstanceResolver, ObjectMapper objectMapper) {
+        this(schemaRegistryInstanceResolver, objectMapper, false);
     }
 
-    public SchemaRegistryRawSchemaClient(Client client, URI schemaRegistryUri, ObjectMapper objectMapper,
+    public SchemaRegistryRawSchemaClient(SchemaRegistryInstanceResolver schemaRegistryInstanceResolver, ObjectMapper objectMapper,
                                          boolean validationEndpointEnabled) {
-
+        this.schemaRegistryInstanceResolver = schemaRegistryInstanceResolver;
         this.validationEndpointEnabled = validationEndpointEnabled;
-        this.target = client.target(schemaRegistryUri);
         this.objectMapper = objectMapper;
     }
 
     @Override
-    public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version) {
-        String versionString = Integer.toString(version.value());
-        Response response = target.path("subjects")
-                .path(topic.qualifiedName())
-                .path("versions")
-                .path(versionString)
-                .request()
-                .get();
-        return extractSchema(topic.qualifiedName(), versionString, response).map(RawSchema::valueOf);
+    public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion schemaVersion) {
+        String version = Integer.toString(schemaVersion.value());
+        String subject = topic.qualifiedName();
+        Response response = getSchema(subject, version);
+        return extractSchema(topic.qualifiedName(), version, response).map(RawSchema::valueOf);
     }
 
     @Override
     public Optional<RawSchema> getLatestSchema(TopicName topic) {
         final String version = "latest";
-        Response response = target.path("subjects")
-                .path(topic.qualifiedName())
+        String subject = topic.qualifiedName();
+        Response response = getSchema(subject, version);
+        return extractSchema(topic.qualifiedName(), version, response).map(RawSchema::valueOf);
+    }
+
+    private Response getSchema(String subject, String version) {
+        return schemaRegistryInstanceResolver.resolve(subject)
+                .path("subjects")
+                .path(subject)
                 .path("versions")
                 .path(version)
                 .request()
                 .get();
-        return extractSchema(topic.qualifiedName(), version, response).map(RawSchema::valueOf);
     }
 
     private Optional<String> extractSchema(String subject, String version, Response response) {
@@ -96,8 +95,10 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
     @Override
     public List<SchemaVersion> getVersions(TopicName topic) {
-        Response response = target.path("subjects")
-                .path(topic.qualifiedName())
+        String subject = topic.qualifiedName();
+        Response response = schemaRegistryInstanceResolver.resolve(subject)
+                .path("subjects")
+                .path(subject)
                 .path("versions")
                 .request()
                 .get();
@@ -123,8 +124,10 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
     @Override
     public void registerSchema(TopicName topic, RawSchema rawSchema) {
-        Response response = target.path("subjects")
-                .path(topic.qualifiedName())
+        String subject = topic.qualifiedName();
+        Response response = schemaRegistryInstanceResolver.resolve(subject)
+                .path("subjects")
+                .path(subject)
                 .path("versions")
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
@@ -147,8 +150,10 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
     @Override
     public void deleteAllSchemaVersions(TopicName topic) {
-        Response response = target.path("subjects")
-                .path(topic.qualifiedName())
+        String subject = topic.qualifiedName();
+        Response response = schemaRegistryInstanceResolver.resolve(subject)
+                .path("subjects")
+                .path(subject)
                 .path("versions")
                 .request()
                 .delete();
@@ -180,21 +185,24 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     }
 
     private void checkCompatibility(TopicName topic, RawSchema schema) {
-        Response response = target.path("compatibility")
+        String subject = topic.qualifiedName();
+        Response response = schemaRegistryInstanceResolver.resolve(subject)
+                .path("compatibility")
                 .path("subjects")
-                .path(topic.qualifiedName())
+                .path(subject)
                 .path("versions")
                 .path("latest")
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(SchemaRegistryRequest.fromRawSchema(schema), SCHEMA_REPO_CONTENT_TYPE));
-
         checkSchemaCompatibilityResponse(topic, response);
     }
 
     private void checkValidation(TopicName topic, RawSchema schema) {
-        Response response = target.path("subjects")
-                .path(topic.qualifiedName())
+        String subject = topic.qualifiedName();
+        Response response = schemaRegistryInstanceResolver.resolve(subject)
+                .path("subjects")
+                .path(subject)
                 .path("validation")
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)

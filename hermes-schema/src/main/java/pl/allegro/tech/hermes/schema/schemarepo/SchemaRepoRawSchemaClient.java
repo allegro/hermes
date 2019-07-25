@@ -9,15 +9,13 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
 import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.resolver.SchemaRegistryInstanceResolver;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -28,17 +26,18 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
 
     private static final Logger logger = LoggerFactory.getLogger(SchemaRepoRawSchemaClient.class);
 
-    private final WebTarget target;
+    private final SchemaRegistryInstanceResolver schemaRegistryInstanceResolver;
 
-    public SchemaRepoRawSchemaClient(Client client, URI schemaRepoServerUri) {
-        this.target = client.target(schemaRepoServerUri);
+    public SchemaRepoRawSchemaClient(SchemaRegistryInstanceResolver schemaRegistryInstanceResolver) {
+        this.schemaRegistryInstanceResolver = schemaRegistryInstanceResolver;
     }
 
     @Override
     public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version) {
         String subject = topic.qualifiedName();
         String versionString = Integer.toString(version.value());
-        Response response = target.path(subject)
+        Response response = schemaRegistryInstanceResolver.resolve(subject)
+                .path(subject)
                 .path("id")
                 .path(versionString)
                 .request()
@@ -50,7 +49,8 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     public Optional<RawSchema> getLatestSchema(TopicName topic) {
         String subject = topic.qualifiedName();
         final String version = "latest";
-        Response response = target.path(subject)
+        Response response = schemaRegistryInstanceResolver.resolve(subject)
+                .path(subject)
                 .path(version)
                 .request()
                 .get();
@@ -73,7 +73,9 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
 
     @Override
     public List<SchemaVersion> getVersions(TopicName topic) {
-        Response response = target.path(topic.qualifiedName())
+        String subject = topic.qualifiedName();
+        Response response = schemaRegistryInstanceResolver.resolve(subject)
+                .path(subject)
                 .path("all")
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
@@ -109,11 +111,18 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     }
 
     private boolean isSubjectRegistered(String subject) {
-        return target.path(subject).request().get().getStatus() == Response.Status.OK.getStatusCode();
+        return schemaRegistryInstanceResolver.resolve(subject)
+                .path(subject)
+                .request()
+                .get()
+                .getStatus() == Response.Status.OK.getStatusCode();
     }
 
     private void registerSubject(String subject) {
-        Response response = target.path(subject).request().put(Entity.entity("", MediaType.APPLICATION_FORM_URLENCODED_TYPE));
+        Response response = schemaRegistryInstanceResolver.resolve(subject)
+                .path(subject)
+                .request()
+                .put(Entity.entity("", MediaType.APPLICATION_FORM_URLENCODED_TYPE));
         checkSubjectRegistration(subject, response);
     }
 
@@ -131,7 +140,11 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     }
 
     public void registerSchema(String subject, String schema) {
-        Response response = target.path(subject).path("register").request().put(Entity.entity(schema, MediaType.TEXT_PLAIN));
+        Response response = schemaRegistryInstanceResolver.resolve(subject)
+                .path(subject)
+                .path("register")
+                .request()
+                .put(Entity.entity(schema, MediaType.TEXT_PLAIN));
         checkSchemaRegistration(subject, response);
     }
 
