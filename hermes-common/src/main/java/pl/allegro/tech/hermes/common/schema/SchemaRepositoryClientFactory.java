@@ -10,12 +10,12 @@ import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
-public class SchemaRegistryClientFactory implements Factory<Client> {
+public class SchemaRepositoryClientFactory implements Factory<Client> {
 
     private final ConfigFactory configFactory;
 
     @Inject
-    public SchemaRegistryClientFactory(ConfigFactory configFactory) {
+    public SchemaRepositoryClientFactory(ConfigFactory configFactory) {
         this.configFactory = configFactory;
     }
 

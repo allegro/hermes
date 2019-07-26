@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
-import pl.allegro.tech.hermes.schema.resolver.SchemaRegistryInstanceResolver;
+import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.schemarepo.SchemaRepoRawSchemaClient;
 
 import javax.inject.Inject;
@@ -17,11 +17,11 @@ public class RawSchemaClientFactory implements Factory<RawSchemaClient> {
     private final ConfigFactory configFactory;
     private final HermesMetrics hermesMetrics;
     private final ObjectMapper objectMapper;
-    private final SchemaRegistryInstanceResolver resolver;
+    private final SchemaRepositoryInstanceResolver resolver;
 
     @Inject
     public RawSchemaClientFactory(ConfigFactory configFactory, HermesMetrics hermesMetrics, ObjectMapper objectMapper,
-                                  SchemaRegistryInstanceResolver resolver) {
+                                  SchemaRepositoryInstanceResolver resolver) {
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.objectMapper = objectMapper;

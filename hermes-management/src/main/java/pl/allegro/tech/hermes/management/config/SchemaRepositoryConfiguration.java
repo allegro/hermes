@@ -22,7 +22,7 @@ import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
 import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
-import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRegistryInstanceResolver;
+import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.schemarepo.SchemaRepoRawSchemaClient;
 
 import javax.ws.rs.client.Client;
@@ -54,7 +54,7 @@ public class SchemaRepositoryConfiguration {
     @ConditionalOnMissingBean(RawSchemaClient.class)
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_repo")
     public RawSchemaClient schemaRepoRawSchemaClient(Client httpClient) {
-        return new SchemaRepoRawSchemaClient(new DefaultSchemaRegistryInstanceResolver(httpClient, URI.create(schemaRepositoryProperties.getServerUrl())));
+        return new SchemaRepoRawSchemaClient(new DefaultSchemaRepositoryInstanceResolver(httpClient, URI.create(schemaRepositoryProperties.getServerUrl())));
     }
 
     @Bean
@@ -64,7 +64,7 @@ public class SchemaRepositoryConfiguration {
             @Qualifier("schemaRepositoryClient") Client httpClient,
             ObjectMapper objectMapper
     ) {
-        return new SchemaRegistryRawSchemaClient(new DefaultSchemaRegistryInstanceResolver(httpClient, URI.create(schemaRepositoryProperties.getServerUrl())),
+        return new SchemaRegistryRawSchemaClient(new DefaultSchemaRepositoryInstanceResolver(httpClient, URI.create(schemaRepositoryProperties.getServerUrl())),
                 objectMapper, schemaRepositoryProperties.isValidationEnabled());
     }
 

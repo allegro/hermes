@@ -11,8 +11,8 @@ import pl.allegro.tech.hermes.schema.BadSchemaRequestException
 import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException
 import pl.allegro.tech.hermes.schema.RawSchemaClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
-import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRegistryInstanceResolver
-import pl.allegro.tech.hermes.schema.resolver.SchemaRegistryInstanceResolver
+import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver
+import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
@@ -40,7 +40,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     @Shared int port
 
-    @Shared SchemaRegistryInstanceResolver resolver
+    @Shared SchemaRepositoryInstanceResolver resolver
 
     @Shared @Subject RawSchemaClient client
 
@@ -48,7 +48,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         port = Ports.nextAvailable()
         wireMock = new WireMockServer(port)
         wireMock.start()
-        resolver = new DefaultSchemaRegistryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
+        resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
         client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper())
     }
 
@@ -266,7 +266,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should successfully validate schema against validation endpoint"() {
         boolean validationEnabled = true
-        resolver = new DefaultSchemaRegistryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
+        resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
         client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled)
 
         wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
@@ -289,7 +289,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
     def "should receive errors from validation endpoint"() {
         given:
         boolean validationEnabled = true
-        resolver = new DefaultSchemaRegistryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
+        resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
         client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled)
 
         wireMock.stubFor(post(schemaCompatibilityUrl(topicName))

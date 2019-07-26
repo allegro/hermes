@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
 import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
-import pl.allegro.tech.hermes.schema.resolver.SchemaRegistryInstanceResolver;
+import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.ws.rs.client.Entity;
@@ -26,17 +26,17 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
 
     private static final Logger logger = LoggerFactory.getLogger(SchemaRepoRawSchemaClient.class);
 
-    private final SchemaRegistryInstanceResolver schemaRegistryInstanceResolver;
+    private final SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver;
 
-    public SchemaRepoRawSchemaClient(SchemaRegistryInstanceResolver schemaRegistryInstanceResolver) {
-        this.schemaRegistryInstanceResolver = schemaRegistryInstanceResolver;
+    public SchemaRepoRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver) {
+        this.schemaRepositoryInstanceResolver = schemaRepositoryInstanceResolver;
     }
 
     @Override
     public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version) {
         String subject = topic.qualifiedName();
         String versionString = Integer.toString(version.value());
-        Response response = schemaRegistryInstanceResolver.resolve(subject)
+        Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
                 .path("id")
                 .path(versionString)
@@ -49,7 +49,7 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     public Optional<RawSchema> getLatestSchema(TopicName topic) {
         String subject = topic.qualifiedName();
         final String version = "latest";
-        Response response = schemaRegistryInstanceResolver.resolve(subject)
+        Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
                 .path(version)
                 .request()
@@ -74,7 +74,7 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     @Override
     public List<SchemaVersion> getVersions(TopicName topic) {
         String subject = topic.qualifiedName();
-        Response response = schemaRegistryInstanceResolver.resolve(subject)
+        Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
                 .path("all")
                 .request()
@@ -111,7 +111,7 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     }
 
     private boolean isSubjectRegistered(String subject) {
-        return schemaRegistryInstanceResolver.resolve(subject)
+        return schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
                 .request()
                 .get()
@@ -119,7 +119,7 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     }
 
     private void registerSubject(String subject) {
-        Response response = schemaRegistryInstanceResolver.resolve(subject)
+        Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
                 .request()
                 .put(Entity.entity("", MediaType.APPLICATION_FORM_URLENCODED_TYPE));
@@ -140,7 +140,7 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     }
 
     public void registerSchema(String subject, String schema) {
-        Response response = schemaRegistryInstanceResolver.resolve(subject)
+        Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
                 .path("register")
                 .request()

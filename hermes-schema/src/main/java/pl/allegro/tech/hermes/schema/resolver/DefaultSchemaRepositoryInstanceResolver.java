@@ -4,11 +4,11 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import java.net.URI;
 
-public class DefaultSchemaRegistryInstanceResolver implements SchemaRegistryInstanceResolver {
+public class DefaultSchemaRepositoryInstanceResolver implements SchemaRepositoryInstanceResolver {
 
     private final WebTarget target;
 
-    public DefaultSchemaRegistryInstanceResolver(Client client, URI schemaRegistryServerUri) {
+    public DefaultSchemaRepositoryInstanceResolver(Client client, URI schemaRegistryServerUri) {
         this.target = client.target(schemaRegistryServerUri);
     }
 
