@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
 import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
 import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver;
+import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.schemarepo.SchemaRepoRawSchemaClient;
 
 import javax.ws.rs.client.Client;
@@ -53,19 +54,24 @@ public class SchemaRepositoryConfiguration {
     @Bean
     @ConditionalOnMissingBean(RawSchemaClient.class)
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_repo")
-    public RawSchemaClient schemaRepoRawSchemaClient(Client httpClient) {
-        return new SchemaRepoRawSchemaClient(new DefaultSchemaRepositoryInstanceResolver(httpClient, URI.create(schemaRepositoryProperties.getServerUrl())));
+    public RawSchemaClient schemaRepoRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver) {
+        return new SchemaRepoRawSchemaClient(schemaRepositoryInstanceResolver);
     }
 
     @Bean
     @ConditionalOnMissingBean(RawSchemaClient.class)
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_registry")
     public RawSchemaClient schemaRegistryRawSchemaClient(
-            @Qualifier("schemaRepositoryClient") Client httpClient,
+            SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
             ObjectMapper objectMapper
     ) {
-        return new SchemaRegistryRawSchemaClient(new DefaultSchemaRepositoryInstanceResolver(httpClient, URI.create(schemaRepositoryProperties.getServerUrl())),
-                objectMapper, schemaRepositoryProperties.isValidationEnabled());
+        return new SchemaRegistryRawSchemaClient(schemaRepositoryInstanceResolver, objectMapper, schemaRepositoryProperties.isValidationEnabled());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(SchemaRepositoryInstanceResolver.class)
+    public SchemaRepositoryInstanceResolver defaultSchemaRepositoryInstanceResolver(@Qualifier("schemaRepositoryClient") Client client) {
+        return new DefaultSchemaRepositoryInstanceResolver(client, URI.create(schemaRepositoryProperties.getServerUrl()));
     }
 
     @Bean
