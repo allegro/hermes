@@ -1,8 +1,11 @@
 package pl.allegro.tech.hermes.management.utils
 
 import org.apache.curator.test.TestingServer
+import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties
+import pl.allegro.tech.hermes.management.config.storage.StorageProperties
 import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvider
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient
+import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Specification
 
@@ -34,6 +37,26 @@ abstract class MultiZookeeperIntegrationTest extends Specification {
 
     static assertClientDisconnected(ZookeeperClient client) {
         return !client.getCuratorFramework().getZookeeperClient().isConnected()
+    }
+
+    static assertZookeeperClientsConnected(List<ZookeeperClient> clients) {
+        def dc1Client = findClientByDc(clients, DC_1_NAME)
+        assert assertClientConnected(dc1Client)
+
+        def dc2Client = findClientByDc(clients, DC_2_NAME)
+        assert assertClientConnected(dc2Client)
+    }
+
+    static buildZookeeperClientManager(String dc = "dc1") {
+        def properties = new StorageClustersProperties(clusters: [
+                new StorageProperties(connectionString: "localhost:$DC_1_ZOOKEEPER_PORT", datacenter: DC_1_NAME),
+                new StorageProperties(connectionString: "localhost:$DC_2_ZOOKEEPER_PORT", datacenter: DC_2_NAME)
+        ])
+        new ZookeeperClientManager(properties, new TestDatacenterNameProvider(dc))
+    }
+
+    static findClientByDc(List<ZookeeperClient> clients, String dcName) {
+        clients.find { it.datacenterName == dcName }
     }
 
     static class TestDatacenterNameProvider implements DatacenterNameProvider {
