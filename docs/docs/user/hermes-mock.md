@@ -96,7 +96,7 @@ class MyServiceTest {
         myService.publishHermesMessage(myMessage);
 
         // then
-        hermesMock.expect().jsonMessagesOnTopicAs(topicName, MyMessage.class);
+        hermesMock.expect().singleJsonMessageOnTopicAs(topicName, MyMessage.class);
         
         // and
         List<MyMessage> all = hermesMock.query().allJsonMessagesAs(topicName, MyMessage.class);
