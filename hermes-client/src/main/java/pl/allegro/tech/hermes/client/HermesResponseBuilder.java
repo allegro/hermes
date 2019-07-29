@@ -10,13 +10,17 @@ public class HermesResponseBuilder {
     private String protocol = "http/1.1";
     private Throwable failureCause;
     private Function<String, String> headerSupplier = (header) -> null;
+    private HermesMessage hermesMessage;
 
     public static HermesResponseBuilder hermesResponse() {
         return new HermesResponseBuilder();
     }
 
-    public static HermesResponse hermesFailureResponse(Throwable exception) {
-        return hermesResponse().withFailureCause(exception).build();
+    public static HermesResponse hermesFailureResponse(Throwable exception, HermesMessage hermesMessage) {
+        return hermesResponse()
+                .withFailureCause(exception)
+                .withFailedMessage(hermesMessage)
+                .build();
     }
 
     public HermesResponseBuilder withHttpStatus(int statusCode) {
@@ -29,8 +33,13 @@ public class HermesResponseBuilder {
         return this;
     }
 
-    public HermesResponseBuilder withFailureCause(Throwable exception) {
+    private HermesResponseBuilder withFailureCause(Throwable exception) {
         this.failureCause = exception;
+        return this;
+    }
+
+    private HermesResponseBuilder withFailedMessage(HermesMessage hermesMessage) {
+        this.hermesMessage = hermesMessage;
         return this;
     }
 
@@ -55,6 +64,11 @@ public class HermesResponseBuilder {
             @Override
             public Optional<Throwable> getFailureCause() {
                 return Optional.ofNullable(failureCause);
+            }
+
+            @Override
+            public Optional<HermesMessage> getFailedMessage() {
+                return Optional.ofNullable(hermesMessage);
             }
 
             @Override
