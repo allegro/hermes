@@ -29,6 +29,7 @@ import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class BatchRetryPolicyTest extends IntegrationTest {
 
@@ -63,7 +64,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     @Test
     public void shouldRetryUntilRequestSuccessfulAndSendRetryCounterInHeader() throws Throwable {
         //given
-        Topic topic = operations.buildTopic("group", "retryUntilRequestSuccessful");
+        Topic topic = operations.buildTopic(randomTopic("group", "retryUntilRequestSuccessful").build());
         createSingleMessageBatchSubscription(topic);
 
         wireMock.register(post(topicUrl(topic))
@@ -92,7 +93,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     @Test
     public void shouldNotRetryIfRequestSuccessful() throws Throwable {
         //given
-        Topic topic = operations.buildTopic("group", "notRetryIfRequestSuccessful");
+        Topic topic = operations.buildTopic(randomTopic("group", "notRetryIfRequestSuccessful").build());
         createSingleMessageBatchSubscription(topic);
 
         wireMock.register(post(topicUrl(topic)).willReturn(aResponse().withStatus(SC_CREATED)));
@@ -107,7 +108,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     @Test
     public void shouldRetryUntilTtlExceeded() throws Throwable {
         //given
-        Topic topic = operations.buildTopic("group", "retryUntilTtlExceeded");
+        Topic topic = operations.buildTopic(randomTopic("group", "retryUntilTtlExceeded").build());
         createSingleMessageBatchSubscription(topic, 1, 10);
 
         wireMock.register(post(topicUrl(topic))
@@ -138,7 +139,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     @Test
     public void shouldRetryOnClientErrors() throws Throwable {
         //given
-        Topic topic = operations.buildTopic("group", "retryOnClientErrors");
+        Topic topic = operations.buildTopic(randomTopic("group", "retryOnClientErrors").build());
         createSingleMessageBatchSubscription(topic, true);
 
         wireMock.register(post(topicUrl(topic))
@@ -162,7 +163,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     @Test
     public void shouldNotRetryOnClientErrors() throws Throwable {
         //given
-        Topic topic = operations.buildTopic("group", "notRetryOnClientErrors");
+        Topic topic = operations.buildTopic(randomTopic("group", "notRetryOnClientErrors").build());
         createSingleMessageBatchSubscription(topic, false);
 
         wireMock.register(post(topicUrl(topic))

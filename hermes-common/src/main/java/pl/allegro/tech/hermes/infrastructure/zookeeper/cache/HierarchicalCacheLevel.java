@@ -160,7 +160,7 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
         try {
             HierarchicalCacheLevel subcache = subcacheMap.remove(cacheName);
             if (subcache == null) {
-                logger.warn("Possible duplicate of removed entry for {}, ignoring", cacheName);
+                logger.debug("Possible duplicate of removed entry for {}, ignoring", cacheName);
                 return;
             }
             subcache.close();

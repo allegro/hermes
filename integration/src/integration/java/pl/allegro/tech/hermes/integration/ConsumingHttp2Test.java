@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class ConsumingHttp2Test extends IntegrationTest {
     static final int HTTPS_PORT = Ports.nextAvailable();
@@ -32,7 +33,7 @@ public class ConsumingHttp2Test extends IntegrationTest {
     @Test
     public void shouldDeliverMessageUsingHttp2() throws InterruptedException {
         // given
-        Topic topic = operations.buildTopic("deliverHttp2", "topic");
+        Topic topic = operations.buildTopic(randomTopic("deliverHttp2", "topic").build());
 
         Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
                 .withEndpoint(HTTPS_ENDPOINT)
