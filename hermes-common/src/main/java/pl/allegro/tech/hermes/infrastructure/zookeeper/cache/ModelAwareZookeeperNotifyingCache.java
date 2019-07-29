@@ -36,7 +36,8 @@ public class ModelAwareZookeeperNotifyingCache {
                 executor,
                 rootPath,
                 3,
-                levelPrefixes
+                levelPrefixes,
+                true
         );
     }
 

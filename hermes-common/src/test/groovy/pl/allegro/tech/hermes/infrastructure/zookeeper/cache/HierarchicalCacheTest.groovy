@@ -7,6 +7,8 @@ import pl.allegro.tech.hermes.test.IntegrationTest
 import java.util.concurrent.Executors
 
 import static com.jayway.awaitility.Awaitility.await
+import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.Type.CHILD_ADDED
+import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.Type.CHILD_REMOVED
 
 class HierarchicalCacheTest extends IntegrationTest implements AwaitilityTrait {
 
@@ -15,17 +17,21 @@ class HierarchicalCacheTest extends IntegrationTest implements AwaitilityTrait {
             Executors.newSingleThreadExecutor(),
             '/hierarchicalCacheTest',
             3,
-            ['groups', 'topics', 'subscriptions']
+            ['groups', 'topics', 'subscriptions'],
+            true
     )
 
     private Set calledCallbacks = [] as Set
+
+    private Closure loggingCallback = { e ->
+        calledCallbacks.add(new Tuple(e.getType(), e.data.path, new String(e.data.data)))
+    }
 
     void setupSpec() {
         zookeeper().create().creatingParentsIfNeeded().forPath('/hierarchicalCacheTest/groups')
     }
 
     void setup() {
-        Closure loggingCallback = { e -> calledCallbacks.add(new String(e.data.data)) }
         cache.registerCallback(0, loggingCallback)
         cache.registerCallback(1, loggingCallback)
         cache.registerCallback(2, loggingCallback)
@@ -42,7 +48,9 @@ class HierarchicalCacheTest extends IntegrationTest implements AwaitilityTrait {
                 .and().commit()
 
         then:
-        await().atMost(Duration.FIVE_SECONDS).until({ calledCallbacks.contains('groupA') })
+        await().atMost(Duration.FIVE_SECONDS).until({
+            calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupA', 'groupA'))
+        })
 
         when:
         zookeeper().inTransaction()
@@ -51,13 +59,17 @@ class HierarchicalCacheTest extends IntegrationTest implements AwaitilityTrait {
                 .and().commit()
 
         then:
-        await().atMost(Duration.FIVE_SECONDS).until({ calledCallbacks.contains('topicA') })
+        await().atMost(Duration.FIVE_SECONDS).until({
+            calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupA/topics/topicA', 'topicA'))
+        })
 
         when:
         zookeeper().create().forPath('/hierarchicalCacheTest/groups/groupA/topics/topicA/subscriptions/subA', 'subA'.bytes)
 
         then:
-        await().atMost(Duration.FIVE_SECONDS).until({ calledCallbacks.contains('subA') })
+        await().atMost(Duration.FIVE_SECONDS).until({
+            calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupA/topics/topicA/subscriptions/subA', 'subA'))
+        })
 
         cleanup:
         cache.stop()
@@ -70,7 +82,7 @@ class HierarchicalCacheTest extends IntegrationTest implements AwaitilityTrait {
                 .and().create().forPath('/hierarchicalCacheTest/groups/groupB/topics')
                 .and().create().forPath('/hierarchicalCacheTest/groups/groupB/topics/topicB', 'topicB'.bytes)
                 .and().create().forPath('/hierarchicalCacheTest/groups/groupB/topics/topicB/subscriptions')
-                .and().create().forPath('/hierarchicalCacheTest/groups/groupB/topics/topicB/subscriptions/subscriptionB', 'subscriptionB'.bytes)
+                .and().create().forPath('/hierarchicalCacheTest/groups/groupB/topics/topicB/subscriptions/subB', 'subB'.bytes)
                 .and().commit()
 
         when:
@@ -78,7 +90,62 @@ class HierarchicalCacheTest extends IntegrationTest implements AwaitilityTrait {
 
         then:
         await().atMost(Duration.FIVE_SECONDS).until({
-            calledCallbacks.contains('groupB') && calledCallbacks.contains('topicB') && calledCallbacks.contains('subscriptionB')
+            calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupB', 'groupB')) &&
+            calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupB/topics/topicB', 'topicB')) &&
+            calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupB/topics/topicB/subscriptions/subB', 'subB'))
+        })
+
+        cleanup:
+        cache.stop()
+    }
+
+    def "should remove empty topic with children when empty nodes remove enabled"() {
+        given:
+        zookeeper().create().creatingParentsIfNeeded().forPath('/hierarchicalCacheTest/groups/groupC', '123'.bytes)
+
+        cache.start()
+
+        when:
+        zookeeper().create().creatingParentsIfNeeded().forPath(
+                '/hierarchicalCacheTest/groups/groupC/topics/topicC/metrics/published', '123'.bytes)
+
+        then:
+        await().atMost(Duration.FIVE_SECONDS).until({
+            calledCallbacks.contains(
+                    new Tuple(CHILD_REMOVED, '/hierarchicalCacheTest/groups/groupC/topics/topicC', ''))
+        })
+
+        cleanup:
+        cache.stop()
+    }
+
+    def "should not remove empty topic when empty nodes remove disabled"() {
+        given:
+        def removeEmptyNodes = false
+        HierarchicalCache cache = new HierarchicalCache(
+                zookeeper(),
+                Executors.newSingleThreadExecutor(),
+                '/hierarchicalCacheTest/workload',
+                2,
+                [],
+                removeEmptyNodes)
+
+        cache.registerCallback(0, loggingCallback)
+        cache.registerCallback(1, loggingCallback)
+
+        zookeeper().create().creatingParentsIfNeeded().forPath(
+                '/hierarchicalCacheTest/workload/runtime', '127.0.0.1'.bytes)
+
+        cache.start()
+
+        when:
+        zookeeper().create().creatingParentsIfNeeded().forPath(
+                '/hierarchicalCacheTest/workload/runtime/topic$subscription/hs-consumer1', 'AUTO_ASSIGNED'.bytes)
+
+        then:
+        await().atMost(Duration.FIVE_SECONDS).until({
+            calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/workload/runtime/topic$subscription', '')) &&
+                    !calledCallbacks.contains(new Tuple(CHILD_REMOVED, '/hierarchicalCacheTest/workload/runtime/topic$subscription', ''))
         })
 
         cleanup:

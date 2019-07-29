@@ -23,6 +23,7 @@ public class HierarchicalCache {
     private final ExecutorService executorService;
 
     private final String basePath;
+    private final boolean removeNodesWithNoData;
 
     private final List<String> levelPrefixes = new ArrayList<>();
 
@@ -36,10 +37,12 @@ public class HierarchicalCache {
                              ExecutorService executorService,
                              String basePath,
                              int maxDepth,
-                             List<String> levelPrefixes) {
+                             List<String> levelPrefixes,
+                             boolean removeNodesWithNoData) {
         this.curatorFramework = curatorFramework;
         this.executorService = executorService;
         this.basePath = basePath;
+        this.removeNodesWithNoData = removeNodesWithNoData;
         this.levelPrefixes.addAll(levelPrefixes);
         this.maxDepth = maxDepth;
 
@@ -68,11 +71,13 @@ public class HierarchicalCache {
                 path(depth, path),
                 depth,
                 levelCallbacks.get(depth),
-                Optional.ofNullable(function));
+                Optional.ofNullable(function),
+                removeNodesWithNoData);
         try {
+            logger.debug("Starting hierarchical cache level for path  {} and depth {}", path, depth);
             levelCache.start();
         } catch (Exception e) {
-            logger.error("Failed to start hierarchical cache level {} for path {}", depth, path(depth, path), e);
+            logger.error("Failed to start hierarchical cache level for path {} and depth {}", path(depth, path), depth, e);
         }
         return levelCache;
     }

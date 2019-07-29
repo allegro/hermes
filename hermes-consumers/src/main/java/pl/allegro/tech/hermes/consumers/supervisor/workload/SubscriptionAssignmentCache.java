@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 
@@ -60,7 +61,7 @@ public class SubscriptionAssignmentCache {
         this.pathSerializer = new SubscriptionAssignmentPathSerializer(basePath, AUTO_ASSIGNED_MARKER);
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("subscription-assignment-cache-%d").build();
         this.cache = new HierarchicalCache(
-                curator, Executors.newSingleThreadScheduledExecutor(threadFactory), basePath, 2, Collections.emptyList()
+                curator, Executors.newSingleThreadScheduledExecutor(threadFactory), basePath, 2, emptyList(), false
         );
 
         cache.registerCallback(ASSIGNMENT_LEVEL, (e) -> {
