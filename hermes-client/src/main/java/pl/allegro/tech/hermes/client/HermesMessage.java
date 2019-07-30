@@ -127,23 +127,6 @@ public class HermesMessage {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        HermesMessage that = (HermesMessage) o;
-        return Objects.equals(topic, that.topic) &&
-                Arrays.equals(body, that.body) &&
-                Objects.equals(headers, that.headers);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(topic, headers);
-        result = 31 * result + Arrays.hashCode(body);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return new String(getBody(), StandardCharsets.UTF_8);
     }
