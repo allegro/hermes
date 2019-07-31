@@ -121,7 +121,7 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
                     path, children.stream().map(Object::toString).collect(Collectors.joining(",")));
             printChildrenWithEmptyParentRecursively(path, children);
         } catch (KeeperException.NoNodeException e) {
-            // probably already removed
+            logger.info("Could not receive list of children for path {} as the path does not exist", path);
         } catch (Exception e) {
             logger.warn("Could not receive list of children for path {} due to error", path, e);
         }
@@ -136,7 +136,7 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
 
                 printChildrenWithEmptyParentRecursively(nextPath, nextChildren);
             } catch (KeeperException.NoNodeException e) {
-                // probably already removed
+                logger.info("Could not receive list of children for path {} as the path does not exist", pathWithEmptyParent);
             } catch (Exception e) {
                 logger.warn("Could not receive list of children for path {} due to error", pathWithEmptyParent, e);
             }
