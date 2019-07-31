@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import javax.ws.rs.core.Response;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class PublishingWithFailoverTest extends IntegrationTest {
 
@@ -34,7 +35,7 @@ public class PublishingWithFailoverTest extends IntegrationTest {
         //given
         TestMessage message = TestMessage.of("hello", "world");
 
-        Topic topic = operations.buildTopic("inMemory", "topic");
+        Topic topic = operations.buildTopic(randomTopic("inMemory", "topic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         remoteService.expectMessages(message.body(), message.body());
         //we must send first message to a working kafka because producer need to fetch metadata

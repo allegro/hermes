@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class JmsConsumingTest extends IntegrationTest {
 
@@ -33,7 +34,7 @@ public class JmsConsumingTest extends IntegrationTest {
     @Test
     public void shouldConsumeMessageOnJMSEndpoint() {
         // given
-        Topic topic = operations.buildTopic("publishJmsGroup", "topic");
+        Topic topic = operations.buildTopic(randomTopic("publishJmsGroup", "topic").build());
         operations.createSubscription(topic, "subscription", jmsEndpointAddress(JMS_TOPIC_NAME));
         jmsEndpoint.expectMessages(TestMessage.of("hello", "world"));
 
@@ -45,14 +46,14 @@ public class JmsConsumingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldPublishAndConsumeJmsMessageWithTraceId() throws Exception {
+    public void shouldPublishAndConsumeJmsMessageWithTraceId() {
 
         // given
         String message = "{\"hello\": \"world\"}";
         String traceId = UUID.randomUUID().toString();
 
         // and
-        Topic topic = operations.buildTopic("publishJmsGroupWithTrace", "topic");
+        Topic topic = operations.buildTopic(randomTopic("publishJmsGroupWithTrace", "topic").build());
         operations.createSubscription(topic, "subscription", jmsEndpointAddress(JMS_TOPIC_NAME));
         WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
         jmsEndpoint.expectMessages(TestMessage.of("hello", "world"));
@@ -69,14 +70,14 @@ public class JmsConsumingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldPublishAndConsumeJmsMessageWithTraceHeaders() throws Exception {
+    public void shouldPublishAndConsumeJmsMessageWithTraceHeaders() {
 
         // given
         String message = "{\"hello\": \"world\"}";
         TraceContext trace = TraceContext.random();
 
         // and
-        Topic topic = operations.buildTopic("publishJmsGroupWithTrace", "topic");
+        Topic topic = operations.buildTopic(randomTopic("publishJmsGroupWithTrace", "topic").build());
         operations.createSubscription(topic, "subscription", jmsEndpointAddress(JMS_TOPIC_NAME));
         jmsEndpoint.expectMessages(TestMessage.of("hello", "world"));
         Invocation.Builder request = createRequestWithTraceHeaders(FRONTEND_URL, topic.getQualifiedName(), trace);;

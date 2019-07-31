@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.integration;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
-import org.apache.commons.io.FileUtils;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
@@ -18,6 +16,7 @@ import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
+import pl.allegro.tech.hermes.integration.env.CustomKafkaStarter;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
@@ -25,14 +24,11 @@ import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.endpoint.Waiter;
-import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.Clock;
 import java.util.Collections;
-import java.util.Properties;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static java.nio.charset.Charset.defaultCharset;
@@ -44,65 +40,56 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_ZOOKEEPER_CONNECT_STRING;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class MessageBufferLoadingTest extends IntegrationTest {
 
-    private static final int KAFKA_PORT = Ports.nextAvailable();
-    private static final int FRONTEND_PORT = Ports.nextAvailable();
-
-    private static final String FRONTEND_URL = "http://localhost:" + FRONTEND_PORT + "/";
     private static final String KAFKA_ZK_CONNECT_STRING = ZOOKEEPER_CONNECT_STRING + "/backupKafka";
-    private static final String KAFKA_BROKERS_LIST = "localhost:" + KAFKA_PORT;
 
     private static final int ENTRIES = 100;
     private static final int AVERAGE_MESSAGE_SIZE = 600;
 
     private final HermesEndpoints management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL);
     private final HermesAPIOperations operations = new HermesAPIOperations(management, new Waiter(management));
-    private final HermesPublisher publisher = new HermesPublisher(FRONTEND_URL);
 
     private RemoteServiceEndpoint remoteService;
 
-    private File tempDir;
-
     @BeforeMethod
     public void setup() {
-        tempDir = Files.createTempDir();
         remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
     }
 
-    @AfterMethod
-    public void tearDown() throws IOException {
-        FileUtils.deleteDirectory(tempDir);
-    }
-
-
     @Test
     public void shouldBackupMessage() throws Exception {
-        // given
-        String tempDirPath = Files.createTempDir().getAbsolutePath();
-        KafkaStarter kafka = new KafkaStarter(kafkaProperties());
+        // setup
+        int kafkaPort = Ports.nextAvailable();
+        int frontendPort = Ports.nextAvailable();
+        HermesPublisher publisher = new HermesPublisher("http://localhost:" + frontendPort + "/");
+        String backupStorageDir = Files.createTempDir().getAbsolutePath();
+
+        CustomKafkaStarter kafka = new CustomKafkaStarter(kafkaPort, KAFKA_ZK_CONNECT_STRING);
         kafka.start();
 
-        operations.buildTopic("backupGroup", "uniqueTopic");
+        Topic topic = randomTopic("backupGroup", "uniqueTopic").build();
+        operations.buildTopic(topic);
 
-        FrontendStarter frontend = new FrontendStarter(FRONTEND_PORT, false);
-        frontend.overrideProperty(KAFKA_BROKER_LIST, KAFKA_BROKERS_LIST);
+        FrontendStarter frontend = new FrontendStarter(frontendPort, false);
+        frontend.overrideProperty(KAFKA_BROKER_LIST, "localhost:" + kafkaPort);
         frontend.overrideProperty(KAFKA_ZOOKEEPER_CONNECT_STRING, KAFKA_ZK_CONNECT_STRING);
-        frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
+        frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, backupStorageDir);
         frontend.start();
 
         try {
-            ChronicleMapMessageRepository backupRepository = createBackupRepository(tempDirPath);
+            //given
+            ChronicleMapMessageRepository backupRepository = createBackupRepository(backupStorageDir);
 
             await().atMost(5, SECONDS).until(() ->
-                    assertThat(publisher.publish("backupGroup.uniqueTopic", "message").getStatus())
+                    assertThat(publisher.publish(topic.getQualifiedName(), "message").getStatus())
                             .isEqualTo(CREATED.getStatusCode()));
 
             // when
             kafka.stop();
-            assertThat(publisher.publish("backupGroup.uniqueTopic", "message").getStatus()).isEqualTo(ACCEPTED.getStatusCode());
+            assertThat(publisher.publish(topic.getQualifiedName(), "message").getStatus()).isEqualTo(ACCEPTED.getStatusCode());
 
             // then
             await().atMost(10, SECONDS).until(() -> assertThat(backupRepository.findAll()).hasSize(1));
@@ -119,7 +106,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     public void shouldLoadMessageFromBackupStorage() throws Exception {
         // given
         String tempDirPath = Files.createTempDir().getAbsolutePath();
-        Topic topic = topic("backupGroup", "topic").withContentType(ContentType.JSON).build();
+        Topic topic = randomTopic("backupGroup", "topic").withContentType(ContentType.JSON).build();
         backupFileWithOneMessage(tempDirPath, topic);
 
         operations.createSubscription(operations.buildTopic(topic), "subscription", HTTP_ENDPOINT_URL);
@@ -157,16 +144,6 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         messageRepository.close();
 
         return backup;
-    }
-
-    private Properties kafkaProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("port", String.valueOf(KAFKA_PORT));
-        properties.setProperty("zookeeper.connect", KAFKA_ZK_CONNECT_STRING);
-        properties.setProperty("broker.id", "0");
-        properties.setProperty("log.dirs", tempDir.getAbsolutePath() + "/kafka-logs-it");
-
-        return properties;
     }
 
     private ChronicleMapMessageRepository createBackupRepository(String storageDirPath) {

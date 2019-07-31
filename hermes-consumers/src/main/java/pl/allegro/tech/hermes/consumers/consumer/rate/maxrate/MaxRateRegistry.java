@@ -18,7 +18,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCache;
 import javax.inject.Inject;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
 
 public class MaxRateRegistry {
 
@@ -60,7 +61,7 @@ public class MaxRateRegistry {
         ThreadFactory cacheThreadFactory = new ThreadFactoryBuilder().setNameFormat("max-rate-registry-%d").build();
         this.cache = new HierarchicalCache(curator,
                 Executors.newSingleThreadExecutor(cacheThreadFactory),
-                zookeeperPaths.consumersRateRuntimePath(cluster), 3, Collections.emptyList()
+                zookeeperPaths.consumersRateRuntimePath(cluster), 3, emptyList(), false
         );
 
         handleContentUpdates();

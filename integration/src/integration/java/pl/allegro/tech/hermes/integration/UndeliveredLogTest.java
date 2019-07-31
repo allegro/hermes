@@ -12,6 +12,7 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class UndeliveredLogTest extends IntegrationTest {
 
@@ -20,7 +21,7 @@ public class UndeliveredLogTest extends IntegrationTest {
     @Test
     public void shouldLogUndeliveredMessage() {
         // given
-        Topic topic = operations.buildTopic("logUndelivered", "topic");
+        Topic topic = operations.buildTopic(randomTopic("logUndelivered", "topic").build());
         Subscription subscription = subscription(topic, "subscription")
                 .withEndpoint(EndpointAddress.of(INVALID_ENDPOINT_URL))
                 .withSubscriptionPolicy(subscriptionPolicy().withRate(1).withMessageTtl(0).build())
@@ -29,11 +30,11 @@ public class UndeliveredLogTest extends IntegrationTest {
         operations.createSubscription(topic, subscription);
 
         // when
-        publisher.publish("logUndelivered.topic", TestMessage.simple().body());
+        publisher.publish(topic.getQualifiedName(), TestMessage.simple().body());
 
         // then
         wait.until(() -> {
-            Response response = management.subscription().getLatestUndeliveredMessage("logUndelivered.topic", "subscription");
+            Response response = management.subscription().getLatestUndeliveredMessage(topic.getQualifiedName(), "subscription");
             assertThat(response.getStatusInfo().getFamily()).isEqualTo(SUCCESSFUL);
         });
     }

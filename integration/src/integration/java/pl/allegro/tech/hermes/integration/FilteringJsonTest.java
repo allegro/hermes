@@ -15,6 +15,7 @@ import static com.google.common.collect.ImmutableMap.of;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class FilteringJsonTest extends IntegrationTest {
     private RemoteServiceEndpoint remoteService;
@@ -41,7 +42,7 @@ public class FilteringJsonTest extends IntegrationTest {
     @Test
     public void shouldFilterIncomingEvents() {
         // given
-        Topic topic = operations.buildTopic("filteredTopicJson", "topic");
+        Topic topic = operations.buildTopic(randomTopic("filteredTopicJson", "topic").build());
         final Subscription subscription = subscription(topic.getName(), "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)
                 .withContentType(ContentType.JSON)
@@ -63,7 +64,7 @@ public class FilteringJsonTest extends IntegrationTest {
     @Test
     public void shouldChainFilters() {
         // given
-        Topic topic = operations.buildTopic("filteredChainedTopicJson", "topic");
+        Topic topic = operations.buildTopic(randomTopic("filteredChainedTopicJson", "topic").build());
         final Subscription subscription = subscription(topic.getName(), "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)
                 .withContentType(ContentType.JSON)
@@ -88,7 +89,7 @@ public class FilteringJsonTest extends IntegrationTest {
     @Test
     public void shouldPassSubscriptionHeadersWhenFilteringIsEnabledForIncomingEvents() {
         // given
-        Topic topic = operations.buildTopic("filteredJsonTopicHavingSubscriptionWithHeaders", "topic");
+        Topic topic = operations.buildTopic(randomTopic("filteredJsonTopicHavingSubscriptionWithHeaders", "topic").build());
         final Subscription subscription = subscription(topic.getName(), "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)
                 .withContentType(ContentType.JSON)

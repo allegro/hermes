@@ -64,7 +64,8 @@ public class SchemaRepositoryConfiguration {
             ObjectMapper objectMapper
     ) {
         return new SchemaRegistryRawSchemaClient(httpClient, URI.create(schemaRepositoryProperties.getServerUrl()),
-                objectMapper, schemaRepositoryProperties.isValidationEnabled());
+                objectMapper, schemaRepositoryProperties.isValidationEnabled(),
+                schemaRepositoryProperties.getDeleteSchemaPathSuffix());
     }
 
     @Bean
