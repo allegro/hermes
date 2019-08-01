@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class BroadcastDeliveryTest extends IntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(BroadcastDeliveryTest.class);
@@ -37,7 +38,7 @@ public class BroadcastDeliveryTest extends IntegrationTest {
     public void shouldPublishAndConsumeMessageByAllServices() {
         // given
         String endpointUrl = setUpServicesAndGetEndpoint();
-        Topic topic = operations.buildTopic("publishAndConsumeGroup", "broadcastTopic");
+        Topic topic = operations.buildTopic(randomTopic("publishAndConsumeGroup", "broadcastTopic").build());
         operations.createBroadcastSubscription(topic, "broadcastSubscription", endpointUrl);
 
         TestMessage message = TestMessage.random();
@@ -54,7 +55,7 @@ public class BroadcastDeliveryTest extends IntegrationTest {
     public void shouldPublishAndRetryOnlyForUndeliveredConsumers() {
         // given
         String endpointUrl = setUpServicesAndGetEndpoint();
-        Topic topic = operations.buildTopic("publishAndConsumeGroup", "broadcastTopic2");
+        Topic topic = operations.buildTopic(randomTopic("publishAndConsumeGroup", "broadcastTopic2").build());
         operations.createBroadcastSubscription(topic, "broadcastSubscription2", endpointUrl);
 
         TestMessage message = TestMessage.random();
@@ -73,7 +74,7 @@ public class BroadcastDeliveryTest extends IntegrationTest {
     public void shouldNotRetryForBadRequestsFromConsumers() {
         // given
         String endpointUrl = setUpServicesAndGetEndpoint();
-        Topic topic = operations.buildTopic("publishAndConsumeGroup", "broadcastTopic3");
+        Topic topic = operations.buildTopic(randomTopic("publishAndConsumeGroup", "broadcastTopic3").build());
         operations.createBroadcastSubscription(topic, "broadcastSubscription3", endpointUrl);
 
         TestMessage message = TestMessage.random();

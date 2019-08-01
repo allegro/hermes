@@ -5,6 +5,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -30,7 +31,7 @@ public class JvmKeystoreSslContextFactory implements SslContextFactory {
     }
 
     @Override
-    public SSLContext create() {
+    public SSLContextHolder create() {
         try {
             return createSSLContext(loadKeyStore(keyStoreProperties), loadKeyStore(trustStoreProperties));
         } catch (Exception e) {
@@ -48,12 +49,12 @@ public class JvmKeystoreSslContextFactory implements SslContextFactory {
 
     private InputStream getResourceAsInputStream(URI location) throws FileNotFoundException {
         if ("classpath".equalsIgnoreCase(location.getScheme())) {
-             return JvmKeystoreSslContextFactory.class.getClassLoader().getResourceAsStream(location.getSchemeSpecificPart());
+            return JvmKeystoreSslContextFactory.class.getClassLoader().getResourceAsStream(location.getSchemeSpecificPart());
         }
         return new FileInputStream(isNullOrEmpty(location.getPath()) ? location.getSchemeSpecificPart() : location.getPath());
     }
 
-    private SSLContext createSSLContext(final KeyStore keyStore, final KeyStore trustStore)
+    private SSLContextHolder createSSLContext(final KeyStore keyStore, final KeyStore trustStore)
             throws NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException, KeyManagementException {
 
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -67,6 +68,6 @@ public class JvmKeystoreSslContextFactory implements SslContextFactory {
 
         SSLContext sslContext = SSLContext.getInstance(protocol);
         sslContext.init(keyManagers, trustManagers, new SecureRandom());
-        return sslContext;
+        return new SSLContextHolder(sslContext, trustManagers);
     }
 }

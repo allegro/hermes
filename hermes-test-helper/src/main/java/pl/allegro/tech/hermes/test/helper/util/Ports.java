@@ -1,18 +1,36 @@
 package pl.allegro.tech.hermes.test.helper.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 public final class Ports {
+
+    private static final Logger logger = LoggerFactory.getLogger(Ports.class);
 
     private Ports() {
     }
 
     public static int nextAvailable() {
         try {
-            try (ServerSocket socket = new ServerSocket(0)) {
-                return socket.getLocalPort();
+            ServerSocket socket = new ServerSocket(0);
+            socket.setReuseAddress(true);
+            int port = socket.getLocalPort();
+            socket.getLocalSocketAddress();
+            socket.close();
+
+            // second check whether the port is available as on some dynamic environments it can be still in use
+            try (Socket ignore = new Socket("0.0.0.0", port)) {
+                logger.warn("Connected to randomly selected port {} meaning it is still in use. Drawing next port.", port);
+                return nextAvailable();
+            } catch (ConnectException ex) {
+                // expected exception as on provided port no one should listen
+                return port;
             }
         } catch (IOException exception) {
             throw new NoAvailablePortException(exception);

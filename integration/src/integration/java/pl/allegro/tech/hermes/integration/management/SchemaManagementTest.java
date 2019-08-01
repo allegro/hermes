@@ -6,12 +6,11 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class SchemaManagementTest extends IntegrationTest {
 
@@ -33,11 +32,11 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldSaveSchemaForExistingTopic() {
         // given
-        Topic topic = topic("schemaGroup1", "schemaTopic1").withContentType(AVRO).build();
+        Topic topic = randomTopic("schemaGroup1", "schemaTopic1").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, SCHEMA_V1));
 
         // when
-        Response response = management.schema().save("schemaGroup1.schemaTopic1", SCHEMA_V2);
+        Response response = management.schema().save(topic.getQualifiedName(), SCHEMA_V2);
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
@@ -46,11 +45,11 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnSchemaForTopic() {
         // given
-        Topic topic = topic("schemaGroup2", "schemaTopic2").withContentType(AVRO).build();
+        Topic topic = randomTopic("schemaGroup2", "schemaTopic2").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, EXAMPLE_SCHEMA));
 
         // when
-        Response response = management.schema().get("schemaGroup2.schemaTopic2");
+        Response response = management.schema().get(topic.getQualifiedName());
 
         // then
         assertThat(response.readEntity(String.class)).isEqualTo(EXAMPLE_SCHEMA);
@@ -66,26 +65,26 @@ public class SchemaManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnMethodNotAcceptableWhenRemovingSchemaIsDisabled() throws IOException {
+    public void shouldSuccessfullyRemoveSchemaWhenSchemaRemovingIsEnabled() {
         // given
-        Topic topic = topic("avroGroup", "avroTopic").withContentType(AVRO).build();
+        Topic topic = randomTopic("avroGroup", "avroTopic").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, EXAMPLE_SCHEMA));
 
         // when
-        Response response = management.schema().delete("avroGroup.avroTopic");
+        Response response = management.schema().delete(topic.getQualifiedName());
 
         // then
-        assertThat(response).hasStatus(Response.Status.NOT_ACCEPTABLE);
+        assertThat(response).hasStatus(Response.Status.OK);
     }
 
     @Test
-    public void shouldNotSaveInvalidAvroSchema() throws IOException {
+    public void shouldNotSaveInvalidAvroSchema() {
         // given
-        Topic topic = topic("avroGroup", "avroTopic").withContentType(AVRO).build();
+        Topic topic = randomTopic("avroGroup", "avroTopic").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, EXAMPLE_SCHEMA));
 
         // when
-        Response response = management.schema().save("avroGroup.avroTopic", "{");
+        Response response = management.schema().save(topic.getQualifiedName(), "{");
 
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
@@ -94,10 +93,10 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnBadRequestDueToNoSchemaValidatorForJsonTopic() {
         // given
-        operations.buildTopic("someGroup", "jsonTopic");
+        Topic topic = operations.buildTopic(randomTopic("someGroup", "jsonTopic").build());
 
         // when
-        Response response = management.schema().save("someGroup.jsonTopic", true, EXAMPLE_SCHEMA);
+        Response response = management.schema().save(topic.getQualifiedName(), true, EXAMPLE_SCHEMA);
 
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST);

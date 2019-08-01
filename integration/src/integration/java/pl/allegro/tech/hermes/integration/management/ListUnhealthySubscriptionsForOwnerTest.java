@@ -24,6 +24,7 @@ import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctionin
 import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
 
@@ -33,7 +34,7 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
 
     @BeforeMethod
     public void initializeAlways() {
-        topic = operations.buildTopic("group", "topic");
+        topic = operations.buildTopic(randomTopic("group", "topic").build());
         graphiteEndpoint = new GraphiteEndpoint(SharedServices.services().graphiteHttpMock());
     }
 
@@ -55,14 +56,14 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         createSubscriptionForOwner("ownedSubscription2", "Team A");
         createSubscriptionForOwner("ownedSubscription3", "Team B");
 
-        graphiteEndpoint.returnMetricForTopic("group", "topic", 100, 50);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("group.topic.ownedSubscription1").withRate(100).withStatusRate(500, 0).build());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("group.topic.ownedSubscription2").withRate(50).withStatusRate(500, 11).build());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("group.topic.ownedSubscription3").withRate(100).withStatusRate(500, 0).build());
+        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription1")).withRate(100).withStatusRate(500, 0).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription2")).withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription3")).withRate(100).withStatusRate(500, 0).build());
 
         // then
         assertThat(listUnhealthySubscriptionsForOwner("Team A")).containsOnly(
-                new UnhealthySubscription("ownedSubscription2", "group.topic", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11)))
+                new UnhealthySubscription("ownedSubscription2", topic.getQualifiedName(), Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11)))
         );
         assertThat(listUnhealthySubscriptionsForOwnerAsPlainText("Team A")).isEqualTo(
                 "ownedSubscription2 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s"
@@ -75,13 +76,13 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         createSubscriptionForOwner("ownedSubscription1", "Team A");
         createSubscriptionForOwner("ownedSubscription2", "Team A");
 
-        graphiteEndpoint.returnMetricForTopic("group", "topic", 100, 50);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("group.topic.ownedSubscription1").withRate(100).withStatusRate(500, 0).build());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("group.topic.ownedSubscription2").withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription1")).withRate(100).withStatusRate(500, 0).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription2")).withRate(50).withStatusRate(500, 11).build());
 
         // then
         assertThat(listAllUnhealthySubscriptions()).containsOnly(
-                new UnhealthySubscription("ownedSubscription2", "group.topic", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11)))
+                new UnhealthySubscription("ownedSubscription2", topic.getQualifiedName(), Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11)))
         );
         assertThat(listAllUnhealthySubscriptionsAsPlainText()).isEqualTo(
                 "ownedSubscription2 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s"
@@ -95,16 +96,16 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         createSubscriptionForOwner("ownedSubscription2", "Team A", Severity.IMPORTANT);
         createSubscriptionForOwner("ownedSubscription3", "Team A", Severity.NON_IMPORTANT);
 
-        graphiteEndpoint.returnMetricForTopic("group", "topic", 100, 50);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("group.topic.ownedSubscription1").withRate(50).withStatusRate(500, 11).build());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("group.topic.ownedSubscription2").withRate(50).withStatusRate(500, 11).build());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("group.topic.ownedSubscription3").withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription1")).withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription2")).withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription3")).withRate(50).withStatusRate(500, 11).build());
 
         // then
         assertThat(listUnhealthySubscriptionsDisrespectingSeverity("Team A")).contains(
-                new UnhealthySubscription("ownedSubscription1", "group.topic", Severity.CRITICAL, ImmutableSet.of(malfunctioning(11))),
-                new UnhealthySubscription("ownedSubscription2", "group.topic", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11))),
-                new UnhealthySubscription("ownedSubscription3", "group.topic", Severity.NON_IMPORTANT, ImmutableSet.of(malfunctioning(11)))
+                new UnhealthySubscription("ownedSubscription1", topic.getQualifiedName(), Severity.CRITICAL, ImmutableSet.of(malfunctioning(11))),
+                new UnhealthySubscription("ownedSubscription2", topic.getQualifiedName(), Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11))),
+                new UnhealthySubscription("ownedSubscription3", topic.getQualifiedName(), Severity.NON_IMPORTANT, ImmutableSet.of(malfunctioning(11)))
         );
         assertThat(listUnhealthySubscriptionsDisrespectingSeverityAsPlainText("Team A")).isEqualTo(
                 "ownedSubscription1 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s\r\n" +
@@ -183,5 +184,9 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
                 .queryParam("respectMonitoringSeverity", respectMonitoringSeverity)
                 .request(TEXT_PLAIN)
                 .get(String.class);
+    }
+
+    private String subName(String rawSubscriptionName) {
+        return topic.getQualifiedName() + "." + rawSubscriptionName;
     }
 }

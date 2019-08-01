@@ -102,16 +102,15 @@ public class MetricsTest extends IntegrationTest {
     @Test
     public void shouldNotCreateNewSubscriptionWhenAskedForNonExistingMetrics() {
         // given
-        TopicName topic = new TopicName("pl.group.sub.bug", "topic");
-        operations.buildTopic(topic.getGroupName(), topic.getName());
+        Topic topic = operations.buildTopic(randomTopic("pl.group.sub.bug", "topic").build());
         String randomSubscription = UUID.randomUUID().toString();
 
         // when
         catchException(management.subscription())
-                .getMetrics(topic.qualifiedName(), randomSubscription);
+                .getMetrics(topic.getQualifiedName(), randomSubscription);
 
         // then
-        assertThat(management.subscription().list(topic.qualifiedName(), false)).doesNotContain(randomSubscription);
+        assertThat(management.subscription().list(topic.getQualifiedName(), false)).doesNotContain(randomSubscription);
         assertThat(CatchException.<BadRequestException>caughtException())
                 .isInstanceOf(BadRequestException.class);
     }

@@ -105,8 +105,4 @@ class ZookeeperClientManagerTest extends MultiZookeeperIntegrationTest {
         clusterProperties.setDatacenter(dcName)
         return clusterProperties
     }
-
-    static findClientByDc(List<ZookeeperClient> clients, String dcName) {
-        return clients.find { it.datacenterName == dcName }
-    }
 }

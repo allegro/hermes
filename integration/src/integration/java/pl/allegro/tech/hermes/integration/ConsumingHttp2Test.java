@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Response;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
@@ -22,6 +23,7 @@ import static io.undertow.util.Protocols.HTTP_2_0;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.fail;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class ConsumingHttp2Test extends IntegrationTest {
 
@@ -97,7 +99,7 @@ public class ConsumingHttp2Test extends IntegrationTest {
     }
 
     private Topic createTopicAndSubscriptionWithHttp2Enabled(String httpsEndpoint) {
-        Topic topic = operations.buildTopic("deliverHttp2", "topic");
+        Topic topic = operations.buildTopic(randomTopic("deliverHttp2", "topic").build());
 
         Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
                 .withEndpoint(httpsEndpoint)
@@ -111,7 +113,7 @@ public class ConsumingHttp2Test extends IntegrationTest {
     private SSLContext getSslContext() {
         KeystoreProperties keystore = new KeystoreProperties("classpath:server.keystore", "JKS", "password");
         KeystoreProperties truststore = new KeystoreProperties("classpath:server.truststore", "JKS", "password");
-        return new JvmKeystoreSslContextFactory("TLS", keystore, truststore).create();
+        return new JvmKeystoreSslContextFactory("TLS", keystore, truststore).create().getSslContext();
     }
 
 }
