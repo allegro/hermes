@@ -57,15 +57,15 @@ class NotificationAwareSubscriptionIdsCacheTest extends Specification {
         subscriptionIds.start()
 
         then:
-        !subscriptionIds.getSubscriptionName(sub1Id).ifPresent()
-        !subscriptionIds.getSubscriptionName(sub2Id).ifPresent()
+        !subscriptionIds.getSubscriptionName(sub1Id).isPresent()
+        !subscriptionIds.getSubscriptionName(sub2Id).isPresent()
 
         when:
         subscriptionIds.onSubscriptionCreated(subscription(sub1).build())
 
         then:
         subscriptionIds.getSubscriptionName(sub1Id).get() == sub1
-        !subscriptionIds.getSubscriptionName(sub2Id).ifPresent()
+        !subscriptionIds.getSubscriptionName(sub2Id).isPresent()
 
         when:
         subscriptionIds.onSubscriptionChanged(subscription(sub2).build())

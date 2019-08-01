@@ -6,13 +6,13 @@ import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.notifications.SubscriptionCallback;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class NotificationAwareSubscriptionIdsCache implements SubscriptionIds, SubscriptionCallback {
 
-    private final Map<SubscriptionId, SubscriptionName> ids = new HashMap<>();
+    private final Map<SubscriptionId, SubscriptionName> ids = new ConcurrentHashMap<>();
     private final SubscriptionsCache subscriptionsCache;
 
     public NotificationAwareSubscriptionIdsCache(InternalNotificationsBus notificationsBus,
