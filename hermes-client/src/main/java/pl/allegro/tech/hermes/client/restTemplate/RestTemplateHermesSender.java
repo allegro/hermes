@@ -11,8 +11,11 @@ import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.HermesSender;
 
 import java.net.URI;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.stream.Collectors.toMap;
 import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 
 public class RestTemplateHermesSender implements HermesSender {
@@ -51,7 +54,8 @@ public class RestTemplateHermesSender implements HermesSender {
         return hermesResponse()
                 .withHttpStatus(response.getStatusCode().value())
                 .withBody(response.toString())
-                .withHeaderSupplier(header -> response.getHeaders().toSingleValueMap().getOrDefault(header, null))
+                .withHeaderSupplier(header -> convertToTreeMap(response.getHeaders().toSingleValueMap())
+                        .getOrDefault(header, null))
                 .build();
     }
 
@@ -60,5 +64,15 @@ public class RestTemplateHermesSender implements HermesSender {
                 .withHttpStatus(exception.getStatusCode().value())
                 .withBody(exception.getResponseBodyAsString())
                 .build();
+    }
+
+    private TreeMap<String, String> convertToTreeMap(Map<String, String> hashMap) {
+        return hashMap.entrySet().stream()
+                .collect(toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldVal, newVal) -> newVal,
+                        () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)
+                ));
     }
 }
