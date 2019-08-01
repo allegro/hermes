@@ -39,15 +39,17 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
     private final ObjectMapper objectMapper;
     private final boolean validationEndpointEnabled;
+    private final String deleteSchemaPathSuffix;
 
     public SchemaRegistryRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver, ObjectMapper objectMapper) {
-        this(schemaRepositoryInstanceResolver, objectMapper, false);
+        this(schemaRepositoryInstanceResolver, objectMapper, false, "versions");
     }
 
     public SchemaRegistryRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver, ObjectMapper objectMapper,
-                                         boolean validationEndpointEnabled) {
+                                         boolean validationEndpointEnabled, String deleteSchemaPathSuffix) {
         this.schemaRepositoryInstanceResolver = schemaRepositoryInstanceResolver;
         this.validationEndpointEnabled = validationEndpointEnabled;
+        this.deleteSchemaPathSuffix = deleteSchemaPathSuffix;
         this.objectMapper = objectMapper;
     }
 
@@ -154,7 +156,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
         Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path("subjects")
                 .path(subject)
-                .path("versions")
+                .path(deleteSchemaPathSuffix)
                 .request()
                 .delete();
         checkSchemaRemoval(topic.qualifiedName(), response);

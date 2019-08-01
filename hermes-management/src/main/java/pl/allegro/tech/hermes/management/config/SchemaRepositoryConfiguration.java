@@ -65,7 +65,8 @@ public class SchemaRepositoryConfiguration {
             SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
             ObjectMapper objectMapper
     ) {
-        return new SchemaRegistryRawSchemaClient(schemaRepositoryInstanceResolver, objectMapper, schemaRepositoryProperties.isValidationEnabled());
+        return new SchemaRegistryRawSchemaClient(schemaRepositoryInstanceResolver, objectMapper,
+                schemaRepositoryProperties.isValidationEnabled(), schemaRepositoryProperties.getDeleteSchemaPathSuffix());
     }
 
     @Bean

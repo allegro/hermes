@@ -2,8 +2,9 @@ package pl.allegro.tech.hermes.integration;
 
 import okhttp3.OkHttpClient;
 import org.springframework.web.client.AsyncRestTemplate;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.HermesResponse;
@@ -22,18 +23,21 @@ import static java.net.URI.create;
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class HermesClientPublishingTest extends IntegrationTest {
 
     private TestMessage message = TestMessage.of("hello", "world");
 
-    private TopicName topic = new TopicName("hermesClientGroup", "topic");
     private URI topicURI = create("http://localhost:" + FRONTEND_PORT);
     private URI sslTopicUri = create("https://localhost:" + FRONTEND_SSL_PORT);
 
-    @BeforeClass
-    public void initialize() throws InterruptedException {
-        operations.buildTopic(topic.getGroupName(), topic.getName());
+    private Topic topic;
+
+    @BeforeMethod
+    public void initialize() {
+        topic = randomTopic("hermesClientGroup", "topic").build();
+        operations.buildTopic(topic);
     }
 
     @Test
@@ -78,7 +82,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
         HermesClient client = hermesClient(new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured())).withURI(sslTopicUri).build();
 
         // when
-        HermesResponse response = client.publish(topic.qualifiedName(), message.body()).join();
+        HermesResponse response = client.publish(topic.getQualifiedName(), message.body()).join();
 
         // then
         assertThat(response.getProtocol()).isEqualTo("h2");
@@ -91,7 +95,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
 
     private void shouldPublishUsingHermesClient(HermesClient client) {
         // when
-        HermesResponse response = client.publish(topic.qualifiedName(), message.body()).join();
+        HermesResponse response = client.publish(topic.getQualifiedName(), message.body()).join();
 
         // then
         assertThat(response.isSuccess()).isTrue();

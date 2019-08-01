@@ -17,7 +17,7 @@ import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class FilteringAvroTest extends IntegrationTest {
 
@@ -43,7 +43,7 @@ public class FilteringAvroTest extends IntegrationTest {
     public void shouldFilterIncomingEvents() {
         // given
         final String schema = AvroUserSchemaLoader.load().toString();
-        final Topic topic = topic("filteredTopic.topic")
+        final Topic topic = randomTopic("filteredTopic", "topic")
                 .withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, schema));
 
@@ -69,7 +69,7 @@ public class FilteringAvroTest extends IntegrationTest {
     public void shouldChainMultipleFilters() {
         // given
         final String schema = AvroUserSchemaLoader.load().toString();
-        final Topic topic = topic("filteredChainTopic.topic")
+        final Topic topic = randomTopic("filteredChainTopic", "topic")
                 .withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, schema));
 

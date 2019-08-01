@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -12,19 +11,22 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
+import static pl.allegro.tech.hermes.api.BlacklistStatus.BLACKLISTED;
+import static pl.allegro.tech.hermes.api.BlacklistStatus.NOT_BLACKLISTED;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class TopicBlacklistTest extends IntegrationTest {
 
     @Test
     public void shouldRefuseMessageOnBlacklistedTopic() {
         // given
-        Topic topic = operations.buildTopic("group", "topic");
+        Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
         TestMessage message = TestMessage.of("hello", "world");
 
         // when
-        management.blacklist().blacklistTopics(Arrays.asList("group.topic"));
-        wait.untilTopicBlacklisted("group.topic");
+        management.blacklist().blacklistTopics(Arrays.asList(topic.getQualifiedName()));
+        wait.untilTopicBlacklisted(topic.getQualifiedName());
 
         Response response = publisher.publish(topic.getQualifiedName(), message.body());
 
@@ -35,14 +37,14 @@ public class TopicBlacklistTest extends IntegrationTest {
     @Test
     public void shouldAcceptMessageOnUnblacklistedTopic() {
         // given
-        Topic topic = operations.buildTopic("group", "topic");
+        Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
         TestMessage message = TestMessage.of("hello", "world");
-        management.blacklist().blacklistTopics(Arrays.asList("group.topic"));
-        wait.untilTopicBlacklisted("group.topic");
+        management.blacklist().blacklistTopics(Arrays.asList(topic.getQualifiedName()));
+        wait.untilTopicBlacklisted(topic.getQualifiedName());
 
         // when
-        management.blacklist().unblacklistTopic("group.topic");
-        wait.untilTopicUnblacklisted("group.topic");
+        management.blacklist().unblacklistTopic(topic.getQualifiedName());
+        wait.untilTopicUnblacklisted(topic.getQualifiedName());
 
         Response response = publisher.publish(topic.getQualifiedName(), message.body());
 
@@ -77,21 +79,21 @@ public class TopicBlacklistTest extends IntegrationTest {
     @Test
     public void shouldReportValidStatusOfTopic() {
         // given
-        operations.buildTopic("group", "topic");
+        Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
 
         // when
-        management.blacklist().blacklistTopics(Arrays.asList("group.topic"));
-        wait.untilTopicBlacklisted("group.topic");
+        management.blacklist().blacklistTopics(Arrays.asList(topic.getQualifiedName()));
+        wait.untilTopicBlacklisted(topic.getQualifiedName());
 
         // then
-        assertThat(management.blacklist().isTopicBlacklisted("group.topic")).isEqualTo(BlacklistStatus.BLACKLISTED);
+        assertThat(management.blacklist().isTopicBlacklisted(topic.getQualifiedName())).isEqualTo(BLACKLISTED);
 
         // when
-        management.blacklist().unblacklistTopic("group.topic");
-        wait.untilTopicUnblacklisted("group.topic");
+        management.blacklist().unblacklistTopic(topic.getQualifiedName());
+        wait.untilTopicUnblacklisted(topic.getQualifiedName());
 
         // then
-        assertThat(management.blacklist().isTopicBlacklisted("group.topic")).isEqualTo(BlacklistStatus.NOT_BLACKLISTED);
+        assertThat(management.blacklist().isTopicBlacklisted(topic.getQualifiedName())).isEqualTo(NOT_BLACKLISTED);
     }
 
     @Test

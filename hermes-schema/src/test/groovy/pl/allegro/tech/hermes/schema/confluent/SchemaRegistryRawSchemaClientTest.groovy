@@ -266,8 +266,9 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should successfully validate schema against validation endpoint"() {
         boolean validationEnabled = true
+        String deleteSchemaPathSuffix = ""
         resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
-        client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled)
+        client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled, deleteSchemaPathSuffix)
 
         wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
                 .willReturn(okResponse()
@@ -289,8 +290,9 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
     def "should receive errors from validation endpoint"() {
         given:
         boolean validationEnabled = true
+        String deleteSchemaPathSuffix = ""
         resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
-        client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled)
+        client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled, deleteSchemaPathSuffix)
 
         wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
                 .willReturn(okResponse()
