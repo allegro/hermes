@@ -1,3 +1,7 @@
+configurations {
+    sbeClasspath
+}
+
 dependencies {
     compile project(':hermes-common')
     compile project(':hermes-tracker')
@@ -41,10 +45,28 @@ dependencies {
     testCompile group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+
+    sbeClasspath group: 'uk.co.real-logic', name: 'sbe-all', version: '1.12.8'
 }
 
 if (project.hasProperty('distribution')) {
     apply plugin: 'application'
     mainClassName = 'pl.allegro.tech.hermes.consumers.HermesConsumers'
+}
+
+task generateMaxRateSbeStubs(type: JavaExec) {
+    description = "Generate SBE stubs for max-rate alg"
+    classpath configurations.sbeClasspath
+    main = 'uk.co.real_logic.sbe.SbeTool'
+    systemProperties(
+            'sbe.output.dir': 'src/main/java',
+            'sbe.xinclude.aware': 'true'
+    )
+    args = ['src/main/resources/sbe/max-rate.xml']
+}
+
+task generateSbeStubs(type: DefaultTask) {
+    description = "Generate all SBE stubs from provided schemas"
+    dependsOn 'generateMaxRateSbeStubs'
 }
 
