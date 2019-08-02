@@ -202,6 +202,7 @@ public enum Configs {
     CONSUMER_RATE_FAILURES_NOCHANGE_TOLERANCE_RATIO("consumer.rate.failures.nochange.tolerance.ratio", 0.05),
     CONSUMER_RATE_FAILURES_SPEEDUP_TOLERANCE_RATIO("consumer.rate.failures.speedup.tolerance.ratio", 0.01),
     CONSUMER_MAXRATE_STRATEGY("consumer.maxrate.strategy", "negotiated"),
+    CONSUMER_MAXRATE_REGISTRY_TYPE("consumer.maxrate.registry.type", "hierarchical"),
     CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS("consumer.maxrate.balance.interval.seconds", 30),
     CONSUMER_MAXRATE_UPDATE_INTERVAL_SECONDS("consumer.maxrate.update.interval.seconds", 15),
     CONSUMER_MAXRATE_HISTORY_SIZE("consumer.maxrate.history.size", 1),
