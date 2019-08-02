@@ -54,7 +54,7 @@ public class RestTemplateHermesSender implements HermesSender {
         return hermesResponse()
                 .withHttpStatus(response.getStatusCode().value())
                 .withBody(response.toString())
-                .withHeaderSupplier(header -> convertToTreeMap(response.getHeaders().toSingleValueMap())
+                .withHeaderSupplier(header -> convertToCaseInsensitiveMap(response.getHeaders().toSingleValueMap())
                         .getOrDefault(header, null))
                 .build();
     }
@@ -66,7 +66,7 @@ public class RestTemplateHermesSender implements HermesSender {
                 .build();
     }
 
-    private TreeMap<String, String> convertToTreeMap(Map<String, String> hashMap) {
+    private TreeMap<String, String> convertToCaseInsensitiveMap(Map<String, String> hashMap) {
         return hashMap.entrySet().stream()
                 .collect(toMap(
                         Map.Entry::getKey,
