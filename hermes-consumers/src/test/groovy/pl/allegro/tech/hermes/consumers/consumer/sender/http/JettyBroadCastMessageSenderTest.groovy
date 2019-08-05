@@ -8,6 +8,10 @@ import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HermesHeadersProvider
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1HeadersProvider
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress
 import pl.allegro.tech.hermes.test.helper.endpoint.MultiUrlEndpointAddressResolver
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint
@@ -30,16 +34,18 @@ class JettyBroadCastMessageSenderTest extends Specification {
     EndpointAddress endpoint = EndpointAddress.of(ports.collect {"http://localhost:${it}/"}.join(";"))
 
     @Shared
-    HttpClient client;
+    HttpClient client
 
     @Shared
-    List<WireMockServer> wireMockServers = ports.collect { new WireMockServer(it) };
+    List<WireMockServer> wireMockServers = ports.collect { new WireMockServer(it) }
 
     @Shared
     List<RemoteServiceEndpoint> serviceEndpoints
 
     @Subject
     JettyBroadCastMessageSender messageSender
+
+    HttpHeadersProvider requestHeadersProvider = new HermesHeadersProvider(new AuthHeadersProvider(new Http1HeadersProvider(), { Optional.empty() }))
 
     def setupSpec() throws Exception {
         wireMockServers.forEach { it.start() }
@@ -56,7 +62,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
     def setup() {
         def address = new ResolvableEndpointAddress(endpoint, new MultiUrlEndpointAddressResolver(),
                 EndpointAddressResolverMetadata.empty());
-        def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), Optional.empty());
+        def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), requestHeadersProvider)
         messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address);
     }
 
@@ -117,8 +123,8 @@ class JettyBroadCastMessageSenderTest extends Specification {
         def address = Stub(ResolvableEndpointAddress) {
             resolveAllFor(_) >> []
         }
-        def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), Optional.empty());
-        messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address);
+        def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), requestHeadersProvider)
+        messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address)
 
         when:
         def future = messageSender.send(testMessage())

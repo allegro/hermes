@@ -8,7 +8,6 @@ public class DefaultHttpMetadataAppender implements MetadataAppender<Request> {
 
     @Override
     public Request append(Request target, Message message) {
-
         message.getExternalMetadata().forEach(target::header);
         return target;
     }
