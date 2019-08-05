@@ -11,6 +11,10 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HermesHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1HeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
@@ -43,6 +47,8 @@ public class JettyMessageSenderTest {
     private RemoteServiceEndpoint remoteServiceEndpoint;
     private JettyMessageSender messageSender;
 
+    private HttpHeadersProvider headersProvider = new HermesHeadersProvider(new Http1HeadersProvider());
+
     @BeforeClass
     public static void setupEnvironment() throws Exception {
         wireMockServer = new WireMockServer(ENDPOINT_PORT);
@@ -65,7 +71,7 @@ public class JettyMessageSenderTest {
     public void setUp() throws Exception {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
         address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver(), METADATA);
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), Optional.empty());
+        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), headersProvider);
         messageSender = new JettyMessageSender(httpRequestFactory, address);
     }
 
@@ -108,7 +114,6 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.waitUntilReceived();
         assertThat(future.get(1, TimeUnit.SECONDS).succeeded()).isFalse();
     }
-
 
     @Test
     public void shouldSendMessageIdHeader() {
@@ -154,7 +159,12 @@ public class JettyMessageSenderTest {
     public void shouldSendAuthorizationHeaderIfAuthorizationProviderAttached() {
         // given
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(),
-                Optional.of(() -> Optional.of("Basic Auth Hello!")));
+                new HermesHeadersProvider(
+                        new AuthHeadersProvider(
+                                new Http1HeadersProvider(),
+                                () -> Optional.of("Basic Auth Hello!")
+                        )
+                ));
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
         Message message = MessageBuilder.withTestMessage().build();
@@ -174,8 +184,7 @@ public class JettyMessageSenderTest {
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client,
                 100, 1000,
                 new DefaultHttpMetadataAppender(),
-                Optional.empty()
-        );
+                headersProvider);
         remoteServiceEndpoint.setDelay(500);
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
@@ -195,8 +204,7 @@ public class JettyMessageSenderTest {
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client,
                 1000, 100,
                 new DefaultHttpMetadataAppender(),
-                Optional.empty()
-        );
+                headersProvider);
         remoteServiceEndpoint.setDelay(200);
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address);
