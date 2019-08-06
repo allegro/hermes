@@ -142,7 +142,7 @@ public class MaxRateDecoder
 
         public static int sbeBlockLength()
         {
-            return 10;
+            return 16;
         }
 
         public int actingBlockLength()
@@ -201,7 +201,7 @@ public class MaxRateDecoder
 
         public static int idEncodingLength()
         {
-            return 2;
+            return 8;
         }
 
         public static String idMetaAttribute(final MetaAttribute metaAttribute)
@@ -217,24 +217,24 @@ public class MaxRateDecoder
             return "";
         }
 
-        public static int idNullValue()
+        public static long idNullValue()
         {
-            return 65535;
+            return -9223372036854775808L;
         }
 
-        public static int idMinValue()
+        public static long idMinValue()
         {
-            return 0;
+            return -9223372036854775807L;
         }
 
-        public static int idMaxValue()
+        public static long idMaxValue()
         {
-            return 65534;
+            return 9223372036854775807L;
         }
 
-        public int id()
+        public long id()
         {
-            return (buffer.getShort(offset + 0, java.nio.ByteOrder.LITTLE_ENDIAN) & 0xFFFF);
+            return buffer.getLong(offset + 0, java.nio.ByteOrder.LITTLE_ENDIAN);
         }
 
 
@@ -250,7 +250,7 @@ public class MaxRateDecoder
 
         public static int maxRateEncodingOffset()
         {
-            return 2;
+            return 8;
         }
 
         public static int maxRateEncodingLength()
@@ -288,7 +288,7 @@ public class MaxRateDecoder
 
         public double maxRate()
         {
-            return buffer.getDouble(offset + 2, java.nio.ByteOrder.LITTLE_ENDIAN);
+            return buffer.getDouble(offset + 8, java.nio.ByteOrder.LITTLE_ENDIAN);
         }
 
 
@@ -301,13 +301,13 @@ public class MaxRateDecoder
         public StringBuilder appendTo(final StringBuilder builder)
         {
             builder.append('(');
-            //Token{signal=BEGIN_FIELD, name='Id', referencedName='null', description='null', id=2, version=0, deprecated=0, encodedLength=2, offset=0, componentTokenCount=3, encoding=Encoding{presence=REQUIRED, primitiveType=null, byteOrder=LITTLE_ENDIAN, minValue=null, maxValue=null, nullValue=null, constValue=null, characterEncoding='null', epoch='null', timeUnit=null, semanticType='null'}}
-            //Token{signal=ENCODING, name='uint16', referencedName='null', description='null', id=-1, version=0, deprecated=0, encodedLength=2, offset=0, componentTokenCount=1, encoding=Encoding{presence=REQUIRED, primitiveType=UINT16, byteOrder=LITTLE_ENDIAN, minValue=null, maxValue=null, nullValue=null, constValue=null, characterEncoding='null', epoch='null', timeUnit=null, semanticType='null'}}
+            //Token{signal=BEGIN_FIELD, name='Id', referencedName='null', description='null', id=2, version=0, deprecated=0, encodedLength=8, offset=0, componentTokenCount=3, encoding=Encoding{presence=REQUIRED, primitiveType=null, byteOrder=LITTLE_ENDIAN, minValue=null, maxValue=null, nullValue=null, constValue=null, characterEncoding='null', epoch='null', timeUnit=null, semanticType='null'}}
+            //Token{signal=ENCODING, name='int64', referencedName='null', description='null', id=-1, version=0, deprecated=0, encodedLength=8, offset=0, componentTokenCount=1, encoding=Encoding{presence=REQUIRED, primitiveType=INT64, byteOrder=LITTLE_ENDIAN, minValue=null, maxValue=null, nullValue=null, constValue=null, characterEncoding='null', epoch='null', timeUnit=null, semanticType='null'}}
             builder.append("id=");
             builder.append(id());
             builder.append('|');
-            //Token{signal=BEGIN_FIELD, name='MaxRate', referencedName='null', description='null', id=3, version=0, deprecated=0, encodedLength=8, offset=2, componentTokenCount=3, encoding=Encoding{presence=REQUIRED, primitiveType=null, byteOrder=LITTLE_ENDIAN, minValue=null, maxValue=null, nullValue=null, constValue=null, characterEncoding='null', epoch='null', timeUnit=null, semanticType='null'}}
-            //Token{signal=ENCODING, name='double', referencedName='null', description='null', id=-1, version=0, deprecated=0, encodedLength=8, offset=2, componentTokenCount=1, encoding=Encoding{presence=REQUIRED, primitiveType=DOUBLE, byteOrder=LITTLE_ENDIAN, minValue=null, maxValue=null, nullValue=null, constValue=null, characterEncoding='null', epoch='null', timeUnit=null, semanticType='null'}}
+            //Token{signal=BEGIN_FIELD, name='MaxRate', referencedName='null', description='null', id=3, version=0, deprecated=0, encodedLength=8, offset=8, componentTokenCount=3, encoding=Encoding{presence=REQUIRED, primitiveType=null, byteOrder=LITTLE_ENDIAN, minValue=null, maxValue=null, nullValue=null, constValue=null, characterEncoding='null', epoch='null', timeUnit=null, semanticType='null'}}
+            //Token{signal=ENCODING, name='double', referencedName='null', description='null', id=-1, version=0, deprecated=0, encodedLength=8, offset=8, componentTokenCount=1, encoding=Encoding{presence=REQUIRED, primitiveType=DOUBLE, byteOrder=LITTLE_ENDIAN, minValue=null, maxValue=null, nullValue=null, constValue=null, characterEncoding='null', epoch='null', timeUnit=null, semanticType='null'}}
             builder.append("maxRate=");
             builder.append(maxRate());
             builder.append(')');
@@ -344,7 +344,7 @@ public class MaxRateDecoder
         }
         builder.append(BLOCK_LENGTH);
         builder.append("):");
-        //Token{signal=BEGIN_GROUP, name='Subscriptions', referencedName='null', description='null', id=1, version=0, deprecated=0, encodedLength=10, offset=0, componentTokenCount=12, encoding=Encoding{presence=REQUIRED, primitiveType=null, byteOrder=LITTLE_ENDIAN, minValue=null, maxValue=null, nullValue=null, constValue=null, characterEncoding='null', epoch='null', timeUnit=null, semanticType='null'}}
+        //Token{signal=BEGIN_GROUP, name='Subscriptions', referencedName='null', description='null', id=1, version=0, deprecated=0, encodedLength=16, offset=0, componentTokenCount=12, encoding=Encoding{presence=REQUIRED, primitiveType=null, byteOrder=LITTLE_ENDIAN, minValue=null, maxValue=null, nullValue=null, constValue=null, characterEncoding='null', epoch='null', timeUnit=null, semanticType='null'}}
         builder.append("subscriptions=[");
         SubscriptionsDecoder subscriptions = subscriptions();
         if (subscriptions.count() > 0)

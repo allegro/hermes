@@ -56,7 +56,7 @@ if (project.hasProperty('distribution')) {
 }
 
 task generateMaxRateSbeStubs(type: JavaExec) {
-    description = "Generate SBE stubs for max-rate alg"
+    description = "Generate SBE stubs for max-rate"
     classpath configurations.sbeClasspath
     main = 'uk.co.real_logic.sbe.SbeTool'
     systemProperties(

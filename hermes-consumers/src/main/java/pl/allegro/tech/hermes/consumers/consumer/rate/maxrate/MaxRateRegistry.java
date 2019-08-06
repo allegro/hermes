@@ -21,4 +21,10 @@ public interface MaxRateRegistry {
     RateHistory getRateHistory(ConsumerInstance consumer);
 
     void writeRateHistory(ConsumerInstance consumer, RateHistory rateHistory);
+
+    default void onAfterWriteRateHistories() {};
+
+    default void onBeforeMaxRateCalculation() {};
+
+    default void onAfterMaxRateCalculation() {};
 }

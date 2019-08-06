@@ -56,7 +56,7 @@ public class HierarchicalCacheMaxRateRegistry implements MaxRateRegistry {
         this.subscriptionsCache = subscriptionsCache;
         this.cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 
-        ThreadFactory cacheThreadFactory = new ThreadFactoryBuilder().setNameFormat("max-rate-registry-%d").build();
+        ThreadFactory cacheThreadFactory = new ThreadFactoryBuilder().setNameFormat("hierarchical-max-rate-registry-%d").build();
         this.cache = new HierarchicalCache(curator,
                 Executors.newSingleThreadExecutor(cacheThreadFactory),
                 zookeeperPaths.consumersRateRuntimePath(cluster), 3, emptyList(), false
@@ -110,6 +110,7 @@ public class HierarchicalCacheMaxRateRegistry implements MaxRateRegistry {
 
     @Override
     public void update(SubscriptionName subscriptionName, Map<String, MaxRate> newMaxRates) {
+
         try {
             for (Map.Entry<String, MaxRate> entry : newMaxRates.entrySet()) {
                 String maxRatePath = zookeeperPaths.consumersMaxRatePath(cluster, subscriptionName, entry.getKey());

@@ -177,4 +177,8 @@ public class ZookeeperPaths {
     public String nodeHealthPathForManagementHost(String host, String port) {
         return Joiner.on(URL_SEPARATOR).join(basePath, STORAGE_HEALTH_PATH, String.format("%s_%s", host, port));
     }
+
+    public String join(String... parts) {
+        return Joiner.on(URL_SEPARATOR).join(parts);
+    }
 }

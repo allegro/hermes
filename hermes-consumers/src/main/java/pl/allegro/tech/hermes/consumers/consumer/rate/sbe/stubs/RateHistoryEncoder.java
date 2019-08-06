@@ -141,7 +141,7 @@ public class RateHistoryEncoder
             this.count = count;
             final int limit = parentMessage.limit();
             parentMessage.limit(limit + HEADER_SIZE);
-            buffer.putShort(limit + 0, (short)(int)2, java.nio.ByteOrder.LITTLE_ENDIAN);
+            buffer.putShort(limit + 0, (short)(int)8, java.nio.ByteOrder.LITTLE_ENDIAN);
             buffer.putShort(limit + 2, (short)(int)count, java.nio.ByteOrder.LITTLE_ENDIAN);
         }
 
@@ -152,7 +152,7 @@ public class RateHistoryEncoder
 
         public static int sbeBlockLength()
         {
-            return 2;
+            return 8;
         }
 
         public SubscriptionsEncoder next()
@@ -186,7 +186,7 @@ public class RateHistoryEncoder
 
         public static int idEncodingLength()
         {
-            return 2;
+            return 8;
         }
 
         public static String idMetaAttribute(final MetaAttribute metaAttribute)
@@ -202,24 +202,24 @@ public class RateHistoryEncoder
             return "";
         }
 
-        public static int idNullValue()
+        public static long idNullValue()
         {
-            return 65535;
+            return -9223372036854775808L;
         }
 
-        public static int idMinValue()
+        public static long idMinValue()
         {
-            return 0;
+            return -9223372036854775807L;
         }
 
-        public static int idMaxValue()
+        public static long idMaxValue()
         {
-            return 65534;
+            return 9223372036854775807L;
         }
 
-        public SubscriptionsEncoder id(final int value)
+        public SubscriptionsEncoder id(final long value)
         {
-            buffer.putShort(offset + 0, (short)value, java.nio.ByteOrder.LITTLE_ENDIAN);
+            buffer.putLong(offset + 0, value, java.nio.ByteOrder.LITTLE_ENDIAN);
             return this;
         }
 
