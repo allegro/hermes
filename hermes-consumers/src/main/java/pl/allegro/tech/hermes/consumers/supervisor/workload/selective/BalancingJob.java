@@ -33,7 +33,7 @@ public class BalancingJob implements Runnable {
 
     private final BalancingJobMetrics balancingMetrics = new BalancingJobMetrics();
 
-    public BalancingJob(ConsumerNodesRegistry consumersRegistry,
+    BalancingJob(ConsumerNodesRegistry consumersRegistry,
                         SubscriptionsCache subscriptionsCache,
                         SelectiveWorkBalancer workBalancer,
                         WorkTracker workTracker,

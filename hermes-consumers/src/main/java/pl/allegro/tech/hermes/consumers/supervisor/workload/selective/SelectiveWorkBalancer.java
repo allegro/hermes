@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignment;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.SubscriptionConstraints;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
 
 import java.util.Iterator;
 import java.util.List;
@@ -20,10 +22,16 @@ public class SelectiveWorkBalancer {
 
     private final int consumersPerSubscription;
     private final int maxSubscriptionsPerConsumer;
+    private final WorkloadConstraints constraints;
 
     public SelectiveWorkBalancer(int consumersPerSubscription, int maxSubscriptionsPerConsumer) {
+        this(consumersPerSubscription, maxSubscriptionsPerConsumer, null);
+    }
+
+    public SelectiveWorkBalancer(int consumersPerSubscription, int maxSubscriptionsPerConsumer, WorkloadConstraints constraints) {
         this.consumersPerSubscription = consumersPerSubscription;
         this.maxSubscriptionsPerConsumer = maxSubscriptionsPerConsumer;
+        this.constraints = constraints;
     }
 
     public WorkBalancingResult balance(List<SubscriptionName> subscriptions,
@@ -58,7 +66,7 @@ public class SelectiveWorkBalancer {
             newSubscriptions.forEach(transformer::addSubscription);
             newConsumers.forEach(transformer::addConsumerNode);
             minimizeWorkload(state, transformer);
-            AvailableWork.stream(state, consumersPerSubscription, maxSubscriptionsPerConsumer)
+            AvailableWork.stream(state, consumersPerSubscription, maxSubscriptionsPerConsumer, constraints)
                     .forEach(transformer::addAssignment);
             equalizeWorkload(state, transformer);
         });
@@ -72,7 +80,9 @@ public class SelectiveWorkBalancer {
     }
 
     private Stream<SubscriptionAssignment> findRedundantAssignments(SubscriptionAssignmentView state, SubscriptionName subscriptionName) {
-        int diff = state.getAssignmentsCountForSubscription(subscriptionName) - consumersPerSubscription;
+        SubscriptionConstraints subscriptionConstraints = constraints != null ? constraints.getSubscriptionConstraints(subscriptionName) : null;
+        int diff = state.getAssignmentsCountForSubscription(subscriptionName) -
+                (subscriptionConstraints != null ? subscriptionConstraints.getConsumersNumber() : consumersPerSubscription);
         if (diff > 0) {
             Stream.Builder<SubscriptionAssignment> redundant = Stream.builder();
             Iterator<SubscriptionAssignment> iterator = state.getAssignmentsForSubscription(subscriptionName).iterator();
@@ -115,8 +125,7 @@ public class SelectiveWorkBalancer {
                 int minLoad = state.getAssignmentsCountForConsumerNode(minLoaded);
 
                 while (maxLoad > minLoad + 1) {
-                    Optional<SubscriptionName> subscription =
-                            getSubscriptionForTransfer(state, maxLoaded, minLoaded);
+                    Optional<SubscriptionName> subscription = getSubscriptionForTransfer(state, maxLoaded, minLoaded);
                     if (subscription.isPresent()) {
                         transformer.transferAssignment(maxLoaded, minLoaded, subscription.get());
                         transferred = true;

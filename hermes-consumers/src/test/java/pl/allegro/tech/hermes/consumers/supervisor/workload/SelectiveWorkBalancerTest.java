@@ -4,9 +4,12 @@ import com.google.common.collect.ImmutableList;
 import org.assertj.core.api.ListAssert;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.SubscriptionConstraints;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.WorkBalancingResult;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
@@ -210,6 +213,66 @@ public class SelectiveWorkBalancerTest {
         // then
         assertThat(stateAfterRebalance.getAssignmentsForSubscription(subscriptionName)
                 .stream().map(SubscriptionAssignment::getConsumerNodeId).collect(toList())).containsOnly("c2", "c3", "c4");
+    }
+
+    @Test
+    public void shouldReassignConsumersForSubscriptionsAccordingToConstraints_1() {
+        // given
+        SelectiveWorkBalancer workBalancer = new SelectiveWorkBalancer(2, 4);
+        List<String> supervisors = ImmutableList.of("c1", "c2");
+        List<SubscriptionName> subscriptions = someSubscriptions(4);
+
+        // when
+        SubscriptionAssignmentView balancedState = initialState(subscriptions, supervisors, workBalancer);
+
+        // then
+        assertThat(balancedState.getAssignmentsForSubscription(subscriptions.get(0)).size()).isEqualTo(2);
+        assertThat(balancedState.getAssignmentsForSubscription(subscriptions.get(1)).size()).isEqualTo(2);
+        assertThat(balancedState.getAssignmentsForSubscription(subscriptions.get(2)).size()).isEqualTo(2);
+        assertThat(balancedState.getAssignmentsForSubscription(subscriptions.get(3)).size()).isEqualTo(2);
+
+        // when
+        WorkloadConstraints constraints = new WorkloadConstraints(Collections.singletonList(
+                new SubscriptionConstraints(subscriptions.get(0), 1)
+        ));
+        SelectiveWorkBalancer workBalancerWithConstraints = new SelectiveWorkBalancer(2, 4, constraints);
+        SubscriptionAssignmentView rebalancedState = initialState(subscriptions, supervisors, workBalancerWithConstraints);
+
+        // then
+        assertThat(rebalancedState.getAssignmentsForSubscription(subscriptions.get(0)).size()).isEqualTo(1);
+        assertThat(rebalancedState.getAssignmentsForSubscription(subscriptions.get(1)).size()).isEqualTo(2);
+        assertThat(rebalancedState.getAssignmentsForSubscription(subscriptions.get(2)).size()).isEqualTo(2);
+        assertThat(rebalancedState.getAssignmentsForSubscription(subscriptions.get(3)).size()).isEqualTo(2);
+    }
+
+    @Test
+    public void shouldReassignConsumersForSubscriptionsAccordingToConstraints_2() {
+        // given
+        SelectiveWorkBalancer workBalancer = new SelectiveWorkBalancer(2, 100);
+        List<String> supervisors = ImmutableList.of("c1", "c2", "c3");
+        List<SubscriptionName> subscriptions = someSubscriptions(4);
+
+        // when
+        SubscriptionAssignmentView balancedState = initialState(subscriptions, supervisors, workBalancer);
+
+        // then
+        assertThat(balancedState.getAssignmentsForSubscription(subscriptions.get(0)).size()).isEqualTo(2);
+        assertThat(balancedState.getAssignmentsForSubscription(subscriptions.get(1)).size()).isEqualTo(2);
+        assertThat(balancedState.getAssignmentsForSubscription(subscriptions.get(2)).size()).isEqualTo(2);
+        assertThat(balancedState.getAssignmentsForSubscription(subscriptions.get(3)).size()).isEqualTo(2);
+
+        // when
+        WorkloadConstraints constraints = new WorkloadConstraints(Collections.singletonList(
+                new SubscriptionConstraints(subscriptions.get(0), 3)
+        ));
+        SelectiveWorkBalancer workBalancerWithConstraints = new SelectiveWorkBalancer(2, 100, constraints);
+        SubscriptionAssignmentView rebalancedState = workBalancerWithConstraints.balance(subscriptions, supervisors, balancedState).getAssignmentsView();
+
+        // then
+        assertThat(rebalancedState.getAssignmentsForSubscription(subscriptions.get(0)).size()).isEqualTo(3);
+        assertThat(rebalancedState.getAssignmentsForSubscription(subscriptions.get(1)).size()).isEqualTo(2);
+        assertThat(rebalancedState.getAssignmentsForSubscription(subscriptions.get(2)).size()).isEqualTo(2);
+        assertThat(rebalancedState.getAssignmentsForSubscription(subscriptions.get(3)).size()).isEqualTo(2);
     }
 
     private SubscriptionAssignmentView initialState(List<SubscriptionName> subscriptions, List<String> supervisors) {
