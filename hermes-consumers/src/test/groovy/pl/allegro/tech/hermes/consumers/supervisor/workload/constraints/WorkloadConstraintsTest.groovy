@@ -23,11 +23,11 @@ class WorkloadConstraintsTest extends Specification {
         )
 
         expect:
-        workloadConstraints.getSubscriptionConstraints(subscriptionName).requiredConsumersNumber == expectedResult
+        workloadConstraints.getSubscriptionConstraints(subscriptionName).consumersNumber == expectedResult
 
         where:
         subscriptionName        | expectedResult
-        sub1.subscriptionName   | sub1.requiredConsumersNumber
+        sub1.subscriptionName   | sub1.consumersNumber
         undefinedSubscription   | DEFAULT_CONSUMERS_PER_SUBSCRIPTION
     }
 }

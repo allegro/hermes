@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignment;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.SubscriptionConstraints;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
 
 import java.util.Comparator;
@@ -19,15 +18,11 @@ import static java.util.stream.Collectors.toSet;
 
 public class AvailableWork extends Spliterators.AbstractSpliterator<SubscriptionAssignment> {
     private SubscriptionAssignmentView state;
-    private final int consumersPerSubscription;
-    private final int maxSubscriptionsPerConsumer;
     private final WorkloadConstraints constraints;
 
-    private AvailableWork(SubscriptionAssignmentView state, int consumersPerSubscription, int maxSubscriptionsPerConsumer, WorkloadConstraints constraints) {
+    private AvailableWork(SubscriptionAssignmentView state, WorkloadConstraints constraints) {
         super(Long.MAX_VALUE, 0);
         this.state = state;
-        this.consumersPerSubscription = consumersPerSubscription;
-        this.maxSubscriptionsPerConsumer = maxSubscriptionsPerConsumer;
         this.constraints = constraints;
     }
 
@@ -47,7 +42,7 @@ public class AvailableWork extends Spliterators.AbstractSpliterator<Subscription
 
     private Optional<SubscriptionName> getNextSubscription(SubscriptionAssignmentView state, Set<String> availableConsumerNodes) {
         return state.getSubscriptions().stream()
-                .filter(s -> state.getAssignmentsCountForSubscription(s) < getConsumersPerSubscription(s))
+                .filter(s -> state.getAssignmentsCountForSubscription(s) < constraints.getConsumersNumber(s))
                 .filter(s -> !Sets.difference(availableConsumerNodes, state.getConsumerNodesForSubscription(s)).isEmpty())
                 .min(Comparator.comparingInt(state::getAssignmentsCountForSubscription));
     }
@@ -64,28 +59,13 @@ public class AvailableWork extends Spliterators.AbstractSpliterator<Subscription
 
     private Set<String> availableConsumerNodes(SubscriptionAssignmentView state) {
         return state.getConsumerNodes().stream()
-                .filter(s -> state.getAssignmentsCountForConsumerNode(s) < maxSubscriptionsPerConsumer)
+                .filter(s -> state.getAssignmentsCountForConsumerNode(s) < constraints.getMaxSubscriptionsPerConsumer())
                 .filter(s -> state.getAssignmentsCountForConsumerNode(s) < state.getSubscriptionsCount())
                 .collect(toSet());
     }
 
-    private int getConsumersPerSubscription(SubscriptionName subscriptionName) {
-        if (constraints == null) {
-            return consumersPerSubscription;
-        }
-
-        final SubscriptionConstraints subscriptionConstraints = constraints.getSubscriptionConstraints(subscriptionName);
-        if (subscriptionConstraints != null) {
-            return subscriptionConstraints.getRequiredConsumersNumber();
-        }
-        return consumersPerSubscription;
-    }
-
-    public static Stream<SubscriptionAssignment> stream(SubscriptionAssignmentView state,
-                                                        int consumersPerSubscription,
-                                                        int maxSubscriptionsPerConsumer,
-                                                        WorkloadConstraints constraints) {
-        AvailableWork work = new AvailableWork(state, consumersPerSubscription, maxSubscriptionsPerConsumer, constraints);
+    public static Stream<SubscriptionAssignment> stream(SubscriptionAssignmentView state, WorkloadConstraints constraints) {
+        AvailableWork work = new AvailableWork(state, constraints);
         return StreamSupport.stream(work, false);
     }
 }

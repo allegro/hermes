@@ -25,6 +25,10 @@ public class WorkloadConstraints {
                 .getOrDefault(subscriptionName, new SubscriptionConstraints(subscriptionName, consumersPerSubscription));
     }
 
+    public int getConsumersNumber(SubscriptionName subscriptionName) {
+        return getSubscriptionConstraints(subscriptionName).getConsumersNumber();
+    }
+
     public int getConsumersPerSubscription() {
         return consumersPerSubscription;
     }

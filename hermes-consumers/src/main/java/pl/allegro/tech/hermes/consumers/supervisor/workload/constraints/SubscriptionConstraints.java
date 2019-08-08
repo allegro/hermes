@@ -16,7 +16,7 @@ public class SubscriptionConstraints {
         return subscriptionName;
     }
 
-    public int getRequiredConsumersNumber() {
+    public int getConsumersNumber() {
         return consumersNumber;
     }
 }

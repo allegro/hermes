@@ -53,9 +53,7 @@ public class SelectiveWorkBalancer {
             newSubscriptions.forEach(transformer::addSubscription);
             newConsumers.forEach(transformer::addConsumerNode);
             minimizeWorkload(state, transformer, constraints);
-            int consumersPerSubscription = constraints.getConsumersPerSubscription();
-            int maxSubscriptionsPerConsumer = constraints.getMaxSubscriptionsPerConsumer();
-            AvailableWork.stream(state, consumersPerSubscription, maxSubscriptionsPerConsumer, constraints)
+            AvailableWork.stream(state, constraints)
                     .forEach(transformer::addAssignment);
             equalizeWorkload(state, transformer);
         });
@@ -74,7 +72,7 @@ public class SelectiveWorkBalancer {
                                                                     SubscriptionName subscriptionName,
                                                                     WorkloadConstraints constraints) {
         int redundantConsumers = state.getAssignmentsCountForSubscription(subscriptionName) -
-                constraints.getSubscriptionConstraints(subscriptionName).getRequiredConsumersNumber();
+                constraints.getConsumersNumber(subscriptionName);
         if (redundantConsumers > 0) {
             Stream.Builder<SubscriptionAssignment> redundant = Stream.builder();
             Iterator<SubscriptionAssignment> iterator = state.getAssignmentsForSubscription(subscriptionName).iterator();
@@ -93,7 +91,7 @@ public class SelectiveWorkBalancer {
     private int countMissingResources(List<SubscriptionName> subscriptions, SubscriptionAssignmentView state, WorkloadConstraints constraints) {
         return subscriptions.stream()
                 .mapToInt(s -> {
-                    int requiredConsumers = constraints.getSubscriptionConstraints(s).getRequiredConsumersNumber();
+                    int requiredConsumers = constraints.getSubscriptionConstraints(s).getConsumersNumber();
                     int subscriptionAssignments = state.getAssignmentsCountForSubscription(s);
                     int missing = requiredConsumers - subscriptionAssignments;
                     if (missing != 0) {
