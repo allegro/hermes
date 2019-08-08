@@ -69,7 +69,7 @@ public class SelectiveSupervisorController implements SupervisorController {
 //                new SelectiveWorkBalancer(configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION),
 //                        configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER)),
                 // TODO:
-                new SelectiveWorkBalancer(configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER)),
+                new SelectiveWorkBalancer(),
                 workTracker, metrics,
                 configFactory.getIntProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL),
                 configFactory.getStringProperty(KAFKA_CLUSTER_NAME));

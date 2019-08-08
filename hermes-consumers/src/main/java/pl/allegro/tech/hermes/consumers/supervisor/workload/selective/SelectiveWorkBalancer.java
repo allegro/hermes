@@ -19,12 +19,6 @@ public class SelectiveWorkBalancer {
 
     private static final Logger logger = LoggerFactory.getLogger(SelectiveWorkBalancer.class);
 
-    private final int maxSubscriptionsPerConsumer;
-
-    public SelectiveWorkBalancer(int maxSubscriptionsPerConsumer) {
-        this.maxSubscriptionsPerConsumer = maxSubscriptionsPerConsumer;
-    }
-
     public WorkBalancingResult balance(List<SubscriptionName> subscriptions,
                                        List<String> activeConsumerNodes,
                                        SubscriptionAssignmentView currentState,
@@ -60,6 +54,7 @@ public class SelectiveWorkBalancer {
             newConsumers.forEach(transformer::addConsumerNode);
             minimizeWorkload(state, transformer, constraints);
             int consumersPerSubscription = constraints.getConsumersPerSubscription();
+            int maxSubscriptionsPerConsumer = constraints.getMaxSubscriptionsPerConsumer();
             AvailableWork.stream(state, consumersPerSubscription, maxSubscriptionsPerConsumer, constraints)
                     .forEach(transformer::addAssignment);
             equalizeWorkload(state, transformer);
