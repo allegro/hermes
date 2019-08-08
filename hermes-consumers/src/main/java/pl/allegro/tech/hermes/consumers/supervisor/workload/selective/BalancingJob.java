@@ -97,7 +97,6 @@ public class BalancingJob implements Runnable {
                             .withConsumersPerSubscription(configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION))
                             .withMaxSubscriptionsPerConsumer(configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER))
                             .withAvailableConsumers(consumersRegistry.list().size())
-                            .withSubscriptionConstraints(emptyList())
                             .build();
 
                     WorkBalancingResult work = workBalancer.balance(
