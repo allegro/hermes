@@ -11,22 +11,24 @@ public class WorkloadConstraints {
     private final Map<SubscriptionName, SubscriptionConstraints> subscriptionConstraintsBySubscriptionName;
     private final int consumersPerSubscription;
     private final int maxSubscriptionsPerConsumer;
+    private final int availableConsumers;
 
     public WorkloadConstraints(Map<SubscriptionName, SubscriptionConstraints> subscriptionConstraintsBySubscriptionName,
                                int consumersPerSubscription,
-                               int maxSubscriptionsPerConsumer) {
+                               int maxSubscriptionsPerConsumer,
+                               int availableConsumers) {
         this.subscriptionConstraintsBySubscriptionName = subscriptionConstraintsBySubscriptionName;
         this.consumersPerSubscription = consumersPerSubscription;
         this.maxSubscriptionsPerConsumer = maxSubscriptionsPerConsumer;
-    }
-
-    public SubscriptionConstraints getSubscriptionConstraints(SubscriptionName subscriptionName) {
-        return subscriptionConstraintsBySubscriptionName
-                .getOrDefault(subscriptionName, new SubscriptionConstraints(subscriptionName, consumersPerSubscription));
+        this.availableConsumers = availableConsumers;
     }
 
     public int getConsumersNumber(SubscriptionName subscriptionName) {
-        return getSubscriptionConstraints(subscriptionName).getConsumersNumber();
+        final int requiredConsumers = getSubscriptionConstraints(subscriptionName).getConsumersNumber();
+        if (requiredConsumers > availableConsumers) {
+            return consumersPerSubscription;
+        }
+        return requiredConsumers;
     }
 
     public int getConsumersPerSubscription() {
@@ -37,7 +39,12 @@ public class WorkloadConstraints {
         return maxSubscriptionsPerConsumer;
     }
 
-    public static WorkloadConstraints defaultConstraints(int consumersPerSubscription, int maxSubscriptionsPerConsumer) {
-        return new WorkloadConstraints(emptyMap(), consumersPerSubscription, maxSubscriptionsPerConsumer);
+    public static WorkloadConstraints defaultConstraints(int consumersPerSubscription, int maxSubscriptionsPerConsumer, int availableConsumers) {
+        return new WorkloadConstraints(emptyMap(), consumersPerSubscription, maxSubscriptionsPerConsumer, availableConsumers);
+    }
+
+    private SubscriptionConstraints getSubscriptionConstraints(SubscriptionName subscriptionName) {
+        return subscriptionConstraintsBySubscriptionName
+                .getOrDefault(subscriptionName, new SubscriptionConstraints(subscriptionName, consumersPerSubscription));
     }
 }

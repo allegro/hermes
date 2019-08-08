@@ -17,7 +17,8 @@ public class DefaultWorkloadConstraintsRepository implements WorkloadConstraints
     public WorkloadConstraints getWorkloadConstraints() {
         return WorkloadConstraints.defaultConstraints(
                 configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION),
-                configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER)
+                configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER),
+                configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION)
         );
     }
 }
