@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
 
 import java.util.concurrent.Executors;
@@ -21,6 +22,7 @@ public class BalancingJob implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(BalancingJob.class);
 
     private final ConsumerNodesRegistry consumersRegistry;
+    private final WorkloadConstraintsRepository workloadConstraintsRepository;
     private final SubscriptionsCache subscriptionsCache;
     private final SelectiveWorkBalancer workBalancer;
     private final WorkTracker workTracker;
@@ -35,13 +37,15 @@ public class BalancingJob implements Runnable {
     private final BalancingJobMetrics balancingMetrics = new BalancingJobMetrics();
 
     BalancingJob(ConsumerNodesRegistry consumersRegistry,
-                        SubscriptionsCache subscriptionsCache,
-                        SelectiveWorkBalancer workBalancer,
-                        WorkTracker workTracker,
-                        HermesMetrics metrics,
-                        int intervalSeconds,
-                        String kafkaCluster) {
+                 WorkloadConstraintsRepository workloadConstraintsRepository,
+                 SubscriptionsCache subscriptionsCache,
+                 SelectiveWorkBalancer workBalancer,
+                 WorkTracker workTracker,
+                 HermesMetrics metrics,
+                 int intervalSeconds,
+                 String kafkaCluster) {
         this.consumersRegistry = consumersRegistry;
+        this.workloadConstraintsRepository = workloadConstraintsRepository;
         this.subscriptionsCache = subscriptionsCache;
         this.workBalancer = workBalancer;
         this.workTracker = workTracker;
@@ -85,12 +89,12 @@ public class BalancingJob implements Runnable {
 
                     SubscriptionAssignmentView initialState = workTracker.getAssignments();
 
+                    WorkloadConstraints constraints = workloadConstraintsRepository.getWorkloadConstraints();
                     WorkBalancingResult work = workBalancer.balance(
                             subscriptionsCache.listActiveSubscriptionNames(),
                             consumersRegistry.list(),
                             initialState,
-                            // TODO
-                            WorkloadConstraints.defaultConstraints(2, 2));
+                            constraints);
 
                     if (consumersRegistry.isLeader()) {
                         logger.info("Applying workload balance changes {}", work.toString());
