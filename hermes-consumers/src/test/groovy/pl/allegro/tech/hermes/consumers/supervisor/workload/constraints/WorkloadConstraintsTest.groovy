@@ -19,7 +19,7 @@ class WorkloadConstraintsTest extends Specification {
     def "should return constraints of given subscription or default value if constraints don't exist"() {
         given:
         def workloadConstraints = new WorkloadConstraints(
-                [(sub1.subscriptionName): sub1, (sub2.subscriptionName): sub2],
+                [sub1, sub2],
                 DEFAULT_CONSUMERS_PER_SUBSCRIPTION,
                 DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER,
                 AVAILABLE_CONSUMERS
@@ -37,7 +37,7 @@ class WorkloadConstraintsTest extends Specification {
     def "should return default number of consumers if specified constraints is higher than available consumers"() {
         given:
         def workloadConstraints = new WorkloadConstraints(
-                [(sub3.subscriptionName): sub3],
+                [sub3],
                 DEFAULT_CONSUMERS_PER_SUBSCRIPTION,
                 DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER,
                 AVAILABLE_CONSUMERS

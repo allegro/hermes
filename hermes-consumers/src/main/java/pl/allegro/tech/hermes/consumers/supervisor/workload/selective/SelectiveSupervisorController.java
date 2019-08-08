@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.DefaultWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 
 import java.util.Optional;
@@ -66,7 +65,7 @@ public class SelectiveSupervisorController implements SupervisorController {
         this.configFactory = configFactory;
         this.balancingJob = new BalancingJob(
                 consumersRegistry,
-                new DefaultWorkloadConstraintsRepository(configFactory),
+                configFactory,
                 subscriptionsCache,
                 new SelectiveWorkBalancer(),
                 workTracker, metrics,

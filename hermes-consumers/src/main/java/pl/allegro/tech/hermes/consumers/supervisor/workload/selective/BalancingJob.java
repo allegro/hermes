@@ -4,11 +4,11 @@ import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
 
 import java.util.concurrent.Executors;
@@ -17,12 +17,16 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Collections.emptyList;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER;
+
 public class BalancingJob implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(BalancingJob.class);
 
     private final ConsumerNodesRegistry consumersRegistry;
-    private final WorkloadConstraintsRepository workloadConstraintsRepository;
+    private final ConfigFactory configFactory;
     private final SubscriptionsCache subscriptionsCache;
     private final SelectiveWorkBalancer workBalancer;
     private final WorkTracker workTracker;
@@ -37,7 +41,7 @@ public class BalancingJob implements Runnable {
     private final BalancingJobMetrics balancingMetrics = new BalancingJobMetrics();
 
     BalancingJob(ConsumerNodesRegistry consumersRegistry,
-                 WorkloadConstraintsRepository workloadConstraintsRepository,
+                 ConfigFactory configFactory,
                  SubscriptionsCache subscriptionsCache,
                  SelectiveWorkBalancer workBalancer,
                  WorkTracker workTracker,
@@ -45,7 +49,7 @@ public class BalancingJob implements Runnable {
                  int intervalSeconds,
                  String kafkaCluster) {
         this.consumersRegistry = consumersRegistry;
-        this.workloadConstraintsRepository = workloadConstraintsRepository;
+        this.configFactory = configFactory;
         this.subscriptionsCache = subscriptionsCache;
         this.workBalancer = workBalancer;
         this.workTracker = workTracker;
@@ -89,7 +93,13 @@ public class BalancingJob implements Runnable {
 
                     SubscriptionAssignmentView initialState = workTracker.getAssignments();
 
-                    WorkloadConstraints constraints = workloadConstraintsRepository.getWorkloadConstraints();
+                    WorkloadConstraints constraints = WorkloadConstraints.builder()
+                            .withConsumersPerSubscription(configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION))
+                            .withMaxSubscriptionsPerConsumer(configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER))
+                            .withAvailableConsumers(consumersRegistry.list().size())
+                            .withSubscriptionConstraints(emptyList())
+                            .build();
+
                     WorkBalancingResult work = workBalancer.balance(
                             subscriptionsCache.listActiveSubscriptionNames(),
                             consumersRegistry.list(),
