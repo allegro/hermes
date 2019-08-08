@@ -71,8 +71,9 @@ public class SelectiveWorkBalancer {
     private Stream<SubscriptionAssignment> findRedundantAssignments(SubscriptionAssignmentView state,
                                                                     SubscriptionName subscriptionName,
                                                                     WorkloadConstraints constraints) {
-        int redundantConsumers = state.getAssignmentsCountForSubscription(subscriptionName) -
-                constraints.getConsumersNumber(subscriptionName);
+        final int assignedConsumers = state.getAssignmentsCountForSubscription(subscriptionName);
+        final int requiredConsumers = constraints.getConsumersNumber(subscriptionName);
+        int redundantConsumers = assignedConsumers - requiredConsumers;
         if (redundantConsumers > 0) {
             Stream.Builder<SubscriptionAssignment> redundant = Stream.builder();
             Iterator<SubscriptionAssignment> iterator = state.getAssignmentsForSubscription(subscriptionName).iterator();
@@ -91,7 +92,7 @@ public class SelectiveWorkBalancer {
     private int countMissingResources(List<SubscriptionName> subscriptions, SubscriptionAssignmentView state, WorkloadConstraints constraints) {
         return subscriptions.stream()
                 .mapToInt(s -> {
-                    int requiredConsumers = constraints.getSubscriptionConstraints(s).getConsumersNumber();
+                    int requiredConsumers = constraints.getConsumersNumber(s);
                     int subscriptionAssignments = state.getAssignmentsCountForSubscription(s);
                     int missing = requiredConsumers - subscriptionAssignments;
                     if (missing != 0) {
