@@ -2,20 +2,38 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload.constraints;
 
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
-import java.util.List;
+import java.util.Map;
+
+import static java.util.Collections.emptyMap;
 
 public class WorkloadConstraints {
 
-    private final List<SubscriptionConstraints> subscriptionConstraints;
+    private final Map<SubscriptionName, SubscriptionConstraints> subscriptionConstraintsBySubscriptionName;
+    private final int consumersPerSubscription;
+    private final int maxSubscriptionsPerConsumer;
 
-    public WorkloadConstraints(List<SubscriptionConstraints> subscriptionConstraints) {
-        this.subscriptionConstraints = subscriptionConstraints;
+    public WorkloadConstraints(Map<SubscriptionName, SubscriptionConstraints> subscriptionConstraintsBySubscriptionName,
+                               int consumersPerSubscription,
+                               int maxSubscriptionsPerConsumer) {
+        this.subscriptionConstraintsBySubscriptionName = subscriptionConstraintsBySubscriptionName;
+        this.consumersPerSubscription = consumersPerSubscription;
+        this.maxSubscriptionsPerConsumer = maxSubscriptionsPerConsumer;
     }
 
     public SubscriptionConstraints getSubscriptionConstraints(SubscriptionName subscriptionName) {
-        return subscriptionConstraints.stream()
-                .filter(subCons -> subCons.getSubscriptionName().equals(subscriptionName))
-                .findFirst()
-                .orElse(null);
+        return subscriptionConstraintsBySubscriptionName
+                .getOrDefault(subscriptionName, new SubscriptionConstraints(subscriptionName, consumersPerSubscription));
+    }
+
+    public int getConsumersPerSubscription() {
+        return consumersPerSubscription;
+    }
+
+    public int getMaxSubscriptionsPerConsumer() {
+        return maxSubscriptionsPerConsumer;
+    }
+
+    public static WorkloadConstraints defaultConstraints(int consumersPerSubscription, int maxSubscriptionsPerConsumer) {
+        return new WorkloadConstraints(emptyMap(), consumersPerSubscription, maxSubscriptionsPerConsumer);
     }
 }

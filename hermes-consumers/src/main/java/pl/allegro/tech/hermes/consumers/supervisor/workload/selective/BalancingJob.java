@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -87,7 +88,9 @@ public class BalancingJob implements Runnable {
                     WorkBalancingResult work = workBalancer.balance(
                             subscriptionsCache.listActiveSubscriptionNames(),
                             consumersRegistry.list(),
-                            initialState);
+                            initialState,
+                            // TODO
+                            WorkloadConstraints.defaultConstraints(2, 2));
 
                     if (consumersRegistry.isLeader()) {
                         logger.info("Applying workload balance changes {}", work.toString());

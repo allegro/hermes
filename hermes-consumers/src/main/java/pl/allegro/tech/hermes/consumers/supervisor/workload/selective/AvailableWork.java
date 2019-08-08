@@ -76,7 +76,7 @@ public class AvailableWork extends Spliterators.AbstractSpliterator<Subscription
 
         final SubscriptionConstraints subscriptionConstraints = constraints.getSubscriptionConstraints(subscriptionName);
         if (subscriptionConstraints != null) {
-            return subscriptionConstraints.getConsumersNumber();
+            return subscriptionConstraints.getRequiredConsumersNumber();
         }
         return consumersPerSubscription;
     }

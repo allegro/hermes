@@ -12,11 +12,11 @@ public class SubscriptionConstraints {
         this.consumersNumber = consumersNumber;
     }
 
-    public int getConsumersNumber() {
-        return consumersNumber;
-    }
-
     public SubscriptionName getSubscriptionName() {
         return subscriptionName;
+    }
+
+    public int getRequiredConsumersNumber() {
+        return consumersNumber;
     }
 }
