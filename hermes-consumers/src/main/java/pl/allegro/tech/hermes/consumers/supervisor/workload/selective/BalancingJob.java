@@ -17,7 +17,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.Collections.emptyList;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER;
 
@@ -93,11 +92,10 @@ public class BalancingJob implements Runnable {
 
                     SubscriptionAssignmentView initialState = workTracker.getAssignments();
 
-                    WorkloadConstraints constraints = WorkloadConstraints.builder()
-                            .withConsumersPerSubscription(configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION))
-                            .withMaxSubscriptionsPerConsumer(configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER))
-                            .withAvailableConsumers(consumersRegistry.list().size())
-                            .build();
+                    WorkloadConstraints constraints = WorkloadConstraints.defaultConstraints(
+                            configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION),
+                            configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER),
+                            consumersRegistry.list().size());
 
                     WorkBalancingResult work = workBalancer.balance(
                             subscriptionsCache.listActiveSubscriptionNames(),

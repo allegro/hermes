@@ -54,10 +54,6 @@ public class WorkloadConstraints {
         return new WorkloadConstraints(emptyList(), emptyList(), consumersPerSubscription, maxSubscriptionsPerConsumer, availableConsumers);
     }
 
-    public static WorkloadConstraintsBuilder builder() {
-        return new WorkloadConstraintsBuilder();
-    }
-
     private Optional<SubscriptionConstraints> getSubscriptionConstraints(SubscriptionName subscriptionName) {
         return subscriptionConstraints.stream()
                 .filter(sub -> sub.getSubscriptionName().equals(subscriptionName))
@@ -68,42 +64,5 @@ public class WorkloadConstraints {
         return topicConstraints.stream()
                 .filter(topic -> topic.getTopicName().equals(topicName))
                 .findFirst();
-    }
-
-    public static class WorkloadConstraintsBuilder {
-        private List<SubscriptionConstraints> subscriptionConstraints;
-        private List<TopicConstraints> topicConstraints;
-        private int consumersPerSubscription;
-        private int maxSubscriptionsPerConsumer;
-        private int availableConsumers;
-
-        public WorkloadConstraints build() {
-            return new WorkloadConstraints(subscriptionConstraints, topicConstraints, consumersPerSubscription, maxSubscriptionsPerConsumer, availableConsumers);
-        }
-
-        public WorkloadConstraintsBuilder withSubscriptionConstraints(List<SubscriptionConstraints> subscriptionConstraints) {
-            this.subscriptionConstraints = subscriptionConstraints;
-            return this;
-        }
-
-        public WorkloadConstraintsBuilder withTopicConstraints(List<TopicConstraints> topicConstraints) {
-            this.topicConstraints = topicConstraints;
-            return this;
-        }
-
-        public WorkloadConstraintsBuilder withConsumersPerSubscription(int consumersPerSubscription) {
-            this.consumersPerSubscription = consumersPerSubscription;
-            return this;
-        }
-
-        public WorkloadConstraintsBuilder withMaxSubscriptionsPerConsumer(int maxSubscriptionsPerConsumer) {
-            this.maxSubscriptionsPerConsumer = maxSubscriptionsPerConsumer;
-            return this;
-        }
-
-        public WorkloadConstraintsBuilder withAvailableConsumers(int availableConsumers) {
-            this.availableConsumers = availableConsumers;
-            return this;
-        }
     }
 }
