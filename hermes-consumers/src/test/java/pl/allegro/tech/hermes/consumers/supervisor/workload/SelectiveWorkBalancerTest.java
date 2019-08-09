@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
@@ -8,7 +9,7 @@ import org.assertj.core.api.ListAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.SubscriptionConstraints;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.Constraints;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.WorkBalancingResult;
@@ -264,8 +265,8 @@ public class SelectiveWorkBalancerTest {
 
         List<String> supervisors = ImmutableList.of("c1", "c2", "c3");
         List<SubscriptionName> subscriptions = someSubscriptions(4);
-        WorkloadConstraints subscriptionConstraints = new WorkloadConstraints(ImmutableList.of(
-                new SubscriptionConstraints(subscriptions.get(0), requiredConsumersNumber)
+        WorkloadConstraints subscriptionConstraints = new WorkloadConstraints(ImmutableMap.of(
+                subscriptions.get(0), new Constraints(requiredConsumersNumber)
         ), emptyList(), 2, 4, supervisors.size());
 
         // when
