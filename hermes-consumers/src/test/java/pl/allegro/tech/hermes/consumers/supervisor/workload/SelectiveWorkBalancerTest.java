@@ -267,7 +267,7 @@ public class SelectiveWorkBalancerTest {
         List<SubscriptionName> subscriptions = someSubscriptions(4);
         WorkloadConstraints subscriptionConstraints = new WorkloadConstraints(ImmutableMap.of(
                 subscriptions.get(0), new Constraints(requiredConsumersNumber)
-        ), emptyList(), 2, 4, supervisors.size());
+        ), emptyMap(), 2, 4, supervisors.size());
 
         // when
         SubscriptionAssignmentView state = workBalancer
