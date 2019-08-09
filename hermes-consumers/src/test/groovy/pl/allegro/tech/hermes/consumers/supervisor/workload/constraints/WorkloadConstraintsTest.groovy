@@ -94,4 +94,25 @@ class WorkloadConstraintsTest extends Specification {
         where:
         incorrectConsumersNumber << [0, -1]
     }
+
+    @Unroll
+    def "should return default number of consumers if specified constraints are null"() {
+        given:
+        def subscriptionName = SubscriptionName.fromString('group.incorrect_topic$sub')
+        def workloadConstraints = new WorkloadConstraints(
+                constraintsSubscription,
+                constraintsTopic,
+                DEFAULT_CONSUMERS_PER_SUBSCRIPTION,
+                DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER,
+                AVAILABLE_CONSUMERS
+        )
+
+        expect:
+        workloadConstraints.getConsumersNumber(subscriptionName) == DEFAULT_CONSUMERS_PER_SUBSCRIPTION
+
+        where:
+        constraintsSubscription | constraintsTopic
+        null                    | []
+        []                      | null
+    }
 }

@@ -21,8 +21,8 @@ public class WorkloadConstraints {
                                int consumersPerSubscription,
                                int maxSubscriptionsPerConsumer,
                                int availableConsumers) {
-        this.subscriptionConstraints = subscriptionConstraints;
-        this.topicConstraints = topicConstraints;
+        this.subscriptionConstraints = subscriptionConstraints != null ? subscriptionConstraints : emptyList();
+        this.topicConstraints = topicConstraints != null ? topicConstraints : emptyList();
         this.consumersPerSubscription = consumersPerSubscription;
         this.maxSubscriptionsPerConsumer = maxSubscriptionsPerConsumer;
         this.availableConsumers = availableConsumers;
