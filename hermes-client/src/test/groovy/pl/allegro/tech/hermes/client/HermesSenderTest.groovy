@@ -38,15 +38,12 @@ class HermesSenderTest extends Specification {
     }
 
     @Shared
-    def tcpClient = TcpClient.create()
-
-    @Shared
     def webClient = WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient)))
+            .clientConnector(new ReactorClientHttpConnector(HttpClient.from(TcpClient.create())))
             .build()
 
-    @Unroll("should send Content-Type header when publishing using #name sender")
-    def "should send Content-Type header"() {
+    @Unroll
+    def "should send Content-Type header when publishing using #name sender"() {
         given:
         HermesSender currentSender = sender
         HermesClient client = HermesClientBuilder
@@ -67,17 +64,15 @@ class HermesSenderTest extends Specification {
                 .withRequestBody(containing("Hello!")))
 
         where:
-        name << ['JerseySender', 'RestTemplateSender', 'OkHttpSender', 'WebClient']
-        sender << [
-                new JerseyHermesSender(ClientBuilder.newClient()),
-                new RestTemplateHermesSender(new AsyncRestTemplate()),
-                new OkHttpHermesSender(new OkHttpClient()),
-                new WebClientHermesSender(webClient)
-        ]
+        sender                                                  | name
+        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'
+        new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'
+        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'
+        new WebClientHermesSender(webClient)                    | 'WebClientSender'
     }
 
-    @Unroll("should send Schema-Version header when publishing with schema using #name sender")
-    def "should send Schema-Version header"() {
+    @Unroll
+    def "should send Schema-Version header when publishing with schema using #name sender"() {
         given:
         HermesSender currentSender = sender
         HermesClient client = HermesClientBuilder
@@ -89,24 +84,23 @@ class HermesSenderTest extends Specification {
                 .willReturn(aResponse().withStatus(201)))
 
         when:
-        client.publish(hermesMessage('topic.test', 'Hello!').withSchemaVersion(13).build()).join();
+        client.publish(hermesMessage('topic.test', 'Hello!').withSchemaVersion(13).build()).join()
 
         then:
         service.verify(postRequestedFor(urlEqualTo("/topics/topic.test"))
-                .withHeader("Schema-Version", equalTo("13")))
+                .withHeader("Schema-Version", equalTo("13"))
+                .withRequestBody(containing("Hello!")))
 
         where:
-        name << ['JerseySender', 'RestTemplateSender', 'OkHttpSender', 'WebClient']
-        sender << [
-                new JerseyHermesSender(ClientBuilder.newClient()),
-                new RestTemplateHermesSender(new AsyncRestTemplate()),
-                new OkHttpHermesSender(new OkHttpClient()),
-                new WebClientHermesSender(webClient)
-        ]
+        sender                                                  | name
+        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'
+        new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'
+        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'
+        new WebClientHermesSender(webClient)                    | 'WebClientSender'
     }
 
-    @Unroll("should send custom header when publishing using #name sender")
-    def "should send custom header"() {
+    @Unroll
+    def "should send custom header when publishing using #name sender"() {
         given:
         HermesSender currentSender = sender
         HermesClient client = HermesClientBuilder
@@ -118,20 +112,19 @@ class HermesSenderTest extends Specification {
                 .willReturn(aResponse().withStatus(201)))
 
         when:
-        client.publish(hermesMessage('topic.test', 'Hello!').withHeader('Custom-Header', 'header value').build()).join();
+        client.publish(hermesMessage('topic.test', 'Hello!').withHeader('Custom-Header', 'header value').build()).join()
 
         then:
         service.verify(postRequestedFor(urlEqualTo("/topics/topic.test"))
-                .withHeader("Custom-Header", equalTo("header value")))
+                .withHeader("Custom-Header", equalTo("header value"))
+                .withRequestBody(containing("Hello!")))
 
         where:
-        name << ['JerseySender', 'RestTemplateSender', 'OkHttpSender', 'WebClient']
-        sender << [
-                new JerseyHermesSender(ClientBuilder.newClient()),
-                new RestTemplateHermesSender(new AsyncRestTemplate()),
-                new OkHttpHermesSender(new OkHttpClient()),
-                new WebClientHermesSender(webClient)
-        ]
+        sender                                                  | name
+        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'
+        new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'
+        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'
+        new WebClientHermesSender(webClient)                    | 'WebClientSender'
     }
 
     @Unroll
@@ -156,7 +149,8 @@ class HermesSenderTest extends Specification {
 
         then:
         service.verify(postRequestedFor(urlEqualTo("/topics/topic.test"))
-                .withHeader("Content-Type", equalTo("application/json")))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .withRequestBody(containing("Hello!")))
 
         and:
         response.messageId == 'messageId'
@@ -166,16 +160,16 @@ class HermesSenderTest extends Specification {
         new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'        | 'Hermes-Message-Id'
         new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'  | 'Hermes-Message-Id'
         new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'        | 'Hermes-Message-Id'
-        new WebClientHermesSender(webClient)                    | 'WebClient'           | 'Hermes-Message-Id'
+        new WebClientHermesSender(webClient)                    | 'WebClientSender'     | 'Hermes-Message-Id'
 
         new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'        | 'hermes-message-id'
         new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'  | 'hermes-message-id'
         new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'        | 'hermes-message-id'
-        new WebClientHermesSender(webClient)                    | 'WebClient'           | 'hermes-message-id'
+        new WebClientHermesSender(webClient)                    | 'WebClientSender'     | 'hermes-message-id'
 
         new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'        | 'HERMES-MESSAGE-ID'
         new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'  | 'HERMES-MESSAGE-ID'
         new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'        | 'HERMES-MESSAGE-ID'
-        new WebClientHermesSender(webClient)                    | 'WebClient'           | 'HERMES-MESSAGE-ID'
+        new WebClientHermesSender(webClient)                    | 'WebClientSender'     | 'HERMES-MESSAGE-ID'
     }
 }
