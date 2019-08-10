@@ -2,8 +2,11 @@ dependencies {
     compileOnly group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.metrics
     compileOnly group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     compileOnly group: 'org.springframework', name: 'spring-web', version: versions.spring_web
+    compileOnly group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
+
     compileOnly group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     compileOnly group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
+    compileOnly group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.8.10.RELEASE'
 
     compile group: 'net.jodah', name: 'failsafe', version: '0.9.3'
 
@@ -15,6 +18,8 @@ dependencies {
     testCompile group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.metrics
     testCompile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     testCompile group: 'org.springframework', name: 'spring-web', version: versions.spring_web
+    testCompile group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
     testCompile group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     testCompile group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
+    testCompile group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.8.10.RELEASE'
 }
