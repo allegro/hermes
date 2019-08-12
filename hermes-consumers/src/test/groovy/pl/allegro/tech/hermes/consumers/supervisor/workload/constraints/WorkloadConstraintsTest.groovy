@@ -54,7 +54,7 @@ class WorkloadConstraintsTest extends Specification {
     }
 
     @Unroll
-    def "should return default number of consumers if specified constraint is higher than available consumers number"() {
+    def "should return max available number of consumers if specified constraint is higher than available consumers number"() {
         given:
         def workloadConstraints = new WorkloadConstraints(
                 [(SubscriptionName.fromString('group.topic1$sub')): new Constraints(AVAILABLE_CONSUMERS + 1)],
@@ -65,7 +65,7 @@ class WorkloadConstraintsTest extends Specification {
         )
 
         expect:
-        workloadConstraints.getConsumersNumber(subscriptionName) == DEFAULT_CONSUMERS_PER_SUBSCRIPTION
+        workloadConstraints.getConsumersNumber(subscriptionName) == AVAILABLE_CONSUMERS
 
         where:
         subscriptionName << [

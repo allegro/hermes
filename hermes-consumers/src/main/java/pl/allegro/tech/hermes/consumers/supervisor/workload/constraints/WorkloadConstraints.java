@@ -32,15 +32,23 @@ public class WorkloadConstraints {
         final int requiredConsumers = getSubscriptionConstraints(subscriptionName)
                 .map(Constraints::getConsumersNumber)
                 .orElse(0);
-        if (requiredConsumers > 0 && requiredConsumers <= availableConsumers) {
-            return requiredConsumers;
+        if (requiredConsumers > 0) {
+            if (requiredConsumers <= availableConsumers) {
+                return requiredConsumers;
+            } else {
+                return availableConsumers;
+            }
         }
 
         final int requiredConsumersForTopic = getTopicConstraints(subscriptionName.getTopicName())
                 .map(Constraints::getConsumersNumber)
                 .orElse(0);
-        if (requiredConsumersForTopic > 0 && requiredConsumersForTopic <= availableConsumers) {
-            return requiredConsumersForTopic;
+        if (requiredConsumersForTopic > 0) {
+            if (requiredConsumersForTopic <= availableConsumers) {
+                return requiredConsumersForTopic;
+            } else {
+                return availableConsumers;
+            }
         }
 
         return consumersPerSubscription;
