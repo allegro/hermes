@@ -4,7 +4,6 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.Collections.emptyMap;
 
@@ -29,23 +28,13 @@ public class WorkloadConstraints {
     }
 
     public int getConsumersNumber(SubscriptionName subscriptionName) {
-        final int requiredConsumers = getSubscriptionConstraints(subscriptionName)
-                .map(Constraints::getConsumersNumber)
-                .orElse(0);
+        final int requiredConsumers = subscriptionConstraints
+                .getOrDefault(subscriptionName, topicConstraints.getOrDefault(subscriptionName.getTopicName(), new Constraints(consumersPerSubscription)))
+                .getConsumersNumber();
+
         if (requiredConsumers > 0) {
             if (requiredConsumers <= availableConsumers) {
                 return requiredConsumers;
-            } else {
-                return availableConsumers;
-            }
-        }
-
-        final int requiredConsumersForTopic = getTopicConstraints(subscriptionName.getTopicName())
-                .map(Constraints::getConsumersNumber)
-                .orElse(0);
-        if (requiredConsumersForTopic > 0) {
-            if (requiredConsumersForTopic <= availableConsumers) {
-                return requiredConsumersForTopic;
             } else {
                 return availableConsumers;
             }
@@ -60,13 +49,5 @@ public class WorkloadConstraints {
 
     public static WorkloadConstraints defaultConstraints(int consumersPerSubscription, int maxSubscriptionsPerConsumer, int availableConsumers) {
         return new WorkloadConstraints(emptyMap(), emptyMap(), consumersPerSubscription, maxSubscriptionsPerConsumer, availableConsumers);
-    }
-
-    private Optional<Constraints> getSubscriptionConstraints(SubscriptionName subscriptionName) {
-        return Optional.ofNullable(subscriptionConstraints.get(subscriptionName));
-    }
-
-    private Optional<Constraints> getTopicConstraints(TopicName topicName) {
-        return Optional.ofNullable(topicConstraints.get(topicName));
     }
 }
