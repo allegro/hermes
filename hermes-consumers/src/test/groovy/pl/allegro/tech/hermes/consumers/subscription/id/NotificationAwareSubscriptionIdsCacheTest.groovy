@@ -48,8 +48,13 @@ class NotificationAwareSubscriptionIdsCacheTest extends Specification {
 
         then:
         subscriptionIds.getSubscriptionId(sub1).get() == id1
+        subscriptionIds.getSubscriptionId(id1.value).get() == id1
+
         subscriptionIds.getSubscriptionId(sub2).get() == id2
+        subscriptionIds.getSubscriptionId(id2.value).get() == id2
+
         !subscriptionIds.getSubscriptionId(sub3).isPresent()
+        !subscriptionIds.getSubscriptionId(id3.value).isPresent()
     }
 
     def "should handle subscription callback zk events"() {
@@ -77,20 +82,25 @@ class NotificationAwareSubscriptionIdsCacheTest extends Specification {
 
         then:
         subscriptionIds.getSubscriptionId(sub1).get() == id1
+        subscriptionIds.getSubscriptionId(id1.value).get() == id1
         !subscriptionIds.getSubscriptionId(sub2).isPresent()
+        !subscriptionIds.getSubscriptionId(id2.value).isPresent()
 
         when:
         subscriptionIds.onSubscriptionChanged(subscription(sub2).build())
 
         then:
         subscriptionIds.getSubscriptionId(sub2).get() == id2
+        subscriptionIds.getSubscriptionId(id2.value).get() == id2
 
         when:
         subscriptionIds.onSubscriptionRemoved(subscription(sub1).build())
 
         then:
         !subscriptionIds.getSubscriptionId(sub1).isPresent()
+        !subscriptionIds.getSubscriptionId(id1.value).isPresent()
         subscriptionIds.getSubscriptionId(sub2).get() == id2
+        subscriptionIds.getSubscriptionId(id2.value).get() == id2
     }
 
     private static class SubscriptionNames {

@@ -8,5 +8,7 @@ public interface SubscriptionIds {
 
     Optional<SubscriptionId> getSubscriptionId(SubscriptionName subscriptionName);
 
+    Optional<SubscriptionId> getSubscriptionId(long id);
+
     void start();
 }

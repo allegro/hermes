@@ -14,7 +14,8 @@ public class NotificationAwareSubscriptionIdsCache implements SubscriptionIds, S
 
     private final SubscriptionsCache subscriptionsCache;
     private final SubscriptionIdProvider subscriptionIdProvider;
-    private final Map<SubscriptionName, SubscriptionId> ids = new ConcurrentHashMap<>();
+    private final Map<SubscriptionName, SubscriptionId> nameToIdMap = new ConcurrentHashMap<>();
+    private final Map<Long, SubscriptionId> valueToIdMap = new ConcurrentHashMap<>();
 
     public NotificationAwareSubscriptionIdsCache(InternalNotificationsBus notificationsBus,
                                                  SubscriptionsCache subscriptionsCache,
@@ -32,12 +33,19 @@ public class NotificationAwareSubscriptionIdsCache implements SubscriptionIds, S
     }
 
     private void putSubscriptionId(SubscriptionName name) {
-        ids.put(name, subscriptionIdProvider.getSubscriptionId(name));
+        SubscriptionId id = subscriptionIdProvider.getSubscriptionId(name);
+        nameToIdMap.put(name, id);
+        valueToIdMap.put(id.getValue(), id);
     }
 
     @Override
     public Optional<SubscriptionId> getSubscriptionId(SubscriptionName subscriptionName) {
-        return Optional.ofNullable(ids.get(subscriptionName));
+        return Optional.ofNullable(nameToIdMap.get(subscriptionName));
+    }
+
+    @Override
+    public Optional<SubscriptionId> getSubscriptionId(long id) {
+        return Optional.ofNullable(valueToIdMap.get(id));
     }
 
     @Override
@@ -52,6 +60,8 @@ public class NotificationAwareSubscriptionIdsCache implements SubscriptionIds, S
 
     @Override
     public void onSubscriptionRemoved(Subscription subscription) {
-        ids.remove(subscription.getQualifiedName());
+        Optional.ofNullable(nameToIdMap.remove(subscription.getQualifiedName()))
+                .map(SubscriptionId::getValue)
+                .ifPresent(valueToIdMap::remove);
     }
 }
