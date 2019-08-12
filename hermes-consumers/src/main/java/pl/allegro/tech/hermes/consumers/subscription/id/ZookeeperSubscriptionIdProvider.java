@@ -22,7 +22,7 @@ public class ZookeeperSubscriptionIdProvider implements SubscriptionIdProvider {
     public SubscriptionId getSubscriptionId(SubscriptionName name) {
         return Optional.ofNullable(getZnodeStat(name))
                 .map(Stat::getCzxid)
-                .map(SubscriptionId::from)
+                .map(czxid -> SubscriptionId.from(name, czxid))
                 .orElseThrow(() -> new IllegalStateException(
                         String.format("Cannot get czxid of subscription %s as it doesn't exist", name.getQualifiedName())));
     }

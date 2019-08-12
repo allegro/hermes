@@ -1,21 +1,30 @@
 package pl.allegro.tech.hermes.consumers.subscription.id;
 
+import pl.allegro.tech.hermes.api.SubscriptionName;
+
 import java.util.Objects;
 
 public class SubscriptionId {
 
     private final long value;
 
-    private SubscriptionId(long value) {
+    private final SubscriptionName subscriptionName;
+
+    private SubscriptionId(SubscriptionName subscriptionName, long value) {
         this.value = value;
+        this.subscriptionName = subscriptionName;
     }
 
-    public static SubscriptionId from(long value) {
-        return new SubscriptionId(value);
+    static SubscriptionId from(SubscriptionName subscriptionName, long value) {
+        return new SubscriptionId(subscriptionName, value);
     }
 
     public long getValue() {
         return value;
+    }
+
+    public SubscriptionName getSubscriptionName() {
+        return subscriptionName;
     }
 
     @Override
