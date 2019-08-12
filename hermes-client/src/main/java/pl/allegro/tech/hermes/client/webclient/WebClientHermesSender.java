@@ -10,11 +10,12 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+import static java.util.stream.Collectors.toMap;
 import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
-import static pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender.convertToCaseInsensitiveMap;
 
 public class WebClientHermesSender implements HermesSender {
 
@@ -64,5 +65,15 @@ public class WebClientHermesSender implements HermesSender {
         Map<String, String> getHeaders() {
             return httpHeaders.toSingleValueMap();
         }
+    }
+
+    private TreeMap<String, String> convertToCaseInsensitiveMap(Map<String, String> hashMap) {
+        return hashMap.entrySet().stream()
+                .collect(toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldVal, newVal) -> newVal,
+                        () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)
+                ));
     }
 }

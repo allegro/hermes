@@ -66,7 +66,7 @@ public class RestTemplateHermesSender implements HermesSender {
                 .build();
     }
 
-    public static TreeMap<String, String> convertToCaseInsensitiveMap(Map<String, String> hashMap) {
+    private TreeMap<String, String> convertToCaseInsensitiveMap(Map<String, String> hashMap) {
         return hashMap.entrySet().stream()
                 .collect(toMap(
                         Map.Entry::getKey,
