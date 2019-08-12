@@ -1,24 +1,30 @@
 package pl.allegro.tech.hermes.consumers.subscription.id;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.notifications.SubscriptionCallback;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class NotificationAwareSubscriptionIdsCache implements SubscriptionIds, SubscriptionCallback {
 
-    private final Map<SubscriptionId, SubscriptionName> ids = new ConcurrentHashMap<>();
     private final SubscriptionsCache subscriptionsCache;
+    private final SubscriptionIdProvider subscriptionIdProvider;
+    private final BiMap<SubscriptionId, SubscriptionName> idsBiMap;
 
     public NotificationAwareSubscriptionIdsCache(InternalNotificationsBus notificationsBus,
-                                                 SubscriptionsCache subscriptionsCache) {
+                                                 SubscriptionsCache subscriptionsCache,
+                                                 SubscriptionIdProvider subscriptionIdProvider) {
         this.subscriptionsCache = subscriptionsCache;
+        this.subscriptionIdProvider = subscriptionIdProvider;
+
         notificationsBus.registerSubscriptionCallback(this);
+        this.idsBiMap = Maps.synchronizedBiMap(HashBiMap.create());
     }
 
     @Override
@@ -28,17 +34,17 @@ public class NotificationAwareSubscriptionIdsCache implements SubscriptionIds, S
     }
 
     private void putSubscriptionId(SubscriptionName name) {
-        ids.put(SubscriptionId.of(name), name);
+        idsBiMap.put(subscriptionIdProvider.getSubscriptionId(name), name);
     }
 
     @Override
-    public SubscriptionId getSubscriptionId(SubscriptionName subscriptionName) {
-        return SubscriptionId.of(subscriptionName);
+    public Optional<SubscriptionId> getSubscriptionId(SubscriptionName subscriptionName) {
+        return Optional.ofNullable(idsBiMap.inverse().get(subscriptionName));
     }
 
     @Override
     public Optional<SubscriptionName> getSubscriptionName(SubscriptionId subscriptionId) {
-        return Optional.ofNullable(ids.get(subscriptionId));
+        return Optional.ofNullable(idsBiMap.get(subscriptionId));
     }
 
     @Override
@@ -53,6 +59,6 @@ public class NotificationAwareSubscriptionIdsCache implements SubscriptionIds, S
 
     @Override
     public void onSubscriptionRemoved(Subscription subscription) {
-        ids.remove(SubscriptionId.of(subscription.getQualifiedName()));
+        idsBiMap.inverse().remove(subscription.getQualifiedName());
     }
 }
