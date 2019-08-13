@@ -33,18 +33,18 @@ import pl.allegro.tech.hermes.management.domain.subscription.validator.Subscript
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status;
-import java.util.Set;
 
 @Component
 public class SubscriptionService {
