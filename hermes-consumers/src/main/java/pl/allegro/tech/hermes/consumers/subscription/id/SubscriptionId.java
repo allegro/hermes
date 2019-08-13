@@ -15,7 +15,7 @@ public class SubscriptionId {
         this.subscriptionName = subscriptionName;
     }
 
-    static SubscriptionId from(SubscriptionName subscriptionName, long value) {
+    public static SubscriptionId from(SubscriptionName subscriptionName, long value) {
         return new SubscriptionId(subscriptionName, value);
     }
 
