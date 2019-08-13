@@ -7,7 +7,6 @@ import pl.allegro.tech.hermes.domain.group.GroupRepository
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository
 import pl.allegro.tech.hermes.domain.topic.TopicRepository
-import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder
 import spock.lang.Specification
 
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
