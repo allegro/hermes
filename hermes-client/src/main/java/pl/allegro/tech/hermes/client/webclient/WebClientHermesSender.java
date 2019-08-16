@@ -16,6 +16,7 @@ import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse
 
 public class WebClientHermesSender implements HermesSender {
 
+    private final static Mono<String> NO_BODY = Mono.just("");
     private final WebClient webClient;
 
     public WebClientHermesSender(WebClient webClient) {
@@ -31,7 +32,7 @@ public class WebClientHermesSender implements HermesSender {
                 .exchange()
                 .flatMap(response -> response
                         .bodyToMono(String.class)
-                        .switchIfEmpty(Mono.just(""))
+                        .switchIfEmpty(NO_BODY)
                         .map(body -> hermesResponse()
                                 .withBody(body)
                                 .withHttpStatus(response.rawStatusCode())
