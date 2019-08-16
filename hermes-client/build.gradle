@@ -6,7 +6,6 @@ dependencies {
 
     compileOnly group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     compileOnly group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
-    compileOnly group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.8.10.RELEASE'
 
     compile group: 'net.jodah', name: 'failsafe', version: '0.9.3'
 
