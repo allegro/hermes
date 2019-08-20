@@ -14,8 +14,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import javax.inject.Inject;
 
 import static org.slf4j.LoggerFactory.getLogger;
-import static pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.ConsumerMaxRateRegistryType.FLAT_BINARY;
-import static pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.ConsumerMaxRateRegistryType.HIERARCHICAL;
 
 public class MaxRateRegistryFactory implements Factory<MaxRateRegistry> {
 
@@ -46,17 +44,23 @@ public class MaxRateRegistryFactory implements Factory<MaxRateRegistry> {
 
     @Override
     public MaxRateRegistry provide() {
-        String strategy = configFactory.getStringProperty(Configs.CONSUMER_MAXRATE_REGISTRY_TYPE);
-        logger.info("Max rate registry type chosen: {}", strategy);
+        ConsumerMaxRateRegistryType type;
+        try {
+            type = ConsumerMaxRateRegistryType.fromString(configFactory.getStringProperty(Configs.CONSUMER_MAXRATE_REGISTRY_TYPE));
+        } catch (Exception e) {
+            logger.error("Could not configure max rate registry", e);
+            throw e;
+        }
+        logger.info("Max rate registry type chosen: {}", type.getConfigValue());
 
-        switch (strategy) {
+        switch (type) {
             case HIERARCHICAL:
                 return new HierarchicalCacheMaxRateRegistry(configFactory, curator, objectMapper, zookeeperPaths, pathSerializer, subscriptionCache);
             case FLAT_BINARY:
                 return new FlatBinaryMaxRateRegistry(configFactory, subscriptionAssignmentCache::getAssignedConsumers,
                         subscriptionAssignmentCache::getConsumerSubscriptions, curator, zookeeperPaths, subscriptionIds);
             default:
-                throw new ConsumerMaxRateRegistryType.UnknownMaxRateRegistryException();
+                throw new UnsupportedOperationException("Max-rate type not supported.");
         }
     }
 
