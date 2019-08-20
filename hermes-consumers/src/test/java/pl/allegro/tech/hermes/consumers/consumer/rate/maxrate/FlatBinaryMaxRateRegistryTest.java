@@ -144,19 +144,19 @@ public class FlatBinaryMaxRateRegistryTest extends ZookeeperBaseTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void shouldNotAllowForSavingRateHistoryOfOtherNodes() {
+    public void shouldNotAllowForSavingRateHistoryOfOtherThanCurrentConsumerNode() {
         // when
         maxRateRegistry.writeRateHistory(new ConsumerInstance("otherConsumer", subscription1), RateHistory.create(0.5));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void shouldNotAllowForReadingRateHistoryOfOtherNodes() {
+    public void shouldNotAllowForReadingRateHistoryOfOtherThanCurrentConsumerNode() {
         // when
         maxRateRegistry.getRateHistory(new ConsumerInstance("otherConsumer", subscription1));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void shouldNotAllowForReadingMaxRateOfOtherNodes() {
+    public void shouldNotAllowForReadingMaxRateOfOtherThanCurrentConsumerNodeConsumerRateHistoriesDecoder() {
         // when
         maxRateRegistry.getMaxRate(new ConsumerInstance("otherConsumer", subscription1));
     }

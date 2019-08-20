@@ -249,7 +249,6 @@ class HierarchicalCacheMaxRateRegistry implements MaxRateRegistry {
                 logger.warn("Exception occurred when initializing cache for subscription {}", subscriptionName, e);
             }
         }
-        ;
         logger.info("Loaded max-rates of {} out of {} subscriptions", loadedMaxRates, subscriptions.size());
     }
 

@@ -29,9 +29,13 @@ public class MaxRateRegistryFactory implements Factory<MaxRateRegistry> {
     private final SubscriptionAssignmentCache subscriptionAssignmentCache;
 
     @Inject
-    public MaxRateRegistryFactory(ConfigFactory configFactory, CuratorFramework curator, ObjectMapper objectMapper,
-                                  ZookeeperPaths zookeeperPaths, MaxRatePathSerializer pathSerializer, SubscriptionsCache subscriptionCache,
-                                  SubscriptionIds subscriptionIds, SubscriptionAssignmentCache subscriptionAssignmentCache) {
+    public MaxRateRegistryFactory(ConfigFactory configFactory,
+                                  CuratorFramework curator, ObjectMapper objectMapper,
+                                  ZookeeperPaths zookeeperPaths,
+                                  MaxRatePathSerializer pathSerializer,
+                                  SubscriptionsCache subscriptionCache,
+                                  SubscriptionIds subscriptionIds,
+                                  SubscriptionAssignmentCache subscriptionAssignmentCache) {
         this.configFactory = configFactory;
         this.curator = curator;
         this.objectMapper = objectMapper;
@@ -46,7 +50,8 @@ public class MaxRateRegistryFactory implements Factory<MaxRateRegistry> {
     public MaxRateRegistry provide() {
         ConsumerMaxRateRegistryType type;
         try {
-            type = ConsumerMaxRateRegistryType.fromString(configFactory.getStringProperty(Configs.CONSUMER_MAXRATE_REGISTRY_TYPE));
+            String typeString = configFactory.getStringProperty(Configs.CONSUMER_MAXRATE_REGISTRY_TYPE);
+            type = ConsumerMaxRateRegistryType.fromString(typeString);
         } catch (Exception e) {
             logger.error("Could not configure max rate registry", e);
             throw e;
@@ -55,10 +60,23 @@ public class MaxRateRegistryFactory implements Factory<MaxRateRegistry> {
 
         switch (type) {
             case HIERARCHICAL:
-                return new HierarchicalCacheMaxRateRegistry(configFactory, curator, objectMapper, zookeeperPaths, pathSerializer, subscriptionCache);
+                return new HierarchicalCacheMaxRateRegistry(
+                        configFactory,
+                        curator,
+                        objectMapper,
+                        zookeeperPaths,
+                        pathSerializer,
+                        subscriptionCache
+                );
             case FLAT_BINARY:
-                return new FlatBinaryMaxRateRegistry(configFactory, subscriptionAssignmentCache::getAssignedConsumers,
-                        subscriptionAssignmentCache::getConsumerSubscriptions, curator, zookeeperPaths, subscriptionIds);
+                return new FlatBinaryMaxRateRegistry(
+                        configFactory,
+                        subscriptionAssignmentCache::getAssignedConsumers,
+                        subscriptionAssignmentCache::getConsumerSubscriptions,
+                        curator,
+                        zookeeperPaths,
+                        subscriptionIds
+                );
             default:
                 throw new UnsupportedOperationException("Max-rate type not supported.");
         }

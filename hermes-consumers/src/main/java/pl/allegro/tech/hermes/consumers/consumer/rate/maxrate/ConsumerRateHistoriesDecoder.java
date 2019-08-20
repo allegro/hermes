@@ -3,10 +3,12 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 import org.agrona.concurrent.UnsafeBuffer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.sbe.stubs.MessageHeaderDecoder;
 import pl.allegro.tech.hermes.consumers.consumer.rate.sbe.stubs.RateHistoryDecoder;
+import pl.allegro.tech.hermes.consumers.consumer.rate.sbe.stubs.RateHistoryDecoder.SubscriptionsDecoder.RatesDecoder;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 class ConsumerRateHistoriesDecoder {
 
@@ -33,10 +35,10 @@ class ConsumerRateHistoriesDecoder {
         ConsumerRateHistory result = new ConsumerRateHistory();
         for (RateHistoryDecoder.SubscriptionsDecoder subscriptionDecoder : body.subscriptions()) {
             long id = subscriptionDecoder.id();
-            List<Double> rates = new ArrayList<>();
-            for (RateHistoryDecoder.SubscriptionsDecoder.RatesDecoder ratesDecoder : subscriptionDecoder.rates()) {
-                rates.add(ratesDecoder.rate());
-            }
+            List<Double> rates = StreamSupport.stream(subscriptionDecoder.rates().spliterator(), false)
+                    .map(RatesDecoder::rate)
+                    .collect(Collectors.toList());
+
             subscriptionIds.getSubscriptionId(id)
                     .ifPresent(subscriptionId -> {
                         result.setRateHistory(subscriptionId.getSubscriptionName(), new RateHistory(rates));
