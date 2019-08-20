@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 
-public class HierarchicalCacheMaxRateRegistry implements MaxRateRegistry {
+class HierarchicalCacheMaxRateRegistry implements MaxRateRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(HierarchicalCacheMaxRateRegistry.class);
 
@@ -47,7 +47,7 @@ public class HierarchicalCacheMaxRateRegistry implements MaxRateRegistry {
 
     private final Map<ConsumerInstance, RateInfo> rateInfos = new ConcurrentHashMap<>();
 
-    public HierarchicalCacheMaxRateRegistry(ConfigFactory configFactory, CuratorFramework curator, ObjectMapper objectMapper, ZookeeperPaths zookeeperPaths,
+    HierarchicalCacheMaxRateRegistry(ConfigFactory configFactory, CuratorFramework curator, ObjectMapper objectMapper, ZookeeperPaths zookeeperPaths,
                                             MaxRatePathSerializer pathSerializer, SubscriptionsCache subscriptionsCache) {
         this.curator = curator;
         this.objectMapper = objectMapper;

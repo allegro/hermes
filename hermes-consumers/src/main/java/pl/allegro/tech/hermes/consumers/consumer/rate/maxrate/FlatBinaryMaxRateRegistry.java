@@ -24,7 +24,7 @@ import java.util.Set;
 import static org.slf4j.LoggerFactory.getLogger;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 
-public class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheListener {
+class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheListener {
 
     private static final Logger logger = getLogger(FlatBinaryMaxRateRegistry.class);
 
@@ -49,7 +49,7 @@ public class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheList
 
     private final FlatBinaryMaxRateRegistryPaths registryPaths;
 
-    public FlatBinaryMaxRateRegistry(ConfigFactory configFactory,
+    FlatBinaryMaxRateRegistry(ConfigFactory configFactory,
                                      AssignedConsumersSupplier assignedConsumersSupplier,
                                      AssignedSubscriptionsSupplier assignedSubscriptionsSupplier,
                                      CuratorFramework curator,
