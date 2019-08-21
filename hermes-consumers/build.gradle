@@ -55,12 +55,14 @@ if (project.hasProperty('distribution')) {
     mainClassName = 'pl.allegro.tech.hermes.consumers.HermesConsumers'
 }
 
+def generatedPath = "${buildDir}/generated/java/"
+
 task generateMaxRateSbeStubs(type: JavaExec) {
     description = "Generate SBE stubs for max-rate"
     classpath configurations.sbeClasspath
     main = 'uk.co.real_logic.sbe.SbeTool'
     systemProperties(
-            'sbe.output.dir': 'src/main/java',
+            'sbe.output.dir': generatedPath,
             'sbe.xinclude.aware': 'true'
     )
     args = ['src/main/resources/sbe/max-rate.xml']
@@ -71,3 +73,12 @@ task generateSbeStubs(type: DefaultTask) {
     dependsOn 'generateMaxRateSbeStubs'
 }
 
+sourceSets {
+    main {
+        java.srcDir generatedPath
+    }
+}
+
+compileJava{
+    dependsOn(generateSbeStubs)
+}
