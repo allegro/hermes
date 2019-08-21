@@ -152,7 +152,15 @@ class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheListener {
         zookeeper.getNodeData(consumerMaxRatePath)
                 .map(consumerMaxRatesDecoder::decode)
                 .ifPresent(maxRates -> {
-                    logger.info("Refreshing max rates of {} with {} subscriptions", consumerId, maxRates.size());
+                    int decodedSize = maxRates.size();
+                    maxRates.cleanup(assignedSubscriptionsSupplier.getAssignedSubscriptions(consumerId));
+                    int cleanedSize = maxRates.size();
+                    if (decodedSize > cleanedSize) {
+                        logger.info("Refreshed max rates of {} with {} subscriptions ({} stale entries omitted)",
+                                consumerId, cleanedSize, decodedSize - cleanedSize);
+                    } else {
+                        logger.info("Refreshed max rates of {} with {} subscriptions", consumerId, cleanedSize);
+                    }
                     consumersMaxRates.put(consumerId, maxRates);
                 });
     }
@@ -163,7 +171,7 @@ class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheListener {
         zookeeper.getNodeData(consumerRateHistoryPath)
                 .map(consumerRateHistoriesDecoder::decode)
                 .ifPresent(rateHistories -> {
-                    logger.info("Refreshing rate history of {} with {} subscriptions", consumerId, rateHistories.size());
+                    logger.info("Refreshed rate history of {} with {} subscriptions", consumerId, rateHistories.size());
                     consumersRateHistories.put(consumerId, rateHistories);
                 });
     }

@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,11 @@ class ConsumerMaxRates {
 
     void setMaxRate(SubscriptionName subscription, MaxRate maxRate) {
         maxRates.put(subscription, maxRate);
+    }
+
+    public void cleanup(Set<SubscriptionName> subscriptions) {
+        this.maxRates.entrySet()
+                .removeIf(entry -> !subscriptions.contains(entry.getKey()));
     }
 
     int size() {

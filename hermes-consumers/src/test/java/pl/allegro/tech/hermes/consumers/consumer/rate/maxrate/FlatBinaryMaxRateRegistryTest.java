@@ -18,8 +18,11 @@ import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
+import static com.jayway.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -141,6 +144,32 @@ public class FlatBinaryMaxRateRegistryTest extends ZookeeperBaseTest {
 
         // then
         wait.untilZookeeperPathNotExists(paths.consumerMaxRatePath(consumerId));
+    }
+
+    @Test
+    public void shouldCleanupConsumerMaxRateFromPreviouslyAssignedSubscriptions() {
+        // when
+        maxRateRegistry.update(subscription1, ImmutableMap.of(consumerId, new MaxRate(350.0)));
+        maxRateRegistry.update(subscription2, ImmutableMap.of(consumerId, new MaxRate(5.0)));
+
+        // and
+        maxRateRegistry.onAfterMaxRateCalculation(); // store
+
+        // then
+        wait.untilZookeeperPathIsCreated(paths.consumerMaxRatePath(consumerId));
+
+        // when
+        when(assignedSubscriptionsSupplier.getAssignedSubscriptions(consumerId))
+                .thenReturn(Collections.singleton(subscription1));
+
+        // and
+        maxRateRegistry.onBeforeMaxRateCalculation(); // read and cleanup
+        maxRateRegistry.onAfterMaxRateCalculation(); // store
+
+        // then
+        await().atMost(2, TimeUnit.SECONDS)
+                .until((() -> maxRateRegistry.getMaxRate(new ConsumerInstance(consumerId, subscription1)).isPresent()
+                        && !maxRateRegistry.getMaxRate(new ConsumerInstance(consumerId, subscription2)).isPresent()));
     }
 
     @Test(expected = IllegalStateException.class)

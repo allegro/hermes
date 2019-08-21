@@ -10,32 +10,32 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ConsumerRateHistory {
+class ConsumerRateHistory {
 
     private final Map<SubscriptionName, RateHistory> rateHistories;
 
-    public ConsumerRateHistory() {
+    ConsumerRateHistory() {
         this.rateHistories = new HashMap<>();
     }
 
-    public RateHistory getRateHistory(SubscriptionName subscription) {
+    RateHistory getRateHistory(SubscriptionName subscription) {
         return rateHistories.getOrDefault(subscription, RateHistory.empty());
     }
 
-    public void setRateHistory(SubscriptionName subscription, RateHistory rateHistory) {
+    void setRateHistory(SubscriptionName subscription, RateHistory rateHistory) {
         rateHistories.put(subscription, rateHistory);
     }
 
-    public void cleanup(Set<SubscriptionName> subscriptions) {
+    void cleanup(Set<SubscriptionName> subscriptions) {
         rateHistories.entrySet()
                 .removeIf(entry -> !subscriptions.contains(entry.getKey()));
     }
 
-    public int size() {
+    int size() {
         return rateHistories.size();
     }
 
-    public Map<SubscriptionId, RateHistory> toSubscriptionIdsMap(SubscriptionIdMapper subscriptionIdMapping) {
+    Map<SubscriptionId, RateHistory> toSubscriptionIdsMap(SubscriptionIdMapper subscriptionIdMapping) {
         return rateHistories.keySet().stream()
                 .map(subscriptionIdMapping::mapToSubscriptionId)
                 .filter(Optional::isPresent)
