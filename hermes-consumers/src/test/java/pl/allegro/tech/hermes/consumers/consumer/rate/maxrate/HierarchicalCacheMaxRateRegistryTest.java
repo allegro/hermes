@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class MaxRateRegistryTest extends ZookeeperBaseTest {
+public class HierarchicalCacheMaxRateRegistryTest extends ZookeeperBaseTest {
 
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
     private final SubscriptionName subscription = qualifiedName("subscription");
@@ -31,7 +31,7 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
     private final ConfigFactory configFactory = new MutableConfigFactory();
     private final String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 
-    private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(
+    private final HierarchicalCacheMaxRateRegistry maxRateRegistry = new HierarchicalCacheMaxRateRegistry(
             configFactory, zookeeperClient, objectMapper, zookeeperPaths, pathSerializer, subscriptionsCache
     );
 
