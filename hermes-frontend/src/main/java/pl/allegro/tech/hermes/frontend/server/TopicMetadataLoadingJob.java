@@ -30,7 +30,7 @@ public class TopicMetadataLoadingJob implements Runnable {
         this.intervalSeconds = intervalSeconds;
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("TopicMetadataLoadingExecutor-%d").build();
+                .setNameFormat("TopicMetadataLoadingJob-%d").build();
         this.executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 
