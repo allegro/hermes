@@ -11,20 +11,23 @@ public class WorkTracker {
 
     private final String consumerNodeId;
 
-    private final SubscriptionAssignmentRegistry registry;
+    private final ConsumerWorkloadRegistry registry;
+    private final SubscriptionAssignmentNotifyingCache assignmentCache;
 
     public WorkTracker(String consumerNodeId,
-                       SubscriptionAssignmentRegistry registry) {
+                       ConsumerWorkloadRegistry registry,
+                       SubscriptionAssignmentNotifyingCache assignmentCache) {
         this.consumerNodeId = consumerNodeId;
         this.registry = registry;
+        this.assignmentCache = assignmentCache;
     }
 
     public boolean isReady() {
-        return registry.isStarted();
+        return assignmentCache.isStarted();
     }
 
     public void forceAssignment(Subscription subscription) {
-        registry.addEphemeralAssignment(new SubscriptionAssignment(
+        registry.addAssignment(new SubscriptionAssignment(
                 consumerNodeId,
                 subscription.getQualifiedName()
         ));
@@ -43,17 +46,17 @@ public class WorkTracker {
         List<SubscriptionAssignment> assignmentAdditions = initialState.additions(targetView).getAllAssignments();
 
         assignmentDeletions.forEach(registry::dropAssignment);
-        assignmentAdditions.forEach(registry::addPersistentAssignment);
+        assignmentAdditions.forEach(registry::addAssignment);
 
         return new WorkDistributionChanges(assignmentDeletions.size(), assignmentAdditions.size());
     }
 
-    public SubscriptionAssignmentView getAssignments() {
-        return registry.createSnapshot();
+    public SubscriptionAssignmentView getAssignmentsSnapshot() {
+        return assignmentCache.createSnapshot();
     }
 
     public boolean isAssignedTo(SubscriptionName subscription, String consumerNodeId) {
-        return registry.isAssignedTo(consumerNodeId, subscription);
+        return assignmentCache.isAssignedTo(consumerNodeId, subscription);
     }
 
     public static class WorkDistributionChanges {

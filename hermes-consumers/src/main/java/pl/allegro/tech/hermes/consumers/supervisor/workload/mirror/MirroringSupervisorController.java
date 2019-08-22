@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentNotifyingCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
@@ -32,7 +32,7 @@ public class MirroringSupervisorController implements SupervisorController {
 
     private final ConsumersSupervisor supervisor;
     private final InternalNotificationsBus notificationsBus;
-    private final SubscriptionAssignmentRegistry assignmentRegistry;
+    private final SubscriptionAssignmentNotifyingCache assignmentCache;
     private final SubscriptionsCache subscriptionsCache;
     private final WorkTracker workTracker;
     private final ZookeeperAdminCache adminCache;
@@ -42,7 +42,7 @@ public class MirroringSupervisorController implements SupervisorController {
 
     public MirroringSupervisorController(ConsumersSupervisor supervisor,
                                          InternalNotificationsBus notificationsBus,
-                                         SubscriptionAssignmentRegistry assignmentRegistry,
+                                         SubscriptionAssignmentNotifyingCache assignmentCache,
                                          SubscriptionsCache subscriptionsCache,
                                          WorkTracker workTracker,
                                          ZookeeperAdminCache adminCache,
@@ -51,7 +51,7 @@ public class MirroringSupervisorController implements SupervisorController {
 
         this.supervisor = supervisor;
         this.notificationsBus = notificationsBus;
-        this.assignmentRegistry = assignmentRegistry;
+        this.assignmentCache = assignmentCache;
         this.subscriptionsCache = subscriptionsCache;
         this.workTracker = workTracker;
         this.adminCache = adminCache;
@@ -117,16 +117,15 @@ public class MirroringSupervisorController implements SupervisorController {
 
         notificationsBus.registerSubscriptionCallback(this);
         notificationsBus.registerTopicCallback(this);
-        assignmentRegistry.registerAssignmentCallback(this);
+        assignmentCache.registerAssignmentCallback(this);
 
         supervisor.start();
-        assignmentRegistry.start();
         logger.info("Consumer boot complete. Workload config: [{}]", configFactory.print(CONSUMER_WORKLOAD_NODE_ID, CONSUMER_WORKLOAD_ALGORITHM));
     }
 
     @Override
     public Set<SubscriptionName> assignedSubscriptions() {
-        return assignmentRegistry.createSnapshot().getSubscriptionsForConsumerNode(consumerNodeId);
+        return assignmentCache.getConsumerSubscriptions(consumerNodeId);
     }
 
     @Override

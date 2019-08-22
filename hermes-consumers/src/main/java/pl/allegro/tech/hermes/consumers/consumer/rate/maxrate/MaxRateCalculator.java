@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.Gauges;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentNotifyingCache;
 
 import java.time.Clock;
 import java.util.Map;
@@ -18,7 +18,7 @@ class MaxRateCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(MaxRateCalculator.class);
 
-    private final SubscriptionAssignmentCache subscriptionAssignmentCache;
+    private final SubscriptionAssignmentNotifyingCache subscriptionAssignmentsRepository;
     private final SubscriptionsCache subscriptionsCache;
     private final MaxRateBalancer balancer;
     private final MaxRateRegistry maxRateRegistry;
@@ -27,13 +27,13 @@ class MaxRateCalculator {
 
     private volatile long lastUpdateDurationMillis = 0;
 
-    MaxRateCalculator(SubscriptionAssignmentCache subscriptionAssignmentCache,
+    MaxRateCalculator(SubscriptionAssignmentNotifyingCache subscriptionAssignmentsRepository,
                       SubscriptionsCache subscriptionsCache,
                       MaxRateBalancer balancer,
                       MaxRateRegistry maxRateRegistry,
                       HermesMetrics metrics,
                       Clock clock) {
-        this.subscriptionAssignmentCache = subscriptionAssignmentCache;
+        this.subscriptionAssignmentsRepository = subscriptionAssignmentsRepository;
         this.subscriptionsCache = subscriptionsCache;
         this.balancer = balancer;
         this.maxRateRegistry = maxRateRegistry;
@@ -45,7 +45,7 @@ class MaxRateCalculator {
 
     void calculate() {
         try {
-            if (!subscriptionAssignmentCache.isStarted()) {
+            if (!subscriptionAssignmentsRepository.isStarted()) {
                 return;
             }
             logger.info("Max rate calculation started");
@@ -54,7 +54,7 @@ class MaxRateCalculator {
             maxRateRegistry.onBeforeMaxRateCalculation();
 
             Map<SubscriptionName, Set<String>> subscriptionConsumers =
-                    subscriptionAssignmentCache.getSubscriptionConsumers();
+                    subscriptionAssignmentsRepository.getSubscriptionConsumers();
 
             subscriptionConsumers.entrySet().forEach(entry -> {
                 try {

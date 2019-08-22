@@ -11,7 +11,7 @@ import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class SubscriptionAssignmentRegistry implements SubscriptionAssignmentAware {
+public class SubscriptionAssignmentRegistry implements ConsumerWorkloadRegistry, SubscriptionAssignmentAware {
 
     private static final Logger logger = getLogger(SubscriptionAssignmentRegistry.class);
 
@@ -20,22 +20,20 @@ public class SubscriptionAssignmentRegistry implements SubscriptionAssignmentAwa
     private final CuratorFramework curator;
 
     private final SubscriptionAssignmentPathSerializer pathSerializer;
-    private final SubscriptionAssignmentCache subscriptionAssignmentCache;
+
+    private final SubscriptionAssignmentNotifyingCache assignmentCache;
+
+    private final CreateMode assignmentNodeCreationMode;
 
     public SubscriptionAssignmentRegistry(CuratorFramework curator,
-                                          SubscriptionAssignmentCache subscriptionAssignmentCache,
-                                          SubscriptionAssignmentPathSerializer pathSerializer) {
+                                          SubscriptionAssignmentNotifyingCache assignmentCache,
+                                          SubscriptionAssignmentPathSerializer pathSerializer,
+                                          CreateMode assignmentNodeCreationMode) {
         this.curator = curator;
         this.pathSerializer = pathSerializer;
-        this.subscriptionAssignmentCache = subscriptionAssignmentCache;
-    }
-
-    public void start() throws Exception {
-        subscriptionAssignmentCache.registerAssignmentCallback(this);
-    }
-
-    public boolean isStarted() {
-        return subscriptionAssignmentCache.isStarted();
+        this.assignmentCache = assignmentCache;
+        this.assignmentNodeCreationMode = assignmentNodeCreationMode;
+        this.assignmentCache.registerAssignmentCallback(this);
     }
 
     @Override
@@ -51,19 +49,8 @@ public class SubscriptionAssignmentRegistry implements SubscriptionAssignmentAwa
         return Optional.empty();
     }
 
-    public void registerAssignmentCallback(SubscriptionAssignmentAware callback) {
-        subscriptionAssignmentCache.registerAssignmentCallback(callback);
-    }
-
-    boolean isAssignedTo(String nodeId, SubscriptionName subscription) {
-        return subscriptionAssignmentCache.isAssignedTo(nodeId, subscription);
-    }
-
-    public SubscriptionAssignmentView createSnapshot() {
-        return subscriptionAssignmentCache.createSnapshot();
-    }
-
-    void dropAssignment(SubscriptionAssignment assignment) {
+    @Override
+    public void dropAssignment(SubscriptionAssignment assignment) {
         String message = String.format("Dropping assignment [consumer=%s, subscription=%s]",
                 assignment.getConsumerNodeId(), assignment.getSubscriptionName().getQualifiedName());
         logger.info(message);
@@ -71,12 +58,16 @@ public class SubscriptionAssignmentRegistry implements SubscriptionAssignmentAwa
                 pathSerializer.serialize(assignment.getSubscriptionName(), assignment.getConsumerNodeId())), message);
     }
 
-    void addPersistentAssignment(SubscriptionAssignment assignment) {
-        addAssignment(assignment, CreateMode.PERSISTENT);
-    }
-
-    void addEphemeralAssignment(SubscriptionAssignment assignment) {
-        addAssignment(assignment, CreateMode.EPHEMERAL);
+    @Override
+    public void addAssignment(SubscriptionAssignment assignment) {
+        String message = String.format("Adding assignment [consumer=%s, subscription=%s]",
+                assignment.getConsumerNodeId(), assignment.getSubscriptionName().getQualifiedName());
+        logger.info(message);
+        askCuratorPolitely(() -> {
+            String path = pathSerializer.serialize(assignment.getSubscriptionName(), assignment.getConsumerNodeId());
+            curator.create().creatingParentsIfNeeded().withMode(assignmentNodeCreationMode)
+                    .forPath(path, AUTO_ASSIGNED_MARKER);
+        }, message);
     }
 
     private void removeSubscriptionEntryIfEmpty(SubscriptionName subscriptionName) {
@@ -86,17 +77,6 @@ public class SubscriptionAssignmentRegistry implements SubscriptionAssignmentAwa
                 logger.info(message);
                 curator.delete().guaranteed().forPath(pathSerializer.serialize(subscriptionName));
             }
-        }, message);
-    }
-
-    private void addAssignment(SubscriptionAssignment assignment, CreateMode createMode) {
-        String message = String.format("Adding assignment [consumer=%s, subscription=%s]",
-                assignment.getConsumerNodeId(), assignment.getSubscriptionName().getQualifiedName());
-        logger.info(message);
-        askCuratorPolitely(() -> {
-            String path = pathSerializer.serialize(assignment.getSubscriptionName(), assignment.getConsumerNodeId());
-            curator.create().creatingParentsIfNeeded().withMode(createMode)
-                    .forPath(path, AUTO_ASSIGNED_MARKER);
         }, message);
     }
 

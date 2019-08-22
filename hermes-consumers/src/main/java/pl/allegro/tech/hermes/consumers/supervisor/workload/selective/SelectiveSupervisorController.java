@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentNotifyingCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
@@ -34,7 +34,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     private final ConsumersSupervisor supervisor;
     private final InternalNotificationsBus notificationsBus;
     private final SubscriptionsCache subscriptionsCache;
-    private final SubscriptionAssignmentRegistry registry;
+    private final SubscriptionAssignmentNotifyingCache assignmentCache;
     private final WorkTracker workTracker;
     private final ConsumerNodesRegistry consumersRegistry;
     private final BalancingJob balancingJob;
@@ -46,7 +46,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     public SelectiveSupervisorController(ConsumersSupervisor supervisor,
                                          InternalNotificationsBus notificationsBus,
                                          SubscriptionsCache subscriptionsCache,
-                                         SubscriptionAssignmentRegistry registry,
+                                         SubscriptionAssignmentNotifyingCache assignmentCache,
                                          WorkTracker workTracker,
                                          ConsumerNodesRegistry consumersRegistry,
                                          ZookeeperAdminCache adminCache,
@@ -57,7 +57,7 @@ public class SelectiveSupervisorController implements SupervisorController {
         this.supervisor = supervisor;
         this.notificationsBus = notificationsBus;
         this.subscriptionsCache = subscriptionsCache;
-        this.registry = registry;
+        this.assignmentCache = assignmentCache;
         this.workTracker = workTracker;
         this.consumersRegistry = consumersRegistry;
         this.adminCache = adminCache;
@@ -120,11 +120,10 @@ public class SelectiveSupervisorController implements SupervisorController {
 
         notificationsBus.registerSubscriptionCallback(this);
         notificationsBus.registerTopicCallback(this);
-        registry.registerAssignmentCallback(this);
+        assignmentCache.registerAssignmentCallback(this);
 
         supervisor.start();
         consumersRegistry.start();
-        registry.start();
         if (configFactory.getBooleanProperty(CONSUMER_WORKLOAD_AUTO_REBALANCE)) {
             balancingJob.start();
             consumersRegistry.startLeaderLatch();
@@ -144,7 +143,7 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public Set<SubscriptionName> assignedSubscriptions() {
-        return registry.createSnapshot().getSubscriptionsForConsumerNode(consumerId());
+        return assignmentCache.getConsumerSubscriptions(consumerId());
     }
 
     @Override

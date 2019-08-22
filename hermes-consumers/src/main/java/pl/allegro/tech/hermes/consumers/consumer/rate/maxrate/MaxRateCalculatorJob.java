@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentNotifyingCache;
 
 import java.time.Clock;
 import java.util.concurrent.Executors;
@@ -31,7 +31,7 @@ class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
 
     MaxRateCalculatorJob(CuratorFramework curator,
                                 ConfigFactory configFactory,
-                                SubscriptionAssignmentCache subscriptionAssignmentCache,
+                                SubscriptionAssignmentNotifyingCache assignmentCache,
                                 MaxRateBalancer balancer,
                                 MaxRateRegistry maxRateRegistry,
                                 String leaderPath,
@@ -44,7 +44,7 @@ class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
         this.executorService = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder().setNameFormat("max-rate-calculator-%d").build());
         this.maxRateCalculator = new MaxRateCalculator(
-                subscriptionAssignmentCache, subscriptionsCache, balancer, maxRateRegistry, metrics, clock);
+                assignmentCache, subscriptionsCache, balancer, maxRateRegistry, metrics, clock);
         this.leaderLatch = new LeaderLatch(curator, leaderPath, consumerId);
     }
 

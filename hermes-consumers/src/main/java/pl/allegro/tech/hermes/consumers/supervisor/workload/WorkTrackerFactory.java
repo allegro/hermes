@@ -10,19 +10,22 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NOD
 public class WorkTrackerFactory implements Factory<WorkTracker> {
 
     private final ConfigFactory configFactory;
-    private final SubscriptionAssignmentRegistry assignementRegistry;
+    private final ConsumerWorkloadRegistry consumerWorkloadRegistry;
+    private final SubscriptionAssignmentNotifyingCache assignmentCache;
 
     @Inject
     public WorkTrackerFactory(ConfigFactory configFactory,
-                              SubscriptionAssignmentRegistry assignementRegistry) {
+                              ConsumerWorkloadRegistry consumerWorkloadRegistry,
+                              SubscriptionAssignmentNotifyingCache assignmentCache) {
         this.configFactory = configFactory;
-        this.assignementRegistry = assignementRegistry;
+        this.consumerWorkloadRegistry = consumerWorkloadRegistry;
+        this.assignmentCache = assignmentCache;
     }
 
     @Override
     public WorkTracker provide() {
         String consumerNodeId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
-        return new WorkTracker(consumerNodeId, assignementRegistry);
+        return new WorkTracker(consumerNodeId, consumerWorkloadRegistry, assignmentCache);
     }
 
     @Override

@@ -74,9 +74,10 @@ import pl.allegro.tech.hermes.consumers.supervisor.NonblockingConsumersSuperviso
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitorFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistryFactory;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadRegistryFactory;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentNotifyingCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentNotifyingRepositoryFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorControllerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
@@ -132,12 +133,12 @@ public class ConsumersBinder extends AbstractBinder {
         bindFactory(SubscriptionCacheFactory.class).in(Singleton.class).to(SubscriptionsCache.class);
         bindFactory(SubscriptionIdProviderFactory.class).in(Singleton.class).to(SubscriptionIdProvider.class);
         bindFactory(SubscriptionIdsCacheFactory.class).in(Singleton.class).to(SubscriptionIds.class);
-        bindSingleton(SubscriptionAssignmentCache.class);
+        bindFactory(SubscriptionAssignmentNotifyingRepositoryFactory.class).in(Singleton.class)
+                .to(SubscriptionAssignmentNotifyingCache.class);
 
         bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
         bindFactory(WorkTrackerFactory.class).in(Singleton.class).to(WorkTracker.class);
-        bindFactory(SubscriptionAssignmentRegistryFactory.class).in(Singleton.class)
-                .to(SubscriptionAssignmentRegistry.class);
+        bindFactory(ConsumerWorkloadRegistryFactory.class).in(Singleton.class).to(ConsumerWorkloadRegistry.class);
         bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);
         bindFactory(ConsumersRuntimeMonitorFactory.class).in(Singleton.class).to(ConsumersRuntimeMonitor.class);
 

@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -144,22 +143,22 @@ class ConsumerTestRuntimeEnvironment {
         );
         subscriptionsCaches.add(subscriptionsCache);
 
-        SubscriptionAssignmentCache subscriptionAssignmentCache = new SubscriptionAssignmentCache(
+        SubscriptionAssignmentNotifyingCache assignmentCache = new SubscriptionAssignmentNotifyingRepositoryFactory(
                 curator, configFactory, paths, subscriptionsCache
-        );
-
-        SubscriptionAssignmentRegistry assignmentRegistry = new SubscriptionAssignmentRegistryFactory(
-                curator, configFactory, subscriptionAssignmentCache
         ).provide();
 
-        WorkTracker workTracker = new WorkTracker(consumerId, assignmentRegistry);
+        ConsumerWorkloadRegistry consumerWorkloadRegistry = new ConsumerWorkloadRegistryFactory(
+                curator, configFactory, paths, assignmentCache
+        ).provide();
+
+        WorkTracker workTracker = new WorkTracker(consumerId, consumerWorkloadRegistry, assignmentCache);
 
         SelectiveSupervisorController supervisor = new SelectiveSupervisorController(
-                consumersSupervisor, notificationsBus, subscriptionsCache, assignmentRegistry, workTracker, registry,
+                consumersSupervisor, notificationsBus, subscriptionsCache, assignmentCache, workTracker, registry,
                 mock(ZookeeperAdminCache.class), executorService, configFactory, metricsSupplier.get()
         );
 
-        return new ConsumerControllers(subscriptionAssignmentCache, supervisor);
+        return new ConsumerControllers(assignmentCache, supervisor);
     }
 
     SelectiveSupervisorController spawnConsumer(String consumerId, ConsumersSupervisor consumersSupervisor) {
@@ -319,12 +318,12 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     static class ConsumerControllers {
-        SubscriptionAssignmentCache assignmentCache;
+        SubscriptionAssignmentNotifyingCache assignmentCache;
         SelectiveSupervisorController supervisorController;
 
-        public ConsumerControllers(SubscriptionAssignmentCache assignmentCache,
+        public ConsumerControllers(SubscriptionAssignmentNotifyingCache assignmentNotifyingRepository,
                                    SelectiveSupervisorController supervisorController) {
-            this.assignmentCache = assignmentCache;
+            this.assignmentCache = assignmentNotifyingRepository;
             this.supervisorController = supervisorController;
         }
 

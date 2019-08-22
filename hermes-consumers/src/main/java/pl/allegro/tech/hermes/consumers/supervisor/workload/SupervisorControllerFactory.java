@@ -46,7 +46,7 @@ public class SupervisorControllerFactory implements Factory<SupervisorController
     @Inject
     public SupervisorControllerFactory(@Named(CuratorType.HERMES) CuratorFramework curator,
                                        InternalNotificationsBus notificationsBus,
-                                       SubscriptionAssignmentRegistry assignmentRegistry,
+                                       SubscriptionAssignmentNotifyingCache assignmentCache,
                                        SubscriptionsCache subscriptionsCache,
                                        WorkTracker workTracker,
                                        ConsumersSupervisor supervisor,
@@ -56,8 +56,8 @@ public class SupervisorControllerFactory implements Factory<SupervisorController
                                        Clock clock) {
         this.configs = configs;
         this.availableImplementations = ImmutableMap.of(
-                MIRROR, () -> new MirroringSupervisorController(supervisor, notificationsBus, assignmentRegistry, subscriptionsCache, workTracker, adminCache, configs),
-                SELECTIVE, () -> new SelectiveSupervisorController(supervisor, notificationsBus, subscriptionsCache, assignmentRegistry, workTracker,
+                MIRROR, () -> new MirroringSupervisorController(supervisor, notificationsBus, assignmentCache, subscriptionsCache, workTracker, adminCache, configs),
+                SELECTIVE, () -> new SelectiveSupervisorController(supervisor, notificationsBus, subscriptionsCache, assignmentCache, workTracker,
                         createConsumersRegistry(configs, curator, clock), adminCache,
                         getAssignmentExecutor(configs),
                         configs, metrics));

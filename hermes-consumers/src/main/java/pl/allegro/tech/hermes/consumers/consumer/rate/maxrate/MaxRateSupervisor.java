@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentNotifyingCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import javax.inject.Inject;
@@ -31,7 +31,7 @@ public class MaxRateSupervisor implements Runnable {
     @Inject
     public MaxRateSupervisor(ConfigFactory configFactory,
                              CuratorFramework curator,
-                             SubscriptionAssignmentCache subscriptionAssignmentCache,
+                             SubscriptionAssignmentNotifyingCache assignmentCache,
                              MaxRateRegistry maxRateRegistry,
                              SubscriptionsCache subscriptionsCache,
                              ZookeeperPaths zookeeperPaths,
@@ -55,7 +55,7 @@ public class MaxRateSupervisor implements Runnable {
         this.calculatorJob = new MaxRateCalculatorJob(
                 curator,
                 configFactory,
-                subscriptionAssignmentCache,
+                assignmentCache,
                 balancer,
                 maxRateRegistry,
                 leaderPath,

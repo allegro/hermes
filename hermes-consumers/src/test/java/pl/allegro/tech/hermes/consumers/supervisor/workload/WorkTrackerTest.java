@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.NotificationsBasedSubscriptionCache;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -41,6 +42,8 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
             zookeeperClient, "/hermes", 1
     );
 
+    private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
+
     private final SubscriptionsCache cache = new NotificationsBasedSubscriptionCache(
             new ZookeeperInternalNotificationBus(new ObjectMapper(), notifyingCache),
             groupRepository, topicRepository, subscriptionRepository
@@ -49,26 +52,26 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
     private final SubscriptionAssignmentPathSerializer serializer =
             new SubscriptionAssignmentPathSerializer(basePath, AUTO_ASSIGNED_MARKER);
 
-    private final SubscriptionAssignmentCache subscriptionAssignmentCache =
-            new SubscriptionAssignmentCache(zookeeperClient, new MutableConfigFactory(),
-                    new ZookeeperPaths("/hermes"), cache);
+    private final ConfigFactory configFactory = new MutableConfigFactory();
 
-    private final SubscriptionAssignmentRegistry subscriptionAssignmentRegistry =
-            new SubscriptionAssignmentRegistry(zookeeperClient, subscriptionAssignmentCache, serializer);
+    private final SubscriptionAssignmentNotifyingCache assignmentCache =
+            new SubscriptionAssignmentNotifyingRepositoryFactory(zookeeperClient, configFactory, zookeeperPaths, cache).provide();
 
-    private final WorkTracker workTracker = new WorkTracker(supervisorId, subscriptionAssignmentRegistry);
+    private final ConsumerWorkloadRegistry consumerWorkloadRegistry =
+            new ConsumerWorkloadRegistryFactory(zookeeperClient, configFactory, zookeeperPaths, assignmentCache).provide();
+
+    private final WorkTracker workTracker = new WorkTracker(supervisorId, consumerWorkloadRegistry, assignmentCache);
 
     @Before
     public void before() throws Exception {
         notifyingCache.start();
-        subscriptionAssignmentCache.start();
-        subscriptionAssignmentRegistry.start();
+        assignmentCache.start();
     }
 
     @After
     public void cleanup() throws Exception {
         notifyingCache.stop();
-        subscriptionAssignmentCache.stop();
+        assignmentCache.stop();
         deleteAllNodes();
     }
 
@@ -104,7 +107,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         Subscription s2 = forceAssignment(anySubscription());
 
         // when
-        SubscriptionAssignmentView assignments = workTracker.getAssignments();
+        SubscriptionAssignmentView assignments = workTracker.getAssignmentsSnapshot();
 
         // then
         assertThat(assignments.getSubscriptions()).containsOnly(s1.getQualifiedName(), s2.getQualifiedName());
@@ -119,7 +122,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         SubscriptionAssignmentView view = stateWithSingleAssignment(s1);
 
         // when
-        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), view);
+        workTracker.apply(assignmentCache.createSnapshot(), view);
 
         // then
         wait.untilZookeeperPathIsCreated(basePath, s1.getQualifiedName().toString(), supervisorId);
@@ -131,7 +134,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         Subscription s1 = forceAssignment(anySubscription());
 
         // when
-        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), stateWithNoAssignments());
+        workTracker.apply(assignmentCache.createSnapshot(), stateWithNoAssignments());
 
         // then
         wait.untilZookeeperPathNotExists(basePath, s1.getQualifiedName().toString(), supervisorId);
@@ -143,7 +146,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         Subscription s1 = dropAssignment(forceAssignment(anySubscription()));
 
         // when
-        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), stateWithNoAssignments());
+        workTracker.apply(assignmentCache.createSnapshot(), stateWithNoAssignments());
 
         // then
         wait.untilZookeeperPathNotExists(basePath, s1.getQualifiedName().toString());
@@ -154,11 +157,11 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         // given
         Subscription s1 = anySubscription();
         SubscriptionAssignmentView view = stateWithSingleAssignment(s1);
-        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), view);
+        workTracker.apply(assignmentCache.createSnapshot(), view);
         wait.untilZookeeperPathIsCreated(basePath, s1.getQualifiedName().toString(), supervisorId);
 
         // when
-        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), stateWithNoAssignments());
+        workTracker.apply(assignmentCache.createSnapshot(), stateWithNoAssignments());
 
         // then
         wait.untilZookeeperPathNotExists(basePath, s1.getQualifiedName().toString());
@@ -175,7 +178,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
                         s2.getQualifiedName(), ImmutableSet.of(assignment(supervisorId, s2.getQualifiedName()))));
 
         // when
-        workTracker.apply(subscriptionAssignmentRegistry.createSnapshot(), view);
+        workTracker.apply(assignmentCache.createSnapshot(), view);
 
         // then
         wait.untilZookeeperPathIsCreated(basePath, s1.getQualifiedName().toString(), supervisorId);
