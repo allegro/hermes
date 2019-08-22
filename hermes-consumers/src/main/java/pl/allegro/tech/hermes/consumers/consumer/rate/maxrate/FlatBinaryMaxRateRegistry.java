@@ -10,6 +10,8 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import java.io.IOException;
@@ -37,8 +39,8 @@ class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheListener {
     private final ConsumerMaxRates currentConsumerMaxRates;
 
     private final String consumerId;
-    private final AssignedConsumersSupplier assignedConsumersSupplier;
-    private final AssignedSubscriptionsSupplier assignedSubscriptionsSupplier;
+    private final ClusterAssignmentCache clusterAssignmentCache;
+    private final ConsumerAssignmentCache consumerAssignmentCache;
 
     private final ConsumerRateHistoriesEncoder consumerRateHistoriesEncoder;
     private final ConsumerRateHistoriesDecoder consumerRateHistoriesDecoder;
@@ -50,15 +52,15 @@ class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheListener {
     private final FlatBinaryMaxRateRegistryPaths registryPaths;
 
     FlatBinaryMaxRateRegistry(ConfigFactory configFactory,
-                                     AssignedConsumersSupplier assignedConsumersSupplier,
-                                     AssignedSubscriptionsSupplier assignedSubscriptionsSupplier,
-                                     CuratorFramework curator,
-                                     ZookeeperPaths zookeeperPaths,
-                                     SubscriptionIds subscriptionIds) {
+                              ClusterAssignmentCache clusterAssignmentCache,
+                              ConsumerAssignmentCache consumerAssignmentCache,
+                              CuratorFramework curator,
+                              ZookeeperPaths zookeeperPaths,
+                              SubscriptionIds subscriptionIds) {
 
         this.consumerId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
-        this.assignedConsumersSupplier = assignedConsumersSupplier;
-        this.assignedSubscriptionsSupplier = assignedSubscriptionsSupplier;
+        this.clusterAssignmentCache = clusterAssignmentCache;
+        this.consumerAssignmentCache = consumerAssignmentCache;
         final String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 
         this.currentConsumerRateHistories = new ConsumerRateHistory();
@@ -113,7 +115,7 @@ class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheListener {
 
     @Override
     public void onBeforeMaxRateCalculation() {
-        Set<String> assignedConsumers = assignedConsumersSupplier.getAllAssignedConsumers();
+        Set<String> assignedConsumers = clusterAssignmentCache.getAssignedConsumers();
         clearCacheFromInactiveConsumers(assignedConsumers);
         refreshRateCachesOfConsumers(assignedConsumers);
     }
@@ -153,7 +155,7 @@ class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheListener {
                 .map(consumerMaxRatesDecoder::decode)
                 .ifPresent(maxRates -> {
                     int decodedSize = maxRates.size();
-                    maxRates.cleanup(assignedSubscriptionsSupplier.getAssignedSubscriptions(consumerId));
+                    maxRates.cleanup(clusterAssignmentCache.getConsumerSubscriptions(consumerId));
                     int cleanedSize = maxRates.size();
                     if (decodedSize > cleanedSize) {
                         logger.info("Refreshed max rates of {} with {} subscriptions ({} stale entries omitted)",
@@ -245,7 +247,7 @@ class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheListener {
 
     @Override
     public void onAfterWriteRateHistories() {
-        Set<SubscriptionName> subscriptions = assignedSubscriptionsSupplier.getAssignedSubscriptions(consumerId);
+        Set<SubscriptionName> subscriptions = consumerAssignmentCache.getConsumerSubscriptions();
         currentConsumerRateHistories.cleanup(subscriptions);
         byte[] encoded = consumerRateHistoriesEncoder.encode(currentConsumerRateHistories);
         logger.info("Writing rate history of {} subscriptions, saving {} bytes", currentConsumerRateHistories.size(), encoded.length);
@@ -259,15 +261,5 @@ class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheListener {
     @Override
     public void nodeChanged() {
         refreshConsumerMaxRates();
-    }
-
-    @FunctionalInterface
-    interface AssignedSubscriptionsSupplier {
-        Set<SubscriptionName> getAssignedSubscriptions(String consumerId);
-    }
-
-    @FunctionalInterface
-    interface AssignedConsumersSupplier {
-        Set<String> getAllAssignedConsumers();
     }
 }

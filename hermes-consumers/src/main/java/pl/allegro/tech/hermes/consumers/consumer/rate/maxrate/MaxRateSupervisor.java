@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import javax.inject.Inject;
@@ -30,9 +30,9 @@ public class MaxRateSupervisor implements Runnable {
 
     @Inject
     public MaxRateSupervisor(ConfigFactory configFactory,
-                             CuratorFramework curator,
-                             SubscriptionAssignmentCache subscriptionAssignmentCache,
+                             ClusterAssignmentCache clusterAssignmentCache,
                              MaxRateRegistry maxRateRegistry,
+                             ConsumerNodesRegistry consumerNodesRegistry,
                              SubscriptionsCache subscriptionsCache,
                              ZookeeperPaths zookeeperPaths,
                              HermesMetrics metrics,
@@ -49,16 +49,12 @@ public class MaxRateSupervisor implements Runnable {
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_MAX_RATE),
                 configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_ALLOWED_CHANGE_PERCENT));
 
-        String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
-        String leaderPath = zookeeperPaths.maxRateLeaderPath(cluster);
-
         this.calculatorJob = new MaxRateCalculatorJob(
-                curator,
                 configFactory,
-                subscriptionAssignmentCache,
+                clusterAssignmentCache,
+                consumerNodesRegistry,
                 balancer,
                 maxRateRegistry,
-                leaderPath,
                 subscriptionsCache,
                 metrics,
                 clock

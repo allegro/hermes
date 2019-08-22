@@ -68,9 +68,20 @@ task generateMaxRateSbeStubs(type: JavaExec) {
     args = ['src/main/resources/sbe/max-rate.xml']
 }
 
+task generateWorkloadSbeStubs(type: JavaExec) {
+    description = "Generate SBE stubs for workload"
+    classpath configurations.sbeClasspath
+    main = 'uk.co.real_logic.sbe.SbeTool'
+    systemProperties(
+            'sbe.output.dir': generatedPath,
+            'sbe.xinclude.aware': 'true'
+    )
+    args = ['src/main/resources/sbe/workload.xml']
+}
+
 task generateSbeStubs(type: DefaultTask) {
     description = "Generate all SBE stubs from provided schemas"
-    dependsOn 'generateMaxRateSbeStubs'
+    dependsOn 'generateMaxRateSbeStubs', 'generateWorkloadSbeStubs'
 }
 
 sourceSets {
