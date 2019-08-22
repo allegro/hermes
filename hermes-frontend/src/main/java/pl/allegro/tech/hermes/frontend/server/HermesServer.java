@@ -108,7 +108,10 @@ public class HermesServer {
         undertow.stop();
         messagePreviewPersister.shutdown();
         throughputLimiter.stop();
-        topicMetadataLoadingJob.stop();
+
+        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_LOADING_JOB_ENABLED)) {
+            topicMetadataLoadingJob.stop();
+        }
     }
 
     private Undertow configureServer() {
