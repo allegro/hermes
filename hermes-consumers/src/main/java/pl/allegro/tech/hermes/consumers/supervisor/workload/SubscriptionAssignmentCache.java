@@ -176,4 +176,12 @@ public class SubscriptionAssignmentCache {
                         SubscriptionAssignment::getSubscriptionName,
                         Collectors.mapping(SubscriptionAssignment::getConsumerNodeId, Collectors.toSet())));
     }
+
+    public Set<SubscriptionName> getConsumerSubscriptions(String consumerId) {
+        return createSnapshot().getSubscriptionsForConsumerNode(consumerId);
+    }
+
+    public Set<String> getAssignedConsumers() {
+        return createSnapshot().getConsumerNodes();
+    }
 }

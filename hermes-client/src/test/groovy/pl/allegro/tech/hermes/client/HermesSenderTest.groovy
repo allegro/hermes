@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.client
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule
 import okhttp3.OkHttpClient
+import org.springframework.web.reactive.function.client.WebClient
+import pl.allegro.tech.hermes.client.webclient.WebClientHermesSender
 import org.junit.ClassRule
 import org.springframework.web.client.AsyncRestTemplate
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender
@@ -15,6 +17,7 @@ import spock.lang.Unroll
 import javax.ws.rs.client.ClientBuilder
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import static com.github.tomakehurst.wiremock.client.WireMock.containing
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import static com.github.tomakehurst.wiremock.client.WireMock.post
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
@@ -25,14 +28,14 @@ class HermesSenderTest extends Specification {
 
     @ClassRule
     @Shared
-    WireMockClassRule service = new WireMockClassRule(14523);
+    WireMockClassRule service = new WireMockClassRule(14523)
 
     void setup() {
-        WireMock.reset();
+        WireMock.reset()
     }
 
-    @Unroll("should send Content-Type header when publishing using #name sender")
-    def "should send Content-Type header"() {
+    @Unroll
+    def "should send Content-Type header when publishing using #name sender"() {
         given:
         HermesSender currentSender = sender
         HermesClient client = HermesClientBuilder
@@ -41,24 +44,27 @@ class HermesSenderTest extends Specification {
                 .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
+        service.stubFor(post(urlEqualTo('/topics/topic.test'))
+                .willReturn(aResponse().withStatus(201)))
+
         when:
         client.publish("topic.test", "Hello!").join()
 
         then:
         service.verify(postRequestedFor(urlEqualTo("/topics/topic.test"))
-                .withHeader("Content-Type", equalTo("application/json")))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .withRequestBody(containing("Hello!")))
 
         where:
-        name << ['JerseySender', 'RestTemplateSender', 'OkHttpSender']
-        sender << [
-                new JerseyHermesSender(ClientBuilder.newClient()),
-                new RestTemplateHermesSender(new AsyncRestTemplate()),
-                new OkHttpHermesSender(new OkHttpClient())
-        ]
+        sender                                                  | name
+        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'
+        new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'
+        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'
+        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'
     }
 
-    @Unroll("should send Schema-Version header when publishing with schema using #name sender")
-    def "should send Schema-Version header"() {
+    @Unroll
+    def "should send Schema-Version header when publishing with schema using #name sender"() {
         given:
         HermesSender currentSender = sender
         HermesClient client = HermesClientBuilder
@@ -66,24 +72,27 @@ class HermesSenderTest extends Specification {
                 .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
+        service.stubFor(post(urlEqualTo('/topics/topic.test'))
+                .willReturn(aResponse().withStatus(201)))
+
         when:
-        client.publish(hermesMessage('topic.test', 'Hello!').withSchemaVersion(13).build()).join();
+        client.publish(hermesMessage('topic.test', 'Hello!').withSchemaVersion(13).build()).join()
 
         then:
         service.verify(postRequestedFor(urlEqualTo("/topics/topic.test"))
-                .withHeader("Schema-Version", equalTo("13")))
+                .withHeader("Schema-Version", equalTo("13"))
+                .withRequestBody(containing("Hello!")))
 
         where:
-        name << ['JerseySender', 'RestTemplateSender', 'OkHttpSender']
-        sender << [
-                new JerseyHermesSender(ClientBuilder.newClient()),
-                new RestTemplateHermesSender(new AsyncRestTemplate()),
-                new OkHttpHermesSender(new OkHttpClient())
-        ]
+        sender                                                  | name
+        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'
+        new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'
+        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'
+        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'
     }
 
-    @Unroll("should send custom header when publishing using #name sender")
-    def "should send custom header"() {
+    @Unroll
+    def "should send custom header when publishing using #name sender"() {
         given:
         HermesSender currentSender = sender
         HermesClient client = HermesClientBuilder
@@ -91,20 +100,23 @@ class HermesSenderTest extends Specification {
                 .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
+        service.stubFor(post(urlEqualTo('/topics/topic.test'))
+                .willReturn(aResponse().withStatus(201)))
+
         when:
-        client.publish(hermesMessage('topic.test', 'Hello!').withHeader('Custom-Header', 'header value').build()).join();
+        client.publish(hermesMessage('topic.test', 'Hello!').withHeader('Custom-Header', 'header value').build()).join()
 
         then:
         service.verify(postRequestedFor(urlEqualTo("/topics/topic.test"))
-                .withHeader("Custom-Header", equalTo("header value")))
+                .withHeader("Custom-Header", equalTo("header value"))
+                .withRequestBody(containing("Hello!")))
 
         where:
-        name << ['JerseySender', 'RestTemplateSender', 'OkHttpSender']
-        sender << [
-                new JerseyHermesSender(ClientBuilder.newClient()),
-                new RestTemplateHermesSender(new AsyncRestTemplate()),
-                new OkHttpHermesSender(new OkHttpClient())
-        ]
+        sender                                                  | name
+        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'
+        new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'
+        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'
+        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'
     }
 
     @Unroll
@@ -129,7 +141,8 @@ class HermesSenderTest extends Specification {
 
         then:
         service.verify(postRequestedFor(urlEqualTo("/topics/topic.test"))
-                .withHeader("Content-Type", equalTo("application/json")))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .withRequestBody(containing("Hello!")))
 
         and:
         response.messageId == 'messageId'
@@ -139,13 +152,16 @@ class HermesSenderTest extends Specification {
         new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'        | 'Hermes-Message-Id'
         new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'  | 'Hermes-Message-Id'
         new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'        | 'Hermes-Message-Id'
+        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'     | 'Hermes-Message-Id'
 
         new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'        | 'hermes-message-id'
         new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'  | 'hermes-message-id'
         new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'        | 'hermes-message-id'
+        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'     | 'hermes-message-id'
 
         new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'        | 'HERMES-MESSAGE-ID'
         new RestTemplateHermesSender(new AsyncRestTemplate())   | 'RestTemplateSender'  | 'HERMES-MESSAGE-ID'
         new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'        | 'HERMES-MESSAGE-ID'
+        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'     | 'HERMES-MESSAGE-ID'
     }
 }
