@@ -148,8 +148,8 @@ public enum Configs {
     FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_COUNT("frontend.startup.topic.metadata.loading.retry.count", 5),
     FRONTEND_STARTUP_TOPIC_METADATA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.metadata.loading.thread.pool.size", 16),
 
-    FRONTEND_TOPIC_METADATA_LOADING_JOB_ENABLED("frontend.topic.metadata.job.enabled", false),
-    FRONTEND_TOPIC_METADATA_LOADING_JOB_INTERVAL("frontend.topic.metadata.job.interval", 60),
+    FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED("frontend.topic.metadata.refresh.job.enabled", true),
+    FRONTEND_TOPIC_METADATA_REFRESH_JOB_INTERVAL("frontend.topic.metadata.refresh.job.interval", 60),
 
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED("frontend.startup.topic.schema.loading.enabled", false),
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT("frontend.startup.topic.schema.loading.retry.count", 3),

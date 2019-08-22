@@ -49,7 +49,6 @@ class TopicMetadataLoader implements AutoCloseable {
     private MetadataLoadingResult fetchTopicMetadata(CachedTopic topic, ExecutionContext context) {
         int attempt = context.getExecutions() + 1;
         if (brokerMessageProducer.isTopicAvailable(topic)) {
-            logger.info("Successfully loaded metadata for topic {}, attempt #{}", topic.getQualifiedName(), attempt);
             return MetadataLoadingResult.success(topic.getTopicName());
         }
         logger.warn("Failed to load metadata for topic {}, attempt #{}", topic.getQualifiedName(), attempt);

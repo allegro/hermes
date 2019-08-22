@@ -42,7 +42,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_CLIENT_A
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_PORT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_WORKER_THREADS_COUNT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_TOPIC_METADATA_LOADING_JOB_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED;
 
 public class HermesServer {
 
@@ -91,7 +91,7 @@ public class HermesServer {
         messagePreviewPersister.start();
         throughputLimiter.start();
 
-        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_LOADING_JOB_ENABLED)) {
+        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
             topicMetadataLoadingJob.start();
         }
     }
@@ -109,7 +109,7 @@ public class HermesServer {
         messagePreviewPersister.shutdown();
         throughputLimiter.stop();
 
-        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_LOADING_JOB_ENABLED)) {
+        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
             topicMetadataLoadingJob.stop();
         }
     }
