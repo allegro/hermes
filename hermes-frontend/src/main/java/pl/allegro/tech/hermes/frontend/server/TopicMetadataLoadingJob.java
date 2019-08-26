@@ -22,7 +22,7 @@ public class TopicMetadataLoadingJob implements Runnable {
     @Inject
     public TopicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
                                    ConfigFactory config) {
-        this(topicMetadataLoadingRunner, config.getIntProperty(Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_INTERVAL));
+        this(topicMetadataLoadingRunner, config.getIntProperty(Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_INTERVAL_SECONDS));
     }
 
     TopicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner, int intervalSeconds) {
