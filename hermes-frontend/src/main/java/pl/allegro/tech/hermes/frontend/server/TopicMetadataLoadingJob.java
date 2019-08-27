@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.frontend.server;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
@@ -12,6 +14,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class TopicMetadataLoadingJob implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(TopicMetadataLoadingJob.class);
 
     private final TopicMetadataLoadingRunner topicMetadataLoadingRunner;
     private final ScheduledExecutorService executorService;
@@ -36,7 +40,11 @@ public class TopicMetadataLoadingJob implements Runnable {
 
     @Override
     public void run() {
-        topicMetadataLoadingRunner.refreshMetadata();
+        try {
+            topicMetadataLoadingRunner.refreshMetadata();
+        } catch (Exception e) {
+            logger.error("An error occurred while refreshing topic metadata", e);
+        }
     }
 
     public void start() {
