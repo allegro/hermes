@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 
 import java.util.Optional;
@@ -52,7 +53,8 @@ public class SelectiveSupervisorController implements SupervisorController {
                                          ZookeeperAdminCache adminCache,
                                          ExecutorService assignmentExecutor,
                                          ConfigFactory configFactory,
-                                         HermesMetrics metrics) {
+                                         HermesMetrics metrics,
+                                         WorkloadConstraintsRepository workloadConstraintsRepository) {
 
         this.supervisor = supervisor;
         this.notificationsBus = notificationsBus;
@@ -70,7 +72,8 @@ public class SelectiveSupervisorController implements SupervisorController {
                 new SelectiveWorkBalancer(),
                 workTracker, metrics,
                 configFactory.getIntProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL),
-                configFactory.getStringProperty(KAFKA_CLUSTER_NAME));
+                configFactory.getStringProperty(KAFKA_CLUSTER_NAME),
+                workloadConstraintsRepository);
     }
 
     @Override

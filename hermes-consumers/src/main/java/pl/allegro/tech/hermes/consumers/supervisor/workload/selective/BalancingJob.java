@@ -9,7 +9,9 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.ConsumersWorkloadConstraints;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraintsRepository;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -31,6 +33,7 @@ public class BalancingJob implements Runnable {
     private final WorkTracker workTracker;
     private final HermesMetrics metrics;
     private final String kafkaCluster;
+    private final WorkloadConstraintsRepository workloadConstraintsRepository;
     private final ScheduledExecutorService executorService;
 
     private final int intervalSeconds;
@@ -46,7 +49,8 @@ public class BalancingJob implements Runnable {
                  WorkTracker workTracker,
                  HermesMetrics metrics,
                  int intervalSeconds,
-                 String kafkaCluster) {
+                 String kafkaCluster,
+                 WorkloadConstraintsRepository workloadConstraintsRepository) {
         this.consumersRegistry = consumersRegistry;
         this.configFactory = configFactory;
         this.subscriptionsCache = subscriptionsCache;
@@ -54,6 +58,7 @@ public class BalancingJob implements Runnable {
         this.workTracker = workTracker;
         this.metrics = metrics;
         this.kafkaCluster = kafkaCluster;
+        this.workloadConstraintsRepository = workloadConstraintsRepository;
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("BalancingExecutor-%d").build();
         this.executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
@@ -92,7 +97,10 @@ public class BalancingJob implements Runnable {
 
                     SubscriptionAssignmentView initialState = workTracker.getAssignments();
 
-                    WorkloadConstraints constraints = WorkloadConstraints.defaultConstraints(
+                    ConsumersWorkloadConstraints constraints = workloadConstraintsRepository.getConsumersWorkloadConstraints();
+                    WorkloadConstraints workloadConstraints = new WorkloadConstraints(
+                            constraints.getSubscriptionConstraints(),
+                            constraints.getTopicConstraints(),
                             configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION),
                             configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER),
                             consumersRegistry.list().size());
@@ -101,7 +109,7 @@ public class BalancingJob implements Runnable {
                             subscriptionsCache.listActiveSubscriptionNames(),
                             consumersRegistry.list(),
                             initialState,
-                            constraints);
+                            workloadConstraints);
 
                     if (consumersRegistry.isLeader()) {
                         logger.info("Applying workload balance changes {}", work.toString());

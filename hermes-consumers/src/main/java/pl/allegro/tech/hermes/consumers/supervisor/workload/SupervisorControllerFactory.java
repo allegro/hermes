@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.UnsupportedConsumerWorkloadAlgorithm;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.mirror.MirroringSupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
@@ -53,14 +54,15 @@ public class SupervisorControllerFactory implements Factory<SupervisorController
                                        ZookeeperAdminCache adminCache,
                                        HermesMetrics metrics,
                                        ConfigFactory configs,
-                                       Clock clock) {
+                                       Clock clock,
+                                       WorkloadConstraintsRepository workloadConstraintsRepository) {
         this.configs = configs;
         this.availableImplementations = ImmutableMap.of(
                 MIRROR, () -> new MirroringSupervisorController(supervisor, notificationsBus, assignmentRegistry, subscriptionsCache, workTracker, adminCache, configs),
                 SELECTIVE, () -> new SelectiveSupervisorController(supervisor, notificationsBus, subscriptionsCache, assignmentRegistry, workTracker,
                         createConsumersRegistry(configs, curator, clock), adminCache,
                         getAssignmentExecutor(configs),
-                        configs, metrics));
+                        configs, metrics, workloadConstraintsRepository));
     }
 
     private ExecutorService getAssignmentExecutor(ConfigFactory configs) {

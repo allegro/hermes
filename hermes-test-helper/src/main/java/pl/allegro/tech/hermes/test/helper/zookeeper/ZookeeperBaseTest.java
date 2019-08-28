@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.test.helper.zookeeper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import kafka.zk.KafkaZkClient;
 import kafka.zookeeper.ZooKeeperClient;
@@ -21,6 +22,8 @@ public abstract class ZookeeperBaseTest {
     protected static ZookeeperWaiter wait;
 
     protected static KafkaZkClient kafkaZkClient;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     protected ZookeeperBaseTest() {
     }
@@ -59,22 +62,29 @@ public abstract class ZookeeperBaseTest {
         zookeeperServer.stop();
     }
 
-    public void createPath(String path) throws Exception {
-        if(zookeeperClient.checkExists().forPath(path) == null) {
+    protected void createPath(String path) throws Exception {
+        if (zookeeperClient.checkExists().forPath(path) == null) {
             zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
         }
     }
 
-    public void deleteData(String path) throws Exception {
+    protected void deleteData(String path) throws Exception {
         if (zookeeperClient.checkExists().forPath(path) != null) {
             zookeeperClient.delete().deletingChildrenIfNeeded().forPath(path);
         }
     }
 
-    public void deleteAllNodes() throws Exception {
-        if (zookeeperClient.checkExists().forPath("/hermes") != null) {
-            zookeeperClient.delete().guaranteed().deletingChildrenIfNeeded().forPath("/hermes");
-        }
+    protected void deleteAllNodes() throws Exception {
+        zookeeperClient.delete().guaranteed().deletingChildrenIfNeeded().forPath("/hermes");
+    }
+
+    protected void setupNode(String path, Object data) throws Exception {
+        createPath(path);
+        zookeeperClient.setData().forPath(path, objectMapper.writeValueAsBytes(data));
+    }
+
+    protected void updateNode(String path, Object data) throws Exception {
+        zookeeperClient.setData().forPath(path, objectMapper.writeValueAsBytes(data));
     }
 
 }
