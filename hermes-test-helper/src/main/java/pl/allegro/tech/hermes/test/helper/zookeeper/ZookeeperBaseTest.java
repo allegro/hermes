@@ -75,7 +75,9 @@ public abstract class ZookeeperBaseTest {
     }
 
     protected void deleteAllNodes() throws Exception {
-        zookeeperClient.delete().guaranteed().deletingChildrenIfNeeded().forPath("/hermes");
+        if (zookeeperClient.checkExists().forPath("/hermes") != null) {
+            zookeeperClient.delete().guaranteed().deletingChildrenIfNeeded().forPath("/hermes");
+        }
     }
 
     protected void setupNode(String path, Object data) throws Exception {
