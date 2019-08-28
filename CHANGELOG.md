@@ -2,6 +2,43 @@
 
 ### ...
 
+## 1.2.2 (22.08.2019)
+
+### Features
+
+#### ([1084](https://github.com/allegro/hermes/pull/1084)) `WebClient` Hermes sender implementation
+
+Introduces an implementation of Hermes Sender which makes use of reactive, non-blocking 
+[WebFlux HTTP client](https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html#webflux-client).
+
+#### ([1086](https://github.com/allegro/hermes/pull/1086)) Flat tree with binary-content nodes implementation of max-rate registry
+
+Introducing a lightweight alternative of max-rate storage which generates less zookeeper nodes and should load fast 
+even for large number of subscriptions and consumer nodes.
+
+Enable this storage type with `consumer.maxrate.registry.type: flat-binary` property in hermes-consumers configuration
+(previous `hierarchical` storage type is used as default).
+
+## 1.2.1 (05.08.2019)
+
+### Features
+
+#### ([1076](https://github.com/allegro/hermes/pull/1076)) `SchemaRepositoryInstanceResolver` interface introduced
+
+This change allows providing different instance resolvers for schema repositories in frontends and consumers. 
+The default implementations uses configured URLs, but one can provide an implementation that 
+makes use of a custom discovery mechanism or instance hashing.
+
+### Enhancements
+
+#### ([1073](https://github.com/allegro/hermes/pull/1073)) Original message available on `HermesResponse` when it wasn't published
+
+#### ([1079](https://github.com/allegro/hermes/pull/1079)) Hermes client supports case insensitive headers
+
+### Bugfixes
+
+#### ([1063](https://github.com/allegro/hermes/pull/1063)) `Keep-alive` excluded in HTTP/2 communication in hermes-consumers
+
 ## 1.2.0 (24.07.2019)
 
 ### Enhancements

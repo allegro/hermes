@@ -51,6 +51,7 @@ class MaxRateCalculator {
             logger.info("Max rate calculation started");
 
             long start = clock.millis();
+            maxRateRegistry.onBeforeMaxRateCalculation();
 
             Map<SubscriptionName, Set<String>> subscriptionConsumers =
                     subscriptionAssignmentCache.getSubscriptionConsumers();
@@ -78,6 +79,8 @@ class MaxRateCalculator {
                     logger.error("Problem calculating max rates for subscription {}", entry.getKey(), e);
                 }
             });
+
+            maxRateRegistry.onAfterMaxRateCalculation();
 
             lastUpdateDurationMillis = clock.millis() - start;
             logger.info("Max rate calculation done in {} ms", lastUpdateDurationMillis);
