@@ -42,6 +42,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_CLIENT_A
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_PORT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_WORKER_THREADS_COUNT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED;
 
 public class HermesServer {
 
@@ -57,6 +58,7 @@ public class HermesServer {
     private final int sslPort;
     private final String host;
     private ThroughputLimiter throughputLimiter;
+    private final TopicMetadataLoadingJob topicMetadataLoadingJob;
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
     @Inject
@@ -67,6 +69,7 @@ public class HermesServer {
             HealthCheckService healthCheckService,
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
+            TopicMetadataLoadingJob topicMetadataLoadingJob,
             SslContextFactoryProvider sslContextFactoryProvider) {
 
         this.configFactory = configFactory;
@@ -74,6 +77,7 @@ public class HermesServer {
         this.publishingHandler = publishingHandler;
         this.healthCheckService = healthCheckService;
         this.messagePreviewPersister = messagePreviewPersister;
+        this.topicMetadataLoadingJob = topicMetadataLoadingJob;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
@@ -87,6 +91,9 @@ public class HermesServer {
         messagePreviewPersister.start();
         throughputLimiter.start();
 
+        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
+            topicMetadataLoadingJob.start();
+        }
     }
 
     public void gracefulShutdown() throws InterruptedException {
@@ -101,6 +108,10 @@ public class HermesServer {
         undertow.stop();
         messagePreviewPersister.shutdown();
         throughputLimiter.stop();
+
+        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
+            topicMetadataLoadingJob.stop();
+        }
     }
 
     private Undertow configureServer() {
