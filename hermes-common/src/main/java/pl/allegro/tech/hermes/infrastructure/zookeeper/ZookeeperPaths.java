@@ -36,8 +36,8 @@ public class ZookeeperPaths {
         return basePath;
     }
 
-    public String extractChildNode(String fullChildPath, String basePath) {
-        return fullChildPath.substring(basePath.length() + URL_SEPARATOR.length());
+    public String extractChildNode(String fullChildPath, String prefixPath) {
+        return fullChildPath.substring(prefixPath.length() + URL_SEPARATOR.length());
     }
 
     public String adminPath() {
