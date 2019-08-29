@@ -15,6 +15,7 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
     ZookeeperWorkloadConstraintsRepository repository
     ZookeeperWorkloadConstraintsCache cache
     def paths = new ZookeeperPaths("/hermes")
+    def mapper = new ObjectMapper()
 
     def setup() {
         try {
@@ -23,8 +24,8 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
             e.printStackTrace()
         }
 
-        cache = new ZookeeperWorkloadConstraintsCache(zookeeper(), paths)
-        repository = new ZookeeperWorkloadConstraintsRepository(zookeeper(), new ObjectMapper(), paths, cache)
+        cache = new ZookeeperWorkloadConstraintsCache(zookeeper(), mapper, paths)
+        repository = new ZookeeperWorkloadConstraintsRepository(zookeeper(), mapper, paths, cache)
     }
 
     def cleanup() {

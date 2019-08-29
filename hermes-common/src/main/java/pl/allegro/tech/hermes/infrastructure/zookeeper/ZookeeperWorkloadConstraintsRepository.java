@@ -15,7 +15,7 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
     private final ZookeeperWorkloadConstraintsCache pathChildrenCache;
 
     public ZookeeperWorkloadConstraintsRepository(CuratorFramework curator, ObjectMapper mapper, ZookeeperPaths paths) {
-        this(curator, mapper, paths, new ZookeeperWorkloadConstraintsCache(curator, paths));
+        this(curator, mapper, paths, new ZookeeperWorkloadConstraintsCache(curator, mapper, paths));
     }
 
     ZookeeperWorkloadConstraintsRepository(CuratorFramework curator, ObjectMapper mapper, ZookeeperPaths paths,

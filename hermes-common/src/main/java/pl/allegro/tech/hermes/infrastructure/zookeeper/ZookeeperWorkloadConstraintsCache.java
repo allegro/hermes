@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 class ZookeeperWorkloadConstraintsCache extends PathChildrenCache implements PathChildrenCacheListener {
@@ -21,11 +22,12 @@ class ZookeeperWorkloadConstraintsCache extends PathChildrenCache implements Pat
 
     private final Map<TopicName, Constraints> topicConstraintsCache = new ConcurrentHashMap<>();
     private final Map<SubscriptionName, Constraints> subscriptionConstraintsCache = new ConcurrentHashMap<>();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     private final ZookeeperPaths paths;
 
-    ZookeeperWorkloadConstraintsCache(CuratorFramework curatorFramework, ZookeeperPaths paths) {
+    ZookeeperWorkloadConstraintsCache(CuratorFramework curatorFramework, ObjectMapper objectMapper, ZookeeperPaths paths) {
         super(curatorFramework, paths.consumersWorkloadConstraintsPath(), true);
+        this.objectMapper = objectMapper;
         this.paths = paths;
         getListenable().addListener(this);
     }
@@ -38,41 +40,41 @@ class ZookeeperWorkloadConstraintsCache extends PathChildrenCache implements Pat
     public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) {
         switch (event.getType()) {
             case CHILD_ADDED:
-                updatedCache(event.getData().getPath(), event.getData().getData());
+                updateCache(event.getData().getPath(), event.getData().getData());
                 break;
             case CHILD_REMOVED:
                 removeFromCache(event.getData().getPath());
                 break;
             case CHILD_UPDATED:
-                updatedCache(event.getData().getPath(), event.getData().getData());
+                updateCache(event.getData().getPath(), event.getData().getData());
                 break;
             default:
                 break;
         }
     }
 
-    private void updatedCache(String path, byte[] bytes) {
-        Constraints constraints = bytesToConstraints(bytes, path);
-        if (constraints == null) {
+    private void updateCache(String path, byte[] bytes) {
+        Optional<Constraints> constraints = bytesToConstraints(bytes, path);
+        if (!constraints.isPresent()) {
             return;
         }
         if (isSubscription(path)) {
             subscriptionConstraintsCache.put(
                     SubscriptionName.fromString(paths.extractChildNode(path, paths.consumersWorkloadConstraintsPath())),
-                    constraints);
+                    constraints.get());
         } else {
             topicConstraintsCache.put(
                     TopicName.fromQualifiedName(paths.extractChildNode(path, paths.consumersWorkloadConstraintsPath())),
-                    constraints);
+                    constraints.get());
         }
     }
 
-    private Constraints bytesToConstraints(byte[] bytes, String path) {
+    private Optional<Constraints> bytesToConstraints(byte[] bytes, String path) {
         try {
-            return objectMapper.readValue(bytes, Constraints.class);
+            return Optional.ofNullable(objectMapper.readValue(bytes, Constraints.class));
         } catch (Exception e) {
             logger.error("Cannot read data from node: {}", path, e);
-            return null;
+            return Optional.empty();
         }
     }
 

@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import pl.allegro.tech.hermes.api.Constraints
 import pl.allegro.tech.hermes.api.SubscriptionName
@@ -35,7 +36,7 @@ class ZookeeperWorkloadConstraintsCacheTest extends IntegrationTest {
             e.printStackTrace()
         }
 
-        pathChildrenCache = new ZookeeperWorkloadConstraintsCache(zookeeper(), new ZookeeperPaths("/hermes"))
+        pathChildrenCache = new ZookeeperWorkloadConstraintsCache(zookeeper(), new ObjectMapper(), new ZookeeperPaths("/hermes"))
         pathChildrenCache.start()
     }
 
