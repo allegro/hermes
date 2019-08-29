@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.UnsupportedConsumerWorkloadAlgorithm;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.mirror.MirroringSupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;

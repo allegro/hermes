@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workload.constraints;
+package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
@@ -7,8 +7,9 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperBasedRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.api.Constraints;
+import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +23,7 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
 
     private final ZookeeperWorkloadConstraintsPathChildrenCache pathChildrenCache;
 
-    ZookeeperWorkloadConstraintsRepository(CuratorFramework curator, ObjectMapper mapper, ZookeeperPaths paths) {
+    public ZookeeperWorkloadConstraintsRepository(CuratorFramework curator, ObjectMapper mapper, ZookeeperPaths paths) {
         this(curator, mapper, paths,
                 new ZookeeperWorkloadConstraintsPathChildrenCache(curator, paths.consumersWorkloadConstraintsPath()));
     }

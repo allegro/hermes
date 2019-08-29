@@ -1,10 +1,12 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workload.constraints;
+package pl.allegro.tech.hermes.common.di.factories;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 
 import javax.inject.Inject;
 import javax.inject.Named;

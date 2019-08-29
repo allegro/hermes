@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workload.constraints;
+package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;

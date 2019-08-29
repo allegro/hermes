@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workload.constraints;
+package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

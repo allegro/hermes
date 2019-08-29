@@ -9,9 +9,9 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.ConsumersWorkloadConstraints;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
