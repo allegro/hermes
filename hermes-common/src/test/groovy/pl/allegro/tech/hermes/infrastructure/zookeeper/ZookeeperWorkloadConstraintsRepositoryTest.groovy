@@ -19,7 +19,6 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
 
     ZookeeperWorkloadConstraintsRepository repository
     ZookeeperWorkloadConstraintsPathChildrenCache pathChildrenCache
-    def objectMapper = new ObjectMapper()
     def paths = new ZookeeperPaths("/hermes")
     def curator = zookeeper()
 
@@ -33,7 +32,7 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
         logger.addAppender(listAppender)
 
         try {
-            deleteAllNodes()
+            deleteAllNodes("/hermes/consumers-workload-constraints")
         } catch (Exception e) {
             e.printStackTrace()
         }
@@ -102,30 +101,5 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
         await()
                 .atMost(200, TimeUnit.MILLISECONDS)
                 .until { pathChildrenCache.getChildrenData().size() == expectedSize }
-    }
-
-    def createPath(String path) {
-        if (curator.checkExists().forPath(path) == null) {
-            curator.create().creatingParentsIfNeeded().forPath(path)
-        }
-    }
-
-    def deleteData(String path) throws Exception {
-        if (curator.checkExists().forPath(path) != null) {
-            curator.delete().deletingChildrenIfNeeded().forPath(path)
-        }
-    }
-
-    def deleteAllNodes() {
-        curator.delete().guaranteed().deletingChildrenIfNeeded().forPath("/hermes/consumers-workload-constraints")
-    }
-
-    def setupNode(String path, Object data) {
-        createPath(path)
-        curator.setData().forPath(path, objectMapper.writeValueAsBytes(data))
-    }
-
-    def updateNode(String path, Object data) {
-        curator.setData().forPath(path, objectMapper.writeValueAsBytes(data))
     }
 }

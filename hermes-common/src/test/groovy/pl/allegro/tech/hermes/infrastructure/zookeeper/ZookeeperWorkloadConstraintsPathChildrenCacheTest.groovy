@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import pl.allegro.tech.hermes.api.Constraints
 import pl.allegro.tech.hermes.test.IntegrationTest
 
@@ -11,12 +10,11 @@ import static com.jayway.awaitility.Awaitility.await
 class ZookeeperWorkloadConstraintsPathChildrenCacheTest extends IntegrationTest {
 
     ZookeeperWorkloadConstraintsPathChildrenCache pathChildrenCache
-    def objectMapper = new ObjectMapper()
     def curator = zookeeper()
 
     def setup() {
         try {
-            deleteAllNodes()
+            deleteAllNodes("/hermes/consumers-workload-constraints")
         } catch (Exception e) {
             e.printStackTrace()
         }
@@ -43,8 +41,8 @@ class ZookeeperWorkloadConstraintsPathChildrenCacheTest extends IntegrationTest 
         when:
         def childrenData = pathChildrenCache.getChildrenData()
         def constraints = childrenData
-                .collect { it.getData() }
-                .collect { it -> objectMapper.readValue(it, Constraints) }
+                .collect { it.data }
+                .collect { objectMapper.readValue(it, Constraints) }
 
         then:
         childrenData.size() == 2
@@ -97,8 +95,8 @@ class ZookeeperWorkloadConstraintsPathChildrenCacheTest extends IntegrationTest 
         when:
         def childrenData = pathChildrenCache.getChildrenData()
         def constraints = childrenData
-                .collect { it.getData() }
-                .collect { it -> objectMapper.readValue(it, Constraints) }
+                .collect { it.data }
+                .collect { objectMapper.readValue(it, Constraints) }
 
         then:
         childrenData.size() == 2
@@ -110,8 +108,8 @@ class ZookeeperWorkloadConstraintsPathChildrenCacheTest extends IntegrationTest 
 
         def updatedChildrenData = pathChildrenCache.getChildrenData()
         def updatedConstraints = updatedChildrenData
-                .collect { it.getData() }
-                .collect { it -> objectMapper.readValue(it, Constraints) }
+                .collect { it.data }
+                .collect { objectMapper.readValue(it, Constraints) }
 
         then:
         updatedChildrenData.size() == 2
@@ -122,31 +120,6 @@ class ZookeeperWorkloadConstraintsPathChildrenCacheTest extends IntegrationTest 
         await()
                 .atMost(200, TimeUnit.MILLISECONDS)
                 .until { pathChildrenCache.getChildrenData().size() == expectedSize }
-    }
-
-    def createPath(String path) {
-        if (curator.checkExists().forPath(path) == null) {
-            curator.create().creatingParentsIfNeeded().forPath(path)
-        }
-    }
-
-    def deleteData(String path) throws Exception {
-        if (curator.checkExists().forPath(path) != null) {
-            curator.delete().deletingChildrenIfNeeded().forPath(path)
-        }
-    }
-
-    def deleteAllNodes() {
-        curator.delete().guaranteed().deletingChildrenIfNeeded().forPath("/hermes/consumers-workload-constraints")
-    }
-
-    def setupNode(String path, Object data) {
-        createPath(path)
-        curator.setData().forPath(path, objectMapper.writeValueAsBytes(data))
-    }
-
-    def updateNode(String path, Object data) {
-        curator.setData().forPath(path, objectMapper.writeValueAsBytes(data))
     }
 }
 
