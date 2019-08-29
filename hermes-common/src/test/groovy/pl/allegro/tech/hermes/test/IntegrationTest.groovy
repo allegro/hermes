@@ -65,8 +65,7 @@ abstract class IntegrationTest extends Specification {
     }
 
     def setupNode(String path, Object data) {
-        createPath(path)
-        zookeeper().setData().forPath(path, objectMapper.writeValueAsBytes(data))
+        zookeeper().create().creatingParentsIfNeeded().forPath(path, objectMapper.writeValueAsBytes(data))
     }
 
     def updateNode(String path, Object data) {
