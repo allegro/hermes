@@ -80,13 +80,4 @@ public abstract class ZookeeperBaseTest {
         }
     }
 
-    protected void setupNode(String path, Object data) throws Exception {
-        createPath(path);
-        zookeeperClient.setData().forPath(path, objectMapper.writeValueAsBytes(data));
-    }
-
-    protected void updateNode(String path, Object data) throws Exception {
-        zookeeperClient.setData().forPath(path, objectMapper.writeValueAsBytes(data));
-    }
-
 }

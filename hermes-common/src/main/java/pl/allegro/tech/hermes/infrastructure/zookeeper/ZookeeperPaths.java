@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.google.common.base.Joiner;
+import org.apache.commons.lang.StringUtils;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -37,7 +38,7 @@ public class ZookeeperPaths {
     }
 
     public String extractChildNode(String fullChildPath, String prefixPath) {
-        return fullChildPath.substring(prefixPath.length() + URL_SEPARATOR.length());
+        return StringUtils.removeStart(fullChildPath, prefixPath + URL_SEPARATOR);
     }
 
     public String adminPath() {

@@ -80,9 +80,11 @@ class ZookeeperWorkloadConstraintsCache extends PathChildrenCache implements Pat
 
     private void removeFromCache(String path) {
         if (isSubscription(path)) {
-            subscriptionConstraintsCache.remove(SubscriptionName.fromString(paths.extractChildNode(path, "/hermes/consumers-workload-constraints")));
+            subscriptionConstraintsCache.remove(
+                    SubscriptionName.fromString(paths.extractChildNode(path, paths.consumersWorkloadConstraintsPath())));
         } else {
-            topicConstraintsCache.remove(TopicName.fromQualifiedName(paths.extractChildNode(path, "/hermes/consumers-workload-constraints")));
+            topicConstraintsCache.remove(
+                    TopicName.fromQualifiedName(paths.extractChildNode(path, paths.consumersWorkloadConstraintsPath())));
         }
     }
 
