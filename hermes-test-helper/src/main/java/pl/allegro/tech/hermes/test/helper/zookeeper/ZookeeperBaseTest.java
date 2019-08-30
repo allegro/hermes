@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.test.helper.zookeeper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import kafka.zk.KafkaZkClient;
 import kafka.zookeeper.ZooKeeperClient;
@@ -22,8 +21,6 @@ public abstract class ZookeeperBaseTest {
     protected static ZookeeperWaiter wait;
 
     protected static KafkaZkClient kafkaZkClient;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     protected ZookeeperBaseTest() {
     }
