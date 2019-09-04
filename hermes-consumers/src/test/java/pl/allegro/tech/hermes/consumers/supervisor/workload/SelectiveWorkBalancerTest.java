@@ -9,8 +9,8 @@ import org.assertj.core.api.ListAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.Constraints;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
+import pl.allegro.tech.hermes.api.Constraints;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.WorkBalancingResult;
 

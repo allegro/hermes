@@ -1,7 +1,8 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workload.constraints
+package pl.allegro.tech.hermes.domain.workload.constraints
 
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
+import pl.allegro.tech.hermes.api.Constraints
 import spock.lang.Specification
 import spock.lang.Unroll
 

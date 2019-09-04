@@ -21,6 +21,7 @@ import pl.allegro.tech.hermes.common.di.factories.SharedCounterFactory;
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionOffsetChangeIndicatorFactory;
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
+import pl.allegro.tech.hermes.common.di.factories.WorkloadConstraintsRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
@@ -41,6 +42,7 @@ import pl.allegro.tech.hermes.common.schema.SchemaVersionsRepositoryFactory;
 import pl.allegro.tech.hermes.common.util.HostnameResolver;
 import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
 import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
 
@@ -86,6 +88,7 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(PathsCompilerFactory.class);
         bindSingletonFactory(KafkaNamesMapperFactory.class);
         bindSingletonFactory(MessagePreviewRepositoryFactory.class);
+        bindFactory(WorkloadConstraintsRepositoryFactory.class).in(Singleton.class).to(WorkloadConstraintsRepository.class);
 
         bind(ZookeeperInternalNotificationBus.class).to(InternalNotificationsBus.class);
         bindSingletonFactory(ModelAwareZookeeperNotifyingCacheFactory.class);

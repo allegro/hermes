@@ -81,6 +81,8 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorControllerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTrackerFactory;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.common.di.factories.WorkloadConstraintsRepositoryFactory;
 
 import javax.inject.Singleton;
 import javax.jms.Message;

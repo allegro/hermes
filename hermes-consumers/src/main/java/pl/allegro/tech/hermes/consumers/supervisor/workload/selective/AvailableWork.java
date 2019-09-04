@@ -4,7 +4,7 @@ import com.google.common.collect.Sets;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignment;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.constraints.WorkloadConstraints;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
 
 import java.util.Comparator;
 import java.util.Optional;

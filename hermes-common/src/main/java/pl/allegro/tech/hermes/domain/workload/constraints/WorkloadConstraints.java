@@ -1,5 +1,6 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workload.constraints;
+package pl.allegro.tech.hermes.domain.workload.constraints;
 
+import pl.allegro.tech.hermes.api.Constraints;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 
