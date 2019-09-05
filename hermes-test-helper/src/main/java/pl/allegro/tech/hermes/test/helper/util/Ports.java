@@ -25,7 +25,7 @@ public final class Ports {
             socket.close();
 
             // second check whether the port is available as on some dynamic environments it can be still in use
-            try (Socket ignore = new Socket("0.0.0.0", port)) {
+            try (Socket ignore = new Socket("127.0.0.1", port)) {
                 logger.warn("Connected to randomly selected port {} meaning it is still in use. Drawing next port.", port);
                 return nextAvailable();
             } catch (ConnectException ex) {
