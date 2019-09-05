@@ -44,7 +44,7 @@ class HermesMockAvroTest extends Specification {
         then: "check for any single message on the topic and check for single specific avro message"
             hermes.expect().singleMessageOnTopic(topicName)
             hermes.expect().singleAvroMessageOnTopic(topicName, schema)
-            response.getStatus() == HttpStatus.SC_CREATED
+            response.status == HttpStatus.SC_CREATED
     }
 
     def "should get all messages as avro"() {
