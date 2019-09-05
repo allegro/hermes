@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.test
 
 import org.apache.curator.framework.CuratorFramework
+import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperWaiter
@@ -28,5 +29,17 @@ class RepositoryWaiter extends ZookeeperWaiter {
 
     void untilSubscriptionCreated(TopicName topic, String subscription) {
         untilZookeeperPathIsCreated(paths.subscriptionPath(topic, subscription))
+    }
+
+    void untilWorkloadConstraintsCreated(TopicName topicName) {
+        untilWorkloadConstraintsCreated(topicName.qualifiedName())
+    }
+
+    void untilWorkloadConstraintsCreated(SubscriptionName subscriptionName) {
+        untilWorkloadConstraintsCreated(subscriptionName.qualifiedName)
+    }
+
+    void untilWorkloadConstraintsCreated(String constraintsPath) {
+        untilZookeeperPathIsCreated("${paths.consumersWorkloadConstraintsPath()}/${constraintsPath}")
     }
 }
