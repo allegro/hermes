@@ -9,6 +9,7 @@ public class UpdateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
 
     private final SubscriptionName subscriptionName;
     private final Constraints constraints;
+    private Constraints backup;
 
     public UpdateSubscriptionConstraintsRepositoryCommand(SubscriptionName subscriptionName, Constraints constraints) {
         this.subscriptionName = subscriptionName;
@@ -17,7 +18,7 @@ public class UpdateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
 
     @Override
     public void backup(WorkloadConstraintsRepository repository) {
-
+        backup = repository.getConsumersWorkloadConstraints().getSubscriptionConstraints().get(subscriptionName);
     }
 
     @Override
@@ -27,11 +28,18 @@ public class UpdateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
 
     @Override
     public void rollback(WorkloadConstraintsRepository repository) {
-
+        if (backup != null) {
+            repository.updateConstraints(subscriptionName, backup);
+        }
     }
 
     @Override
     public Class<WorkloadConstraintsRepository> getRepositoryType() {
         return WorkloadConstraintsRepository.class;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("UpdateSubscriptionConstraints(%s)", subscriptionName.getQualifiedName());
     }
 }

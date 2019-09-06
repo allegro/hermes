@@ -9,6 +9,7 @@ public class CreateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
 
     private final SubscriptionName subscriptionName;
     private final Constraints constraints;
+    private boolean exists;
 
     public CreateSubscriptionConstraintsRepositoryCommand(SubscriptionName subscriptionName, Constraints constraints) {
         this.subscriptionName = subscriptionName;
@@ -17,7 +18,7 @@ public class CreateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
 
     @Override
     public void backup(WorkloadConstraintsRepository repository) {
-
+        exists = repository.constraintsExist(subscriptionName);
     }
 
     @Override
@@ -27,11 +28,18 @@ public class CreateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
 
     @Override
     public void rollback(WorkloadConstraintsRepository repository) {
-
+        if (!exists) {
+            repository.deleteConstraints(subscriptionName);
+        }
     }
 
     @Override
     public Class<WorkloadConstraintsRepository> getRepositoryType() {
         return WorkloadConstraintsRepository.class;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("CreateSubscriptionConstraints(%s)", subscriptionName.getQualifiedName());
     }
 }

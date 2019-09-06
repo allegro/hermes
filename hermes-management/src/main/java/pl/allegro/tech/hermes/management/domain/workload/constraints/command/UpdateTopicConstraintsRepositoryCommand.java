@@ -9,6 +9,7 @@ public class UpdateTopicConstraintsRepositoryCommand extends RepositoryCommand<W
 
     private final TopicName topicName;
     private final Constraints constraints;
+    private Constraints backup;
 
     public UpdateTopicConstraintsRepositoryCommand(TopicName topicName, Constraints constraints) {
         this.topicName = topicName;
@@ -17,7 +18,7 @@ public class UpdateTopicConstraintsRepositoryCommand extends RepositoryCommand<W
 
     @Override
     public void backup(WorkloadConstraintsRepository repository) {
-
+        backup = repository.getConsumersWorkloadConstraints().getTopicConstraints().get(topicName);
     }
 
     @Override
@@ -27,11 +28,18 @@ public class UpdateTopicConstraintsRepositoryCommand extends RepositoryCommand<W
 
     @Override
     public void rollback(WorkloadConstraintsRepository repository) {
-
+        if (backup != null) {
+            repository.updateConstraints(topicName, backup);
+        }
     }
 
     @Override
     public Class<WorkloadConstraintsRepository> getRepositoryType() {
         return WorkloadConstraintsRepository.class;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("UpdateTopicConstraints(%s)", topicName.qualifiedName());
     }
 }

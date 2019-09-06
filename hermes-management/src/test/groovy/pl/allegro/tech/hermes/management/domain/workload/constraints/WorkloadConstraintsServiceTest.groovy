@@ -4,7 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import pl.allegro.tech.hermes.api.Constraints
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
+import pl.allegro.tech.hermes.common.exception.InternalProcessingException
 import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints
+import pl.allegro.tech.hermes.domain.workload.constraints.SubscriptionConstraintsAlreadyExistException
+import pl.allegro.tech.hermes.domain.workload.constraints.SubscriptionConstraintsDoNotExistException
+import pl.allegro.tech.hermes.domain.workload.constraints.TopicConstraintsAlreadyExistException
+import pl.allegro.tech.hermes.domain.workload.constraints.TopicConstraintsDoNotExistException
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository
@@ -37,7 +42,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
                 manager, new TestDatacenterNameProvider(DC_1_NAME), objectMapper,
                 paths, new DefaultZookeeperGroupRepositoryFactory(), 180000)
         repositoryManager.start()
-        executor = new MultiDatacenterRepositoryCommandExecutor(repositoryManager, false)
+        executor = new MultiDatacenterRepositoryCommandExecutor(repositoryManager, true)
         service = new WorkloadConstraintsService(repository, executor)
     }
 
@@ -77,6 +82,68 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         assertNodesContains('group.topic$sub', new Constraints(1))
     }
 
+    def "nodes should remain unchanged in case of failure while creating topic constraints"() {
+        given:
+        setupNode(DC_2_NAME, 'group.topic', new Constraints(2))
+        ensureCacheWasUpdated()
+
+        when:
+        service.createConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1))
+
+        then:
+        def e = thrown(TopicConstraintsAlreadyExistException)
+        e.message == 'Constraints for topic group.topic already exist.'
+
+        and:
+        assertNodesDoNotExist('group.topic')
+    }
+
+    def "nodes should remain unchanged in case of failure while creating subscription constraints"() {
+        given:
+        setupNode(DC_2_NAME, 'group.topic$sub', new Constraints(2))
+        ensureCacheWasUpdated()
+
+        when:
+        service.createConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+
+        then:
+        def e = thrown(SubscriptionConstraintsAlreadyExistException)
+        e.message == 'Constraints for subscription group.topic$sub already exist.'
+
+        and:
+        assertNodesDoNotExist('group.topic$sub')
+    }
+
+    def "nodes should remain unchanged in case of unavailability while creating topic constraints"() {
+        given:
+        zookeeper2.stop()
+
+        when:
+        service.createConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1))
+
+        then:
+        def e = thrown(InternalProcessingException)
+        e.message == "Execution of command 'CreateTopicConstraints(group.topic)' failed on DC 'dc2'."
+
+        and:
+        assertNodeDoesNotExist(DC_1_NAME, 'group.topic')
+    }
+
+    def "nodes should remain unchanged in case of unavailability while creating subscription constraints"() {
+        given:
+        zookeeper2.stop()
+
+        when:
+        service.createConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+
+        then:
+        def e = thrown(InternalProcessingException)
+        e.message == "Execution of command 'CreateSubscriptionConstraints(group.topic\$sub)' failed on DC 'dc2'."
+
+        and:
+        assertNodeDoesNotExist(DC_1_NAME, 'group.topic$sub')
+    }
+
     def "should update topic constraints in all zk clusters"() {
         given:
         setupNodes('group.topic', new Constraints(1))
@@ -99,6 +166,74 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         assertNodesContains('group.topic$sub', new Constraints(2))
     }
 
+    def "nodes should remain unchanged in case of failure while updating topic constraints"() {
+        given:
+        setupNode(DC_1_NAME, 'group.topic', new Constraints(2))
+        ensureCacheWasUpdated()
+
+        when:
+        service.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1))
+
+        then:
+        def e = thrown(TopicConstraintsDoNotExistException)
+        e.message == 'Constraints for topic group.topic do not exist.'
+
+        and:
+        assertNodeContains(DC_1_NAME, 'group.topic', new Constraints(2))
+        assertNodeDoesNotExist(DC_2_NAME, 'group.topic')
+    }
+
+    def "nodes should remain unchanged in case of failure while updating subscription constraints"() {
+        given:
+        setupNode(DC_1_NAME, 'group.topic$sub', new Constraints(2))
+        ensureCacheWasUpdated()
+
+        when:
+        service.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+
+        then:
+        def e = thrown(SubscriptionConstraintsDoNotExistException)
+        e.message == 'Constraints for subscription group.topic$sub do not exist.'
+
+        and:
+        assertNodeContains(DC_1_NAME, 'group.topic$sub', new Constraints(2))
+        assertNodeDoesNotExist(DC_2_NAME, 'group.topic$sub')
+    }
+
+    def "nodes should remain unchanged in case of unavailability while updating topic constraints"() {
+        given:
+        setupNode(DC_1_NAME, 'group.topic', new Constraints(2))
+        ensureCacheWasUpdated()
+        zookeeper2.stop()
+
+        when:
+        service.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1))
+
+        then:
+        def e = thrown(InternalProcessingException)
+        e.message == "Execution of command 'UpdateTopicConstraints(group.topic)' failed on DC 'dc2'."
+
+        and:
+        assertNodeContains(DC_1_NAME, 'group.topic', new Constraints(2))
+    }
+
+    def "nodes should remain unchanged in case of unavailability while updating subscription constraints"() {
+        given:
+        setupNode(DC_1_NAME, 'group.topic$sub', new Constraints(2))
+        ensureCacheWasUpdated()
+        zookeeper2.stop()
+
+        when:
+        service.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+
+        then:
+        def e = thrown(InternalProcessingException)
+        e.message == "Execution of command 'UpdateSubscriptionConstraints(group.topic\$sub)' failed on DC 'dc2'."
+
+        and:
+        assertNodeContains(DC_1_NAME, 'group.topic$sub', new Constraints(2))
+    }
+
     def "should remove topic constraints in all zk clusters"() {
         given:
         setupNodes('group.topic', new Constraints(1))
@@ -107,7 +242,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         service.deleteConstraints(TopicName.fromQualifiedName('group.topic'))
 
         then:
-        assertNodesDoesNotExist('group.topic')
+        assertNodesDoNotExist('group.topic')
     }
 
     def "should remove subscription constraints in all zk clusters"() {
@@ -118,10 +253,78 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         service.deleteConstraints(SubscriptionName.fromString('group.topic$sub'))
 
         then:
-        assertNodesDoesNotExist('group.topic$sub')
+        assertNodesDoNotExist('group.topic$sub')
     }
 
-    def "should return true if topic constraints exist in local zk otherwise should return false"() {
+    def "should perform remove operation successfully even if some nodes do not have given topic constraints"() {
+        given:
+        setupNode(DC_1_NAME, 'group.topic', new Constraints(2))
+        ensureCacheWasUpdated()
+
+        assert assertNodeDoesNotExist(DC_2_NAME, 'group.topic')
+
+        when:
+        service.deleteConstraints(TopicName.fromQualifiedName('group.topic'))
+
+        then:
+        noExceptionThrown()
+
+        and:
+        assertNodesDoNotExist('group.topic')
+    }
+
+    def "should perform remove operation successfully even if some nodes do not have given subscription constraints"() {
+        given:
+        setupNode(DC_1_NAME, 'group.topic$sub', new Constraints(2))
+        ensureCacheWasUpdated()
+
+        assert assertNodeDoesNotExist(DC_2_NAME, 'group.topic$sub')
+
+        when:
+        service.deleteConstraints(SubscriptionName.fromString('group.topic$sub'))
+
+        then:
+        noExceptionThrown()
+
+        and:
+        assertNodesDoNotExist('group.topic$sub')
+    }
+
+    def "nodes should remain unchanged in case of failure while deleting topic constraints"() {
+        given:
+        setupNode(DC_1_NAME, 'group.topic', new Constraints(2))
+        ensureCacheWasUpdated()
+        zookeeper2.stop()
+
+        when:
+        service.deleteConstraints(TopicName.fromQualifiedName('group.topic'))
+
+        then:
+        def e = thrown(InternalProcessingException)
+        e.message == "Execution of command 'DeleteTopicConstraints(group.topic)' failed on DC 'dc2'."
+
+        and:
+        assertNodeContains(DC_1_NAME, 'group.topic', new Constraints(2))
+    }
+
+    def "nodes should remain unchanged in case of failure while deleting subscription constraints"() {
+        given:
+        setupNode(DC_1_NAME, 'group.topic$sub', new Constraints(2))
+        ensureCacheWasUpdated()
+        zookeeper2.stop()
+
+        when:
+        service.deleteConstraints(SubscriptionName.fromString('group.topic$sub'))
+
+        then:
+        def e = thrown(InternalProcessingException)
+        e.message == "Execution of command 'DeleteSubscriptionConstraints(group.topic\$sub)' failed on DC 'dc2'."
+
+        and:
+        assertNodeContains(DC_1_NAME, 'group.topic$sub', new Constraints(2))
+    }
+
+    def "should return true if topic constraints exist in local zk, otherwise false"() {
         given:
         setupNodes('group.topic', new Constraints(1))
         ensureCacheWasUpdated()
@@ -131,7 +334,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         !service.constraintsExist(TopicName.fromQualifiedName('group.non-existent-topic'))
     }
 
-    def "should return true if subscription constraints exist in local zk otherwise should return false"() {
+    def "should return true if subscription constraints exist in local zk, otherwise false"() {
         given:
         setupNodes('group.topic$sub', new Constraints(1))
         ensureCacheWasUpdated()
@@ -139,6 +342,13 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         expect:
         service.constraintsExist(SubscriptionName.fromString('group.topic$sub'))
         !service.constraintsExist(SubscriptionName.fromString('group.topic$non-existent-subscription'))
+    }
+
+    private def assertNodeContains(String dc, String path, Constraints expectedConstraints) {
+        def zkClient = findClientByDc(manager.clients, dc)
+        def data = zkClient.curatorFramework.getData().forPath("$WORKLOAD_CONSTRAINTS_PATH/$path")
+        def constraints = objectMapper.readValue(data, Constraints)
+        constraints == expectedConstraints
     }
 
     private def assertNodesContains(String path, Constraints expectedConstraints) {
@@ -149,7 +359,12 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         }
     }
 
-    private def assertNodesDoesNotExist(String path) {
+    private def assertNodeDoesNotExist(String dc, String path) {
+        def zkClient = findClientByDc(manager.clients, dc)
+        zkClient.curatorFramework.checkExists().forPath("$WORKLOAD_CONSTRAINTS_PATH/$path") == null
+    }
+
+    private def assertNodesDoNotExist(String path) {
         manager.clients.each {
             assert it.curatorFramework.checkExists().forPath("$WORKLOAD_CONSTRAINTS_PATH/$path") == null
         }
@@ -158,6 +373,13 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
     private def setupLocalNode(String path, Constraints constraints) {
         def localClient = findClientByDc(manager.clients, DC_1_NAME)
         localClient.curatorFramework.create()
+                .creatingParentsIfNeeded()
+                .forPath("$WORKLOAD_CONSTRAINTS_PATH/$path", objectMapper.writeValueAsBytes(constraints))
+    }
+
+    private def setupNode(String dc, String path, Constraints constraints) {
+        def zkClient = findClientByDc(manager.clients, dc)
+        zkClient.curatorFramework.create()
                 .creatingParentsIfNeeded()
                 .forPath("$WORKLOAD_CONSTRAINTS_PATH/$path", objectMapper.writeValueAsBytes(constraints))
     }

@@ -30,6 +30,7 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvider;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,6 +129,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
         return getRepositoriesByType(repositoryType)
                 .entrySet()
                 .stream()
+                .sorted(Comparator.comparing(Map.Entry::getKey))
                 .map(entry -> new DatacenterBoundRepositoryHolder<>(entry.getValue(), entry.getKey()))
                 .collect(Collectors.toList());
     }

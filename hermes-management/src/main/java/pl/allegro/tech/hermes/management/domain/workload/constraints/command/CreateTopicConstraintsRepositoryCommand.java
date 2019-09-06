@@ -9,6 +9,7 @@ public class CreateTopicConstraintsRepositoryCommand extends RepositoryCommand<W
 
     private final TopicName topicName;
     private final Constraints constraints;
+    private boolean exist;
 
     public CreateTopicConstraintsRepositoryCommand(TopicName topicName, Constraints constraints) {
         this.topicName = topicName;
@@ -17,7 +18,7 @@ public class CreateTopicConstraintsRepositoryCommand extends RepositoryCommand<W
 
     @Override
     public void backup(WorkloadConstraintsRepository repository) {
-
+        exist = repository.constraintsExist(topicName);
     }
 
     @Override
@@ -27,11 +28,18 @@ public class CreateTopicConstraintsRepositoryCommand extends RepositoryCommand<W
 
     @Override
     public void rollback(WorkloadConstraintsRepository repository) {
-
+        if (!exist) {
+            repository.deleteConstraints(topicName);
+        }
     }
 
     @Override
     public Class<WorkloadConstraintsRepository> getRepositoryType() {
         return WorkloadConstraintsRepository.class;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("CreateTopicConstraints(%s)", topicName.qualifiedName());
     }
 }
