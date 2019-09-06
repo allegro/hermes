@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.mock
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.avro.Schema
 import org.apache.avro.reflect.ReflectData
+import org.apache.http.HttpStatus
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
@@ -10,6 +11,8 @@ import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
+
+import javax.ws.rs.core.Response
 
 class HermesMockAvroTest extends Specification {
 
@@ -36,11 +39,12 @@ class HermesMockAvroTest extends Specification {
             hermes.define().avroTopic(topicName)
 
         when:
-            publish(topicName)
+            def response = publish(topicName)
 
         then: "check for any single message on the topic and check for single specific avro message"
             hermes.expect().singleMessageOnTopic(topicName)
             hermes.expect().singleAvroMessageOnTopic(topicName, schema)
+            response.status == HttpStatus.SC_CREATED
     }
 
     def "should get all messages as avro"() {

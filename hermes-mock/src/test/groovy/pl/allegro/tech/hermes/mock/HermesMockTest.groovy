@@ -1,10 +1,13 @@
 package pl.allegro.tech.hermes.mock
 
+import org.apache.http.HttpStatus
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
+
+import javax.ws.rs.core.Response
 
 class HermesMockTest extends Specification {
 
@@ -27,10 +30,11 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            publish(topicName)
+            def response = publish(topicName)
 
         then:
             hermes.expect().singleMessageOnTopic(topicName)
+            response.status == HttpStatus.SC_CREATED
     }
 
     def "should receive 3 messages"() {
