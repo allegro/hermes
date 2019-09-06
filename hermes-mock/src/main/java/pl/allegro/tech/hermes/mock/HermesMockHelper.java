@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.mock;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -68,9 +69,9 @@ public class HermesMockHelper {
 
     public void addStub(String topicName, int statusCode, String contentType) {
         wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
+                .withHeader("Content-Type", equalTo(contentType))
                 .willReturn(aResponse()
                         .withStatus(statusCode)
-                        .withHeader("Content-Type", contentType)
                         .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
                 )
         );
