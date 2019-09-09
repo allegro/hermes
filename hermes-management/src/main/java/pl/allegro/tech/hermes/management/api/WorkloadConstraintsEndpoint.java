@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
 import pl.allegro.tech.hermes.management.domain.workload.constraints.WorkloadConstraintsService;
 
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -49,7 +50,7 @@ public class WorkloadConstraintsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Create or update topic constraints", response = String.class, httpMethod = HttpMethod.PUT)
-    public Response createOrUpdateTopicConstraints(TopicConstraints topicConstraints) {
+    public Response createOrUpdateTopicConstraints(@Valid TopicConstraints topicConstraints) {
         if (service.constraintsExist(topicConstraints.getTopicName())) {
             service.updateConstraints(topicConstraints.getTopicName(), topicConstraints.getConstraints());
             return Response.status(OK).build();
@@ -72,7 +73,7 @@ public class WorkloadConstraintsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Create or update subscription constraints", response = String.class, httpMethod = HttpMethod.PUT)
-    public Response createOrUpdateSubscriptionConstraints(SubscriptionConstraints subscriptionConstraints) {
+    public Response createOrUpdateSubscriptionConstraints(@Valid SubscriptionConstraints subscriptionConstraints) {
         if (service.constraintsExist(subscriptionConstraints.getSubscriptionName())) {
             service.updateConstraints(subscriptionConstraints.getSubscriptionName(), subscriptionConstraints.getConstraints());
             return Response.status(OK).build();

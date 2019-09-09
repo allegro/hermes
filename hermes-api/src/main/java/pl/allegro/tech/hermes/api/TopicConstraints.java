@@ -3,9 +3,12 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.validation.Valid;
+
 public class TopicConstraints {
 
     private final TopicName topicName;
+    @Valid
     private final Constraints constraints;
 
     @JsonCreator
