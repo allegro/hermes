@@ -16,8 +16,6 @@ public interface CounterStorage {
 
     long getInflightCounter(TopicName topicName, String subscriptionName);
 
-    int countInflightNodes(TopicName topicName, String subscriptionName);
-
     void setSubscriptionDiscardedCounter(TopicName topicName, String subscription, long value);
 
     void incrementVolumeCounter(TopicName topicName, String subscriptionName, long value);

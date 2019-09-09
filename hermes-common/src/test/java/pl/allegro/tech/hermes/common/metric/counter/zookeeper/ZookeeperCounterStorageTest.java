@@ -111,19 +111,6 @@ public class ZookeeperCounterStorageTest {
     }
 
     @Test
-    public void shouldCountInflightNodes() throws Exception {
-        // given
-        when(ephemeralCounter.countOccurrences("/hermes/consumers", "/groups/test/topics/topic/subscriptions/sub/metrics/inflight"))
-                .thenReturn(16);
-
-        // when
-        long value = storage.countInflightNodes(TopicName.fromQualifiedName("test.topic"), "sub");
-
-        // then
-        assertThat(value).isEqualTo(16);
-    }
-
-    @Test
     public void shouldNotIncrementSharedCounterForNonExistingSubscription() {
         //given
         TopicName topicName = TopicName.fromQualifiedName("test.topic");

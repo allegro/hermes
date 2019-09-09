@@ -103,14 +103,6 @@ public class ZookeeperCounterStorage implements CounterStorage {
     }
 
     @Override
-    public int countInflightNodes(TopicName topicName, String subscriptionName) {
-        return distributedCounter.countOccurrences(
-                appendRootPath(CONSUMER_BASE_PATH),
-                pathsCompiler.compile(SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH, subscriptionPathContext(topicName, subscriptionName))
-        );
-    }
-
-    @Override
     public void setSubscriptionDiscardedCounter(TopicName topicName, String subscriptionName, long count) {
         try {
             subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
