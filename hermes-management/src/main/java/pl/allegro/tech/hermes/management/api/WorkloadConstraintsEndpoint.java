@@ -8,8 +8,10 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicConstraints;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
+import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.workload.constraints.WorkloadConstraintsService;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -40,6 +42,7 @@ public class WorkloadConstraintsEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
+    @RolesAllowed(Roles.ANY)
     @ApiOperation(value = "All workload constraints", response = List.class, httpMethod = HttpMethod.GET)
     public ConsumersWorkloadConstraints getConsumersWorkloadConstraints() {
         return service.getConsumersWorkloadConstraints();
@@ -49,6 +52,7 @@ public class WorkloadConstraintsEndpoint {
     @Path("/topic")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed(Roles.ADMIN)
     @ApiOperation(value = "Create or update topic constraints", response = String.class, httpMethod = HttpMethod.PUT)
     public Response createOrUpdateTopicConstraints(@Valid TopicConstraints topicConstraints) {
         if (service.constraintsExist(topicConstraints.getTopicName())) {
@@ -62,6 +66,7 @@ public class WorkloadConstraintsEndpoint {
 
     @DELETE
     @Path("/topic/{topicName}")
+    @RolesAllowed(Roles.ADMIN)
     @ApiOperation(value = "Remove topic constraints", response = String.class, httpMethod = HttpMethod.DELETE)
     public Response deleteTopicConstraints(@PathParam("topicName") String topicName) {
         service.deleteConstraints(TopicName.fromQualifiedName(topicName));
@@ -72,6 +77,7 @@ public class WorkloadConstraintsEndpoint {
     @Path("/subscription")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed(Roles.ADMIN)
     @ApiOperation(value = "Create or update subscription constraints", response = String.class, httpMethod = HttpMethod.PUT)
     public Response createOrUpdateSubscriptionConstraints(@Valid SubscriptionConstraints subscriptionConstraints) {
         if (service.constraintsExist(subscriptionConstraints.getSubscriptionName())) {
@@ -85,6 +91,7 @@ public class WorkloadConstraintsEndpoint {
 
     @DELETE
     @Path("/subscription/{topicName}/{subscriptionName}")
+    @RolesAllowed(Roles.ADMIN)
     @ApiOperation(value = "Remove subscription constraints", response = String.class, httpMethod = HttpMethod.DELETE)
     public Response deleteSubscriptionConstraints(@PathParam("topicName") String topicName,
                                                   @PathParam("subscriptionName") String subscriptionName) {
