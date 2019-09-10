@@ -21,6 +21,7 @@ public class HermesClientBuilder {
     private long retrySleepInMillis = 100;
     private long maxRetrySleepInMillis = 300;
     private Supplier<ScheduledExecutorService> schedulerFactory = Executors::newSingleThreadScheduledExecutor;
+    private MetricRegistry metrics;
 
     public HermesClientBuilder(HermesSender sender) {
         this.sender = sender;
@@ -33,7 +34,7 @@ public class HermesClientBuilder {
 
     public HermesClient build() {
         return new HermesClient(sender, uri, defaultHeaders, retries, retryCondition, retrySleepInMillis,
-                maxRetrySleepInMillis, schedulerFactory.get());
+                maxRetrySleepInMillis, schedulerFactory.get(), metrics);
     }
 
     public HermesClientBuilder withURI(URI uri) {
@@ -43,6 +44,7 @@ public class HermesClientBuilder {
 
     public HermesClientBuilder withMetrics(MetricRegistry metrics) {
         this.sender = new MetricsHermesSender(sender, metrics);
+        this.metrics = metrics;
         return this;
     }
 

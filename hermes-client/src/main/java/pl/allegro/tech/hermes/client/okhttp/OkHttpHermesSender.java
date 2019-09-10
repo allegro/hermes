@@ -45,15 +45,15 @@ public class OkHttpHermesSender implements HermesSender {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                future.complete(fromOkHttpResponse(response));
+                future.complete(fromOkHttpResponse(message, response));
             }
         });
 
         return future;
     }
 
-    HermesResponse fromOkHttpResponse(Response response) throws IOException {
-        return hermesResponse()
+    HermesResponse fromOkHttpResponse(HermesMessage message, Response response) throws IOException {
+        return hermesResponse(message)
                 .withHeaderSupplier(response::header)
                 .withHttpStatus(response.code())
                 .withBody(response.body().string())

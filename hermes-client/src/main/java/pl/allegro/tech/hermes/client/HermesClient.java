@@ -1,30 +1,35 @@
 package pl.allegro.tech.hermes.client;
 
+import com.codahale.metrics.MetricRegistry;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
+import net.jodah.failsafe.event.ExecutionCompletedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.client.metrics.MetricsUtils;
 
 import java.net.URI;
+import java.text.MessageFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
 
 public class HermesClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HermesClient.class);
 
     private final HermesSender sender;
     private final String uri;
     private final Map<String, String> defaultHeaders;
     private final AtomicInteger currentlySending = new AtomicInteger(0);
-    private final RetryPolicy retryPolicy;
+    private final RetryPolicy<HermesResponse> retryPolicy;
     private final ScheduledExecutorService scheduler;
+    private final MetricRegistry metrics;
     private volatile boolean shutdown = false;
 
     HermesClient(HermesSender sender,
@@ -34,27 +39,33 @@ public class HermesClient {
                  Predicate<HermesResponse> retryCondition,
                  long retrySleepInMillis,
                  long maxRetrySleepInMillis,
-                 ScheduledExecutorService scheduler) {
+                 ScheduledExecutorService scheduler,
+                 MetricRegistry metrics) {
         this.sender = sender;
         this.uri = createUri(uri);
         this.defaultHeaders = Collections.unmodifiableMap(new HashMap<>(defaultHeaders));
         this.retryPolicy = createRetryPolicy(retries, retryCondition, retrySleepInMillis, maxRetrySleepInMillis);
         this.scheduler = scheduler;
+        this.metrics = metrics;
     }
 
-    private RetryPolicy createRetryPolicy(int retries, Predicate<HermesResponse> retryCondition,
-                                          long retrySleepInMillis, long maxRetrySleepInMillis) {
-        RetryPolicy retryPolicy = new RetryPolicy().withMaxRetries(retries)
-                .retryIf(retryCondition::test);
+    private RetryPolicy<HermesResponse> createRetryPolicy(int retries, Predicate<HermesResponse> retryCondition,
+                                                          long retrySleepInMillis, long maxRetrySleepInMillis) {
+        RetryPolicy<HermesResponse> retryPolicy = new RetryPolicy<HermesResponse>()
+                .withMaxRetries(retries)
+                .handleIf((resp, cause) -> retryCondition.test(resp))
+                .onRetriesExceeded((e) -> handleMaxRetriesExceeded(e))
+                .onSuccess((e) -> handleSuccessfulRetry(e));
+
         if (retrySleepInMillis > 0) {
-            retryPolicy.withBackoff(retrySleepInMillis, maxRetrySleepInMillis, TimeUnit.MILLISECONDS);
+            retryPolicy.withBackoff(retrySleepInMillis, maxRetrySleepInMillis, ChronoUnit.MILLIS);
         }
         return retryPolicy;
     }
 
     private String createUri(URI uri) {
         String uriString = uri.toString();
-        return uriString + (uriString.endsWith("/") ? "" : "/" ) + "topics/";
+        return uriString + (uriString.endsWith("/") ? "" : "/") + "topics/";
     }
 
     public CompletableFuture<HermesResponse> publishJSON(String topic, byte[] message) {
@@ -97,8 +108,8 @@ public class HermesClient {
         currentlySending.incrementAndGet();
         return Failsafe.with(retryPolicy)
                 .with(scheduler)
-                .future(() -> sendOnce(message))
-                .whenComplete((response, ex) -> currentlySending.decrementAndGet());
+                .onComplete((e) -> currentlySending.decrementAndGet())
+                .getStageAsync(() -> sendOnce(message));
     }
 
     private CompletableFuture<HermesResponse> sendOnce(HermesMessage message) {
@@ -128,4 +139,30 @@ public class HermesClient {
         }
     }
 
+    private void handleMaxRetriesExceeded(ExecutionCompletedEvent<HermesResponse> event) {
+        if (event.getResult().isSuccess()) {
+            return;
+        }
+
+        HermesMessage message = event.getResult().getHermesMessage();
+        if (shouldPublishMetrics()) {
+            String prefix = MetricsUtils.getMetricsPrefix(message.getTopic());
+            metrics.counter(prefix + ".failure.unsent").inc();
+        }
+
+        LOGGER.error(MessageFormat.format("Failed to send message to topic {0} after {1} attempts",
+                message.getTopic(), event.getAttemptCount()));
+    }
+
+    private void handleSuccessfulRetry(ExecutionCompletedEvent<HermesResponse> event) {
+        if (shouldPublishMetrics()) {
+            HermesMessage message = event.getResult().getHermesMessage();
+            String prefix = MetricsUtils.getMetricsPrefix(message.getTopic());
+            metrics.counter(prefix + ".failure.retried").inc();
+        }
+    }
+
+    private boolean shouldPublishMetrics() {
+        return metrics != null;
+    }
 }

@@ -5,13 +5,14 @@ import java.util.Optional;
 import static java.net.HttpURLConnection.HTTP_ACCEPTED;
 import static java.net.HttpURLConnection.HTTP_CREATED;
 
-@FunctionalInterface
 public interface HermesResponse {
 
     String MESSAGE_ID = "Hermes-Message-Id";
     String HTTP_1_1 = "http/1.1";
 
     int getHttpStatus();
+
+    HermesMessage getHermesMessage();
 
     @Deprecated
     default boolean wasPublished() {
@@ -32,10 +33,6 @@ public interface HermesResponse {
     }
 
     default Optional<Throwable> getFailureCause() {
-        return Optional.empty();
-    }
-
-    default Optional<HermesMessage> getFailedMessage() {
         return Optional.empty();
     }
 
@@ -66,7 +63,7 @@ public interface HermesResponse {
                 .append(getBody());
         getFailureCause().ifPresent(ex ->
                 builder.append(", exception: ")
-                       .append(ex.getMessage())
+                        .append(ex.getMessage())
         );
         return builder.toString();
     }

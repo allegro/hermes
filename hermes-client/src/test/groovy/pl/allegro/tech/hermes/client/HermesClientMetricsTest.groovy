@@ -14,7 +14,7 @@ class HermesClientMetricsTest extends Specification {
 
     def "should register latency timer in sanitized path"() {
         given:
-        HermesClient client = hermesClient({uri, msg -> completedFuture({201} as HermesResponse)})
+        HermesClient client = hermesClient({uri, msg -> successFuture(msg)})
                 .withRetrySleep(0)
                 .withMetrics(metrics).build()
 
@@ -38,6 +38,53 @@ class HermesClientMetricsTest extends Specification {
         then:
         metrics.counter("hermes-client.com_group.topic.failure").count > 0
         metrics.timers.containsKey("hermes-client.com_group.topic.latency")
+    }
+
+    def "should update failure metrics and max retries exceeded"() {
+        given:
+        HermesClient client = hermesClient({uri, msg ->  failingFuture(new RuntimeException())})
+                .withRetrySleep(0)
+                .withMetrics(metrics).build()
+
+        when:
+        silence({ client.publish("com.group.topic", "123").join() })
+
+        then:
+        metrics.counter("hermes-client.com_group.topic.failure").count > 0
+        metrics.counter("hermes-client.com_group.topic.failure.unsent").count == 1
+        metrics.timers.containsKey("hermes-client.com_group.topic.latency")
+    }
+
+    def "should update failure metrics with success retry"() {
+        given:
+        def retries = 3
+        HermesClient client = hermesClient(new HermesSender() {
+                    int i = 0;
+                    @Override
+                    CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
+                        i++
+                        if(i < retries) {
+                            return failingFuture(new RuntimeException())
+                        }
+                        return successFuture(message)
+                    }
+                })
+                .withRetrySleep(0)
+                .withRetries(retries)
+                .withMetrics(metrics).build()
+
+        when:
+        silence({ client.publish("com.group.topic", "123").join() })
+
+        then:
+        metrics.counter("hermes-client.com_group.topic.failure").count > 0
+        metrics.counter("hermes-client.com_group.topic.failure.unsent").count == 0
+        metrics.counter("hermes-client.com_group.topic.failure.retried").count == 1
+        metrics.timers.containsKey("hermes-client.com_group.topic.latency")
+    }
+
+    private CompletableFuture<HermesResponse> successFuture(HermesMessage message) {
+        return completedFuture(HermesResponseBuilder.hermesResponse(message).withHttpStatus(201).build())
     }
 
     private CompletableFuture<HermesResponse> failingFuture(Throwable throwable) {
