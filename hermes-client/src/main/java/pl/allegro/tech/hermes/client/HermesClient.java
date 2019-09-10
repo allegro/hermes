@@ -150,7 +150,7 @@ public class HermesClient {
         HermesMessage message = event.getResult().getHermesMessage();
         if (shouldPublishMetrics()) {
             String prefix = MetricsUtils.getMetricsPrefix(message.getTopic());
-            metrics.counter(prefix + ".failure.unsent").inc();
+            metrics.counter(prefix + ".retries.exhausted").inc();
         }
 
         LOGGER.error("Failed to send message to topic {} after {} attempts",
@@ -161,7 +161,8 @@ public class HermesClient {
         if (shouldPublishMetrics()) {
             HermesMessage message = event.getResult().getHermesMessage();
             String prefix = MetricsUtils.getMetricsPrefix(message.getTopic());
-            metrics.counter(prefix + ".failure.retried").inc();
+            metrics.counter(prefix + ".retries.success").inc();
+            metrics.histogram(prefix + ".retries.attempts").update(event.getAttemptCount() - 1);
         }
     }
 

@@ -71,6 +71,11 @@ public class HermesResponseBuilder {
             }
 
             @Override
+            public Optional<HermesMessage> getFailedMessage() {
+                return Optional.ofNullable(hermesMessage);
+            }
+
+            @Override
             public String getBody() {
                 return body;
             }

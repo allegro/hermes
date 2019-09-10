@@ -40,7 +40,7 @@ class HermesClientMetricsTest extends Specification {
         metrics.timers.containsKey("hermes-client.com_group.topic.latency")
     }
 
-    def "should update failure metrics and max retries exceeded"() {
+    def "should update max retries exceeded metric"() {
         given:
         HermesClient client = hermesClient({uri, msg ->  failingFuture(new RuntimeException())})
                 .withRetrySleep(0)
@@ -51,11 +51,11 @@ class HermesClientMetricsTest extends Specification {
 
         then:
         metrics.counter("hermes-client.com_group.topic.failure").count > 0
-        metrics.counter("hermes-client.com_group.topic.failure.unsent").count == 1
+        metrics.counter("hermes-client.com_group.topic.retries.exhausted").count == 1
         metrics.timers.containsKey("hermes-client.com_group.topic.latency")
     }
 
-    def "should update failure metrics with success retry"() {
+    def "should update retries metrics"() {
         given:
         def retries = 3
         HermesClient client = hermesClient(new HermesSender() {
@@ -78,8 +78,9 @@ class HermesClientMetricsTest extends Specification {
 
         then:
         metrics.counter("hermes-client.com_group.topic.failure").count > 0
-        metrics.counter("hermes-client.com_group.topic.failure.unsent").count == 0
-        metrics.counter("hermes-client.com_group.topic.failure.retried").count == 1
+        metrics.counter("hermes-client.com_group.topic.retries.exhausted").count == 0
+        metrics.counter("hermes-client.com_group.topic.retries.success").count == 1
+        metrics.histogram("hermes-client.com_group.topic.retries.attempts").getSnapshot().getMax() == 2
         metrics.timers.containsKey("hermes-client.com_group.topic.latency")
     }
 
