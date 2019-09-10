@@ -9,12 +9,15 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.client.metrics.MetricsUtils;
 
 import java.net.URI;
-import java.text.MessageFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
@@ -150,8 +153,8 @@ public class HermesClient {
             metrics.counter(prefix + ".failure.unsent").inc();
         }
 
-        LOGGER.error(MessageFormat.format("Failed to send message to topic {0} after {1} attempts",
-                message.getTopic(), event.getAttemptCount()));
+        LOGGER.error("Failed to send message to topic {} after {} attempts",
+                message.getTopic(), event.getAttemptCount());
     }
 
     private void handleSuccessfulRetry(ExecutionCompletedEvent<HermesResponse> event) {

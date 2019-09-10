@@ -63,7 +63,7 @@ public interface HermesResponse {
                 .append(getBody());
         getFailureCause().ifPresent(ex ->
                 builder.append(", exception: ")
-                        .append(ex.getMessage())
+                       .append(ex.getMessage())
         );
         return builder.toString();
     }
