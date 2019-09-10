@@ -3,10 +3,12 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.validation.constraints.Min;
 import java.util.Objects;
 
 public class Constraints {
 
+    @Min(1)
     private final int consumersNumber;
 
     @JsonCreator

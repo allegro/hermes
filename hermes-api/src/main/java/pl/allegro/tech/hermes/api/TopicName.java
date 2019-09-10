@@ -61,10 +61,7 @@ public class TopicName {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("name", name)
-                .add("groupName", groupName)
-                .toString();
+        return qualifiedName();
     }
 
     @Override
