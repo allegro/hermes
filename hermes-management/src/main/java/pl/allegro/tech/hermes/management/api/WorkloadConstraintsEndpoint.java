@@ -95,7 +95,7 @@ public class WorkloadConstraintsEndpoint {
     @ApiOperation(value = "Remove subscription constraints", response = String.class, httpMethod = HttpMethod.DELETE)
     public Response deleteSubscriptionConstraints(@PathParam("topicName") String topicName,
                                                   @PathParam("subscriptionName") String subscriptionName) {
-        service.deleteConstraints(SubscriptionName.fromString(String.format("%s$%s", topicName, subscriptionName)));
+        service.deleteConstraints(new SubscriptionName(subscriptionName, TopicName.fromQualifiedName(topicName)));
         return Response.status(OK).build();
     }
 }

@@ -4,7 +4,7 @@ import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.exception.HermesException;
 
-import static pl.allegro.tech.hermes.api.ErrorCode.SUBSCRIPTION_ALREADY_EXISTS;
+import static pl.allegro.tech.hermes.api.ErrorCode.SUBSCRIPTION_CONSTRAINTS_ALREADY_EXIST;
 
 public class SubscriptionConstraintsAlreadyExistException extends HermesException {
 
@@ -14,6 +14,6 @@ public class SubscriptionConstraintsAlreadyExistException extends HermesExceptio
 
     @Override
     public ErrorCode getCode() {
-        return SUBSCRIPTION_ALREADY_EXISTS;
+        return SUBSCRIPTION_CONSTRAINTS_ALREADY_EXIST;
     }
 }
