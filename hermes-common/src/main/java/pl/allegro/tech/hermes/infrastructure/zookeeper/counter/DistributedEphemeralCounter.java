@@ -19,15 +19,6 @@ public class DistributedEphemeralCounter {
         this.curatorClient = curatorClient;
     }
 
-    public void setCounterValue(String path, long count) {
-        try {
-            ensureCounterExists(path);
-            curatorClient.setData().forPath(path, Longs.toByteArray(count));
-        } catch (Exception e) {
-            throw new ZookeeperCounterException(path, e);
-        }
-    }
-
     public void increment(String path, long count) {
         try {
             ensureCounterExists(path);
