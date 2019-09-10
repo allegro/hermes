@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperCredentialsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
@@ -21,6 +22,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.management.config.storage.ZookeeperGroupRepositoryFactory;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
@@ -28,6 +30,7 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvider;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final Map<String, SubscriptionOffsetChangeIndicator> offsetChangeIndicatorsByDc = new HashMap<>();
     private final Map<String, MessagePreviewRepository> messagePreviewRepositoriesByDc = new HashMap<>();
     private final Map<String, TopicBlacklistRepository> topicBlacklistRepositoriesByDc = new HashMap<>();
+    private final Map<String, WorkloadConstraintsRepository> workloadConstraintsRepositoriesByDc = new HashMap<>();
     private final Map<String, UndeliveredMessageLog> undeliveredMessageLogsByDc = new HashMap<>();
     private final Map<String, AdminTool> adminToolByDc = new HashMap<>();
 
@@ -88,6 +92,8 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
                     paths);
             TopicBlacklistRepository topicBlacklistRepository = new ZookeeperTopicBlacklistRepository(zookeeper, mapper,
                     paths);
+            WorkloadConstraintsRepository workloadConstraintsRepository = new ZookeeperWorkloadConstraintsRepository(
+                    zookeeper, mapper, paths);
             UndeliveredMessageLog undeliveredMessageLog = new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
             AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(),
                     mapper, adminReaperInterval);
@@ -101,6 +107,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             offsetChangeIndicatorsByDc.put(dcName, offsetChangeIndicator);
             messagePreviewRepositoriesByDc.put(dcName, messagePreviewRepository);
             topicBlacklistRepositoriesByDc.put(dcName, topicBlacklistRepository);
+            workloadConstraintsRepositoriesByDc.put(dcName, workloadConstraintsRepository);
             undeliveredMessageLogsByDc.put(dcName, undeliveredMessageLog);
             adminToolByDc.put(dcName, adminTool);
         }
@@ -122,6 +129,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
         return getRepositoriesByType(repositoryType)
                 .entrySet()
                 .stream()
+                .sorted(Comparator.comparing(Map.Entry::getKey))
                 .map(entry -> new DatacenterBoundRepositoryHolder<>(entry.getValue(), entry.getKey()))
                 .collect(Collectors.toList());
     }
@@ -144,6 +152,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
         repositoryByType.put(SubscriptionOffsetChangeIndicator.class, offsetChangeIndicatorsByDc);
         repositoryByType.put(MessagePreviewRepository.class, messagePreviewRepositoriesByDc);
         repositoryByType.put(TopicBlacklistRepository.class, topicBlacklistRepositoriesByDc);
+        repositoryByType.put(WorkloadConstraintsRepository.class, workloadConstraintsRepositoriesByDc);
         repositoryByType.put(UndeliveredMessageLog.class, undeliveredMessageLogsByDc);
         repositoryByType.put(AdminTool.class, adminToolByDc);
     }
