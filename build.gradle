@@ -12,6 +12,7 @@ plugins {
     id 'java'
     id 'pl.allegro.tech.build.axion-release' version '1.7.2'
     id 'io.codearte.nexus-staging' version '0.9.0'
+    id 'maven-publish'
 }
 
 apply plugin: 'io.codearte.nexus-staging'
@@ -60,7 +61,8 @@ allprojects {
             json2avro         : '0.2.5',
             okhttp            : '3.9.1',
             undertow          : '1.4.27.Final',
-            spring_web        : '5.1.5.RELEASE'
+            spring_web        : '5.1.5.RELEASE',
+            failsafe          : '2.3.1'
     ]
 
     repositories {
@@ -114,6 +116,42 @@ configure(subprojects - project(':integration')) {
                 developer {
                     id 'skylab'
                     name 'Team Skylab'
+                }
+            }
+        }
+    }
+
+    apply plugin: 'maven-publish'
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                pom {
+                    name = project.name
+                    description = 'Fast and reliable message broker built on top of Kafka.'
+                    url = 'https://github.com/allegro/hermes'
+                    inceptionYear = '2015'
+
+                    scm {
+                        url = 'https://github.com/allegro/hermes'
+                        connection = 'scm:git@github.com:allegro/hermes.git'
+                        developerConnection = 'scm:git@github.com:allegro/hermes.git'
+                    }
+
+                    licenses {
+                        license {
+                            name = 'The Apache Software License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = 'skylab'
+                            name = 'Team Skylab'
+                        }
+                    }
                 }
             }
         }
