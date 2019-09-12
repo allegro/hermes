@@ -36,6 +36,9 @@ public interface HermesResponse {
         return Optional.empty();
     }
 
+    /**
+     * @deprecated as of Hermes 1.2.4, in favor of {@link #getHermesMessage()}
+     */
     @Deprecated
     default Optional<HermesMessage> getFailedMessage() {
         return Optional.empty();

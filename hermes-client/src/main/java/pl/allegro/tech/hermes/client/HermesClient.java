@@ -1,11 +1,12 @@
 package pl.allegro.tech.hermes.client;
 
-import com.codahale.metrics.MetricRegistry;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
+import net.jodah.failsafe.event.ExecutionAttemptedEvent;
 import net.jodah.failsafe.event.ExecutionCompletedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.client.metrics.MetricsProvider;
 import pl.allegro.tech.hermes.client.metrics.MetricsUtils;
 
 import java.net.URI;
@@ -32,7 +33,7 @@ public class HermesClient {
     private final AtomicInteger currentlySending = new AtomicInteger(0);
     private final RetryPolicy<HermesResponse> retryPolicy;
     private final ScheduledExecutorService scheduler;
-    private final MetricRegistry metrics;
+    private final MetricsProvider metrics;
     private volatile boolean shutdown = false;
 
     HermesClient(HermesSender sender,
@@ -43,7 +44,7 @@ public class HermesClient {
                  long retrySleepInMillis,
                  long maxRetrySleepInMillis,
                  ScheduledExecutorService scheduler,
-                 MetricRegistry metrics) {
+                 MetricsProvider metrics) {
         this.sender = sender;
         this.uri = createUri(uri);
         this.defaultHeaders = Collections.unmodifiableMap(new HashMap<>(defaultHeaders));
@@ -58,6 +59,9 @@ public class HermesClient {
                 .withMaxRetries(retries)
                 .handleIf((resp, cause) -> retryCondition.test(resp))
                 .onRetriesExceeded((e) -> handleMaxRetriesExceeded(e))
+                .onRetry((e) -> {
+                    if (e.getLastResult() != null) handleFailedAttempt(e);
+                })
                 .onSuccess((e) -> handleSuccessfulRetry(e));
 
         if (retrySleepInMillis > 0) {
@@ -150,19 +154,27 @@ public class HermesClient {
         HermesMessage message = event.getResult().getHermesMessage();
         if (shouldPublishMetrics()) {
             String prefix = MetricsUtils.getMetricsPrefix(message.getTopic());
-            metrics.counter(prefix + ".retries.exhausted").inc();
+            metrics.counterIncrement(prefix + ".retries.exhausted");
         }
 
         LOGGER.error("Failed to send message to topic {} after {} attempts",
                 message.getTopic(), event.getAttemptCount());
     }
 
+    private void handleFailedAttempt(ExecutionAttemptedEvent<HermesResponse> event) {
+        if (shouldPublishMetrics()) {
+            HermesMessage message = event.getLastResult().getHermesMessage();
+            String prefix = MetricsUtils.getMetricsPrefix(message.getTopic());
+            metrics.counterIncrement(prefix + ".retries.count");
+        }
+    }
+
     private void handleSuccessfulRetry(ExecutionCompletedEvent<HermesResponse> event) {
         if (shouldPublishMetrics()) {
             HermesMessage message = event.getResult().getHermesMessage();
             String prefix = MetricsUtils.getMetricsPrefix(message.getTopic());
-            metrics.counter(prefix + ".retries.success").inc();
-            metrics.histogram(prefix + ".retries.attempts").update(event.getAttemptCount() - 1);
+            metrics.counterIncrement(prefix + ".retries.success");
+            metrics.histogramUpdate(prefix + ".retries.attempts", event.getAttemptCount() - 1);
         }
     }
 

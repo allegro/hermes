@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.client;
 
-import com.codahale.metrics.MetricRegistry;
 import pl.allegro.tech.hermes.client.metrics.MetricsHermesSender;
+import pl.allegro.tech.hermes.client.metrics.MetricsProvider;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ public class HermesClientBuilder {
     private long retrySleepInMillis = 100;
     private long maxRetrySleepInMillis = 300;
     private Supplier<ScheduledExecutorService> schedulerFactory = Executors::newSingleThreadScheduledExecutor;
-    private MetricRegistry metrics;
+    private MetricsProvider metrics;
 
     public HermesClientBuilder(HermesSender sender) {
         this.sender = sender;
@@ -42,7 +42,7 @@ public class HermesClientBuilder {
         return this;
     }
 
-    public HermesClientBuilder withMetrics(MetricRegistry metrics) {
+    public HermesClientBuilder withMetrics(MetricsProvider metrics) {
         this.sender = new MetricsHermesSender(sender, metrics);
         this.metrics = metrics;
         return this;
