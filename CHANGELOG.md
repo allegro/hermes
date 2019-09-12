@@ -2,6 +2,62 @@
 
 ### ...
 
+## 1.2.3 (10.09.2019)
+
+### Features
+
+#### ([1083](https://github.com/allegro/hermes/pull/1083)) Workload constraints
+
+Workload constraints allow to configure consumers number for subscription or topic.
+
+Constraints are stored in zookeeper. hermes-management exposes REST API for constraints management.
+
+- create or update topic constraints
+```
+PUT /workload-constraints/topic
+```
+```json
+{
+  "topicName": "group.topic",
+  "constraints": {
+    "consumersNumber": 4
+  }
+}
+```
+
+- delete topic constraints
+```
+DELETE /workload-constraints/topic/group.topic
+```
+
+- create or update subscription constraints
+```
+PUT /workload-constraints/subscription
+```
+```json
+{
+  "subscriptionName": "group.topic$subscription",
+  "constraints": {
+    "consumersNumber": 4
+  }
+}
+```
+
+- delete subscription constraints
+```
+DELETE /workload-constraints/subscription/group.topic/subscription
+```
+
+### Bugfixes
+
+#### ([1094](https://github.com/allegro/hermes/pull/1094)) hermes-mock matches content-type header
+
+### Enhancements
+
+#### ([1089](https://github.com/allegro/hermes/pull/1089)) Topics metadata refreshed in a background thread
+
+#### ([1092](https://github.com/allegro/hermes/pull/1092)) Speed up Ports.nextAvailable
+
 ## 1.2.2 (22.08.2019)
 
 ### Features
