@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
@@ -63,6 +64,9 @@ public class HermesConsumers {
         maxRateSupervisor = serviceLocator.getService(MaxRateSupervisor.class);
         assignmentCache = serviceLocator.getService(SubscriptionAssignmentCache.class);
         oAuthHttpClient = serviceLocator.getService(OAuthClient.class);
+
+        HttpClientsWorkloadReporter httpClientsWorkloadReporter = serviceLocator.getService(HttpClientsWorkloadReporter.class);
+        httpClientsWorkloadReporter.registerMetrics();
 
         hooksHandler.addShutdownHook((s) -> {
             try {

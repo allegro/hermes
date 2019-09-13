@@ -53,6 +53,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientHolder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
@@ -138,6 +139,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindFactory(SubscriptionIdProviderFactory.class).in(Singleton.class).to(SubscriptionIdProvider.class);
         bindFactory(SubscriptionIdsCacheFactory.class).in(Singleton.class).to(SubscriptionIds.class);
         bindSingleton(SubscriptionAssignmentCache.class);
+        bindSingleton(HttpClientsWorkloadReporter.class);
 
         bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
         bindFactory(WorkTrackerFactory.class).in(Singleton.class).to(WorkTracker.class);

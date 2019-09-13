@@ -98,6 +98,10 @@ public class HermesMetrics {
         metricRegistry.register(metricRegistryName(Gauges.BACKUP_STORAGE_SIZE), gauge);
     }
 
+    public void registerConsumerSenderRequestQueueSize(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_REQUEST_QUEUE_SIZE), gauge);
+    }
+
     public <T> void registerOutputRateGauge(TopicName topicName, String name, Gauge<T> gauge) {
         metricRegistry.register(metricRegistryName(Gauges.OUTPUT_RATE, topicName, name), gauge);
     }
