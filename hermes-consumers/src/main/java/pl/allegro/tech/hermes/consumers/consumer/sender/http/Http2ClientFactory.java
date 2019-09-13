@@ -5,18 +5,18 @@ import org.glassfish.hk2.api.Factory;
 
 import javax.inject.Inject;
 
-public class HttpClientFactory implements Factory<HttpClient> {
+public class Http2ClientFactory implements Factory<HttpClient> {
 
     private final HttpClientsFactory httpClientsFactory;
 
     @Inject
-    public HttpClientFactory(HttpClientsFactory httpClientsFactory) {
+    public Http2ClientFactory(HttpClientsFactory httpClientsFactory) {
         this.httpClientsFactory = httpClientsFactory;
     }
 
     @Override
     public HttpClient provide() {
-        return httpClientsFactory.createClientForHttp1("jetty-http-client");
+        return httpClientsFactory.createClientForHttp2();
     }
 
     @Override
