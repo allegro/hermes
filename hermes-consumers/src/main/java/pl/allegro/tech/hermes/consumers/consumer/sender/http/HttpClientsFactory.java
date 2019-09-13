@@ -14,7 +14,6 @@ import java.util.concurrent.ExecutorService;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_THREAD_POOL_MONITORING;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_THREAD_POOL_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_IDLE_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING;
@@ -37,7 +36,8 @@ public class HttpClientsFactory {
     }
 
     public HttpClient createClientForHttp1(String name) {
-        ExecutorService executor = executorFactory.getExecutorService(name,
+        ExecutorService executor = executorFactory.getExecutorService(
+                name,
                 configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE),
                 configFactory.getBooleanProperty(CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING));
 
@@ -51,11 +51,8 @@ public class HttpClientsFactory {
     }
 
     public HttpClient createClientForHttp2() {
-        if (!configFactory.getBooleanProperty(CONSUMER_HTTP2_ENABLED)) {
-            return null;
-        }
-
-        ExecutorService executor = executorFactory.getExecutorService("jetty-http2-client",
+        ExecutorService executor = executorFactory.getExecutorService(
+                "jetty-http2-client",
                 configFactory.getIntProperty(CONSUMER_HTTP2_CLIENT_THREAD_POOL_SIZE),
                 configFactory.getBooleanProperty(CONSUMER_HTTP2_CLIENT_THREAD_POOL_MONITORING));
 

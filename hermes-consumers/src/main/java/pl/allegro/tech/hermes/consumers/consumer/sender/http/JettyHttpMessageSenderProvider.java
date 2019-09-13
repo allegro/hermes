@@ -33,7 +33,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private static final HttpHeadersProvider http2HeadersProvider = new Http2HeadersProvider();
 
     private final HttpClient httpClient;
-    private final HttpClient http2Client;
+    private final Http2ClientHolder http2ClientHolder;
     private final EndpointAddressResolver endpointAddressResolver;
     private final MetadataAppender<Request> metadataAppender;
     private final HttpAuthorizationProviderFactory authorizationProviderFactory;
@@ -41,12 +41,12 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     @Inject
     public JettyHttpMessageSenderProvider(
             @Named("http-1-client") HttpClient httpClient,
-            @Named("http-2-client") HttpClient http2Client,
+            Http2ClientHolder http2ClientHolder,
             EndpointAddressResolver endpointAddressResolver,
             MetadataAppender<Request> metadataAppender,
             HttpAuthorizationProviderFactory authorizationProviderFactory) {
         this.httpClient = httpClient;
-        this.http2Client = http2Client;
+        this.http2ClientHolder = http2ClientHolder;
         this.endpointAddressResolver = endpointAddressResolver;
         this.metadataAppender = metadataAppender;
         this.authorizationProviderFactory = authorizationProviderFactory;
@@ -102,9 +102,9 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     }
 
     private HttpClient tryToGetHttp2Client(Subscription subscription) {
-        if (http2Client != null) {
+        if (http2ClientHolder.getHttp2Client().isPresent()) {
             logger.info("Using http/2 for {}.", subscription.getQualifiedName());
-            return http2Client;
+            return http2ClientHolder.getHttp2Client().get();
         } else {
             logger.info("Using http/1.1 for {}. Http/2 delivery is not enabled on this server.",
                     subscription.getQualifiedName());
@@ -115,9 +115,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     @Override
     public void start() throws Exception {
         startClient(httpClient);
-        if (http2Client != null) {
-            startClient(http2Client);
-        }
+        http2ClientHolder.getHttp2Client().ifPresent(this::startClient);
     }
 
     private void startClient(HttpClient client) {
@@ -133,9 +131,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     @Override
     public void stop() throws Exception {
         stopClient(httpClient);
-        if (http2Client != null) {
-            stopClient(http2Client);
-        }
+        http2ClientHolder.getHttp2Client().ifPresent(this::stopClient);
     }
 
     private void stopClient(HttpClient client) {
