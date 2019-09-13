@@ -5,6 +5,8 @@ import pl.allegro.tech.hermes.client.metrics.DropwizardMetricsProvider
 import pl.allegro.tech.hermes.client.metrics.MetricsProvider
 import spock.lang.Specification
 
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.CompletableFuture
 
 import static java.util.concurrent.CompletableFuture.completedFuture
@@ -12,12 +14,12 @@ import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient
 
 class HermesClientMetricsTest extends Specification {
 
-    private final MetricRegistry metrics = new MetricRegistry();
+    private final MetricRegistry metrics = new MetricRegistry()
     private final MetricsProvider metricsProvider = new DropwizardMetricsProvider(metrics)
 
-    def "should register latency timer in sanitized path"() {
+    def "should measure publish latency"() {
         given:
-        HermesClient client = hermesClient({uri, msg -> successFuture(msg)})
+        HermesClient client = hermesClient(delayedHermesSender(Duration.ofMillis(100)))
                 .withRetrySleep(0)
                 .withMetrics(metricsProvider).build()
 
@@ -26,7 +28,8 @@ class HermesClientMetricsTest extends Specification {
 
         then:
         metrics.counter("hermes-client.com_group.topic.status.201").count == 1
-        metrics.timers.containsKey("hermes-client.com_group.topic.latency")
+        metrics.timer("hermes-client.com_group.topic.latency").getSnapshot().getMax() >= Duration.ofMillis(100).get(ChronoUnit.NANOS)
+        metrics.timer("hermes-client.com_group.topic.latency").getSnapshot().getMax() < Duration.ofMillis(300).get(ChronoUnit.NANOS)
     }
 
     def "should close timer on exceptional completion and log failure metric"() {
@@ -66,17 +69,7 @@ class HermesClientMetricsTest extends Specification {
     def "should update retries metrics"() {
         given:
         def retries = 3
-        HermesClient client = hermesClient(new HermesSender() {
-                    int i = 0
-                    @Override
-                    CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
-                        i++
-                        if(i < retries) {
-                            return failingFuture(new RuntimeException())
-                        }
-                        return successFuture(message)
-                    }
-                })
+        HermesClient client = hermesClient(failingHermesSender(retries - 1))
                 .withRetrySleep(0)
                 .withRetries(retries)
                 .withMetrics(metricsProvider).build()
@@ -99,14 +92,38 @@ class HermesClientMetricsTest extends Specification {
     }
 
     private CompletableFuture<HermesResponse> failingFuture(Throwable throwable) {
-        CompletableFuture<HermesResponse> future = new CompletableFuture<>();
-        future.completeExceptionally(throwable);
-        return future;
+        CompletableFuture<HermesResponse> future = new CompletableFuture<>()
+        future.completeExceptionally(throwable)
+        return future
+    }
+
+    private HermesSender failingHermesSender(int errorNo) {
+        new HermesSender() {
+            int i = 0
+            @Override
+            CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
+                i++
+                if (i <= errorNo) {
+                    return failingFuture(new RuntimeException())
+                }
+                return successFuture(message)
+            }
+        }
+    }
+
+    private HermesSender delayedHermesSender(Duration sendLatencyMs) {
+        new HermesSender() {
+            @Override
+            CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
+                Thread.sleep(sendLatencyMs.toMillis())
+                return successFuture(message)
+            }
+        }
     }
 
     private void silence(Runnable runnable) {
         try {
-            runnable.run();
+            runnable.run()
         } catch (Exception ex) {
             // do nothing
         }

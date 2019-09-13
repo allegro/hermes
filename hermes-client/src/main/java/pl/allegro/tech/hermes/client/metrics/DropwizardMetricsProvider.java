@@ -2,7 +2,9 @@ package pl.allegro.tech.hermes.client.metrics;
 
 import com.codahale.metrics.MetricRegistry;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class DropwizardMetricsProvider implements MetricsProvider {
 
@@ -18,6 +20,11 @@ public class DropwizardMetricsProvider implements MetricsProvider {
     }
 
     @Override
+    public void counterIncrement(String prefix, String name, Map<String, String> tags) {
+        counterIncrement(buildCounterName(prefix, name, tags));
+    }
+
+    @Override
     public void timerRecord(String name, long duration, TimeUnit unit) {
         metrics.timer(name).update(duration, unit);
     }
@@ -25,5 +32,9 @@ public class DropwizardMetricsProvider implements MetricsProvider {
     @Override
     public void histogramUpdate(String name, int value) {
         metrics.histogram(name).update(value);
+    }
+
+    private String buildCounterName(String prefix, String name, Map<String, String> tags) {
+        return prefix + "." + name + "." + tags.values().stream().collect(Collectors.joining("."));
     }
 }
