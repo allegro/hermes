@@ -28,6 +28,8 @@ public class HttpClientsWorkloadReporter {
 
     public void registerMetrics() {
         metrics.registerConsumerSenderRequestQueueSize(this::getQueuesSize);
+        metrics.registerConsumerSenderHttp1RequestQueueSize(this::getHttp1QueueSize);
+        metrics.registerConsumerSenderHttp2RequestQueueSize(this::getHttp2QueueSize);
     }
 
     int getQueuesSize() {
