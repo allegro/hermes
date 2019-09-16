@@ -30,6 +30,8 @@ class HttpClientsWorkloadReporterTest extends Specification {
 
         expect:
         reporter.queuesSize == 6
+        reporter.http1QueueSize == 3
+        reporter.http2QueueSize == 3
     }
 
     def "should return sum of http/1 client destinations"() {
@@ -46,5 +48,7 @@ class HttpClientsWorkloadReporterTest extends Specification {
 
         expect:
         reporter.queuesSize == 3
+        reporter.http1QueueSize == 3
+        reporter.http2QueueSize == 0
     }
 }

@@ -102,6 +102,14 @@ public class HermesMetrics {
         metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_REQUEST_QUEUE_SIZE), gauge);
     }
 
+    public void registerConsumerSenderHttp1RequestQueueSize(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_1_REQUEST_QUEUE_SIZE), gauge);
+    }
+
+    public void registerConsumerSenderHttp2RequestQueueSize(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_2_REQUEST_QUEUE_SIZE), gauge);
+    }
+
     public <T> void registerOutputRateGauge(TopicName topicName, String name, Gauge<T> gauge) {
         metricRegistry.register(metricRegistryName(Gauges.OUTPUT_RATE, topicName, name), gauge);
     }
