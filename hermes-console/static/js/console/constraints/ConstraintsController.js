@@ -18,7 +18,6 @@ constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scop
                         });
                     }
                 }
-                console.log($scope.topicConstraints);
 
                 $scope.subscriptionConstraints = [];
                 for (subscriptionName in workloadConstraints.subscriptionConstraints) {
@@ -29,7 +28,6 @@ constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scop
                         });
                     }
                 }
-                console.log($scope.subscriptionConstraints);
             })
             .catch(function () {
                 $scope.workloadConstraints = {};
