@@ -14,14 +14,14 @@
                     Topic constraints
                 </h4>
             </div>
-            <div class="list-group-item" ng-repeat="item in topicConstraints">
+            <a ng-href="#/topic-constraints/{{item.topicName}}" class="list-group-item" ng-repeat="item in topicConstraints">
                 <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
                 <strong>{{item.topicName}}</strong>
                 <div class="pull-right">
                     <span class="label label-info">consumers number: {{ item.consumersNumber }}</span>
                     <span class="glyphicon glyphicon-chevron-right"></span>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div ng-show="fetching" class="text-center">
