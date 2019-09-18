@@ -1,9 +1,35 @@
-<section ng-controller="StatsController">
+<section ng-controller="ConstraintsController">
 
     <h1>Constraints</h1>
 
     <h2>Topics</h2>
+    <div class="row">
+        <div class="list-topic-constraints">
+            <ul>
+                <li ng-repeat="topicConstraintsItem in topicConstraints">
+                    {{ topicConstraintsItem.topicName }}: {{ topicConstraintsItem.consumersNumber }}
+                </li>
+            </ul>
+        </div>
+
+        <div ng-show="fetching" class="text-center">
+            <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
+        </div>
+    </div>
 
     <h2>Subscriptions</h2>
+    <div class="row">
+        <div class="list-subscription-constraints">
+            <ul>
+                <li ng-repeat="subscriptionConstraintsItem in subscriptionConstraints">
+                    {{ subscriptionConstraintsItem.subscriptionName }}: {{ subscriptionConstraintsItem.consumersNumber}}
+                </li>
+            </ul>
+        </div>
+
+        <div ng-show="fetching" class="text-center">
+            <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
+        </div>
+    </div>
 
 </section>
