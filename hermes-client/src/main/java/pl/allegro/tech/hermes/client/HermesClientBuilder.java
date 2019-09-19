@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.client.metrics.MetricsProvider;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
@@ -21,7 +22,7 @@ public class HermesClientBuilder {
     private long retrySleepInMillis = 100;
     private long maxRetrySleepInMillis = 300;
     private Supplier<ScheduledExecutorService> schedulerFactory = Executors::newSingleThreadScheduledExecutor;
-    private MetricsProvider metrics;
+    private Optional<MetricsProvider> metrics = Optional.empty();
 
     public HermesClientBuilder(HermesSender sender) {
         this.sender = sender;
@@ -33,8 +34,13 @@ public class HermesClientBuilder {
     }
 
     public HermesClient build() {
-        return new HermesClient(sender, uri, defaultHeaders, retries, retryCondition, retrySleepInMillis,
-                maxRetrySleepInMillis, schedulerFactory.get(), metrics);
+        return metrics.map(metrics -> {
+            MetricsHermesSender metricsSender = new MetricsHermesSender(this.sender, metrics);
+            return (HermesClient) new MetricsHermesClient(metricsSender, uri, defaultHeaders, retries, retryCondition,
+                    retrySleepInMillis, maxRetrySleepInMillis, schedulerFactory.get(), metrics);
+        }).orElseGet(() -> new HermesClient(sender, uri, defaultHeaders, retries, retryCondition,
+                retrySleepInMillis, maxRetrySleepInMillis, schedulerFactory.get())
+        );
     }
 
     public HermesClientBuilder withURI(URI uri) {
@@ -43,8 +49,7 @@ public class HermesClientBuilder {
     }
 
     public HermesClientBuilder withMetrics(MetricsProvider metrics) {
-        this.sender = new MetricsHermesSender(sender, metrics);
-        this.metrics = metrics;
+        this.metrics = Optional.of(metrics);
         return this;
     }
 

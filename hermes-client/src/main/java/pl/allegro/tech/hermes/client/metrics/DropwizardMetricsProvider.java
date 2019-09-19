@@ -4,7 +4,6 @@ import com.codahale.metrics.MetricRegistry;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class DropwizardMetricsProvider implements MetricsProvider {
 
@@ -35,6 +34,6 @@ public class DropwizardMetricsProvider implements MetricsProvider {
     }
 
     private String buildCounterName(String prefix, String name, Map<String, String> tags) {
-        return prefix + "." + name + "." + tags.values().stream().collect(Collectors.joining("."));
+        return prefix + "." + name + "." + String.join(".", tags.values());
     }
 }
