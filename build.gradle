@@ -56,7 +56,7 @@ allprojects {
             spock    : '1.2-groovy-2.4',
             alpn_api : '1.1.2.v20150522',
             avro     : '1.8.1',
-            json2avro: '0.2.5'
+            json2avro: '0.2.9'
     ]
 
     repositories {
