@@ -14,7 +14,7 @@ import static java.util.stream.Collectors.joining;
 
 public class ConfigFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConfigFactory.class);
 
     private final DynamicPropertyFactory propertyFactory = getDynamicPropertyFactory();
 
@@ -63,7 +63,7 @@ public class ConfigFactory {
         return new AbstractPollingScheduler() {
             @Override
             protected void schedule(Runnable pollingRunnable) {
-                LOGGER.info("Periodical polling of a configuration source is turned off!");
+                logger.info("Periodical polling of a configuration source is turned off!");
             }
 
             @Override
