@@ -1,11 +1,12 @@
 package pl.allegro.tech.hermes.client;
 
-import com.codahale.metrics.MetricRegistry;
-import pl.allegro.tech.hermes.client.metrics.MetricsHermesSender;
+import pl.allegro.tech.hermes.client.metrics.MetricsMessageDeliveryListener;
+import pl.allegro.tech.hermes.client.metrics.MetricsProvider;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
@@ -21,6 +22,7 @@ public class HermesClientBuilder {
     private long retrySleepInMillis = 100;
     private long maxRetrySleepInMillis = 300;
     private Supplier<ScheduledExecutorService> schedulerFactory = Executors::newSingleThreadScheduledExecutor;
+    private Optional<MetricsProvider> metrics = Optional.empty();
 
     public HermesClientBuilder(HermesSender sender) {
         this.sender = sender;
@@ -32,8 +34,14 @@ public class HermesClientBuilder {
     }
 
     public HermesClient build() {
-        return new HermesClient(sender, uri, defaultHeaders, retries, retryCondition, retrySleepInMillis,
-                maxRetrySleepInMillis, schedulerFactory.get());
+        HermesClient hermesClient = new HermesClient(sender, uri, defaultHeaders, retries, retryCondition,
+                retrySleepInMillis, maxRetrySleepInMillis, schedulerFactory.get());
+
+        metrics.ifPresent((metricsProvider) -> {
+            hermesClient.addMessageDeliveryListener(new MetricsMessageDeliveryListener(metricsProvider));
+        });
+
+        return hermesClient;
     }
 
     public HermesClientBuilder withURI(URI uri) {
@@ -41,8 +49,8 @@ public class HermesClientBuilder {
         return this;
     }
 
-    public HermesClientBuilder withMetrics(MetricRegistry metrics) {
-        this.sender = new MetricsHermesSender(sender, metrics);
+    public HermesClientBuilder withMetrics(MetricsProvider metrics) {
+        this.metrics = Optional.of(metrics);
         return this;
     }
 
