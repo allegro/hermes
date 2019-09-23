@@ -83,6 +83,24 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldNotRemoveSubscriptionAfterItsRecreation() {
+        // given
+        Topic topic = operations.buildTopic(randomTopic("subscribeGroup", "topic").build());
+        Subscription subscription = subscription(topic, "sub").build();
+        Response response = management.subscription().create(topic.getQualifiedName(), subscription);
+        assertThat(response).hasStatus(Response.Status.CREATED);
+
+        // when
+        Response errorResponse = management.subscription().create(topic.getQualifiedName(), subscription);
+
+        // then
+        assertThat(errorResponse).hasStatus(Response.Status.BAD_REQUEST);
+        assertThat(
+                management.subscription().get(topic.getQualifiedName(), subscription.getName()).getName()
+        ).isEqualTo("sub");
+    }
+
+    @Test
     public void shouldNotCreateSubscriptionWithoutTopicName() {
         // given
         operations.buildTopic("invalidGroup", "topic");

@@ -42,7 +42,33 @@ abstract class IntegrationTest extends Specification {
 
     protected PathsCompiler pathsCompiler = new PathsCompiler("")
 
+    protected ObjectMapper objectMapper = new ObjectMapper()
+
     protected CuratorFramework zookeeper() {
         return zookeeperResource.curator()
+    }
+
+    def createPath(String path) {
+        if (zookeeper().checkExists().forPath(path) == null) {
+            zookeeper().create().creatingParentsIfNeeded().forPath(path)
+        }
+    }
+
+    def deleteData(String path) throws Exception {
+        if (zookeeper().checkExists().forPath(path) != null) {
+            zookeeper().delete().deletingChildrenIfNeeded().forPath(path)
+        }
+    }
+
+    def deleteAllNodes(String path) {
+        zookeeper().delete().guaranteed().deletingChildrenIfNeeded().forPath(path)
+    }
+
+    def setupNode(String path, Object data) {
+        zookeeper().create().creatingParentsIfNeeded().forPath(path, objectMapper.writeValueAsBytes(data))
+    }
+
+    def updateNode(String path, Object data) {
+        zookeeper().setData().forPath(path, objectMapper.writeValueAsBytes(data))
     }
 }

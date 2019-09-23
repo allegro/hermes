@@ -24,6 +24,8 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewFactory;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
+import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
+import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
@@ -55,6 +57,8 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageValidators.class);
 
         bind(hooksHandler).to(HooksHandler.class);
+        bindSingleton(TopicMetadataLoadingRunner.class);
+        bindSingleton(TopicMetadataLoadingJob.class);
         bindSingleton(TopicMetadataLoadingStartupHook.class);
         bindSingleton(TopicSchemaLoadingStartupHook.class);
         bindSingleton(AuthenticationConfigurationProvider.class);

@@ -59,20 +59,22 @@ public abstract class ZookeeperBaseTest {
         zookeeperServer.stop();
     }
 
-    public void createPath(String path) throws Exception {
-        if(zookeeperClient.checkExists().forPath(path) == null) {
+    protected void createPath(String path) throws Exception {
+        if (zookeeperClient.checkExists().forPath(path) == null) {
             zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
         }
     }
 
-    public void deleteData(String path) throws Exception {
+    protected void deleteData(String path) throws Exception {
         if (zookeeperClient.checkExists().forPath(path) != null) {
             zookeeperClient.delete().deletingChildrenIfNeeded().forPath(path);
         }
     }
 
-    public void deleteAllNodes() throws Exception {
-        zookeeperClient.delete().guaranteed().deletingChildrenIfNeeded().forPath("/hermes");
+    protected void deleteAllNodes() throws Exception {
+        if (zookeeperClient.checkExists().forPath("/hermes") != null) {
+            zookeeperClient.delete().guaranteed().deletingChildrenIfNeeded().forPath("/hermes");
+        }
     }
 
 }

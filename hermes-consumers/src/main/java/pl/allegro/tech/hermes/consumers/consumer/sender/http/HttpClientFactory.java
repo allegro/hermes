@@ -12,7 +12,14 @@ import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorService
 import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_THREAD_POOL_MONITORING;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_THREAD_POOL_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_IDLE_TIMEOUT;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
 
 public class HttpClientFactory implements Factory<HttpClient> {
 
@@ -68,7 +75,7 @@ public class HttpClientFactory implements Factory<HttpClient> {
     private SslContextFactory createSslContextFactory() {
         SslContextFactory sslCtx = new SslContextFactory();
         sslCtx.setEndpointIdentificationAlgorithm("HTTPS");
-        sslCtx.setSslContext(sslContextFactory.create());
+        sslCtx.setSslContext(sslContextFactory.create().getSslContext());
         return sslCtx;
     }
 

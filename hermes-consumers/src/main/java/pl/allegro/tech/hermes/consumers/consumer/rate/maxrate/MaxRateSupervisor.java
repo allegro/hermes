@@ -90,6 +90,7 @@ public class MaxRateSupervisor implements Runnable {
     @Override
     public void run() {
         providers.forEach(NegotiatedMaxRateProvider::tickForHistory);
+        maxRateRegistry.onAfterWriteRateHistories();
     }
 
     public void register(NegotiatedMaxRateProvider maxRateProvider) {

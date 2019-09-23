@@ -2,9 +2,122 @@
 
 ### ...
 
+## 1.2.3 (10.09.2019)
+
+### Features
+
+#### ([1083](https://github.com/allegro/hermes/pull/1083)) Workload constraints
+
+Workload constraints allow to configure consumers number for subscription or topic.
+
+Constraints are stored in zookeeper. hermes-management exposes REST API for constraints management.
+
+- create or update topic constraints
+```
+PUT /workload-constraints/topic
+```
+```json
+{
+  "topicName": "group.topic",
+  "constraints": {
+    "consumersNumber": 4
+  }
+}
+```
+
+- delete topic constraints
+```
+DELETE /workload-constraints/topic/group.topic
+```
+
+- create or update subscription constraints
+```
+PUT /workload-constraints/subscription
+```
+```json
+{
+  "subscriptionName": "group.topic$subscription",
+  "constraints": {
+    "consumersNumber": 4
+  }
+}
+```
+
+- delete subscription constraints
+```
+DELETE /workload-constraints/subscription/group.topic/subscription
+```
+
+### Bugfixes
+
+#### ([1094](https://github.com/allegro/hermes/pull/1094)) hermes-mock matches content-type header
+
+### Enhancements
+
+#### ([1089](https://github.com/allegro/hermes/pull/1089)) Topics metadata refreshed in a background thread
+
+#### ([1092](https://github.com/allegro/hermes/pull/1092)) Speed up Ports.nextAvailable
+
+## 1.2.2 (22.08.2019)
+
+### Features
+
+#### ([1084](https://github.com/allegro/hermes/pull/1084)) `WebClient` Hermes sender implementation
+
+Introduces an implementation of Hermes Sender which makes use of reactive, non-blocking 
+[WebFlux HTTP client](https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html#webflux-client).
+
+#### ([1086](https://github.com/allegro/hermes/pull/1086)) Flat tree with binary-content nodes implementation of max-rate registry
+
+Introducing a lightweight alternative of max-rate storage which generates less zookeeper nodes and should load fast 
+even for large number of subscriptions and consumer nodes.
+
+Enable this storage type with `consumer.maxrate.registry.type: flat-binary` property in hermes-consumers configuration
+(previous `hierarchical` storage type is used as default).
+
+## 1.2.1 (05.08.2019)
+
+### Features
+
+#### ([1076](https://github.com/allegro/hermes/pull/1076)) `SchemaRepositoryInstanceResolver` interface introduced
+
+This change allows providing different instance resolvers for schema repositories in frontends and consumers. 
+The default implementations uses configured URLs, but one can provide an implementation that 
+makes use of a custom discovery mechanism or instance hashing.
+
+### Enhancements
+
+#### ([1073](https://github.com/allegro/hermes/pull/1073)) Original message available on `HermesResponse` when it wasn't published
+
+#### ([1079](https://github.com/allegro/hermes/pull/1079)) Hermes client supports case insensitive headers
+
+### Bugfixes
+
+#### ([1063](https://github.com/allegro/hermes/pull/1063)) `Keep-alive` excluded in HTTP/2 communication in hermes-consumers
+
+## 1.2.0 (24.07.2019)
+
+### Enhancements
+
+#### ([1060](https://github.com/allegro/hermes/pull/1060)) Added support for JDK 11
+
+#### ([1071](https://github.com/allegro/hermes/pull/1071)) Counter values summed from all zookeeper clusters
+
+Counters published, delivered, discarded and volume are kept in zookeeper. Thanks to this their values aren't reset after Hermes restart. 
+However, recently multi-zookeeper feature was introduced in Hermes allowing to have independent Hermes Zookeeper clusters per DC. 
+Because of this when a client sends a request about some topic or subscription metrics to hermes-management then it receives 
+metrics summed from all zookeeper clusters.
+
+#### ([1069](https://github.com/allegro/hermes/pull/1069)) Added storage health check metrics
+
+Since we have [#1052](https://github.com/allegro/hermes/issues/1052), the next step was to introduce metrics 
+for storage (zookeeper clusters) health checks. They are added to MeterRegistry as `storage-health-check.successful` 
+and `storage-health-check.failed` counters.
+
 ## 1.1.2 (08.07.2019)
 
 ### Enhancements
+
 #### ([1061](https://github.com/allegro/hermes/pull/1061)) Introduced HdrHistogram-based metrics reservoir
 
 Introduced [HdrHistogram](http://hdrhistogram.org/)–based implementation of reservoir in metrics. HdrHistogram-based 

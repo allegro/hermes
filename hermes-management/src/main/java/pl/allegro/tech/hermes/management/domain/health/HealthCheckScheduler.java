@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.health;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,10 +34,11 @@ public class HealthCheckScheduler {
                                 NodeDataProvider nodeDataProvider,
                                 ObjectMapper objectMapper,
                                 ModeService modeService,
+                                MeterRegistry meterRegistry,
                                 @Value("${management.health.periodSeconds}") Long periodSeconds) {
         String healthCheckPath = zookeeperPaths.nodeHealthPathForManagementHost(nodeDataProvider.getHostname(), nodeDataProvider.getServerPort());
         this.period = periodSeconds;
-        this.healthCheckTask = new HealthCheckTask(zookeeperClientManager.getClients(), healthCheckPath, objectMapper, modeService);
+        this.healthCheckTask = new HealthCheckTask(zookeeperClientManager.getClients(), healthCheckPath, objectMapper, modeService, meterRegistry);
     }
 
     @PostConstruct

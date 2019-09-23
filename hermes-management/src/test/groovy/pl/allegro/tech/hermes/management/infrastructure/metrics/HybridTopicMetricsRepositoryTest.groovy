@@ -4,7 +4,6 @@ import pl.allegro.tech.hermes.api.TopicMetrics
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics
 import pl.allegro.tech.hermes.management.stub.MetricsPaths
@@ -17,15 +16,15 @@ class HybridTopicMetricsRepositoryTest extends Specification {
     private GraphiteClient client = Stub(GraphiteClient)
     
     private MetricsPaths paths = new MetricsPaths("stats")
-    
-    private SharedCounter sharedCounter = Stub(SharedCounter)
+
+    private SummedSharedCounter summedSharedCounter = Stub(SummedSharedCounter)
     
     private ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes")
 
     private SubscriptionRepository subscriptionRepository = Mock(SubscriptionRepository);
     
-    private HybridTopicMetricsRepository repository = new HybridTopicMetricsRepository(client, paths, sharedCounter,
-            zookeeperPaths, subscriptionRepository)
+    private HybridTopicMetricsRepository repository = new HybridTopicMetricsRepository(client, paths,
+            summedSharedCounter, zookeeperPaths, subscriptionRepository)
     
     def "should load metrics from graphite and zookeeper"() {
         given:
@@ -36,8 +35,8 @@ class HybridTopicMetricsRepositoryTest extends Specification {
         client.readMetrics(rate, deliveryRate) >> new GraphiteMetrics()
             .addMetricValue(rate, of('10'))
             .addMetricValue(deliveryRate, of('20'))
-        sharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/published') >> 100
-        sharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/volume') >> 1024
+        summedSharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/published') >> 100
+        summedSharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/volume') >> 1024
         subscriptionRepository.listSubscriptionNames(topic) >> ["subscription1", "subscription2"]
 
         when:

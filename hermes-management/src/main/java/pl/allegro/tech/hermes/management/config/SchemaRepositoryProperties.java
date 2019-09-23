@@ -15,6 +15,7 @@ public class SchemaRepositoryProperties {
     private int connectionTimeoutMillis = 1000;
 
     private int socketTimeoutMillis = 3000;
+    private String deleteSchemaPathSuffix = "versions";
 
     public String getType() {
         return type;
@@ -50,5 +51,17 @@ public class SchemaRepositoryProperties {
 
     public int getSocketTimeoutMillis() {
         return socketTimeoutMillis;
+    }
+
+    public String getDeleteSchemaPathSuffix() {
+        return deleteSchemaPathSuffix;
+    }
+
+    public void setDeleteSchemaPathSuffix(String deleteSchemaPathSuffix) {
+        this.deleteSchemaPathSuffix = deleteSchemaPathSuffix;
+    }
+
+    public void setSocketTimeoutMillis(int socketTimeoutMillis) {
+        this.socketTimeoutMillis = socketTimeoutMillis;
     }
 }

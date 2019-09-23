@@ -6,7 +6,7 @@ dependencies {
     testCompile project(path: ":hermes-tracker", configuration: "testArtifacts")
     testCompile project(path: ":hermes-test-helper")
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
-    testCompile 'pl.allegro.tech:embedded-elasticsearch:2.7.0'
+    testCompile 'pl.allegro.tech:embedded-elasticsearch:2.10.0'
 }
 
 test.useTestNG()

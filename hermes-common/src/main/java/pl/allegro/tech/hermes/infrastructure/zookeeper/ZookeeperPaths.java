@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.google.common.base.Joiner;
+import org.apache.commons.lang.StringUtils;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -15,6 +16,7 @@ public class ZookeeperPaths {
     public static final String URL_SEPARATOR = "/";
     public static final String CONSUMERS_PATH = "consumers";
     public static final String CONSUMERS_WORKLOAD_PATH = "consumers-workload";
+    public static final String CONSUMERS_WORKLOAD_CONSTRAINTS_PATH = "consumers-workload-constraints";
     public static final String CONSUMERS_RATE_PATH = "consumers-rate";
     public static final String METRICS_PATH = "metrics";
     public static final String ADMIN_PATH = "admin";
@@ -33,6 +35,10 @@ public class ZookeeperPaths {
 
     public String basePath() {
         return basePath;
+    }
+
+    public String extractChildNode(String fullChildPath, String prefixPath) {
+        return StringUtils.removeStart(fullChildPath, prefixPath + URL_SEPARATOR);
     }
 
     public String adminPath() {
@@ -115,6 +121,14 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH);
     }
 
+    public String consumersWorkloadConstraintsPath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_CONSTRAINTS_PATH);
+    }
+
+    public String consumersWorkloadConstraintsPath(String constraintsPath) {
+        return Joiner.on(URL_SEPARATOR).join(consumersWorkloadConstraintsPath(), constraintsPath);
+    }
+
     public String consumersRateRuntimePath(String cluster) {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, cluster, "runtime");
     }
@@ -176,5 +190,9 @@ public class ZookeeperPaths {
 
     public String nodeHealthPathForManagementHost(String host, String port) {
         return Joiner.on(URL_SEPARATOR).join(basePath, STORAGE_HEALTH_PATH, String.format("%s_%s", host, port));
+    }
+
+    public String join(String... parts) {
+        return Joiner.on(URL_SEPARATOR).join(parts);
     }
 }

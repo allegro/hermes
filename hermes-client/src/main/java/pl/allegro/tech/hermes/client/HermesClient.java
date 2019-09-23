@@ -102,7 +102,9 @@ public class HermesClient {
     }
 
     private CompletableFuture<HermesResponse> sendOnce(HermesMessage message) {
-        return sender.send(URI.create(uri + message.getTopic()), message).exceptionally(HermesResponseBuilder::hermesFailureResponse);
+        return sender
+                .send(URI.create(uri + message.getTopic()), message)
+                .exceptionally(e -> HermesResponseBuilder.hermesFailureResponse(e, message));
     }
 
     private CompletableFuture<HermesResponse> completedWithShutdownException() {

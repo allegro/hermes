@@ -23,7 +23,7 @@ import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
 
@@ -38,12 +38,7 @@ public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
     private WireMockServer emptySchemaRegistryMock = new WireMockServer(Ports.nextAvailable());
 
     @BeforeClass
-    public void setup() throws Exception {
-        Topic topic = topic("avro.topicWithoutSchema")
-                .withContentType(AVRO)
-                .build();
-        operations.buildTopicWithSchema(topicWithSchema(topic, AvroUserSchemaLoader.load().toString()));
-
+    public void setup() {
         emptySchemaRegistryMock.start();
         ConfigFactory configFactory = new MutableConfigFactory()
                 .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
@@ -67,9 +62,13 @@ public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
 
     @Test
     public void shouldReturnServerInternalErrorResponseOnMissingSchema() {
+        // given
+        Topic topic = randomTopic("avro", "topicWithoutSchema").withContentType(AVRO).build();
+        operations.buildTopicWithSchema(topicWithSchema(topic, AvroUserSchemaLoader.load().toString()));
+
         // when
         String message = new AvroUser("Bob", 50, "blue").asJson();
-        Response response = publisher.publish("avro.topicWithoutSchema", message);
+        Response response = publisher.publish(topic.getQualifiedName(), message);
 
         // then
         assertThat(response).hasStatus(INTERNAL_SERVER_ERROR);

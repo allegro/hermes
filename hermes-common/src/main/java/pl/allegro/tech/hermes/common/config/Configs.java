@@ -148,6 +148,9 @@ public enum Configs {
     FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_COUNT("frontend.startup.topic.metadata.loading.retry.count", 5),
     FRONTEND_STARTUP_TOPIC_METADATA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.metadata.loading.thread.pool.size", 16),
 
+    FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED("frontend.topic.metadata.refresh.job.enabled", true),
+    FRONTEND_TOPIC_METADATA_REFRESH_JOB_INTERVAL_SECONDS("frontend.topic.metadata.refresh.job.interval.seconds", 60),
+
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED("frontend.startup.topic.schema.loading.enabled", false),
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT("frontend.startup.topic.schema.loading.retry.count", 3),
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.schema.loading.thread.pool.size", 16),
@@ -202,6 +205,9 @@ public enum Configs {
     CONSUMER_RATE_FAILURES_NOCHANGE_TOLERANCE_RATIO("consumer.rate.failures.nochange.tolerance.ratio", 0.05),
     CONSUMER_RATE_FAILURES_SPEEDUP_TOLERANCE_RATIO("consumer.rate.failures.speedup.tolerance.ratio", 0.01),
     CONSUMER_MAXRATE_STRATEGY("consumer.maxrate.strategy", "negotiated"),
+    CONSUMER_MAXRATE_REGISTRY_TYPE("consumer.maxrate.registry.type", "hierarchical"),
+    CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_MAX_RATE_BUFFER_SIZE_BYTES("consumer.maxrate.registry.binary.encoder.max.rate.buffer.size.bytes", 100_000),
+    CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_HISTORY_BUFFER_SIZE_BYTES("consumer.maxrate.registry.binary.encoder.history.buffer.size.bytes", 100_000),
     CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS("consumer.maxrate.balance.interval.seconds", 30),
     CONSUMER_MAXRATE_UPDATE_INTERVAL_SECONDS("consumer.maxrate.update.interval.seconds", 15),
     CONSUMER_MAXRATE_HISTORY_SIZE("consumer.maxrate.history.size", 1),

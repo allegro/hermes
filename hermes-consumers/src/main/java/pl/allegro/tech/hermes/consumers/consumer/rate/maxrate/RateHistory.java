@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-final class RateHistory {
+public final class RateHistory {
     private final List<Double> rates;
 
     @ConstructorProperties({"rates"})

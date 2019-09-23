@@ -129,7 +129,7 @@ class FilterChainSpec extends Specification {
         def order
 
         RecordingSubscriptionMessageFilterCompiler(String type, AtomicInteger counter) {
-            super(type, { m -> test(m) })
+            super(type, null)
             this.counter = counter
         }
 

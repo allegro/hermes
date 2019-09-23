@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.health;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
@@ -20,12 +21,15 @@ class HealthCheckTask implements Runnable {
     private final String healthCheckPath;
     private final ObjectMapper objectMapper;
     private final ModeService modeService;
+    private final MeterRegistry meterRegistry;
 
-    HealthCheckTask(Collection<ZookeeperClient> zookeeperClients, String healthCheckPath, ObjectMapper objectMapper, ModeService modeService) {
+    HealthCheckTask(Collection<ZookeeperClient> zookeeperClients, String healthCheckPath, ObjectMapper objectMapper,
+                    ModeService modeService, MeterRegistry meterRegistry) {
         this.zookeeperClients = zookeeperClients;
         this.healthCheckPath = healthCheckPath;
         this.objectMapper = objectMapper;
         this.modeService = modeService;
+        this.meterRegistry = meterRegistry;
     }
 
     @Override
@@ -43,9 +47,10 @@ class HealthCheckTask implements Runnable {
             zookeeperClient.getCuratorFramework()
                     .setData()
                     .forPath(healthCheckPath, objectMapper.writeValueAsBytes(timestamp));
-            logger.info("Storage healthy for datacenter {}", zookeeperClient.getDatacenterName());
+            meterRegistry.counter("storage-health-check.successful").increment();
             return HealthCheckResult.HEALTHY;
         } catch (Exception e) {
+            meterRegistry.counter("storage-health-check.failed").increment();
             logger.error("Storage health check failed for datacenter {}", zookeeperClient.getDatacenterName(), e);
             return HealthCheckResult.UNHEALTHY;
         }

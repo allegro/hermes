@@ -37,6 +37,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalcu
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRatePathSerializer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
+import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistryFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
@@ -62,6 +63,10 @@ import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionCacheFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
+import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIdProvider;
+import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIdProviderFactory;
+import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
+import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIdsCacheFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
@@ -76,6 +81,8 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorControllerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTrackerFactory;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.common.di.factories.WorkloadConstraintsRepositoryFactory;
 
 import javax.inject.Singleton;
 import javax.jms.Message;
@@ -125,6 +132,8 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(HttpClientFactory.class);
 
         bindFactory(SubscriptionCacheFactory.class).in(Singleton.class).to(SubscriptionsCache.class);
+        bindFactory(SubscriptionIdProviderFactory.class).in(Singleton.class).to(SubscriptionIdProvider.class);
+        bindFactory(SubscriptionIdsCacheFactory.class).in(Singleton.class).to(SubscriptionIds.class);
         bindSingleton(SubscriptionAssignmentCache.class);
 
         bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
@@ -137,7 +146,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(MaxRatePathSerializer.class);
         bindSingleton(MaxRateSupervisor.class);
         bindSingleton(MaxRateProviderFactory.class);
-        bindSingleton(MaxRateRegistry.class);
+        bindFactory(MaxRateRegistryFactory.class).in(Singleton.class).to(MaxRateRegistry.class);
 
         bindSingleton(UndeliveredMessageLogPersister.class);
         bindFactory(ByteBufferMessageBatchFactoryProvider.class).in(Singleton.class).to(MessageBatchFactory.class);
