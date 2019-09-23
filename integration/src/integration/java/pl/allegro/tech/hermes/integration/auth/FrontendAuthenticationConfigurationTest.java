@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.integration.auth;
 
-import avro.shaded.com.google.common.collect.Lists;
+import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import io.undertow.security.impl.BasicAuthenticationMechanism;
 import io.undertow.util.StatusCodes;
