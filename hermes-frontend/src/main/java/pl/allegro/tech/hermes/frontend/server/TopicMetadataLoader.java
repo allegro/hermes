@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,7 +27,7 @@ class TopicMetadataLoader implements AutoCloseable {
 
     private final ScheduledExecutorService scheduler;
 
-    private final RetryPolicy retryPolicy;
+    private final RetryPolicy<MetadataLoadingResult> retryPolicy;
 
     TopicMetadataLoader(BrokerMessageProducer brokerMessageProducer,
                                int retryCount,
@@ -35,19 +37,19 @@ class TopicMetadataLoader implements AutoCloseable {
         this.brokerMessageProducer = brokerMessageProducer;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("topic-metadata-loader-%d").build();
         this.scheduler = Executors.newScheduledThreadPool(threadPoolSize, threadFactory);
-        this.retryPolicy = new RetryPolicy()
+        this.retryPolicy = new RetryPolicy<MetadataLoadingResult>()
                 .withMaxRetries(retryCount)
-                .withDelay(retryInterval, TimeUnit.MILLISECONDS)
-                .retryIf(MetadataLoadingResult::isFailure);
+                .withDelay(Duration.of(retryInterval, ChronoUnit.MILLIS))
+                .handleIf((resp, cause) -> resp.isFailure());
     }
 
     CompletableFuture<MetadataLoadingResult> loadTopicMetadata(CachedTopic topic) {
         return Failsafe.with(retryPolicy).with(scheduler)
-                .future((ExecutionContext context) -> completedFuture(fetchTopicMetadata(topic, context)));
+                .getStageAsync((context) -> completedFuture(fetchTopicMetadata(topic, context)));
     }
 
     private MetadataLoadingResult fetchTopicMetadata(CachedTopic topic, ExecutionContext context) {
-        int attempt = context.getExecutions() + 1;
+        int attempt = context.getAttemptCount();
         if (brokerMessageProducer.isTopicAvailable(topic)) {
             return MetadataLoadingResult.success(topic.getTopicName());
         }

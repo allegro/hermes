@@ -30,7 +30,7 @@ class HermesClientTest extends Specification {
         HermesClient client = hermesClient({ URI uri, HermesMessage message ->
             assert uri.toString() == (String) "$HERMES_URI/topics/$TOPIC"
             assert message.body == CONTENT
-            statusFuture(201)
+            statusFuture(message, 201)
         })
                 .withURI(create(HERMES_URI))
                 .build()
@@ -42,12 +42,12 @@ class HermesClientTest extends Specification {
         response.success
         !response.failure
         response.httpStatus == 201
-        !response.failedMessage.isPresent()
+        !response.failureCause.isPresent()
     }
 
     def "should interpret message as accepted when sender returns 202"() {
         given:
-        HermesClient client = hermesClient({ uri, msg -> statusFuture(202) })
+        HermesClient client = hermesClient({ uri, msg -> statusFuture(msg, 202) })
                 .withURI(create(HERMES_URI))
                 .build()
 
@@ -61,7 +61,7 @@ class HermesClientTest extends Specification {
 
     def "should interpret message as failed for status different than 201 or 202"() {
         given:
-        HermesClient client = hermesClient({uri, msg -> statusFuture(status)})
+        HermesClient client = hermesClient({uri, msg -> statusFuture(msg, status)})
                 .withURI(create(HERMES_URI))
                 .withRetrySleep(0)
                 .build()
@@ -108,9 +108,9 @@ class HermesClientTest extends Specification {
 
         then:
         latch.count == 0
-        response.failedMessage.get().body == CONTENT
-        response.failedMessage.get().contentType == CONTENT_TYPE
-        response.failedMessage.get().topic == TOPIC
+        response.hermesMessage.body == CONTENT
+        response.hermesMessage.contentType == CONTENT_TYPE
+        response.hermesMessage.topic == TOPIC
         response.failureCause.get().message == "Sending failed"
     }
 
@@ -178,7 +178,7 @@ class HermesClientTest extends Specification {
 
     def "should not publish after shutdown"() {
         given:
-        HermesClient client = hermesClient({ uri, msg -> statusFuture(201) }).build()
+        HermesClient client = hermesClient({ uri, msg -> statusFuture(msg, 201) }).build()
 
         when:
         client.closeAsync(10).get(1, TimeUnit.SECONDS)
@@ -300,8 +300,8 @@ class HermesClientTest extends Specification {
         }
     }
 
-    private CompletableFuture<HermesResponse> statusFuture(int status) {
-        completedFuture({status} as HermesResponse)
+    private CompletableFuture<HermesResponse> statusFuture(HermesMessage message, int status) {
+        completedFuture(HermesResponseBuilder.hermesResponse(message).withHttpStatus(status).build())
     }
 
     private CompletableFuture<HermesResponse> failingFuture(Throwable throwable) {
@@ -317,7 +317,7 @@ class HermesClientTest extends Specification {
     private HermesSender getCountDownSender(CountDownLatch latch, Supplier<Integer> status) {
         { uri, msg ->
             latch.countDown()
-            completedFuture({ status.get() } as HermesResponse)
+            completedFuture(HermesResponseBuilder.hermesResponse(msg).withHttpStatus(status.get()).build())
         }
     }
 
@@ -328,7 +328,7 @@ class HermesClientTest extends Specification {
             executor.submit({
                 Thread.sleep(delay)
                 latch.countDown()
-                future.complete({status} as HermesResponse)
+                future.complete(HermesResponseBuilder.hermesResponse(msg).withHttpStatus(status).build())
             } as Runnable)
 
             future
@@ -338,7 +338,7 @@ class HermesClientTest extends Specification {
     private HermesSender getHeaderScrapingSender(Map<String, String> headers) {
         { uri, msg ->
             headers.putAll(msg.headers)
-            completedFuture({ 201 } as HermesResponse)
+            completedFuture(HermesResponseBuilder.hermesResponse(msg).withHttpStatus(201).build())
         }
     }
 }
