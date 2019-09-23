@@ -3,6 +3,8 @@ var repository = angular.module('hermes.constraints.repository', []);
 repository.factory('ConstraintsRepository', ['DiscoveryService', '$resource',
     function (discovery, $resource) {
         var workloadConstraints = $resource(discovery.resolve('/workload-constraints'), {}, { query: { method: 'GET' } });
+        var removeTopicConstraintsEndpoint = $resource(discovery.resolve('/workload-constraints/topic/:topicName'));
+        var removeSubscriptionConstraintsEndpoint = $resource(discovery.resolve('/workload-constraints/subscription/:topicName/:subscriptionName'));
 
         return {
             getWorkloadConstraints: function () {
@@ -36,6 +38,12 @@ repository.factory('ConstraintsRepository', ['DiscoveryService', '$resource',
                             subscriptionConstraints: []
                         };
                     })
+            },
+            removeTopicConstraints: function (topicName) {
+                return removeTopicConstraintsEndpoint.remove({ topicName: topicName });
+            },
+            removeSubscriptionConstraints: function (topicName, subscriptionName) {
+                return removeSubscriptionConstraintsEndpoint.remove({ topicName: topicName, subscriptionName: subscriptionName })
             }
         };
     }]);

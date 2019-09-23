@@ -12,6 +12,17 @@ constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scop
 
         $scope.constraintsName = $stateParams.constraintsName;
 
+        $scope.remove = function () {
+            if (_isSubscription($scope.constraintsName)) {
+                var splittedName = $scope.constraintsName.split("$");
+                var topicName = splittedName[0];
+                var subscriptionName = splittedName[1];
+                constraintsRepository.removeSubscriptionConstraints(topicName, subscriptionName);
+            } else {
+                constraintsRepository.removeTopicConstraints($scope.constraintsName);
+            }
+        };
+
         constraintsRepository.getWorkloadConstraints()
             .then(function (workloadConstraints) {
                 if (_isSubscription($scope.constraintsName)) {

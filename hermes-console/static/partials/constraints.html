@@ -1,5 +1,10 @@
 <section ng-controller="ConstraintsController">
 
+    <div class="pull-right">
+        <button class="btn btn-primary">Edit</button>
+        <button class="btn btn-danger" ng-click="remove()">Remove</button>
+    </div>
+
     <h1><small>{{constraintsType}}:</small> {{constraintsName}}</h1>
 
     <div class="row" style="margin-top: 2em;">
