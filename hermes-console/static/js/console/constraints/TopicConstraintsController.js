@@ -9,7 +9,7 @@ constraints.controller('TopicConstraintsController', ['ConstraintsRepository', '
             .then(function (workloadConstraints) {
                 $scope.topicConstraints = workloadConstraints.topicConstraints
                     .find(function (topicCons) {
-                        return topicCons.topicName === topicName;
+                        return topicCons.topicName === $stateParams.topicName;
                     });
             });
     }]);
