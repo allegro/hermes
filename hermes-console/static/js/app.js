@@ -13,9 +13,7 @@ var hermes = angular.module('hermes', [
     'hermes.stats',
     'hermes.diagnostics',
     'hermes.constraints.list',
-    'hermes.constraints',
-    'hermes.topic.constraints',
-    'hermes.subscription.constraints'
+    'hermes.constraints'
 ]);
 
 hermes.constant('DASHBOARD_CONFIG', config.dashboard);
@@ -65,14 +63,6 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
                 .state('constraints', {
                     url: '/constraints/:constraintsName',
                     templateUrl: 'partials/constraints.html'
-                })
-                .state('topic-constraints', {
-                    url: '/topic-constraints/:topicName',
-                    templateUrl: 'partials/topicConstraints.html'
-                })
-                .state('subscription-constraints', {
-                    url: '/subscription-constraints/:subscriptionName',
-                    templateUrl: 'partials/subscriptionConstraints.html'
                 })
                 .state('search', {
                     url: '/search?entity&property&operator&pattern',
