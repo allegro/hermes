@@ -125,7 +125,10 @@ public class HermesClient {
 
         return sender.send(URI.create(uri + message.getTopic()), message)
                 .exceptionally(e -> HermesResponseBuilder.hermesFailureResponse(e, message))
-                .whenComplete((resp, cause) -> messageDeliveryListeners.forEach(l -> l.onSend(resp, System.nanoTime() - startTime)));
+                .whenComplete((resp, cause) -> {
+                    long latency = System.nanoTime() - startTime;
+                    messageDeliveryListeners.forEach(l -> l.onSend(resp, latency));
+                });
     }
 
     private CompletableFuture<HermesResponse> completedWithShutdownException() {
