@@ -50,7 +50,7 @@ public class AvroToJsonMessageConverter implements MessageConverter {
         return Schema.createRecord(
                 schema.getFields().stream()
                         .filter(field -> !METADATA_MARKER.equals(field.name()))
-                        .map(field -> new Schema.Field(field.name(), field.schema(), field.doc(), field.defaultValue()))
+                        .map(field -> new Schema.Field(field.name(), field.schema(), field.doc(), field.defaultVal()))
                         .collect(toList()));
     }
 
