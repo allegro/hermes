@@ -6,9 +6,8 @@
 
 ### Features
 
-#### ([1096](https://github.com/allegro/hermes/pull/1096)) failed messages metrics
-
-new client metrics have been added for failed messages that won't be retried:
+#### ([1096](https://github.com/allegro/hermes/pull/1096)) Failed messages metrics
+New client metrics have been added for failed messages that won't be retried:
 - hermes-client.*.retries.exhausted - the number of unsent messages, max retries limit reached
 - hermes-client.*.retries.success - the number of retried messages with success
 - hermes-client.*.retries.attempts - how many retries the message required before success delivery
