@@ -9,8 +9,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -32,6 +34,7 @@ public class HermesClient {
     private final RetryPolicy<HermesResponse> retryPolicy;
     private final ScheduledExecutorService scheduler;
     private volatile boolean shutdown = false;
+    private final List<MessageDeliveryListener> messageDeliveryListeners = new ArrayList<>();
 
     HermesClient(HermesSender sender,
                  URI uri,
@@ -54,9 +57,8 @@ public class HermesClient {
                 .withMaxRetries(retries)
                 .handleIf((resp, cause) -> retryCondition.test(resp))
                 .onRetriesExceeded((e) -> handleMaxRetriesExceeded(e))
-                .onRetry((e) -> {
-                    if (e.getLastResult() != null) handleFailedAttempt(e);
-                })
+                .onRetry((e) -> handleFailedAttempt(e))
+                .onFailure((e) -> handleFailure(e))
                 .onSuccess((e) -> handleSuccessfulRetry(e));
 
         if (retrySleepInMillis > 0) {
@@ -106,6 +108,10 @@ public class HermesClient {
         return publishWithRetries(message);
     }
 
+    public boolean addMessageDeliveryListener(MessageDeliveryListener listener) {
+        return messageDeliveryListeners.add(listener);
+    }
+
     private CompletableFuture<HermesResponse> publishWithRetries(HermesMessage message) {
         currentlySending.incrementAndGet();
         return Failsafe.with(retryPolicy)
@@ -115,9 +121,11 @@ public class HermesClient {
     }
 
     private CompletableFuture<HermesResponse> sendOnce(HermesMessage message) {
-        return sender
-                .send(URI.create(uri + message.getTopic()), message)
-                .exceptionally(e -> HermesResponseBuilder.hermesFailureResponse(e, message));
+        long startTime = System.nanoTime();
+
+        return sender.send(URI.create(uri + message.getTopic()), message)
+                .exceptionally(e -> HermesResponseBuilder.hermesFailureResponse(e, message))
+                .whenComplete((resp, cause) -> messageDeliveryListeners.forEach(l -> l.onSend(resp, System.nanoTime() - startTime)));
     }
 
     private CompletableFuture<HermesResponse> completedWithShutdownException() {
@@ -146,30 +154,24 @@ public class HermesClient {
             return;
         }
 
-        onMaxRetriesExceeded(event);
-
         HermesMessage message = event.getResult().getHermesMessage();
+        messageDeliveryListeners.forEach(l -> l.onMaxRetriesExceeded(message, event.getAttemptCount()));
         logger.error("Failed to send message to topic {} after {} attempts",
                 message.getTopic(), event.getAttemptCount());
     }
 
     private void handleFailedAttempt(ExecutionAttemptedEvent<HermesResponse> event) {
-        onFailedAttempt(event);
+        HermesMessage message = event.getLastResult().getHermesMessage();
+        messageDeliveryListeners.forEach(l -> l.onFailedRetry(message, event.getAttemptCount()));
+    }
+
+    private void handleFailure(ExecutionCompletedEvent<HermesResponse> event) {
+        HermesMessage message = event.getResult().getHermesMessage();
+        messageDeliveryListeners.forEach(l -> l.onFailure(message, event.getAttemptCount()));
     }
 
     private void handleSuccessfulRetry(ExecutionCompletedEvent<HermesResponse> event) {
-        onSuccessfulRetry(event);
-    }
-
-    protected void onMaxRetriesExceeded(ExecutionCompletedEvent<HermesResponse> event) {
-
-    }
-
-    protected void onFailedAttempt(ExecutionAttemptedEvent<HermesResponse> event) {
-
-    }
-
-    protected void onSuccessfulRetry(ExecutionCompletedEvent<HermesResponse> event) {
-
+        HermesMessage message = event.getResult().getHermesMessage();
+        messageDeliveryListeners.forEach(l -> l.onSuccessfulRetry(message, event.getAttemptCount()));
     }
 }

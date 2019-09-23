@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.client.metrics;
 
-public class MetricsUtils {
+class MetricsUtils {
 
-    public static String getMetricsPrefix(String topic) {
+    static String getMetricsPrefix(String topic) {
         return "hermes-client." + sanitizeTopic(topic);
     }
 

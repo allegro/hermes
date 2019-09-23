@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.client;
 
-import pl.allegro.tech.hermes.client.metrics.MetricsHermesSender;
+import pl.allegro.tech.hermes.client.metrics.MetricsMessageDeliveryListener;
 import pl.allegro.tech.hermes.client.metrics.MetricsProvider;
 
 import java.net.URI;
@@ -34,13 +34,14 @@ public class HermesClientBuilder {
     }
 
     public HermesClient build() {
-        return metrics.map(metrics -> {
-            MetricsHermesSender metricsSender = new MetricsHermesSender(this.sender, metrics);
-            return (HermesClient) new MetricsHermesClient(metricsSender, uri, defaultHeaders, retries, retryCondition,
-                    retrySleepInMillis, maxRetrySleepInMillis, schedulerFactory.get(), metrics);
-        }).orElseGet(() -> new HermesClient(sender, uri, defaultHeaders, retries, retryCondition,
-                retrySleepInMillis, maxRetrySleepInMillis, schedulerFactory.get())
-        );
+        HermesClient hermesClient = new HermesClient(sender, uri, defaultHeaders, retries, retryCondition,
+                retrySleepInMillis, maxRetrySleepInMillis, schedulerFactory.get());
+
+        metrics.ifPresent((metricsProvider) -> {
+            hermesClient.addMessageDeliveryListener(new MetricsMessageDeliveryListener(metricsProvider));
+        });
+
+        return hermesClient;
     }
 
     public HermesClientBuilder withURI(URI uri) {
