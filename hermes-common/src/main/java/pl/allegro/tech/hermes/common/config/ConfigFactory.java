@@ -1,13 +1,22 @@
 package pl.allegro.tech.hermes.common.config;
 
+import com.netflix.config.AbstractPollingScheduler;
+import com.netflix.config.ConfigurationManager;
+import com.netflix.config.DynamicConfiguration;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.config.PolledConfigurationSource;
+import com.netflix.config.sources.URLConfigurationSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
 public class ConfigFactory {
 
-    private final DynamicPropertyFactory propertyFactory = DynamicPropertyFactory.getInstance();
+    private static final Logger logger = LoggerFactory.getLogger(ConfigFactory.class);
+
+    private final DynamicPropertyFactory propertyFactory = getDynamicPropertyFactory();
 
     public String getIntPropertyAsString(Configs config) {
         return String.format("%s", getIntProperty(config));
@@ -41,4 +50,26 @@ public class ConfigFactory {
         return propertyFactory.getContextualProperty(opt.getName(), opt.getDefaultValue()).getValue().toString();
     }
 
+    private DynamicPropertyFactory getDynamicPropertyFactory() {
+        if (!ConfigurationManager.isConfigurationInstalled()) {
+            PolledConfigurationSource source = new URLConfigurationSource();
+            AbstractPollingScheduler scheduler = createDisabledPollingScheduler();
+            ConfigurationManager.install(new DynamicConfiguration(source, scheduler));
+        }
+        return DynamicPropertyFactory.getInstance();
+    }
+
+    private static AbstractPollingScheduler createDisabledPollingScheduler() {
+        return new AbstractPollingScheduler() {
+            @Override
+            protected void schedule(Runnable pollingRunnable) {
+                logger.info("Periodical polling of a configuration source is turned off!");
+            }
+
+            @Override
+            public void stop() {
+
+            }
+        };
+    }
 }

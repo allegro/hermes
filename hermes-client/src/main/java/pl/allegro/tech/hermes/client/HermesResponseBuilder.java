@@ -12,14 +12,13 @@ public class HermesResponseBuilder {
     private Function<String, String> headerSupplier = (header) -> null;
     private HermesMessage hermesMessage;
 
-    public static HermesResponseBuilder hermesResponse() {
-        return new HermesResponseBuilder();
+    public static HermesResponseBuilder hermesResponse(HermesMessage hermesMessage) {
+        return new HermesResponseBuilder().withHermesMessage(hermesMessage);
     }
 
     public static HermesResponse hermesFailureResponse(Throwable exception, HermesMessage hermesMessage) {
-        return hermesResponse()
+        return hermesResponse(hermesMessage)
                 .withFailureCause(exception)
-                .withFailedMessage(hermesMessage)
                 .build();
     }
 
@@ -38,7 +37,7 @@ public class HermesResponseBuilder {
         return this;
     }
 
-    private HermesResponseBuilder withFailedMessage(HermesMessage hermesMessage) {
+    private HermesResponseBuilder withHermesMessage(HermesMessage hermesMessage) {
         this.hermesMessage = hermesMessage;
         return this;
     }
@@ -59,6 +58,11 @@ public class HermesResponseBuilder {
             @Override
             public int getHttpStatus() {
                 return statusCode;
+            }
+
+            @Override
+            public HermesMessage getHermesMessage() {
+                return hermesMessage;
             }
 
             @Override
