@@ -10,7 +10,7 @@ repository.factory('ConstraintsRepository', ['DiscoveryService', '$resource',
                     .then(function (response) {
                         var workloadConstraints = {};
                         workloadConstraints.topicConstraints = [];
-                        for (topicName in response.topicConstraints) {
+                        for (var topicName in response.topicConstraints) {
                             if (response.topicConstraints.hasOwnProperty(topicName)) {
                                 workloadConstraints.topicConstraints.push({
                                     topicName: topicName,
@@ -20,7 +20,7 @@ repository.factory('ConstraintsRepository', ['DiscoveryService', '$resource',
                         }
 
                         workloadConstraints.subscriptionConstraints = [];
-                        for (subscriptionName in response.subscriptionConstraints) {
+                        for (var subscriptionName in response.subscriptionConstraints) {
                             if (response.subscriptionConstraints.hasOwnProperty(subscriptionName)) {
                                 workloadConstraints.subscriptionConstraints.push({
                                     subscriptionName: subscriptionName,
