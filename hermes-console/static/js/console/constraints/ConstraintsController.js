@@ -3,29 +3,37 @@ var constraints = angular.module('hermes.constraints', [
     'hermes.constraints.repository'
 ]);
 
-constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scope', '$stateParams',
-    function (constraintsRepository, $scope, $stateParams) {
+constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scope', '$stateParams', '$location',
+    function (constraintsRepository, $scope, $stateParams, $location) {
 
-        var _isSubscription = function (constraintsName) {
+        var isSubscription = function (constraintsName) {
             return constraintsName.includes('$');
+        };
+
+        var redirectToConstraintsList = function() {
+            $location.path('/constraints-list');
         };
 
         $scope.constraintsName = $stateParams.constraintsName;
 
         $scope.remove = function () {
-            if (_isSubscription($scope.constraintsName)) {
+            if (isSubscription($scope.constraintsName)) {
                 var splittedName = $scope.constraintsName.split("$");
                 var topicName = splittedName[0];
                 var subscriptionName = splittedName[1];
-                constraintsRepository.removeSubscriptionConstraints(topicName, subscriptionName);
+                constraintsRepository.removeSubscriptionConstraints(topicName, subscriptionName)
+                    .$promise
+                    .then(redirectToConstraintsList);
             } else {
-                constraintsRepository.removeTopicConstraints($scope.constraintsName);
+                constraintsRepository.removeTopicConstraints($scope.constraintsName)
+                    .$promise
+                    .then(redirectToConstraintsList);
             }
         };
 
         constraintsRepository.getWorkloadConstraints()
             .then(function (workloadConstraints) {
-                if (_isSubscription($scope.constraintsName)) {
+                if (isSubscription($scope.constraintsName)) {
                     $scope.constraintsType = 'Subscription';
                     $scope.consumersNumber = workloadConstraints.subscriptionConstraints
                         .find(function (cons) {
