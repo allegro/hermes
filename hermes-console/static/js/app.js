@@ -12,7 +12,6 @@ var hermes = angular.module('hermes', [
     'hermes.search',
     'hermes.stats',
     'hermes.diagnostics',
-    'hermes.constraints.list',
     'hermes.constraints'
 ]);
 

@@ -23,17 +23,10 @@ constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scop
                 size: 'lg',
                 resolve: {
                     constraintsType: function () {
-                        if (isSubscription($scope.constraintsName)) {
-                            return 'subscription';
-                        } else {
-                            return 'topic';
-                        }
+                        return isSubscription($scope.constraintsName) ? 'subscription' : 'topic';
                     },
                     constraintsName: function () {
                         return $scope.constraintsName;
-                    },
-                    operation: function () {
-                        return 'EDIT';
                     }
                 }
             }).result.then(function () {
@@ -78,6 +71,70 @@ constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scop
         };
 
         loadConstraints();
+    }]);
+
+constraints.controller('ConstraintsListController', ['ConstraintsRepository', '$scope', '$uibModal',
+    function (constraintsRepository, $scope, $modal) {
+        var loadConstraints = function () {
+            constraintsRepository.getWorkloadConstraints()
+                .then(function (workloadConstraints) {
+                    $scope.topicConstraints = workloadConstraints.topicConstraints;
+                    $scope.subscriptionConstraints = workloadConstraints.subscriptionConstraints;
+                });
+        };
+
+        var addConstraints = function (constraintsType) {
+            $modal.open({
+                templateUrl: 'partials/modal/addConstraints.html',
+                controller: 'ConstraintsAddController',
+                size: 'lg',
+                resolve: {
+                    constraintsType: function () {
+                        return constraintsType;
+                    }
+                }
+            }).result.then(function () {
+                loadConstraints();
+            });
+        };
+
+        $scope.addTopicConstraints = function () {
+            addConstraints('topic');
+        };
+
+        $scope.addSubscriptionConstraints = function () {
+            addConstraints('subscription');
+        };
+
+        loadConstraints();
+    }]);
+
+constraints.controller('ConstraintsAddController', ['ConstraintsRepository', '$scope', '$uibModalInstance', 'constraintsType',
+    function (constraintsRepository, $scope, $modal, constraintsType) {
+        $scope.constraintsType = constraintsType;
+        $scope.consumersNumber = 1;
+
+        $scope.save = function () {
+            if ($scope.constraintsType === 'topic') {
+                constraintsRepository.updateTopicConstraints({
+                    topicName: $scope.constraintsName,
+                    constraints: {
+                        consumersNumber: $scope.consumersNumber
+                    }
+                }).then(function () {
+                    $modal.close();
+                });
+            } else {
+                constraintsRepository.updateSubscriptionConstraints({
+                    subscriptionName: $scope.constraintsName,
+                    constraints: {
+                        consumersNumber: $scope.consumersNumber
+                    }
+                }).then(function () {
+                    $modal.close();
+                });
+            }
+        }
     }]);
 
 constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$scope', '$uibModalInstance', 'constraintsType', 'constraintsName',

@@ -1,7 +1,7 @@
 <section>
     <div class="modal-header">
         <h3 class="modal-title">
-            <small>Edit constraints for {{constraintsType}}:</small> {{constraintsName}}
+            <small>Create constraints for {{constraintsType}}:</small>
         </h3>
     </div>
     <div class="modal-body">
@@ -11,6 +11,12 @@
                 <div class="col-md-9">
                     <input class="form-control" type="password" ng-required="!isAuthorized && authEnabled.headers"
                            id="rootPassword" name="rootPassword" placeholder="root password" ng-model="rootPassword"/>
+                </div>
+            </div>
+            <div class="form-group {{constraintsName.$valid ? '' : 'has-error'}}">
+                <label for="constraintsName" class="col-md-3 control-label">Name</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="constraintsName" required name="constraintsName" ng-model="constraintsName"/>
                 </div>
             </div>
             <div class="form-group {{consumersNumber.$valid ? '' : 'has-error'}}">
