@@ -354,11 +354,11 @@ class OffsetCommitterTest extends Specification {
         return new SubscriptionPartitionOffset(partitionOffset, offset)
     }
 
-    private assignPartitions(int ... partitions) {
+    private assignPartitions(int... partitions) {
         state.assign(SUBSCRIPTION_NAME, [*partitions])
     }
 
-    private revokePartitions(int ... partitions) {
+    private revokePartitions(int... partitions) {
         state.revoke(SUBSCRIPTION_NAME, [*partitions])
     }
 
