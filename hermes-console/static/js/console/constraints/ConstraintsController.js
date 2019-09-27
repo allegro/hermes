@@ -10,77 +10,22 @@ constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scop
             return constraintsName.includes('$');
         };
 
-        var redirectToConstraintsList = function() {
-            $location.path('/constraints-list');
-        };
-
-        $scope.constraintsName = $stateParams.constraintsName;
-
-        $scope.edit = function () {
+        $scope.edit = function (constraintsItem) {
             $modal.open({
                 templateUrl: 'partials/modal/editConstraints.html',
                 controller: 'ConstraintsEditController',
                 size: 'lg',
                 resolve: {
                     constraintsType: function () {
-                        return isSubscription($scope.constraintsName) ? 'subscription' : 'topic';
+                        return isSubscription(constraintsItem) ? 'subscription' : 'topic';
                     },
                     constraintsName: function () {
-                        return $scope.constraintsName;
+                        return constraintsItem;
                     }
                 }
             }).result.then(function () {
                 loadConstraints();
             });
-        };
-
-        $scope.remove = function () {
-            if (isSubscription($scope.constraintsName)) {
-                var splittedName = $scope.constraintsName.split("$");
-                var topicName = splittedName[0];
-                var subscriptionName = splittedName[1];
-                constraintsRepository.removeSubscriptionConstraints(topicName, subscriptionName)
-                    .$promise
-                    .then(redirectToConstraintsList);
-            } else {
-                constraintsRepository.removeTopicConstraints($scope.constraintsName)
-                    .$promise
-                    .then(redirectToConstraintsList);
-            }
-        };
-
-        var loadConstraints = function () {
-            constraintsRepository.getWorkloadConstraints()
-                .then(function (workloadConstraints) {
-                    if (isSubscription($scope.constraintsName)) {
-                        $scope.constraintsType = 'Subscription';
-                        $scope.consumersNumber = workloadConstraints.subscriptionConstraints
-                            .find(function (cons) {
-                                return cons.subscriptionName === $scope.constraintsName;
-                            })
-                            .consumersNumber;
-                    } else {
-                        $scope.constraintsType = 'Topic';
-                        $scope.consumersNumber = workloadConstraints.topicConstraints
-                            .find(function (cons) {
-                                return cons.topicName === $scope.constraintsName;
-                            })
-                            .consumersNumber;
-                    }
-                });
-        };
-
-        loadConstraints();
-    }]);
-
-constraints.controller('ConstraintsListController', ['ConstraintsRepository', '$scope', '$uibModal',
-    function (constraintsRepository, $scope, $modal) {
-        var loadConstraints = function () {
-            constraintsRepository.getWorkloadConstraints()
-                .then(function (workloadConstraints) {
-                    $scope.topicConstraints = workloadConstraints.topicConstraints;
-                    $scope.subscriptionConstraints = workloadConstraints.subscriptionConstraints;
-                });
         };
 
         var addConstraints = function (constraintsType) {
@@ -104,6 +49,29 @@ constraints.controller('ConstraintsListController', ['ConstraintsRepository', '$
 
         $scope.addSubscriptionConstraints = function () {
             addConstraints('subscription');
+        };
+
+        // $scope.remove = function () {
+        //     if (isSubscription($scope.constraintsName)) {
+        //         var splittedName = $scope.constraintsName.split("$");
+        //         var topicName = splittedName[0];
+        //         var subscriptionName = splittedName[1];
+        //         constraintsRepository.removeSubscriptionConstraints(topicName, subscriptionName)
+        //             .$promise
+        //             .then(redirectToConstraintsList);
+        //     } else {
+        //         constraintsRepository.removeTopicConstraints($scope.constraintsName)
+        //             .$promise
+        //             .then(redirectToConstraintsList);
+        //     }
+        // };
+
+        var loadConstraints = function () {
+            constraintsRepository.getWorkloadConstraints()
+                .then(function (workloadConstraints) {
+                    $scope.topicConstraints = workloadConstraints.topicConstraints;
+                    $scope.subscriptionConstraints = workloadConstraints.subscriptionConstraints;
+                });
         };
 
         loadConstraints();
@@ -165,3 +133,39 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
             }
         }
     }]);
+
+// constraints.controller('ConstraintsListController', ['ConstraintsRepository', '$scope', '$uibModal',
+//     function (constraintsRepository, $scope, $modal) {
+//         var loadConstraints = function () {
+//             constraintsRepository.getWorkloadConstraints()
+//                 .then(function (workloadConstraints) {
+//                     $scope.topicConstraints = workloadConstraints.topicConstraints;
+//                     $scope.subscriptionConstraints = workloadConstraints.subscriptionConstraints;
+//                 });
+//         };
+//
+//         var addConstraints = function (constraintsType) {
+//             $modal.open({
+//                 templateUrl: 'partials/modal/addConstraints.html',
+//                 controller: 'ConstraintsAddController',
+//                 size: 'lg',
+//                 resolve: {
+//                     constraintsType: function () {
+//                         return constraintsType;
+//                     }
+//                 }
+//             }).result.then(function () {
+//                 loadConstraints();
+//             });
+//         };
+//
+//         $scope.addTopicConstraints = function () {
+//             addConstraints('topic');
+//         };
+//
+//         $scope.addSubscriptionConstraints = function () {
+//             addConstraints('subscription');
+//         };
+//
+//         loadConstraints();
+//     }]);

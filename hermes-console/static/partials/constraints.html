@@ -1,20 +1,48 @@
 <section ng-controller="ConstraintsController">
 
-    <div class="pull-right">
-        <button class="btn btn-primary" ng-click="edit()">Edit</button>
-        <button class="btn btn-danger" ng-click="remove()">Remove</button>
+    <h1><small>Constraints:</small></h1>
+
+    <div class="row">
+        <div class="list-group">
+            <div class="list-group-item">
+                <div class="pull-right">
+                    <button class="btn btn-primary">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                </div>
+                <h4>
+                    Topic constraints
+                </h4>
+            </div>
+            <div class="list-group-item" ng-repeat="item in topicConstraints">
+                <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                <strong>{{item.topicName}}</strong>
+                <div class="pull-right">
+                    <span class="label label-info">consumers number: {{ item.consumersNumber }}</span>
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <h1><small>{{constraintsType}}:</small> {{constraintsName}}</h1>
-
-    <div class="row" style="margin-top: 2em;">
-        <div class="col-md-6">
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Constraints</h3>
+    <div class="row">
+        <div class="list-group">
+            <div class="list-group-item">
+                <div class="pull-right">
+                    <button class="btn btn-primary">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
                 </div>
-                <div class="panel-body">
-                    <p><strong>Consumers number:</strong> {{consumersNumber}}</p>
+                <h4>
+                    Subscription constraints
+                </h4>
+            </div>
+            <div class="list-group-item" ng-repeat="item in subscriptionConstraints">
+                <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                <strong>{{item.subscriptionName}}</strong>
+                <div class="pull-right">
+                    <span class="label label-info">consumers number: {{ item.consumersNumber }}</span>
+                    <span class="glyphicon glyphicon-chevron-right"></span>
                 </div>
             </div>
         </div>

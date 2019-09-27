@@ -55,12 +55,8 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
                     url: '/groups/:groupName/topics/:topicName/subscriptions/:subscriptionName/diagnostics',
                     templateUrl: 'partials/diagnostics.html'
                 })
-                .state('constraints-list', {
-                    url: '/constraints-list',
-                    templateUrl: 'partials/constraintsList.html'
-                })
                 .state('constraints', {
-                    url: '/constraints/:constraintsName',
+                    url: '/constraints',
                     templateUrl: 'partials/constraints.html'
                 })
                 .state('search', {

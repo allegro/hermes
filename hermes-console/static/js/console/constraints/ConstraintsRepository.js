@@ -14,23 +14,19 @@ repository.factory('ConstraintsRepository', ['DiscoveryService', '$resource',
                     .then(function (response) {
                         var workloadConstraints = {};
                         workloadConstraints.topicConstraints = [];
-                        for (topicName in response.topicConstraints) {
-                            if (response.topicConstraints.hasOwnProperty(topicName)) {
-                                workloadConstraints.topicConstraints.push({
-                                    topicName: topicName,
-                                    consumersNumber: response.topicConstraints[topicName].consumersNumber
-                                });
-                            }
+                        for (var topicName in response.topicConstraints) {
+                            workloadConstraints.topicConstraints.push({
+                                topicName: topicName,
+                                consumersNumber: response.topicConstraints[topicName].consumersNumber
+                            });
                         }
 
                         workloadConstraints.subscriptionConstraints = [];
-                        for (subscriptionName in response.subscriptionConstraints) {
-                            if (response.subscriptionConstraints.hasOwnProperty(subscriptionName)) {
-                                workloadConstraints.subscriptionConstraints.push({
-                                    subscriptionName: subscriptionName,
-                                    consumersNumber: response.subscriptionConstraints[subscriptionName].consumersNumber
-                                });
-                            }
+                        for (var subscriptionName in response.subscriptionConstraints) {
+                            workloadConstraints.subscriptionConstraints.push({
+                                subscriptionName: subscriptionName,
+                                consumersNumber: response.subscriptionConstraints[subscriptionName].consumersNumber
+                            });
                         }
                         return workloadConstraints;
                     })
