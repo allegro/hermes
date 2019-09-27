@@ -41,9 +41,18 @@ public class ConfigFactoryCreator implements Factory<ConfigFactory> {
 
     private DynamicPropertyFactory createDynamicPropertyFactory(boolean isConfigPollingSchedulerDisabled) {
         if (isConfigPollingSchedulerDisabled) {
-            ConfigurationManager.install(createConfigInstance());
+            installConfiguration(createConfigInstance());
         }
         return DynamicPropertyFactory.getInstance();
+    }
+
+    private void installConfiguration(AbstractConfiguration configuration) {
+        if(ConfigurationManager.isConfigurationInstalled()) {
+            logger.warn("Custom Archaius configuration is already installed. " +
+                        "Check runtime environment. {}", ConfigurationManager.getConfigInstance());
+            return;
+        }
+        ConfigurationManager.install(configuration);
     }
 
     private static AbstractConfiguration createConfigInstance() {
