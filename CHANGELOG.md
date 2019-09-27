@@ -8,8 +8,8 @@
 
 #### ([1009](https://github.com/allegro/hermes/issues/1009)) Disable dynamic reloading of configuration files
 Enabling possibility of providing external archaius configuration.
-Pulling archaius initialization from `ConfigFactory` out and initializing `DynamicPropertyFactory` at the start of `hermes-consummers` and `hermes-fontend`. 
-Restore the default way that archaius build configuration with the addition of a configurable option to enable/disable config reload, by default is disabled.
+Pulling archaius initialization from `ConfigFactory` out and initializing `DynamicPropertyFactory` at the start of `hermes-consummers` and `hermes-frontend`. 
+Restore the default way that archaius builds configuration with the addition of a configurable option to enable/disable config reload, by default is disabled.
 
 ## 1.2.4 (23.09.2019)
 
