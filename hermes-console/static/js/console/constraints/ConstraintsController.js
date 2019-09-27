@@ -122,7 +122,12 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
             $modal.open({
                 templateUrl: 'partials/modal/removeConstraints.html',
                 controller: 'ConstraintsRemoveController',
-                size: 'lg'
+                size: 'lg',
+                resolve: {
+                    constraintsName: function () {
+                        return $scope.constraintsName;
+                    }
+                }
             }).result.then(acceptHandler, dismissHandler);
         };
 
@@ -152,8 +157,9 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
         };
     }]);
 
-constraints.controller('ConstraintsRemoveController', ['ConstraintsRepository', '$scope', '$uibModalInstance',
-    function (constraintsRepository, $scope, $modalInstance) {
+constraints.controller('ConstraintsRemoveController', ['ConstraintsRepository', '$scope', '$uibModalInstance', 'constraintsName',
+    function (constraintsRepository, $scope, $modalInstance, constraintsName) {
+        $scope.constraintsName = constraintsName;
         $scope.remove = function () {
             $modalInstance.close('REMOVE')
         };
