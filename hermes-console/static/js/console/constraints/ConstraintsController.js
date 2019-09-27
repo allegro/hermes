@@ -6,21 +6,24 @@ var constraints = angular.module('hermes.constraints', [
 constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scope', '$stateParams', '$location', '$uibModal',
     function (constraintsRepository, $scope, $stateParams, $location, $modal) {
 
-        var isSubscription = function (constraintsName) {
-            return constraintsName.includes('$');
+        var isSubscription = function (constraints) {
+            return constraints.subscriptionName !== undefined;
         };
 
-        $scope.edit = function (constraintsItem) {
+        $scope.edit = function (constraints) {
             $modal.open({
                 templateUrl: 'partials/modal/editConstraints.html',
                 controller: 'ConstraintsEditController',
                 size: 'lg',
                 resolve: {
                     constraintsType: function () {
-                        return isSubscription(constraintsItem) ? 'subscription' : 'topic';
+                        return isSubscription(constraints) ? 'subscription' : 'topic';
                     },
                     constraintsName: function () {
-                        return constraintsItem;
+                        return isSubscription(constraints) ? constraints.subscriptionName : constraints.topicName;
+                    },
+                    consumersNumber: function () {
+                        return constraints.consumersNumber;
                     }
                 }
             }).result.then(function () {
@@ -105,11 +108,12 @@ constraints.controller('ConstraintsAddController', ['ConstraintsRepository', '$s
         }
     }]);
 
-constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$scope', '$uibModalInstance', 'constraintsType', 'constraintsName',
-    function (constraintsRepository, $scope, $modal, constraintsType, constraintsName) {
+constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$scope', '$uibModalInstance',
+    'constraintsType', 'constraintsName', 'consumersNumber',
+    function (constraintsRepository, $scope, $modal, constraintsType, constraintsName, consumersNumber) {
         $scope.constraintsType = constraintsType;
         $scope.constraintsName = constraintsName;
-        $scope.consumersNumber = 1;
+        $scope.consumersNumber = consumersNumber;
 
         $scope.save = function () {
             if ($scope.constraintsType === 'topic') {

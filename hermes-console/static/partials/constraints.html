@@ -6,7 +6,7 @@
         <div class="list-group">
             <div class="list-group-item">
                 <div class="pull-right">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" ng-click="addTopicConstraints()">
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
                 </div>
@@ -14,14 +14,14 @@
                     Topic constraints
                 </h4>
             </div>
-            <div class="list-group-item" ng-repeat="item in topicConstraints">
+            <a class="list-group-item" ng-repeat="item in topicConstraints" ng-click="edit(item)">
                 <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
                 <strong>{{item.topicName}}</strong>
                 <div class="pull-right">
                     <span class="label label-info">consumers number: {{ item.consumersNumber }}</span>
                     <span class="glyphicon glyphicon-chevron-right"></span>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -29,7 +29,7 @@
         <div class="list-group">
             <div class="list-group-item">
                 <div class="pull-right">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" ng-click="addSubscriptionConstraints()">
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
                 </div>
@@ -37,14 +37,14 @@
                     Subscription constraints
                 </h4>
             </div>
-            <div class="list-group-item" ng-repeat="item in subscriptionConstraints">
+            <a class="list-group-item" ng-repeat="item in subscriptionConstraints" ng-click="edit(item)">
                 <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
                 <strong>{{item.subscriptionName}}</strong>
                 <div class="pull-right">
                     <span class="label label-info">consumers number: {{ item.consumersNumber }}</span>
                     <span class="glyphicon glyphicon-chevron-right"></span>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
