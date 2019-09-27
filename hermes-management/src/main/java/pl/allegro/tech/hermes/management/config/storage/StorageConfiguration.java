@@ -28,7 +28,6 @@ import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvide
 import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameSource;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider;
 import pl.allegro.tech.hermes.management.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
-import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedDistributedEphemeralCounter;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
@@ -94,11 +93,6 @@ public class StorageConfiguration {
                 storageClustersProperties.getSharedCountersExpiration(),
                 storageClustersProperties.getRetrySleep(),
                 storageClustersProperties.getRetryTimes());
-    }
-
-    @Bean
-    SummedDistributedEphemeralCounter summedDistributedEphemeralCounter(ZookeeperClientManager manager) {
-        return new SummedDistributedEphemeralCounter(getCuratorClients(manager));
     }
 
     @Bean
