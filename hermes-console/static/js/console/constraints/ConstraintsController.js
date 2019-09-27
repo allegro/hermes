@@ -54,21 +54,6 @@ constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scop
             addConstraints('subscription');
         };
 
-        // $scope.remove = function () {
-        //     if (isSubscription($scope.constraintsName)) {
-        //         var splittedName = $scope.constraintsName.split("$");
-        //         var topicName = splittedName[0];
-        //         var subscriptionName = splittedName[1];
-        //         constraintsRepository.removeSubscriptionConstraints(topicName, subscriptionName)
-        //             .$promise
-        //             .then(redirectToConstraintsList);
-        //     } else {
-        //         constraintsRepository.removeTopicConstraints($scope.constraintsName)
-        //             .$promise
-        //             .then(redirectToConstraintsList);
-        //     }
-        // };
-
         var loadConstraints = function () {
             constraintsRepository.getWorkloadConstraints()
                 .then(function (workloadConstraints) {
@@ -108,9 +93,9 @@ constraints.controller('ConstraintsAddController', ['ConstraintsRepository', '$s
         }
     }]);
 
-constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$scope', '$uibModalInstance',
+constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$scope', '$uibModal', '$uibModalInstance',
     'constraintsType', 'constraintsName', 'consumersNumber',
-    function (constraintsRepository, $scope, $modal, constraintsType, constraintsName, consumersNumber) {
+    function (constraintsRepository, $scope, $modal, $modalInstance, constraintsType, constraintsName, consumersNumber) {
         $scope.constraintsType = constraintsType;
         $scope.constraintsName = constraintsName;
         $scope.consumersNumber = consumersNumber;
@@ -123,7 +108,7 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
                         consumersNumber: $scope.consumersNumber
                     }
                 }).then(function () {
-                    $modal.close();
+                    $modalInstance.close();
                 });
             } else {
                 constraintsRepository.updateSubscriptionConstraints({
@@ -131,45 +116,43 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
                     constraints: {
                         consumersNumber: $scope.consumersNumber
                     }
-                }).then(function () {
-                    $modal.close();
-                });
+                }).then(closeModal);
             }
-        }
+        };
+
+        $scope.remove = function () {
+            $modal.open({
+                templateUrl: 'partials/modal/removeConstraints.html',
+                controller: 'ConstraintsRemoveController',
+                size: 'lg'
+            }).result.then(removeConstraintsHandler, closeModal);
+        };
+
+        var closeModal = function () {
+            $modalInstance.close();
+        };
+
+        var removeConstraintsHandler = function (response) {
+            if (response === 'REMOVE') {
+                if ($scope.constraintsType === 'topic') {
+                    constraintsRepository.removeTopicConstraints($scope.constraintsName)
+                        .$promise
+                        .then(closeModal);
+                } else {
+                    var splittedName = $scope.constraintsName.split("$");
+                    var topicName = splittedName[0];
+                    var subscriptionName = splittedName[1];
+                    constraintsRepository.removeSubscriptionConstraints(topicName, subscriptionName)
+                        .$promise
+                        .then(closeModal);
+                }
+            }
+        };
     }]);
 
-// constraints.controller('ConstraintsListController', ['ConstraintsRepository', '$scope', '$uibModal',
-//     function (constraintsRepository, $scope, $modal) {
-//         var loadConstraints = function () {
-//             constraintsRepository.getWorkloadConstraints()
-//                 .then(function (workloadConstraints) {
-//                     $scope.topicConstraints = workloadConstraints.topicConstraints;
-//                     $scope.subscriptionConstraints = workloadConstraints.subscriptionConstraints;
-//                 });
-//         };
-//
-//         var addConstraints = function (constraintsType) {
-//             $modal.open({
-//                 templateUrl: 'partials/modal/addConstraints.html',
-//                 controller: 'ConstraintsAddController',
-//                 size: 'lg',
-//                 resolve: {
-//                     constraintsType: function () {
-//                         return constraintsType;
-//                     }
-//                 }
-//             }).result.then(function () {
-//                 loadConstraints();
-//             });
-//         };
-//
-//         $scope.addTopicConstraints = function () {
-//             addConstraints('topic');
-//         };
-//
-//         $scope.addSubscriptionConstraints = function () {
-//             addConstraints('subscription');
-//         };
-//
-//         loadConstraints();
-//     }]);
+constraints.controller('ConstraintsRemoveController', ['ConstraintsRepository', '$scope', '$uibModalInstance',
+    function (constraintsRepository, $scope, $uibModalInstance) {
+        $scope.remove = function () {
+            $uibModalInstance.close('REMOVE')
+        };
+    }]);
