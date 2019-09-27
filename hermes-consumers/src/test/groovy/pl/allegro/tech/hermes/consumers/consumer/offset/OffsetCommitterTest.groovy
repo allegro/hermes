@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset
 
 import com.codahale.metrics.MetricRegistry
+import com.netflix.config.DynamicPropertyFactory
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
@@ -19,7 +20,7 @@ class OffsetCommitterTest extends Specification {
 
     private OffsetQueue queue = new OffsetQueue(
             new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
-            new ConfigFactory()
+            new ConfigFactory(DynamicPropertyFactory.getInstance())
     )
 
     private MockMessageCommitter messageCommitter = new MockMessageCommitter()
@@ -353,11 +354,11 @@ class OffsetCommitterTest extends Specification {
         return new SubscriptionPartitionOffset(partitionOffset, offset)
     }
 
-    private assignPartitions(int... partitions) {
+    private assignPartitions(int ... partitions) {
         state.assign(SUBSCRIPTION_NAME, [*partitions])
     }
 
-    private revokePartitions(int... partitions) {
+    private revokePartitions(int ... partitions) {
         state.revoke(SUBSCRIPTION_NAME, [*partitions])
     }
 
