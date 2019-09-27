@@ -66,7 +66,7 @@ constraints.controller('ConstraintsController', ['ConstraintsRepository', '$scop
     }]);
 
 constraints.controller('ConstraintsAddController', ['ConstraintsRepository', '$scope', '$uibModalInstance', 'constraintsType',
-    function (constraintsRepository, $scope, $modal, constraintsType) {
+    function (constraintsRepository, $scope, $modalInstance, constraintsType) {
         $scope.constraintsType = constraintsType;
         $scope.consumersNumber = 1;
 
@@ -78,7 +78,7 @@ constraints.controller('ConstraintsAddController', ['ConstraintsRepository', '$s
                         consumersNumber: $scope.consumersNumber
                     }
                 }).then(function () {
-                    $modal.close();
+                    $modalInstance.close();
                 });
             } else {
                 constraintsRepository.updateSubscriptionConstraints({
@@ -87,7 +87,7 @@ constraints.controller('ConstraintsAddController', ['ConstraintsRepository', '$s
                         consumersNumber: $scope.consumersNumber
                     }
                 }).then(function () {
-                    $modal.close();
+                    $modalInstance.close();
                 });
             }
         }
@@ -107,9 +107,7 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
                     constraints: {
                         consumersNumber: $scope.consumersNumber
                     }
-                }).then(function () {
-                    $modalInstance.close();
-                });
+                }).then(closeModal);
             } else {
                 constraintsRepository.updateSubscriptionConstraints({
                     subscriptionName: $scope.constraintsName,
@@ -125,14 +123,14 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
                 templateUrl: 'partials/modal/removeConstraints.html',
                 controller: 'ConstraintsRemoveController',
                 size: 'lg'
-            }).result.then(removeConstraintsHandler, closeModal);
+            }).result.then(acceptHandler, dismissHandler);
         };
 
         var closeModal = function () {
             $modalInstance.close();
         };
 
-        var removeConstraintsHandler = function (response) {
+        var acceptHandler = function (response) {
             if (response === 'REMOVE') {
                 if ($scope.constraintsType === 'topic') {
                     constraintsRepository.removeTopicConstraints($scope.constraintsName)
@@ -148,11 +146,15 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
                 }
             }
         };
+
+        var dismissHandler = function () {
+            $modalInstance.dismiss();
+        };
     }]);
 
 constraints.controller('ConstraintsRemoveController', ['ConstraintsRepository', '$scope', '$uibModalInstance',
-    function (constraintsRepository, $scope, $uibModalInstance) {
+    function (constraintsRepository, $scope, $modalInstance) {
         $scope.remove = function () {
-            $uibModalInstance.close('REMOVE')
+            $modalInstance.close('REMOVE')
         };
     }]);
