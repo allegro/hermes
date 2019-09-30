@@ -143,7 +143,7 @@ public enum Configs {
     FRONTEND_MESSAGE_PREVIEW_SIZE("frontend.message.preview.size", 3),
     FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD("frontend.message.preview.log.persist.period.seconds", 30),
 
-    FRONTEND_STARTUP_WAIT_KAFKA_ENABLED("frontend.startup.wait.kafka.enabled", true),
+    FRONTEND_STARTUP_WAIT_KAFKA_ENABLED("frontend.startup.wait.kafka.enabled", false),
     FRONTEND_STARTUP_WAIT_KAFKA_INTERVAL("frontend.startup.wait.kafka.interval", 5000L),
 
     FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED("frontend.startup.topic.metadata.loading.enabled", false),
