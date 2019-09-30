@@ -2,6 +2,30 @@
 
 ### ...
 
+## 1.2.5 (27.09.2019)
+
+### Features
+
+#### ([1009](https://github.com/allegro/hermes/issues/1009)) Disable dynamic reloading of configuration files
+Enabling possibility of providing external archaius configuration.
+Pulling archaius initialization from `ConfigFactory` out and initializing `DynamicPropertyFactory` at the start of `hermes-consummers` and `hermes-frontend`. 
+Restore the default way that archaius builds configuration with the addition of a configurable option to enable/disable config reload, by default is disabled.
+
+## 1.2.4 (23.09.2019)
+
+### Features
+
+#### ([1096](https://github.com/allegro/hermes/pull/1096)) Failed messages metrics
+New client metrics have been added for failed messages that won't be retried:
+- hermes-client.*.retries.exhausted - the number of unsent messages, max retries limit reached
+- hermes-client.*.retries.success - the number of retried messages with success
+- hermes-client.*.retries.attempts - how many retries the message required before success delivery
+- hermes-client.*.retries.count - the number of retried messages
+
+#### ([1009](https://github.com/allegro/hermes/issues/1009)) Disable dynamic reloading of configuration files
+Hermes uses archaius library (https://github.com/Netflix/archaius) for configuration management.
+By default, it tracks configuration changes at the given intervals. This mechanism has been disabled.
+
 ## 1.2.3 (10.09.2019)
 
 ### Features

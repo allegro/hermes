@@ -33,7 +33,7 @@ public class WebClientHermesSender implements HermesSender {
                 .flatMap(response -> response
                         .bodyToMono(String.class)
                         .switchIfEmpty(NO_BODY)
-                        .map(body -> hermesResponse()
+                        .map(body -> hermesResponse(message)
                                 .withBody(body)
                                 .withHttpStatus(response.rawStatusCode())
                                 .withHeaderSupplier(header ->

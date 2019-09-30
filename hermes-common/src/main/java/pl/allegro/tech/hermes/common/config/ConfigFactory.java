@@ -2,12 +2,19 @@ package pl.allegro.tech.hermes.common.config;
 
 import com.netflix.config.DynamicPropertyFactory;
 
+import javax.inject.Inject;
+
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
 public class ConfigFactory {
 
-    private final DynamicPropertyFactory propertyFactory = DynamicPropertyFactory.getInstance();
+    private final DynamicPropertyFactory propertyFactory;
+
+    @Inject
+    public ConfigFactory(DynamicPropertyFactory propertyFactory) {
+        this.propertyFactory = propertyFactory;
+    }
 
     public String getIntPropertyAsString(Configs config) {
         return String.format("%s", getIntProperty(config));
@@ -40,5 +47,4 @@ public class ConfigFactory {
     private String getProperty(Configs opt) {
         return propertyFactory.getContextualProperty(opt.getName(), opt.getDefaultValue()).getValue().toString();
     }
-
 }
