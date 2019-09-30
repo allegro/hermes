@@ -268,10 +268,13 @@ public class SubscriptionService {
 
     private List<UnhealthySubscription> filterSubscriptions(Collection<Subscription> subscriptions, boolean respectMonitoringSeverity,
                                                             List<String> subscriptionNames, List<String> qualifiedTopicNames) {
+        boolean shouldFilterBySubscriptionNames = CollectionUtils.isNotEmpty(subscriptionNames);
+        boolean shouldFilterByQualifiedTopicNames = CollectionUtils.isNotEmpty(qualifiedTopicNames);
+
         return subscriptions.stream()
                 .filter(s -> filterBySeverityMonitorFlag(respectMonitoringSeverity, s.isSeverityNotImportant()))
-                .filter(s -> filterBySubscriptionNames(subscriptionNames, s.getName()))
-                .filter(s -> filterByQualifiedTopicNames(qualifiedTopicNames, s.getQualifiedTopicName()))
+                .filter(s -> filterBySubscriptionNames(shouldFilterBySubscriptionNames, subscriptionNames, s.getName()))
+                .filter(s -> filterByQualifiedTopicNames(shouldFilterByQualifiedTopicNames, qualifiedTopicNames, s.getQualifiedTopicName()))
                 .flatMap(s -> {
                     SubscriptionHealth subscriptionHealth = getHealth(s);
 
@@ -284,18 +287,18 @@ public class SubscriptionService {
                 .collect(toList());
     }
 
-    private boolean filterBySubscriptionNames(List<String> subscriptionNames, String subscriptionName) {
-        if (CollectionUtils.isEmpty(subscriptionNames)) {
-            return true;
+    private boolean filterBySubscriptionNames(boolean shouldFilter, List<String> subscriptionNames, String subscriptionName) {
+        if (shouldFilter) {
+            return subscriptionNames.contains(subscriptionName);
         }
-        return subscriptionNames.contains(subscriptionName);
+        return true;
     }
 
-    private boolean filterByQualifiedTopicNames(List<String> qualifiedTopicNames, String qualifiedTopicName) {
-        if (CollectionUtils.isEmpty(qualifiedTopicNames)) {
-            return true;
+    private boolean filterByQualifiedTopicNames(boolean shouldFilter, List<String> qualifiedTopicNames, String qualifiedTopicName) {
+        if (shouldFilter) {
+            return qualifiedTopicNames.contains(qualifiedTopicName);
         }
-        return qualifiedTopicNames.contains(qualifiedTopicName);
+        return true;
     }
 
     private boolean filterBySeverityMonitorFlag(boolean respectMonitoringSeverity, boolean isSeverityNotImportant) {
