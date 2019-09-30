@@ -7,7 +7,6 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
-import pl.allegro.tech.hermes.consumers.consumer.ActiveConsumerCounter;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.batch.ByteBufferMessageBatchFactoryProvider;
@@ -120,7 +119,6 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(MessageConverterResolver.class);
         bindSingleton(OffsetQueue.class);
         bindSingleton(ConsumerPartitionAssignmentState.class);
-        bindSingleton(ActiveConsumerCounter.class);
         bindSingleton(Retransmitter.class);
         bindSingleton(ConsumerMonitor.class);
         bindSingleton(SslContextFactoryProvider.class);

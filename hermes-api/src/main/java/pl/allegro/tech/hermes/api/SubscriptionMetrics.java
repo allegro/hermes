@@ -7,7 +7,6 @@ public class SubscriptionMetrics {
     private long delivered;
     private long discarded;
     private long volume;
-    private long inflight;
     private MetricDecimalValue timeouts;
     private MetricDecimalValue otherErrors;
     private MetricDecimalValue codes2xx;
@@ -26,7 +25,6 @@ public class SubscriptionMetrics {
     public SubscriptionMetrics(@JsonProperty("delivered") long delivered,
                                @JsonProperty("discarded") long discarded,
                                @JsonProperty("volume") long volume,
-                               @JsonProperty("inflight") long inflight,
                                @JsonProperty("timeouts") MetricDecimalValue timeouts,
                                @JsonProperty("otherErrors") MetricDecimalValue otherErrors,
                                @JsonProperty("codes2xx") MetricDecimalValue codes2xx,
@@ -39,7 +37,6 @@ public class SubscriptionMetrics {
         this.delivered = delivered;
         this.discarded = discarded;
         this.volume = volume;
-        this.inflight = inflight;
         this.timeouts = timeouts;
         this.otherErrors = otherErrors;
         this.codes2xx = codes2xx;
@@ -57,10 +54,6 @@ public class SubscriptionMetrics {
 
     public long getDiscarded() {
         return discarded;
-    }
-
-    public long getInflight() {
-        return inflight;
     }
 
     public MetricDecimalValue getTimeouts() {
@@ -126,11 +119,6 @@ public class SubscriptionMetrics {
 
         public Builder withVolume(long volume) {
             subscriptionMetrics.volume = volume;
-            return this;
-        }
-
-        public Builder withInflight(long inflight) {
-            subscriptionMetrics.inflight = inflight;
             return this;
         }
 

@@ -5,7 +5,6 @@ import org.apache.avro.Schema;
 import org.glassfish.hk2.api.TypeLiteral;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.DistributedEphemeralCounterFactory;
 import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.GraphiteWebTargetFactory;
 import pl.allegro.tech.hermes.common.di.factories.GroupRepositoryFactory;
@@ -78,7 +77,6 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(GraphiteWebTargetFactory.class);
         bindSingletonFactory(ObjectMapperFactory.class);
         bindSingletonFactory(SharedCounterFactory.class);
-        bindSingletonFactory(DistributedEphemeralCounterFactory.class);
         bindSingletonFactory(MetricRegistryFactory.class);
         bindSingletonFactory(ZookeeperPathsFactory.class);
         bindSingletonFactory(GroupRepositoryFactory.class);
