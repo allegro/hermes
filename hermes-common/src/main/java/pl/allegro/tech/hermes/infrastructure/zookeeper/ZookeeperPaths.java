@@ -125,6 +125,10 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_CONSTRAINTS_PATH);
     }
 
+    public String consumersWorkloadConstraintsPath(String constraintsPath) {
+        return Joiner.on(URL_SEPARATOR).join(consumersWorkloadConstraintsPath(), constraintsPath);
+    }
+
     public String consumersRateRuntimePath(String cluster) {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, cluster, "runtime");
     }

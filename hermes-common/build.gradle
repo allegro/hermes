@@ -30,8 +30,8 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
     compile group: 'org.apache.avro', name: 'avro', version: versions.avro
 
-    compile group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: versions.metrics
-    compile group: 'io.dropwizard.metrics', name: 'metrics-jvm', version: versions.metrics
+    compile group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: versions.dropwizard_metrics
+    compile group: 'io.dropwizard.metrics', name: 'metrics-jvm', version: versions.dropwizard_metrics
     compile group: 'org.mpierce.metrics.reservoir', name: 'hdrhistogram-metrics-reservoir', version: '1.1.0'
 
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.0'

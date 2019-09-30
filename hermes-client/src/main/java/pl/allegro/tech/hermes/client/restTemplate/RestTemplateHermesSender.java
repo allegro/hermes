@@ -35,13 +35,13 @@ public class RestTemplateHermesSender implements HermesSender {
                 .addCallback(new ListenableFutureCallback<ResponseEntity>() {
                     @Override
                     public void onSuccess(ResponseEntity response) {
-                        future.complete(fromRestTemplateResponse(response));
+                        future.complete(fromRestTemplateResponse(message, response));
                     }
 
                     @Override
                     public void onFailure(Throwable exception) {
                         if (exception instanceof HttpStatusCodeException) {
-                            future.complete(fromHttpStatusCodeException((HttpStatusCodeException) exception));
+                            future.complete(fromHttpStatusCodeException(message, (HttpStatusCodeException) exception));
                         } else {
                             future.completeExceptionally(exception);
                         }
@@ -50,8 +50,8 @@ public class RestTemplateHermesSender implements HermesSender {
         return future;
     }
 
-    private HermesResponse fromRestTemplateResponse(ResponseEntity response) {
-        return hermesResponse()
+    private HermesResponse fromRestTemplateResponse(HermesMessage message, ResponseEntity response) {
+        return hermesResponse(message)
                 .withHttpStatus(response.getStatusCode().value())
                 .withBody(response.toString())
                 .withHeaderSupplier(header -> convertToCaseInsensitiveMap(response.getHeaders().toSingleValueMap())
@@ -59,8 +59,8 @@ public class RestTemplateHermesSender implements HermesSender {
                 .build();
     }
 
-    private HermesResponse fromHttpStatusCodeException(HttpStatusCodeException exception) {
-        return hermesResponse()
+    private HermesResponse fromHttpStatusCodeException(HermesMessage message, HttpStatusCodeException exception) {
+        return hermesResponse(message)
                 .withHttpStatus(exception.getStatusCode().value())
                 .withBody(exception.getResponseBodyAsString())
                 .build();

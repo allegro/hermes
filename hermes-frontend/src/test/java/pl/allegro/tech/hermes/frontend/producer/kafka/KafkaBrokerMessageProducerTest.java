@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
+import com.netflix.config.DynamicPropertyFactory;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -39,7 +40,8 @@ public class KafkaBrokerMessageProducerTest {
     private ByteArraySerializer serializer = new ByteArraySerializer();
     private MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
     private MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
-    private Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, new ConfigFactory());
+    private ConfigFactory configFactory = new ConfigFactory(DynamicPropertyFactory.getInstance());
+    private Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, configFactory);
 
     private KafkaBrokerMessageProducer producer;
     private KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns");

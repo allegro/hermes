@@ -83,13 +83,7 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
         CounterMatcher matcher = new CounterMatcher(counterName);
         long value = counter.getCount();
 
-        if (matcher.isSubscriptionInflight()) {
-            counterStorage.setInflightCounter(
-                    escapedTopicName(matcher.getTopicName()),
-                    escapeMetricsReplacementChar(matcher.getSubscriptionName()),
-                    value
-            );
-        } else if (matcher.isTopicPublished()) {
+        if (matcher.isTopicPublished()) {
             counterStorage.setTopicPublishedCounter(
                     escapedTopicName(matcher.getTopicName()),
                     value

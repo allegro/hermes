@@ -8,15 +8,9 @@ public interface CounterStorage {
 
     void setSubscriptionDeliveredCounter(TopicName topicName, String subscriptionName, long count);
 
-    void setInflightCounter(TopicName topicName, String subscriptionName, long count);
-
     long getTopicPublishedCounter(TopicName topicName);
 
     long getSubscriptionDeliveredCounter(TopicName topicName, String subscriptionName);
-
-    long getInflightCounter(TopicName topicName, String subscriptionName);
-
-    int countInflightNodes(TopicName topicName, String subscriptionName);
 
     void setSubscriptionDiscardedCounter(TopicName topicName, String subscription, long value);
 

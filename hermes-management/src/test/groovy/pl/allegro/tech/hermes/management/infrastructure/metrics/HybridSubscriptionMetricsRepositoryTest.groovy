@@ -20,14 +20,12 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
 
     private SummedSharedCounter summedSharedCounter = Stub(SummedSharedCounter)
 
-    private SummedDistributedEphemeralCounter summedDistributedCounter = Stub(SummedDistributedEphemeralCounter)
-
     private ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes")
 
     private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
 
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(client, paths,
-            summedSharedCounter, summedDistributedCounter, zookeeperPaths, lagSource)
+            summedSharedCounter, zookeeperPaths, lagSource)
 
     def "should read subscription metrics from multiple places"() {
         given:
@@ -42,7 +40,6 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 100
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 1
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/volume') >> 16
-        summedDistributedCounter.getValue('/hermes/consumers', '/groups/group/topics/topic/subscriptions/subscription/metrics/inflight') >> 5
 
         when:
         SubscriptionMetrics metrics = repository.loadMetrics(new TopicName('group', 'topic'), 'subscription')
@@ -52,7 +49,6 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
         metrics.delivered == 100
         metrics.discarded == 1
         metrics.volume == 16
-        metrics.inflight == 5
         metrics.timeouts == of("100")
         metrics.otherErrors == of("1000")
         metrics.lag == MetricLongValue.of(-1)

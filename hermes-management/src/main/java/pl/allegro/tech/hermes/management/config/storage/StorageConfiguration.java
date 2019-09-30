@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperCredentialsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
@@ -19,6 +20,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRep
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
@@ -26,7 +28,6 @@ import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvide
 import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameSource;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider;
 import pl.allegro.tech.hermes.management.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
-import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedDistributedEphemeralCounter;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
@@ -95,11 +96,6 @@ public class StorageConfiguration {
     }
 
     @Bean
-    SummedDistributedEphemeralCounter summedDistributedEphemeralCounter(ZookeeperClientManager manager) {
-        return new SummedDistributedEphemeralCounter(getCuratorClients(manager));
-    }
-
-    @Bean
     GroupRepository groupRepository() {
         ZookeeperClient localClient = clientManager().getLocalClient();
         return new ZookeeperGroupRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
@@ -141,6 +137,12 @@ public class StorageConfiguration {
     TopicBlacklistRepository topicBlacklistRepository() {
         ZookeeperClient localClient = clientManager().getLocalClient();
         return new ZookeeperTopicBlacklistRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
+    }
+
+    @Bean
+    WorkloadConstraintsRepository workloadConstraintsRepository() {
+        ZookeeperClient localClient = clientManager().getLocalClient();
+        return new ZookeeperWorkloadConstraintsRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @PostConstruct

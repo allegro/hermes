@@ -27,25 +27,25 @@ class TopicSchemaLoader implements AutoCloseable {
 
     private final ScheduledExecutorService scheduler;
 
-    private final RetryPolicy retryPolicy;
+    private final RetryPolicy<SchemaLoadingResult> retryPolicy;
 
     TopicSchemaLoader(SchemaRepository schemaRepository, int retryCount, int threadPoolSize) {
         this.schemaRepository = schemaRepository;
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("topic-schema-loader-%d").build();
         this.scheduler = Executors.newScheduledThreadPool(threadPoolSize, threadFactory);
-        this.retryPolicy = new RetryPolicy()
+        this.retryPolicy = new RetryPolicy<SchemaLoadingResult>()
                 .withMaxRetries(retryCount)
-                .retryIf(SchemaLoadingResult::isFailure);
+                .handleIf((resp, cause) -> resp.isFailure());
     }
 
     CompletableFuture<SchemaLoadingResult> loadTopicSchema(Topic topic) {
         return Failsafe.with(retryPolicy).with(scheduler)
-                .future((ExecutionContext context) -> completedFuture(loadLatestSchema(topic, context)));
+                .getStageAsync((context) -> completedFuture(loadLatestSchema(topic, context)));
     }
 
     private SchemaLoadingResult loadLatestSchema(Topic topic, ExecutionContext context) {
-        int attempt = context.getExecutions() + 1;
+        int attempt = context.getAttemptCount();
         try {
             schemaRepository.getLatestAvroSchema(topic);
             logger.info("Successfully loaded schema for topic {}, attempt #{}", topic.getQualifiedName(), attempt);
