@@ -38,19 +38,16 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
     private final SummedSharedCounter summedSharedCounter;
 
-    private final SummedDistributedEphemeralCounter summedDistributedCounter;
-
     private final ZookeeperPaths zookeeperPaths;
 
     private final SubscriptionLagSource lagSource;
 
     public HybridSubscriptionMetricsRepository(GraphiteClient graphiteClient, MetricsPaths metricsPaths,
-                                               SummedSharedCounter summedSharedCounter, SummedDistributedEphemeralCounter summedDistributedCounter,
+                                               SummedSharedCounter summedSharedCounter,
                                                ZookeeperPaths zookeeperPaths, SubscriptionLagSource lagSource) {
         this.graphiteClient = graphiteClient;
         this.metricsPaths = metricsPaths;
         this.summedSharedCounter = summedSharedCounter;
-        this.summedDistributedCounter = summedDistributedCounter;
         this.zookeeperPaths = zookeeperPaths;
         this.lagSource = lagSource;
     }
@@ -77,7 +74,6 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
                 .withDelivered(zookeeperMetrics.delivered)
                 .withDiscarded(zookeeperMetrics.discarded)
                 .withVolume(zookeeperMetrics.volume)
-                .withInflight(zookeeperMetrics.inflight)
                 .withCodes2xx(graphiteMetrics.metricValue(codes2xxPath))
                 .withCodes4xx(graphiteMetrics.metricValue(codes4xxPath))
                 .withCodes5xx(graphiteMetrics.metricValue(codes5xxPath))
@@ -93,11 +89,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
         return new ZookeeperMetrics(
                 readZookeeperMetric(() -> summedSharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "delivered")), name),
                 readZookeeperMetric(() -> summedSharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "discarded")), name),
-                readZookeeperMetric(() -> summedSharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "volume")), name),
-                readZookeeperMetric(() -> summedDistributedCounter.getValue(
-                        zookeeperPaths.consumersPath(),
-                        zookeeperPaths.subscriptionMetricPathWithoutBasePath(name, "inflight")
-                ), name)
+                readZookeeperMetric(() -> summedSharedCounter.getValue(zookeeperPaths.subscriptionMetricPath(name, "volume")), name)
         );
     }
 
@@ -163,13 +155,10 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
 
         final long volume;
 
-        final long inflight;
-
-        ZookeeperMetrics(long delivered, long discarded, long volume, long inflight) {
+        ZookeeperMetrics(long delivered, long discarded, long volume) {
             this.delivered = delivered;
             this.discarded = discarded;
             this.volume = volume;
-            this.inflight = inflight;
         }
     }
 }
