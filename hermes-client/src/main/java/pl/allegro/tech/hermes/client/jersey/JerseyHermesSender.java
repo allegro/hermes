@@ -31,7 +31,7 @@ public class JerseyHermesSender implements HermesSender {
                         new InvocationCallback<Response>() {
                             @Override
                             public void completed(Response response) {
-                                future.complete(fromJerseyResponse(response));
+                                future.complete(fromJerseyResponse(message, response));
                             }
 
                             @Override
@@ -42,8 +42,8 @@ public class JerseyHermesSender implements HermesSender {
         return future;
     }
 
-    private HermesResponse fromJerseyResponse(Response response) {
-        return hermesResponse()
+    private HermesResponse fromJerseyResponse(HermesMessage message, Response response) {
+        return hermesResponse(message)
                 .withHttpStatus(response.getStatus())
                 .withBody(response.readEntity(String.class))
                 .withHeaderSupplier(response::getHeaderString)

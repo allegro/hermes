@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.test.helper.config;
 
+import com.netflix.config.DynamicPropertyFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
@@ -9,6 +10,10 @@ import java.util.Map;
 public class MutableConfigFactory extends ConfigFactory {
 
     private Map<Configs, Object> overridden = new HashMap<>();
+
+    public MutableConfigFactory() {
+        super(DynamicPropertyFactory.getInstance());
+    }
 
     @Override
     public String getIntPropertyAsString(Configs config) {
