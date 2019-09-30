@@ -1,0 +1,40 @@
+<section>
+    <div class="modal-header">
+        <h3 class="modal-title">
+            <small>Create constraints for {{constraintsType}}:</small>
+        </h3>
+    </div>
+    <div class="modal-body">
+        <form name="constraintsForm" class="form-horizontal" role="form">
+            <div ng-hide="!authEnabled.headers || isAuthorized" class="form-group {{constraintsForm.rootPassword.$valid ? '' : 'has-error'}}">
+                <label for="rootPassword" class="col-md-3 control-label">Root password</label>
+                <div class="col-md-9">
+                    <input class="form-control" type="password" ng-required="!isAuthorized && authEnabled.headers"
+                           id="rootPassword" name="rootPassword" placeholder="root password" ng-model="rootPassword"/>
+                </div>
+            </div>
+            <div class="form-group {{constraintsForm.topicName.$valid ? '' : 'has-error'}}">
+                <label for="topicName" class="col-md-3 control-label">Topic name</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="topicName" required name="topicName" ng-model="constraintsName.topicName"/>
+                </div>
+            </div>
+            <div class="form-group {{constraintsForm.subscriptionName.$valid ? '' : 'has-error'}}" ng-if="constraintsType === 'subscription'">
+                <label for="subscriptionName" class="col-md-3 control-label">Subscription name</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="subscriptionName" required name="subscriptionName" ng-model="constraintsName.subscriptionName"/>
+                </div>
+            </div>
+            <div class="form-group {{constraintsForm.consumersNumber.$valid ? '' : 'has-error'}}">
+                <label for="consumersNumber" class="col-md-3 control-label">Consumers number</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="consumersNumber" required name="consumersNumber" ng-model="consumersNumber" ng-pattern="/^[0-9]+$/"/>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" ng-disabled="constraintsForm.$invalid" ng-click="save()">Save</button>
+        <button class="btn btn-warning" ng-click="$dismiss()">Cancel</button>
+    </div>
+</section>
