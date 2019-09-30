@@ -126,6 +126,9 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
                 resolve: {
                     constraintsName: function () {
                         return $scope.constraintsName;
+                    },
+                    constraintsType: function () {
+                        return $scope.constraintsType;
                     }
                 }
             }).result.then(acceptHandler, dismissHandler);
@@ -157,9 +160,10 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
         };
     }]);
 
-constraints.controller('ConstraintsRemoveController', ['ConstraintsRepository', '$scope', '$uibModalInstance', 'constraintsName',
-    function (constraintsRepository, $scope, $modalInstance, constraintsName) {
+constraints.controller('ConstraintsRemoveController', ['ConstraintsRepository', '$scope', '$uibModalInstance', 'constraintsName', 'constraintsType',
+    function (constraintsRepository, $scope, $modalInstance, constraintsName, constraintsType) {
         $scope.constraintsName = constraintsName;
+        $scope.constraintsType = constraintsType;
         $scope.remove = function () {
             $modalInstance.close('REMOVE')
         };
