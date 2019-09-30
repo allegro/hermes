@@ -26,7 +26,7 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersiste
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
-import pl.allegro.tech.hermes.frontend.server.WaitOnKafkaStartupHook;
+import pl.allegro.tech.hermes.frontend.server.WaitForKafkaStartupHook;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
@@ -58,7 +58,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageValidators.class);
 
         bind(hooksHandler).to(HooksHandler.class);
-        bindSingleton(WaitOnKafkaStartupHook.class);
+        bindSingleton(WaitForKafkaStartupHook.class);
         bindSingleton(TopicMetadataLoadingRunner.class);
         bindSingleton(TopicMetadataLoadingJob.class);
         bindSingleton(TopicMetadataLoadingStartupHook.class);

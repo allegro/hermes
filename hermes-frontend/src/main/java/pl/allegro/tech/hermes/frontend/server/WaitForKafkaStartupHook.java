@@ -19,22 +19,22 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
-public class WaitOnKafkaStartupHook implements ServiceAwareHook {
+public class WaitForKafkaStartupHook implements ServiceAwareHook {
 
-    private static final Logger logger = LoggerFactory.getLogger(WaitOnKafkaStartupHook.class);
+    private static final Logger logger = LoggerFactory.getLogger(WaitForKafkaStartupHook.class);
 
     private final TopicMetadataLoadingRunner topicMetadataLoadingRunner;
     private final ScheduledExecutorService scheduler;
     private final RetryPolicy<List<MetadataLoadingResult>> retryPolicy;
 
     @Inject
-    public WaitOnKafkaStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner, ConfigFactory config) {
+    public WaitForKafkaStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner, ConfigFactory config) {
         this.topicMetadataLoadingRunner = topicMetadataLoadingRunner;
 
-        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("topic-metadata-loader-%d").build();
-        this.scheduler = Executors.newScheduledThreadPool(1, threadFactory);
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("wait-kafka-%d").build();
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
         this.retryPolicy = new RetryPolicy<List<MetadataLoadingResult>>()
-                .withMaxRetries(config.getIntProperty(Configs.FRONTEND_STARTUP_WAIT_KAFKA_RETRIES))
+                .withMaxRetries(-1)
                 .withDelay(Duration.of(config.getLongProperty(Configs.FRONTEND_STARTUP_WAIT_KAFKA_INTERVAL), ChronoUnit.MILLIS))
                 .handleIf(this::allMetadataResultsFail);
     }

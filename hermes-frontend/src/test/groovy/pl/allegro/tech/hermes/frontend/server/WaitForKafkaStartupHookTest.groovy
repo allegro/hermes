@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.common.config.Configs
 import spock.lang.Shared
 import spock.lang.Specification
 
-class WaitOnKafkaStartupHookTest extends Specification {
+class WaitForKafkaStartupHookTest extends Specification {
 
     @Shared
     ServiceLocator serviceLocator = Mock()
@@ -15,23 +15,17 @@ class WaitOnKafkaStartupHookTest extends Specification {
     def "should wait for any metadata to be fetched successfully"() {
         given:
         ConfigFactory config = Mock() {
-            getIntProperty(Configs.FRONTEND_STARTUP_WAIT_KAFKA_RETRIES) >> 10
             getLongProperty(Configs.FRONTEND_STARTUP_WAIT_KAFKA_INTERVAL) >> 1L
         }
         TopicMetadataLoadingRunner loader = Mock()
 
-        def hook = new WaitOnKafkaStartupHook(loader, config)
+        def hook = new WaitForKafkaStartupHook(loader, config)
 
         when:
         hook.accept(serviceLocator);
 
         then:
-        11 * loader.refreshMetadata() >> [failureResult()]
-
-        when:
-        hook.accept(serviceLocator)
-
-        then:
+        10 * loader.refreshMetadata() >> [failureResult()]
         1 * loader.refreshMetadata() >> [successfulResult()]
     }
 
