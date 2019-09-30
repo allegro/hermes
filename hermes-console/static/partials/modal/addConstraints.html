@@ -13,10 +13,18 @@
                            id="rootPassword" name="rootPassword" placeholder="root password" ng-model="rootPassword"/>
                 </div>
             </div>
-            <div class="form-group {{constraintsName.$valid ? '' : 'has-error'}}">
-                <label for="constraintsName" class="col-md-3 control-label">Name</label>
+            <div class="form-group {{constraintsName.topicName.$valid ? '' : 'has-error'}}">
+                <label for="constraintsName.topicName" class="col-md-3 control-label">Topic name</label>
                 <div class="col-md-9">
-                    <input class="form-control" id="constraintsName" required name="constraintsName" ng-model="constraintsName"/>
+                    <input class="form-control" id="constraintsName.topicName"
+                           required name="constraintsName.topicName" ng-model="constraintsName.topicName"/>
+                </div>
+            </div>
+            <div class="form-group {{constraintsName.subscriptionName.$valid ? '' : 'has-error'}}" ng-if="constraintsType === 'subscription'">
+                <label for="constraintsName.subscriptionName" class="col-md-3 control-label">Subscription name</label>
+                <div class="col-md-9">
+                    <input class="form-control" id="constraintsName.subscriptionName"
+                           required name="constraintsName.subscriptionName" ng-model="constraintsName.subscriptionName"/>
                 </div>
             </div>
             <div class="form-group {{consumersNumber.$valid ? '' : 'has-error'}}">

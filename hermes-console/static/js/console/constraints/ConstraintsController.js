@@ -69,11 +69,12 @@ constraints.controller('ConstraintsAddController', ['ConstraintsRepository', '$s
     function (constraintsRepository, $scope, $modalInstance, constraintsType) {
         $scope.constraintsType = constraintsType;
         $scope.consumersNumber = 1;
+        $scope.constraintsName = { topicName: '', subscriptionName: '' };
 
         $scope.save = function () {
             if ($scope.constraintsType === 'topic') {
                 constraintsRepository.updateTopicConstraints({
-                    topicName: $scope.constraintsName,
+                    topicName: $scope.constraintsName.topicName,
                     constraints: {
                         consumersNumber: $scope.consumersNumber
                     }
@@ -82,7 +83,7 @@ constraints.controller('ConstraintsAddController', ['ConstraintsRepository', '$s
                 });
             } else {
                 constraintsRepository.updateSubscriptionConstraints({
-                    subscriptionName: $scope.constraintsName,
+                    subscriptionName: $scope.constraintsName.topicName + '$' + $scope.constraintsName.subscriptionName,
                     constraints: {
                         consumersNumber: $scope.consumersNumber
                     }
@@ -160,7 +161,8 @@ constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$
         };
     }]);
 
-constraints.controller('ConstraintsRemoveController', ['ConstraintsRepository', '$scope', '$uibModalInstance', 'constraintsName', 'constraintsType',
+constraints.controller('ConstraintsRemoveController', ['ConstraintsRepository', '$scope', '$uibModalInstance',
+    'constraintsName', 'constraintsType',
     function (constraintsRepository, $scope, $modalInstance, constraintsName, constraintsType) {
         $scope.constraintsName = constraintsName;
         $scope.constraintsType = constraintsType;
