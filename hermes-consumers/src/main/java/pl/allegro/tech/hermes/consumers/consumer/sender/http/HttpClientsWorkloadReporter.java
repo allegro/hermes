@@ -26,7 +26,7 @@ public class HttpClientsWorkloadReporter {
         this.http2ClientHolder = http2ClientHolder;
     }
 
-    public void registerMetrics() {
+    public void start() {
         metrics.registerConsumerSenderRequestQueueSize(this::getQueuesSize);
         metrics.registerConsumerSenderHttp1RequestQueueSize(this::getHttp1QueueSize);
         metrics.registerConsumerSenderHttp2RequestQueueSize(this::getHttp2QueueSize);

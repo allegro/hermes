@@ -40,6 +40,7 @@ public class HermesConsumers {
     private final MaxRateSupervisor maxRateSupervisor;
     private final SubscriptionAssignmentCache assignmentCache;
     private final OAuthClient oAuthHttpClient;
+    private final HttpClientsWorkloadReporter httpClientsWorkloadReporter;
 
     public static void main(String... args) {
         consumers().build().start();
@@ -64,9 +65,7 @@ public class HermesConsumers {
         maxRateSupervisor = serviceLocator.getService(MaxRateSupervisor.class);
         assignmentCache = serviceLocator.getService(SubscriptionAssignmentCache.class);
         oAuthHttpClient = serviceLocator.getService(OAuthClient.class);
-
-        HttpClientsWorkloadReporter httpClientsWorkloadReporter = serviceLocator.getService(HttpClientsWorkloadReporter.class);
-        httpClientsWorkloadReporter.registerMetrics();
+        httpClientsWorkloadReporter = serviceLocator.getService(HttpClientsWorkloadReporter.class);
 
         hooksHandler.addShutdownHook((s) -> {
             try {
@@ -100,6 +99,7 @@ public class HermesConsumers {
             maxRateSupervisor.start();
             serviceLocator.getService(ConsumersRuntimeMonitor.class).start();
             consumerHttpServer.start();
+            httpClientsWorkloadReporter.start();
             hooksHandler.startup(serviceLocator);
         } catch (Exception e) {
             logger.error("Exception while starting Hermes Consumers", e);
