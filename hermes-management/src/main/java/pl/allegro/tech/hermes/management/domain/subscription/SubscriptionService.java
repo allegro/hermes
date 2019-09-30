@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
@@ -271,34 +272,32 @@ public class SubscriptionService {
         boolean shouldFilterBySubscriptionNames = CollectionUtils.isNotEmpty(subscriptionNames);
         boolean shouldFilterByQualifiedTopicNames = CollectionUtils.isNotEmpty(qualifiedTopicNames);
 
-        return subscriptions.stream()
-                .filter(s -> filterBySeverityMonitorFlag(respectMonitoringSeverity, s.isSeverityNotImportant()))
-                .filter(s -> filterBySubscriptionNames(shouldFilterBySubscriptionNames, subscriptionNames, s.getName()))
-                .filter(s -> filterByQualifiedTopicNames(shouldFilterByQualifiedTopicNames, qualifiedTopicNames, s.getQualifiedTopicName()))
-                .flatMap(s -> {
-                    SubscriptionHealth subscriptionHealth = getHealth(s);
+        Stream<Subscription> subscriptionStream = subscriptions.stream()
+                .filter(s -> filterBySeverityMonitorFlag(respectMonitoringSeverity, s.isSeverityNotImportant()));
 
-                    if (subscriptionHealth.getStatus() == Status.UNHEALTHY) {
-                        return of(UnhealthySubscription.from(s, subscriptionHealth));
-                    } else {
-                        return empty();
-                    }
-                })
-                .collect(toList());
+        if (shouldFilterBySubscriptionNames) {
+            subscriptionStream = subscriptionStream.filter(s -> filterBySubscriptionNames(subscriptionNames, s.getName()));
+        }
+        if (shouldFilterByQualifiedTopicNames) {
+            subscriptionStream = subscriptionStream.filter(s -> filterByQualifiedTopicNames(qualifiedTopicNames, s.getQualifiedTopicName()));
+        }
+
+        return subscriptionStream.flatMap(s -> {
+            SubscriptionHealth subscriptionHealth = getHealth(s);
+            if (subscriptionHealth.getStatus() == Status.UNHEALTHY) {
+                return of(UnhealthySubscription.from(s, subscriptionHealth));
+            } else {
+                return empty();
+            }
+        }).collect(toList());
     }
 
-    private boolean filterBySubscriptionNames(boolean shouldFilter, List<String> subscriptionNames, String subscriptionName) {
-        if (shouldFilter) {
-            return subscriptionNames.contains(subscriptionName);
-        }
-        return true;
+    private boolean filterBySubscriptionNames(List<String> subscriptionNames, String subscriptionName) {
+        return subscriptionNames.contains(subscriptionName);
     }
 
-    private boolean filterByQualifiedTopicNames(boolean shouldFilter, List<String> qualifiedTopicNames, String qualifiedTopicName) {
-        if (shouldFilter) {
-            return qualifiedTopicNames.contains(qualifiedTopicName);
-        }
-        return true;
+    private boolean filterByQualifiedTopicNames(List<String> qualifiedTopicNames, String qualifiedTopicName) {
+        return qualifiedTopicNames.contains(qualifiedTopicName);
     }
 
     private boolean filterBySeverityMonitorFlag(boolean respectMonitoringSeverity, boolean isSeverityNotImportant) {
