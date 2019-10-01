@@ -3,11 +3,10 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.Gauges;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 
 import java.time.Clock;
 import java.util.Map;
@@ -18,7 +17,7 @@ class MaxRateCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(MaxRateCalculator.class);
 
-    private final SubscriptionAssignmentCache subscriptionAssignmentCache;
+    private final ClusterAssignmentCache clusterAssignmentCache;
     private final SubscriptionsCache subscriptionsCache;
     private final MaxRateBalancer balancer;
     private final MaxRateRegistry maxRateRegistry;
@@ -27,13 +26,13 @@ class MaxRateCalculator {
 
     private volatile long lastUpdateDurationMillis = 0;
 
-    MaxRateCalculator(SubscriptionAssignmentCache subscriptionAssignmentCache,
+    MaxRateCalculator(ClusterAssignmentCache clusterAssignmentCache,
                       SubscriptionsCache subscriptionsCache,
                       MaxRateBalancer balancer,
                       MaxRateRegistry maxRateRegistry,
                       HermesMetrics metrics,
                       Clock clock) {
-        this.subscriptionAssignmentCache = subscriptionAssignmentCache;
+        this.clusterAssignmentCache = clusterAssignmentCache;
         this.subscriptionsCache = subscriptionsCache;
         this.balancer = balancer;
         this.maxRateRegistry = maxRateRegistry;
@@ -45,7 +44,7 @@ class MaxRateCalculator {
 
     void calculate() {
         try {
-            if (!subscriptionAssignmentCache.isStarted()) {
+            if (!clusterAssignmentCache.isReady()) {
                 return;
             }
             logger.info("Max rate calculation started");
@@ -53,14 +52,10 @@ class MaxRateCalculator {
             long start = clock.millis();
             maxRateRegistry.onBeforeMaxRateCalculation();
 
-            Map<SubscriptionName, Set<String>> subscriptionConsumers =
-                    subscriptionAssignmentCache.getSubscriptionConsumers();
-
-            subscriptionConsumers.entrySet().forEach(entry -> {
+            clusterAssignmentCache.getSubscriptionConsumers().forEach((subscriptionName, consumerIds) -> {
                 try {
-                    Subscription subscription = subscriptionsCache.getSubscription(entry.getKey());
+                    Subscription subscription = subscriptionsCache.getSubscription(subscriptionName);
                     if (!subscription.isBatchSubscription()) {
-                        Set<String> consumerIds = entry.getValue();
 
                         Set<ConsumerRateInfo> rateInfos = maxRateRegistry.ensureCorrectAssignments(
                                 subscription.getQualifiedName(), consumerIds);
@@ -76,7 +71,7 @@ class MaxRateCalculator {
                         });
                     }
                 } catch (Exception e) {
-                    logger.error("Problem calculating max rates for subscription {}", entry.getKey(), e);
+                    logger.error("Problem calculating max rates for subscription {}", subscriptionName, e);
                 }
             });
 

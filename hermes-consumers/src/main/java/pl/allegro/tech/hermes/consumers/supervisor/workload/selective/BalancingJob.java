@@ -6,9 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkDistributionChanges;
 import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
@@ -29,8 +32,9 @@ public class BalancingJob implements Runnable {
     private final ConsumerNodesRegistry consumersRegistry;
     private final ConfigFactory configFactory;
     private final SubscriptionsCache subscriptionsCache;
+    private final ClusterAssignmentCache clusterAssignmentCache;
+    private final ConsumerAssignmentRegistry consumerAssignmentRegistry;
     private final SelectiveWorkBalancer workBalancer;
-    private final WorkTracker workTracker;
     private final HermesMetrics metrics;
     private final String kafkaCluster;
     private final WorkloadConstraintsRepository workloadConstraintsRepository;
@@ -45,8 +49,9 @@ public class BalancingJob implements Runnable {
     BalancingJob(ConsumerNodesRegistry consumersRegistry,
                  ConfigFactory configFactory,
                  SubscriptionsCache subscriptionsCache,
+                 ClusterAssignmentCache clusterAssignmentCache,
+                 ConsumerAssignmentRegistry consumerAssignmentRegistry,
                  SelectiveWorkBalancer workBalancer,
-                 WorkTracker workTracker,
                  HermesMetrics metrics,
                  int intervalSeconds,
                  String kafkaCluster,
@@ -54,8 +59,9 @@ public class BalancingJob implements Runnable {
         this.consumersRegistry = consumersRegistry;
         this.configFactory = configFactory;
         this.subscriptionsCache = subscriptionsCache;
+        this.clusterAssignmentCache = clusterAssignmentCache;
+        this.consumerAssignmentRegistry = consumerAssignmentRegistry;
         this.workBalancer = workBalancer;
-        this.workTracker = workTracker;
         this.metrics = metrics;
         this.kafkaCluster = kafkaCluster;
         this.workloadConstraintsRepository = workloadConstraintsRepository;
@@ -91,11 +97,12 @@ public class BalancingJob implements Runnable {
     public void run() {
         try {
             consumersRegistry.refresh();
-            if (consumersRegistry.isLeader() && workTracker.isReady()) {
+            if (consumersRegistry.isLeader() && clusterAssignmentCache.isReady()) {
                 try (Timer.Context ctx = metrics.consumersWorkloadRebalanceDurationTimer(kafkaCluster).time()) {
                     logger.info("Initializing workload balance.");
+                    clusterAssignmentCache.refresh();
 
-                    SubscriptionAssignmentView initialState = workTracker.getAssignments();
+                    SubscriptionAssignmentView initialState = clusterAssignmentCache.createSnapshot();
 
                     ConsumersWorkloadConstraints constraints = workloadConstraintsRepository.getConsumersWorkloadConstraints();
                     WorkloadConstraints workloadConstraints = new WorkloadConstraints(
@@ -103,20 +110,22 @@ public class BalancingJob implements Runnable {
                             constraints.getTopicConstraints(),
                             configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION),
                             configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER),
-                            consumersRegistry.list().size());
+                            consumersRegistry.listConsumerNodes().size());
 
                     WorkBalancingResult work = workBalancer.balance(
                             subscriptionsCache.listActiveSubscriptionNames(),
-                            consumersRegistry.list(),
+                            consumersRegistry.listConsumerNodes(),
                             initialState,
                             workloadConstraints);
 
                     if (consumersRegistry.isLeader()) {
                         logger.info("Applying workload balance changes {}", work.toString());
-                        WorkTracker.WorkDistributionChanges changes =
-                                workTracker.apply(initialState, work.getAssignmentsView());
+                        WorkDistributionChanges changes =
+                                consumerAssignmentRegistry.updateAssignments(initialState, work.getAssignmentsView());
 
                         logger.info("Finished workload balance {}, {}", work.toString(), changes.toString());
+
+                        clusterAssignmentCache.refresh(); // refresh cache with just stored data
 
                         updateMetrics(work, changes);
                     } else {
@@ -141,7 +150,7 @@ public class BalancingJob implements Runnable {
         executorService.awaitTermination(1, TimeUnit.MINUTES);
     }
 
-    private void updateMetrics(WorkBalancingResult balancingResult, WorkTracker.WorkDistributionChanges changes) {
+    private void updateMetrics(WorkBalancingResult balancingResult, WorkDistributionChanges changes) {
         this.balancingMetrics.allAssignments = balancingResult.getAssignmentsView().getAllAssignments().size();
         this.balancingMetrics.missingResources = balancingResult.getMissingResources();
         this.balancingMetrics.createdAssignments = changes.getCreatedAssignmentsCount();
