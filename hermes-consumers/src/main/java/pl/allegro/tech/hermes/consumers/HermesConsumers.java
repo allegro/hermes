@@ -13,8 +13,9 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
+import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -35,9 +36,10 @@ public class HermesConsumers {
     private final MessageSenderFactory messageSenderFactory;
     private final ServiceLocator serviceLocator;
 
+    private final ConsumerNodesRegistry consumerNodesRegistry;
     private final SupervisorController supervisorController;
     private final MaxRateSupervisor maxRateSupervisor;
-    private final SubscriptionAssignmentCache assignmentCache;
+    private final ConsumerAssignmentCache assignmentCache;
     private final OAuthClient oAuthHttpClient;
 
     public static void main(String... args) {
@@ -59,9 +61,10 @@ public class HermesConsumers {
         consumerHttpServer = serviceLocator.getService(ConsumerHttpServer.class);
         messageSenderFactory = serviceLocator.getService(MessageSenderFactory.class);
 
+        consumerNodesRegistry = serviceLocator.getService(ConsumerNodesRegistry.class);
         supervisorController = serviceLocator.getService(SupervisorController.class);
         maxRateSupervisor = serviceLocator.getService(MaxRateSupervisor.class);
-        assignmentCache = serviceLocator.getService(SubscriptionAssignmentCache.class);
+        assignmentCache = serviceLocator.getService(ConsumerAssignmentCache.class);
         oAuthHttpClient = serviceLocator.getService(OAuthClient.class);
 
         hooksHandler.addShutdownHook((s) -> {
@@ -70,6 +73,7 @@ public class HermesConsumers {
                 maxRateSupervisor.stop();
                 assignmentCache.stop();
                 oAuthHttpClient.stop();
+                consumerNodesRegistry.stop();
                 supervisorController.shutdown();
                 s.shutdown();
             } catch (Exception e) {
@@ -91,6 +95,7 @@ public class HermesConsumers {
                     entry.getValue().stream().forEach(supplier ->
                             messageSenderFactory.addSupportedProtocol(entry.getKey(), supplier.apply(serviceLocator))
                     ));
+            consumerNodesRegistry.start();
             supervisorController.start();
             assignmentCache.start();
             maxRateSupervisor.start();
