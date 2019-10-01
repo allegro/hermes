@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,9 +26,6 @@ public class ZookeeperCounterStorageTest {
     private SharedCounter sharedCounter;
 
     @Mock
-    private DistributedEphemeralCounter ephemeralCounter;
-
-    @Mock
     private ConfigFactory configFactory;
 
     @Mock
@@ -43,7 +39,7 @@ public class ZookeeperCounterStorageTest {
     public void initialize() {
         when(configFactory.getStringProperty(Configs.ZOOKEEPER_ROOT)).thenReturn("/hermes");
         pathCompiler = new PathsCompiler("my-host-example.net");
-        storage = new ZookeeperCounterStorage(sharedCounter, ephemeralCounter, subscriptionRepository, pathCompiler, configFactory);
+        storage = new ZookeeperCounterStorage(sharedCounter, subscriptionRepository, pathCompiler, configFactory);
     }
 
     @Test
@@ -89,41 +85,6 @@ public class ZookeeperCounterStorageTest {
     }
 
     @Test
-    public void shouldIncrementInflightMetricUsingDistirbutedCounter() {
-        // given when
-        storage.setInflightCounter(TopicName.fromQualifiedName("test.topic"), "sub", 10);
-
-        // then
-        verify(ephemeralCounter).setCounterValue("/hermes/consumers/my-host-example_net/groups/test/topics/topic/subscriptions/sub/metrics/inflight", 10);
-    }
-
-    @Test
-    public void shouldReadValueFromInflightMetric() throws Exception {
-        // given
-        when(ephemeralCounter.getValue("/hermes/consumers", "/groups/test/topics/topic/subscriptions/sub/metrics/inflight"))
-                .thenReturn(10L);
-
-        // when
-        long value = storage.getInflightCounter(TopicName.fromQualifiedName("test.topic"), "sub");
-
-        // then
-        assertThat(value).isEqualTo(10);
-    }
-
-    @Test
-    public void shouldCountInflightNodes() throws Exception {
-        // given
-        when(ephemeralCounter.countOccurrences("/hermes/consumers", "/groups/test/topics/topic/subscriptions/sub/metrics/inflight"))
-                .thenReturn(16);
-
-        // when
-        long value = storage.countInflightNodes(TopicName.fromQualifiedName("test.topic"), "sub");
-
-        // then
-        assertThat(value).isEqualTo(16);
-    }
-
-    @Test
     public void shouldNotIncrementSharedCounterForNonExistingSubscription() {
         //given
         TopicName topicName = TopicName.fromQualifiedName("test.topic");
@@ -133,21 +94,6 @@ public class ZookeeperCounterStorageTest {
 
         //when
         storage.setSubscriptionDeliveredCounter(topicName, subscriptionName, 1L);
-
-        //then
-        verifyZeroInteractions(sharedCounter);
-    }
-
-    @Test
-    public void shouldNotIncrementInflightCounterForNonExistingSubscription() {
-        //given
-        TopicName topicName = TopicName.fromQualifiedName("test.topic");
-        String subscriptionName = "sub";
-        doThrow(new SubscriptionNotExistsException(topicName, subscriptionName))
-                .when(subscriptionRepository).ensureSubscriptionExists(topicName, subscriptionName);
-
-        //when
-        storage.setInflightCounter(topicName, subscriptionName, 1L);
 
         //then
         verifyZeroInteractions(sharedCounter);
