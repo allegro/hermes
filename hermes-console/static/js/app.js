@@ -12,7 +12,10 @@ var hermes = angular.module('hermes', [
     'hermes.search',
     'hermes.stats',
     'hermes.diagnostics',
-    'hermes.constraints'
+    'hermes.constraints',
+    'hermes.diagnostics',
+    'hermes.visibility',
+    'hermes.mode'
 ]);
 
 hermes.constant('DASHBOARD_CONFIG', config.dashboard);

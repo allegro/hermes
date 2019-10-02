@@ -9,11 +9,11 @@
     </ol>
 
     <div class="pull-right">
-        <button ng-show="subscription.state === 'ACTIVE'" class="btn btn-warning" ng-click="suspend()">Suspend</button>
-        <button ng-show="subscription.state === 'SUSPENDED'" class="btn btn-success" ng-click="activate()">Activate</button>
-        <button class="btn btn-primary" ng-click="edit()">Edit</button>
-        <button class="btn btn-primary" ng-click="clone()">Clone</button>
-        <button class="btn btn-danger" ng-click="remove()">Remove</button>
+        <button ng-show="subscription.state === 'ACTIVE'" class="btn btn-warning" ng-disabled="disabled" ng-click="suspend()">Suspend</button>
+        <button ng-show="subscription.state === 'SUSPENDED'" class="btn btn-success" ng-disabled="disabled" ng-click="activate()">Activate</button>
+        <button class="btn btn-primary" ng-disabled="disabled" ng-click="edit()">Edit</button>
+        <button class="btn btn-primary" ng-disabled="disabled" ng-click="clone()">Clone</button>
+        <button class="btn btn-danger" ng-disabled="disabled" ng-click="remove()">Remove</button>
     </div>
 
     <h2><small>Subscription:</small> {{subscription.name}}</h2>

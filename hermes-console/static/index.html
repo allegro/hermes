@@ -60,6 +60,8 @@
         <script src="js/console/Auth.js"></script>
         <script src="js/console/Search.js"></script>
         <script src="js/console/Stats.js"></script>
+        <script src="js/console/Visibility.js"></script>
+        <script src="js/console/Mode.js"></script>
         <script src="js/app.js"></script>
         <script src="js/bootstrap.js"></script>
     </head>
@@ -75,6 +77,7 @@
                 <auth-pane ng-show="enabled"></auth-pane>
             </div>
         </nav>
+    <div ng-show="readOnly" class="container alert alert-warning">Running in read only mode</div>
 
     <toaster-container toaster-options="{'time-out': {'toast-error': 0, 'toast-warning': 0, 'toast-success': 5000, 'toast-info': 5000}, 'close-button': {'toast-error': true, 'toast-warning': true}}"></toaster-container>
     <div ui-view class="container">
