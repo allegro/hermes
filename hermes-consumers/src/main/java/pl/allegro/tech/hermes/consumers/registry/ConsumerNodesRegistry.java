@@ -1,14 +1,16 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workload.selective;
+package pl.allegro.tech.hermes.consumers.registry;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
+import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
+import java.io.IOException;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,22 +28,28 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
     private static final Logger logger = LoggerFactory.getLogger(ConsumerNodesRegistry.class);
 
     private final CuratorFramework curatorClient;
+    private final ConsumerNodesRegistryPaths registryPaths;
     private final String consumerNodeId;
-    private final String prefix;
     private final LeaderLatch leaderLatch;
     private final Map<String, Long> consumersLastSeen = new HashMap<>();
     private final long deathOfConsumerAfterMillis;
     private final Clock clock;
 
-    public ConsumerNodesRegistry(CuratorFramework curatorClient, ExecutorService executorService, String prefix,
-                                 String consumerNodeId, int deathOfConsumerAfterSeconds, Clock clock) {
-        super(curatorClient, getNodesPath(prefix), true, false, executorService);
+    public ConsumerNodesRegistry(
+            CuratorFramework curatorClient,
+            ExecutorService executorService,
+            ConsumerNodesRegistryPaths registryPaths,
+            String consumerNodeId,
+            int deathOfConsumerAfterSeconds,
+            Clock clock
+    ) {
+        super(curatorClient, registryPaths.nodesPath(), true, false, executorService);
 
         this.curatorClient = curatorClient;
+        this.registryPaths = registryPaths;
         this.consumerNodeId = consumerNodeId;
-        this.prefix = prefix;
         this.clock = clock;
-        this.leaderLatch = new LeaderLatch(curatorClient, getLeaderPath(), consumerNodeId);
+        this.leaderLatch = new LeaderLatch(curatorClient, registryPaths.leaderPath(), consumerNodeId);
         this.deathOfConsumerAfterMillis = TimeUnit.SECONDS.toMillis(deathOfConsumerAfterSeconds);
     }
 
@@ -49,6 +57,12 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
     public void start() throws Exception {
         getListenable().addListener(this);
         super.start(StartMode.POST_INITIALIZED_EVENT);
+        leaderLatch.start();
+    }
+
+    public void stop() throws IOException {
+        leaderLatch.close();
+        close();
     }
 
     @Override
@@ -65,37 +79,21 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
 
     public boolean isRegistered(String consumerNodeId) {
         try {
-            return curatorClient.checkExists().forPath(getNodePath(consumerNodeId)) != null;
+            return curatorClient.checkExists().forPath(registryPaths.nodePath(consumerNodeId)) != null;
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
     }
 
-    void startLeaderLatch() {
-        try {
-            leaderLatch.start();
-        } catch (Exception e) {
-            throw new InternalProcessingException(e);
-        }
-    }
-
-    void stopLeaderLatch() {
-        try {
-            leaderLatch.close();
-        } catch (Exception e) {
-            throw new InternalProcessingException(e);
-        }
-    }
-
-    boolean isLeader() {
+    public boolean isLeader() {
         return ensureRegistered() && leaderLatch.hasLeadership();
     }
 
-    List<String> list() {
+    public List<String> listConsumerNodes() {
         return new ArrayList<>(consumersLastSeen.keySet());
     }
 
-    void refresh() {
+    public void refresh() {
         logger.info("Refreshing current consumers registry");
 
         long currentTime = clock.millis();
@@ -120,25 +118,16 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
 
     private void registerConsumerNode() {
         try {
-            curatorClient.create().creatingParentsIfNeeded()
-                    .withMode(EPHEMERAL).forPath(getNodePath(consumerNodeId));
-            logger.info("Registered in consumer nodes registry as {}", consumerNodeId);
+            String nodePath = registryPaths.nodePath(consumerNodeId);
+            if (curatorClient.checkExists().forPath(nodePath) == null) {
+                curatorClient.create().creatingParentsIfNeeded()
+                        .withMode(EPHEMERAL).forPath(nodePath);
+                logger.info("Registered in consumer nodes registry as {}", consumerNodeId);
+            }
             refresh();
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
-    }
-
-    private String getNodePath(String consumerNodeId) {
-        return getNodesPath(prefix) + "/" + consumerNodeId;
-    }
-
-    private static String getNodesPath(String prefix) {
-        return prefix + "/nodes";
-    }
-
-    private String getLeaderPath() {
-        return prefix + "/leader";
     }
 
     private List<String> findDeadConsumers(long currentTime) {
@@ -158,7 +147,15 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
                 .collect(toList());
     }
 
-    public String getId() {
+    public String getConsumerId() {
         return consumerNodeId;
+    }
+
+    public void addLeaderLatchListener(LeaderLatchListener listener) {
+        leaderLatch.addListener(listener);
+    }
+
+    public void removeLeaderLatchListener(LeaderLatchListener listener) {
+        leaderLatch.removeListener(listener);
     }
 }
