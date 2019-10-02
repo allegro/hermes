@@ -5,12 +5,10 @@ import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCache;
 
-import javax.inject.Inject;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,20 +21,21 @@ import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
-import static pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry.AUTO_ASSIGNED_MARKER;
+import static pl.allegro.tech.hermes.consumers.supervisor.workload.HierarchicalConsumerAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 
-public class SubscriptionAssignmentCache {
+class HierarchicalConsumerAssignmentCache implements ConsumerAssignmentCache, ClusterAssignmentCache {
 
     private static final int SUBSCRIPTION_LEVEL = 0;
 
     private static final int ASSIGNMENT_LEVEL = 1;
 
-    private static final Logger logger = LoggerFactory.getLogger(SubscriptionAssignmentCache.class);
+    private static final Logger logger = LoggerFactory.getLogger(HierarchicalConsumerAssignmentCache.class);
 
     private final String basePath;
 
     private final CuratorFramework curator;
+
+    private final String consumerId;
 
     private final Set<SubscriptionAssignment> assignments = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
@@ -50,13 +49,14 @@ public class SubscriptionAssignmentCache {
 
     private volatile boolean started = false;
 
-    @Inject
-    public SubscriptionAssignmentCache(CuratorFramework curator,
-                                       ConfigFactory configFactory,
-                                       ZookeeperPaths zookeeperPaths,
-                                       SubscriptionsCache subscriptionsCache) {
+    public HierarchicalConsumerAssignmentCache(CuratorFramework curator,
+                                               String consumerId,
+                                               String clusterName,
+                                               ZookeeperPaths zookeeperPaths,
+                                               SubscriptionsCache subscriptionsCache) {
         this.curator = curator;
-        this.basePath = zookeeperPaths.consumersRuntimePath(configFactory.getStringProperty(KAFKA_CLUSTER_NAME));
+        this.consumerId = consumerId;
+        this.basePath = zookeeperPaths.consumersRuntimePath(clusterName);
         this.subscriptionsCache = subscriptionsCache;
         this.pathSerializer = new SubscriptionAssignmentPathSerializer(basePath, AUTO_ASSIGNED_MARKER);
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("subscription-assignment-cache-%d").build();
@@ -78,6 +78,7 @@ public class SubscriptionAssignmentCache {
         });
     }
 
+    @Override
     public void start() throws Exception {
         long startNanos = System.nanoTime();
 
@@ -96,6 +97,7 @@ public class SubscriptionAssignmentCache {
                 basePath, currentAssignments.size(), elapsedMillis);
     }
 
+    @Override
     public void stop() throws Exception {
         logger.info("Stopping assignment cache for {}", basePath);
 
@@ -104,21 +106,40 @@ public class SubscriptionAssignmentCache {
         logger.info("Stopped assignment cache for {}", basePath);
     }
 
+    @Override
     public boolean isStarted() {
         return started;
     }
 
+    @Override
+    public boolean isReady() {
+        return isStarted();
+    }
+
+    @Override
+    public void refresh() {
+        // do nothing, refreshed automatically
+    }
+
+    @Override
     public SubscriptionAssignmentView createSnapshot() {
         return SubscriptionAssignmentView.of(assignments);
     }
 
-    boolean isAssignedTo(String nodeId, SubscriptionName subscription) {
+    @Override
+    public boolean isAssignedTo(SubscriptionName subscription) {
+        return isAssignedTo(consumerId, subscription);
+    }
+
+    @Override
+    public boolean isAssignedTo(String nodeId, SubscriptionName subscription) {
         return assignments.stream()
                 .anyMatch(a -> a.getSubscriptionName().equals(subscription)
                         && a.getConsumerNodeId().equals(nodeId));
     }
 
-    void registerAssignmentCallback(SubscriptionAssignmentAware callback) {
+    @Override
+    public void registerAssignmentCallback(SubscriptionAssignmentAware callback) {
         callbacks.add(callback);
     }
 
@@ -170,18 +191,30 @@ public class SubscriptionAssignmentCache {
                 || callback.watchedConsumerId().get().equals(assignment.getConsumerNodeId());
     }
 
+    @Override
     public Map<SubscriptionName, Set<String>> getSubscriptionConsumers() {
-        return createSnapshot().getAllAssignments().stream()
+        return assignments.stream()
                 .collect(Collectors.groupingBy(
                         SubscriptionAssignment::getSubscriptionName,
                         Collectors.mapping(SubscriptionAssignment::getConsumerNodeId, Collectors.toSet())));
     }
 
+    @Override
+    public Set<SubscriptionName> getConsumerSubscriptions() {
+        return getConsumerSubscriptions(consumerId);
+    }
+
+    @Override
     public Set<SubscriptionName> getConsumerSubscriptions(String consumerId) {
-        return createSnapshot().getSubscriptionsForConsumerNode(consumerId);
+        return assignments.stream()
+                .filter(assignment -> consumerId.equals(assignment.getConsumerNodeId()))
+                .map(SubscriptionAssignment::getSubscriptionName)
+                .collect(Collectors.toSet());
     }
 
     public Set<String> getAssignedConsumers() {
-        return createSnapshot().getConsumerNodes();
+        return assignments.stream()
+                .map(SubscriptionAssignment::getConsumerNodeId)
+                .collect(Collectors.toSet());
     }
 }

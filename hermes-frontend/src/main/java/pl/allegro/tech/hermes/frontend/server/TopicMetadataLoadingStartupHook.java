@@ -22,7 +22,7 @@ public class TopicMetadataLoadingStartupHook implements ServiceAwareHook {
 
     @Override
     public int getPriority() {
-        return Hook.HIGHER_PRIORITY;
+        return Hook.NORMAL_PRIORITY;
     }
 
 }

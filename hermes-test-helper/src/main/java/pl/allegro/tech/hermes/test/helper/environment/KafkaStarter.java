@@ -57,7 +57,7 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
     private Properties loadProperties(String resourcesPath) {
         Properties properties = new Properties();
         try {
-            logger.info("Loading kafka properties file: ", resourcesPath);
+            logger.info("Loading kafka properties file: {}", resourcesPath);
             properties.load(this.getClass().getResourceAsStream(resourcesPath));
         } catch (IOException e) {
             throw new IllegalStateException("Error while loading kafka properties", e);

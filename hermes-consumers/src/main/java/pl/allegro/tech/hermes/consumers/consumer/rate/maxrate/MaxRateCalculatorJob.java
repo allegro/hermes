@@ -1,15 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 
 import java.time.Clock;
 import java.util.concurrent.Executors;
@@ -23,47 +20,41 @@ class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
 
     private final int intervalSeconds;
     private final ScheduledExecutorService executorService;
-    private final CuratorFramework curator;
-    private final LeaderLatch leaderLatch;
     private final MaxRateCalculator maxRateCalculator;
+    private final ConsumerNodesRegistry consumerNodesRegistry;
 
     private ScheduledFuture job;
 
-    MaxRateCalculatorJob(CuratorFramework curator,
-                                ConfigFactory configFactory,
-                                SubscriptionAssignmentCache subscriptionAssignmentCache,
-                                MaxRateBalancer balancer,
-                                MaxRateRegistry maxRateRegistry,
-                                String leaderPath,
-                                SubscriptionsCache subscriptionsCache,
-                                HermesMetrics metrics,
-                                Clock clock) {
-        String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
-        this.curator = curator;
+    MaxRateCalculatorJob(ConfigFactory configFactory,
+                         ClusterAssignmentCache clusterAssignmentCache,
+                         ConsumerNodesRegistry consumerNodesRegistry,
+                         MaxRateBalancer balancer,
+                         MaxRateRegistry maxRateRegistry,
+                         SubscriptionsCache subscriptionsCache,
+                         HermesMetrics metrics,
+                         Clock clock) {
+        this.consumerNodesRegistry = consumerNodesRegistry;
         this.intervalSeconds = configFactory.getIntProperty(CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS);
         this.executorService = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder().setNameFormat("max-rate-calculator-%d").build());
         this.maxRateCalculator = new MaxRateCalculator(
-                subscriptionAssignmentCache, subscriptionsCache, balancer, maxRateRegistry, metrics, clock);
-        this.leaderLatch = new LeaderLatch(curator, leaderPath, consumerId);
+                clusterAssignmentCache, subscriptionsCache, balancer, maxRateRegistry, metrics, clock
+        );
     }
 
     public void start() {
-        try {
-            leaderLatch.start();
-            leaderLatch.addListener(this);
-        } catch (Exception e) {
-            throw new InternalProcessingException(e);
+        consumerNodesRegistry.addLeaderLatchListener(this);
+        startJobIfAlreadyBeingLeader();
+    }
+
+    private void startJobIfAlreadyBeingLeader() {
+        if (consumerNodesRegistry.isLeader()) {
+            isLeader();
         }
     }
 
     public void stop() throws InterruptedException {
-        try {
-            leaderLatch.removeListener(this);
-            leaderLatch.close();
-        } catch (Exception e) {
-            throw new InternalProcessingException(e);
-        }
+        consumerNodesRegistry.removeLeaderLatchListener(this);
 
         if (job != null) {
             job.cancel(false);
@@ -72,13 +63,9 @@ class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
         executorService.awaitTermination(1, TimeUnit.MINUTES);
     }
 
-    private boolean hasLeadership() {
-        return curator.getZookeeperClient().isConnected() && leaderLatch.hasLeadership();
-    }
-
     @Override
     public void run() {
-        if (hasLeadership()) {
+        if (consumerNodesRegistry.isLeader()) {
             maxRateCalculator.calculate();
         }
     }

@@ -11,14 +11,12 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.MetricsDeltaCalculator;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.DistributedEphemeralCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 
 import javax.inject.Inject;
 
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.HOSTNAME;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 
@@ -29,15 +27,11 @@ public class ZookeeperCounterStorage implements CounterStorage {
     static final String SUBSCRIPTION_DELIVERED = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/delivered";
     static final String SUBSCRIPTION_DISCARDED = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/discarded";
     static final String SUBSCRIPTION_VOLUME_COUNTER = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/volume";
-    static final String CONSUMER_BASE_PATH = "/consumers";
-    static final String SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH = "/groups/" + GROUP + "/topics/" + TOPIC + "/subscriptions/" + SUBSCRIPTION + "/metrics/inflight";
-    static final String SUBSCRIPTION_INFLIGHT_FULL_PATH = CONSUMER_BASE_PATH + "/" + HOSTNAME + SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperCounterStorage.class);
 
     private final MetricsDeltaCalculator deltaCalculator = new MetricsDeltaCalculator();
     private final SharedCounter sharedCounter;
-    private final DistributedEphemeralCounter distributedCounter;
 
     private final SubscriptionRepository subscriptionRepository;
     private final PathsCompiler pathsCompiler;
@@ -45,12 +39,10 @@ public class ZookeeperCounterStorage implements CounterStorage {
 
     @Inject
     public ZookeeperCounterStorage(SharedCounter sharedCounter,
-                                   DistributedEphemeralCounter distributedCounter,
                                    SubscriptionRepository subscriptionRepository,
                                    PathsCompiler pathsCompiler,
                                    ConfigFactory configFactory) {
         this.sharedCounter = sharedCounter;
-        this.distributedCounter = distributedCounter;
         this.subscriptionRepository = subscriptionRepository;
         this.pathsCompiler = pathsCompiler;
         zookeeperRoot = configFactory.getStringProperty(Configs.ZOOKEEPER_ROOT);
@@ -81,33 +73,6 @@ public class ZookeeperCounterStorage implements CounterStorage {
         } catch (SubscriptionNotExistsException e) {
             LOGGER.debug("Trying to report metric on not existing subscription {} {}", topicName, subscriptionName);
         }
-    }
-
-    @Override
-    public long getInflightCounter(TopicName topicName, String subscriptionName) {
-        return distributedCounter.getValue(appendRootPath(CONSUMER_BASE_PATH),
-                pathsCompiler.compile(SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH, subscriptionPathContext(topicName, subscriptionName)));
-    }
-
-    @Override
-    public void setInflightCounter(TopicName topicName, String subscriptionName, long count) {
-        try {
-            subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
-            distributedCounter.setCounterValue(
-                    pathsCompiler.compile(appendRootPath(SUBSCRIPTION_INFLIGHT_FULL_PATH),
-                            subscriptionPathContext(topicName, subscriptionName)),
-                            count);
-        } catch (SubscriptionNotExistsException e) {
-            LOGGER.debug("Trying to report metric on not existing subscription {} {}", topicName, subscriptionName);
-        }
-    }
-
-    @Override
-    public int countInflightNodes(TopicName topicName, String subscriptionName) {
-        return distributedCounter.countOccurrences(
-                appendRootPath(CONSUMER_BASE_PATH),
-                pathsCompiler.compile(SUBSCRIPTION_INFLIGHT_WITHOUT_HOSTNAME_PATH, subscriptionPathContext(topicName, subscriptionName))
-        );
     }
 
     @Override

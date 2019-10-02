@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
-import pl.allegro.tech.hermes.consumers.consumer.ActiveConsumerCounter;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.batch.ByteBufferMessageBatchFactoryProvider;
@@ -67,6 +66,8 @@ import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
+import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
+import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistryFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionCacheFactory;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIdProvider;
@@ -80,13 +81,14 @@ import pl.allegro.tech.hermes.consumers.supervisor.NonblockingConsumersSuperviso
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitorFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistryFactory;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCacheFactory;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCacheFactory;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistryFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorControllerFactory;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTrackerFactory;
 
 import javax.inject.Singleton;
 import javax.jms.Message;
@@ -123,7 +125,6 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(MessageConverterResolver.class);
         bindSingleton(OffsetQueue.class);
         bindSingleton(ConsumerPartitionAssignmentState.class);
-        bindSingleton(ActiveConsumerCounter.class);
         bindSingleton(Retransmitter.class);
         bindSingleton(ConsumerMonitor.class);
         bindSingleton(SslContextFactoryProvider.class);
@@ -135,16 +136,18 @@ public class ConsumersBinder extends AbstractBinder {
                 .to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
         bindSingleton(HttpClientsFactory.class);
 
+        bindFactory(ConsumerNodesRegistryFactory.class).in(Singleton.class).to(ConsumerNodesRegistry.class);
+
         bindFactory(SubscriptionCacheFactory.class).in(Singleton.class).to(SubscriptionsCache.class);
         bindFactory(SubscriptionIdProviderFactory.class).in(Singleton.class).to(SubscriptionIdProvider.class);
         bindFactory(SubscriptionIdsCacheFactory.class).in(Singleton.class).to(SubscriptionIds.class);
         bindSingleton(SubscriptionAssignmentCache.class);
+        bindFactory(ConsumerAssignmentCacheFactory.class).in(Singleton.class).to(ConsumerAssignmentCache.class);
+        bindFactory(ClusterAssignmentCacheFactory.class).in(Singleton.class).to(ClusterAssignmentCache.class);
         bindSingleton(HttpClientsWorkloadReporter.class);
 
         bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
-        bindFactory(WorkTrackerFactory.class).in(Singleton.class).to(WorkTracker.class);
-        bindFactory(SubscriptionAssignmentRegistryFactory.class).in(Singleton.class)
-                .to(SubscriptionAssignmentRegistry.class);
+        bindFactory(ConsumerAssignmentRegistryFactory.class).in(Singleton.class).to(ConsumerAssignmentRegistry.class);
         bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);
         bindFactory(ConsumersRuntimeMonitorFactory.class).in(Singleton.class).to(ConsumersRuntimeMonitor.class);
 

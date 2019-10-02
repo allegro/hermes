@@ -27,7 +27,6 @@ class CounterMatcher {
                 isSubscriptionDelivered()
                         || isSubscriptionThroughput()
                         || isSubscriptionDiscarded()
-                        || isSubscriptionInflight()
                         || isSubscriptionFiltered()
                 ) {
             subscription = Optional.of(splitted[splitted.length - 1]);
@@ -53,10 +52,6 @@ class CounterMatcher {
 
     public boolean isSubscriptionDiscarded() {
         return counterName.startsWith("discarded.");
-    }
-
-    public boolean isSubscriptionInflight() {
-        return counterName.startsWith("inflight.");
     }
 
     public boolean isSubscriptionFiltered() {

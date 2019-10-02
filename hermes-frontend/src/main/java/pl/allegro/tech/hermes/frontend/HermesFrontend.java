@@ -27,6 +27,7 @@ import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
+import pl.allegro.tech.hermes.frontend.server.WaitForKafkaStartupHook;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
@@ -41,6 +42,7 @@ import java.util.function.Function;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_WAIT_KAFKA_ENABLED;
 
 public final class HermesFrontend {
 
@@ -71,6 +73,9 @@ public final class HermesFrontend {
         ConfigFactory config = serviceLocator.getService(ConfigFactory.class);
         if (config.getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED)) {
             hooksHandler.addShutdownHook(gracefulShutdownHook());
+        }
+        if (config.getBooleanProperty(FRONTEND_STARTUP_WAIT_KAFKA_ENABLED)) {
+            hooksHandler.addBeforeStartHook(serviceLocator.getService(WaitForKafkaStartupHook.class));
         }
         if (config.getBooleanProperty(FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED)) {
             hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicMetadataLoadingStartupHook.class));

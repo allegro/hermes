@@ -113,14 +113,6 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH, cluster, "runtime");
     }
 
-    public String consumersRegistryPath(String cluster) {
-        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH, cluster, "registry");
-    }
-
-    public String consumersWorkloadPath() {
-        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_PATH);
-    }
-
     public String consumersWorkloadConstraintsPath() {
         return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_WORKLOAD_CONSTRAINTS_PATH);
     }
@@ -149,10 +141,6 @@ public class ZookeeperPaths {
     public String consumersMaxRatePath(String cluster, SubscriptionName subscription, String consumerId) {
         return Joiner.on(URL_SEPARATOR).join(consumersRateRuntimePath(cluster), subscription, consumerId,
                 MAX_RATE_PATH);
-    }
-
-    public String maxRateLeaderPath(String cluster) {
-        return Joiner.on(URL_SEPARATOR).join(basePath, CONSUMERS_RATE_PATH, cluster, "leader");
     }
 
     public String topicsBlacklistPath() {

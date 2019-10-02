@@ -14,7 +14,7 @@
     <logger name="org.eclipse.jetty.server.HttpChannel" level="error"/>
     <logger name="pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer" level="warn" />
     <logger name="pl.allegro.tech.hermes.consumers.supervisor.workload.selective.BalancingJob" level="warn" />
-    <logger name="pl.allegro.tech.hermes.consumers.supervisor.workload.selective.ConsumerNodesRegistry" level="warn" />
+    <logger name="pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry" level="warn" />
     <logger name="pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateCalculator" level="warn" />
 
     <logger name="org.mortbay.log" level="info" />
