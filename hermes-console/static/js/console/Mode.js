@@ -9,7 +9,7 @@ modeModule.factory('Mode', ['DiscoveryService', '$resource', '$rootScope',
             reload: function () {
                 modeResource.get().$promise.then(
                     function (value) {
-                        $rootScope.readOnly = value !== 'readOnly'
+                        $rootScope.readOnly = value === 'readOnly'
                     });
             }
         };
