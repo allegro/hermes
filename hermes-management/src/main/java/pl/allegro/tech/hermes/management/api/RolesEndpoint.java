@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 
@@ -23,12 +22,12 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Component
 @Path("/roles")
-@Api(value = "/roles", description = "")
+@Api(value = "/roles", description = "Get user roles for given resource")
 public class RolesEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
-    @ApiOperation(value = "Get user roles", httpMethod = HttpMethod.GET)
+    @ApiOperation(value = "Get general user roles", httpMethod = HttpMethod.GET)
     public Collection<String> getRoles(ContainerRequestContext requestContext) {
         return getRoles(requestContext, Collections.emptyList());
     }
@@ -36,6 +35,7 @@ public class RolesEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/topics/{topicName}")
+    @ApiOperation(value = "Get topic user roles", httpMethod = HttpMethod.GET)
     public Collection<String> getTopicRoles(ContainerRequestContext requestContext) {
         return getRoles(requestContext, Collections.singletonList(Roles.TOPIC_OWNER));
     }
@@ -43,24 +43,23 @@ public class RolesEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}/subscriptions/{subscriptionName}")
+    @ApiOperation(value = "Get subscription user roles", httpMethod = HttpMethod.GET)
     public Collection<String> getSubscriptionRoles(ContainerRequestContext requestContext) {
         return (new Random().nextBoolean()) ? getTopicRoles(requestContext) :
-        getRoles(requestContext, Arrays.asList(Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER));
+                getRoles(requestContext, Arrays.asList(Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER));
     }
 
     private Collection<String> getRoles(ContainerRequestContext requestContext, Collection<String> additionalRoles) {
         SecurityContext securityContext = requestContext.getSecurityContext();
-        Collection<String> roles = getBasicRoles(securityContext);
-        for(String role : additionalRoles) {
-            ifUserInRoleDo(securityContext, role, roles::add);
-        }
-        return roles;
-    }
+        Collection<String> roles = new ArrayList<>();
 
-    private Collection<String> getBasicRoles(SecurityContext securityContext) {
-        List<String> roles = new ArrayList<>();
         ifUserInRoleDo(securityContext, Roles.ADMIN, roles::add);
         ifUserInRoleDo(securityContext, Roles.ANY, roles::add);
+
+        for (String role : additionalRoles) {
+            ifUserInRoleDo(securityContext, role, roles::add);
+        }
+
         return roles;
     }
 
@@ -69,6 +68,5 @@ public class RolesEndpoint {
             consumer.accept(role);
         }
     }
-
 
 }
