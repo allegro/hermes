@@ -1,33 +1,43 @@
-var rolesModule = angular.module('hermes.visibility', ['hermes.auth']);
+var rolesModule = angular.module('hermes.visibility', []);
 
-rolesModule.factory('Visibility', ['AuthService', 'DiscoveryService', '$resource', '$rootScope',
-    function (auth, discovery, $resource, $rootScope) {
+rolesModule.factory('Visibility', ['DiscoveryService', '$resource', '$rootScope', '$stateParams',
+    function (discovery, $resource, $rootScope, $stateParams) {
 
-    var rolesResource = $resource(discovery.resolve('/roles'));
-
-    var service =  {
-
+    return   {
         update: function () {
 
-            function notLoggedIn() {
-                return auth.isEnabled() && !auth.isAuthorized();
-            }
+            var topicName = $stateParams.topicName;
+            var subscriptionName = $stateParams.subscriptionName;
+
+            var topicPath = topicName && '/topics/' + topicName || '';
+            var subscriptionPath = topicPath && subscriptionName && '/subscriptions/' + subscriptionName || '';
+
+            var rolesResource = $resource(discovery.resolve('/roles' + topicPath + subscriptionPath));
 
             function isAdmin(value) {
                 return value.includes('admin');
             }
 
+            function isOwner(value) {
+                if(isAdmin(value)) {
+                    return true;
+                }
+                if(subscriptionName) {
+                    return value.includes('subscriptionOwner');
+                }
+                if(topicName) {
+                    return value.includes('topicOwner');
+                }
+                return value.includes('any');
+            }
+
             rolesResource.query().$promise.then(
                 function (value) {
                     $rootScope.admin = isAdmin(value);
-                    $rootScope.disabled = !isAdmin(value) && notLoggedIn() || $rootScope.readOnly;
+                    $rootScope.disabled = !isOwner(value) || $rootScope.readOnly;
                 }
             );
         }
     };
-
-    service.update();
-
-    return service;
 
 }]);
