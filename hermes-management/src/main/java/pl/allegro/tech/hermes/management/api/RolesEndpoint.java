@@ -42,7 +42,7 @@ public class RolesEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
-    @Path("/{topicName}/subscriptions/{subscriptionName}")
+    @Path("/topics/{topicName}/subscriptions/{subscriptionName}")
     @ApiOperation(value = "Get subscription user roles", httpMethod = HttpMethod.GET)
     public Collection<String> getSubscriptionRoles(ContainerRequestContext requestContext) {
         return (new Random().nextBoolean()) ? getTopicRoles(requestContext) :
