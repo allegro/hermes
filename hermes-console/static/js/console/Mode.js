@@ -5,9 +5,13 @@ modeModule.factory('Mode', ['DiscoveryService', '$resource', '$rootScope',
 
         var modeResource = $resource(discovery.resolve('/mode'));
 
-        modeResource.query().$promise.then(
-            function (value) {
-                $rootScope.readOnly = value !== 'readOnly'
-            });
+        return {
+            reload: function () {
+                modeResource.get().$promise.then(
+                    function (value) {
+                        $rootScope.readOnly = value !== 'readOnly'
+                    });
+            }
+        };
 
     }]);

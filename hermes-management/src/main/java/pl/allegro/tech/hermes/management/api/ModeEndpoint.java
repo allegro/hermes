@@ -16,6 +16,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static pl.allegro.tech.hermes.management.domain.mode.ModeService.ManagementMode.READ_ONLY;
 import static pl.allegro.tech.hermes.management.domain.mode.ModeService.ManagementMode.READ_WRITE;
 
@@ -31,7 +32,7 @@ public class ModeEndpoint {
     }
 
     @GET
-    @Produces(APPLICATION_JSON)
+    @Produces(TEXT_PLAIN)
     @ApiOperation(value = "Get management mode", response = String.class, httpMethod = HttpMethod.GET)
     public String getMode() {
         return modeService.getMode().toString();

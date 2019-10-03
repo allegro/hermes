@@ -87,15 +87,17 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
         $tooltipProvider.options({ placement: 'left' });
     }]);
 
-hermes.run(['$rootScope', 'CONSOLE_CONFIG', 'AUTH_CONFIG', 'Visibility', function($rootScope, config, authConfig, visibility) {
-    $rootScope.console = {
-        title: config.title
-    };
-    $rootScope.authEnabled = {
-        oauth: authConfig.oauth.enabled,
-        headers: authConfig.headers.enabled
-    };
-    $rootScope.$on('$viewContentLoaded', function(event) {
-        visibility.update();
-    });
+hermes.run(['$rootScope', 'CONSOLE_CONFIG', 'AUTH_CONFIG', 'Mode', 'Visibility',
+    function ($rootScope, config, authConfig, mode, visibility) {
+        $rootScope.console = {
+            title: config.title
+        };
+        $rootScope.authEnabled = {
+            oauth: authConfig.oauth.enabled,
+            headers: authConfig.headers.enabled
+        };
+        $rootScope.$on('$viewContentLoaded', function (event) {
+            visibility.update();
+        });
+        mode.reload();
 }]);
