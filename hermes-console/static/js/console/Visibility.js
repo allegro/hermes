@@ -35,6 +35,10 @@ rolesModule.factory('Visibility', ['DiscoveryService', '$resource', '$rootScope'
                 function (value) {
                     $rootScope.admin = isAdmin(value);
                     $rootScope.disabled = !isOwner(value) || $rootScope.readOnly;
+                },
+                function() {
+                    $rootScope.admin = false;
+                    $rootScope.disabled = true;
                 }
             );
         }
