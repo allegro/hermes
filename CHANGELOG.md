@@ -14,11 +14,14 @@ Each consumer uses a single znode that contains binary encoded list of subscript
 The configuration loads fast and is updated only on workload distribution change.
 Enabled with `consumer.workload.registry.type=flat-binary` setting. The default is `hierarchical` type.
 
-#### ([1110](https://github.com/allegro/hermes/pull/1110)) A single consumer registry and leader election
+#### A single consumer registry and leader election
 Consumer registry is extracted from consumer workload and is now used by max-rate job as well. 
 The registry contains a leader latch which is always enabled and available.
 
-#### ([1095](https://github.com/allegro/hermes/pull/1095)) Removal of inflight message counter
+#### ([1095](https://github.com/allegro/hermes/pull/1095)) Removal of deprecated `StrictMaxRateProvider`
+The legacy max-rate provider type is now removed.
+
+#### Removal of inflight message counter
 The inflight message counter as well as the distributed zookeeper counter are now removed.
 This feature was not used but was leaving a lot of junk in zookeeper.
 
@@ -29,9 +32,6 @@ This feature allows easy management of consumer constraints. Link to it is not v
 #### ([1113](https://github.com/allegro/hermes/pull/1113)) Frontends wait for kafka when booting up
 Frontends will not start the HTTP server unless the underlying kafka brokers are available, i.e. we can fetch topics metadata from them. 
 By default the feature is disabled, enable with `frontend.startup.wait.kafka.enabled=true`.
-
-#### ([1095](https://github.com/allegro/hermes/pull/1095)) Removal of deprecated `StrictMaxRateProvider`
-The legacy max-rate provider type is now removed.
 
 #### ([1109](https://github.com/allegro/hermes/pull/1109)) Cancel all waiting messages on stopping sender
 When a subscription is stopped all messages that were already accepted by consumer message sender will be now dropped.
