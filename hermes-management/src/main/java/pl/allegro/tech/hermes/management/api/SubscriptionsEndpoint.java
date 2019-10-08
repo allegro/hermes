@@ -166,7 +166,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}/state")
-    @RolesAllowed({Roles.ADMIN, Roles.RESOURCE_WITHOUT_OWNER, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
     @ApiOperation(value = "Update subscription state", httpMethod = HttpMethod.PUT)
     public Response updateState(@PathParam("topicName") String qualifiedTopicName,
                                 @PathParam("subscriptionName") String subscriptionName,
@@ -179,7 +179,7 @@ public class SubscriptionsEndpoint {
 
     @DELETE
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.ADMIN, Roles.RESOURCE_WITHOUT_OWNER, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
     @ApiOperation(value = "Remove subscription", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionId,
@@ -192,7 +192,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.ADMIN, Roles.RESOURCE_WITHOUT_OWNER, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
     @ApiOperation(value = "Update subscription", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionName,
