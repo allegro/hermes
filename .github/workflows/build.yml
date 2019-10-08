@@ -1,6 +1,6 @@
-name: Java CI
+name: build-and-test
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         java_version: [8, 11]
-        suite: [check, integrationTest] # "jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0"]
+        suite: [check, integrationTest] # TODO: "jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0"]
 
     steps:
     - uses: actions/checkout@v1
