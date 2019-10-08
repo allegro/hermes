@@ -40,7 +40,7 @@ public class WaitForKafkaStartupHook implements ServiceAwareHook {
     }
 
     private boolean allMetadataResultsFail(List<MetadataLoadingResult> results, Throwable t) {
-        return results.stream().allMatch(MetadataLoadingResult::isFailure);
+        return !results.isEmpty() &&  results.stream().allMatch(MetadataLoadingResult::isFailure);
     }
 
     @Override
