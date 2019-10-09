@@ -87,10 +87,11 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
         $tooltipProvider.options({ placement: 'left' });
     }]);
 
-hermes.run(['$rootScope', 'CONSOLE_CONFIG', 'AUTH_CONFIG', 'Mode', 'Visibility',
-    function ($rootScope, config, authConfig, mode, visibility) {
+hermes.run(['$rootScope', 'CONSOLE_CONFIG', 'AUTH_CONFIG', "$sce", 'Mode', 'Visibility',
+    function ($rootScope, config, authConfig, $sce, mode, visibility) {
         $rootScope.console = {
-            title: config.title
+            title: config.title,
+            footer: $sce.trustAsHtml(config.footer)
         };
         $rootScope.authEnabled = {
             oauth: authConfig.oauth.enabled,

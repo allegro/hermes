@@ -77,10 +77,11 @@
                 <auth-pane ng-show="enabled"></auth-pane>
             </div>
         </nav>
-    <div ng-show="readOnly" class="container alert alert-warning">Running in read only mode</div>
+        <div ng-if="readOnly" class="container alert alert-info">Running in read only mode</div>
 
-    <toaster-container toaster-options="{'time-out': {'toast-error': 0, 'toast-warning': 0, 'toast-success': 5000, 'toast-info': 5000}, 'close-button': {'toast-error': true, 'toast-warning': true}}"></toaster-container>
-    <div ui-view class="container">
-    </div>
-</body>
+        <toaster-container toaster-options="{'time-out': {'toast-error': 0, 'toast-warning': 0, 'toast-success': 5000, 'toast-info': 5000}, 'close-button': {'toast-error': true, 'toast-warning': true}}"></toaster-container>
+        <div ui-view class="container"></div>
+
+        <footer ng-bind-html="console.footer"></footer>
+    </body>
 </html>
