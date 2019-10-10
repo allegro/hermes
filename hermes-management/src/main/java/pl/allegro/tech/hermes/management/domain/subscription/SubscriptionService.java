@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.subscription;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
@@ -253,30 +255,49 @@ public class SubscriptionService {
         return subscriptionRepository.getSubscriptionDetails(subscriptionNames);
     }
 
-    public List<UnhealthySubscription> getAllUnhealthy(boolean respectMonitoringSeverity) {
-        Collection<SubscriptionName> subscriptionNames = subscriptionOwnerCache.getAll();
-        List<Subscription> subscriptions = subscriptionRepository.getSubscriptionDetails(subscriptionNames);
-        return filterHealthy(subscriptions, respectMonitoringSeverity);
+    public List<UnhealthySubscription> getAllUnhealthy(boolean respectMonitoringSeverity, List<String> subscriptionNames,
+                                                       List<String> qualifiedTopicNames) {
+        List<Subscription> subscriptions = subscriptionRepository.getSubscriptionDetails(subscriptionOwnerCache.getAll());
+        return filterSubscriptions(subscriptions, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames);
     }
 
-    public List<UnhealthySubscription> getUnhealthyForOwner(OwnerId ownerId, boolean respectMonitoringSeverity) {
+    public List<UnhealthySubscription> getUnhealthyForOwner(OwnerId ownerId, boolean respectMonitoringSeverity,
+                                                            List<String> subscriptionNames, List<String> qualifiedTopicNames) {
         List<Subscription> ownerSubscriptions = getForOwnerId(ownerId);
-        return filterHealthy(ownerSubscriptions, respectMonitoringSeverity);
+        return filterSubscriptions(ownerSubscriptions, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames);
     }
 
-    private List<UnhealthySubscription> filterHealthy(Collection<Subscription> subscriptions, boolean respectMonitoringSeverity) {
-        return subscriptions.stream()
-                .filter(s -> filterBySeverityMonitorFlag(respectMonitoringSeverity, s.isSeverityNotImportant()))
-                .flatMap(s -> {
-                    SubscriptionHealth subscriptionHealth = getHealth(s);
+    private List<UnhealthySubscription> filterSubscriptions(Collection<Subscription> subscriptions, boolean respectMonitoringSeverity,
+                                                            List<String> subscriptionNames, List<String> qualifiedTopicNames) {
+        boolean shouldFilterBySubscriptionNames = CollectionUtils.isNotEmpty(subscriptionNames);
+        boolean shouldFilterByQualifiedTopicNames = CollectionUtils.isNotEmpty(qualifiedTopicNames);
 
-                    if (subscriptionHealth.getStatus() == Status.UNHEALTHY) {
-                        return of(UnhealthySubscription.from(s, subscriptionHealth));
-                    } else {
-                        return empty();
-                    }
-                })
-                .collect(toList());
+        Stream<Subscription> subscriptionStream = subscriptions.stream()
+                .filter(s -> filterBySeverityMonitorFlag(respectMonitoringSeverity, s.isSeverityNotImportant()));
+
+        if (shouldFilterBySubscriptionNames) {
+            subscriptionStream = subscriptionStream.filter(s -> filterBySubscriptionNames(subscriptionNames, s.getName()));
+        }
+        if (shouldFilterByQualifiedTopicNames) {
+            subscriptionStream = subscriptionStream.filter(s -> filterByQualifiedTopicNames(qualifiedTopicNames, s.getQualifiedTopicName()));
+        }
+
+        return subscriptionStream.flatMap(s -> {
+            SubscriptionHealth subscriptionHealth = getHealth(s);
+            if (subscriptionHealth.getStatus() == Status.UNHEALTHY) {
+                return of(UnhealthySubscription.from(s, subscriptionHealth));
+            } else {
+                return empty();
+            }
+        }).collect(toList());
+    }
+
+    private boolean filterBySubscriptionNames(List<String> subscriptionNames, String subscriptionName) {
+        return subscriptionNames.contains(subscriptionName);
+    }
+
+    private boolean filterByQualifiedTopicNames(List<String> qualifiedTopicNames, String qualifiedTopicName) {
+        return qualifiedTopicNames.contains(qualifiedTopicName);
     }
 
     private boolean filterBySeverityMonitorFlag(boolean respectMonitoringSeverity, boolean isSeverityNotImportant) {
