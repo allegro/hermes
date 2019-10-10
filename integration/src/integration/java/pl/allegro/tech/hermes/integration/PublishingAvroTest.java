@@ -234,6 +234,22 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldReturnBadRequestResponseOnMissingMetadataFieldInSchema() {
+        // given
+        Schema schema = AvroUserSchemaLoader.load("/schema/user_no_metadata.avsc");
+        Topic topic = randomTopic("pl.allegro.test", "Topic")
+                .withContentType(AVRO)
+                .build();
+        operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), user.asJson());
+
+        // then
+        assertThat(response).hasStatus(BAD_REQUEST);
+    }
+
+    @Test
     public void shouldPublishJsonIncompatibleWithSchemaWhileJsonToAvroDryRunModeIsEnabled() {
         // given
         Topic topic = randomTopic("jsonToAvroDryRun", "topic")
