@@ -93,7 +93,6 @@ public class MetricsTest extends IntegrationTest {
             assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15"));
             assertThat(metrics.getDelivered()).isEqualTo(1);
             assertThat(metrics.getDiscarded()).isEqualTo(0);
-            assertThat(metrics.getInflight()).isEqualTo(0);
             assertThat(metrics.getVolume()).isGreaterThan(1);
         });
     }

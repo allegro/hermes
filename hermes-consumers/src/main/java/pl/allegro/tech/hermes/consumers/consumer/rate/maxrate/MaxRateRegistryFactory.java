@@ -8,7 +8,8 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import javax.inject.Inject;
@@ -26,7 +27,8 @@ public class MaxRateRegistryFactory implements Factory<MaxRateRegistry> {
     private final MaxRatePathSerializer pathSerializer;
     private final SubscriptionsCache subscriptionCache;
     private final SubscriptionIds subscriptionIds;
-    private final SubscriptionAssignmentCache subscriptionAssignmentCache;
+    private final ConsumerAssignmentCache assignmentCache;
+    private final ClusterAssignmentCache clusterAssignmentCache;
 
     @Inject
     public MaxRateRegistryFactory(ConfigFactory configFactory,
@@ -35,7 +37,8 @@ public class MaxRateRegistryFactory implements Factory<MaxRateRegistry> {
                                   MaxRatePathSerializer pathSerializer,
                                   SubscriptionsCache subscriptionCache,
                                   SubscriptionIds subscriptionIds,
-                                  SubscriptionAssignmentCache subscriptionAssignmentCache) {
+                                  ConsumerAssignmentCache assignmentCache,
+                                  ClusterAssignmentCache clusterAssignmentCache) {
         this.configFactory = configFactory;
         this.curator = curator;
         this.objectMapper = objectMapper;
@@ -43,7 +46,8 @@ public class MaxRateRegistryFactory implements Factory<MaxRateRegistry> {
         this.pathSerializer = pathSerializer;
         this.subscriptionCache = subscriptionCache;
         this.subscriptionIds = subscriptionIds;
-        this.subscriptionAssignmentCache = subscriptionAssignmentCache;
+        this.assignmentCache = assignmentCache;
+        this.clusterAssignmentCache = clusterAssignmentCache;
     }
 
     @Override
@@ -71,8 +75,8 @@ public class MaxRateRegistryFactory implements Factory<MaxRateRegistry> {
             case FLAT_BINARY:
                 return new FlatBinaryMaxRateRegistry(
                         configFactory,
-                        subscriptionAssignmentCache::getAssignedConsumers,
-                        subscriptionAssignmentCache::getConsumerSubscriptions,
+                        clusterAssignmentCache,
+                        assignmentCache,
                         curator,
                         zookeeperPaths,
                         subscriptionIds

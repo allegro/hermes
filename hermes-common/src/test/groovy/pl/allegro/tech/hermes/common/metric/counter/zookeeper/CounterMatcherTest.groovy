@@ -49,20 +49,4 @@ class CounterMatcherTest extends Specification {
         topicName == "lagMetricGroup.topic"
         subscriptionName == "subscription"
     }
-
-    def "should match inflight counter"() {
-        given:
-        def counterName = "inflight.group.topic.subscription"
-        def counterMatcher = new CounterMatcher(counterName)
-
-        when:
-        def isInflight = counterMatcher.isSubscriptionInflight()
-        def topicName = counterMatcher.topicName
-        def subscriptionName = counterMatcher.subscriptionName
-
-        then:
-        isInflight
-        topicName == "group.topic"
-        subscriptionName == "subscription"
-    }
 }

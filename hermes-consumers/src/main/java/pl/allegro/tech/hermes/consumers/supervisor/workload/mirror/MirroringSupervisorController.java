@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.mirror;
 
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,15 +12,19 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignment;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
@@ -32,9 +37,9 @@ public class MirroringSupervisorController implements SupervisorController {
 
     private final ConsumersSupervisor supervisor;
     private final InternalNotificationsBus notificationsBus;
-    private final SubscriptionAssignmentRegistry assignmentRegistry;
+    private final ConsumerAssignmentCache assignmentCache;
+    private final ConsumerAssignmentRegistry consumerAssignmentRegistry;
     private final SubscriptionsCache subscriptionsCache;
-    private final WorkTracker workTracker;
     private final ZookeeperAdminCache adminCache;
     private final ConfigFactory configFactory;
 
@@ -42,18 +47,17 @@ public class MirroringSupervisorController implements SupervisorController {
 
     public MirroringSupervisorController(ConsumersSupervisor supervisor,
                                          InternalNotificationsBus notificationsBus,
-                                         SubscriptionAssignmentRegistry assignmentRegistry,
+                                         ConsumerAssignmentCache assignmentCache,
+                                         ConsumerAssignmentRegistry consumerAssignmentRegistry,
                                          SubscriptionsCache subscriptionsCache,
-                                         WorkTracker workTracker,
                                          ZookeeperAdminCache adminCache,
                                          ConfigFactory configFactory) {
         this.consumerNodeId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
-
         this.supervisor = supervisor;
         this.notificationsBus = notificationsBus;
-        this.assignmentRegistry = assignmentRegistry;
+        this.assignmentCache = assignmentCache;
+        this.consumerAssignmentRegistry = consumerAssignmentRegistry;
         this.subscriptionsCache = subscriptionsCache;
-        this.workTracker = workTracker;
         this.adminCache = adminCache;
         this.configFactory = configFactory;
         this.executorService = Executors.newFixedThreadPool(
@@ -64,12 +68,35 @@ public class MirroringSupervisorController implements SupervisorController {
 
     @Override
     public void onSubscriptionCreated(Subscription subscription) {
-        executorService.submit(() -> workTracker.forceAssignment(subscription));
+        Set<SubscriptionAssignment> currentAssignments = getConsumerAssignments();
+
+        SubscriptionAssignmentView currentState = SubscriptionAssignmentView.of(currentAssignments);
+
+        SubscriptionAssignment addedAssignment = new SubscriptionAssignment(consumerNodeId, subscription.getQualifiedName());
+        SubscriptionAssignmentView targetState = SubscriptionAssignmentView.of(
+                Sets.union(currentAssignments, Collections.singleton(addedAssignment))
+        );
+        executorService.submit(() -> consumerAssignmentRegistry.updateAssignments(currentState, targetState));
     }
 
     @Override
     public void onSubscriptionRemoved(Subscription subscription) {
-        executorService.submit(() -> workTracker.dropAssignment(subscription));
+        Set<SubscriptionAssignment> currentAssignments = getConsumerAssignments();
+
+        SubscriptionAssignmentView currentState = SubscriptionAssignmentView.of(currentAssignments);
+
+        SubscriptionAssignment deletedAssignment = new SubscriptionAssignment(consumerNodeId, subscription.getQualifiedName());
+        SubscriptionAssignmentView targetState = SubscriptionAssignmentView.of(
+                Sets.difference(currentAssignments, Collections.singleton(deletedAssignment))
+        );
+
+        executorService.submit(() -> consumerAssignmentRegistry.updateAssignments(currentState, targetState));
+    }
+
+    private Set<SubscriptionAssignment> getConsumerAssignments() {
+        return assignmentCache.getConsumerSubscriptions().stream()
+                .map(s -> new SubscriptionAssignment(consumerNodeId, s))
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -78,10 +105,10 @@ public class MirroringSupervisorController implements SupervisorController {
             switch (subscription.getState()) {
                 case PENDING:
                 case ACTIVE:
-                    workTracker.forceAssignment(subscription);
+                    onSubscriptionCreated(subscription);
                     break;
                 case SUSPENDED:
-                    workTracker.dropAssignment(subscription);
+                    onSubscriptionRemoved(subscription);
                     break;
                 default:
                     break;
@@ -117,16 +144,15 @@ public class MirroringSupervisorController implements SupervisorController {
 
         notificationsBus.registerSubscriptionCallback(this);
         notificationsBus.registerTopicCallback(this);
-        assignmentRegistry.registerAssignmentCallback(this);
+        assignmentCache.registerAssignmentCallback(this);
 
         supervisor.start();
-        assignmentRegistry.start();
         logger.info("Consumer boot complete. Workload config: [{}]", configFactory.print(CONSUMER_WORKLOAD_NODE_ID, CONSUMER_WORKLOAD_ALGORITHM));
     }
 
     @Override
     public Set<SubscriptionName> assignedSubscriptions() {
-        return assignmentRegistry.createSnapshot().getSubscriptionsForConsumerNode(consumerNodeId);
+        return assignmentCache.getConsumerSubscriptions();
     }
 
     @Override

@@ -82,7 +82,7 @@ public class ConsumerMessageSender {
 
     public void shutdown() {
         running = false;
-        retrySingleThreadExecutor.shutdown();
+        retrySingleThreadExecutor.shutdownNow();
         try {
             retrySingleThreadExecutor.awaitTermination(1, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
