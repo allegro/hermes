@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.management;
 
 import com.google.common.collect.ImmutableSet;
+import org.javers.common.collections.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -25,24 +26,24 @@ import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscri
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
 
-    private Topic topic;
     private GraphiteEndpoint graphiteEndpoint;
     private Client httpClient = ClientBuilder.newClient();
 
     @BeforeMethod
     public void initializeAlways() {
-        topic = operations.buildTopic(randomTopic("group", "topic").build());
         graphiteEndpoint = new GraphiteEndpoint(SharedServices.services().graphiteHttpMock());
     }
 
     @Test
     public void shouldNotListHealthySubscriptions() {
         // given
-        createSubscriptionForOwner("s1", "Team A");
-        createSubscriptionForOwner("s2", "Team B");
+        Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
+        createSubscriptionForOwner(topic, "s1", "Team A");
+        createSubscriptionForOwner(topic, "s2", "Team B");
 
         // then
         assertThat(listUnhealthySubscriptionsForOwner("Team A")).isEmpty();
@@ -52,14 +53,15 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
     @Test
     public void shouldReturnOnlyUnhealthySubscriptionOfSingleOwner() {
         // given
-        createSubscriptionForOwner("ownedSubscription1", "Team A");
-        createSubscriptionForOwner("ownedSubscription2", "Team A");
-        createSubscriptionForOwner("ownedSubscription3", "Team B");
+        Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
+        createSubscriptionForOwner(topic, "ownedSubscription1", "Team A");
+        createSubscriptionForOwner(topic, "ownedSubscription2", "Team A");
+        createSubscriptionForOwner(topic, "ownedSubscription3", "Team B");
 
         graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription1")).withRate(100).withStatusRate(500, 0).build());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription2")).withRate(50).withStatusRate(500, 11).build());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription3")).withRate(100).withStatusRate(500, 0).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic, "ownedSubscription1")).withRate(100).withStatusRate(500, 0).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic, "ownedSubscription2")).withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic, "ownedSubscription3")).withRate(100).withStatusRate(500, 0).build());
 
         // then
         assertThat(listUnhealthySubscriptionsForOwner("Team A")).containsOnly(
@@ -71,14 +73,72 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldReturnOnlySpecifiedUnhealthySubscription() {
+        // given
+        Topic topic1 = operations.buildTopic(topic("group", "topic1").build());
+        Topic topic2 = operations.buildTopic(topic("group", "topic2").build());
+        Topic topic3 = operations.buildTopic(topic("group", "topic3").build());
+
+        createSubscriptionForOwner(topic1, "ownedSubscription1", "Team A");
+        createSubscriptionForOwner(topic2, "ownedSubscription2", "Team A");
+        createSubscriptionForOwner(topic3, "ownedSubscription3", "Team A");
+        createSubscriptionForOwner(topic1, "ownedSubscription4", "Team B");
+        createSubscriptionForOwner(topic2, "ownedSubscription5", "Team B");
+        createSubscriptionForOwner(topic3, "ownedSubscription6", "Team B");
+
+        graphiteEndpoint.returnMetricForTopic(topic1.getName().getGroupName(), topic1.getName().getName(), 100, 50);
+        graphiteEndpoint.returnMetricForTopic(topic2.getName().getGroupName(), topic2.getName().getName(), 100, 50);
+        graphiteEndpoint.returnMetricForTopic(topic3.getName().getGroupName(), topic3.getName().getName(), 100, 50);
+
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic1, "ownedSubscription1")).withRate(100).withStatusRate(500, 0).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic2, "ownedSubscription2")).withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic3, "ownedSubscription3")).withRate(50).withStatusRate(500, 11).build());
+
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic1, "ownedSubscription4")).withRate(100).withStatusRate(500, 0).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic2, "ownedSubscription5")).withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic3, "ownedSubscription6")).withRate(50).withStatusRate(500, 11).build());
+
+        // then
+        assertThat(listUnhealthySubscriptionsForOwner("Team A", Lists.asList(), Lists.asList("group.topic2"))).containsOnly(
+                new UnhealthySubscription("ownedSubscription2", "group.topic2", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11)))
+        );
+        assertThat(listUnhealthySubscriptionsForOwnerAsPlainText("Team A", Lists.asList(), Lists.asList("group.topic2"))).isEqualTo(
+                "ownedSubscription2 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s"
+        );
+        assertThat(listAllUnhealthySubscriptions(Lists.asList(), Lists.asList("group.topic2"))).containsOnly(
+                new UnhealthySubscription("ownedSubscription2", "group.topic2", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11))),
+                new UnhealthySubscription("ownedSubscription5", "group.topic2", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11)))
+        );
+        assertThat(listAllUnhealthySubscriptionsAsPlainText(Lists.asList(), Lists.asList("group.topic2"))).isEqualTo(
+                "ownedSubscription2 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s\r\n" +
+                "ownedSubscription5 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s"
+        );
+        assertThat(listAllUnhealthySubscriptionsAsPlainText(Lists.asList("ownedSubscription2"), Lists.asList("group.topic2"))).isEqualTo(
+                "ownedSubscription2 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s"
+        );
+        assertThat(listAllUnhealthySubscriptions()).containsOnly(
+                new UnhealthySubscription("ownedSubscription2", "group.topic2", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11))),
+                new UnhealthySubscription("ownedSubscription3", "group.topic3", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11))),
+                new UnhealthySubscription("ownedSubscription5", "group.topic2", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11))),
+                new UnhealthySubscription("ownedSubscription6", "group.topic3", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11)))
+        );
+        assertThat(listAllUnhealthySubscriptions(Lists.asList("ownedSubscription2", "ownedSubscription3"),
+                Lists.asList("group.topic2", "group.topic3"))).containsOnly(
+                new UnhealthySubscription("ownedSubscription2", "group.topic2", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11))),
+                new UnhealthySubscription("ownedSubscription3", "group.topic3", Severity.IMPORTANT, ImmutableSet.of(malfunctioning(11)))
+        );
+    }
+
+    @Test
     public void shouldReportAllUnhealthySubscriptionsForEmptyOwnerSource() {
         // given
-        createSubscriptionForOwner("ownedSubscription1", "Team A");
-        createSubscriptionForOwner("ownedSubscription2", "Team A");
+        Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
+        createSubscriptionForOwner(topic, "ownedSubscription1", "Team A");
+        createSubscriptionForOwner(topic, "ownedSubscription2", "Team A");
 
         graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription1")).withRate(100).withStatusRate(500, 0).build());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription2")).withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic, "ownedSubscription1")).withRate(100).withStatusRate(500, 0).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic, "ownedSubscription2")).withRate(50).withStatusRate(500, 11).build());
 
         // then
         assertThat(listAllUnhealthySubscriptions()).containsOnly(
@@ -92,14 +152,15 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
     @Test
     public void shouldReportUnhealthySubscriptionsDisrespectingSeverity() {
         // given
-        createSubscriptionForOwner("ownedSubscription1", "Team A", Severity.CRITICAL);
-        createSubscriptionForOwner("ownedSubscription2", "Team A", Severity.IMPORTANT);
-        createSubscriptionForOwner("ownedSubscription3", "Team A", Severity.NON_IMPORTANT);
+        Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
+        createSubscriptionForOwner(topic, "ownedSubscription1", "Team A", Severity.CRITICAL);
+        createSubscriptionForOwner(topic, "ownedSubscription2", "Team A", Severity.IMPORTANT);
+        createSubscriptionForOwner(topic, "ownedSubscription3", "Team A", Severity.NON_IMPORTANT);
 
         graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription1")).withRate(50).withStatusRate(500, 11).build());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription2")).withRate(50).withStatusRate(500, 11).build());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName("ownedSubscription3")).withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic, "ownedSubscription1")).withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic, "ownedSubscription2")).withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(subName(topic, "ownedSubscription3")).withRate(50).withStatusRate(500, 11).build());
 
         // then
         assertThat(listUnhealthySubscriptionsDisrespectingSeverity("Team A")).contains(
@@ -117,7 +178,8 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
     @Test
     public void shouldReportSuspendedSubscriptionAsHealthy() {
         // given
-        Subscription s = createSubscriptionForOwner("subscription1", "Team A");
+        Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
+        Subscription s = createSubscriptionForOwner(topic, "subscription1", "Team A");
 
         // when
         s.setState(Subscription.State.SUSPENDED);
@@ -127,11 +189,11 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         assertThat(listUnhealthySubscriptionsForOwnerAsPlainText("Team A")).isEmpty();
     }
 
-    private Subscription createSubscriptionForOwner(String subscriptionName, String ownerId) {
-        return createSubscriptionForOwner(subscriptionName, ownerId, Severity.IMPORTANT);
+    private Subscription createSubscriptionForOwner(Topic topic, String subscriptionName, String ownerId) {
+        return createSubscriptionForOwner(topic, subscriptionName, ownerId, Severity.IMPORTANT);
     }
 
-    private Subscription createSubscriptionForOwner(String subscriptionName, String ownerId, Severity severity) {
+    private Subscription createSubscriptionForOwner(Topic topic, String subscriptionName, String ownerId, Severity severity) {
         Subscription subscription = subscription(topic, subscriptionName)
                 .withEndpoint(HTTP_ENDPOINT_URL)
                 .withOwner(ownerId(ownerId))
@@ -148,45 +210,69 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
     }
 
     private List<UnhealthySubscription> listUnhealthySubscriptionsForOwner(String ownerId) {
-        return listUnhealthy("Plaintext", ownerId, true);
+        return listUnhealthy("Plaintext", ownerId, true, Lists.asList(), Lists.asList());
+    }
+
+    private List<UnhealthySubscription> listUnhealthySubscriptionsForOwner(String ownerId, List<String> subscriptionNames, List<String> qualifiedTopicNames) {
+        return listUnhealthy("Plaintext", ownerId, true, subscriptionNames, qualifiedTopicNames);
     }
 
     private List<UnhealthySubscription> listUnhealthySubscriptionsDisrespectingSeverity(String ownerId) {
-        return listUnhealthy("Plaintext", ownerId, false);
+        return listUnhealthy("Plaintext", ownerId, false, Lists.asList(), Lists.asList());
+    }
+
+    private List<UnhealthySubscription> listUnhealthySubscriptionsDisrespectingSeverity(String ownerId, List<String> subscriptionNames, List<String> qualifiedTopicNames) {
+        return listUnhealthy("Plaintext", ownerId, false, subscriptionNames, qualifiedTopicNames);
     }
 
     private List<UnhealthySubscription> listAllUnhealthySubscriptions() {
-        return listUnhealthy(null, null, true);
+        return listUnhealthy(null, null, true, Lists.asList(), Lists.asList());
     }
 
-    private List<UnhealthySubscription> listUnhealthy(String ownerSourceName, String ownerId, boolean respectMonitoringSeverity) {
-        return management.unhealthyEndpoint().listUnhealthy(ownerSourceName, ownerId, respectMonitoringSeverity)
+    private List<UnhealthySubscription> listAllUnhealthySubscriptions(List<String> subscriptionNames, List<String> qualifiedTopicNames) {
+        return listUnhealthy(null, null, true, subscriptionNames, qualifiedTopicNames);
+    }
+
+    private List<UnhealthySubscription> listUnhealthy(String ownerSourceName, String ownerId, boolean respectMonitoringSeverity,
+                                                      List<String> subscriptionNames, List<String> qualifiedTopicNames) {
+        return management.unhealthyEndpoint().listUnhealthy(ownerSourceName, ownerId, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
                 .readEntity(new GenericType<List<UnhealthySubscription>>() {});
     }
 
     private String listUnhealthySubscriptionsForOwnerAsPlainText(String ownerId) {
-        return listUnhealthyAsPlainText("Plaintext", ownerId, true);
+        return listUnhealthyAsPlainText("Plaintext", ownerId, true, Lists.asList(), Lists.asList());
+    }
+
+    private String listUnhealthySubscriptionsForOwnerAsPlainText(String ownerId, List<String> subscriptionNames, List<String> qualifiedTopicNames) {
+        return listUnhealthyAsPlainText("Plaintext", ownerId, true, subscriptionNames, qualifiedTopicNames);
     }
 
     private String listUnhealthySubscriptionsDisrespectingSeverityAsPlainText(String ownerId) {
-        return listUnhealthyAsPlainText("Plaintext", ownerId, false);
+        return listUnhealthyAsPlainText("Plaintext", ownerId, false, Lists.asList(), Lists.asList());
     }
 
     private String listAllUnhealthySubscriptionsAsPlainText() {
-        return listUnhealthyAsPlainText(null, null, true);
+        return listUnhealthyAsPlainText(null, null, true, Lists.asList(), Lists.asList());
     }
 
-    private String listUnhealthyAsPlainText(String ownerSourceName, String ownerId, boolean respectMonitoringSeverity) {
+    private String listAllUnhealthySubscriptionsAsPlainText(List<String> subscriptionNames, List<String> qualifiedTopicNames) {
+        return listUnhealthyAsPlainText(null, null, true, subscriptionNames, qualifiedTopicNames);
+    }
+
+    private String listUnhealthyAsPlainText(String ownerSourceName, String ownerId, boolean respectMonitoringSeverity,
+                                            List<String> subscriptionNames, List<String> qualifiedTopicNames) {
         return httpClient.target(MANAGEMENT_ENDPOINT_URL)
                 .path("unhealthy")
                 .queryParam("ownerSourceName", ownerSourceName)
                 .queryParam("ownerId", ownerId)
                 .queryParam("respectMonitoringSeverity", respectMonitoringSeverity)
+                .queryParam("subscriptionNames", (Object[])subscriptionNames.toArray(new String[0]))
+                .queryParam("qualifiedTopicNames", (Object[])qualifiedTopicNames.toArray(new String[0]))
                 .request(TEXT_PLAIN)
                 .get(String.class);
     }
 
-    private String subName(String rawSubscriptionName) {
+    private String subName(Topic topic, String rawSubscriptionName) {
         return topic.getQualifiedName() + "." + rawSubscriptionName;
     }
 }

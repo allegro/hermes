@@ -38,12 +38,14 @@ public class UnhealthyEndpoint {
     public Response listUnhealthy(
             @QueryParam("ownerSourceName") String ownerSourceName,
             @QueryParam("ownerId") String id,
-            @DefaultValue("true") @QueryParam("respectMonitoringSeverity") boolean respectMonitoringSeverity) {
+            @DefaultValue("true") @QueryParam("respectMonitoringSeverity") boolean respectMonitoringSeverity,
+            @QueryParam("subscriptionNames") List<String> subscriptionNames,
+            @QueryParam("qualifiedTopicNames") List<String> qualifiedTopicNames) {
 
         Optional<OwnerId> ownerId = resolveOwnerId(ownerSourceName, id);
         List<UnhealthySubscription> unhealthySubscriptions = ownerId.isPresent()
-                ? subscriptionService.getUnhealthyForOwner(ownerId.get(), respectMonitoringSeverity)
-                : subscriptionService.getAllUnhealthy(respectMonitoringSeverity);
+                ? subscriptionService.getUnhealthyForOwner(ownerId.get(), respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
+                : subscriptionService.getAllUnhealthy(respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames);
         return Response.ok()
                 .entity(new GenericEntity<List<UnhealthySubscription>>(unhealthySubscriptions){})
                 .build();
