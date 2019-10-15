@@ -232,4 +232,48 @@ public class FlatBinaryWorkloadRegistryTest extends ZookeeperBaseTest {
         // then
         assertThat(clusterAssignmentCache.getAssignedConsumers()).containsOnly(consumer2);
     }
+
+    @Test
+    public void shouldCleanRegistryFromStaleAssignments() {
+        // given
+        SubscriptionAssignmentView initView = new SubscriptionAssignmentView(Collections.emptyMap());
+        SubscriptionAssignmentView targetView = new SubscriptionAssignmentView(ImmutableMap.of(
+                subscription1, ImmutableSet.of(
+                        new SubscriptionAssignment(consumer1, subscription1),
+                        new SubscriptionAssignment(consumer2, subscription1)
+                ),
+                subscription2, ImmutableSet.of(
+                        new SubscriptionAssignment(consumer1, subscription2)
+                )
+        ));
+
+        // when
+        registry.updateAssignments(initView, targetView);
+
+        // then
+        wait.untilZookeeperPathIsCreated(registryPaths.consumerWorkloadPath(consumer1));
+        wait.untilZookeeperPathIsCreated(registryPaths.consumerWorkloadPath(consumer2));
+
+        // when
+        clusterAssignmentCache.refresh();
+
+        // then
+        assertThat(clusterAssignmentCache.createSnapshot().getAssignmentsCountForConsumerNode(consumer1)).isEqualTo(2);
+
+        // when subscription2 is removed
+        SubscriptionAssignmentView afterRebalanceView = new SubscriptionAssignmentView(ImmutableMap.of(
+                subscription1, ImmutableSet.of(
+                        new SubscriptionAssignment(consumer1, subscription1),
+                        new SubscriptionAssignment(consumer2, subscription1)
+                )
+        ));
+        // and
+        registry.updateAssignments(clusterAssignmentCache.createSnapshot(), afterRebalanceView);
+
+        // and
+        clusterAssignmentCache.refresh();
+
+        // then
+        assertThat(clusterAssignmentCache.createSnapshot().getAssignmentsCountForConsumerNode(consumer1)).isEqualTo(1);
+    }
 }
