@@ -59,12 +59,13 @@ public class TopicMetadataLoadingRunner {
         this.threadPoolSize = threadPoolSize;
     }
 
-    public void refreshMetadata() {
+    public List<MetadataLoadingResult> refreshMetadata() {
         long start = System.currentTimeMillis();
         logger.info("Loading topics metadata");
         List<CachedTopic> topics = topicsCache.getTopics();
         List<MetadataLoadingResult> allResults = loadMetadataForTopics(topics);
         logResultInfo(allResults, System.currentTimeMillis() - start);
+        return allResults;
     }
 
     private List<MetadataLoadingResult> loadMetadataForTopics(List<CachedTopic> topics) {

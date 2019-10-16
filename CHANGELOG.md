@@ -1,6 +1,64 @@
 ## [Unreleased]
 
-### ...
+### Features
+
+...
+
+## 1.3.0 (1.10.2019)
+
+### Features
+
+#### ([1110](https://github.com/allegro/hermes/pull/1110)) Flat binary storage for consumers workload
+Introducing more concise registry type for consumers workload distribution that should help scale better. 
+Each consumer uses a single znode that contains binary encoded list of subscriptions that the consumer should process.
+The configuration loads fast and is updated only on workload distribution change.
+Enabled with `consumer.workload.registry.type=flat-binary` setting. The default is `hierarchical` type.
+
+#### A single consumer registry and leader election
+Consumer registry is extracted from consumer workload and is now used by max-rate job as well. 
+The registry contains a leader latch which is always enabled and available.
+
+#### ([1095](https://github.com/allegro/hermes/pull/1095)) Removal of deprecated `StrictMaxRateProvider`
+The legacy max-rate provider type is now removed.
+
+#### Removal of inflight message counter
+The inflight message counter as well as the distributed zookeeper counter are now removed.
+This feature was not used but was leaving a lot of junk in zookeeper.
+
+#### ([1106](https://github.com/allegro/hermes/pull/1106)) Consumer constraints management in hermes-console
+This feature allows easy management of consumer constraints. Link to it is not visible in the home screen as it is an admin feature 
+(all endpoints are admin-secured though), accessed from `http://<hermes-console>/#/constraints` URL.
+
+#### ([1113](https://github.com/allegro/hermes/pull/1113)) Frontends wait for kafka when booting up
+Frontends will not start the HTTP server unless the underlying kafka brokers are available, i.e. we can fetch topics metadata from them. 
+By default the feature is disabled, enable with `frontend.startup.wait.kafka.enabled=true`.
+
+#### ([1109](https://github.com/allegro/hermes/pull/1109)) Cancel all waiting messages on stopping sender
+When a subscription is stopped all messages that were already accepted by consumer message sender will be now dropped.
+
+## 1.2.5 (27.09.2019)
+
+### Features
+
+#### ([1009](https://github.com/allegro/hermes/issues/1009)) Disable dynamic reloading of configuration files
+Enabling possibility of providing external archaius configuration.
+Pulling archaius initialization from `ConfigFactory` out and initializing `DynamicPropertyFactory` at the start of `hermes-consummers` and `hermes-frontend`. 
+Restore the default way that archaius builds configuration with the addition of a configurable option to enable/disable config reload, by default is disabled.
+
+## 1.2.4 (23.09.2019)
+
+### Features
+
+#### ([1096](https://github.com/allegro/hermes/pull/1096)) Failed messages metrics
+New client metrics have been added for failed messages that won't be retried:
+- hermes-client.*.retries.exhausted - the number of unsent messages, max retries limit reached
+- hermes-client.*.retries.success - the number of retried messages with success
+- hermes-client.*.retries.attempts - how many retries the message required before success delivery
+- hermes-client.*.retries.count - the number of retried messages
+
+#### ([1009](https://github.com/allegro/hermes/issues/1009)) Disable dynamic reloading of configuration files
+Hermes uses archaius library (https://github.com/Netflix/archaius) for configuration management.
+By default, it tracks configuration changes at the given intervals. This mechanism has been disabled.
 
 ## 1.2.3 (10.09.2019)
 

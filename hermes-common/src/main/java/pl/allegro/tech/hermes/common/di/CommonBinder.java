@@ -4,9 +4,8 @@ import com.yammer.metrics.core.HealthCheckRegistry;
 import org.apache.avro.Schema;
 import org.glassfish.hk2.api.TypeLiteral;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.DistributedEphemeralCounterFactory;
+import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.GraphiteWebTargetFactory;
 import pl.allegro.tech.hermes.common.di.factories.GroupRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
@@ -66,7 +65,7 @@ public class CommonBinder extends AbstractBinder {
         bindSingleton(CuratorClientFactory.class);
         bindSingleton(HermesMetrics.class);
         bindSingleton(HealthCheckRegistry.class);
-        bindSingleton(ConfigFactory.class);
+        bindSingletonFactory(ConfigFactoryCreator.class);
         bindSingleton(MessageContentWrapper.class);
         bindSingleton(DeserializationMetrics.class);
         bindSingleton(JsonMessageContentWrapper.class);
@@ -78,7 +77,6 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(GraphiteWebTargetFactory.class);
         bindSingletonFactory(ObjectMapperFactory.class);
         bindSingletonFactory(SharedCounterFactory.class);
-        bindSingletonFactory(DistributedEphemeralCounterFactory.class);
         bindSingletonFactory(MetricRegistryFactory.class);
         bindSingletonFactory(ZookeeperPathsFactory.class);
         bindSingletonFactory(GroupRepositoryFactory.class);

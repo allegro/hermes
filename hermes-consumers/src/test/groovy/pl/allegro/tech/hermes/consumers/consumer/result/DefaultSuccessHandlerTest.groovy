@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.result
 
 import com.codahale.metrics.MetricRegistry
+import com.netflix.config.DynamicPropertyFactory
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.TrackingMode
 import pl.allegro.tech.hermes.common.config.ConfigFactory
@@ -19,7 +20,7 @@ class DefaultSuccessHandlerTest extends Specification {
 
     private OffsetQueue offsetQueue = new OffsetQueue(
             new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
-            new ConfigFactory()
+            new ConfigFactory(DynamicPropertyFactory.getInstance())
     )
 
     private InMemoryLogRepository sendingTracker = new InMemoryLogRepository()

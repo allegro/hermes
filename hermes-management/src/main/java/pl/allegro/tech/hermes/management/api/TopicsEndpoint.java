@@ -105,7 +105,7 @@ public class TopicsEndpoint {
     @DELETE
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
-    @RolesAllowed({Roles.TOPIC_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER})
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName, @Context SecurityContext securityContext) {
         topicService.removeTopicWithSchema(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
@@ -117,7 +117,7 @@ public class TopicsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
-    @RolesAllowed({Roles.TOPIC_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER})
     @ApiOperation(value = "Update topic", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch,
                            @Context SecurityContext securityContext) {
