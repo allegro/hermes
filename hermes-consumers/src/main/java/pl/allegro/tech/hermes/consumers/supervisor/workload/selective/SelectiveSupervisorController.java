@@ -8,13 +8,15 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
-import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 
 import java.util.Optional;
 import java.util.Set;
@@ -35,8 +37,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     private final ConsumersSupervisor supervisor;
     private final InternalNotificationsBus notificationsBus;
     private final SubscriptionsCache subscriptionsCache;
-    private final SubscriptionAssignmentRegistry registry;
-    private final WorkTracker workTracker;
+    private final ConsumerAssignmentCache assignmentCache;
     private final ConsumerNodesRegistry consumersRegistry;
     private final BalancingJob balancingJob;
     private final ZookeeperAdminCache adminCache;
@@ -47,8 +48,9 @@ public class SelectiveSupervisorController implements SupervisorController {
     public SelectiveSupervisorController(ConsumersSupervisor supervisor,
                                          InternalNotificationsBus notificationsBus,
                                          SubscriptionsCache subscriptionsCache,
-                                         SubscriptionAssignmentRegistry registry,
-                                         WorkTracker workTracker,
+                                         ConsumerAssignmentCache assignmentCache,
+                                         ConsumerAssignmentRegistry consumerAssignmentRegistry,
+                                         ClusterAssignmentCache clusterAssignmentCache,
                                          ConsumerNodesRegistry consumersRegistry,
                                          ZookeeperAdminCache adminCache,
                                          ExecutorService assignmentExecutor,
@@ -59,8 +61,7 @@ public class SelectiveSupervisorController implements SupervisorController {
         this.supervisor = supervisor;
         this.notificationsBus = notificationsBus;
         this.subscriptionsCache = subscriptionsCache;
-        this.registry = registry;
-        this.workTracker = workTracker;
+        this.assignmentCache = assignmentCache;
         this.consumersRegistry = consumersRegistry;
         this.adminCache = adminCache;
         this.assignmentExecutor = assignmentExecutor;
@@ -69,8 +70,10 @@ public class SelectiveSupervisorController implements SupervisorController {
                 consumersRegistry,
                 configFactory,
                 subscriptionsCache,
+                clusterAssignmentCache,
+                consumerAssignmentRegistry,
                 new SelectiveWorkBalancer(),
-                workTracker, metrics,
+                metrics,
                 configFactory.getIntProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL),
                 configFactory.getStringProperty(KAFKA_CLUSTER_NAME),
                 workloadConstraintsRepository);
@@ -99,7 +102,7 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public void onSubscriptionChanged(Subscription subscription) {
-        if (workTracker.isAssignedTo(subscription.getQualifiedName(), consumerId())) {
+        if (assignmentCache.isAssignedTo(subscription.getQualifiedName())) {
             logger.info("Updating subscription {}", subscription.getName());
             supervisor.updateSubscription(subscription);
         }
@@ -108,7 +111,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     @Override
     public void onTopicChanged(Topic topic) {
         for (Subscription subscription : subscriptionsCache.subscriptionsOfTopic(topic.getName())) {
-            if(workTracker.isAssignedTo(subscription.getQualifiedName(), consumerId())) {
+            if(assignmentCache.isAssignedTo(subscription.getQualifiedName())) {
                 supervisor.updateTopic(subscription, topic);
             }
         }
@@ -123,14 +126,11 @@ public class SelectiveSupervisorController implements SupervisorController {
 
         notificationsBus.registerSubscriptionCallback(this);
         notificationsBus.registerTopicCallback(this);
-        registry.registerAssignmentCallback(this);
+        assignmentCache.registerAssignmentCallback(this);
 
         supervisor.start();
-        consumersRegistry.start();
-        registry.start();
         if (configFactory.getBooleanProperty(CONSUMER_WORKLOAD_AUTO_REBALANCE)) {
             balancingJob.start();
-            consumersRegistry.startLeaderLatch();
         } else {
             logger.info("Automatic workload rebalancing is disabled.");
         }
@@ -147,23 +147,22 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public Set<SubscriptionName> assignedSubscriptions() {
-        return registry.createSnapshot().getSubscriptionsForConsumerNode(consumerId());
+        return assignmentCache.getConsumerSubscriptions();
     }
 
     @Override
     public void shutdown() throws InterruptedException {
         balancingJob.stop();
-        consumersRegistry.stopLeaderLatch();
         supervisor.shutdown();
     }
 
     @Override
     public Optional<String> watchedConsumerId() {
-        return Optional.of(consumerId());
+        return Optional.of(consumersRegistry.getConsumerId());
     }
 
     public String consumerId() {
-        return consumersRegistry.getId();
+        return consumersRegistry.getConsumerId();
     }
 
     public boolean isLeader() {
@@ -173,7 +172,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     @Override
     public void onRetransmissionStarts(SubscriptionName subscription) throws Exception {
         logger.info("Triggering retransmission for subscription {}", subscription);
-        if (workTracker.isAssignedTo(subscription, consumerId())) {
+        if (assignmentCache.isAssignedTo(subscription)) {
             supervisor.retransmit(subscription);
         }
     }

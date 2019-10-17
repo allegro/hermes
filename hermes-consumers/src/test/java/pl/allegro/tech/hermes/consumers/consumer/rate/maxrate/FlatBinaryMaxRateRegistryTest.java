@@ -12,12 +12,14 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.TestSubscriptionIds;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
@@ -33,32 +35,27 @@ public class FlatBinaryMaxRateRegistryTest extends ZookeeperBaseTest {
     private final SubscriptionId subscriptionId2 = SubscriptionId.from(subscription2, 2L);
 
     private final SubscriptionsCache subscriptionsCache = mock(SubscriptionsCache.class);
-    private final SubscriptionIds subscriptionIds = mock(SubscriptionIds.class);
+    private final SubscriptionIds subscriptionIds = new TestSubscriptionIds(ImmutableList.of(subscriptionId1, subscriptionId2));
 
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
     private final ConfigFactory configFactory = new MutableConfigFactory();
-
-    private final FlatBinaryMaxRateRegistry.AssignedConsumersSupplier assignedConsumersSupplier = mock(FlatBinaryMaxRateRegistry.AssignedConsumersSupplier.class);
-    private final FlatBinaryMaxRateRegistry.AssignedSubscriptionsSupplier assignedSubscriptionsSupplier = mock(FlatBinaryMaxRateRegistry.AssignedSubscriptionsSupplier.class);
-
-    private final FlatBinaryMaxRateRegistry maxRateRegistry = new FlatBinaryMaxRateRegistry(configFactory,
-            assignedConsumersSupplier, assignedSubscriptionsSupplier, zookeeperClient, zookeeperPaths, subscriptionIds);
-
     private final String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
     private final String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
+
+    private final ConsumerAssignmentCache consumerAssignmentCache = mock(ConsumerAssignmentCache.class);
+    private final ClusterAssignmentCache clusterAssignmentCache = mock(ClusterAssignmentCache.class);
+
+    private final FlatBinaryMaxRateRegistry maxRateRegistry = new FlatBinaryMaxRateRegistry(configFactory,
+            clusterAssignmentCache, consumerAssignmentCache, zookeeperClient, zookeeperPaths, subscriptionIds);
+
     private final FlatBinaryMaxRateRegistryPaths paths = new FlatBinaryMaxRateRegistryPaths(zookeeperPaths, consumerId, cluster);
 
     @Before
     public void setUp() {
         when(subscriptionsCache.listActiveSubscriptionNames()).thenReturn(ImmutableList.of(subscription1, subscription2));
 
-        when(subscriptionIds.getSubscriptionId(subscription1)).thenReturn(Optional.of(subscriptionId1));
-        when(subscriptionIds.getSubscriptionId(subscriptionId1.getValue())).thenReturn(Optional.of(subscriptionId1));
-        when(subscriptionIds.getSubscriptionId(subscription2)).thenReturn(Optional.of(subscriptionId2));
-        when(subscriptionIds.getSubscriptionId(subscriptionId2.getValue())).thenReturn(Optional.of(subscriptionId2));
-
-        when(assignedConsumersSupplier.getAllAssignedConsumers()).thenReturn(ImmutableSet.of(consumerId));
-        when(assignedSubscriptionsSupplier.getAssignedSubscriptions(consumerId)).thenReturn(ImmutableSet.of(subscription1, subscription2));
+        when(clusterAssignmentCache.getAssignedConsumers()).thenReturn(ImmutableSet.of(consumerId));
+        when(consumerAssignmentCache.getConsumerSubscriptions()).thenReturn(ImmutableSet.of(subscription1, subscription2));
         maxRateRegistry.start();
     }
 
@@ -142,7 +139,7 @@ public class FlatBinaryMaxRateRegistryTest extends ZookeeperBaseTest {
         wait.untilZookeeperPathIsCreated(paths.consumerMaxRatePath(consumerId));
 
         // when
-        when(assignedConsumersSupplier.getAllAssignedConsumers()).thenReturn(Collections.emptySet());
+        when(clusterAssignmentCache.getAssignedConsumers()).thenReturn(Collections.emptySet());
         maxRateRegistry.onBeforeMaxRateCalculation(); // cleanup
 
         // then
@@ -162,7 +159,7 @@ public class FlatBinaryMaxRateRegistryTest extends ZookeeperBaseTest {
         wait.untilZookeeperPathIsCreated(paths.consumerMaxRatePath(consumerId));
 
         // when
-        when(assignedSubscriptionsSupplier.getAssignedSubscriptions(consumerId))
+        when(clusterAssignmentCache.getConsumerSubscriptions(consumerId))
                 .thenReturn(Collections.singleton(subscription1));
 
         // and
