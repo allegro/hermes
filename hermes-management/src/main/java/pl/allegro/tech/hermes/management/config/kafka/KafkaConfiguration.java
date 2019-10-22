@@ -110,8 +110,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     kafkaNamesMapper
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
-            ConsumerGroupManager consumerGroupManager = new KafkaConsumerGroupManager(storage, kafkaNamesMapper,
-                    topicProperties.getPartitions(), kafkaProperties.getQualifiedClusterName());
+            ConsumerGroupManager consumerGroupManager = new KafkaConsumerGroupManager(kafkaNamesMapper,
+                    kafkaProperties.getQualifiedClusterName(), kafkaProperties.getBootstrapKafkaServer());
             return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper,
                     new OffsetsAvailableChecker(consumerPool, storage),
