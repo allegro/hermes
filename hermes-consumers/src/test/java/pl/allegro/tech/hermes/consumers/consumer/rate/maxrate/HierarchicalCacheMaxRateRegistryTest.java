@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Duration.TWO_SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -71,7 +72,7 @@ public class HierarchicalCacheMaxRateRegistryTest extends ZookeeperBaseTest {
                 zookeeperPaths.consumersRateHistoryPath(cluster, consumer.getSubscription(), consumer.getConsumerId()));
 
         // then
-        await().atMost(Duration.TWO_SECONDS).until(() -> maxRateRegistry.getRateHistory(consumer).equals(rateHistory));
+        await().atMost(TWO_SECONDS).until(() -> maxRateRegistry.getRateHistory(consumer).equals(rateHistory));
     }
 
     @Test
@@ -93,9 +94,9 @@ public class HierarchicalCacheMaxRateRegistryTest extends ZookeeperBaseTest {
                 zookeeperPaths.consumersMaxRatePath(cluster, consumer2.getSubscription(), consumer2.getConsumerId()));
 
         // then
-        await().atMost(Duration.TWO_SECONDS).until(() -> maxRateRegistry.getMaxRate(consumer1).isPresent() &&
+        await().atMost(TWO_SECONDS).until(() -> maxRateRegistry.getMaxRate(consumer1).isPresent() &&
                 maxRateRegistry.getMaxRate(consumer1).get().equals(new MaxRate(350.0)));
-        await().atMost(Duration.TWO_SECONDS).until(() -> maxRateRegistry.getMaxRate(consumer2).isPresent() &&
+        await().atMost(TWO_SECONDS).until(() -> maxRateRegistry.getMaxRate(consumer2).isPresent() &&
                 maxRateRegistry.getMaxRate(consumer2).get().equals(new MaxRate(0.5)));
     }
 
@@ -121,7 +122,7 @@ public class HierarchicalCacheMaxRateRegistryTest extends ZookeeperBaseTest {
                 zookeeperPaths.consumersRatePath(cluster, consumer2.getSubscription(), consumer2.getConsumerId()));
 
         // then
-        await().atMost(Duration.TWO_SECONDS).until(() -> !maxRateRegistry.getMaxRate(consumer2).isPresent());
+        await().atMost(TWO_SECONDS).until(() -> !maxRateRegistry.getMaxRate(consumer2).isPresent());
     }
 
     @Test
