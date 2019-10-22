@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import com.jayway.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +18,7 @@ import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 import java.util.Collections;
 import java.util.Optional;
 
+import static com.jayway.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -69,7 +71,7 @@ public class HierarchicalCacheMaxRateRegistryTest extends ZookeeperBaseTest {
                 zookeeperPaths.consumersRateHistoryPath(cluster, consumer.getSubscription(), consumer.getConsumerId()));
 
         // then
-        assertEquals(rateHistory, maxRateRegistry.getRateHistory(consumer));
+        await().atMost(Duration.TWO_SECONDS).until(() -> maxRateRegistry.getRateHistory(consumer).equals(rateHistory));
     }
 
     @Test
@@ -91,8 +93,10 @@ public class HierarchicalCacheMaxRateRegistryTest extends ZookeeperBaseTest {
                 zookeeperPaths.consumersMaxRatePath(cluster, consumer2.getSubscription(), consumer2.getConsumerId()));
 
         // then
-        assertEquals(new MaxRate(350.0), maxRateRegistry.getMaxRate(consumer1).get());
-        assertEquals(new MaxRate(0.5), maxRateRegistry.getMaxRate(consumer2).get());
+        await().atMost(Duration.TWO_SECONDS).until(() -> maxRateRegistry.getMaxRate(consumer1).isPresent() &&
+                maxRateRegistry.getMaxRate(consumer1).get().equals(new MaxRate(350.0)));
+        await().atMost(Duration.TWO_SECONDS).until(() -> maxRateRegistry.getMaxRate(consumer2).isPresent() &&
+                maxRateRegistry.getMaxRate(consumer2).get().equals(new MaxRate(0.5)));
     }
 
     @Test
@@ -117,7 +121,7 @@ public class HierarchicalCacheMaxRateRegistryTest extends ZookeeperBaseTest {
                 zookeeperPaths.consumersRatePath(cluster, consumer2.getSubscription(), consumer2.getConsumerId()));
 
         // then
-        assertEquals(Optional.empty(), maxRateRegistry.getMaxRate(consumer2));
+        await().atMost(Duration.TWO_SECONDS).until(() -> !maxRateRegistry.getMaxRate(consumer2).isPresent());
     }
 
     @Test
