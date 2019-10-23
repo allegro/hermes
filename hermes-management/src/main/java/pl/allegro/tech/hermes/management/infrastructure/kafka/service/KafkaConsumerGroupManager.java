@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG;
 
 public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
@@ -75,6 +76,8 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
         props.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapKafkaServer);
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, 1000);
+        props.put("default.api.timeout.ms", 1000);
         props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         return props;

@@ -28,24 +28,33 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 @Testcontainers
 class KafkaConsumerGroupManagerSpec extends Specification {
 
-    @Shared
-    KafkaContainer kafkaContainer = new KafkaContainer()
-
     @Rule
     OutputCapture output = new OutputCapture()
 
-    KafkaNamesMapper namesMapper = new NamespaceKafkaNamesMapper("")
-    AdminClient adminClient
-    KafkaProducer<byte[], byte[]> producer
-    ConsumerGroupManager consumerGroupManager
-    ConsumerGroupId groupId
+    @Shared
+    KafkaContainer kafkaContainer = new KafkaContainer()
 
+    @Shared
+    String containerId
+
+    @Shared
+    AdminClient adminClient
+
+    @Shared
+    KafkaProducer<byte[], byte[]> producer
+
+    @Shared
     def topic = "pl.allegro.test.Foo"
     def subscription = createTestSubscription("test-subscription")
 
-    def setup() {
+    KafkaNamesMapper namesMapper = new NamespaceKafkaNamesMapper("")
+    ConsumerGroupManager consumerGroupManager
+    ConsumerGroupId groupId
+
+    def setupSpec() {
         kafkaContainer.start()
         kafkaContainer.waitingFor(Wait.forHealthcheck())
+        containerId = kafkaContainer.containerId
 
         Properties props = new Properties()
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.bootstrapServers)
@@ -61,7 +70,9 @@ class KafkaConsumerGroupManagerSpec extends Specification {
         assert describeTopicsResult[0].partitions()
                 .collect { it.partition() }
                 .containsAll([0, 1, 2])
+    }
 
+    def setup() {
         groupId = namesMapper.toConsumerGroupId(subscription.qualifiedName)
         consumerGroupManager = new KafkaConsumerGroupManager(namesMapper, "primary", kafkaContainer.bootstrapServers)
     }
@@ -88,6 +99,22 @@ class KafkaConsumerGroupManagerSpec extends Specification {
         and:
         output.toString().contains 'Creating consumer group for subscription pl.allegro.test.Foo$test-subscription, cluster: primary'
         output.toString().contains 'Successfully created consumer groups for subscription pl.allegro.test.Foo$test-subscription, cluster: primary'
+    }
+
+    def "should not create consumer group and log exception in case of request timeout"() {
+        given:
+        kafkaContainer.dockerClient.pauseContainerCmd(containerId).exec()
+
+        when:
+        consumerGroupManager.createConsumerGroup(subscription)
+
+        then:
+        noExceptionThrown()
+        output.toString().contains 'Failed to create consumer groups for subscription pl.allegro.test.Foo$test-subscription, cluster: primary'
+        output.toString().contains 'org.apache.kafka.common.errors.TimeoutException: Timeout expired while fetching topic metadata'
+
+        cleanup:
+        kafkaContainer.dockerClient.unpauseContainerCmd(containerId).exec()
     }
 
     private def publishOnPartition(int partition, int messages) {
