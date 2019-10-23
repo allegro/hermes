@@ -77,7 +77,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @Autowired
     MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
-    @Value("${management.consumer-groups.create-manually}")
+    @Value("${management.consumer-groups.create-manually:}")
     Boolean createConsumerGroupsManually;
 
     private final List<ZooKeeperClient> zkClients = new ArrayList<>();

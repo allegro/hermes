@@ -76,8 +76,8 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
         props.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapKafkaServer);
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
-        props.put(REQUEST_TIMEOUT_MS_CONFIG, 1000);
-        props.put("default.api.timeout.ms", 1000);
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, 5000);
+        props.put("default.api.timeout.ms", 5000);
         props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         return props;
