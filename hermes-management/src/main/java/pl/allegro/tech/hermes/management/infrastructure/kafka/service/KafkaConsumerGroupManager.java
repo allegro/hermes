@@ -52,6 +52,8 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
             logger.info("Received partitions: {}, cluster: {}", topicPartitions, clusterName);
 
+            kafkaConsumer.assign(topicPartitions);
+
             Map<TopicPartition, OffsetAndMetadata> topicPartitionByOffset = topicPartitions.stream()
                     .map(topicPartition -> {
                         long offset = kafkaConsumer.position(topicPartition);
@@ -64,7 +66,7 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
             logger.info("Successfully created consumer groups for subscription {}, cluster: {}", subscription.getQualifiedName(), clusterName);
         } catch (Exception e) {
-            logger.error("Failed to create consumer groups for subscription {}, cluster: {}", subscription.getQualifiedName(), clusterName);
+            logger.error("Failed to create consumer groups for subscription {}, cluster: {}", subscription.getQualifiedName(), clusterName, e);
         }
     }
 
