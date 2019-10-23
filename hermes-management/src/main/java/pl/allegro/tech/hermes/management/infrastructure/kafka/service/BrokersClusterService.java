@@ -36,12 +36,13 @@ public class BrokersClusterService {
     private final ConsumerGroupsDescriber consumerGroupsDescriber;
     private final AdminClient adminClient;
     private final ConsumerGroupManager consumerGroupManager;
+    private final Boolean createConsumerGroupsManually;
 
     public BrokersClusterService(String clusterName, SingleMessageReader singleMessageReader,
                                  RetransmissionService retransmissionService, BrokerTopicManagement brokerTopicManagement,
                                  KafkaNamesMapper kafkaNamesMapper, OffsetsAvailableChecker offsetsAvailableChecker,
                                  LogEndOffsetChecker logEndOffsetChecker, AdminClient adminClient,
-                                 ConsumerGroupManager consumerGroupManager) {
+                                 ConsumerGroupManager consumerGroupManager, Boolean createConsumerGroupsManually) {
         this.clusterName = clusterName;
         this.singleMessageReader = singleMessageReader;
         this.retransmissionService = retransmissionService;
@@ -56,6 +57,7 @@ public class BrokersClusterService {
         );
         this.adminClient = adminClient;
         this.consumerGroupManager = consumerGroupManager;
+        this.createConsumerGroupsManually = createConsumerGroupsManually;
     }
 
     public String getClusterName() {
@@ -101,7 +103,9 @@ public class BrokersClusterService {
     }
 
     public void createConsumerGroup(Subscription subscription) {
-        consumerGroupManager.createConsumerGroup(subscription);
+        if (Boolean.TRUE.equals(createConsumerGroupsManually)) {
+            consumerGroupManager.createConsumerGroup(subscription);
+        }
     }
 
     public Optional<ConsumerGroup> describeConsumerGroup(Topic topic, String subscriptionName) {

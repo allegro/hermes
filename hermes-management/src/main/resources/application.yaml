@@ -41,6 +41,8 @@ management:
   health:
     periodSeconds: 30
     enabled: true
+  consumer-groups:
+    create-manually: false
 
 schema.repository.type: schema_registry
 

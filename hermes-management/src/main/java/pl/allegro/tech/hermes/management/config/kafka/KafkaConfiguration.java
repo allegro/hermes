@@ -10,6 +10,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.common.utils.Time;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -76,6 +77,9 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @Autowired
     MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
+    @Value("${management.consumer-groups.create-manually}")
+    Boolean createConsumerGroupsManually;
+
     private final List<ZooKeeperClient> zkClients = new ArrayList<>();
     private final List<CuratorFramework> curators = new ArrayList<>();
 
@@ -116,7 +120,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper,
                     new OffsetsAvailableChecker(consumerPool, storage),
                     new LogEndOffsetChecker(consumerPool),
-                    brokerAdminClient, consumerGroupManager);
+                    brokerAdminClient, consumerGroupManager, createConsumerGroupsManually);
         }).collect(toList());
 
         return new MultiDCAwareService(
