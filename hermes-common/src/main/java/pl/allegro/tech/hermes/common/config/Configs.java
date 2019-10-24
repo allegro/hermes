@@ -187,6 +187,7 @@ public enum Configs {
     CONSUMER_THREAD_POOL_SIZE("consumer.thread.pool.size", 500),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE("consumer.http.client.thread.pool.size", 30),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING("consumer.http.client.thread.pool.monitoring", false),
+    CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS("consumer.http.client.follow.redirects", false),
     CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION("consumer.http.client.max.connections.per.destination", 100),
     CONSUMER_HTTP_CLIENT_VALIDATE_CERTS("consumer.http.client.validate.certs", true),
     CONSUMER_HTTP_CLIENT_VALIDATE_PEER_CERTS("consumer.http.client.validate.peer.certs", true),
