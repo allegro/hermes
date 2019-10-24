@@ -4,6 +4,47 @@
 
 ...
 
+## 1.3.2 (21.10.2019)
+
+### Enhancements
+
+#### ([1104](https://github.com/allegro/hermes/pull/1104)) Bump Apache AVRO to 1.9.0 and json-avro-converter to 0.2.9
+
+## 1.3.1 (15.10.2019)
+
+### Features
+
+#### ([1103](https://github.com/allegro/hermes/pull/1103)) Unhealthy subscriptions filtering
+
+Added two new parameters to `/unhealthy` management endpoint that additionally allow filtering the returned list of unhealthy subscriptions by:
+
+* subscriptions names
+* qualified topic names
+
+Example:
+
+```
+http://{hermes-management}/unhealthy?ownerSourceName=Service%20Catalog\
+&ownerId={service_id}&respectMonitoringSeverity=false\
+&subscriptionNames={subscription_names}&qualifiedTopicNames={qualified_topic_names}
+```
+
+### Enhancements
+
+#### ([1122](https://github.com/allegro/hermes/pull/1122)) Change order of role verification in management
+
+This should allow admins to control topic and subscriptions management regardless proper ownership being configured.
+
+### Bugfixes
+
+#### ([1118](https://github.com/allegro/hermes/pull/1118)) Fixing frontends waiting for kafka behaviour when there are no topics
+
+When using  `frontend.startup.wait.kafka.enabled=true` feature, in situation when there where no topics created in kafka yet, frontends would wait indefinitely for topics metadata to become available.
+
+#### ([1125](https://github.com/allegro/hermes/pull/1125)) Remove stale assignments from cluster assignment cache
+
+Cluster assignment cache wasn't properly cleared from previous assignments when using `flat-binary` workload registry type, and it could cause rebalance job to behave unstable.
+
 ## 1.3.0 (1.10.2019)
 
 ### Features
