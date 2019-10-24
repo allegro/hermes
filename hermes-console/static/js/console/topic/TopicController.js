@@ -77,14 +77,15 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                         return 'EDIT';
                     },
                     topic: function () {
-                        return $scope.topic;
+                        return _(scope.topic).clone();;
                     },
                     messageSchema: function() {
                         return $scope.messageSchema;
                     },
                     groupName: function () {
                         return groupName;
-                    }
+                    },
+                    onClose: function () {}
                 }
             }).result.then(function (result) {
                 $scope.topic = result.topic;

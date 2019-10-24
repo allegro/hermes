@@ -72,7 +72,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                 size: 'lg',
                 resolve: {
                     subscription: function () {
-                        return $scope.subscription;
+                        return _.cloneDeep($scope.subscription);
                     },
                     topicName: function () {
                         return topicName;
@@ -85,7 +85,8 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     },
                     topicContentType: function () {
                         return $scope.topicContentType;
-                    }
+                    },
+                    onClose: function () {}
                 }
             }).result.then(function(response){
                 $scope.subscription = response.subscription;
