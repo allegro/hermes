@@ -233,14 +233,15 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
-    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'topicContentType',
+    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'topicContentType', 'onClose',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
-              endpointAddressResolverMetadataConfig, topicContentType) {
+              endpointAddressResolverMetadataConfig, topicContentType, onClose) {
         $scope.topicName = topicName;
         $scope.topicContentType = topicContentType;
-        $scope.subscription = _.cloneDeep(subscription);
+        $scope.subscription = subscription;
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
+        $scope.onClose = onClose;
 
         $scope.save = function () {
             var promise;

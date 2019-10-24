@@ -16,6 +16,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
               subscriptionFactory, subscriptionConfig, offlineClientsRepository) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
+        var newSubscription = subscriptionFactory.create(topicName);
 
         $scope.subscriptionsFetching = true;
         $scope.offlineClientsFetching = true;
@@ -198,30 +199,37 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                         return topicName;
                     },
                     subscription: function () {
-                        return subscriptionFactory.create(topicName);
+                        return newSubscription;
                     },
                     endpointAddressResolverMetadataConfig: function() {
                         return subscriptionConfig.endpointAddressResolverMetadata;
                     },
                     topicContentType: function () {
                         return $scope.topic.contentType;
+                    },
+                    onClose: function() {
+                        return function() {
+                            newSubscription = subscriptionFactory.create(topicName);
+                        }
                     }
                 }
             }).result.then(function () {
+                newSubscription = subscriptionFactory.create(topicName);
                 loadSubscriptions();
             });
         };
     }]);
 
 topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$scope', '$uibModalInstance', 'PasswordService',
-    'toaster', 'topic', 'messageSchema', 'groupName', 'operation',
-    function (topicConfig, topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation) {
+    'toaster', 'topic', 'messageSchema', 'groupName', 'operation', 'onClose',
+    function (topicConfig, topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation, onClose) {
         $scope.config = topicConfig;
 
-        $scope.topic = _(topic).clone();
+        $scope.topic = topic;
         $scope.messageSchema = messageSchema;
         $scope.groupName = groupName;
         $scope.operation = operation;
+        $scope.onClose = onClose;
 
         $scope.save = function () {
             var promise;
