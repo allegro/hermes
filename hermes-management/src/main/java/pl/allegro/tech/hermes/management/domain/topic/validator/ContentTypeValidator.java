@@ -10,7 +10,7 @@ import java.util.Set;
 @Component
 public class ContentTypeValidator {
 
-    private static final String ERROR_MESSAGE = "Content type %s is not within allowed content types [%s]";
+    private static final String ERROR_MESSAGE = "Content type %s is not within allowed content types %s";
 
     private final Set<ContentType> allowedContentTypes;
 

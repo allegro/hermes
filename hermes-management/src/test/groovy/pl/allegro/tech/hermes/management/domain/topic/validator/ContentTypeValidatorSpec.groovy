@@ -39,7 +39,8 @@ class ContentTypeValidatorSpec extends Specification {
         validator.check(contentType)
 
         then:
-        thrown TopicValidationException
+        def thrown = thrown(TopicValidationException)
+        thrown.message == "Content type $contentType is not within allowed content types $whitelist"
 
         where:
         whitelist          | contentType
