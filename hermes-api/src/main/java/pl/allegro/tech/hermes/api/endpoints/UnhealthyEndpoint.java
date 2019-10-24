@@ -6,6 +6,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
+import java.util.List;
+
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
@@ -17,5 +19,7 @@ public interface UnhealthyEndpoint {
     @Path("/")
     Response listUnhealthy(@QueryParam("ownerSourceName") String ownerSourceName,
                            @QueryParam("ownerId") String id,
-                           @QueryParam("respectMonitoringSeverity") boolean respectMonitoringSeverity);
+                           @QueryParam("respectMonitoringSeverity") boolean respectMonitoringSeverity,
+                           @QueryParam("subscriptionNames") List<String> subscriptionNames,
+                           @QueryParam("qualifiedTopicNames") List<String> qualifiedTopicNames);
 }
