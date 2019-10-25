@@ -50,7 +50,7 @@ public class MetricsTest extends IntegrationTest {
     @Test
     public void shouldIncreaseTopicMetricsAfterMessageHasBeenPublished() {
         // given
-        Topic topic = operations.buildTopic(randomTopic("group", "topic_metrics").build());
+        Topic topic = operations.buildTopic(randomTopic("group", "topic-x-metrics").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 10, 15);
 
@@ -76,9 +76,9 @@ public class MetricsTest extends IntegrationTest {
     public void shouldIncreaseSubscriptionDeliveredMetricsAfterMessageDelivered() {
         // given
         Topic topic = operations.buildTopic(randomTopic("pl.group", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "s_ubscription", HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub("pl_group." + topic.getName().getName() + ".subscription").withRate(15).build());
+                subscriptionMetricsStub("pl_group." + topic.getName().getName() + ".s-x-ubscription").withRate(15).build());
 
         remoteService.expectMessages(TestMessage.simple().body());
         assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
@@ -87,7 +87,7 @@ public class MetricsTest extends IntegrationTest {
 
         wait.until(() -> {
             // when
-            SubscriptionMetrics metrics = management.subscription().getMetrics(topic.getQualifiedName(), "subscription");
+            SubscriptionMetrics metrics = management.subscription().getMetrics(topic.getQualifiedName(), "s_ubscription");
 
             // then
             assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15"));
@@ -119,13 +119,13 @@ public class MetricsTest extends IntegrationTest {
     public void shouldReadSubscriptionDeliveryRate() {
         // given
         Topic topic = operations.buildTopic("pl.allegro.tech.hermes", "topic");
-        operations.createSubscription(topic, "pl.allegro.tech.hermes.subscription", HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("pl_allegro_tech_hermes.topic.pl_allegro_tech_hermes_subscription").withRate(15).build());
+        operations.createSubscription(topic, "pl.allegro.tech.hermes.s_ubscription", HTTP_ENDPOINT_URL);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub("pl_allegro_tech_hermes.topic.pl_allegro_tech_hermes_s-x-ubscription").withRate(15).build());
 
         wait.until(() -> {
             // when
             SubscriptionMetrics metrics = management.subscription().getMetrics("pl.allegro.tech.hermes.topic",
-                    "pl.allegro.tech.hermes.subscription");
+                    "pl.allegro.tech.hermes.s_ubscription");
 
             // then
             assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15"));

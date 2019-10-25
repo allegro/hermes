@@ -12,7 +12,6 @@ import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 
@@ -20,6 +19,7 @@ import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
+import static pl.allegro.tech.hermes.common.metric.HermesMetrics.unescapeDots;
 
 public class ZookeeperCounterReporter extends ScheduledReporter {
 
@@ -69,7 +69,7 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
         } else if (matcher.isSubscriptionThroughput()) {
             counterStorage.incrementVolumeCounter(
                     escapedTopicName(matcher.getTopicName()),
-                    escapeMetricsReplacementChar(matcher.getSubscriptionName()),
+                    unescapeDots(matcher.getSubscriptionName()),
                     value
             );
         }
@@ -91,13 +91,13 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
         } else if (matcher.isSubscriptionDelivered()) {
             counterStorage.setSubscriptionDeliveredCounter(
                     escapedTopicName(matcher.getTopicName()),
-                    escapeMetricsReplacementChar(matcher.getSubscriptionName()),
+                    unescapeDots(matcher.getSubscriptionName()),
                     value
             );
         } else if (matcher.isSubscriptionDiscarded()) {
             counterStorage.setSubscriptionDiscardedCounter(
                     escapedTopicName(matcher.getTopicName()),
-                    escapeMetricsReplacementChar(matcher.getSubscriptionName()),
+                    unescapeDots(matcher.getSubscriptionName()),
                     value
             );
         }
@@ -106,13 +106,9 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
     private static TopicName escapedTopicName(String qualifiedTopicName) {
         TopicName topicName = fromQualifiedName(qualifiedTopicName);
         return new TopicName(
-                escapeMetricsReplacementChar(topicName.getGroupName()),
+                unescapeDots(topicName.getGroupName()),
                 topicName.getName()
         );
-    }
-
-    private static String escapeMetricsReplacementChar(String value) {
-        return value.replaceAll(HermesMetrics.REPLACEMENT_CHAR, "\\.");
     }
 
     private static final class ZookeeperMetricsFilter implements MetricFilter {
