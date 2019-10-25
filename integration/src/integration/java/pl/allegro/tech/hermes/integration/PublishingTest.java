@@ -179,7 +179,7 @@ public class PublishingTest extends IntegrationTest {
     public void shouldTreatMessageWithInvalidInterpolationAsUndelivered() {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishInvalidInterpolatedGroup", "topic").build());
-        Subscription subscription = subscription(topic, "subscription")
+        Subscription subscription = subscription(topic, "subsc_ription")
                 .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL + "{template}/"))
                 .withSubscriptionPolicy(
                         SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().withMessageTtl(1).build()
@@ -194,7 +194,7 @@ public class PublishingTest extends IntegrationTest {
 
         // then
         wait.until(() -> {
-            long discarded = management.subscription().getMetrics(topic.getQualifiedName(), "subscription").getDiscarded();
+            long discarded = management.subscription().getMetrics(topic.getQualifiedName(), "subsc_ription").getDiscarded();
             assertThat(discarded).isEqualTo(1);
         });
         interpolatedEndpoint.makeSureNoneReceived();

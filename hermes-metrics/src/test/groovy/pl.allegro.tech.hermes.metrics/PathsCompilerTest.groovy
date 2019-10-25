@@ -31,4 +31,20 @@ class PathsCompilerTest extends Specification {
         then:
         compiled == "hermes.group.topic.subscription.0.201"
     }
+
+    def "should compile path with path context with underscores"() {
+        given:
+        def pathContext = pathContext().withGroup("group")
+                .withTopic("topic_offercore")
+                .withSubscription("subscri_ption")
+                .withPartition(0)
+                .withHttpCode(201)
+                .build()
+
+        when:
+        def compiled = pathsCompiler.compile("hermes.$GROUP.$TOPIC.$SUBSCRIPTION.$PARTITION.$HTTP_CODE", pathContext)
+
+        then:
+        compiled == "hermes.group.topic_offercore.subscri_ption.0.201"
+    }
 }

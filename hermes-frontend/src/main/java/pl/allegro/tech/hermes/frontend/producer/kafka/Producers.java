@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import java.util.Collections;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
@@ -11,13 +10,12 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.Gauges;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
-
-import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 
 public class Producers {
@@ -99,7 +97,7 @@ public class Producers {
                                                String producerName,
                                                Node node) {
 
-        String gauge = Gauges.JMX_PREFIX + "." + producerName + "-" + metricName + "." + escapeDots(node.host());
+        String gauge = Gauges.JMX_PREFIX + "." + producerName + "-" + metricName + "." + HermesMetrics.escapeDots(node.host());
         registerGauge(producer, metrics, gauge,
                 entry -> entry.getKey().group().equals("producer-node-metrics")
                         && entry.getKey().name().equals(metricName)
@@ -113,7 +111,7 @@ public class Producers {
             Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
                     producer.metrics().entrySet().stream().filter(predicate).findFirst();
             double value = first.isPresent() ? first.get().getValue().value() : 0.0;
-            return value < 0? 0.0 : value;
+            return value < 0 ? 0.0 : value;
         });
     }
 

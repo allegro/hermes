@@ -56,18 +56,18 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
         if (configFactory.getBooleanProperty(Configs.METRICS_GRAPHITE_REPORTER)) {
 
             Set<MetricAttribute> disabledAttributes = Sets.newHashSet(
-                            MetricAttribute.M15_RATE,
-                            MetricAttribute.M5_RATE,
-                            MetricAttribute.MEAN,
-                            MetricAttribute.MEAN_RATE,
-                            MetricAttribute.MIN,
-                            MetricAttribute.STDDEV
+                    MetricAttribute.M15_RATE,
+                    MetricAttribute.M5_RATE,
+                    MetricAttribute.MEAN,
+                    MetricAttribute.MEAN_RATE,
+                    MetricAttribute.MIN,
+                    MetricAttribute.STDDEV
             );
 
             String prefix = Joiner.on(".").join(
                     configFactory.getStringProperty(Configs.GRAPHITE_PREFIX),
                     moduleName,
-                    hostnameResolver.resolve().replaceAll("\\.", HermesMetrics.REPLACEMENT_CHAR));
+                    HermesMetrics.escapeDots(hostnameResolver.resolve()));
 
             GraphiteReporter
                     .forRegistry(registry)
