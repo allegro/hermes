@@ -19,7 +19,7 @@ class AggregatingTurboFilterTest extends Specification {
 
     def "should pass through messages from loggers without aggregation enabled"() {
         given:
-        def filter = createFilter("some-aggregated-logger")
+        def filter = createFilter("some-aggregated-logger-1")
         def notAggregatedLogger = getLogger("not-aggregated")
 
         when:
@@ -31,11 +31,11 @@ class AggregatingTurboFilterTest extends Specification {
 
     def "should report aggregated messages for configured logger"() {
         given:
-        def filter = createFilter("some-aggregated-logger")
+        def filter = createFilter("some-aggregated-logger-2")
         filter.reportingIntervalMillis = 50
         filter.start()
 
-        def aggregatedLogger = getLogger("some-aggregated-logger")
+        def aggregatedLogger = getLogger("some-aggregated-logger-2")
         def appenderCalled = new BlockingVariable<Boolean>(200, TimeUnit.MILLISECONDS)
         LoggingEvent capturedEvent = null
 
@@ -64,12 +64,12 @@ class AggregatingTurboFilterTest extends Specification {
 
     def "should report aggregated messages grouping by params"() {
         given:
-        def filter = createFilter("some-aggregated-logger")
+        def filter = createFilter("some-aggregated-logger-3")
         filter.reportingIntervalMillis = 50
         filter.start()
 
         def appender = Mock(Appender)
-        def aggregatedLogger = getLogger("some-aggregated-logger")
+        def aggregatedLogger = getLogger("some-aggregated-logger-3")
         aggregatedLogger.addAppender(appender)
         List<LoggingEvent> capturedEvents = []
 
@@ -94,10 +94,10 @@ class AggregatingTurboFilterTest extends Specification {
 
     def "should log aggregates with the same log level as original messages"() {
         given:
-        def filter = createFilter("some-aggregated-logger")
+        def filter = createFilter("some-aggregated-logger-4")
 
         def appender = Mock(Appender)
-        def aggregatedLogger = getLogger("some-aggregated-logger")
+        def aggregatedLogger = getLogger("some-aggregated-logger-4")
         aggregatedLogger.addAppender(appender)
         List<LoggingEvent> capturedEvents = []
 
@@ -119,10 +119,10 @@ class AggregatingTurboFilterTest extends Specification {
 
     def "should log aggregates with the same marker as for original messages"() {
         given:
-        def filter = createFilter("some-aggregated-logger")
+        def filter = createFilter("some-aggregated-logger-5")
 
         def appender = Mock(Appender)
-        def aggregatedLogger = getLogger("some-aggregated-logger")
+        def aggregatedLogger = getLogger("some-aggregated-logger-5")
         aggregatedLogger.addAppender(appender)
         List<LoggingEvent> capturedEvents = []
         def myMarker = MarkerFactory.getMarker("abc")
@@ -145,9 +145,9 @@ class AggregatingTurboFilterTest extends Specification {
 
     def "should log last exception"() {
         given:
-        def filter = createFilter("some-aggregated-logger")
+        def filter = createFilter("some-aggregated-logger-6")
 
-        def aggregatedLogger = getLogger("some-aggregated-logger")
+        def aggregatedLogger = getLogger("some-aggregated-logger-6")
         def appender = Mock(Appender)
         aggregatedLogger.addAppender(appender)
 
@@ -169,9 +169,9 @@ class AggregatingTurboFilterTest extends Specification {
 
     def "should not report when there are no more logs"() {
         given:
-        def filter = createFilter("some-aggregated-logger")
+        def filter = createFilter("some-aggregated-logger-7")
 
-        def aggregatedLogger = getLogger("some-aggregated-logger")
+        def aggregatedLogger = getLogger("some-aggregated-logger-7")
         def appender = Mock(Appender)
         aggregatedLogger.addAppender(appender)
 
@@ -196,9 +196,9 @@ class AggregatingTurboFilterTest extends Specification {
 
     def "should create aggregates properly when last param is an exception"() {
         given:
-        def filter = createFilter("some-aggregated-logger")
+        def filter = createFilter("some-aggregated-logger-8")
 
-        def aggregatedLogger = getLogger("some-aggregated-logger")
+        def aggregatedLogger = getLogger("some-aggregated-logger-8")
         def appender = Mock(Appender)
         aggregatedLogger.addAppender(appender)
         List<LoggingEvent> capturedEvents = []
@@ -231,8 +231,8 @@ class AggregatingTurboFilterTest extends Specification {
         def logsPerThread = 1_000
         def executor = Executors.newFixedThreadPool(threadsCount)
 
-        def filter = createFilter("some-aggregated-logger")
-        def aggregatedLogger = getLogger("some-aggregated-logger")
+        def filter = createFilter("some-aggregated-logger-9")
+        def aggregatedLogger = getLogger("some-aggregated-logger-9")
         def appender = Mock(Appender)
         aggregatedLogger.addAppender(appender)
 
@@ -269,11 +269,11 @@ class AggregatingTurboFilterTest extends Specification {
         def logsPerThread = 10_000
         def executor = Executors.newFixedThreadPool(threadsCount)
 
-        def filter = createFilter("some-aggregated-logger")
+        def filter = createFilter("some-aggregated-logger-10")
         filter.setReportingIntervalMillis(10) // small reporting interval
         filter.start()
 
-        def aggregatedLogger = getLogger("some-aggregated-logger")
+        def aggregatedLogger = getLogger("some-aggregated-logger-10")
         def appender = [doAppend: { LoggingEvent event ->
             loggerCalls.incrementAndGet()
             def matcher = (event.message =~ countRegexp) // we need to parse the number of occurrences
