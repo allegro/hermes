@@ -50,7 +50,7 @@ public class MetricsTest extends IntegrationTest {
     @Test
     public void shouldIncreaseTopicMetricsAfterMessageHasBeenPublished() {
         // given
-        Topic topic = operations.buildTopic(randomTopic("group", "topic-x-metrics").build());
+        Topic topic = operations.buildTopic(randomTopic("group", "topic€metrics").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 10, 15);
 
@@ -78,7 +78,7 @@ public class MetricsTest extends IntegrationTest {
         Topic topic = operations.buildTopic(randomTopic("pl.group", "topic").build());
         operations.createSubscription(topic, "s_ubscription", HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub("pl_group." + topic.getName().getName() + ".s-x-ubscription").withRate(15).build());
+                subscriptionMetricsStub("pl_group." + topic.getName().getName() + ".s€ubscription").withRate(15).build());
 
         remoteService.expectMessages(TestMessage.simple().body());
         assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
@@ -120,7 +120,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("pl.allegro.tech.hermes", "topic");
         operations.createSubscription(topic, "pl.allegro.tech.hermes.s_ubscription", HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("pl_allegro_tech_hermes.topic.pl_allegro_tech_hermes_s-x-ubscription").withRate(15).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub("pl_allegro_tech_hermes.topic.pl_allegro_tech_hermes_s€ubscription").withRate(15).build());
 
         wait.until(() -> {
             // when

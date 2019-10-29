@@ -6,6 +6,9 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,7 +107,7 @@ public class GraphiteEndpoint implements EnvironmentAware {
         }
 
         private String toUrlPattern() {
-            return "/.*sumSeries%28stats.tech.hermes\\.consumer\\.%2A\\.meter\\." + subscription + "\\.m1_rate%29.*";
+            return "/.*sumSeries%28stats.tech.hermes\\.consumer\\.%2A\\.meter\\." + encodeValue(subscription) + "\\.m1_rate%29.*";
         }
 
         private String toBody() {
@@ -112,6 +115,14 @@ public class GraphiteEndpoint implements EnvironmentAware {
                 return new ObjectMapper().writeValueAsString(responseBody);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
+            }
+        }
+
+        private static String encodeValue(String value) {
+            try {
+                return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+            } catch (UnsupportedEncodingException ex) {
+                throw new RuntimeException(ex.getCause());
             }
         }
     }
