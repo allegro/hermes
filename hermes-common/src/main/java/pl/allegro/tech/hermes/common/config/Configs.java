@@ -236,6 +236,7 @@ public enum Configs {
     CONSUMER_BATCH_CONNECTION_TIMEOUT("consumer.batch.connection.timeout", 500),
     CONSUMER_BATCH_CONNECTION_REQUEST_TIMEOUT("consumer.batch.connection.request.timeout", 500),
     CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
+    CONSUMER_SUBSCRIPTION_IDS_CACHE_REMOVED_EXPIRE_AFTER_ACCESS_SECONDS("consumer.subscription.ids.cache.removed.expire.after.access.seconds", 60L),
 
     CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 20_000),
     CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER("consumer.supervisor.background.unhealty.after", 600_000),
