@@ -163,7 +163,7 @@ class ConsumerTestRuntimeEnvironment {
         subscriptionsCaches.add(subscriptionsCache);
 
         SubscriptionIds subscriptionIds = new SubscriptionIdsCacheFactory(notificationsBus, subscriptionsCache,
-                new ZookeeperSubscriptionIdProvider(curator, zookeeperPaths)).provide();
+                new ZookeeperSubscriptionIdProvider(curator, zookeeperPaths), consumerConfig).provide();
 
         ConsumerAssignmentCache consumerAssignmentCache = new ConsumerAssignmentCacheFactory(
                 curator, consumerConfig, zookeeperPaths, subscriptionsCache, subscriptionIds
