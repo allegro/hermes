@@ -1,8 +1,3 @@
-if (typeof String.prototype.endsWith != 'function') {  
-    String.prototype.endsWith = function(suffix) {  
-        return this.indexOf(suffix, this.length - suffix.length) !== -1;  
-    };  
-}
 deferredBootstrapper.bootstrap({
   element: document,
   module: 'hermes',
@@ -21,8 +16,15 @@ deferredBootstrapper.bootstrap({
   }
 });
 
+function removeTrailingSlash(url) {
+    if (url.indexOf("/", url.length - 1) !== -1) {
+        return url.slice(0, -1)
+    }
+    return url
+}
+
 function SimpleServiceDiscovery(url, $q) {
-    var url = url.endsWith('/') ? url.slice(0, -1) : url;
+    var url = removeTrailingSlash(url)
 
     this.resolveInstances = function() {
         return $q(function(resolve) { resolve([url]) });;
