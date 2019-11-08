@@ -16,8 +16,15 @@ deferredBootstrapper.bootstrap({
   }
 });
 
+function removeTrailingSlash(url) {
+    if (url.indexOf("/", url.length - 1) !== -1) {
+        return url.slice(0, -1)
+    }
+    return url
+}
+
 function SimpleServiceDiscovery(url, $q) {
-    var url = url.endsWith('/') ? url.slice(0, -1) : url;
+    var url = removeTrailingSlash(url)
 
     this.resolveInstances = function() {
         return $q(function(resolve) { resolve([url]) });;
