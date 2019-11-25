@@ -25,7 +25,7 @@ public class HermesMockDefine {
         addTopic(topicName, statusCode, "avro/binary");
     }
 
-    private void addTopic(String topicName, int statusCode, String contentType) {
+    public void addTopic(String topicName, int statusCode, String contentType) {
         hermesMockHelper.addStub(topicName, statusCode, contentType);
     }
 }
