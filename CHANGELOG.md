@@ -4,6 +4,38 @@
 
 ...
 
+## 1.3.4 (27.11.2019)
+
+### Enhancements
+
+#### ([1149](https://github.com/allegro/hermes/pull/1149)) Hermes Mock asserts contentType using startsWith check
+
+Thanks @Deff17 for contribution.
+
+### Bugfixes
+
+#### ([1147](https://github.com/allegro/hermes/pull/1147)) Added support for IE 11 in Hermes Console
+
+Thanks @kuaikuai for contribution.
+
+## 1.3.3 (04.11.2019)
+
+### Enhancements
+
+#### ([1134](https://github.com/allegro/hermes/pull/1134)) Including schema validation error details in management responses
+
+### Bugfixes
+
+#### ([1132](https://github.com/allegro/hermes/pull/1132)) Fixed url of service mock in QuickStart guide
+
+#### ([1146](https://github.com/allegro/hermes/pull/1146)) Fixed consumer process stopping on subscription removal
+
+#### ([1140](https://github.com/allegro/hermes/pull/1140)) Clearing inflight-messages meter on consumer stop
+
+#### ([1131](https://github.com/allegro/hermes/pull/1131)) Renamed file with key dedicated for integration tests
+
+#### ([1130](https://github.com/allegro/hermes/pull/1130)) Fixed hierarchical max rate registry test
+
 ## 1.3.2 (21.10.2019)
 
 ### Enhancements
