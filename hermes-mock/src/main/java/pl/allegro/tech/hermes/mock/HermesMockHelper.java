@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.mock;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
@@ -16,8 +20,6 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class HermesMockHelper {
     private final WireMockServer wireMockServer;
