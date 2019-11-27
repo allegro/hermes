@@ -4,6 +4,20 @@
 
 ...
 
+## 1.3.3 (27.11.2019)
+
+### Enhancements
+
+#### ([1149](https://github.com/allegro/hermes/pull/1149)) Hermes Mock asserts contentType using startsWith check
+
+Thanks @Deff17 for contribution.
+
+### Bugfixes
+
+#### ([1147](https://github.com/allegro/hermes/pull/1147)) Added support for IE 11 in Hermes Console
+
+Thanks @kuaikuai for contribution.
+
 ## 1.3.2 (21.10.2019)
 
 ### Enhancements
