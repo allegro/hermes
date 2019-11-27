@@ -18,11 +18,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 
 @Path("topics")
 public interface TopicEndpoint {
+
+    String APPLICATION_JSON = "application/json;charset=UTF-8";
+
     @GET
     @Produces(APPLICATION_JSON)
     List<String> list(
