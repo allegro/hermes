@@ -67,7 +67,7 @@ public class AvroMessageContentWrapper {
             return recordToBytes(genericRecord, schema);
         } catch (Exception e) {
             if (e instanceof AvroRuntimeException && e.getMessage().equals("Not a valid schema field: __metadata")) {
-                throw new AvroInvalidMetadataException("Avro schema has invalid field __metadata", e);
+                throw new AvroInvalidMetadataException("Schema does not contain mandatory __metadata field for Hermes internal metadata. Please fix topic schema.", e);
             }
             throw new WrappingException("Could not wrap avro message", e);
         }

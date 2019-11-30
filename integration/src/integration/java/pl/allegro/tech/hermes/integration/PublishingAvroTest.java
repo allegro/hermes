@@ -248,7 +248,8 @@ public class PublishingAvroTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(BAD_REQUEST);
         assertThat(response.readEntity(String.class))
-                .isEqualTo("{\"message\":\"Avro schema has invalid field __metadata\",\"code\":\"AVRO_SCHEMA_INVALID_METADATA\"}");
+                .isEqualTo("{\"message\":\"Schema does not contain mandatory __metadata field for Hermes internal metadata. " +
+                        "Please fix topic schema.\",\"code\":\"AVRO_SCHEMA_INVALID_METADATA\"}");
     }
 
     @Test
