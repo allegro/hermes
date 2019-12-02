@@ -7,8 +7,6 @@ import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
 
-import javax.ws.rs.core.Response
-
 class HermesMockTest extends Specification {
 
     @Shared
@@ -95,16 +93,15 @@ class HermesMockTest extends Specification {
         given:
             def topicName = "my-test-filtered-topic"
             hermes.define().jsonTopic(topicName)
-            def count = 5
-            def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
-            def filter = { TestMessage m -> m.key.startsWith("key-") }
+            def messages = (1..5).collect { new TestMessage("key-" + it, "value-" + it) }
+            def filter = { TestMessage m -> m.key.startsWith("key-1") || m.key.startsWith("key-3") }
 
         when:
             messages.each { publish(topicName, it.asJson()) }
             3.times { publish("whatever") }
 
         then:
-            hermes.expect().jsonMessagesOnTopicAs(topicName, count, TestMessage, filter)
+            hermes.expect().jsonMessagesOnTopicAs(topicName, 2, TestMessage, filter)
     }
 
     def "should throw on more than 1 message"() {
@@ -136,7 +133,7 @@ class HermesMockTest extends Specification {
 
         then:
             def ex = thrown(HermesMockException)
-            ex.message == "Hermes mock did not receive 1 messages."
+            ex.message == "Hermes mock did not receive 1 messages, got 2"
     }
 
     def "should get all messages"() {
@@ -268,16 +265,15 @@ class HermesMockTest extends Specification {
         given:
             def topicName = "my-topic"
             hermes.define().jsonTopic(topicName)
-            def count = 3
-            def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
-            def filter = { TestMessage m -> m.key.startsWith("key-") }
+            def messages = (1..3).collect { new TestMessage("key-" + it, "value-" + it) }
+            def filter = { TestMessage m -> m.key.startsWith("key-1") }
 
         when:
             messages.each { publish(topicName, it.asJson()) }
             5.times { publish(topicName) }
 
         then:
-            count == hermes.query().countMatchingJsonMessages(topicName, TestMessage, filter)
+            1 == hermes.query().countMatchingJsonMessages(topicName, TestMessage, filter)
     }
 
     def publish(String topic) {
