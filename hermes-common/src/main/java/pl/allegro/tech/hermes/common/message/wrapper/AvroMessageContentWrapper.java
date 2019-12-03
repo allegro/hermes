@@ -60,8 +60,8 @@ public class AvroMessageContentWrapper {
     }
 
     byte[] wrapContent(byte[] message, String id, long timestamp, Schema schema, Map<String, String> externalMetadata) {
+        GenericRecord genericRecord = bytesToRecord(message, schema);
         try {
-            GenericRecord genericRecord = bytesToRecord(message, schema);
             genericRecord.put(METADATA_MARKER, metadataMap(id, timestamp, externalMetadata));
             return recordToBytes(genericRecord, schema);
         } catch (Exception exception) {
