@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.common.message.converter;
 
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
@@ -23,7 +22,7 @@ public class AvroBinaryDecoders {
     static GenericRecord decodeReusingThreadLocalBinaryDecoder(byte[] message, Schema schema) {
         try (FlushableBinaryDecoderHolder holder = new FlushableBinaryDecoderHolder()){
             BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(message, holder.getBinaryDecoder());
-            return new GenericDatumReader<GenericRecord>(schema).read(null, binaryDecoder);
+            return new SingleSchemaGenericDatumReader<GenericRecord>(schema).read(null, binaryDecoder);
         } catch (Exception e) {
             String reason = e.getMessage() == null ? ExceptionUtils.getRootCauseMessage(e) : e.getMessage();
             throw new AvroConversionException(String.format("Could not deserialize Avro message with provided schema, reason: %s", reason));
