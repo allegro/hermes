@@ -38,7 +38,7 @@ public class AvroMessageContentWrapperTest {
     }
 
     @Test
-    public void shouldWrapAndUnwrapAvroMessageWithMetadata() throws IOException {
+    public void shouldWrapAndUnwrapAvroMessageWithMetadata() {
         // when
         byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema(), Collections.emptyMap());
         UnwrappedMessageContent unwrappedMessageContent = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getCompiledSchema());
@@ -51,7 +51,7 @@ public class AvroMessageContentWrapperTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void shouldWrappedMessageContainsMetadata() throws IOException {
+    public void shouldWrappedMessageContainsMetadata() {
         // when
         byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema(), Collections.emptyMap());
 
