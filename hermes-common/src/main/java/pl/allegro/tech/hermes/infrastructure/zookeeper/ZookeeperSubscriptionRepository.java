@@ -100,8 +100,8 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
                 paths.subscriptionPath(topicName, subscriptionName),
                 Subscription.class,
                 (sub, stat) -> {
-                    sub.setCreatedAt(Instant.ofEpochMilli(stat.getCtime()));
-                    sub.setModifiedAt(Instant.ofEpochMilli(stat.getMtime()));
+                    sub.setCreatedAt(stat.getCtime());
+                    sub.setModifiedAt(stat.getMtime());
                 },
                 false
         ).get();

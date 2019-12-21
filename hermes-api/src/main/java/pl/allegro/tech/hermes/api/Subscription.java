@@ -431,16 +431,16 @@ public class Subscription implements Anonymizable {
         return createdAt;
     }
 
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
+    public void setCreatedAt(Long createdAt) {
+        this.createdAt = Instant.ofEpochMilli(createdAt);
     }
 
     public Instant getModifiedAt() {
         return modifiedAt;
     }
 
-    public void setModifiedAt(Instant modifiedAt) {
-        this.modifiedAt = modifiedAt;
+    public void setModifiedAt(Long modifiedAt) {
+        this.modifiedAt = Instant.ofEpochMilli(modifiedAt);
     }
 
     @Override

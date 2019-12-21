@@ -122,10 +122,6 @@ public abstract class ZookeeperBasedRepository {
                 T t = supplier.read(data);
                 statDecorator.accept(t, stat);
                 return Optional.of(t);
-            } else {
-                logWarnOrThrowException("No data at path " + path,
-                        new InternalProcessingException("No data at path " + path),
-                        quiet);
             }
         } catch (JsonMappingException malformedException) {
             logWarnOrThrowException("Unable to read data from path " + path,
