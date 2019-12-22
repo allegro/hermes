@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
+import java.time.Instant
+
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
@@ -107,6 +109,7 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should load topic details"() {
         given:
+        def timestamp = Instant.now()
         repository.createTopic(topic(GROUP, 'details').withDescription('description').build())
         wait.untilTopicCreated(GROUP, 'details')
 
@@ -115,6 +118,10 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
         then:
         retrievedTopic.description == 'description'
+
+        and: 'createdAt and modifiedAt are greater than or equal to timestamp'
+        !retrievedTopic.createdAt.isBefore(timestamp)
+        !retrievedTopic.modifiedAt.isBefore(timestamp)
     }
 
     def "should update topic"() {

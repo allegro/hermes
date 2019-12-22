@@ -2,14 +2,17 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.time.Instant;
 import java.util.Objects;
 
+@JsonIgnoreProperties(value = {"createdAt", "modifiedAt"}, allowGetters = true)
 public class Topic {
 
     @Valid
@@ -59,11 +62,15 @@ public class Topic {
 
     private final TopicDataOfflineStorage offlineStorage;
 
+    private Instant createdAt;
+
+    private Instant modifiedAt;
+
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
                  boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
-                 TopicDataOfflineStorage offlineStorage) {
+                 TopicDataOfflineStorage offlineStorage, Instant createdAt, Instant modifiedAt) {
         this.name = name;
         this.description = description;
         this.owner = owner;
@@ -78,6 +85,8 @@ public class Topic {
         this.publishingAuth = publishingAuth;
         this.subscribingRestricted = subscribingRestricted;
         this.offlineStorage = offlineStorage;
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
     }
 
     @JsonCreator
@@ -95,14 +104,17 @@ public class Topic {
             @JsonProperty("maxMessageSize") Integer maxMessageSize,
             @JsonProperty("auth") PublishingAuth publishingAuth,
             @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
-            @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage
-            ) {
+            @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
+            @JsonProperty("createdAt") Instant createdAt,
+            @JsonProperty("modifiedAt") Instant modifiedAt
+    ) {
         this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
                 trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
                 maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize,
                 publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
                 subscribingRestricted,
-                offlineStorage == null ? TopicDataOfflineStorage.defaultOfflineStorage() : offlineStorage
+                offlineStorage == null ? TopicDataOfflineStorage.defaultOfflineStorage() : offlineStorage,
+                createdAt, modifiedAt
         );
     }
 
@@ -221,6 +233,22 @@ public class Topic {
 
     public TopicDataOfflineStorage getOfflineStorage() {
         return offlineStorage;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Long createdAt) {
+        this.createdAt = Instant.ofEpochMilli(createdAt);
+    }
+
+    public Instant getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(Long modifiedAt) {
+        this.modifiedAt = Instant.ofEpochMilli(modifiedAt);
     }
 
     @Override
