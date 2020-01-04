@@ -103,6 +103,14 @@
                         <span uib-popover='For how long should this topic be stored in offline storage.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
 
+                    <hr/>
+                    <p ng-show="topic.createdAt">
+                        <strong>Creation date:</strong> {{topic.createdAt}}
+                    </p>
+                    <p ng-show="topic.modifiedAt">
+                        <strong>Modification date:</strong> {{topic.modifiedAt}}
+                    </p>
+
                 </div>
             </div>
         </div>
