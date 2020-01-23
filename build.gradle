@@ -59,7 +59,7 @@ allprojects {
             avro              : '1.9.1',
             json2avro         : '0.2.9',
             okhttp            : '3.9.1',
-            undertow          : '1.4.27.Final',
+            undertow          : '2.0.29.Final',
             spring_web        : '5.1.5.RELEASE',
             failsafe          : '2.3.1'
     ]
