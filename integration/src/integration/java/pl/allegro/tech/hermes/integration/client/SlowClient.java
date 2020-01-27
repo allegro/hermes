@@ -21,12 +21,14 @@ public class SlowClient {
 
     public static final String msgHeadWithContentLenght(String topicName) {
         return "POST /topics/" + topicName + " HTTP/1.1\n"
+             + "Host: " + HOST + ":" + PORT + "\n"
              + "Content-Type: application/json\n"
              + "Content-Length: " + MSG_BODY.length() + "\r\n\r\n";
     }
 
     private static final String msgHeadWithChunkedEncoding(String topicName) {
         return "POST /topics/" + topicName + " HTTP/1.1\n"
+                + "Host: " + HOST + ":" + PORT + "\n"
                 + "Content-Type: application/json\n"
                 + "Transfer-Encoding: chunked \r\n\r\n";
     }
