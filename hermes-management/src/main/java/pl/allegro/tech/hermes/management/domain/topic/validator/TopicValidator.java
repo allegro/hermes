@@ -15,14 +15,17 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 public class TopicValidator {
 
     private final OwnerIdValidator ownerIdValidator;
+    private final ContentTypeValidator contentTypeValidator;
     private final SchemaRepository schemaRepository;
     private final ApiPreconditions apiPreconditions;
 
     @Autowired
     public TopicValidator(OwnerIdValidator ownerIdValidator,
+                          ContentTypeValidator contentTypeValidator,
                           SchemaRepository schemaRepository,
                           ApiPreconditions apiPreconditions) {
         this.ownerIdValidator = ownerIdValidator;
+        this.contentTypeValidator = contentTypeValidator;
         this.schemaRepository = schemaRepository;
         this.apiPreconditions = apiPreconditions;
     }
@@ -30,6 +33,7 @@ public class TopicValidator {
     public void ensureCreatedTopicIsValid(Topic created, CreatorRights creatorRights) {
         apiPreconditions.checkConstraints(created);
         checkOwner(created);
+        checkContentType(created);
 
         if (created.wasMigratedFromJsonType()) {
             throw new TopicValidationException("Newly created topic cannot have migratedFromJsonType flag set to true");
@@ -77,4 +81,7 @@ public class TopicValidator {
         ownerIdValidator.check(checked.getOwner());
     }
 
+    private void checkContentType(Topic checked) {
+        contentTypeValidator.check(checked.getContentType());
+    }
 }
