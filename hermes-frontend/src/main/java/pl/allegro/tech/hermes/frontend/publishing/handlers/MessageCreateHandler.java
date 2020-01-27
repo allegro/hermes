@@ -2,7 +2,9 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroInvalidMetadataException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
+import pl.allegro.tech.hermes.common.message.wrapper.WrappingException;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.validator.InvalidMessageException;
@@ -10,6 +12,7 @@ import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
+import static pl.allegro.tech.hermes.api.ErrorCode.AVRO_SCHEMA_INVALID_METADATA;
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
 import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
@@ -49,6 +52,14 @@ class MessageCreateHandler implements HttpHandler {
                     attachment.getTopic(),
                     attachment.getMessageId(),
                     error("Missing schema", SCHEMA_COULD_NOT_BE_LOADED),
+                    exception);
+        } catch (AvroInvalidMetadataException exception) {
+            attachment.removeTimeout();
+            messageErrorProcessor.sendAndLog(
+                    exchange,
+                    attachment.getTopic(),
+                    attachment.getMessageId(),
+                    error("Schema does not contain mandatory __metadata field for Hermes internal metadata. Please fix topic schema.", AVRO_SCHEMA_INVALID_METADATA),
                     exception);
         } catch (Exception exception) {
             attachment.removeTimeout();
