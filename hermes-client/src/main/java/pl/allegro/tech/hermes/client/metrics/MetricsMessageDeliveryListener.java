@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.client.metrics;
 
-import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.MessageDeliveryListener;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
@@ -20,8 +22,9 @@ public class MetricsMessageDeliveryListener implements MessageDeliveryListener {
         String prefix = MetricsUtils.getMetricsPrefix(message.getTopic());
 
         metrics.timerRecord(prefix + ".latency", latency, NANOSECONDS);
-        metrics.counterIncrement(prefix, "status",
-                ImmutableMap.of("code", String.valueOf(response.getHttpStatus())));
+        Map<String, String> tags = new HashMap<>();
+        tags.put("code", String.valueOf(response.getHttpStatus()));
+        metrics.counterIncrement(prefix, "status", tags);
     }
 
     @Override
