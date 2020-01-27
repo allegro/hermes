@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
+import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
@@ -12,7 +13,6 @@ import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
@@ -166,7 +166,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}/state")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
     @ApiOperation(value = "Update subscription state", httpMethod = HttpMethod.PUT)
     public Response updateState(@PathParam("topicName") String qualifiedTopicName,
                                 @PathParam("subscriptionName") String subscriptionName,
@@ -179,7 +179,7 @@ public class SubscriptionsEndpoint {
 
     @DELETE
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
     @ApiOperation(value = "Remove subscription", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionId,
@@ -192,7 +192,7 @@ public class SubscriptionsEndpoint {
     @PUT
     @Consumes(APPLICATION_JSON)
     @Path("/{subscriptionName}")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
     @ApiOperation(value = "Update subscription", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName,
                            @PathParam("subscriptionName") String subscriptionName,
@@ -207,7 +207,7 @@ public class SubscriptionsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/retransmission")
-    @RolesAllowed({Roles.SUBSCRIPTION_OWNER, Roles.TOPIC_OWNER, Roles.ADMIN})
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
     @ApiOperation(value = "Update subscription offset", httpMethod = HttpMethod.PUT)
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,

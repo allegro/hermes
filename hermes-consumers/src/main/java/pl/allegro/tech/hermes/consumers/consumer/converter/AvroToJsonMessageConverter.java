@@ -8,6 +8,8 @@ import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.message.converter.AvroBinaryDecoders;
+import pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
@@ -16,6 +18,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 
 import static java.util.stream.Collectors.toList;
+import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
 import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_MARKER;
 import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
 
@@ -39,7 +42,7 @@ public class AvroToJsonMessageConverter implements MessageConverter {
     }
 
     private GenericRecord recordWithoutMetadata(byte [] data, Schema schema) {
-        GenericRecord original = originalRecord(data, schema);
+        GenericRecord original = bytesToRecord(data, schema);
         Schema schemaWithoutMetadata = removeMetadataField(schema);
         GenericRecordBuilder builder = new GenericRecordBuilder(schemaWithoutMetadata);
         schemaWithoutMetadata.getFields().forEach(field -> builder.set(field, original.get(field.name())));
@@ -50,17 +53,7 @@ public class AvroToJsonMessageConverter implements MessageConverter {
         return Schema.createRecord(
                 schema.getFields().stream()
                         .filter(field -> !METADATA_MARKER.equals(field.name()))
-                        .map(field -> new Schema.Field(field.name(), field.schema(), field.doc(), field.defaultValue()))
+                        .map(field -> new Schema.Field(field.name(), field.schema(), field.doc(), field.defaultVal()))
                         .collect(toList()));
     }
-
-    private GenericRecord originalRecord(byte[] data, Schema schema) {
-        try {
-            BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(data, null);
-            return new GenericDatumReader<GenericRecord>(schema).read(null, binaryDecoder);
-        } catch (IOException e) {
-            throw new AvroConversionException("Failed to create avro record.", e);
-        }
-    }
-
 }

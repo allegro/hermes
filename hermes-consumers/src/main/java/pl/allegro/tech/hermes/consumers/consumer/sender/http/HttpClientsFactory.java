@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_THREAD_POOL_MONITORING;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_THREAD_POOL_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_IDLE_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING;
@@ -47,6 +48,7 @@ public class HttpClientsFactory {
         client.setExecutor(executor);
         client.setCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_IDLE_TIMEOUT));
+        client.setFollowRedirects(configFactory.getBooleanProperty(CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS));
         return client;
     }
 
@@ -64,6 +66,7 @@ public class HttpClientsFactory {
         client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE));
         client.setCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(configFactory.getIntProperty(CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT));
+        client.setFollowRedirects(configFactory.getBooleanProperty(CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS));
         return client;
     }
 

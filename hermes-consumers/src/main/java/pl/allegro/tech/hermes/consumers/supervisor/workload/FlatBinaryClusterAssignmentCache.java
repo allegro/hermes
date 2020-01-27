@@ -54,6 +54,9 @@ public class FlatBinaryClusterAssignmentCache implements ClusterAssignmentCache 
         List<String> currentlyAssignedConsumers = getWorkloadConsumers();
         List<String> activeConsumers = consumerNodesRegistry.listConsumerNodes();
 
+        assignments.clear();
+        consumerSubscriptions.clear();
+
         for (String consumer : currentlyAssignedConsumers) {
             if (activeConsumers.contains(consumer)) {
                 Set<SubscriptionName> subscriptions = readConsumerWorkload(consumer);
@@ -63,8 +66,6 @@ public class FlatBinaryClusterAssignmentCache implements ClusterAssignmentCache 
                 });
             } else {
                 logger.info("Deleting consumer {} from workload", consumer);
-                consumerSubscriptions.remove(consumer);
-                assignments.removeIf(assignment -> assignment.getConsumerNodeId().equals(consumer));
                 deleteConsumerWorkloadNode(consumer);
             }
         }

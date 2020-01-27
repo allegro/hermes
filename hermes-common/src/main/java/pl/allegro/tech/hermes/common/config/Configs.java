@@ -187,6 +187,7 @@ public enum Configs {
     CONSUMER_THREAD_POOL_SIZE("consumer.thread.pool.size", 500),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE("consumer.http.client.thread.pool.size", 30),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING("consumer.http.client.thread.pool.monitoring", false),
+    CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS("consumer.http.client.follow.redirects", false),
     CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION("consumer.http.client.max.connections.per.destination", 100),
     CONSUMER_HTTP_CLIENT_VALIDATE_CERTS("consumer.http.client.validate.certs", true),
     CONSUMER_HTTP_CLIENT_VALIDATE_PEER_CERTS("consumer.http.client.validate.peer.certs", true),
@@ -236,6 +237,7 @@ public enum Configs {
     CONSUMER_BATCH_CONNECTION_TIMEOUT("consumer.batch.connection.timeout", 500),
     CONSUMER_BATCH_CONNECTION_REQUEST_TIMEOUT("consumer.batch.connection.request.timeout", 500),
     CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
+    CONSUMER_SUBSCRIPTION_IDS_CACHE_REMOVED_EXPIRE_AFTER_ACCESS_SECONDS("consumer.subscription.ids.cache.removed.expire.after.access.seconds", 60L),
 
     CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 20_000),
     CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER("consumer.supervisor.background.unhealty.after", 600_000),

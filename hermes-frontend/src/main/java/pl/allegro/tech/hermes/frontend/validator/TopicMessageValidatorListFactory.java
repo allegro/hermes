@@ -8,16 +8,16 @@ import java.util.List;
 
 public class TopicMessageValidatorListFactory implements Factory<List<TopicMessageValidator>> {
 
-    private final AvroTopicMessageValidator avroTopicMessageValidator;
+    private final Iterable<TopicMessageValidator> topicMessageValidators;
 
     @Inject
-    public TopicMessageValidatorListFactory(AvroTopicMessageValidator avroTopicMessageValidator) {
-        this.avroTopicMessageValidator = avroTopicMessageValidator;
+    public TopicMessageValidatorListFactory(Iterable<TopicMessageValidator> topicMessageValidators) {
+        this.topicMessageValidators = topicMessageValidators;
     }
 
     @Override
     public List<TopicMessageValidator> provide() {
-        return ImmutableList.of(avroTopicMessageValidator);
+        return ImmutableList.copyOf(topicMessageValidators);
     }
 
     @Override

@@ -1,12 +1,15 @@
 package pl.allegro.tech.hermes.management.infrastructure.schema.validator;
 
+import org.apache.avro.SchemaParseException;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.common.exception.HermesException;
 
+import static java.lang.String.format;
+
 public class InvalidSchemaException extends HermesException {
 
-    InvalidSchemaException(Throwable cause) {
-        super("Error while trying to validate schema", cause);
+    InvalidSchemaException(SchemaParseException cause) {
+        super(format("Error while trying to validate schema: %s", cause.getMessage()), cause);
     }
 
     @Override

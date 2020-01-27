@@ -1,6 +1,113 @@
 ## [Unreleased]
 
-### ...
+### Features
+
+...
+
+## 1.3.4 (27.11.2019)
+
+### Enhancements
+
+#### ([1149](https://github.com/allegro/hermes/pull/1149)) Hermes Mock asserts contentType using startsWith check
+
+Thanks @Deff17 for contribution.
+
+### Bugfixes
+
+#### ([1147](https://github.com/allegro/hermes/pull/1147)) Added support for IE 11 in Hermes Console
+
+Thanks @kuaikuai for contribution.
+
+## 1.3.3 (04.11.2019)
+
+### Enhancements
+
+#### ([1134](https://github.com/allegro/hermes/pull/1134)) Including schema validation error details in management responses
+
+### Bugfixes
+
+#### ([1132](https://github.com/allegro/hermes/pull/1132)) Fixed url of service mock in QuickStart guide
+
+#### ([1146](https://github.com/allegro/hermes/pull/1146)) Fixed consumer process stopping on subscription removal
+
+#### ([1140](https://github.com/allegro/hermes/pull/1140)) Clearing inflight-messages meter on consumer stop
+
+#### ([1131](https://github.com/allegro/hermes/pull/1131)) Renamed file with key dedicated for integration tests
+
+#### ([1130](https://github.com/allegro/hermes/pull/1130)) Fixed hierarchical max rate registry test
+
+## 1.3.2 (21.10.2019)
+
+### Enhancements
+
+#### ([1104](https://github.com/allegro/hermes/pull/1104)) Bump Apache AVRO to 1.9.0 and json-avro-converter to 0.2.9
+
+## 1.3.1 (15.10.2019)
+
+### Features
+
+#### ([1103](https://github.com/allegro/hermes/pull/1103)) Unhealthy subscriptions filtering
+
+Added two new parameters to `/unhealthy` management endpoint that additionally allow filtering the returned list of unhealthy subscriptions by:
+
+* subscriptions names
+* qualified topic names
+
+Example:
+
+```
+http://{hermes-management}/unhealthy?ownerSourceName=Service%20Catalog\
+&ownerId={service_id}&respectMonitoringSeverity=false\
+&subscriptionNames={subscription_names}&qualifiedTopicNames={qualified_topic_names}
+```
+
+### Enhancements
+
+#### ([1122](https://github.com/allegro/hermes/pull/1122)) Change order of role verification in management
+
+This should allow admins to control topic and subscriptions management regardless proper ownership being configured.
+
+### Bugfixes
+
+#### ([1118](https://github.com/allegro/hermes/pull/1118)) Fixing frontends waiting for kafka behaviour when there are no topics
+
+When using  `frontend.startup.wait.kafka.enabled=true` feature, in situation when there where no topics created in kafka yet, frontends would wait indefinitely for topics metadata to become available.
+
+#### ([1125](https://github.com/allegro/hermes/pull/1125)) Remove stale assignments from cluster assignment cache
+
+Cluster assignment cache wasn't properly cleared from previous assignments when using `flat-binary` workload registry type, and it could cause rebalance job to behave unstable.
+
+## 1.3.0 (1.10.2019)
+
+### Features
+
+#### ([1110](https://github.com/allegro/hermes/pull/1110)) Flat binary storage for consumers workload
+Introducing more concise registry type for consumers workload distribution that should help scale better. 
+Each consumer uses a single znode that contains binary encoded list of subscriptions that the consumer should process.
+The configuration loads fast and is updated only on workload distribution change.
+Enabled with `consumer.workload.registry.type=flat-binary` setting. The default is `hierarchical` type.
+
+#### A single consumer registry and leader election
+Consumer registry is extracted from consumer workload and is now used by max-rate job as well. 
+The registry contains a leader latch which is always enabled and available.
+
+#### ([1095](https://github.com/allegro/hermes/pull/1095)) Removal of deprecated `StrictMaxRateProvider`
+The legacy max-rate provider type is now removed.
+
+#### Removal of inflight message counter
+The inflight message counter as well as the distributed zookeeper counter are now removed.
+This feature was not used but was leaving a lot of junk in zookeeper.
+
+#### ([1106](https://github.com/allegro/hermes/pull/1106)) Consumer constraints management in hermes-console
+This feature allows easy management of consumer constraints. Link to it is not visible in the home screen as it is an admin feature 
+(all endpoints are admin-secured though), accessed from `http://<hermes-console>/#/constraints` URL.
+
+#### ([1113](https://github.com/allegro/hermes/pull/1113)) Frontends wait for kafka when booting up
+Frontends will not start the HTTP server unless the underlying kafka brokers are available, i.e. we can fetch topics metadata from them. 
+By default the feature is disabled, enable with `frontend.startup.wait.kafka.enabled=true`.
+
+#### ([1109](https://github.com/allegro/hermes/pull/1109)) Cancel all waiting messages on stopping sender
+When a subscription is stopped all messages that were already accepted by consumer message sender will be now dropped.
 
 ## 1.2.5 (27.09.2019)
 

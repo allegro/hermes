@@ -1,19 +1,20 @@
 package pl.allegro.tech.hermes.mock;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.WireMockServer;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
+import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
+import pl.allegro.tech.hermes.mock.matching.StartsWithPattern;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import java.io.IOException;
@@ -69,11 +70,15 @@ public class HermesMockHelper {
 
     public void addStub(String topicName, int statusCode, String contentType) {
         wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
-                .withHeader("Content-Type", equalTo(contentType))
+                .withHeader("Content-Type", startsWith(contentType))
                 .willReturn(aResponse()
                         .withStatus(statusCode)
                         .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
                 )
         );
+    }
+
+    public static StringValuePattern startsWith(String value) {
+        return new StartsWithPattern(value);
     }
 }

@@ -41,6 +41,7 @@ public class ConsumerMessageSender {
     private final InflightsPool inflight;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
+    private final HermesMetrics hermesMetrics;
 
     private int requestTimeoutMs;
     private ConsumerLatencyTimer consumerLatencyTimer;
@@ -71,6 +72,7 @@ public class ConsumerMessageSender {
         this.async = futureAsyncTimeout;
         this.requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
         this.asyncTimeoutMs = asyncTimeoutMs;
+        this.hermesMetrics = hermesMetrics;
         this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
     }
 
@@ -89,7 +91,6 @@ public class ConsumerMessageSender {
             logger.warn("Failed to stop retry executor within one minute with following exception", e);
         }
     }
-
 
     public void sendAsync(Message message) {
         sendAsync(message, delayForSubscription());
@@ -216,6 +217,10 @@ public class ConsumerMessageSender {
         successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
     }
 
+    private void decrementInflightMessageCounterAfterSenderShutdown() {
+        hermesMetrics.decrementInflightCounter(subscription);
+    }
+
     private boolean messageSentSucceeded(MessageSendingResult result) {
         return result.succeeded() || (result.isClientError() && !shouldRetryOnClientError());
     }
@@ -253,6 +258,7 @@ public class ConsumerMessageSender {
                     handleFailedSending(message, result);
                 }
             } else {
+                decrementInflightMessageCounterAfterSenderShutdown();
                 logger.warn("Process of subscription {} is not running. " +
                                 "Ignoring sending message result [successful={}, partition={}, offset={}, id={}]",
                         subscription.getQualifiedName(), result.succeeded(), message.getPartition(),
