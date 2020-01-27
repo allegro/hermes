@@ -118,16 +118,7 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
 
     @Override
     public Topic getTopicDetails(TopicName topicName) {
-        ensureTopicExists(topicName);
-        return readWithStatFrom(
-                paths.topicPath(topicName),
-                Topic.class,
-                (topic, stat) -> {
-                    topic.setCreatedAt(stat.getCtime());
-                    topic.setModifiedAt(stat.getMtime());
-                },
-                false
-        ).get();
+        return getTopicDetails(topicName, false).get();
     }
 
     @Override
@@ -146,7 +137,14 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
 
     private Optional<Topic> getTopicDetails(TopicName topicName, boolean quiet) {
         ensureTopicExists(topicName);
-
-        return readFrom(paths.topicPath(topicName), Topic.class, quiet);
+        return readWithStatFrom(
+                paths.topicPath(topicName),
+                Topic.class,
+                (topic, stat) -> {
+                    topic.setCreatedAt(stat.getCtime());
+                    topic.setModifiedAt(stat.getMtime());
+                },
+                quiet
+        );
     }
 }

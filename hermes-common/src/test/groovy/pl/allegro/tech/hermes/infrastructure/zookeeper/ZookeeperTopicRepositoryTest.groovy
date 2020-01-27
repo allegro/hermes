@@ -120,8 +120,8 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
         retrievedTopic.description == 'description'
 
         and: 'createdAt and modifiedAt are greater than or equal to timestamp'
-        !retrievedTopic.createdAt.isBefore(timestamp)
-        !retrievedTopic.modifiedAt.isBefore(timestamp)
+        retrievedTopic.createdAt.isAfter(timestamp)
+        retrievedTopic.modifiedAt.isAfter(timestamp)
     }
 
     def "should update topic"() {

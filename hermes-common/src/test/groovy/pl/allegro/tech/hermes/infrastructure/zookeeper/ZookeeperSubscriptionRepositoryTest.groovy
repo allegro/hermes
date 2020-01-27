@@ -98,8 +98,8 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
         subscription.endpoint == EndpointAddress.of('hello')
 
         and: 'createdAt and modifiedAt are greater or equal than timestamp'
-        !subscription.createdAt.isBefore(timestamp)
-        !subscription.modifiedAt.isBefore(timestamp)
+        subscription.createdAt.isAfter(timestamp)
+        subscription.modifiedAt.isAfter(timestamp)
     }
 
     def "should throw exception when trying to return details of unknown subscription"() {

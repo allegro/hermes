@@ -80,38 +80,16 @@ public abstract class ZookeeperBasedRepository {
 
     @SuppressWarnings("unchecked")
     protected <T> Optional<T> readFrom(String path, Class<T> clazz, boolean quiet) {
-        return readFrom(path, b -> (T) mapper.readValue(b, clazz), quiet);
+        return readWithStatFrom(path, b -> (T) mapper.readValue(b, clazz), (t, stat) -> {}, quiet);
     }
 
     @SuppressWarnings("unchecked")
     protected <T> Optional<T> readFrom(String path, TypeReference<T> type, boolean quiet) {
-        return readFrom(path, b -> (T) mapper.readValue(b, type), quiet);
+        return readWithStatFrom(path, b -> (T) mapper.readValue(b, type), (t, stat) -> {}, quiet);
     }
 
     protected <T> Optional<T> readWithStatFrom(String path, Class<T> clazz, BiConsumer<T, Stat> statDecorator, boolean quiet) {
         return readWithStatFrom(path, b -> mapper.readValue(b, clazz), statDecorator, quiet);
-    }
-
-    private <T> Optional<T> readFrom(String path, ThrowingReader<T> supplier, boolean quiet) {
-        try {
-            byte[] data = zookeeper.getData().forPath(path);
-            if (ArrayUtils.isNotEmpty(data)) {
-                return Optional.of(supplier.read(data));
-            } else {
-                logWarnOrThrowException("No data at path " + path,
-                        new InternalProcessingException("No data at path " + path),
-                        quiet);
-            }
-        } catch (JsonMappingException malformedException) {
-            logWarnOrThrowException("Unable to read data from path " + path,
-                    new MalformedDataException(path, malformedException), quiet);
-        } catch (InternalProcessingException e) {
-            throw e;
-        } catch (Exception exception) {
-            logWarnOrThrowException("Unable to read data from path " + path, new InternalProcessingException(exception),
-                    quiet);
-        }
-        return Optional.empty();
     }
 
     private <T> Optional<T> readWithStatFrom(String path, ThrowingReader<T> supplier, BiConsumer<T, Stat> statDecorator, boolean quiet) {
