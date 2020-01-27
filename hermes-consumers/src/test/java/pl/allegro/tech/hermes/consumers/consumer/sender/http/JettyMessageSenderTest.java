@@ -1,14 +1,17 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
+import com.codahale.metrics.MetricRegistry;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.util.HttpCookieStore;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider;
@@ -18,6 +21,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeaders
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
@@ -54,10 +59,16 @@ public class JettyMessageSenderTest {
         wireMockServer = new WireMockServer(ENDPOINT_PORT);
         wireMockServer.start();
 
-        client = new HttpClient();
-        client.setCookieStore(new HttpCookieStore.Empty());
-        client.setConnectTimeout(1000);
-        client.setIdleTimeout(1000);
+        ConfigFactory configFactory = new MutableConfigFactory();
+        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider();
+        sslContextFactoryProvider.configFactory = configFactory;
+
+        HttpClientFactory httpClientFactory = new HttpClientFactory(
+                configFactory,
+                new InstrumentedExecutorServiceFactory(new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
+                sslContextFactoryProvider);
+
+        client = httpClientFactory.provide();
         client.start();
     }
 
@@ -99,6 +110,21 @@ public class JettyMessageSenderTest {
 
         // then
         assertThat(future.get(1, TimeUnit.SECONDS).succeeded()).isTrue();
+    }
+
+    @Test
+    public void shouldNotRedirectMessage() throws InterruptedException, ExecutionException, TimeoutException {
+        // given
+        int numberOfExpectedMessages = 1;
+        int maximumWaitTimeInSeconds = 1;
+        remoteServiceEndpoint.redirectMessage(TEST_MESSAGE_CONTENT);
+
+        // when
+        CompletableFuture<MessageSendingResult> future = messageSender.send(testMessage());
+
+        // then
+        assertThat(future.get(maximumWaitTimeInSeconds, TimeUnit.SECONDS).succeeded()).isFalse();
+        remoteServiceEndpoint.waitUntilReceived(maximumWaitTimeInSeconds, numberOfExpectedMessages);
     }
 
     @Test
