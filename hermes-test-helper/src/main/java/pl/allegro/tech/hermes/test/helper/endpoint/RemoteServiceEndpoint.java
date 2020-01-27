@@ -80,7 +80,7 @@ public class RemoteServiceEndpoint {
         messages.forEach(m -> listener
             .register(
                 post(urlEqualTo(path))
-                .willReturn(aResponse().withStatus(returnedStatusCode).withFixedDelay(delay).withHeader("Location", "http://localhost:1234"))));
+                .willReturn(aResponse().withStatus(returnedStatusCode).withFixedDelay(delay))));
     }
 
     public void redirectMessage(String message) {
