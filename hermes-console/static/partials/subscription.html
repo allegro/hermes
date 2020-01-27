@@ -178,6 +178,14 @@
                     <p ng-repeat="(key, value) in notSupportedEndpointAddressResolverMetadataEntries(subscription.endpointAddressResolverMetadata)">
                         <strong>{{key}}:</strong> {{value}}
                     </p>
+
+                    <hr/>
+                    <p ng-show="subscription.createdAt">
+                        <strong>Creation date:</strong> {{subscription.createdAt}}
+                    </p>
+                    <p ng-show="subscription.modifiedAt">
+                        <strong>Modification date:</strong> {{subscription.modifiedAt}}
+                    </p>
                 </div>
             </div>
 

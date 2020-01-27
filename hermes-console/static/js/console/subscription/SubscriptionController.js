@@ -19,7 +19,20 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         var topicName = $scope.topicName = $stateParams.topicName;
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
 
-        $scope.subscription = subscriptionRepository.get(topicName, subscriptionName);
+        subscriptionRepository.get(topicName, subscriptionName).$promise
+                .then(function(subscription) {
+                    $scope.subscription = subscription;
+                    if (subscription && subscription.createdAt && subscription.modifiedAt) {
+                        var createdAt = new Date(0);
+                        createdAt.setUTCSeconds(subscription.createdAt);
+                        $scope.subscription.createdAt = createdAt;
+
+                        var modifiedAt = new Date(0);
+                        modifiedAt.setUTCSeconds(subscription.modifiedAt);
+                        $scope.subscription.modifiedAt = modifiedAt;
+                    }
+                });
+        
         $scope.retransmissionLoading = false;
 
         $scope.endpointAddressResolverMetadataConfig = config.endpointAddressResolverMetadata;
