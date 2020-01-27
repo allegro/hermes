@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
+import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -64,8 +65,11 @@ public class AvroMessageContentWrapper {
         try {
             genericRecord.put(METADATA_MARKER, metadataMap(id, timestamp, externalMetadata));
             return recordToBytes(genericRecord, schema);
-        } catch (Exception exception) {
-            throw new WrappingException("Could not wrap avro message", exception);
+        } catch (Exception e) {
+            if (e instanceof AvroRuntimeException && e.getMessage().equals("Not a valid schema field: __metadata")) {
+                throw new AvroInvalidMetadataException("Schema does not contain mandatory __metadata field for Hermes internal metadata. Please fix topic schema.", e);
+            }
+            throw new WrappingException("Could not wrap avro message", e);
         }
     }
 
