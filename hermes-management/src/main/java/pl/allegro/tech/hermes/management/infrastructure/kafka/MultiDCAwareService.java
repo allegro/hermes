@@ -79,6 +79,10 @@ public class MultiDCAwareService {
         return clusters.stream().allMatch(brokersClusterService -> brokersClusterService.topicExists(topic));
     }
 
+    public void createConsumerGroups(Subscription subscription) {
+        clusters.forEach(clusterService -> clusterService.createConsumerGroup(subscription));
+    }
+
     private void waitUntilOffsetsAreMoved(Topic topic, String subscriptionName) {
         Instant abortAttemptsInstant = clock.instant().plus(offsetsMovedTimeout);
 

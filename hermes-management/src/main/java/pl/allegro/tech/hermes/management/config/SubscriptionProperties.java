@@ -14,6 +14,8 @@ public class SubscriptionProperties {
 
     private int offsetsMovedTimeoutInSeconds = 30;
 
+    private boolean createConsumerGroupManuallyEnabled = true;
+
     public List<String> getAdditionalEndpointProtocols() {
         return additionalEndpointProtocols;
     }
@@ -36,5 +38,13 @@ public class SubscriptionProperties {
 
     public void setOffsetsMovedTimeoutInSeconds(int offsetsMovedTimeoutInSeconds) {
         this.offsetsMovedTimeoutInSeconds = offsetsMovedTimeoutInSeconds;
+    }
+
+    public boolean isCreateConsumerGroupManuallyEnabled() {
+        return createConsumerGroupManuallyEnabled;
+    }
+
+    public void setCreateConsumerGroupManuallyEnabled(boolean createConsumerGroupManuallyEnabled) {
+        this.createConsumerGroupManuallyEnabled = createConsumerGroupManuallyEnabled;
     }
 }
