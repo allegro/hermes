@@ -63,10 +63,10 @@ public class JettyMessageSenderTest {
         SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider();
         sslContextFactoryProvider.configFactory = configFactory;
 
-        HttpClientFactory httpClientFactory = new HttpClientFactory(
+        HttpClientFactory httpClientFactory = new HttpClientFactory(new HttpClientsFactory(
                 configFactory,
                 new InstrumentedExecutorServiceFactory(new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
-                sslContextFactoryProvider);
+                sslContextFactoryProvider));
 
         client = httpClientFactory.provide();
         client.start();
