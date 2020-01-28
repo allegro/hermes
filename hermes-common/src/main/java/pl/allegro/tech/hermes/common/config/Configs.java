@@ -36,7 +36,7 @@ public enum Configs {
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
     KAFKA_NAMESPACE("kafka.namespace", ""),
 
-    KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG("kafka.consumer.auto.offset.reset", "latest"),
+    KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG("kafka.consumer.auto.offset.reset", "earliest"),
     KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG("kafka.consumer.session.timeout.ms", 200_000),
     KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG("kafka.consumer.heartbeat.interval.ms", 3000),
     KAFKA_CONSUMER_METADATA_MAX_AGE_CONFIG("kafka.consumer.metadata.max.age.ms", 5 * 60 * 1000),

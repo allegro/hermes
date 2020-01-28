@@ -10,7 +10,6 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.common.utils.Time;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +34,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaConsu
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.LogEndOffsetChecker;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.service.NoOpConsumerGroupManager;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.OffsetsAvailableChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
@@ -77,9 +77,6 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     @Autowired
     MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
-    @Value("${management.consumer-groups.create-manually:}")
-    Boolean createConsumerGroupsManually;
-
     private final List<ZooKeeperClient> zkClients = new ArrayList<>();
     private final List<CuratorFramework> curators = new ArrayList<>();
 
@@ -114,13 +111,11 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     kafkaNamesMapper
             );
             KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
-            ConsumerGroupManager consumerGroupManager = new KafkaConsumerGroupManager(kafkaNamesMapper,
-                    kafkaProperties.getQualifiedClusterName(), kafkaProperties.getBootstrapKafkaServer());
             return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper,
                     new OffsetsAvailableChecker(consumerPool, storage),
                     new LogEndOffsetChecker(consumerPool),
-                    brokerAdminClient, consumerGroupManager, createConsumerGroupsManually);
+                    brokerAdminClient, createConsumerGroupManager(kafkaProperties, kafkaNamesMapper));
         }).collect(toList());
 
         return new MultiDCAwareService(
@@ -129,6 +124,13 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
                 ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()),
                 multiDcExecutor);
+    }
+
+    private ConsumerGroupManager createConsumerGroupManager(KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper) {
+        return subscriptionProperties.isCreateConsumerGroupManuallyEnabled() ?
+                new KafkaConsumerGroupManager(kafkaNamesMapper, kafkaProperties.getQualifiedClusterName(),
+                        kafkaProperties.getBootstrapKafkaServer()) :
+                new NoOpConsumerGroupManager();
     }
 
     private SubscriptionOffsetChangeIndicator getRepository(
