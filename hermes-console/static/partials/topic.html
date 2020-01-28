@@ -9,11 +9,11 @@
 
     <div class="pull-right">
         <span bind-html="config.buttonsExtension"></span>
-        <button class="btn btn-primary" ng-click="edit()">Edit</button>
-        <button class="btn btn-primary" ng-click="clone()">Clone</button>
-        <button class="btn btn-warning" ng-click="blacklist()" ng-show="!isBlacklisted">Blacklist</button>
-        <button class="btn btn-default" ng-click="unblacklist()" ng-show="isBlacklisted">Unblacklist</button>
-        <button class="btn btn-danger" ng-click="remove()">Remove</button>
+        <button class="btn btn-primary" ng-disabled="disabled" ng-click="edit()">Edit</button>
+        <button class="btn btn-primary" ng-disabled="disabled" ng-click="clone()">Clone</button>
+        <button class="btn btn-warning" ng-disabled="disabled" ng-show="admin && !isBlacklisted" ng-click="blacklist()" >Blacklist</button>
+        <button class="btn btn-default" ng-disabled="disabled" ng-show="admin && isBlacklisted"ng-click="unblacklist()" >Unblacklist</button>
+        <button class="btn btn-danger" ng-disabled="disabled" ng-click="remove()">Remove</button>
     </div>
 
     <h1><small>Topic:</small> {{topic.name}}</h1>
@@ -151,11 +151,11 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row container">
         <div class="list-group">
             <div class="list-group-item">
                 <div class="pull-right">
-                    <button class="btn btn-primary" ng-click="addSubscription()"><span class="glyphicon glyphicon-plus"></span></button>
+                    <button class="btn btn-primary" ng-disabled="topic.subscribingRestricted && disabled" ng-click="addSubscription()"><span class="glyphicon glyphicon-plus"></span></button>
                 </div>
                 <h4>
                     Subscriptions
@@ -176,7 +176,7 @@
         </div>
     </div>
 
-    <div class="row" ng-if="config.offlineClientsEnabled">
+    <div class="row container" ng-if="config.offlineClientsEnabled">
         <div class="list-group">
             <div class="list-group-item">
                 <h4>
