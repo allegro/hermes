@@ -34,6 +34,9 @@ dependencies {
     testCompile group: 'org.spockframework', name: 'spock-spring', version: versions.spock
 
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
+
+    testCompile group: 'org.testcontainers', name: 'spock', version: '1.12.2'
+    testCompile group: 'org.testcontainers', name: 'kafka', version: '1.12.2'
 }
 
 if (project.hasProperty('distribution')) {

@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
+import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 
@@ -34,12 +35,13 @@ public class BrokersClusterService {
     private final OffsetsAvailableChecker offsetsAvailableChecker;
     private final ConsumerGroupsDescriber consumerGroupsDescriber;
     private final AdminClient adminClient;
+    private final ConsumerGroupManager consumerGroupManager;
 
     public BrokersClusterService(String clusterName, SingleMessageReader singleMessageReader,
                                  RetransmissionService retransmissionService, BrokerTopicManagement brokerTopicManagement,
                                  KafkaNamesMapper kafkaNamesMapper, OffsetsAvailableChecker offsetsAvailableChecker,
-                                 LogEndOffsetChecker logEndOffsetChecker, AdminClient adminClient) {
-
+                                 LogEndOffsetChecker logEndOffsetChecker, AdminClient adminClient,
+                                 ConsumerGroupManager consumerGroupManager) {
         this.clusterName = clusterName;
         this.singleMessageReader = singleMessageReader;
         this.retransmissionService = retransmissionService;
@@ -53,6 +55,7 @@ public class BrokersClusterService {
                 clusterName
         );
         this.adminClient = adminClient;
+        this.consumerGroupManager = consumerGroupManager;
     }
 
     public String getClusterName() {
@@ -95,6 +98,10 @@ public class BrokersClusterService {
             logger.error("Failed to check assignments for topic " + topic.getQualifiedName() + " subscriptions", e);
             return false;
         }
+    }
+
+    public void createConsumerGroup(Subscription subscription) {
+        consumerGroupManager.createConsumerGroup(subscription);
     }
 
     public Optional<ConsumerGroup> describeConsumerGroup(Topic topic, String subscriptionName) {
