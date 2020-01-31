@@ -41,7 +41,7 @@ Vagrant.configure(2) do |config|
     ██Γ   ▀█▌  ▀█████▀  ██⌐    ██Θ  ╘██   ██Γ  ▀█████▀  ▀█████▀
 
 
-        * Console:       http://10.10.10.10
+        * Console:       http://10.10.10.10:8090/ui/index.html
         * Frontend:      http://10.10.10.10:8080
         * Management:    http://10.10.10.10:8090
         * Graphite:      http://10.10.10.10:8082
@@ -57,7 +57,5 @@ Vagrant.configure(2) do |config|
   config.vm.provision "frontend", type: "shell", path: "vagrant_provisioning/install_hermes_module.sh", args: "frontend"
   config.vm.provision "consumers", type: "shell", path: "vagrant_provisioning/install_hermes_module.sh", args: "consumers"
   config.vm.provision "management", type: "shell", path: "vagrant_provisioning/install_hermes_module.sh", args: "management"
-
-  config.vm.provision "console", type: "shell", path: "vagrant_provisioning/install_console.sh"
 
 end

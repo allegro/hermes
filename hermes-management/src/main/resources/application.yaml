@@ -20,10 +20,7 @@ kafka:
 
 spring:
   jersey:
-    type: servlet
-  mvc:
-    servlet:
-      path: /status
+    type: filter
 
 server:
   port: 8090
@@ -51,3 +48,7 @@ topicOwnerCache:
 
 subscriptionOwnerCache:
   refreshRateInSeconds: 300
+
+console:
+  configurationLocation: console/config-local.json
+  configurationType: classpath_resource

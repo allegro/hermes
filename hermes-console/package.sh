@@ -24,22 +24,12 @@ if [ ! -e dist/$NODE_DIST.tar.gz ]; then
     tar --extract --keep-old-files --strip 1 --file dist/$NODE_DIST.tar.gz -C dist/node
 fi
 
-export PATH=$(pwd)/dist/node/bin:$PATH
-
 printf "Running NPM and bower\n"
 
-npm install --production --yes
+dist/node/bin/npm install --production --yes
 node_modules/.bin/bower install --allow-root -F
 
-printf "Creating package: dist/$ARCHIVE_NAME.zip\n"
+printf "Creating directory: dist/static\n"
 
-# first step - create base directory and copy contents
-mkdir -p dist/$ARCHIVE_NAME
-cp -r node_modules package.json serve.js config_default.json static run.sh dist/$ARCHIVE_NAME
-(cd dist && cp -r node $ARCHIVE_NAME)
-
-# second step - create zip
-(cd dist && zip --quiet --symlinks --recurse-paths $ARCHIVE_NAME.zip $ARCHIVE_NAME)
-
-# cleanup
-rm -rf dist/$ARCHIVE_NAME
+# copy static contents
+cp -r static dist

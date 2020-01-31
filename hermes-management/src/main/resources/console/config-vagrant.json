@@ -1,0 +1,40 @@
+{
+  "console": {
+    "title": "hermes vagrant console"
+  },
+  "dashboard": {
+    "metrics": "http://10.10.10.10:8082",
+    "docs": "http://hermes-pubsub.rtfd.org"
+  },
+  "hermes": {
+    "discovery": {
+      "type": "simple",
+      "simple": {
+        "url": "http://10.10.10.10:8090"
+      }
+    }
+  },
+  "metrics": {
+    "type": "graphite",
+    "graphite": {
+      "url": "10.10.10.10:8082",
+      "prefix": "hermes"
+    }
+  },
+  "auth": {
+    "oauth": {
+      "enabled": false,
+      "url": "10.10.10.10:8092/auth",
+      "clientId": "hermes",
+      "scope": "hermes"
+    },
+    "headers": {
+      "enabled": false,
+      "adminHeader": "Hermes-Admin-Password"
+    }
+  },
+  "topic": {
+    "messagePreviewEnabled": true,
+    "offlineClientsEnabled": false
+  }
+}
