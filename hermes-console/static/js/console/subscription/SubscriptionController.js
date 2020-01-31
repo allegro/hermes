@@ -300,6 +300,17 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
             $scope.subscription.filters.splice(index, 1);
         };
 
+        $scope.addHeader = function() {
+            if(!$scope.header.name || !$scope.header.value) {
+                return;
+            }
+            $scope.subscription.headers.push(angular.copy($scope.header));
+            $scope.header = {};
+        };
+
+        $scope.delHeader = function (index) {
+            $scope.subscription.headers.splice(index, 1);
+        };
     }]);
 
 function initRetransmissionCalendar(daysBack) {
