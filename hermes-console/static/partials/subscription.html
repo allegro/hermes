@@ -271,7 +271,7 @@
             <div class="panel">
 
                 <div class="panel-heading">
-                    <h3 class="panel-title">Subscription filters</h3>
+                    <h3 class="panel-title">Subscription message filters</h3>
                 </div>
 
                 <table class="table">
@@ -292,6 +292,29 @@
 
                 </table>
 
+            </div>
+        </div>
+    </div>
+
+    <div class="row" ng-show="subscription.headers.length > 0">
+        <div class="col-md-12">
+            <div class="panel">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Subscription http header filters</h3>
+                </div>
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Pattern</th>
+                        <th> </th>
+                    </tr>
+                    <tr ng-repeat="filter in subscription.headers">
+                        <td>{{$index + 1}}</td>
+                        <td>{{filter.name}}</td>
+                        <td>{{filter.value}}</td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
