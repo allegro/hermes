@@ -1,40 +1,17 @@
 # Hermes Console
 
-Hermes Console is configured using JSON file, which has to be present in order to start the Console. Its location can be
-specified using `-p` command line argument or via `HERMES_CONSOLE_CONFIG` environment variable. Hermes Console can read
-config from local filesystem or via HTTP:
+Hermes Console is served by Hermes Management and can be configured via 
+[application property files](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config-application-property-files)
+under `console` property.
 
-```
-./run.sh -c /etc/hermes-console/config.json
-./run.sh -c http://configuration.store/hermes-console
-```
-
-Hermes Console directory contains example configuration file along with some comments (remember to remove them when
-copying example - it's not a valid JSON file).
+If you want to see console default config then take a look on
+[application-local.yaml](https://github.com/allegro/hermes/blob/master/hermes-management/src/main/resources/application-local.yaml) file.
 
 Option            | Description
 ----------------- | ---------------------------------------------------------
 console.title     | what to display in left upper corner, next to Hermes logo
 dashboard.metrics | link to metrics dashboard, available on Console home page
 dashboard.docs    | link to documentation, available on Console home page
-
-## Hermes Management discovery
-
-Hermes Console can discovery Hermes Management using two approaches:
-
-* `simple`: provide direct URL
-* `consul`: use [Consul](http://consul.io) service discovery to discover instances
-
-In case of using Consul, implementation is very naive: it fetches list of registered hosts only on page load, thus if
-anything changes during user session it is necessary to refresh the page.
-
-Option                              | Description
------------------------------------ | ----------------------------------------------------------
-hermes.discovery.type               | discovery mechanism to use (`simple` or `consul`)
-hermes.discovery.simple.url         | direct address to Hermes Management
-hermes.discovery.consul.agentUrl    | address to Consul Agent
-hermes.discovery.consul.serviceName | name under which Hermes Management is registered in Consul
-
 
 ## Metric Store integration
 
