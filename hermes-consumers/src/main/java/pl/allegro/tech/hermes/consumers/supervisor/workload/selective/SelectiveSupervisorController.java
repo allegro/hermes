@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ALGORITHM;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_AUTO_REBALANCE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER;
@@ -139,7 +138,6 @@ public class SelectiveSupervisorController implements SupervisorController {
                 System.currentTimeMillis() - startTime,
                 configFactory.print(
                         CONSUMER_WORKLOAD_NODE_ID,
-                        CONSUMER_WORKLOAD_ALGORITHM,
                         CONSUMER_WORKLOAD_REBALANCE_INTERVAL,
                         CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION,
                         CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER));
