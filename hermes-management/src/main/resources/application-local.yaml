@@ -21,3 +21,5 @@ console:
   topic:
     messagePreviewEnabled: true
     offlineClientsEnabled: false
+  subscription:
+    showHeadersFilter: true
