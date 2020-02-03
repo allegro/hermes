@@ -15,6 +15,7 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     deliveryType: 'SERIAL',
                     mode: 'ANYCAST',
                     filters: [],
+                    headers: [],
                     contentType: 'JSON',
                     subscriptionPolicy: {
                         messageTtl: 3600,

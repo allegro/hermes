@@ -181,10 +181,10 @@
 
                     <hr/>
                     <p ng-show="subscription.createdAt">
-                        <strong>Creation date:</strong> {{subscription.createdAt}}
+                        <strong>Creation date:</strong> {{subscription.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}
                     </p>
                     <p ng-show="subscription.modifiedAt">
-                        <strong>Modification date:</strong> {{subscription.modifiedAt}}
+                        <strong>Modification date:</strong> {{subscription.modifiedAt | date:'yyyy-MM-dd HH:mm:ss'}}
                     </p>
                 </div>
             </div>

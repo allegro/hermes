@@ -105,10 +105,10 @@
 
                     <hr/>
                     <p ng-show="topic.createdAt">
-                        <strong>Creation date:</strong> {{topic.createdAt}}
+                        <strong>Creation date:</strong> {{topic.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}
                     </p>
                     <p ng-show="topic.modifiedAt">
-                        <strong>Modification date:</strong> {{topic.modifiedAt}}
+                        <strong>Modification date:</strong> {{topic.modifiedAt | date:'yyyy-MM-dd HH:mm:ss'}}
                     </p>
 
                 </div>
