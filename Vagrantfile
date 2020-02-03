@@ -41,10 +41,9 @@ Vagrant.configure(2) do |config|
     ██Γ   ▀█▌  ▀█████▀  ██⌐    ██Θ  ╘██   ██Γ  ▀█████▀  ▀█████▀
 
 
-        * Console:       http://10.10.10.10:8090/ui/index.html
-        * Frontend:      http://10.10.10.10:8080
-        * Management:    http://10.10.10.10:8090
-        * Graphite:      http://10.10.10.10:8082
+        * UI & Management: http://10.10.10.10:8090
+        * Frontend:        http://10.10.10.10:8080
+        * Graphite:        http://10.10.10.10:8082
 
    """
 

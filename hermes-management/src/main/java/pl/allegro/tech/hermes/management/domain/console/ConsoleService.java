@@ -12,6 +12,6 @@ public class ConsoleService {
     }
 
     public String getConfiguration() {
-        return "var config = " + repository.find();
+        return "var config = " + repository.getConfiguration();
     }
 }

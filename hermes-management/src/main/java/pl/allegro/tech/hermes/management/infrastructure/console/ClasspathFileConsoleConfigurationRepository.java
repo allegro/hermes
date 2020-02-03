@@ -2,21 +2,21 @@ package pl.allegro.tech.hermes.management.infrastructure.console;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.FileCopyUtils;
-import pl.allegro.tech.hermes.management.config.ConsoleProperties;
+import pl.allegro.tech.hermes.management.config.console.ConsoleConfigProperties;
 import pl.allegro.tech.hermes.management.domain.console.ConsoleConfigurationRepository;
 
 import java.nio.charset.StandardCharsets;
 
-public class ClasspathConsoleConfigurationRepository implements ConsoleConfigurationRepository {
+public class ClasspathFileConsoleConfigurationRepository implements ConsoleConfigurationRepository {
 
     private String configuration;
 
-    public ClasspathConsoleConfigurationRepository(ConsoleProperties properties) {
-        configuration = loadConfiguration(properties.getConfigurationLocation());
+    public ClasspathFileConsoleConfigurationRepository(ConsoleConfigProperties properties) {
+        configuration = loadConfiguration(properties.getLocation());
     }
 
     @Override
-    public String find() {
+    public String getConfiguration() {
         return configuration;
     }
 

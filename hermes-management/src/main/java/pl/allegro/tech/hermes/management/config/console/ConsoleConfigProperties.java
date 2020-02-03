@@ -1,30 +1,30 @@
-package pl.allegro.tech.hermes.management.config;
+package pl.allegro.tech.hermes.management.config.console;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "console")
-public class ConsoleProperties {
+@ConfigurationProperties(prefix = "console.config")
+public class ConsoleConfigProperties {
 
-    private String configurationLocation = "console/config-local.json";
-    private ConfigurationType configurationType = ConfigurationType.CLASSPATH_RESOURCE;
+    private String location = "console/config-local.json";
+    private ConfigurationType type = ConfigurationType.SPRING_CONFIG;
     private HttpClientProperties httpClient = new HttpClientProperties();
 
-    public String getConfigurationLocation() {
-        return configurationLocation;
+    public String getLocation() {
+        return location;
     }
 
-    public void setConfigurationLocation(String configurationLocation) {
-        this.configurationLocation = configurationLocation;
+    public void setLocation(String location) {
+        this.location = location;
     }
 
-    public ConfigurationType getConfigurationType() {
-        return configurationType;
+    public ConfigurationType getType() {
+        return type;
     }
 
-    public void setConfigurationType(ConfigurationType configurationType) {
-        this.configurationType = configurationType;
+    public void setType(ConfigurationType type) {
+        this.type = type;
     }
 
     public HttpClientProperties getHttpClient() {
@@ -58,6 +58,6 @@ public class ConsoleProperties {
     }
 
     public enum ConfigurationType {
-        CLASSPATH_RESOURCE, HTTP_RESOURCE
+        CLASSPATH_RESOURCE, HTTP_RESOURCE, SPRING_CONFIG
     }
 }
