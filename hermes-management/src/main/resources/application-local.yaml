@@ -1,0 +1,23 @@
+console:
+  console:
+    title: hermes console
+  dashboard:
+    metrics: http://localhost:8082
+    docs: http://hermes-pubsub.rtfd.org
+  metrics:
+    type: graphite
+    graphite:
+      url: localhost:8082
+      prefix: hermes
+  auth:
+    oauth:
+      enabled: false
+      url: localhost:8092/auth
+      clientId: hermes
+      scope: hermes
+    headers:
+      enabled: false
+      adminHeader: Hermes-Admin-Password
+  topic:
+    messagePreviewEnabled: true
+    offlineClientsEnabled: false

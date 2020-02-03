@@ -1,19 +1,19 @@
 package pl.allegro.tech.hermes.management.infrastructure.console;
 
 import org.springframework.web.client.RestTemplate;
-import pl.allegro.tech.hermes.management.config.ConsoleProperties;
+import pl.allegro.tech.hermes.management.config.console.ConsoleConfigProperties;
 import pl.allegro.tech.hermes.management.domain.console.ConsoleConfigurationRepository;
 
 public class HttpConsoleConfigurationRepository implements ConsoleConfigurationRepository {
 
     private String configuration;
 
-    public HttpConsoleConfigurationRepository(ConsoleProperties properties, RestTemplate restTemplate) {
-        configuration = loadConfiguration(properties.getConfigurationLocation(), restTemplate);
+    public HttpConsoleConfigurationRepository(ConsoleConfigProperties properties, RestTemplate restTemplate) {
+        configuration = loadConfiguration(properties.getLocation(), restTemplate);
     }
 
     @Override
-    public String find() {
+    public String getConfiguration() {
         return configuration;
     }
 
