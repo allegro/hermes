@@ -479,6 +479,7 @@ public class ConsoleProperties {
 
     public static final class SubscriptionView {
         private Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata = new HashMap<>();
+        private boolean showHeadersFilter = false;
 
         public Map<String, EndpointAddressResolverMetadata> getEndpointAddressResolverMetadata() {
             return endpointAddressResolverMetadata;
@@ -486,6 +487,14 @@ public class ConsoleProperties {
 
         public void setEndpointAddressResolverMetadata(Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata) {
             this.endpointAddressResolverMetadata = endpointAddressResolverMetadata;
+        }
+
+        public boolean isShowHeadersFilter() {
+            return showHeadersFilter;
+        }
+
+        public void setShowHeadersFilter(boolean showHeadersFilter) {
+            this.showHeadersFilter = showHeadersFilter;
         }
     }
 
