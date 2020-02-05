@@ -278,7 +278,8 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
             $scope.subscription.filters.push({
                 type: $scope.topicContentType === "JSON" ? "jsonpath" : "avropath",
                 path: $scope.filter.path,
-                matcher: $scope.filter.matcher
+                matcher: $scope.filter.matcher,
+                matchingStrategy: $scope.filter.matchingStrategy
             });
             $scope.filter = {};
         };
