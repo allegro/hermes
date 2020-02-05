@@ -89,7 +89,15 @@ Request that specifies all available options:
     ],
     "filters": [
         {"type": "jsonpath", "path": "$.user.name", "matcher": "^abc.*"},
-        {"type": "jsonpath", "path": "$.user.status", "matcher": "new"}
+        {"type": "jsonpath", "path": "$.user.status", "matcher": "new"},
+        {"type": "jsonpath", "path": "$.user.name", "matcher": "^abc.*", "matchingStrategy": "all"},
+        {"type": "jsonpath", "path": "$.user.status", "matcher": "new"},
+        {
+            "type": "jsonpath",
+            "path": "$.addresses.*.country",
+            "matcher": "GB",
+            "matchingStrategy": "any"
+        }
     ],
     "endpointAddressResolverMetadata": {
         "ignoreMessageHeaders": true,
@@ -227,6 +235,29 @@ Topic content-type    | Filter type
 avro                  | avropath
 json                  | jsonpath
 
+### Matching strategy
+
+Filter path can be described in a way that it indicates several fields,
+e.g. a `*` sign in JsonPath or array indicator in AvroPath.
+By default all fields *must* match the matcher, but this behaviour can be changed
+with `matcherStrategy`. Possible values are:
+
+* `"all"` (default)
+* `"any"`
+
+Example:
+```
+{
+    "type": "jsonpath",
+    "path": "$.user.addresses.*.country",
+    "matcher": "GB",
+    "matchingStrategy": "all"
+}
+```
+
+This filter will pass the message only when in all user addresses country will match *GB*.
+In case when `matchingStrategy` would be set to `any` then all messages with *GB* country set in any address will be passed.
+
 ### JsonPath configuration
 
 JsonPath filter is based on popular [library](https://github.com/jayway/JsonPath) of the same name that can query
@@ -237,10 +268,11 @@ Option                | Description
 type                  | type of filter
 path                  | JsonPath expression to query json document
 matcher               | regexp expression to match value from json document
+matcherStrategy       | type of matcher strategy. Default is `all`
 
 Example:
 ```
-{"type": "jsonpath", "path": "$.user.name", "matcher": "^abc.*"}
+{"type": "jsonpath", "path": "$.user.name", "matcher": "^abc.*", "matcherStrategy": "all"}
 ```
 
 ### AvroPath configuration
@@ -255,12 +287,19 @@ Option                | Description
 type                  | type of filter
 path                  | dotted expression to query avro document. When array selector is used then wildcard sign `*` can be used as index 
 matcher               | regexp expression to match value from avro document
+matcherStrategy       | type of matcher strategy. Default is `all`
 
 Example:
 ```
 {"type": "avropath", "path": ".user.name", "matcher": "^abc.*"}
 {"type": "avropath", "path": ".user.addresses[1].city", "matcher": "^abc.*"}
 {"type": "avropath", "path": ".user.addresses[*].city", "matcher": "^abc.*"}
+{
+    "type": "avropath",
+    "path": ".user.addresses[*].city",
+    "matcher": "^abc.*",
+    "matcherStrategy": "any"
+}
 ```
 
 ### Adding filters
