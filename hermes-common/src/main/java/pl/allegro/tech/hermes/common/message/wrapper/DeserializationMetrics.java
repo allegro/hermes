@@ -15,6 +15,10 @@ public class DeserializationMetrics {
         this.metricRegistry = metricRegistry;
     }
 
+    public Counter errorsForHeaderSchemaVersion() {
+        return metricRegistry.counter(name(deserializationErrorsPath(), "headerSchemaVersion"));
+    }
+
     public Counter errorsForSchemaVersionAwarePayload() {
         return metricRegistry.counter(name(deserializationErrorsPath(), "payloadWithSchemaVersion"));
     }
@@ -29,6 +33,10 @@ public class DeserializationMetrics {
 
     public Counter missedSchemaVersionInPayload() {
         return metricRegistry.counter(name(deserializationPath(), "missed", "schemaVersionInPayload"));
+    }
+
+    public Counter missedSchemaVersionInHeader() {
+        return metricRegistry.counter(name(deserializationPath(), "missed", "schemaVersionInHeader"));
     }
 
     private String deserializationErrorsPath() {

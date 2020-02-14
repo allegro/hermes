@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageAnySchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
@@ -35,8 +38,23 @@ public class MessageConfiguration {
 
     @Bean
     MessageContentWrapper messageContentWrapper() {
-        return new MessageContentWrapper(jsonMessageContentWrapper(), new AvroMessageContentWrapper(clock), schemaRepository,
-                () -> true, new DeserializationMetrics(metricRegistry));
+        DeserializationMetrics metrics = new DeserializationMetrics(metricRegistry);
+        AvroMessageContentWrapper avroWrapper = new AvroMessageContentWrapper(clock);
+        JsonMessageContentWrapper jsonWrapper = jsonMessageContentWrapper();
+
+        AvroMessageAnySchemaVersionContentWrapper anySchemaWrapper =
+                new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, () -> true, avroWrapper, metrics);
+
+        AvroMessageSchemaVersionAwareContentWrapper schemaAwareWrapper =
+                new AvroMessageSchemaVersionAwareContentWrapper(schemaRepository, avroWrapper, anySchemaWrapper, metrics);
+
+        AvroMessageHeaderSchemaVersionContentWrapper headerSchemaWrapper = new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, schemaAwareWrapper, metrics);
+
+        return new MessageContentWrapper(
+                jsonWrapper,
+                avroWrapper,
+                headerSchemaWrapper
+        );
     }
 
     private JsonMessageContentWrapper jsonMessageContentWrapper() {

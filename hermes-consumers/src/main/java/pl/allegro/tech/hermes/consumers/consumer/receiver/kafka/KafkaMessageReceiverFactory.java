@@ -40,6 +40,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final FilterChainFactory filterChainFactory;
     private final Trackers trackers;
     private final ConsumerPartitionAssignmentState consumerPartitionAssignmentState;
+    private final KafkaHeaderExtractor kafkaHeaderExtractor;
 
     @Inject
     public KafkaMessageReceiverFactory(ConfigFactory configs,
@@ -50,7 +51,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                        KafkaNamesMapper kafkaNamesMapper,
                                        FilterChainFactory filterChainFactory,
                                        Trackers trackers,
-                                       ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
+                                       ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
+                                       KafkaHeaderExtractor kafkaHeaderExtractor) {
         this.configs = configs;
         this.messageContentWrapper = messageContentWrapper;
         this.hermesMetrics = hermesMetrics;
@@ -60,6 +62,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         this.filterChainFactory = filterChainFactory;
         this.trackers = trackers;
         this.consumerPartitionAssignmentState = consumerPartitionAssignmentState;
+        this.kafkaHeaderExtractor = kafkaHeaderExtractor;
     }
 
     @Override
@@ -77,7 +80,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 clock,
                 configs.getIntProperty(Configs.CONSUMER_RECEIVER_POOL_TIMEOUT),
                 configs.getIntProperty(Configs.CONSUMER_RECEIVER_READ_QUEUE_CAPACITY),
-                consumerPartitionAssignmentState);
+                consumerPartitionAssignmentState,
+                kafkaHeaderExtractor);
 
 
         if (configs.getBooleanProperty(Configs.CONSUMER_RECEIVER_WAIT_BETWEEN_UNSUCCESSFUL_POLLS)) {

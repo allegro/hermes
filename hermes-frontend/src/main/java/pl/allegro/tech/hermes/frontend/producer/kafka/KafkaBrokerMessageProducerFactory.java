@@ -9,17 +9,20 @@ public class KafkaBrokerMessageProducerFactory implements Factory<KafkaBrokerMes
 
     private final Producers producers;
     private final HermesMetrics hermesMetrics;
+    private final KafkaHeaderFactory kafkaHeaderFactory;
 
     @Inject
     public KafkaBrokerMessageProducerFactory(Producers producers,
-                                             HermesMetrics hermesMetrics) {
+                                             HermesMetrics hermesMetrics,
+                                             KafkaHeaderFactory kafkaHeaderFactory) {
         this.producers = producers;
         this.hermesMetrics = hermesMetrics;
+        this.kafkaHeaderFactory = kafkaHeaderFactory;
     }
 
     @Override
     public KafkaBrokerMessageProducer provide() {
-        return new KafkaBrokerMessageProducer(producers, hermesMetrics);
+        return new KafkaBrokerMessageProducer(producers, hermesMetrics, kafkaHeaderFactory);
     }
 
     @Override

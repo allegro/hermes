@@ -17,7 +17,6 @@ import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.List;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
@@ -28,12 +27,15 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     private static final Logger logger = LoggerFactory.getLogger(KafkaBrokerMessageProducer.class);
     private final Producers producers;
     private final HermesMetrics metrics;
+    private final KafkaHeaderFactory kafkaHeaderFactory;
 
     @Inject
     public KafkaBrokerMessageProducer(Producers producers,
-                                      HermesMetrics metrics) {
+                                      HermesMetrics metrics,
+                                      KafkaHeaderFactory kafkaHeaderFactory) {
         this.producers = producers;
         this.metrics = metrics;
+        this.kafkaHeaderFactory = kafkaHeaderFactory;
         producers.registerGauges(metrics);
     }
 
@@ -59,13 +61,14 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     }
 
     private Iterable<Header> createRecordHeaders(String id, long timestamp, Optional<SchemaVersion> schemaVersion) {
-        List<Header> headers = asList(
-                RecordHeaders.messageId(id),
-                RecordHeaders.timestamp(timestamp));
-
-        schemaVersion.ifPresent(sv -> headers.add(RecordHeaders.schemaVersion(sv.value())));
-
-        return headers;
+        return schemaVersion
+                .map(sv -> asList(
+                        kafkaHeaderFactory.messageId(id),
+                        kafkaHeaderFactory.timestamp(timestamp),
+                        kafkaHeaderFactory.schemaVersion(sv.value())))
+                .orElse(asList(
+                        kafkaHeaderFactory.messageId(id),
+                        kafkaHeaderFactory.timestamp(timestamp)));
     }
 
     @Override

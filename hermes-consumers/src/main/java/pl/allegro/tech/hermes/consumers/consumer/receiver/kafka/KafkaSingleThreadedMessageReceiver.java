@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Ints;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -58,6 +59,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
     private final int pollTimeout;
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
+    private KafkaHeaderExtractor kafkaHeaderExtractor;
 
     public KafkaSingleThreadedMessageReceiver(KafkaConsumer<byte[], byte[]> consumer,
                                               MessageContentWrapper messageContentWrapper,
@@ -68,12 +70,14 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                                               Clock clock,
                                               int pollTimeout,
                                               int readQueueCapacity,
-                                              ConsumerPartitionAssignmentState partitionAssignmentState) {
+                                              ConsumerPartitionAssignmentState partitionAssignmentState,
+                                              KafkaHeaderExtractor kafkaHeaderExtractor) {
         this.metrics = metrics;
         this.topic = topic;
         this.subscription = subscription;
         this.pollTimeout = pollTimeout;
         this.partitionAssignmentState = partitionAssignmentState;
+        this.kafkaHeaderExtractor = kafkaHeaderExtractor;
         this.topics = getKafkaTopics(topic, kafkaNamesMapper).stream()
                 .collect(Collectors.toMap(t -> t.name().asString(), Function.identity()));
         this.consumer = consumer;
@@ -152,7 +156,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private UnwrappedMessageContent getUnwrappedMessageContent(ConsumerRecord<byte[], byte[]> message,
                                                                ContentType contentType) {
         if (contentType == ContentType.AVRO) {
-            return messageContentWrapper.unwrapAvro(message.value(), topic);
+            return messageContentWrapper.unwrapAvro(message.value(), topic, kafkaHeaderExtractor.extractSchemaVersion(message.headers()).orElse(null));
         } else if (contentType == ContentType.JSON) {
             return messageContentWrapper.unwrapJson(message.value());
         }

@@ -36,8 +36,15 @@ public class MessageContentWrapperTest {
 
     private final JsonMessageContentWrapper jsonWrapper = new JsonMessageContentWrapper("message", "metadata", new ObjectMapper());
     private final AvroMessageContentWrapper avroWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
+
+    private final AvroMessageAnySchemaVersionContentWrapper anySchemaWrapper =
+            new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, () -> true, avroWrapper, metrics);
+    private final AvroMessageSchemaVersionAwareContentWrapper schemaAwareWrapper =
+            new AvroMessageSchemaVersionAwareContentWrapper(schemaRepository, avroWrapper, anySchemaWrapper, metrics);
+    private final AvroMessageHeaderSchemaVersionContentWrapper headerSchemaWrapper = new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, schemaAwareWrapper, metrics);
+
     private final MessageContentWrapper messageContentWrapper = new MessageContentWrapper(jsonWrapper, avroWrapper,
-            schemaRepository, () -> true, metrics);
+            headerSchemaWrapper);
 
     static CompiledSchema<Schema> schema1 = new CompiledSchema<>(load("/schema/user.avsc"), SchemaVersion.valueOf(1));
     static CompiledSchema<Schema> schema2 = new CompiledSchema<>(load("/schema/user_v2.avsc"), SchemaVersion.valueOf(2));
@@ -46,7 +53,7 @@ public class MessageContentWrapperTest {
     static SchemaVersionsRepository schemaVersionsRepository = new SchemaVersionsRepository() {
         @Override
         public List<SchemaVersion> versions(Topic topic, boolean online) {
-            return online? asList(schema3.getVersion(), schema2.getVersion(), schema1.getVersion())
+            return online ? asList(schema3.getVersion(), schema2.getVersion(), schema1.getVersion())
                     : asList(schema2.getVersion(), schema1.getVersion());
         }
 
@@ -57,10 +64,15 @@ public class MessageContentWrapperTest {
 
     static CompiledSchemaRepository<Schema> compiledSchemaRepository = (topic, version, online) -> {
         switch (version.value()) {
-            case 1: return schema1;
-            case 2: return schema2;
-            case 3: return schema3;
-            default: throw new RuntimeException("sry");}
+            case 1:
+                return schema1;
+            case 2:
+                return schema2;
+            case 3:
+                return schema3;
+            default:
+                throw new RuntimeException("sry");
+        }
     };
     static SchemaRepository schemaRepository = new SchemaRepository(schemaVersionsRepository, compiledSchemaRepository);
 
@@ -90,12 +102,17 @@ public class MessageContentWrapperTest {
                 errorsForAnySchemaVersion, errorsForAnyOnlineSchemaVersion);
     }
 
-    public void shouldUnwrapMessageWrappedWithSchemaAtVersion(MessageContentWrapper wrapper, int schemaVersion, boolean wrapWithSchemaVersionAwarePayload,
-                                                              boolean unwrapWithSchemaVersionAwarePayload, int missedSchemaVersionInPayload,
-                                                              int errorsForPayloadWithSchemaVersion, int errorsForAnySchemaVersion,
+    public void shouldUnwrapMessageWrappedWithSchemaAtVersion(MessageContentWrapper wrapper,
+                                                              int schemaVersion,
+                                                              boolean wrapWithSchemaVersionAwarePayload,
+                                                              boolean unwrapWithSchemaVersionAwarePayload,
+                                                              int missedSchemaVersionInPayload,
+                                                              int errorsForPayloadWithSchemaVersion,
+                                                              int errorsForAnySchemaVersion,
                                                               int errorsForAnyOnlineSchemaVersion) {
         // given
         SchemaVersion version = SchemaVersion.valueOf(schemaVersion);
+        Integer TODO = 1;
         Topic topicToWrap = createTopic("group", "topic", wrapWithSchemaVersionAwarePayload);
         Topic topicToUnwrap = createTopic("group", "topic", unwrapWithSchemaVersionAwarePayload);
         CompiledSchema<Schema> schema = schemaRepository.getKnownAvroSchemaVersion(topicToWrap, version);
@@ -103,7 +120,7 @@ public class MessageContentWrapperTest {
         byte[] wrapped = wrapper.wrapAvro(user.asBytes(), "uniqueId", 1234, topicToWrap, schema, new HashedMap<>());
 
         // when
-        UnwrappedMessageContent unwrappedMessageContent = wrapper.unwrapAvro(wrapped, topicToUnwrap);
+        UnwrappedMessageContent unwrappedMessageContent = wrapper.unwrapAvro(wrapped, topicToUnwrap, TODO);
 
         // then
         assertThat(unwrappedMessageContent.getContent()).contains(user.asBytes());
@@ -121,10 +138,11 @@ public class MessageContentWrapperTest {
     public void shouldThrowExceptionWhenMessageCouldNotBeUnwrappedByAnySchema() {
         // given
         Topic topic = topic("group", "topic").build();
+        Integer TODO = 1;
         byte[] doesNotMatchAnySchema = "{}".getBytes();
 
         // when
-        catchException(messageContentWrapper).unwrapAvro(doesNotMatchAnySchema, topic);
+        catchException(messageContentWrapper).unwrapAvro(doesNotMatchAnySchema, topic, TODO);
 
         // then
         assertThat(caughtException() instanceof SchemaMissingException).isTrue();
@@ -156,7 +174,15 @@ public class MessageContentWrapperTest {
         // given
         SchemaOnlineChecksRateLimiter rateLimiter = mock(SchemaOnlineChecksRateLimiter.class);
         when(rateLimiter.tryAcquireOnlineCheckPermit()).thenReturn(true);
-        MessageContentWrapper wrapper = new MessageContentWrapper(jsonWrapper,avroWrapper, schemaRepository, rateLimiter, metrics);
+
+
+        AvroMessageAnySchemaVersionContentWrapper anySchemaWrapper =
+                new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, rateLimiter, avroWrapper, metrics);
+        AvroMessageSchemaVersionAwareContentWrapper schemaAwareWrapper =
+                new AvroMessageSchemaVersionAwareContentWrapper(schemaRepository, avroWrapper, anySchemaWrapper, metrics);
+        AvroMessageHeaderSchemaVersionContentWrapper headerSchemaWrapper = new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, schemaAwareWrapper, metrics);
+
+        MessageContentWrapper wrapper = new MessageContentWrapper(jsonWrapper, avroWrapper, headerSchemaWrapper);
 
         // when forcing offline checks
         shouldUnwrapMessageWrappedWithSchemaAtVersion(wrapper, 1, false, false, 0, 0, 0, 0);

@@ -39,6 +39,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistryFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaHeaderExtractor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
@@ -122,6 +123,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(Retransmitter.class);
         bindSingleton(ConsumerMonitor.class);
         bindSingleton(SslContextFactoryProvider.class);
+        bindSingleton(KafkaHeaderExtractor.class);
         bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {});
         bind(DefaultHttpMetadataAppender.class).in(Singleton.class)
                 .to(new TypeLiteral<MetadataAppender<Request>>() {});
