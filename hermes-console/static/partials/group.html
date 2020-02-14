@@ -17,6 +17,7 @@
         <div class="list-group">
             <div class="list-group-item">
                 <div class="pull-right">
+                    <span ng-show="disabled" uib-popover='Sign in to add a topic' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
                     <button class="btn btn-primary" ng-disabled="disabled" ng-click="addTopic()"><span class="glyphicon glyphicon-plus"></span></button>
                 </div>
                 <h4>

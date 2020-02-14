@@ -63,6 +63,8 @@ public class ConsoleProperties {
 
     public static final class Console {
         private String title = "hermes console";
+        private String footer = "";
+
 
         public String getTitle() {
             return title;
@@ -70,6 +72,14 @@ public class ConsoleProperties {
 
         public void setTitle(String title) {
             this.title = title;
+        }
+
+        public String getFooter() {
+            return footer;
+        }
+
+        public void setFooter(String footer) {
+            this.footer = footer;
         }
     }
 

@@ -8,6 +8,7 @@
     </ol>
 
     <div class="pull-right">
+        <span ng-show="disabled" uib-popover='Sign in to edit the topic' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
         <span bind-html="config.buttonsExtension"></span>
         <button class="btn btn-primary" ng-disabled="disabled" ng-click="edit()">Edit</button>
         <button class="btn btn-primary" ng-disabled="disabled" ng-click="clone()">Clone</button>
@@ -155,6 +156,7 @@
         <div class="list-group">
             <div class="list-group-item">
                 <div class="pull-right">
+                    <span ng-show="disabled" uib-popover='Sign in to add a subscription' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
                     <button class="btn btn-primary" ng-disabled="topic.subscribingRestricted && disabled" ng-click="addSubscription()"><span class="glyphicon glyphicon-plus"></span></button>
                 </div>
                 <h4>
