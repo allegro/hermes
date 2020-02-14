@@ -11,7 +11,8 @@ public class KafkaBrokerMessageProducerFactory implements Factory<KafkaBrokerMes
     private final HermesMetrics hermesMetrics;
 
     @Inject
-    public KafkaBrokerMessageProducerFactory(Producers producers, HermesMetrics hermesMetrics) {
+    public KafkaBrokerMessageProducerFactory(Producers producers,
+                                             HermesMetrics hermesMetrics) {
         this.producers = producers;
         this.hermesMetrics = hermesMetrics;
     }

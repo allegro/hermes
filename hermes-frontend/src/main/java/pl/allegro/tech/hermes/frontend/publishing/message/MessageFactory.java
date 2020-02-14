@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import io.undertow.util.HeaderMap;
+import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
@@ -9,14 +10,14 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
-import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.common.message.wrapper.WrappingException;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
+import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
@@ -31,6 +32,7 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.StreamSupport.stream;
 
 public class MessageFactory {
+
     private static final Logger logger = LoggerFactory.getLogger(MessageFactory.class);
 
     private final MessageValidators validators;
@@ -91,7 +93,8 @@ public class MessageFactory {
 
     private JsonMessage createJsonMessage(HeaderMap headerMap, String messageId, byte[] messageContent, long timestamp) {
         JsonMessage message = new JsonMessage(messageId, messageContent, timestamp);
-        byte[] wrapped = messageContentWrapper.wrapJson(message.getData(), message.getId(), message.getTimestamp(), headersPropagator.extract(toHeadersMap(headerMap)));
+        byte[] wrapped = messageContentWrapper
+                .wrapJson(message.getData(), message.getId(), message.getTimestamp(), headersPropagator.extract(toHeadersMap(headerMap)));
         return message.withDataReplaced(wrapped);
     }
 
@@ -118,7 +121,7 @@ public class MessageFactory {
             return Optional.empty();
         }
         try {
-            return of(SchemaVersion.valueOf(Integer.valueOf(schemaVersion)));
+            return of(SchemaVersion.valueOf(Integer.parseInt(schemaVersion)));
         } catch (NumberFormatException e) {
             return Optional.empty();
         }
@@ -128,6 +131,6 @@ public class MessageFactory {
         return stream(spliteratorUnknownSize(headerMap.iterator(), 0), false)
                 .collect(toMap(
                         h -> h.getHeaderName().toString(),
-                        h -> h.getFirst()));
+                        HeaderValues::getFirst));
     }
 }

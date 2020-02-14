@@ -47,6 +47,7 @@ public class BackupMessagesLoader {
     private final BrokerListeners brokerListeners;
     private final TopicsCache topicsCache;
     private final Trackers trackers;
+
     private final int messageMaxAgeHours;
     private final int maxResendRetries;
     private final long resendSleep;
@@ -102,14 +103,14 @@ public class BackupMessagesLoader {
     public void loadFromTemporaryBackupV2File(File file) {
         try (
                 FileInputStream fileInputStream = new FileInputStream(file);
-                ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+                ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)
         ) {
             List<BackupMessage> messages = (List<BackupMessage>) objectInputStream.readObject();
             logger.info("Loaded {} messages from temporary v2 backup file: {}", messages.size(), file.toString());
             loadMessages(messages);
 
         } catch (IOException | ClassNotFoundException e) {
-            logger.error("Error reading temporary backup v2 files from path.",
+            logger.error("Error reading temporary backup v2 files from path {}.",
                     file.getAbsolutePath(),
                     e);
         }

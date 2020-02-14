@@ -8,12 +8,16 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import java.util.Optional;
 
 public class AvroMessage implements Message {
+
     private final String id;
     private final byte[] data;
     private final long timestamp;
     private final CompiledSchema<Schema> schema;
 
-    public AvroMessage(String id, byte[] data, long timestamp, CompiledSchema<Schema> schema) {
+    public AvroMessage(String id,
+                       byte[] data,
+                       long timestamp,
+                       CompiledSchema<Schema> schema) {
         this.id = id;
         this.data = data;
         this.timestamp = timestamp;

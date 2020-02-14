@@ -178,7 +178,6 @@ public class BackupMessagesLoaderTest {
         return new JsonMessage(
                 MessageIdGenerator.generate(),
                 "{'a':'b'}".getBytes(),
-                now().minusHours(ageHours).toInstant(UTC).toEpochMilli()
-        );
+                now().minusHours(ageHours).toInstant(UTC).toEpochMilli());
     }
 }
