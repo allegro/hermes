@@ -62,8 +62,8 @@ public class ConsumerProcess implements Runnable {
             while (running && !Thread.currentThread().isInterrupted()) {
                 consumer.consume(this::processSignals);
             }
-        } catch (Exception ex) {
-            logger.error("Consumer process of subscription {} failed", getSubscriptionName(), ex);
+        } catch (Throwable throwable) {
+            logger.error("Consumer process of subscription {} failed", getSubscriptionName(), throwable);
         } finally {
             logger.info("Releasing consumer process thread of subscription {}", getSubscriptionName());
             refreshHealthcheck();
