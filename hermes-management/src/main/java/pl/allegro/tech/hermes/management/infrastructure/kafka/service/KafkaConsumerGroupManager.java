@@ -8,6 +8,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
@@ -40,14 +41,15 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
     }
 
     @Override
-    public void createConsumerGroup(Subscription subscription) {
+    public void createConsumerGroup(Topic topic, Subscription subscription) {
         logger.info("Creating consumer group for subscription {}, cluster: {}", subscription.getQualifiedName(), clusterName);
 
         ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName());
         KafkaConsumer<byte[], byte[]> kafkaConsumer = new KafkaConsumer<>(properties(groupId));
 
         try {
-            Set<TopicPartition> topicPartitions = kafkaConsumer.partitionsFor(subscription.getQualifiedTopicName()).stream()
+            String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
+            Set<TopicPartition> topicPartitions = kafkaConsumer.partitionsFor(kafkaTopicName).stream()
                     .map(info -> new TopicPartition(info.topic(), info.partition()))
                     .collect(toSet());
 
@@ -65,9 +67,11 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
             kafkaConsumer.commitSync(topicPartitionByOffset);
             kafkaConsumer.close();
 
-            logger.info("Successfully created consumer groups for subscription {}, cluster: {}", subscription.getQualifiedName(), clusterName);
+            logger.info("Successfully created consumer group for subscription {}, cluster: {}",
+                    subscription.getQualifiedName(), clusterName);
         } catch (Exception e) {
-            logger.error("Failed to create consumer groups for subscription {}, cluster: {}", subscription.getQualifiedName(), clusterName, e);
+            logger.error("Failed to create consumer group for subscription {}, cluster: {}",
+                    subscription.getQualifiedName(), clusterName, e);
         }
     }
 

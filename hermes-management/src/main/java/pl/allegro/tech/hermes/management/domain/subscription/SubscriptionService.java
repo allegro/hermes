@@ -32,6 +32,7 @@ import pl.allegro.tech.hermes.management.domain.subscription.commands.UpdateSubs
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status;
+import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 @Component
 public class SubscriptionService {
@@ -63,6 +65,7 @@ public class SubscriptionService {
     private final SubscriptionValidator subscriptionValidator;
     private final Auditor auditor;
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
+    private final MultiDCAwareService multiDCAwareService;
     private final RepositoryManager repositoryManager;
 
     @Autowired
@@ -75,6 +78,7 @@ public class SubscriptionService {
                                SubscriptionValidator subscriptionValidator,
                                Auditor auditor,
                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+                               MultiDCAwareService multiDCAwareService,
                                RepositoryManager repositoryManager) {
         this.subscriptionRepository = subscriptionRepository;
         this.subscriptionOwnerCache = subscriptionOwnerCache;
@@ -85,6 +89,7 @@ public class SubscriptionService {
         this.subscriptionValidator = subscriptionValidator;
         this.auditor = auditor;
         this.multiDcExecutor = multiDcExecutor;
+        this.multiDCAwareService = multiDCAwareService;
         this.repositoryManager = repositoryManager;
     }
 
@@ -109,8 +114,12 @@ public class SubscriptionService {
         return subscriptionRepository.listSubscriptions(topicName);
     }
 
-    public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights) {
+    public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights, String qualifiedTopicName) {
         subscriptionValidator.checkCreation(subscription, creatorRights);
+
+        Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
+        multiDCAwareService.createConsumerGroups(topic, subscription);
+
         multiDcExecutor.execute(new CreateSubscriptionRepositoryCommand(subscription));
         auditor.objectCreated(createdBy, subscription);
         subscriptionOwnerCache.onCreatedSubscription(subscription);

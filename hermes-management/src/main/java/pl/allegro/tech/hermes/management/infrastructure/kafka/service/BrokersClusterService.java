@@ -100,8 +100,8 @@ public class BrokersClusterService {
         }
     }
 
-    public void createConsumerGroup(Subscription subscription) {
-        consumerGroupManager.createConsumerGroup(subscription);
+    public void createConsumerGroup(Topic topic, Subscription subscription) {
+        consumerGroupManager.createConsumerGroup(topic, subscription);
     }
 
     public Optional<ConsumerGroup> describeConsumerGroup(Topic topic, String subscriptionName) {

@@ -98,8 +98,7 @@ public class SubscriptionsEndpoint {
                            Subscription subscription,
                            @Context ContainerRequestContext requestContext) {
         subscriptionService.createSubscription(subscription, requestContext.getSecurityContext().getUserPrincipal().getName(),
-                managementRights.getSubscriptionCreatorRights(requestContext));
-        multiDCAwareService.createConsumerGroups(subscription);
+                managementRights.getSubscriptionCreatorRights(requestContext), qualifiedTopicName);
         return responseStatus(Response.Status.CREATED);
     }
 
