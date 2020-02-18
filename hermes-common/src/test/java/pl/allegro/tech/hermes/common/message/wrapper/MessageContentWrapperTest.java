@@ -121,7 +121,7 @@ public class MessageContentWrapperTest {
         // (v1, v2) locally given, asking for v2, should try v2 first and succeed
 
         // given
-        String messageId = "2";
+        String messageId = MESSAGE_ID;
         int messageTimestamp = MESSAGE_TIMESTAMP;
 
         SchemaVersion schemaVersion = createSchemaVersion(VERSION_TWO);
