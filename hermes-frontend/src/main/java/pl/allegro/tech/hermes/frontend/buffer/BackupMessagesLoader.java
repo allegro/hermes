@@ -47,7 +47,6 @@ public class BackupMessagesLoader {
     private final BrokerListeners brokerListeners;
     private final TopicsCache topicsCache;
     private final Trackers trackers;
-
     private final int messageMaxAgeHours;
     private final int maxResendRetries;
     private final long resendSleep;

@@ -9,10 +9,13 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.List;
 
-public class AvroMessageAnySchemaVersionContentWrapper {
+import static pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentUnwrapperResult.AvroMessageContentUnwrapperResultStatus.SUCCESS;
+
+public class AvroMessageAnySchemaVersionContentWrapper implements AvroMessageContentUnwrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(AvroMessageAnySchemaVersionContentWrapper.class);
 
@@ -22,6 +25,7 @@ public class AvroMessageAnySchemaVersionContentWrapper {
 
     private final Counter deserializationErrorsForAnySchemaVersion;
     private final Counter deserializationErrorsForAnyOnlineSchemaVersion;
+    private final Counter deserializationUsingAnySchemaVersion;
 
     @Inject
     public AvroMessageAnySchemaVersionContentWrapper(SchemaRepository schemaRepository,
@@ -34,21 +38,39 @@ public class AvroMessageAnySchemaVersionContentWrapper {
 
         this.deserializationErrorsForAnySchemaVersion = deserializationMetrics.errorsForAnySchemaVersion();
         this.deserializationErrorsForAnyOnlineSchemaVersion = deserializationMetrics.errorsForAnyOnlineSchemaVersion();
+        this.deserializationUsingAnySchemaVersion = deserializationMetrics.usingAnySchemaVersion();
+    }
+
+    @Override
+    public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, @Nullable Integer headerVersion) {
+        return unwrap(data, topic);
+    }
+
+    @Override
+    public boolean isApplicable(byte[] data, Topic topic, Integer schemaVersion) {
+        return true;
     }
 
     // try-harding to find proper schema
-    public UnwrappedMessageContent unwrap(byte[] data, Topic topic) {
-        try {
-            return tryDeserializingUsingAnySchemaVersion(data, topic, false);
-        } catch (Exception ex) {
+    private AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic) {
+        deserializationUsingAnySchemaVersion.inc();
+        AvroMessageContentUnwrapperResult result = tryDeserializingUsingAnySchemaVersion(data, topic, false);
+
+        if (result.getStatus() == SUCCESS) {
+            return result;
+        } else {
             logger.info("Trying to find schema online for message for topic {}", topic.getQualifiedName());
             return tryDeserializingUsingAnySchemaVersion(data, topic, true);
         }
     }
 
-    private UnwrappedMessageContent tryDeserializingUsingAnySchemaVersion(byte[] data, Topic topic, boolean online) {
+    private AvroMessageContentUnwrapperResult tryDeserializingUsingAnySchemaVersion(byte[] data, Topic topic, boolean online) {
         if (online) {
-            limitSchemaRepositoryOnlineCallsRate(topic);
+            if (!schemaOnlineChecksRateLimiter.tryAcquireOnlineCheckPermit()) {
+                logger.error("Could not match schema online for message of topic {} " +
+                        "due to too many schema repository requests", topic.getQualifiedName());
+                return AvroMessageContentUnwrapperResult.failure();
+            }
         }
 
         List<SchemaVersion> versions = schemaRepository.getVersions(topic, online);
@@ -58,26 +80,18 @@ public class AvroMessageAnySchemaVersionContentWrapper {
                         online ?
                                 schemaRepository.getKnownAvroSchemaVersion(topic, version) :
                                 schemaRepository.getAvroSchema(topic, version);
-                return avroMessageContentWrapper.unwrapContent(data, schema);
+                return AvroMessageContentUnwrapperResult.success(avroMessageContentWrapper.unwrapContent(data, schema));
             } catch (Exception ex) {
-                logger.error("Failed to match schema for message for topic {}, schema version {}, fallback to previous.",
+                logger.error("Failed to match schema for message for topic {}, schema version {}, fallback to previous version.",
                         topic.getQualifiedName(), version.value(), ex);
             }
         }
 
+        deserializationErrorsCounterForAnySchemaVersion(online).inc();
         logger.error("Could not match schema {} for message of topic {} {}",
                 online ? "online" : "from cache", topic.getQualifiedName(), SchemaVersion.toString(versions));
-        deserializationErrorsCounterForAnySchemaVersion(online).inc();
 
-        throw new SchemaMissingException(topic);
-    }
-
-    private void limitSchemaRepositoryOnlineCallsRate(Topic topic) {
-        if (!schemaOnlineChecksRateLimiter.tryAcquireOnlineCheckPermit()) {
-            logger.error("Could not match schema online for message of topic {} " +
-                    "due to too many schema repository requests", topic.getQualifiedName());
-            throw new SchemaMissingException(topic);
-        }
+        return AvroMessageContentUnwrapperResult.failure();
     }
 
     private Counter deserializationErrorsCounterForAnySchemaVersion(boolean online) {

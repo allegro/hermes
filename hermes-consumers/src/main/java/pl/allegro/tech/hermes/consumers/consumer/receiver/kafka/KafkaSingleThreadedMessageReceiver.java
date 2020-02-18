@@ -156,7 +156,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private UnwrappedMessageContent getUnwrappedMessageContent(ConsumerRecord<byte[], byte[]> message,
                                                                ContentType contentType) {
         if (contentType == ContentType.AVRO) {
-            return messageContentWrapper.unwrapAvro(message.value(), topic, kafkaHeaderExtractor.extractSchemaVersion(message.headers()).orElse(null));
+            return messageContentWrapper.unwrapAvro(message.value(), topic, kafkaHeaderExtractor.extractSchemaVersion(message.headers()));
         } else if (contentType == ContentType.JSON) {
             return messageContentWrapper.unwrapJson(message.value());
         }

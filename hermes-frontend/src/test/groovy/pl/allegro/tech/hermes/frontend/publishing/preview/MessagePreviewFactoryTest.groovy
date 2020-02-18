@@ -16,8 +16,7 @@ class MessagePreviewFactoryTest extends Specification {
         given:
             factory = new MessagePreviewFactory(maxContentSize)
         when:
-            MessagePreview preview = factory.create(new JsonMessage('message-id',
-                    new byte[messageSize], 0L, headers))
+            MessagePreview preview = factory.create(new JsonMessage('message-id', new byte[messageSize], 0L))
         then:
             preview.truncated == shouldTruncate
         where:
@@ -32,8 +31,7 @@ class MessagePreviewFactoryTest extends Specification {
     def "should truncate message preview if it is too large after decoding to JSON"() {
         given:
             def avroUser = new AvroUser()
-            def message = new AvroMessage('message-id', avroUser.asBytes(), 0L,
-                    avroUser.compiledSchema)
+            def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema)
             factory = new MessagePreviewFactory(avroUser.asJson().length() - 1)
         when:
             MessagePreview preview = factory.create(message)

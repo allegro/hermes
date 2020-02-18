@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import java.util.Optional;
 
 public interface Message {
-
     String getId();
 
     byte[] getData();
@@ -15,9 +14,7 @@ public interface Message {
 
     ContentType getContentType();
 
-    default <T> Optional<CompiledSchema<T>> getCompiledSchema() {
-        return Optional.empty();
-    }
+    default <T> Optional<CompiledSchema<T>> getCompiledSchema() { return Optional.empty(); }
 
     default <T> T getSchema() {
         return this.<T>getCompiledSchema().get().getSchema();

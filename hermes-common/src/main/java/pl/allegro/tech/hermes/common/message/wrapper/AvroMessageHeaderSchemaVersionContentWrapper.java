@@ -11,48 +11,47 @@ import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.inject.Inject;
 
-public class AvroMessageHeaderSchemaVersionContentWrapper {
+public class AvroMessageHeaderSchemaVersionContentWrapper implements AvroMessageContentUnwrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(AvroMessageHeaderSchemaVersionContentWrapper.class);
 
     private final SchemaRepository schemaRepository;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
-    private final AvroMessageSchemaVersionAwareContentWrapper fallbackWrapper;
 
-    private final Counter deserializationWithErrorsForHeaderSchemaVersion;
-    private final Counter deserializationWithMissedSchemaVersionInHeader;
+    private final Counter deserializationWithErrorsUsingHeaderSchemaVersion;
+    private final Counter deserializationUsingHeaderSchemaVersion;
 
     @Inject
     public AvroMessageHeaderSchemaVersionContentWrapper(SchemaRepository schemaRepository,
                                                         AvroMessageContentWrapper avroMessageContentWrapper,
-                                                        AvroMessageSchemaVersionAwareContentWrapper fallbackWrapper,
                                                         DeserializationMetrics deserializationMetrics) {
         this.schemaRepository = schemaRepository;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
-        this.fallbackWrapper = fallbackWrapper;
 
-        this.deserializationWithErrorsForHeaderSchemaVersion = deserializationMetrics.errorsForHeaderSchemaVersion();
-        this.deserializationWithMissedSchemaVersionInHeader = deserializationMetrics.missedSchemaVersionInHeader();
-
+        this.deserializationWithErrorsUsingHeaderSchemaVersion = deserializationMetrics.errorsForHeaderSchemaVersion();
+        this.deserializationUsingHeaderSchemaVersion = deserializationMetrics.usingHeaderSchemaVersion();
     }
 
-    public UnwrappedMessageContent unwrap(byte[] data, Topic topic, Integer schemaVersion) {
-        if (schemaVersion == null) {
-            deserializationWithMissedSchemaVersionInHeader.inc();
-            return fallbackWrapper.unwrap(data, topic);
-        }
-
+    @Override
+    public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, Integer schemaVersion) {
         try {
+            deserializationUsingHeaderSchemaVersion.inc();
             CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(schemaVersion));
 
-            return avroMessageContentWrapper.unwrapContent(data, avroSchema);
+            return AvroMessageContentUnwrapperResult.success(avroMessageContentWrapper.unwrapContent(data, avroSchema));
         } catch (Exception ex) {
-            logger.warn("Could not unwrap content for topic [{}] using schema version provided in header [{}]. Trying fallback deserialization with [{}]",
-                    topic.getQualifiedName(), schemaVersion, fallbackWrapper.getClass().getSimpleName(), ex);
+            logger.warn(
+                    "Could not unwrap content for topic [{}] using schema version provided in header [{}] - falling back",
+                    topic.getQualifiedName(), schemaVersion, ex);
 
-            deserializationWithErrorsForHeaderSchemaVersion.inc();
+            deserializationWithErrorsUsingHeaderSchemaVersion.inc();
 
-            return fallbackWrapper.unwrap(data, topic);
+            return AvroMessageContentUnwrapperResult.failure();
         }
+    }
+
+    @Override
+    public boolean isApplicable(byte[] data, Topic topic, Integer schemaVersion) {
+        return schemaVersion != null;
     }
 }

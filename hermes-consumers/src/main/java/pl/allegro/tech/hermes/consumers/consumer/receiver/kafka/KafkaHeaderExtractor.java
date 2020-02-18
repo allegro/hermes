@@ -18,13 +18,13 @@ public class KafkaHeaderExtractor {
         this.schemaVersionHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_VERSION);
     }
 
-    public Optional<Integer> extractSchemaVersion(Headers headers) {
+    public Integer extractSchemaVersion(Headers headers) {
         Header header = headers.lastHeader(schemaVersionHeaderName);
 
         if (header != null) {
-            return Optional.of(Ints.fromByteArray(header.value()));
+            return Ints.fromByteArray(header.value());
         } else {
-            return Optional.empty();
+            return null;
         }
     }
 }

@@ -45,16 +45,18 @@ public class MessageConfiguration {
         AvroMessageAnySchemaVersionContentWrapper anySchemaWrapper =
                 new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, () -> true, avroWrapper, metrics);
 
-        AvroMessageSchemaVersionAwareContentWrapper schemaAwareWrapper =
-                new AvroMessageSchemaVersionAwareContentWrapper(schemaRepository, avroWrapper, anySchemaWrapper, metrics);
+        AvroMessageHeaderSchemaVersionContentWrapper headerSchemaWrapper =
+                new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, metrics);
 
-        AvroMessageHeaderSchemaVersionContentWrapper headerSchemaWrapper = new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, schemaAwareWrapper, metrics);
+        AvroMessageSchemaVersionAwareContentWrapper schemaAwareWrapper =
+                new AvroMessageSchemaVersionAwareContentWrapper(schemaRepository, avroWrapper, metrics);
 
         return new MessageContentWrapper(
                 jsonWrapper,
                 avroWrapper,
-                headerSchemaWrapper
-        );
+                schemaAwareWrapper,
+                headerSchemaWrapper,
+                anySchemaWrapper);
     }
 
     private JsonMessageContentWrapper jsonMessageContentWrapper() {
