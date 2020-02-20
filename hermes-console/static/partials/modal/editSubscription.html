@@ -182,6 +182,7 @@
                             <th>Type</th>
                             <th>Path</th>
                             <th>Matcher</th>
+                            <th>Matching strategy</th>
                             <th></th>
                         </tr>
                         <tr ng-repeat="filter in subscription.filters">
@@ -202,6 +203,15 @@
                                        name="subscriptionFilterMatcherInput" placeholder="{{filter.matcher}}"/>
                             </td>
                             <td>
+                                <select ng-model="filter.matchingStrategy"
+                                        class="form-control col-md-1"
+                                        id="subscriptionFilterMatchingStrategyEdit"
+                                        name="subscriptionFilterMatchingStrategySelect">
+                                    <option value="all">all (default)</option>
+                                    <option value="any">any</option>
+                                </select>
+                            </td>
+                            <td>
                                 <button class="btn btn-danger" ng-click="delFilter($index)">Delete</button>
                             </td>
                         </tr>
@@ -218,6 +228,15 @@
                                        class="form-control col-md-1 {{filter.matcher.$valid ? '' : 'has-error'}}"
                                        id="subscriptionFilterMatcher"
                                        name="subscriptionFilterMatcherInput" placeholder="Matcher for filter"/>
+                            </td>
+                            <td>
+                                <select ng-model="filter.matchingStrategy" ng-init="filter.matchingStrategy='all'"
+                                        class="form-control col-md-1"
+                                        id="subscriptionFilterMatchingStrategy"
+                                        name="subscriptionFilterMatchingStrategySelect">
+                                    <option value="all">all (default)</option>
+                                    <option value="any">any</option>
+                                </select>
                             </td>
                             <td>
                                 <div class="col-md-1 subscription-add-subscription-filter">

@@ -27,9 +27,9 @@ Minimal request:
 ```json
 {
     "topicName": "group.topic",
-    "name": "mySubscription", 
+    "name": "mySubscription",
     "description": "This is my subscription",
-    "endpoint": "http://my-service", 
+    "endpoint": "http://my-service",
     "owner": {
         "source": "Plaintext",
         "id": "My Team"
@@ -84,16 +84,24 @@ Request that specifies all available options:
         "inflightSize": 100
     },
     "headers": [
-        {"name": "SOME_HEADER", "value": "ABC"}, 
+        {"name": "SOME_HEADER", "value": "ABC"},
         {"name": "OTHER_HEADER", "value": "123"}
     ],
     "filters": [
         {"type": "jsonpath", "path": "$.user.name", "matcher": "^abc.*"},
-        {"type": "jsonpath", "path": "$.user.status", "matcher": "new"}
+        {"type": "jsonpath", "path": "$.user.status", "matcher": "new"},
+        {"type": "jsonpath", "path": "$.user.name", "matcher": "^abc.*", "matchingStrategy": "all"},
+        {"type": "jsonpath", "path": "$.user.status", "matcher": "new"},
+        {
+            "type": "jsonpath",
+            "path": "$.addresses.*.country",
+            "matcher": "GB",
+            "matchingStrategy": "any"
+        }
     ],
     "endpointAddressResolverMetadata": {
         "ignoreMessageHeaders": true,
-        "serviceInstanceId": 123 
+        "serviceInstanceId": 123
     },
     "subscriptionIdentityHeadersEnabled": false
 }
@@ -156,7 +164,7 @@ We set a hard limit for the inflight TTL to 7200 seconds (two hours).
 ### Retries counter
 
 Each message sent by Hermes using HTTP sender comes with an additional header: **Hermes-Retry-Count**. It contains a number
-of retries for this specific message done by this Consumer instance. 
+of retries for this specific message done by this Consumer instance.
 
 The number of retries is counted locally, meaning it can not be treated as a global counter of delivery attempts.
 This counter will reset when:
@@ -199,14 +207,14 @@ If you want to know the exact algorithm, check [rate limiting configuration page
 ## Additional headers
 
 Each subscription can define a number of additional `headers` that will be added to every HTTP request when sending messages.
-They can be useful on test environments to pass security tokens or on production to communicate with some legacy systems that 
+They can be useful on test environments to pass security tokens or on production to communicate with some legacy systems that
 require custom headers.
 
 ## Endpoint address resolver metadata
 
-Custom implementation of Consumer's `EndpointAddressResolver` interface can make use of provided `endpointAddressResolverMetadata` 
+Custom implementation of Consumer's `EndpointAddressResolver` interface can make use of provided `endpointAddressResolverMetadata`
 for selecting address resolving strategies. This object is deserialized to `Map<String, Object>` and may contain any data needed,
-like feature flags. 
+like feature flags.
 
 It's ignored by the default implementation.
 
@@ -219,13 +227,36 @@ of their declaration.
 
 ### Choosing appropriate filter
 
-This mainly concerns message content type. Filtering is done *before* any conversion takes place so all messages have 
+This mainly concerns message content type. Filtering is done *before* any conversion takes place so all messages have
 the same content type as topic on which they were published.
 
 Topic content-type    | Filter type
 --------------------- | -----------
 avro                  | avropath
 json                  | jsonpath
+
+### Matching strategy
+
+Filter path can be described in a way that it indicates several fields,
+e.g. a `*` sign in JsonPath or array indicator in AvroPath.
+By default all fields *must* match the matcher, but this behaviour can be changed
+with `matchingStrategy`. Possible values are:
+
+* `"all"` (default)
+* `"any"`
+
+Example:
+```
+{
+    "type": "jsonpath",
+    "path": "$.user.addresses.*.country",
+    "matcher": "GB",
+    "matchingStrategy": "all"
+}
+```
+
+This filter will pass the message only when in all user addresses country will match *GB*.
+In case when `matchingStrategy` would be set to `any` then all messages with *GB* country set in any address will be passed.
 
 ### JsonPath configuration
 
@@ -237,10 +268,11 @@ Option                | Description
 type                  | type of filter
 path                  | JsonPath expression to query json document
 matcher               | regexp expression to match value from json document
+matchingStrategy      | type of matching strategy. Default is `all`
 
 Example:
 ```
-{"type": "jsonpath", "path": "$.user.name", "matcher": "^abc.*"}
+{"type": "jsonpath", "path": "$.user.name", "matcher": "^abc.*", "matchingStrategy": "all"}
 ```
 
 ### AvroPath configuration
@@ -253,14 +285,21 @@ supported.
 Option                | Description
 --------------------- | ---------------------------------------------------
 type                  | type of filter
-path                  | dotted expression to query avro document. When array selector is used then wildcard sign `*` can be used as index 
+path                  | dotted expression to query avro document. When array selector is used then wildcard sign `*` can be used as index
 matcher               | regexp expression to match value from avro document
+matchingStrategy      | type of matching strategy. Default is `all`
 
 Example:
 ```
 {"type": "avropath", "path": ".user.name", "matcher": "^abc.*"}
 {"type": "avropath", "path": ".user.addresses[1].city", "matcher": "^abc.*"}
 {"type": "avropath", "path": ".user.addresses[*].city", "matcher": "^abc.*"}
+{
+    "type": "avropath",
+    "path": ".user.addresses[*].city",
+    "matcher": "^abc.*",
+    "matchingStrategy": "any"
+}
 ```
 
 ### Adding filters
@@ -290,17 +329,17 @@ you need to provide full credentials.
 
 ### OAuth
 
-Hermes supports OAuth 2 [resource owner password](https://tools.ietf.org/html/rfc6749#section-4.3) 
-and [client credentials](https://tools.ietf.org/html/rfc6749#section-4.4) grants for subscription endpoints authorization. 
+Hermes supports OAuth 2 [resource owner password](https://tools.ietf.org/html/rfc6749#section-4.3)
+and [client credentials](https://tools.ietf.org/html/rfc6749#section-4.4) grants for subscription endpoints authorization.
 
-To enable OAuth, first register Hermes as an OAuth client in your OAuth provider service. 
+To enable OAuth, first register Hermes as an OAuth client in your OAuth provider service.
 Hermes will be given it's unique `id` and `secret`.
 
 #### Registering an OAuth provider
 
-The Hermes administrator needs to define an OAuth provider authority that is responsible 
-for issuing OAuth tokens for subscriptions. There can be many OAuth providers configured in Hermes. 
-A single OAuth provider registration can be configured for a given subscription. 
+The Hermes administrator needs to define an OAuth provider authority that is responsible
+for issuing OAuth tokens for subscriptions. There can be many OAuth providers configured in Hermes.
+A single OAuth provider registration can be configured for a given subscription.
 
 To register an OAuth provider in Hermes send `POST` request with to `/oauth/providers` of Hermes-management:
 
@@ -331,22 +370,22 @@ socketTimeout            | Maximum time of inactivity between two data packets
 Verify the OAuth provider is registered by calling `GET` on `/oauth/providers` and `/oauth/providers/{providerName}` endpoints.
 Hermes HTTP endpoints return asterisks (`******`) in place of the actual secrets.
 
-**Important**: Note that OAuth configuration credentials (secrets, passwords) are stored as plaintext in Zookeeper. 
-Make sure access to it is [properly secured](/configuration/kafka-and-zookeeper#Zookeeper)! 
+**Important**: Note that OAuth configuration credentials (secrets, passwords) are stored as plaintext in Zookeeper.
+Make sure access to it is [properly secured](/configuration/kafka-and-zookeeper#Zookeeper)!
 
 #### Requesting tokens
 
-When Hermes tries to send a message to an OAuth-secured subscription and it gets `401 Unauthorized` response, 
-it will request an OAuth token using the configured OAuth policy's credentials ([see below](#securing-subscription)). 
+When Hermes tries to send a message to an OAuth-secured subscription and it gets `401 Unauthorized` response,
+it will request an OAuth token using the configured OAuth policy's credentials ([see below](#securing-subscription)).
 The message will be resent to subscriber along with the issued token (`Authorization: Bearer <token>` header).
 Hermes will resend messages to OAuth-secured subscribers irrespectively from `retryClientErrors` subscription setting value.
 
-To prevent from requesting tokens too often (when subscription is responding with 401 for some unknown reason 
-even though token is provided) Hermes will rate limit it's token requests using `tokenRequestInitialDelay` and `tokenRequestMaxDelay` 
-values set for subscription's OAuth provider. The delay duration grows exponentially and is being reset to initial value 
+To prevent from requesting tokens too often (when subscription is responding with 401 for some unknown reason
+even though token is provided) Hermes will rate limit it's token requests using `tokenRequestInitialDelay` and `tokenRequestMaxDelay`
+values set for subscription's OAuth provider. The delay duration grows exponentially and is being reset to initial value
 after each `200 OK` response (meaning the token is valid and there's no need to request a new one).
 
-The tokens are stored in-memory and are not distributed between Hermes consumer nodes meaning each node requests 
+The tokens are stored in-memory and are not distributed between Hermes consumer nodes meaning each node requests
 it's own tokens and performs the token request rate limiting calculation locally.
 
 #### Securing subscription
@@ -355,8 +394,8 @@ Both OAuth 2 server-side grants are supported by Hermes in order to secure subsc
 
 #### Client credentials grant
 
-[Cient credentials grant](https://tools.ietf.org/html/rfc6749#section-4.4) is the simpler OAuth grant type where a client (Hermes) 
-is given permission to send messages to subscription endpoint. 
+[Cient credentials grant](https://tools.ietf.org/html/rfc6749#section-4.4) is the simpler OAuth grant type where a client (Hermes)
+is given permission to send messages to subscription endpoint.
 To acquire an access token Hermes will use it's credentials configured in a specific OAuth provider definition.
 
 Enable this grant type by extending the subscription definition with `oAuthPolicy` entry, for example:
@@ -377,13 +416,13 @@ scope        | An optional scope of the access request
 
 #### Resource owner password grant
 
-[Resource owner password grant](https://tools.ietf.org/html/rfc6749#section-4.3) is a more complex grant type that may be useful 
-when subscriptions are owned by different users. A subscription endpoint is a resource and the owner wants to be the only 
-one able to access it. The user needs to provide it's credentials (username and password) to access the resource 
+[Resource owner password grant](https://tools.ietf.org/html/rfc6749#section-4.3) is a more complex grant type that may be useful
+when subscriptions are owned by different users. A subscription endpoint is a resource and the owner wants to be the only
+one able to access it. The user needs to provide it's credentials (username and password) to access the resource
 and Hermes will request an access token on behalf of the user using these credentials.
 
-**Important**: Note that the current implementation of this grant type performs a single request to the OAuth provider 
-when requesting token (containing both client's and resource owner's credentials) and the OAuth provider 
+**Important**: Note that the current implementation of this grant type performs a single request to the OAuth provider
+when requesting token (containing both client's and resource owner's credentials) and the OAuth provider
 should be aware of that and support it.
 
 Enable this grant type by extending the subscription definition with following content:
@@ -580,4 +619,4 @@ It returns array of message tracking information in following format:
 
 Sending delay can be defined for each serial subscription. Consumers will wait for a given time before trying to deliver a message.
 This might be useful in situations when there are multiple topics that sends events in the same time, but you want to increase
-chance that events from one topics will be delivered later than events from another topic. 
+chance that events from one topics will be delivered later than events from another topic.

@@ -67,7 +67,7 @@ class AvroPathMessageFilterSpec extends Specification {
     }
 
     @Unroll
-    def "array paths"(String path, String matcher, boolean result) {
+    def "array paths"(String path, String matcher, String matchingStrategy, boolean result) {
         given:
         def schema = AvroUserSchemaLoader.load("/movie.avsc")
 
@@ -99,7 +99,7 @@ class AvroPathMessageFilterSpec extends Specification {
         '''
 
         def avro = new JsonAvroConverter().convertToAvro(json.bytes, schema)
-        def spec = new MessageFilterSpecification([path: path, matcher: matcher])
+        def spec = new MessageFilterSpecification([path: path, matcher: matcher, matchingStrategy: matchingStrategy])
         def msg = MessageBuilder
             .withTestMessage()
             .withContent(avro)
@@ -111,21 +111,52 @@ class AvroPathMessageFilterSpec extends Specification {
         result == new AvroPathSubscriptionMessageFilterCompiler().compile(spec).test(msg)
 
         where:
-        path                 | matcher        | result
-        ".cast[*].lastName"  | "Pacino"       | false
-        ".cast[*].character" | ".*Corleone.*" | true
-        ".cast[*].firstName" | "unknown"      | false
-        ".cast[0].lastName"  | "Brando"       | true
-        ".cast[1].lastName"  | "Pacino"       | true
-        ".cast[2].lastName"  | "Pacino"       | false
-        ".cast[*].awards[*]" | ".*Best.*"     | true
-        ".cast[1].awards[*]" | ".*Best.*"     | true
-        ".cast[10]"          | "null"         | true
-        ".cast[10]"          | "dummy string" | false
-        ".title.aliases[5]"  | "null"         | true
-        ".title.aliases[5]"  | "some title"   | false
-        ".title.aliases[1]"  | "Godfather"    | true
-        ".title.aliases[*]"  | "^[GTE].*"     | true
+        path                 | matcher        | matchingStrategy | result
+        ".cast[*].lastName"  | "Pacino"       | null             | false
+        ".cast[*].lastName"  | "Pacino"       | "all"            | false
+        ".cast[*].lastName"  | "Pacino"       | "any"            | true
+        ".cast[*].character" | ".*Corleone.*" | null             | true
+        ".cast[*].character" | ".*Corleone.*" | "all"            | true
+        ".cast[*].character" | ".*Corleone.*" | "any"            | true
+        ".cast[*].firstName" | "unknown"      | null             | false
+        ".cast[*].firstName" | "unknown"      | "all"            | false
+        ".cast[*].firstName" | "unknown"      | "any"            | false
+        ".cast[0].lastName"  | "Brando"       | null             | true
+        ".cast[0].lastName"  | "Brando"       | "all"            | true
+        ".cast[0].lastName"  | "Brando"       | "any"            | true
+        ".cast[1].lastName"  | "Pacino"       | null             | true
+        ".cast[1].lastName"  | "Pacino"       | "all"            | true
+        ".cast[1].lastName"  | "Pacino"       | "any"            | true
+        ".cast[2].lastName"  | "Pacino"       | null             | false
+        ".cast[2].lastName"  | "Pacino"       | "all"            | false
+        ".cast[2].lastName"  | "Pacino"       | "any"            | false
+        ".cast[*].awards[*]" | ".*Best.*"     | null             | true
+        ".cast[*].awards[*]" | ".*Best.*"     | "all"            | true
+        ".cast[*].awards[*]" | ".*Best.*"     | "any"            | true
+        ".cast[1].awards[*]" | ".*Best.*"     | null             | true
+        ".cast[1].awards[*]" | ".*Best.*"     | "all"            | true
+        ".cast[1].awards[*]" | ".*Best.*"     | "any"            | true
+        ".cast[10]"          | "null"         | null             | true
+        ".cast[10]"          | "null"         | "all"            | true
+        ".cast[10]"          | "null"         | "any"            | true
+        ".cast[10]"          | "dummy string" | null             | false
+        ".cast[10]"          | "dummy string" | "all"            | false
+        ".cast[10]"          | "dummy string" | "any"            | false
+        ".title.aliases[5]"  | "null"         | null             | true
+        ".title.aliases[5]"  | "null"         | "all"            | true
+        ".title.aliases[5]"  | "null"         | "any"            | true
+        ".title.aliases[5]"  | "some title"   | null             | false
+        ".title.aliases[5]"  | "some title"   | "all"            | false
+        ".title.aliases[5]"  | "some title"   | "any"            | false
+        ".title.aliases[1]"  | "Godfather"    | null             | true
+        ".title.aliases[1]"  | "Godfather"    | "all"            | true
+        ".title.aliases[1]"  | "Godfather"    | "any"            | true
+        ".title.aliases[*]"  | "Godfather"    | null             | false
+        ".title.aliases[*]"  | "Godfather"    | "all"            | false
+        ".title.aliases[*]"  | "Godfather"    | "any"            | true
+        ".title.aliases[*]"  | "^[GTE].*"     | null             | true
+        ".title.aliases[*]"  | "^[GTE].*"     | "all"            | true
+        ".title.aliases[*]"  | "^[GTE].*"     | "any"            | true
     }
 
     def "should throw exception for malformed message"() {
