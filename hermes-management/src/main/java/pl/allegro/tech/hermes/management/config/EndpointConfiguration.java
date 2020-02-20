@@ -17,7 +17,7 @@ public class EndpointConfiguration {
 
     @Bean
     JerseyResourceConfig resourceConfig() {
-        return new JerseyResourceConfig(jerseyProperties.getPackagesToScan());
+        return new JerseyResourceConfig(jerseyProperties);
     }
 
     @Bean

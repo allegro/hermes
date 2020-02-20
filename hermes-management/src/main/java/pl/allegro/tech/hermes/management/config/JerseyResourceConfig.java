@@ -8,22 +8,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.ApplicationPath;
-import java.util.List;
 
 @ApplicationPath("/")
 public class JerseyResourceConfig extends ResourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(JerseyResourceConfig.class);
 
-    public JerseyResourceConfig(List<String> packagesToScan) {
+    public JerseyResourceConfig(JerseyProperties jerseyProperties) {
         packages(true, "pl.allegro.tech.hermes.management.api");
 
-        for(String packageToScan : packagesToScan) {
+        for(String packageToScan : jerseyProperties.getPackagesToScan()) {
             packages(true, packageToScan);
             logger.info("Scanning Jersey resources in: {}", packageToScan);
         }
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
-        property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/ui.*");
+        property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, jerseyProperties.getFilterStaticContentRegexp());
         register(RolesAllowedDynamicFeature.class);
     }
 }
