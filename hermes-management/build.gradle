@@ -34,9 +34,24 @@ dependencies {
     testCompile group: 'org.spockframework', name: 'spock-spring', version: versions.spock
 
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
+
+    testCompile group: 'org.testcontainers', name: 'spock', version: '1.12.2'
+    testCompile group: 'org.testcontainers', name: 'kafka', version: '1.12.2'
 }
 
 if (project.hasProperty('distribution')) {
     apply plugin: 'application'
     mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
 }
+
+task buildHermesConsole(type: Exec) {
+    workingDir '../hermes-console'
+    commandLine './package.sh'
+}
+
+task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
+    from '../hermes-console/dist/static'
+    into(sourceSets.main.output.resourcesDir.path + '/static/ui')
+}
+
+jar.dependsOn(attachHermesConsole)

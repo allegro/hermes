@@ -19,8 +19,23 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         var topicName = $scope.topicName = $stateParams.topicName;
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
 
-        $scope.subscription = subscriptionRepository.get(topicName, subscriptionName);
+        subscriptionRepository.get(topicName, subscriptionName).$promise
+                .then(function(subscription) {
+                    $scope.subscription = subscription;
+                    if (subscription && subscription.createdAt && subscription.modifiedAt) {
+                        var createdAt = new Date(0);
+                        createdAt.setUTCSeconds(subscription.createdAt);
+                        $scope.subscription.createdAt = createdAt;
+
+                        var modifiedAt = new Date(0);
+                        modifiedAt.setUTCSeconds(subscription.modifiedAt);
+                        $scope.subscription.modifiedAt = modifiedAt;
+                    }
+                });
+
         $scope.retransmissionLoading = false;
+
+        $scope.showHeadersFilter = config.showHeadersFilter;
 
         $scope.endpointAddressResolverMetadataConfig = config.endpointAddressResolverMetadata;
 
@@ -85,6 +100,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     },
                     topicContentType: function () {
                         return $scope.topicContentType;
+                    },
+                    showHeadersFilter: function () {
+                        return $scope.showHeadersFilter;
                     }
                 }
             }).result.then(function(response){
@@ -112,6 +130,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     },
                     topicContentType: function () {
                         return $scope.topicContentType;
+                    },
+                    showHeadersFilter: function () {
+                        return $scope.showHeadersFilter;
                     }
                 }
             }).result.then(function(response){
@@ -233,14 +254,15 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
-    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'topicContentType',
+    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'topicContentType', 'showHeadersFilter',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
-              endpointAddressResolverMetadataConfig, topicContentType) {
+              endpointAddressResolverMetadataConfig, topicContentType, showHeadersFilter) {
         $scope.topicName = topicName;
         $scope.topicContentType = topicContentType;
         $scope.subscription = _.cloneDeep(subscription);
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
+        $scope.showHeadersFilter = showHeadersFilter;
 
         $scope.save = function () {
             var promise;
@@ -288,6 +310,17 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
             $scope.subscription.filters.splice(index, 1);
         };
 
+        $scope.addHeader = function() {
+            if(!$scope.header.name || !$scope.header.value) {
+                return;
+            }
+            $scope.subscription.headers.push(angular.copy($scope.header));
+            $scope.header = {};
+        };
+
+        $scope.delHeader = function (index) {
+            $scope.subscription.headers.splice(index, 1);
+        };
     }]);
 
 function initRetransmissionCalendar(daysBack) {

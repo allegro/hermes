@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.time.Instant;
 import java.util.Collection;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
@@ -93,7 +95,16 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
 
     @Override
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
-        return getSubscriptionDetails(topicName, subscriptionName, false).get();
+        ensureSubscriptionExists(topicName, subscriptionName);
+        return readWithStatFrom(
+                paths.subscriptionPath(topicName, subscriptionName),
+                Subscription.class,
+                (sub, stat) -> {
+                    sub.setCreatedAt(stat.getCtime());
+                    sub.setModifiedAt(stat.getMtime());
+                },
+                false
+        ).get();
     }
 
     private Optional<Subscription> getSubscriptionDetails(TopicName topicName, String subscriptionName, boolean quiet) {

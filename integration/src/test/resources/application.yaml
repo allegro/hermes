@@ -26,6 +26,9 @@ topic:
   allowRemoval: true
   removeSchema: true
   defaultContentType: AVRO
+  allowedContentTypes:
+    - AVRO
+    - JSON
   touchSchedulerEnabled: false
 
 storage:

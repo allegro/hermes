@@ -25,13 +25,16 @@ import pl.allegro.tech.hermes.management.config.SubscriptionProperties;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaConsumerGroupManager;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.LogEndOffsetChecker;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.service.NoOpConsumerGroupManager;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.OffsetsAvailableChecker;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
@@ -112,7 +115,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper,
                     new OffsetsAvailableChecker(consumerPool, storage),
                     new LogEndOffsetChecker(consumerPool),
-                    brokerAdminClient);
+                    brokerAdminClient, createConsumerGroupManager(kafkaProperties, kafkaNamesMapper));
         }).collect(toList());
 
         return new MultiDCAwareService(
@@ -121,6 +124,13 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
                 ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()),
                 multiDcExecutor);
+    }
+
+    private ConsumerGroupManager createConsumerGroupManager(KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper) {
+        return subscriptionProperties.isCreateConsumerGroupManuallyEnabled() ?
+                new KafkaConsumerGroupManager(kafkaNamesMapper, kafkaProperties.getQualifiedClusterName(),
+                        kafkaProperties.getBootstrapKafkaServer()) :
+                new NoOpConsumerGroupManager();
     }
 
     private SubscriptionOffsetChangeIndicator getRepository(

@@ -13,7 +13,6 @@ import javax.inject.Inject;
 
 import static org.slf4j.LoggerFactory.getLogger;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
-import static pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadAlgorithm.SELECTIVE;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.HierarchicalConsumerAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 
 public class ConsumerAssignmentRegistryFactory implements Factory<ConsumerAssignmentRegistry> {
@@ -57,7 +56,7 @@ public class ConsumerAssignmentRegistryFactory implements Factory<ConsumerAssign
                 String cluster = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
                 String consumersRuntimePath = zookeeperPaths.consumersRuntimePath(cluster);
                 SubscriptionAssignmentPathSerializer pathSerializer = new SubscriptionAssignmentPathSerializer(consumersRuntimePath, AUTO_ASSIGNED_MARKER);
-                CreateMode assignmentNodeCreationMode = getAssignmentNodeCreationMode();
+                CreateMode assignmentNodeCreationMode = CreateMode.PERSISTENT;
                 return new HierarchicalConsumerAssignmentRegistry(
                         curator,
                         consumerAssignmentCache,
@@ -69,11 +68,6 @@ public class ConsumerAssignmentRegistryFactory implements Factory<ConsumerAssign
             default:
                 throw new UnsupportedOperationException("Max-rate type not supported.");
         }
-    }
-
-    private CreateMode getAssignmentNodeCreationMode() {
-        String algorithm = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_ALGORITHM);
-        return SELECTIVE.equals(algorithm) ? CreateMode.PERSISTENT : CreateMode.EPHEMERAL;
     }
 
     @Override

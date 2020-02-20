@@ -177,12 +177,13 @@
             <div class="form-group">
                 <label class="col-md-3 control-label">Filter</label>
                 <div class="col-md-9">
-                    <table class="table borderless" ng-show="subscription.filters.length > 0">
+                    <table class="table borderless">
                         <tr>
                             <th>Type</th>
                             <th>Path</th>
                             <th>Matcher</th>
                             <th>Matching strategy</th>
+                            <th></th>
                         </tr>
                         <tr ng-repeat="filter in subscription.filters">
                             <td>
@@ -214,10 +215,8 @@
                                 <button class="btn btn-danger" ng-click="delFilter($index)">Delete</button>
                             </td>
                         </tr>
-                    </table>
-
-                    <table class="table borderless">
                         <tr>
+                            <td class="col-sm-2"></td>
                             <td>
                                 <input ng-model="filter.path"
                                        class="form-control col-md-1 {{filter.path.$valid ? '' : 'has-error'}}"
@@ -242,6 +241,47 @@
                             <td>
                                 <div class="col-md-1 subscription-add-subscription-filter">
                                     <button class="btn btn-success" ng-click="addFilter()">Add</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="form-group" ng-show="showHeadersFilter">
+                <label class="col-md-3 control-label">HTTP Header Filter</label>
+                <div class="col-md-9">
+                    <table class="table borderless">
+                        <tr>
+                            <th>Name</th>
+                            <th>Pattern</th>
+                            <th></th>
+                        </tr>
+                        <tr ng-repeat="filter in subscription.headers">
+                            <td>
+                                <input ng-model="filter.name"
+                                       class="form-control col-md-1" placeholder="{{filter.name}}"/>
+                            </td>
+                            <td>
+                                <input ng-model="filter.value"
+                                       class="form-control col-md-1" placeholder="{{filter.value}}"/>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger" ng-click="delHeader($index)">Delete</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input ng-model="header.name"
+                                       class="form-control col-md-1" placeholder="Header name"/>
+                            </td>
+                            <td>
+                                <input ng-model="header.value"
+                                       class="form-control col-md-1" placeholder="Header pattern"/>
+                            </td>
+                            <td>
+                                <div class="col-md-1">
+                                    <button class="btn btn-success" ng-click="addHeader()">Add</button>
                                 </div>
                             </td>
                         </tr>

@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
@@ -41,6 +42,7 @@ public class HermesConsumers {
     private final MaxRateSupervisor maxRateSupervisor;
     private final ConsumerAssignmentCache assignmentCache;
     private final OAuthClient oAuthHttpClient;
+    private final HttpClientsWorkloadReporter httpClientsWorkloadReporter;
 
     public static void main(String... args) {
         consumers().build().start();
@@ -66,6 +68,7 @@ public class HermesConsumers {
         maxRateSupervisor = serviceLocator.getService(MaxRateSupervisor.class);
         assignmentCache = serviceLocator.getService(ConsumerAssignmentCache.class);
         oAuthHttpClient = serviceLocator.getService(OAuthClient.class);
+        httpClientsWorkloadReporter = serviceLocator.getService(HttpClientsWorkloadReporter.class);
 
         hooksHandler.addShutdownHook((s) -> {
             try {
@@ -101,6 +104,7 @@ public class HermesConsumers {
             maxRateSupervisor.start();
             serviceLocator.getService(ConsumersRuntimeMonitor.class).start();
             consumerHttpServer.start();
+            httpClientsWorkloadReporter.start();
             hooksHandler.startup(serviceLocator);
         } catch (Exception e) {
             logger.error("Exception while starting Hermes Consumers", e);

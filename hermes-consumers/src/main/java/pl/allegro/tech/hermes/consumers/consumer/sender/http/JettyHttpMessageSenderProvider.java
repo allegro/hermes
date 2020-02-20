@@ -8,8 +8,6 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
@@ -24,9 +22,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpo
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.Optional;
-
-import static java.util.Optional.empty;
 
 public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProvider {
 
@@ -36,21 +33,20 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private static final HttpHeadersProvider http2HeadersProvider = new Http2HeadersProvider();
 
     private final HttpClient httpClient;
-    private final Optional<HttpClient> http2Client;
+    private final Http2ClientHolder http2ClientHolder;
     private final EndpointAddressResolver endpointAddressResolver;
     private final MetadataAppender<Request> metadataAppender;
     private final HttpAuthorizationProviderFactory authorizationProviderFactory;
 
     @Inject
     public JettyHttpMessageSenderProvider(
-            ConfigFactory config,
-            HttpClientFactory httpClientFactory,
+            @Named("http-1-client") HttpClient httpClient,
+            Http2ClientHolder http2ClientHolder,
             EndpointAddressResolver endpointAddressResolver,
             MetadataAppender<Request> metadataAppender,
             HttpAuthorizationProviderFactory authorizationProviderFactory) {
-        this.httpClient = httpClientFactory.provide();
-        this.http2Client = config.getBooleanProperty(Configs.CONSUMER_HTTP2_ENABLED) ?
-                Optional.of(httpClientFactory.createClientForHttp2()) : empty();
+        this.httpClient = httpClient;
+        this.http2ClientHolder = http2ClientHolder;
         this.endpointAddressResolver = endpointAddressResolver;
         this.metadataAppender = metadataAppender;
         this.authorizationProviderFactory = authorizationProviderFactory;
@@ -106,9 +102,9 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     }
 
     private HttpClient tryToGetHttp2Client(Subscription subscription) {
-        if (http2Client.isPresent()) {
+        if (http2ClientHolder.getHttp2Client().isPresent()) {
             logger.info("Using http/2 for {}.", subscription.getQualifiedName());
-            return http2Client.get();
+            return http2ClientHolder.getHttp2Client().get();
         } else {
             logger.info("Using http/1.1 for {}. Http/2 delivery is not enabled on this server.",
                     subscription.getQualifiedName());
@@ -119,7 +115,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     @Override
     public void start() throws Exception {
         startClient(httpClient);
-        http2Client.ifPresent(this::startClient);
+        http2ClientHolder.getHttp2Client().ifPresent(this::startClient);
     }
 
     private void startClient(HttpClient client) {
@@ -135,7 +131,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     @Override
     public void stop() throws Exception {
         stopClient(httpClient);
-        http2Client.ifPresent(this::stopClient);
+        http2ClientHolder.getHttp2Client().ifPresent(this::stopClient);
     }
 
     private void stopClient(HttpClient client) {

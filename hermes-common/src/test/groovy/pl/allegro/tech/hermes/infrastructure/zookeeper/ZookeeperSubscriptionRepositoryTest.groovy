@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
+import java.time.Instant
+
 import static pl.allegro.tech.hermes.api.PatchData.patchData
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
@@ -82,6 +84,7 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
 
     def "should return subscription details"() {
         given:
+        def timestamp = Instant.now()
         repository.createSubscription(subscription(TOPIC, 'details', EndpointAddress.of('hello'))
                 .withDescription('my description')
                 .build())
@@ -93,6 +96,10 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
         then:
         subscription.description == 'my description'
         subscription.endpoint == EndpointAddress.of('hello')
+
+        and: 'createdAt and modifiedAt are greater or equal than timestamp'
+        subscription.createdAt.isAfter(timestamp)
+        subscription.modifiedAt.isAfter(timestamp)
     }
 
     def "should throw exception when trying to return details of unknown subscription"() {
