@@ -301,6 +301,12 @@ public class ConsoleProperties {
         private boolean offlineClientsEnabled = false;
         private boolean authEnabled = true;
         private DefaultTopicView defaults = new DefaultTopicView();
+        private String buttonsExtension = "";
+        private boolean removeSchema = false;
+        private List<TopicContentType> contentTypes = Lists.newArrayList(
+                new TopicContentType("AVRO", "AVRO"),
+                new TopicContentType("JSON", "JSON")
+        );
 
         public boolean isMessagePreviewEnabled() {
             return messagePreviewEnabled;
@@ -333,19 +339,36 @@ public class ConsoleProperties {
         public void setDefaults(DefaultTopicView defaults) {
             this.defaults = defaults;
         }
+
+        public List<TopicContentType> getContentTypes() {
+            return contentTypes;
+        }
+
+        public void setContentTypes(List<TopicContentType> contentTypes) {
+            this.contentTypes = contentTypes;
+        }
+
+        public String getButtonsExtension() {
+            return buttonsExtension;
+        }
+
+        public void setButtonsExtension(String buttonsExtension) {
+            this.buttonsExtension = buttonsExtension;
+        }
+
+        public boolean isRemoveSchema() {
+            return removeSchema;
+        }
+
+        public void setRemoveSchema(boolean removeSchema) {
+            this.removeSchema = removeSchema;
+        }
     }
 
     public static final class DefaultTopicView {
         private String ack = "LEADER";
         private String contentType = "JSON";
         private RetentionTime retentionTime = new RetentionTime();
-        private String buttonsExtension = "";
-        private boolean offlineClientsEnabled = false;
-        private boolean removeSchema = false;
-        private List<TopicContentType> contentTypes = Lists.newArrayList(
-                new TopicContentType("AVRO", "AVRO"),
-                new TopicContentType("JSON", "JSON")
-        );
 
         public String getAck() {
             return ack;
@@ -369,38 +392,6 @@ public class ConsoleProperties {
 
         public void setRetentionTime(RetentionTime retentionTime) {
             this.retentionTime = retentionTime;
-        }
-
-        public String getButtonsExtension() {
-            return buttonsExtension;
-        }
-
-        public void setButtonsExtension(String buttonsExtension) {
-            this.buttonsExtension = buttonsExtension;
-        }
-
-        public boolean isOfflineClientsEnabled() {
-            return offlineClientsEnabled;
-        }
-
-        public void setOfflineClientsEnabled(boolean offlineClientsEnabled) {
-            this.offlineClientsEnabled = offlineClientsEnabled;
-        }
-
-        public boolean isRemoveSchema() {
-            return removeSchema;
-        }
-
-        public void setRemoveSchema(boolean removeSchema) {
-            this.removeSchema = removeSchema;
-        }
-
-        public List<TopicContentType> getContentTypes() {
-            return contentTypes;
-        }
-
-        public void setContentTypes(List<TopicContentType> contentTypes) {
-            this.contentTypes = contentTypes;
         }
     }
 
@@ -490,6 +481,7 @@ public class ConsoleProperties {
     public static final class SubscriptionView {
         private Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata = new HashMap<>();
         private boolean showHeadersFilter = false;
+        private DefaultSubscriptionView defaults = new DefaultSubscriptionView();
 
         public Map<String, EndpointAddressResolverMetadata> getEndpointAddressResolverMetadata() {
             return endpointAddressResolverMetadata;
@@ -505,6 +497,14 @@ public class ConsoleProperties {
 
         public void setShowHeadersFilter(boolean showHeadersFilter) {
             this.showHeadersFilter = showHeadersFilter;
+        }
+
+        public DefaultSubscriptionView getDefaults() {
+            return defaults;
+        }
+
+        public void setDefaults(DefaultSubscriptionView defaults) {
+            this.defaults = defaults;
         }
     }
 
@@ -535,6 +535,30 @@ public class ConsoleProperties {
 
         public void setHint(String hint) {
             this.hint = hint;
+        }
+    }
+
+    public static final class DefaultSubscriptionView {
+        private SubscriptionPolicy subscriptionPolicy = new SubscriptionPolicy();
+
+        public SubscriptionPolicy getSubscriptionPolicy() {
+            return subscriptionPolicy;
+        }
+
+        public void setSubscriptionPolicy(SubscriptionPolicy subscriptionPolicy) {
+            this.subscriptionPolicy = subscriptionPolicy;
+        }
+    }
+
+    public static final class SubscriptionPolicy {
+        private int messageTtl = 3600;
+
+        public int getMessageTtl() {
+            return messageTtl;
+        }
+
+        public void setMessageTtl(int messageTtl) {
+            this.messageTtl = messageTtl;
         }
     }
 }
