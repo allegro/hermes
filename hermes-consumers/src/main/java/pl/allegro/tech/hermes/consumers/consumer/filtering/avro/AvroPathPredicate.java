@@ -6,17 +6,19 @@ import org.apache.avro.generic.GenericRecord;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.MatchingStrategy;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.UnsupportedMatchingStrategyException;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyListIterator;
@@ -35,10 +37,16 @@ public class AvroPathPredicate implements Predicate<Message> {
     private static final String NULL_AS_STRING = "null";
     private List<String> path;
     private Pattern pattern;
+    private MatchingStrategy matchingStrategy;
 
     public AvroPathPredicate(String path, Pattern pattern) {
+        this(path, pattern, MatchingStrategy.ALL);
+    }
+
+    public AvroPathPredicate(String path, Pattern pattern, MatchingStrategy matchingStrategy) {
         this.path = Arrays.asList(strip(path, ".").split("\\."));
         this.pattern = pattern;
+        this.matchingStrategy = matchingStrategy;
     }
 
     @Override
@@ -46,10 +54,9 @@ public class AvroPathPredicate implements Predicate<Message> {
         check(message.getContentType() == ContentType.AVRO, "This filter supports only AVRO contentType.");
         try {
             List<Object> result = select(message);
+            Stream<String> resultStream = result.stream().map(Object::toString);
 
-            return !result.isEmpty() && result.stream()
-                .map(Object::toString)
-                .allMatch(this::matches);
+            return !result.isEmpty() && matchResultsStream(resultStream);
         } catch (Exception exception) {
             throw new FilteringException(exception);
         }
@@ -111,7 +118,18 @@ public class AvroPathPredicate implements Predicate<Message> {
         return currentArray.get(idx);
     }
 
-    private boolean matches(Object value) {
-        return pattern.matcher(Objects.toString(value)).matches();
+    private boolean matchResultsStream(Stream<String> results) {
+        switch (matchingStrategy) {
+            case ALL:
+                return results.allMatch(this::matches);
+            case ANY:
+                return results.anyMatch(this::matches);
+            default:
+                throw new UnsupportedMatchingStrategyException("avropath", matchingStrategy);
+        }
+    }
+
+    private boolean matches(String value) {
+        return pattern.matcher(value).matches();
     }
 }

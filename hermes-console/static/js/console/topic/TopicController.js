@@ -21,10 +21,20 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         $scope.offlineClientsFetching = true;
         $scope.showMessageSchema = false;
         $scope.config = topicConfig;
+        $scope.showHeadersFilter = subscriptionConfig.showHeadersFilter;
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema;
             $scope.topic.shortName = $scope.topic.name.substring($scope.topic.name.lastIndexOf('.') + 1);
+            if (topicWithSchema && topicWithSchema.createdAt && topicWithSchema.modifiedAt) {
+                var createdAt = new Date(0);
+                createdAt.setUTCSeconds(topicWithSchema.createdAt);
+                $scope.topic.createdAt = createdAt;
+
+                var modifiedAt = new Date(0);
+                modifiedAt.setUTCSeconds(topicWithSchema.modifiedAt);
+                $scope.topic.modifiedAt = modifiedAt;
+            }
             try {
                 $scope.messageSchema = topicWithSchema.schema ? JSON.stringify(JSON.parse(topicWithSchema.schema), null, 2) : null;
             } catch (e) {
@@ -205,6 +215,9 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                     },
                     topicContentType: function () {
                         return $scope.topic.contentType;
+                    },
+                    showHeadersFilter: function () {
+                        return $scope.showHeadersFilter;
                     }
                 }
             }).result.then(function () {

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.di;
 
+import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -29,6 +30,7 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthSubscriptionHandlerF
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthTokenRequestRateLimiterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClient;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
@@ -46,7 +48,11 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientHolder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
@@ -128,7 +134,7 @@ public class ConsumersBinder extends AbstractBinder {
 
         bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class)
                 .to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
-        bindSingleton(HttpClientFactory.class);
+        bindSingleton(HttpClientsFactory.class);
 
         bindFactory(ConsumerNodesRegistryFactory.class).in(Singleton.class).to(ConsumerNodesRegistry.class);
 
@@ -137,11 +143,16 @@ public class ConsumersBinder extends AbstractBinder {
         bindFactory(SubscriptionIdsCacheFactory.class).in(Singleton.class).to(SubscriptionIds.class);
         bindFactory(ConsumerAssignmentCacheFactory.class).in(Singleton.class).to(ConsumerAssignmentCache.class);
         bindFactory(ClusterAssignmentCacheFactory.class).in(Singleton.class).to(ClusterAssignmentCache.class);
+        bindSingleton(HttpClientsWorkloadReporter.class);
 
         bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
         bindFactory(ConsumerAssignmentRegistryFactory.class).in(Singleton.class).to(ConsumerAssignmentRegistry.class);
         bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);
         bindFactory(ConsumersRuntimeMonitorFactory.class).in(Singleton.class).to(ConsumersRuntimeMonitor.class);
+
+        bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class).named("http-1-client");
+        bindFactory(OAuthHttpClientFactory.class).in(Singleton.class).to(HttpClient.class).named("oauth-http-client");
+        bindFactory(Http2ClientFactory.class).in(Singleton.class).to(Http2ClientHolder.class);
 
         bindSingleton(MaxRatePathSerializer.class);
         bindSingleton(MaxRateSupervisor.class);

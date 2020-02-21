@@ -7,18 +7,20 @@
 
     <h1>Groups</h1>
 
-    <div class="row">
+    <div ng-show="!admin" class="alert alert-info">In order to create a new group, please contact Hermes adminstrator</div>
+
+    <div class="row container">
         <div class="input-group col-md-2 col-md-offset-10">
             <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span></div>
             <input class="form-control" ng-model="search.name" placeholder="search...">
         </div>
     </div>
 
-    <div class="row">
+    <div class="row container">
         <div class="list-group">
-            <div class="list-group-item">
+            <div class="list-group-item" ng-show="admin">
                 <div class="pull-right">
-                    <button class="btn btn-primary" ng-click="addGroup()"><span class="glyphicon glyphicon-plus"></span></button>
+                    <button class="btn btn-primary"  ng-click="addGroup()"><span class="glyphicon glyphicon-plus"></span></button>
                 </div>
                 <h4>&nbsp;</h4>
             </div>

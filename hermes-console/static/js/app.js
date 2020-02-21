@@ -12,7 +12,10 @@ var hermes = angular.module('hermes', [
     'hermes.search',
     'hermes.stats',
     'hermes.diagnostics',
-    'hermes.constraints'
+    'hermes.constraints',
+    'hermes.diagnostics',
+    'hermes.visibility',
+    'hermes.mode'
 ]);
 
 hermes.constant('DASHBOARD_CONFIG', config.dashboard);
@@ -84,12 +87,18 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
         $tooltipProvider.options({ placement: 'left' });
     }]);
 
-hermes.run(['$rootScope', 'CONSOLE_CONFIG', 'AUTH_CONFIG', function($rootScope, config, authConfig) {
-    $rootScope.console = {
-        title: config.title
-    };
-    $rootScope.authEnabled = {
-        oauth: authConfig.oauth.enabled,
-        headers: authConfig.headers.enabled
-    };
+hermes.run(['$rootScope', 'CONSOLE_CONFIG', 'AUTH_CONFIG', "$sce", 'Mode', 'Visibility',
+    function ($rootScope, config, authConfig, $sce, mode, visibility) {
+        $rootScope.console = {
+            title: config.title,
+            footer: $sce.trustAsHtml(config.footer)
+        };
+        $rootScope.authEnabled = {
+            oauth: authConfig.oauth.enabled,
+            headers: authConfig.headers.enabled
+        };
+        $rootScope.$on('$viewContentLoaded', function (event) {
+            visibility.update();
+        });
+        mode.reload();
 }]);

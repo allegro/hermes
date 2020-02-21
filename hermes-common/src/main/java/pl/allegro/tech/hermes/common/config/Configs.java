@@ -36,7 +36,7 @@ public enum Configs {
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
     KAFKA_NAMESPACE("kafka.namespace", ""),
 
-    KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG("kafka.consumer.auto.offset.reset", "latest"),
+    KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG("kafka.consumer.auto.offset.reset", "earliest"),
     KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG("kafka.consumer.session.timeout.ms", 200_000),
     KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG("kafka.consumer.heartbeat.interval.ms", 3000),
     KAFKA_CONSUMER_METADATA_MAX_AGE_CONFIG("kafka.consumer.metadata.max.age.ms", 5 * 60 * 1000),
@@ -187,6 +187,7 @@ public enum Configs {
     CONSUMER_THREAD_POOL_SIZE("consumer.thread.pool.size", 500),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE("consumer.http.client.thread.pool.size", 30),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING("consumer.http.client.thread.pool.monitoring", false),
+    CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS("consumer.http.client.follow.redirects", false),
     CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION("consumer.http.client.max.connections.per.destination", 100),
     CONSUMER_HTTP_CLIENT_VALIDATE_CERTS("consumer.http.client.validate.certs", true),
     CONSUMER_HTTP_CLIENT_VALIDATE_PEER_CERTS("consumer.http.client.validate.peer.certs", true),
@@ -219,7 +220,6 @@ public enum Configs {
     CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT("consumer.maxrate.min.significant.update.percent", 9.0),
 
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
-    CONSUMER_WORKLOAD_ALGORITHM("consumer.workload.algorithm", "selective"),
     CONSUMER_WORKLOAD_REGISTRY_TYPE("consumer.workload.registry.type", "hierarchical"),
     CONSUMER_WORKLOAD_REGISTRY_BINARY_ENCODER_ASSIGNMENTS_BUFFER_SIZE_BYTES("consumer.workload.registry.binary.encoder.assignments.buffer.size.bytes", 100_000),
     CONSUMER_WORKLOAD_REBALANCE_INTERVAL("consumer.workload.rebalance.interval.seconds", 30),

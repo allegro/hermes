@@ -7,10 +7,23 @@ import java.util.List;
 
 @ConfigurationProperties(prefix = "jersey")
 public class JerseyProperties {
-    
+
     private List<String> packagesToScan = new ArrayList<>();
+    private String filterStaticContentRegexp = "/(ui|status)/.*";
 
     public List<String> getPackagesToScan() {
         return packagesToScan;
+    }
+
+    public void setPackagesToScan(List<String> packagesToScan) {
+        this.packagesToScan = packagesToScan;
+    }
+
+    public String getFilterStaticContentRegexp() {
+        return filterStaticContentRegexp;
+    }
+
+    public void setFilterStaticContentRegexp(String filterStaticContentRegexp) {
+        this.filterStaticContentRegexp = filterStaticContentRegexp;
     }
 }
