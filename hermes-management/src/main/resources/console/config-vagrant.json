@@ -3,28 +3,28 @@
     "title": "hermes vagrant console"
   },
   "dashboard": {
-    "metrics": "http://PUBLIC_IP:8082",
+    "metrics": "http://10.10.10.10:8082",
     "docs": "http://hermes-pubsub.rtfd.org"
   },
   "hermes": {
     "discovery": {
       "type": "simple",
       "simple": {
-        "url": "http://PUBLIC_IP:8090"
+        "url": "http://10.10.10.10:8090"
       }
     }
   },
   "metrics": {
     "type": "graphite",
     "graphite": {
-      "url": "localhost:8082",
+      "url": "10.10.10.10:8082",
       "prefix": "hermes"
     }
   },
   "auth": {
     "oauth": {
       "enabled": false,
-      "url": "localhost:8092/auth",
+      "url": "10.10.10.10:8092/auth",
       "clientId": "hermes",
       "scope": "hermes"
     },

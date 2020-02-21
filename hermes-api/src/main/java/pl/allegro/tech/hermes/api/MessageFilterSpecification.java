@@ -32,6 +32,8 @@ public class MessageFilterSpecification {
         return getStringValue("header");
     }
 
+    public String getMatchingStrategy() { return getStringValue("matchingStrategy"); }
+
     @SuppressWarnings("unchecked")
     public <T> T getFieldValue(String key) {
         return (T) spec.get(key);

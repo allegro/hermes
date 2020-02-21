@@ -8,12 +8,13 @@
     </ol>
 
     <div class="pull-right">
+        <span ng-show="disabled" uib-popover='Sign in to edit the topic' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
         <span bind-html="config.buttonsExtension"></span>
-        <button class="btn btn-primary" ng-click="edit()">Edit</button>
-        <button class="btn btn-primary" ng-click="clone()">Clone</button>
-        <button class="btn btn-warning" ng-click="blacklist()" ng-show="!isBlacklisted">Blacklist</button>
-        <button class="btn btn-default" ng-click="unblacklist()" ng-show="isBlacklisted">Unblacklist</button>
-        <button class="btn btn-danger" ng-click="remove()">Remove</button>
+        <button class="btn btn-primary" ng-disabled="disabled" ng-click="edit()">Edit</button>
+        <button class="btn btn-primary" ng-disabled="disabled" ng-click="clone()">Clone</button>
+        <button class="btn btn-warning" ng-disabled="disabled" ng-show="admin && !isBlacklisted" ng-click="blacklist()" >Blacklist</button>
+        <button class="btn btn-default" ng-disabled="disabled" ng-show="admin && isBlacklisted"ng-click="unblacklist()" >Unblacklist</button>
+        <button class="btn btn-danger" ng-disabled="disabled" ng-click="remove()">Remove</button>
     </div>
 
     <h1><small>Topic:</small> {{topic.name}}</h1>
@@ -103,6 +104,14 @@
                         <span uib-popover='For how long should this topic be stored in offline storage.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
 
+                    <hr/>
+                    <p ng-show="topic.createdAt">
+                        <strong>Creation date:</strong> {{topic.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}
+                    </p>
+                    <p ng-show="topic.modifiedAt">
+                        <strong>Modification date:</strong> {{topic.modifiedAt | date:'yyyy-MM-dd HH:mm:ss'}}
+                    </p>
+
                 </div>
             </div>
         </div>
@@ -143,11 +152,12 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row container">
         <div class="list-group">
             <div class="list-group-item">
                 <div class="pull-right">
-                    <button class="btn btn-primary" ng-click="addSubscription()"><span class="glyphicon glyphicon-plus"></span></button>
+                    <span ng-show="disabled" uib-popover='Sign in to add a subscription' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
+                    <button class="btn btn-primary" ng-disabled="topic.subscribingRestricted && disabled" ng-click="addSubscription()"><span class="glyphicon glyphicon-plus"></span></button>
                 </div>
                 <h4>
                     Subscriptions
@@ -168,7 +178,7 @@
         </div>
     </div>
 
-    <div class="row" ng-if="config.offlineClientsEnabled">
+    <div class="row container" ng-if="config.offlineClientsEnabled">
         <div class="list-group">
             <div class="list-group-item">
                 <h4>

@@ -1,6 +1,10 @@
 package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import pl.allegro.tech.hermes.api.ContentType;
+
+import java.util.Arrays;
+import java.util.List;
 
 @ConfigurationProperties(prefix = "topic")
 public class TopicProperties {
@@ -12,6 +16,8 @@ public class TopicProperties {
     private boolean allowRemoval = false;
 
     private boolean removeSchema = false;
+
+    private List<ContentType> allowedContentTypes = Arrays.asList(ContentType.AVRO, ContentType.JSON);
 
     private boolean uncleanLeaderElectionEnabled = false;
 
@@ -64,6 +70,14 @@ public class TopicProperties {
 
     public void setRemoveSchema(boolean removeSchema) {
         this.removeSchema = removeSchema;
+    }
+
+    public List<ContentType> getAllowedContentTypes() {
+        return allowedContentTypes;
+    }
+
+    public void setAllowedContentTypes(List<ContentType> allowedContentTypes) {
+        this.allowedContentTypes = allowedContentTypes;
     }
 
     public boolean isUncleanLeaderElectionEnabled() {

@@ -4,6 +4,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Option;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.filtering.MatchingStrategy;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.SubscriptionMessageFilterCompiler;
 
 import java.util.function.Predicate;
@@ -21,6 +22,11 @@ public class JsonPathSubscriptionMessageFilterCompiler implements SubscriptionMe
 
     @Override
     public Predicate<Message> compile(MessageFilterSpecification specification) {
-        return new JsonPathPredicate(specification.getPath(), Pattern.compile(specification.getMatcher()), configuration);
+        return new JsonPathPredicate(
+            specification.getPath(),
+            Pattern.compile(specification.getMatcher()),
+            configuration,
+            MatchingStrategy.fromString(specification.getMatchingStrategy(), MatchingStrategy.ALL)
+        );
     }
 }

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroInvalidMetadataException;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.WrappingException;
@@ -77,7 +78,7 @@ public class MessageFactory {
                     } catch (AvroConversionException exception) {
                         logger.warn("Unsuccessful message conversion from JSON to AVRO on topic {} in dry run mode",
                                 topic.getQualifiedName(), exception);
-                    } catch (WrappingException exception) {
+                    } catch (WrappingException | AvroInvalidMetadataException exception) {
                         logger.warn("Unsuccessful wrapping of AVRO message on topic {} in dry run mode",
                                 topic.getQualifiedName(), exception);
                     }

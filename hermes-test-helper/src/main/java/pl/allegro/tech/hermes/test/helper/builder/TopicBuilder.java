@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicDataOfflineStorage;
 import pl.allegro.tech.hermes.api.TopicName;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -72,7 +73,7 @@ public class TopicBuilder {
                 name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
                 jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize,
                 new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
-                offlineStorage
+                offlineStorage, null, null
         );
     }
 

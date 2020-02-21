@@ -24,8 +24,9 @@ class TopicValidatorTest extends Specification {
 
     def schemaRepository = Stub(SchemaRepository)
     def ownerDescriptorValidator = Stub(OwnerIdValidator)
+    def contentTypeWhitelistValidator = Stub(ContentTypeValidator)
     def apiPreconditions = Stub(ApiPreconditions)
-    def topicValidator = new TopicValidator(ownerDescriptorValidator, schemaRepository, apiPreconditions)
+    def topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, schemaRepository, apiPreconditions)
 
     def "topic with basic properties when creating should be valid"() {
         when:
@@ -71,6 +72,17 @@ class TopicValidatorTest extends Specification {
     def "topic with owner that doesn't include the creator should be invalid"() {
         when:
         topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), NOT_MANAGABLE)
+
+        then:
+        thrown TopicValidationException
+    }
+
+    def "topic with not allowed content type should be invalid"() {
+        given:
+        contentTypeWhitelistValidator.check(_) >> { throw new TopicValidationException("failed") }
+
+        when:
+        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), MANAGABLE)
 
         then:
         thrown TopicValidationException
