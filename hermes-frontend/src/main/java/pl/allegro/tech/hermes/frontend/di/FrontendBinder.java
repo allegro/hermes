@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCacheFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -86,6 +87,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessagePreviewPersister.class);
         bindSingleton(MessagePreviewLog.class);
         bindSingleton(MessagePreviewFactory.class);
+        bindSingleton(KafkaHeaderFactory.class);
         bindSingletonFactory(BlacklistZookeeperNotifyingCacheFactory.class);
     }
 

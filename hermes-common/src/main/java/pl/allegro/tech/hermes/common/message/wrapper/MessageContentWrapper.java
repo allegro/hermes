@@ -1,17 +1,17 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import com.codahale.metrics.Counter;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.inject.Inject;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
+
+import static java.util.Arrays.asList;
+import static pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentUnwrapperResult.AvroMessageContentUnwrapperResultStatus.SUCCESS;
 
 public class MessageContentWrapper {
 
@@ -19,104 +19,37 @@ public class MessageContentWrapper {
 
     private final JsonMessageContentWrapper jsonMessageContentWrapper;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
-    private final SchemaRepository schemaRepository;
-    private final SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter;
-
-    private final Counter deserializationWithMissedSchemaVersionInPayload;
-    private final Counter deserializationErrorsForSchemaVersionAwarePayload;
-    private final Counter deserializationErrorsForAnySchemaVersion;
-    private final Counter deserializationErrorsForAnyOnlineSchemaVersion;
+    private final Collection<AvroMessageContentUnwrapper> avroMessageContentUnwrappers;
 
     @Inject
     public MessageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
                                  AvroMessageContentWrapper avroMessageContentWrapper,
-                                 SchemaRepository schemaRepository,
-                                 SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter,
-                                 DeserializationMetrics deserializationMetrics) {
+                                 AvroMessageSchemaVersionAwareContentWrapper schemaVersionAwareContentWrapper,
+                                 AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
+                                 AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper) {
+
         this.jsonMessageContentWrapper = jsonMessageContentWrapper;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
-        this.schemaRepository = schemaRepository;
-        this.schemaOnlineChecksRateLimiter = schemaOnlineChecksRateLimiter;
-
-        deserializationErrorsForSchemaVersionAwarePayload = deserializationMetrics.errorsForSchemaVersionAwarePayload();
-        deserializationErrorsForAnySchemaVersion = deserializationMetrics.errorsForAnySchemaVersion();
-        deserializationErrorsForAnyOnlineSchemaVersion = deserializationMetrics.errorsForAnyOnlineSchemaVersion();
-        deserializationWithMissedSchemaVersionInPayload = deserializationMetrics.missedSchemaVersionInPayload();
+        this.avroMessageContentUnwrappers =
+                asList(schemaVersionAwareContentWrapper, headerSchemaVersionContentWrapper, anySchemaVersionContentWrapper);
     }
 
     public UnwrappedMessageContent unwrapJson(byte[] data) {
         return jsonMessageContentWrapper.unwrapContent(data);
     }
 
-    public UnwrappedMessageContent unwrapAvro(byte[] data, Topic topic) {
-        return isPayloadAwareOfSchemaVersion(data, topic) ? deserializeSchemaVersionAwarePayload(data, topic) :
-                tryDeserializingUsingAnySchemaVersion(data, topic);
-    }
-
-    private boolean isPayloadAwareOfSchemaVersion(byte[] data, Topic topic) {
-        if (topic.isSchemaVersionAwareSerializationEnabled()) {
-            if (SchemaAwareSerDe.startsWithMagicByte(data)) {
-                return true;
-            }
-            deserializationWithMissedSchemaVersionInPayload.inc();
-        }
-        return false;
-    }
-
-    private UnwrappedMessageContent deserializeSchemaVersionAwarePayload(byte[] data, Topic topic) {
-        try {
-            SchemaAwarePayload payload = SchemaAwareSerDe.deserialize(data);
-            return avroMessageContentWrapper.unwrapContent(payload.getPayload(),
-                    schemaRepository.getAvroSchema(topic, payload.getSchemaVersion()));
-        } catch (Exception ex) {
-            logger.warn("Could not deserialize schema version aware payload for topic {}. Trying to deserialize using any schema version",
-                    topic.getQualifiedName(), ex);
-            deserializationErrorsForSchemaVersionAwarePayload.inc();
-            return tryDeserializingUsingAnySchemaVersion(data, topic);
-        }
-    }
-
-    // try-harding to find proper schema
-    private UnwrappedMessageContent tryDeserializingUsingAnySchemaVersion(byte[] data, Topic topic) {
-        try {
-            return tryDeserializingUsingAnySchemaVersion(data, topic, false);
-        } catch (Exception ex) {
-            logger.info("Trying to find schema online for message for topic {}", topic.getQualifiedName());
-            return tryDeserializingUsingAnySchemaVersion(data, topic, true);
-        }
-    }
-
-    private UnwrappedMessageContent tryDeserializingUsingAnySchemaVersion(byte[] data, Topic topic, boolean online) {
-        if (online) {
-            limitSchemaRepositoryOnlineCallsRate(topic);
-        }
-        List<SchemaVersion> versions = schemaRepository.getVersions(topic, online);
-        for (SchemaVersion version : versions) {
-            try {
-                CompiledSchema<Schema> schema = online ? schemaRepository.getKnownAvroSchemaVersion(topic, version) :
-                        schemaRepository.getAvroSchema(topic, version);
-                return avroMessageContentWrapper.unwrapContent(data, schema);
-            } catch (Exception ex) {
-                logger.error("Failed to match schema for message for topic {}, schema version {}, fallback to previous.",
-                        topic.getQualifiedName(), version.value(), ex);
+    public UnwrappedMessageContent unwrapAvro(byte[] data, Topic topic, Integer schemaVersion) {
+        for (AvroMessageContentUnwrapper unwrapper : avroMessageContentUnwrappers) {
+            if (unwrapper.isApplicable(data, topic, schemaVersion)) {
+                AvroMessageContentUnwrapperResult result = unwrapper.unwrap(data, topic, schemaVersion);
+                if (result.getStatus() == SUCCESS) {
+                    return result.getContent();
+                }
             }
         }
-        logger.error("Could not match schema {} for message of topic {} {}",
-                online ? "online" : "from cache", topic.getQualifiedName(), SchemaVersion.toString(versions));
-        deserializationErrorsCounterForAnySchemaVersion(online).inc();
+
+        logger.error("All attempts to unwrap Avro message for topic {} with schema version {} failed", topic.getQualifiedName(), schemaVersion);
         throw new SchemaMissingException(topic);
-    }
-
-    private void limitSchemaRepositoryOnlineCallsRate(Topic topic) {
-        if (!schemaOnlineChecksRateLimiter.tryAcquireOnlineCheckPermit()) {
-            logger.error("Could not match schema online for message of topic {} " +
-                    "due to too many schema repository requests", topic.getQualifiedName());
-            throw new SchemaMissingException(topic);
-        }
-    }
-
-    private Counter deserializationErrorsCounterForAnySchemaVersion(boolean online) {
-        return online ? deserializationErrorsForAnyOnlineSchemaVersion : deserializationErrorsForAnySchemaVersion;
     }
 
     public byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema, Map<String, String> externalMetadata) {

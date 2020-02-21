@@ -23,7 +23,10 @@ import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.WorkloadConstraintsRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperFactory;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageAnySchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
@@ -70,6 +73,9 @@ public class CommonBinder extends AbstractBinder {
         bindSingleton(DeserializationMetrics.class);
         bindSingleton(JsonMessageContentWrapper.class);
         bindSingleton(AvroMessageContentWrapper.class);
+        bindSingleton(AvroMessageAnySchemaVersionContentWrapper.class);
+        bindSingleton(AvroMessageSchemaVersionAwareContentWrapper.class);
+        bindSingleton(AvroMessageHeaderSchemaVersionContentWrapper.class);
         bind(SchemaOnlineChecksWaitingRateLimiter.class).in(Singleton.class).to(SchemaOnlineChecksRateLimiter.class);
 
         bindSingletonFactory(HermesCuratorClientFactory.class).named(CuratorType.HERMES);

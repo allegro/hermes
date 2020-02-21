@@ -45,6 +45,7 @@ public class KafkaBrokerMessageProducerTest {
 
     private KafkaBrokerMessageProducer producer;
     private KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns");
+    private KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(configFactory);
 
     @Mock
     private HermesMetrics hermesMetrics;
@@ -54,7 +55,7 @@ public class KafkaBrokerMessageProducerTest {
     @Before
     public void before() {
         cachedTopic = new CachedTopic(TOPIC, hermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
-        producer = new KafkaBrokerMessageProducer(producers, hermesMetrics);
+        producer = new KafkaBrokerMessageProducer(producers, hermesMetrics, kafkaHeaderFactory);
     }
 
     @After
