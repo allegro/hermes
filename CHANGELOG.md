@@ -1,8 +1,30 @@
 ## [Unreleased]
 
-### Features
-
 ...
+
+## 1.4.0 (22.02.2020)
+
+The release contains a lot of improvements created during Hacktoberfest event.
+Many thanks to contributors for implementing them, great work! :tada:
+
+### Enhancements
+
+#### ([1173](https://github.com/allegro/hermes/pull/1173)) Metadata headers in messages by @mareckmareck
+#### ([1012](https://github.com/allegro/hermes/pull/1012)) Catching all Throwables when consuming messages by @dankraw
+#### ([1012](https://github.com/allegro/hermes/pull/1012)) Allowed to filter messages by any element in array by @karolhor
+#### ([1166](https://github.com/allegro/hermes/pull/1166)) Hermes-management serves console config from application property file by @druminski
+#### ([1138](https://github.com/allegro/hermes/pull/1138)) Added UI for HTTP header filtering by @qrman
+#### ([1107](https://github.com/allegro/hermes/pull/1107)) Hermes-console served by Hermes-management as static resource by @mkopylec
+#### ([1165](https://github.com/allegro/hermes/pull/1165)) Removed mirror algorithm in consumer workload mechanism by @jewertow
+#### ([1127](https://github.com/allegro/hermes/pull/1127)) Manually create consumer group/commit offsets on subscription creation by @jewertow
+#### ([1141](https://github.com/allegro/hermes/pull/1141)) Added sorting by name and search for constraints UI by @pwolaq
+#### ([1114](https://github.com/allegro/hermes/pull/1114)) Hermes-console UX improvements by @krzysztofpcy
+#### ([1100](https://github.com/allegro/hermes/pull/1100)) Report consumer sender workload by @jewertow
+#### ([1124](https://github.com/allegro/hermes/pull/1124)) Return proper response when Avro lacks __metadata by @jewertow
+#### ([1137](https://github.com/allegro/hermes/pull/1137)) Introduced list of supported topic content types by @semisiu
+#### ([1139](https://github.com/allegro/hermes/pull/1139)) Redirects in hermes-consumers are disabled by default by @druminski
+#### ([1158](https://github.com/allegro/hermes/pull/1158)) Exposed creation and modification date for topic & subscription by @jewertow
+#### ([1162](https://github.com/allegro/hermes/pull/1162)) Removed Jersey repackaged immutable map reference by @dankraw
 
 ## 1.3.4 (27.11.2019)
 
