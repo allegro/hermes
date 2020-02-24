@@ -26,6 +26,21 @@ Many thanks to contributors for implementing them, great work! :tada:
 #### ([1158](https://github.com/allegro/hermes/pull/1158)) Exposed creation and modification date for topic & subscription by @jewertow
 #### ([1162](https://github.com/allegro/hermes/pull/1162)) Removed Jersey repackaged immutable map reference by @dankraw
 
+## 1.3.5 (27.01.2020)
+
+This version contains important changes related to Java 11 deployment of Hermes frontends
+(especially a critical fix in Undertow regarding the use of TLSv1.3 in JDK11)
+as well as some performance improvements (in terms of GC impact) of the way Avro API is being used.
+
+### Enhancements
+
+#### ([1160](https://github.com/allegro/hermes/pull/1160)) Using Undertow 2 on frontends
+#### ([1156](https://github.com/allegro/hermes/pull/1156)) Reusing Avro binary decoders
+
+### Bugfixes
+
+#### ([1153](https://github.com/allegro/hermes/pull/1153)) Fixed Hermes mock predicate
+
 ## 1.3.4 (27.11.2019)
 
 ### Enhancements
