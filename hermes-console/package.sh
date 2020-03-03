@@ -24,9 +24,11 @@ if [ ! -e dist/$NODE_DIST.tar.gz ]; then
     tar --extract --keep-old-files --strip 1 --file dist/$NODE_DIST.tar.gz -C dist/node
 fi
 
+export PATH=$(pwd)/dist/node/bin:$PATH
+
 printf "Running NPM and bower\n"
 
-dist/node/bin/npm install --production --yes
+npm install --production --yes
 node_modules/.bin/bower install --allow-root -F
 
 printf "Creating directory: dist/static\n"
