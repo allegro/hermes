@@ -5,6 +5,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.message
+import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestUris.rawAddress
 
 class Http2HermesHeadersProviderTest extends Specification {
 
@@ -13,7 +14,7 @@ class Http2HermesHeadersProviderTest extends Specification {
     @Unroll
     def "should contain #header header with correct value for http1"() {
         when:
-        def headers = http2HeadersProvider.getHeaders(message()).asMap()
+        def headers = http2HeadersProvider.getHeaders(message(), rawAddress()).asMap()
 
         then:
         headers.get( "Content-Type") == "application/json"
@@ -24,7 +25,7 @@ class Http2HermesHeadersProviderTest extends Specification {
         Message message = message()
 
         when:
-        HttpRequestHeaders headers = http2HeadersProvider.getHeaders(message)
+        HttpRequestHeaders headers = http2HeadersProvider.getHeaders(message, rawAddress())
 
         then:
         !headers.asMap().containsKey("Keep-Alive")

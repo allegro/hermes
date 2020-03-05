@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizat
 import spock.lang.Specification
 
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.message
+import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestUris.rawAddress
 
 class AuthHeadersProviderTest extends Specification {
 
@@ -15,7 +16,7 @@ class AuthHeadersProviderTest extends Specification {
         HttpHeadersProvider authHeadersProvider = new AuthHeadersProvider(null, authorizationProvider)
 
         when:
-        Map<String, String> headers = authHeadersProvider.getHeaders(message()).asMap()
+        Map<String, String> headers = authHeadersProvider.getHeaders(message(), rawAddress()).asMap()
 
         then:
         headers.size() == 1
@@ -27,7 +28,7 @@ class AuthHeadersProviderTest extends Specification {
         HttpHeadersProvider authHeadersProvider = new AuthHeadersProvider(null, null)
 
         when:
-        Map<String, String> headers = authHeadersProvider.getHeaders(message()).asMap()
+        Map<String, String> headers = authHeadersProvider.getHeaders(message(), rawAddress()).asMap()
 
         then:
         headers.size() == 0
@@ -37,7 +38,7 @@ class AuthHeadersProviderTest extends Specification {
         given:
         HttpHeadersProvider nestedHeadersProvider = new HttpHeadersProvider() {
             @Override
-            HttpRequestHeaders getHeaders(Message message) {
+            HttpRequestHeaders getHeaders(Message message, String rawAddress) {
                 return new HttpRequestHeaders(Collections.singletonMap("k", "v"))
             }
         }
@@ -45,7 +46,7 @@ class AuthHeadersProviderTest extends Specification {
         HttpHeadersProvider authHeadersProvider = new AuthHeadersProvider(nestedHeadersProvider, null)
 
         when:
-        Map<String, String> headers = authHeadersProvider.getHeaders(message()).asMap()
+        Map<String, String> headers = authHeadersProvider.getHeaders(message(), rawAddress()).asMap()
 
         then:
         headers.size() == 1

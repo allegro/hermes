@@ -5,6 +5,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
 
+import java.net.URI;
 import java.util.Optional;
 
 public final class AuthHeadersProvider implements HttpHeadersProvider {
@@ -18,11 +19,11 @@ public final class AuthHeadersProvider implements HttpHeadersProvider {
     }
 
     @Override
-    public HttpRequestHeaders getHeaders(Message message) {
+    public HttpRequestHeaders getHeaders(Message message, String rawAddress) {
         ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
 
         if (headersProvider != null) {
-            builder.putAll(headersProvider.getHeaders(message).asMap());
+            builder.putAll(headersProvider.getHeaders(message, rawAddress).asMap());
         }
 
         if (authorizationProvider != null) {

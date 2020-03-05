@@ -5,6 +5,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
+import java.net.URI;
 import java.util.function.Function;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -17,7 +18,7 @@ public final class Http1HeadersProvider implements HttpHeadersProvider {
             AVRO.equals(contentType) ? AVRO_BINARY : APPLICATION_JSON;
 
     @Override
-    public HttpRequestHeaders getHeaders(Message message) {
+    public HttpRequestHeaders getHeaders(Message message, String rawAddress) {
         return new HttpRequestHeaders(
                 ImmutableMap.of(
                         HttpHeader.CONTENT_TYPE.toString(), contentTypeToMediaType.apply(message.getContentType()),

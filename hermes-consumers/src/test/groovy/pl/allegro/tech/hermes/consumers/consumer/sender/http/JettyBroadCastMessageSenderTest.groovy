@@ -22,6 +22,7 @@ import spock.lang.Subject
 
 import java.util.concurrent.TimeUnit
 
+import static java.util.Collections.singleton
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.TEST_MESSAGE_CONTENT
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.testMessage
 
@@ -45,7 +46,8 @@ class JettyBroadCastMessageSenderTest extends Specification {
     @Subject
     JettyBroadCastMessageSender messageSender
 
-    HttpHeadersProvider requestHeadersProvider = new HermesHeadersProvider(new AuthHeadersProvider(new Http1HeadersProvider(), { Optional.empty() }))
+    HttpHeadersProvider requestHeadersProvider = new HermesHeadersProvider(
+            singleton(new AuthHeadersProvider(new Http1HeadersProvider(), { Optional.empty() })))
 
     def setupSpec() throws Exception {
         wireMockServers.forEach { it.start() }
@@ -62,8 +64,9 @@ class JettyBroadCastMessageSenderTest extends Specification {
     def setup() {
         def address = new ResolvableEndpointAddress(endpoint, new MultiUrlEndpointAddressResolver(),
                 EndpointAddressResolverMetadata.empty());
-        def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), requestHeadersProvider)
-        messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address);
+        def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
+        messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
+                requestHeadersProvider);
     }
 
     def "should send message successfully in parallel to all urls"() {
@@ -118,13 +121,16 @@ class JettyBroadCastMessageSenderTest extends Specification {
         future.get(1, TimeUnit.SECONDS).succeeded()
     }
 
-    def "should return not succeded and retry later when endpoint resolver return no hosts"() {
+    def "should return not succeeded and retry later when endpoint resolver return no hosts"() {
         given:
         def address = Stub(ResolvableEndpointAddress) {
-            resolveAllFor(_) >> []
+            resolveAllFor(_ as Message) >> []
+
+            getRawAddress() >> endpoint.getUri()
         }
-        def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender(), requestHeadersProvider)
-        messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address)
+        def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
+        messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
+                requestHeadersProvider)
 
         when:
         def future = messageSender.send(testMessage())

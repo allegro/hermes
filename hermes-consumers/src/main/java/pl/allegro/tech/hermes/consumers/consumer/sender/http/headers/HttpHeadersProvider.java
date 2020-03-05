@@ -4,6 +4,6 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 public interface HttpHeadersProvider {
 
-    HttpRequestHeaders getHeaders(Message message);
+    HttpRequestHeaders getHeaders(Message message, String rawAddress);
 
 }
