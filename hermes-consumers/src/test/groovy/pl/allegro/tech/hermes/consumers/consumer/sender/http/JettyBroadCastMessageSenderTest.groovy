@@ -126,8 +126,9 @@ class JettyBroadCastMessageSenderTest extends Specification {
         def address = Stub(ResolvableEndpointAddress) {
             resolveAllFor(_ as Message) >> []
 
-            getRawAddress() >> endpoint.getUri()
+            getRawAddress() >> endpoint
         }
+
         def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
         messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
                 requestHeadersProvider)

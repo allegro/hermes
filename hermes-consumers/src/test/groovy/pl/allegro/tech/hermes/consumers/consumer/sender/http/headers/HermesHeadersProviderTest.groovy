@@ -2,16 +2,17 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http.headers
 
 import com.google.common.collect.ImmutableSet
 import pl.allegro.tech.hermes.consumers.consumer.Message
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData
 import spock.lang.Specification
 
 import static java.util.Collections.emptyList
 import static java.util.Collections.singleton
 import static java.util.Collections.singletonMap
+import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestHttpRequestData.requestData
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.message
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.messageWithAdditionalHeaders
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.messageWithSchemaVersion
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.messageWithSubscriptionData
-import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestUris.rawAddress
 
 class HermesHeadersProviderTest extends Specification {
 
@@ -20,7 +21,8 @@ class HermesHeadersProviderTest extends Specification {
         HttpHeadersProvider hermesHeadersProvider = new HermesHeadersProvider(emptyList())
 
         when:
-        Map<String, String> headers = hermesHeadersProvider.getHeaders(message(), rawAddress()).asMap()
+        Map<String, String> headers =
+                hermesHeadersProvider.getHeaders(message(), requestData()).asMap()
 
         then:
         headers.size() == 2
@@ -34,7 +36,8 @@ class HermesHeadersProviderTest extends Specification {
 
         when:
         Map<String, String> headers =
-                hermesHeadersProvider.getHeaders(messageWithSubscriptionData(), rawAddress()).asMap()
+                hermesHeadersProvider.getHeaders(messageWithSubscriptionData(), requestData()).
+                        asMap()
 
         then:
         headers.size() == 4
@@ -48,7 +51,7 @@ class HermesHeadersProviderTest extends Specification {
 
         when:
         Map<String, String> headers =
-                hermesHeadersProvider.getHeaders(messageWithSchemaVersion(), rawAddress()).asMap()
+                hermesHeadersProvider.getHeaders(messageWithSchemaVersion(), requestData()).asMap()
 
         then:
         headers.size() == 3
@@ -61,7 +64,8 @@ class HermesHeadersProviderTest extends Specification {
 
         when:
         Map<String, String> headers =
-                hermesHeadersProvider.getHeaders(messageWithAdditionalHeaders(), rawAddress()).asMap()
+                hermesHeadersProvider.getHeaders(messageWithAdditionalHeaders(), requestData()).
+                        asMap()
 
         then:
         headers.size() == 3
@@ -73,7 +77,7 @@ class HermesHeadersProviderTest extends Specification {
         HttpHeadersProvider nestedHeadersProvider = new HttpHeadersProvider() {
 
             @Override
-            HttpRequestHeaders getHeaders(Message message, String rawAddress) {
+            HttpRequestHeaders getHeaders(Message message, HttpRequestData requestData) {
                 return new HttpRequestHeaders(singletonMap("k", "v"))
             }
         }
@@ -82,17 +86,19 @@ class HermesHeadersProviderTest extends Specification {
                 singleton(nestedHeadersProvider))
 
         when:
-        Map<String, String> headers = hermesHeadersProvider.getHeaders(message(), rawAddress()).asMap()
+        Map<String, String> headers =
+                hermesHeadersProvider.getHeaders(message(), requestData()).asMap()
 
         then:
         headers.get("k") == "v"
     }
 
     def "should produce headers appending headers with additional providers"() {
+        given:
         def additionalProviderOne = new HttpHeadersProvider() {
 
             @Override
-            HttpRequestHeaders getHeaders(Message message, String rawAddress) {
+            HttpRequestHeaders getHeaders(Message message, HttpRequestData requestData) {
                 return new HttpRequestHeaders(singletonMap("header-1", "header-1-value"))
             }
         }
@@ -100,18 +106,18 @@ class HermesHeadersProviderTest extends Specification {
         def additionalProviderTwo = new HttpHeadersProvider() {
 
             @Override
-            HttpRequestHeaders getHeaders(Message message, String rawAddress) {
+            HttpRequestHeaders getHeaders(Message message, HttpRequestData requestData) {
                 return new HttpRequestHeaders(singletonMap("header-2", "header-2-value"))
             }
         }
 
-        given:
         HttpHeadersProvider hermesHeadersProvider = new HermesHeadersProvider(
                 ImmutableSet.of(additionalProviderOne, additionalProviderTwo)
         )
 
         when:
-        Map<String, String> headers = hermesHeadersProvider.getHeaders(message(), rawAddress()).asMap()
+        Map<String, String> headers =
+                hermesHeadersProvider.getHeaders(message(), requestData()).asMap()
 
         then:
         headers.get("header-1") == "header-1-value"

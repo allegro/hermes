@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http.headers;
 
 import com.google.common.collect.ImmutableMap;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData;
 
-import java.net.URI;
 import java.util.Collection;
 
 import static java.lang.String.valueOf;
@@ -22,10 +22,10 @@ public final class HermesHeadersProvider implements HttpHeadersProvider {
     }
 
     @Override
-    public HttpRequestHeaders getHeaders(Message message, String rawAddress) {
+    public HttpRequestHeaders getHeaders(Message message, HttpRequestData requestData) {
         ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
 
-        headersProvider.forEach(provider -> builder.putAll(provider.getHeaders(message, rawAddress).asMap()));
+        headersProvider.forEach(provider -> builder.putAll(provider.getHeaders(message, requestData).asMap()));
 
         builder.put(MESSAGE_ID.getName(), message.getId());
         builder.put(RETRY_COUNT.getName(), Integer.toString(message.getRetryCounter()));

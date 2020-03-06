@@ -8,12 +8,12 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData.HttpRequestDataBuilder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeaders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -52,8 +52,12 @@ public class JettyBroadCastMessageSender implements MessageSender {
     }
 
     private List<CompletableFuture<SingleMessageSendingResult>> collectResults(Message message) throws EndpointAddressResolutionException {
-        String rawAddress = endpoint.getRawAddress();
-        HttpRequestHeaders headers = requestHeadersProvider.getHeaders(message, rawAddress);
+
+        final HttpRequestData requestData = new HttpRequestDataBuilder()
+                .withRawAddress(endpoint.getRawAddress())
+                .build();
+
+        HttpRequestHeaders headers = requestHeadersProvider.getHeaders(message, requestData);
 
         return endpoint.resolveAllFor(message).stream()
                 .filter(uri -> message.hasNotBeenSentTo(uri.toString()))

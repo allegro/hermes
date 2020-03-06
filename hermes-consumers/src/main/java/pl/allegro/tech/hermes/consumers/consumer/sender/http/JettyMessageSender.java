@@ -4,6 +4,7 @@ import org.eclipse.jetty.client.api.Request;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData.HttpRequestDataBuilder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeaders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
@@ -29,8 +30,11 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
     @Override
     protected void sendMessage(Message message, final CompletableFuture<MessageSendingResult> resultFuture) {
         try {
-            String rawAddress = addressResolver.getRawAddress();
-            HttpRequestHeaders headers = requestHeadersProvider.getHeaders(message, rawAddress);
+            final HttpRequestData requestData = new HttpRequestDataBuilder()
+                    .withRawAddress(addressResolver.getRawAddress())
+                    .build();
+
+            HttpRequestHeaders headers = requestHeadersProvider.getHeaders(message, requestData);
 
             URI resolvedUri = addressResolver.resolveFor(message);
             Request request = requestFactory.buildRequest(message, resolvedUri, headers);
