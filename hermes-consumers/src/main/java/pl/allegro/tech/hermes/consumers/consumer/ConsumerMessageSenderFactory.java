@@ -81,7 +81,8 @@ public class ConsumerMessageSenderFactory {
                 inflight,
                 hermesMetrics,
                 configFactory.getIntProperty(CONSUMER_SENDER_ASYNC_TIMEOUT_MS),
-                futureAsyncTimeout);
+                futureAsyncTimeout,
+                clock);
     }
 
 }

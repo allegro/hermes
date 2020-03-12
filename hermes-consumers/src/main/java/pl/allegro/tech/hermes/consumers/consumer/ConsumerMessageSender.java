@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogI
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.net.URI;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +30,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 public class ConsumerMessageSender {
 
@@ -38,6 +40,7 @@ public class ConsumerMessageSender {
     private final List<ErrorHandler> errorHandlers;
     private final SerialConsumerRateLimiter rateLimiter;
     private final MessageSenderFactory messageSenderFactory;
+    private final Clock clock;
     private final InflightsPool inflight;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
@@ -60,12 +63,14 @@ public class ConsumerMessageSender {
                                  InflightsPool inflight,
                                  HermesMetrics hermesMetrics,
                                  int asyncTimeoutMs,
-                                 FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout) {
+                                 FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
+                                 Clock clock) {
         this.deliveryReportingExecutor = deliveryReportingExecutor;
         this.successHandlers = successHandlers;
         this.errorHandlers = errorHandlers;
         this.rateLimiter = rateLimiter;
         this.messageSenderFactory = messageSenderFactory;
+        this.clock = clock;
         this.messageSender = messageSenderFactory.create(subscription);
         this.subscription = subscription;
         this.inflight = inflight;
@@ -93,15 +98,24 @@ public class ConsumerMessageSender {
     }
 
     public void sendAsync(Message message) {
-        sendAsync(message, delayForSubscription());
+        sendAsync(message, calculateMessageDelay(message.getPublishingTimestamp()));
     }
 
     private void sendAsync(Message message, int delayMillis) {
         retrySingleThreadExecutor.schedule(() -> sendMessage(message), delayMillis, TimeUnit.MILLISECONDS);
     }
 
-    private int delayForSubscription() {
-        return subscription.getSerialSubscriptionPolicy().getSendingDelay();
+    private int calculateMessageDelay(long publishingMessageTimestamp) {
+        Integer delay = subscription.getSerialSubscriptionPolicy().getSendingDelay();
+        if (INTEGER_ZERO.equals(delay)) {
+            return delay;
+        }
+
+        long messageAgeAtThisPoint = clock.millis() - publishingMessageTimestamp;
+
+        delay = delay - (int) messageAgeAtThisPoint;
+
+        return Math.max(delay, INTEGER_ZERO);
     }
 
     /**
