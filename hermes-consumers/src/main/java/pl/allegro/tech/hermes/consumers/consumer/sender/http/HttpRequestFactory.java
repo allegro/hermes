@@ -5,7 +5,7 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeaders;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import java.net.URI;
@@ -17,38 +17,37 @@ class HttpRequestFactory {
     private final long timeout;
     private final long socketTimeout;
     private final MetadataAppender<Request> metadataAppender;
-    private final HttpHeadersProvider requestHeadersProvider;
 
     HttpRequestFactory(HttpClient client,
                        long timeout,
                        long socketTimeout,
-                       MetadataAppender<Request> metadataAppender,
-                       HttpHeadersProvider requestHeadersProvider) {
+                       MetadataAppender<Request> metadataAppender) {
         this.client = client;
         this.timeout = timeout;
         this.socketTimeout = socketTimeout;
         this.metadataAppender = metadataAppender;
-        this.requestHeadersProvider = requestHeadersProvider;
     }
 
-    Request buildRequest(Message message, URI uri) {
-        return new HttpRequestBuilder(message, uri).build();
+    Request buildRequest(Message message, URI uri, HttpRequestHeaders headers) {
+        return new HttpRequestBuilder(message, uri, headers).build();
     }
 
     private class HttpRequestBuilder {
 
         private final Message message;
         private final URI uri;
+        private final HttpRequestHeaders headers;
 
-        HttpRequestBuilder(Message message, URI uri) {
+        HttpRequestBuilder(Message message, URI uri, HttpRequestHeaders headers) {
             this.message = message;
             this.uri = uri;
+            this.headers = headers;
         }
 
         Request build() {
             Request request = baseRequest();
-            requestHeadersProvider.getHeaders(message)
-                    .asMap()
+
+            headers.asMap()
                     .forEach(request::header);
 
             return request;

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
+import com.google.common.collect.ImmutableSet;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Collection;
 import java.util.Optional;
 
 public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProvider {
@@ -37,6 +39,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private final EndpointAddressResolver endpointAddressResolver;
     private final MetadataAppender<Request> metadataAppender;
     private final HttpAuthorizationProviderFactory authorizationProviderFactory;
+    private final HttpHeadersProvidersFactory httpHeadersProviderFactory;
 
     @Inject
     public JettyHttpMessageSenderProvider(
@@ -44,12 +47,14 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
             Http2ClientHolder http2ClientHolder,
             EndpointAddressResolver endpointAddressResolver,
             MetadataAppender<Request> metadataAppender,
-            HttpAuthorizationProviderFactory authorizationProviderFactory) {
+            HttpAuthorizationProviderFactory authorizationProviderFactory,
+            HttpHeadersProvidersFactory httpHeadersProviderFactory) {
         this.httpClient = httpClient;
         this.http2ClientHolder = http2ClientHolder;
         this.endpointAddressResolver = endpointAddressResolver;
         this.metadataAppender = metadataAppender;
         this.authorizationProviderFactory = authorizationProviderFactory;
+        this.httpHeadersProviderFactory = httpHeadersProviderFactory;
     }
 
     @Override
@@ -61,9 +66,9 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         HttpRequestFactory requestFactory = httpRequestFactory(subscription);
 
         if (subscription.getMode() == SubscriptionMode.BROADCAST) {
-            return new JettyBroadCastMessageSender(requestFactory, resolvableEndpoint);
+            return new JettyBroadCastMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription));
         } else {
-            return new JettyMessageSender(requestFactory, resolvableEndpoint);
+            return new JettyMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription));
         }
     }
 
@@ -75,20 +80,28 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
                 getHttpClient(subscription),
                 requestTimeout,
                 socketTimeout,
-                metadataAppender,
-                getHttpRequestHeadersProvider(subscription)
+                metadataAppender
         );
     }
 
     private HttpHeadersProvider getHttpRequestHeadersProvider(Subscription subscription) {
+        AuthHeadersProvider authProvider = getAuthHeadersProvider(subscription);
+        Collection<HttpHeadersProvider> additionalProviders = httpHeadersProviderFactory.createAll();
+        Collection<HttpHeadersProvider> providers = ImmutableSet.<HttpHeadersProvider>builder()
+                .addAll(additionalProviders)
+                .add(authProvider)
+                .build();
+
+        return new HermesHeadersProvider(providers);
+    }
+
+    private AuthHeadersProvider getAuthHeadersProvider(Subscription subscription) {
         Optional<HttpAuthorizationProvider> authorizationProvider = authorizationProviderFactory.create(subscription);
         HttpHeadersProvider httpHeadersProvider = subscription.isHttp2Enabled() ? http2HeadersProvider : http1HeadersProvider;
 
-        return new HermesHeadersProvider(
-                new AuthHeadersProvider(
-                        httpHeadersProvider,
-                        authorizationProvider.orElse(null)
-                )
+        return new AuthHeadersProvider(
+                httpHeadersProvider,
+                authorizationProvider.orElse(null)
         );
     }
 

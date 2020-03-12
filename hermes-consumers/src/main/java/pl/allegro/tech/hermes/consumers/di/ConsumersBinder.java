@@ -49,11 +49,13 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.EmptyHttpHeadersProvidersFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientHolder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpHeadersProvidersFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
@@ -108,6 +110,7 @@ public class ConsumersBinder extends AbstractBinder {
                 .in(Singleton.class).named("defaultJmsMessageSenderProvider");
         bind(JettyHttpMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
                 .in(Singleton.class).named("defaultHttpMessageSenderProvider");
+        bind(EmptyHttpHeadersProvidersFactory.class).to(HttpHeadersProvidersFactory.class).in(Singleton.class);
 
         bind("consumer").named("moduleName").to(String.class);
 

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http.headers
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestHttpRequestData.requestData
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.message
 
 class Http1HermesHeadersProviderTest extends Specification {
@@ -12,7 +13,7 @@ class Http1HermesHeadersProviderTest extends Specification {
     @Unroll
     def "should contain #header header with correct value for http1"() {
         expect:
-        def headers = http1HeadersProvider.getHeaders(message()).asMap()
+        def headers = http1HeadersProvider.getHeaders(message(), requestData()).asMap()
         headers.get(header) == value
 
         where:

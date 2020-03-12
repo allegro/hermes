@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http.headers
 
 import pl.allegro.tech.hermes.consumers.consumer.Message
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider
 import spock.lang.Specification
 
+import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestHttpRequestData.requestData
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.message
 
 class AuthHeadersProviderTest extends Specification {
@@ -12,10 +14,12 @@ class AuthHeadersProviderTest extends Specification {
 
     def "should produce authorization header when authorization provider is present"() {
         given:
-        HttpHeadersProvider authHeadersProvider = new AuthHeadersProvider(null, authorizationProvider)
+        HttpHeadersProvider authHeadersProvider = new AuthHeadersProvider(null,
+                authorizationProvider)
 
         when:
-        Map<String, String> headers = authHeadersProvider.getHeaders(message()).asMap()
+        Map<String, String> headers =
+                authHeadersProvider.getHeaders(message(), requestData()).asMap()
 
         then:
         headers.size() == 1
@@ -27,7 +31,8 @@ class AuthHeadersProviderTest extends Specification {
         HttpHeadersProvider authHeadersProvider = new AuthHeadersProvider(null, null)
 
         when:
-        Map<String, String> headers = authHeadersProvider.getHeaders(message()).asMap()
+        Map<String, String> headers =
+                authHeadersProvider.getHeaders(message(), requestData()).asMap()
 
         then:
         headers.size() == 0
@@ -36,16 +41,19 @@ class AuthHeadersProviderTest extends Specification {
     def "should forward headers from nested provider"() {
         given:
         HttpHeadersProvider nestedHeadersProvider = new HttpHeadersProvider() {
+
             @Override
-            HttpRequestHeaders getHeaders(Message message) {
+            HttpRequestHeaders getHeaders(Message message, HttpRequestData requestData) {
                 return new HttpRequestHeaders(Collections.singletonMap("k", "v"))
             }
         }
 
-        HttpHeadersProvider authHeadersProvider = new AuthHeadersProvider(nestedHeadersProvider, null)
+        HttpHeadersProvider authHeadersProvider = new AuthHeadersProvider(nestedHeadersProvider,
+                null)
 
         when:
-        Map<String, String> headers = authHeadersProvider.getHeaders(message()).asMap()
+        Map<String, String> headers =
+                authHeadersProvider.getHeaders(message(), requestData()).asMap()
 
         then:
         headers.size() == 1
