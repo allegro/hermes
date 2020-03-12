@@ -2,6 +2,17 @@
 
 ...
 
+## 1.4.1 (12.03.2020)
+
+### Enhancements
+
+#### ([1177](https://github.com/allegro/hermes/pull/1177)) HttpClients can have additional headers set
+
+Additional HTTP headers can be set by providing custom implementation of HttpHeadersProvidersFactory interface.
+
+#### ([1178](https://github.com/allegro/hermes/pull/1178)) Sending delay is calculated based on message publishing timestamp
+
+
 ## 1.4.0 (22.02.2020)
 
 The release contains a lot of improvements created during Hacktoberfest event.
