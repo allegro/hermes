@@ -22,6 +22,7 @@ import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -384,6 +385,30 @@ public class ConsumerMessageSenderTest {
         assertThat(sendingTime).isGreaterThan(500);
     }
 
+    @Test
+    public void shouldCalculateSendingDelayBasingOnPublishingTimestamp() {
+        // given
+        Subscription subscription = subscriptionBuilderWithTestValues()
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
+                        .withSendingDelay(2000)
+                        .build())
+                .build();
+        setUpMetrics(subscription);
+
+        Message message = messageWithTimestamp(System.currentTimeMillis() - 1800);
+        when(messageSender.send(message)).thenReturn(success());
+        ConsumerMessageSender sender = consumerMessageSender(subscription);
+
+        // when
+        long sendingStartTime = System.currentTimeMillis();
+        sender.sendAsync(message);
+        verify(successHandler, timeout(500)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
+
+        // then
+        long sendingTime = System.currentTimeMillis() - sendingStartTime;
+        assertThat(sendingTime).isLessThan(300);
+    }
+
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
         when(messageSenderFactory.create(subscription)).thenReturn(messageSender);
         ConsumerMessageSender sender = new ConsumerMessageSender(
@@ -396,7 +421,8 @@ public class ConsumerMessageSenderTest {
                 () -> inflightSemaphore.release(),
                 hermesMetrics,
                 ASYNC_TIMEOUT_MS,
-                new FutureAsyncTimeout<>(MessageSendingResult::failedResult, Executors.newSingleThreadScheduledExecutor())
+                new FutureAsyncTimeout<>(MessageSendingResult::failedResult, Executors.newSingleThreadScheduledExecutor()),
+                Clock.systemUTC()
         );
         sender.initialize();
 
@@ -508,6 +534,7 @@ public class ConsumerMessageSenderTest {
                 .withTestMessage()
                 .withContent("{\"username\":\"ala\"}", StandardCharsets.UTF_8)
                 .withReadingTimestamp(timestamp)
+                .withPublishingTimestamp(timestamp)
                 .build();
     }
 }
