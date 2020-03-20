@@ -16,11 +16,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.Family.familyOf;
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 public class SingleMessageSendingResult implements MessageSendingResult {
 
@@ -48,7 +49,7 @@ public class SingleMessageSendingResult implements MessageSendingResult {
 
         if (result.getResponse() != null) {
             initializeForStatusCode(result.getResponse().getStatus());
-            if (isStatusCodeServiceUnavailable()) {
+            if (shouldRetryOnStatusCode()) {
                 initializeRetryAfterMillis(result);
             }
         }
@@ -68,7 +69,7 @@ public class SingleMessageSendingResult implements MessageSendingResult {
 
     SingleMessageSendingResult(int statusCode, long retryAfterMillis) {
         initializeForStatusCode(statusCode);
-        if (isStatusCodeServiceUnavailable() && retryAfterMillis >= 0) {
+        if (shouldRetryOnStatusCode() && retryAfterMillis >= 0) {
             this.retryAfterMillis = Optional.of(retryAfterMillis);
         }
     }
@@ -102,11 +103,12 @@ public class SingleMessageSendingResult implements MessageSendingResult {
 
     @Override
     public boolean isRetryLater() {
-        return isStatusCodeServiceUnavailable() && retryAfterMillis.isPresent();
+        return shouldRetryOnStatusCode() && retryAfterMillis.isPresent();
     }
 
-    private boolean isStatusCodeServiceUnavailable() {
-        return getStatusCode() == SERVICE_UNAVAILABLE.getStatusCode();
+    private boolean shouldRetryOnStatusCode() {
+        return getStatusCode() == SERVICE_UNAVAILABLE.code() ||
+                getStatusCode() == TOO_MANY_REQUESTS.code();
     }
 
     @Override
@@ -154,7 +156,7 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     }
 
     private boolean isUnauthorized() {
-        return UNAUTHORIZED.getStatusCode() == getStatusCode();
+        return getStatusCode() == UNAUTHORIZED.code();
     }
 
     @Override
