@@ -128,10 +128,10 @@ with new status name in body (quotation marks are important!):
 Hermes treats any response with **2xx** status code as successful delivery (e.g. 200 or 201).
 
 Responses with **5xx** status code or any network issues (e.g. connection timeout) are treated as failures, unless it
-is **503** code, described in [back pressure section](#back-pressure).
+is **503** (or **429**) code, described in [back pressure section](#back-pressure).
 
-Responses with **4xx** status code are treated as failures, but by default they are not retried. This is because
-usually when subscriber responds with *400 Bad Message* it means this message is somehow invalid and will never be parsed,
+Responses with **4xx** status code are treated as failures (except **429**, see above), but by default they are not retried. 
+This is because usually when subscriber responds with *400 Bad Message* it means this message is somehow invalid and will never be parsed,
 no matter how many times Hermes would try to deliver it. This behavior can be changed using **retryClientErrors**
 flag on subscription.
 
@@ -178,8 +178,8 @@ This counter will reset when:
 The client is able to signal it can't handle the message at the moment and Hermes Consumer will retry delivery after
 minimum of given delay.
 
-The endpoint can return **Retry-After** header, with the amount of seconds to backoff, combined with status **503**. This
-is the only case when returning **5xx** code does not result in slowing down the overall [sending speed](#rate-limiting).
+The endpoint can return **Retry-After** header, with the amount of seconds to backoff, combined with status **429** or **503**. This
+is the only case when returning **4xx** or **5xx** code does not result in slowing down the overall [sending speed](#rate-limiting).
 
 Regardless of the provided delay, the **Inflight TTL** of the message still applies in this situation,
 therefore the endpoint needs to ensure the total delay of consecutive **Retry-After** responses does not exceed this value.
