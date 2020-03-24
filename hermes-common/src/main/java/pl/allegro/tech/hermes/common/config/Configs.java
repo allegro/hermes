@@ -188,6 +188,8 @@ public enum Configs {
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE("consumer.sender.async.timeout.thread.pool.size", 32),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING("consumer.sender.async.timeout.thread.pool.monitoring", false),
     CONSUMER_THREAD_POOL_SIZE("consumer.thread.pool.size", 500),
+    CONSUMER_HTTP_CLIENT_CONNECTION_POOL_MONITORING_ENABLED("consumer.http.client.connection.pool.monitoring.enabled", false),
+    CONSUMER_HTTP_CLIENT_REQUEST_QUEUE_MONITORING_ENABLED("consumer.http.client.request.queue.monitoring.enabled", true),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE("consumer.http.client.thread.pool.size", 30),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING("consumer.http.client.thread.pool.monitoring", false),
     CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS("consumer.http.client.follow.redirects", false),
