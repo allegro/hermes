@@ -12,14 +12,15 @@ import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_MAX_REQUESTS_QUEUED_PER_DESTINATION;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_THREAD_POOL_MONITORING;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_THREAD_POOL_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_IDLE_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_MAX_REQUESTS_QUEUED_PER_DESTINATION;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
 
 public class HttpClientsFactory {
 
@@ -44,7 +45,7 @@ public class HttpClientsFactory {
 
         HttpClient client = new HttpClient(createSslContextFactory());
         client.setMaxConnectionsPerDestination(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION));
-        client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE));
+        client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_MAX_REQUESTS_QUEUED_PER_DESTINATION));
         client.setExecutor(executor);
         client.setCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_IDLE_TIMEOUT));
@@ -63,7 +64,7 @@ public class HttpClientsFactory {
         HttpClientTransportOverHTTP2 transport = new HttpClientTransportOverHTTP2(http2Client);
 
         HttpClient client = new HttpClient(transport, createSslContextFactory());
-        client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE));
+        client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_HTTP2_CLIENT_MAX_REQUESTS_QUEUED_PER_DESTINATION));
         client.setCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(configFactory.getIntProperty(CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT));
         client.setFollowRedirects(configFactory.getBooleanProperty(CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS));
