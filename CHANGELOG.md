@@ -2,6 +2,19 @@
 
 ...
 
+## 1.4.2 (24.03.2020)
+
+### Bugfixes
+
+### Enhancements
+
+#### ([1183](https://github.com/allegro/hermes/pull/1183)) Retry on HTTP 429 Too many requests code
+
+From now Hermes provides back pressure mechanism relaying only on 503 and new 429 http status header.
+
+#### ([1180](https://github.com/allegro/hermes/pull/1180)) Fix subscription latency URL
+#### ([1182](https://github.com/allegro/hermes/pull/1182)) Restoring node command in th path
+
 ## 1.4.1 (12.03.2020)
 
 ### Enhancements
