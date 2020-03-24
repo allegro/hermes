@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
 import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
@@ -42,6 +43,10 @@ public interface MessageSendingResult {
 
     static SingleMessageSendingResult retryAfter(int seconds) {
         return new SingleMessageSendingResult(SERVICE_UNAVAILABLE.getStatusCode(), TimeUnit.SECONDS.toMillis(seconds));
+    }
+
+    static SingleMessageSendingResult tooManyRequests(int seconds) {
+        return new SingleMessageSendingResult(TOO_MANY_REQUESTS.code(), TimeUnit.SECONDS.toMillis(seconds));
     }
 
     static SingleMessageSendingResult of(Result result) {

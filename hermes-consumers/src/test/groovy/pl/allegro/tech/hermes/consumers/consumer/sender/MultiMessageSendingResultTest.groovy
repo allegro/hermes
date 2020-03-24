@@ -5,16 +5,30 @@ import spock.lang.Specification
 import java.util.concurrent.TimeoutException
 
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.loggedFailResult
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.ofStatusCode
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.retryAfter
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult
+import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.tooManyRequests
 
 class MultiMessageSendingResultTest extends Specification {
 
     def "should get minimal retry time from children"() {
         given:
         def children = timeouts.collect { t -> retryAfter(t) }
+
+        expect:
+        new MultiMessageSendingResult(children).getRetryAfterMillis().get() == 1000L * expectedRetryAfter
+
+        where:
+        timeouts  | expectedRetryAfter
+        [1, 2, 3] | 1
+        [2]       | 2
+        [1, 1, 1] | 1
+    }
+
+    def "should get minimal retry time from children for too many requests"() {
+        given:
+        def children = timeouts.collect { t -> tooManyRequests(t) }
 
         expect:
         new MultiMessageSendingResult(children).getRetryAfterMillis().get() == 1000L * expectedRetryAfter
@@ -45,6 +59,14 @@ class MultiMessageSendingResultTest extends Specification {
     def "should return retry later if any of children has retry later"() {
         given:
         def children = [retryAfter(1), ofStatusCode(200)]
+
+        expect:
+        new MultiMessageSendingResult(children).isRetryLater()
+    }
+
+    def "should return retry later if any of children has too many requests"() {
+        given:
+        def children = [tooManyRequests(1), ofStatusCode(200)]
 
         expect:
         new MultiMessageSendingResult(children).isRetryLater()
@@ -98,7 +120,7 @@ class MultiMessageSendingResultTest extends Specification {
 
         expect:
         messageSendingResult.getLogInfo().rootCause == ["error1", "error2"]
-        messageSendingResult.getLogInfo().url.value.collect{it.toString()} == ["http://url1", "http://url2"]
+        messageSendingResult.getLogInfo().url.value.collect { it.toString() } == ["http://url1", "http://url2"]
         messageSendingResult.getLogInfo().failure.message == ["exception1", "exception2"]
     }
 

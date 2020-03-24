@@ -27,7 +27,8 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -298,13 +299,27 @@ public class ConsumerMessageSenderTest {
     public void shouldBackoffRetriesOnServiceUnavailableWithoutRetryAfter() throws InterruptedException {
         // given
         Message message = message();
-        doReturn(failure(SERVICE_UNAVAILABLE.getStatusCode())).doReturn(success()).when(messageSender).send(message);
+        doReturn(failure(SERVICE_UNAVAILABLE.code())).doReturn(success()).when(messageSender).send(message);
 
         // when
         sender.sendAsync(message);
 
         // then
         verifyRateLimiterFailedSendingCountedTimes(1);
+        verifyRateLimiterSuccessfulSendingCountedTimes(1);
+        verifySemaphoreReleased();
+    }
+
+    @Test
+    public void shouldBackoffRetriesOnTooManyRequestsWithoutRetryAfter() throws InterruptedException {
+        // given
+        Message message = message();
+        doReturn(failure(TOO_MANY_REQUESTS.code())).doReturn(success()).when(messageSender).send(message);
+
+        // when
+        sender.sendAsync(message);
+
+        // then
         verifyRateLimiterSuccessfulSendingCountedTimes(1);
         verifySemaphoreReleased();
     }
