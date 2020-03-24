@@ -4,6 +4,7 @@ import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.client.HttpDestination
 import org.eclipse.jetty.client.HttpExchange
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
 import spock.lang.Specification
 
 import java.util.concurrent.LinkedBlockingQueue
@@ -26,7 +27,7 @@ class HttpClientsWorkloadReporterTest extends Specification {
         def http2Client = Mock(HttpClient)
         http2Client.getDestinations() >> [http2Destination]
 
-        def reporter = new HttpClientsWorkloadReporter(Mock(HermesMetrics), http1Client, new Http2ClientHolder(http2Client))
+        def reporter = new HttpClientsWorkloadReporter(Mock(HermesMetrics), http1Client, new Http2ClientHolder(http2Client), new MutableConfigFactory())
 
         expect:
         reporter.queuesSize == 6
@@ -44,7 +45,7 @@ class HttpClientsWorkloadReporterTest extends Specification {
         def http1Client = Mock(HttpClient)
         http1Client.getDestinations() >> [http1Destination1, http1Destination2]
 
-        def reporter = new HttpClientsWorkloadReporter(Mock(HermesMetrics), http1Client, new Http2ClientHolder(null))
+        def reporter = new HttpClientsWorkloadReporter(Mock(HermesMetrics), http1Client, new Http2ClientHolder(null), new MutableConfigFactory())
 
         expect:
         reporter.queuesSize == 3
