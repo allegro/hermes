@@ -2,6 +2,22 @@
 
 ...
 
+## 1.4.3 (24.03.2020)
+
+### Enhancements
+
+#### ([1186](https://github.com/allegro/hermes/pull/1186)) Added metrics for http client connection pool
+
+Added http connection pool monitoring. By default it’s disabled, can be enabled by flag:
+
+`consumer.http.client.connection.pool.monitoring.enabled=true`
+
+#### ([1188](https://github.com/allegro/hermes/pull/1188)) Max requests queued per destination config param for http clients
+
+`consumer.inflight.size` is no longer used in HTTP clients configuration as max requests queued
+ per destination. Instead, `consumer.http.client.max.connections.per.destination` and `consumer
+ .http2.client.max.connections.per.destination` can be used to configure that parameter.
+
 ## 1.4.2 (24.03.2020)
 
 ### Bugfixes
