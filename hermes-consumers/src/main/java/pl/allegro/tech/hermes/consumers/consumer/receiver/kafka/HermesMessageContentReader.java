@@ -7,22 +7,22 @@ import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 
-public class DefaultMessageContentReader implements MessageContentReader {
+public class HermesMessageContentReader implements MessageContentReader {
 
     private final MessageContentWrapper messageContentWrapper;
     private final KafkaHeaderExtractor kafkaHeaderExtractor;
     private final Topic topic;
 
-    public DefaultMessageContentReader(MessageContentWrapper messageContentWrapper,
-                                       KafkaHeaderExtractor kafkaHeaderExtractor,
-                                       Topic topic) {
+    public HermesMessageContentReader(MessageContentWrapper messageContentWrapper,
+                                      KafkaHeaderExtractor kafkaHeaderExtractor,
+                                      Topic topic) {
         this.messageContentWrapper = messageContentWrapper;
         this.kafkaHeaderExtractor = kafkaHeaderExtractor;
         this.topic = topic;
     }
 
     @Override
-    public UnwrappedMessageContent unwrap(ConsumerRecord<byte[], byte[]> message, ContentType contentType) {
+    public UnwrappedMessageContent read(ConsumerRecord<byte[], byte[]> message, ContentType contentType) {
         if (contentType == ContentType.AVRO) {
             Integer schemaVersion = kafkaHeaderExtractor.extractSchemaVersion(message.headers());
             return messageContentWrapper.unwrapAvro(message.value(), topic, schemaVersion);

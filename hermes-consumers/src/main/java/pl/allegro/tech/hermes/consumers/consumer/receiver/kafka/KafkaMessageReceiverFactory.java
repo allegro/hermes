@@ -7,7 +7,6 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
@@ -32,7 +31,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_RECEIVER_MAX
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final ConfigFactory configs;
-    private final MessageContentWrapper messageContentWrapper;
+    private final MessageContentReaderFactory messageContentReaderFactory;
     private final HermesMetrics hermesMetrics;
     private OffsetQueue offsetQueue;
     private final Clock clock;
@@ -40,21 +39,19 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final FilterChainFactory filterChainFactory;
     private final Trackers trackers;
     private final ConsumerPartitionAssignmentState consumerPartitionAssignmentState;
-    private final KafkaHeaderExtractor kafkaHeaderExtractor;
 
     @Inject
     public KafkaMessageReceiverFactory(ConfigFactory configs,
-                                       MessageContentWrapper messageContentWrapper,
+                                       MessageContentReaderFactory messageContentReaderFactory,
                                        HermesMetrics hermesMetrics,
                                        OffsetQueue offsetQueue,
                                        Clock clock,
                                        KafkaNamesMapper kafkaNamesMapper,
                                        FilterChainFactory filterChainFactory,
                                        Trackers trackers,
-                                       ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
-                                       KafkaHeaderExtractor kafkaHeaderExtractor) {
+                                       ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
         this.configs = configs;
-        this.messageContentWrapper = messageContentWrapper;
+        this.messageContentReaderFactory = messageContentReaderFactory;
         this.hermesMetrics = hermesMetrics;
         this.offsetQueue = offsetQueue;
         this.clock = clock;
@@ -62,7 +59,6 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         this.filterChainFactory = filterChainFactory;
         this.trackers = trackers;
         this.consumerPartitionAssignmentState = consumerPartitionAssignmentState;
-        this.kafkaHeaderExtractor = kafkaHeaderExtractor;
     }
 
     @Override
@@ -72,7 +68,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
         MessageReceiver receiver = new KafkaSingleThreadedMessageReceiver(
                 createKafkaConsumer(topic, subscription),
-                messageContentWrapper,
+                messageContentReaderFactory.provide(topic),
                 hermesMetrics,
                 kafkaNamesMapper,
                 topic,
@@ -80,8 +76,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 clock,
                 configs.getIntProperty(Configs.CONSUMER_RECEIVER_POOL_TIMEOUT),
                 configs.getIntProperty(Configs.CONSUMER_RECEIVER_READ_QUEUE_CAPACITY),
-                consumerPartitionAssignmentState,
-                kafkaHeaderExtractor);
+                consumerPartitionAssignmentState);
 
 
         if (configs.getBooleanProperty(Configs.CONSUMER_RECEIVER_WAIT_BETWEEN_UNSUCCESSFUL_POLLS)) {

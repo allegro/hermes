@@ -127,7 +127,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
     private Message convertToMessage(ConsumerRecord<byte[], byte[]> record) {
         KafkaTopic kafkaTopic = topics.get(record.topic());
-        UnwrappedMessageContent unwrappedContent = messageContentReader.unwrap(record, kafkaTopic.contentType());
+        UnwrappedMessageContent unwrappedContent = messageContentReader.read(record, kafkaTopic.contentType());
         long currentTerm = partitionAssignmentState.currentTerm(subscription.getQualifiedName());
         return new Message(
                 unwrappedContent.getMessageMetadata().getId(),
