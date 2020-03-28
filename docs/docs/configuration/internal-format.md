@@ -31,3 +31,33 @@ Messages with metadata have following format:
 
 Hermes metadata is stored in `__metadata` field, which is specified as map of optional elements. It will always contain
 ``id`` and ``timestamp``.
+
+## Custom reading internal messages
+
+Hermes allows to provide custom implementation of reading Kafka records, for example for reading metadata from Kafka headers.
+
+```java
+class CustomMessageContentReader implements MessageContentReader {
+    @Override
+    public UnwrappedMessageContent read(ConsumerRecord<byte[], byte[]> message, ContentType contentType) {
+        // custom implementation of reading consumer record
+    }
+}
+
+class CustomMessageContentReaderFactory implements MessageContentReaderFactory {
+    @Override
+    public MessageContentReader provide(Topic topic) {
+        return new CustomMessageContentReader();
+    }
+}
+
+class CustomHermesConsumers {
+    public static void main(String[] args) {
+        MessageContentReaderFactory factory = new CustomMessageContentReaderFactory();
+        HermesConsumers hermesConsumers = HermesConsumers.consumers()
+                .withMessageContentReaderFactory(factory)
+                .build();
+        hermesConsumers.start();
+    }
+}
+```
