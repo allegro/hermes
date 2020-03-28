@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.consumers.consumer.filtering.SubscriptionMessageFi
 import pl.allegro.tech.hermes.consumers.consumer.filtering.avro.AvroPathSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.header.HeaderSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.json.JsonPathSubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
 import pl.allegro.tech.hermes.consumers.di.TrackersBinder;
@@ -98,6 +99,10 @@ public final class HermesConsumersBuilder {
 
     public HermesConsumersBuilder withKafkaTopicsNamesMapper(KafkaNamesMapper kafkaNamesMapper) {
         return withBinding(kafkaNamesMapper, KafkaNamesMapper.class);
+    }
+
+    public HermesConsumersBuilder withMessageContentReaderFactory(MessageContentReaderFactory messageContentReaderFactory) {
+        return withBinding(messageContentReaderFactory, MessageContentReaderFactory.class);
     }
 
     public <T> HermesConsumersBuilder withBinding(T instance, Class<T> clazz) {
