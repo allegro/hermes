@@ -27,10 +27,35 @@ Messages with metadata have following format:
 }
 ```
 
-## Avro *[incubating]*
+## Avro
 
 Hermes metadata is stored in `__metadata` field, which is specified as map of optional elements. It will always contain
 ``id`` and ``timestamp``.
+
+```json
+{
+  "type": "record",
+  "name": "SomeTopic",
+  "namespace": "pl.allegro.hermes",
+  "doc": "Schema of some event",
+  "fields": [
+    {
+      "name": "__metadata",
+      "type": [
+        "null",
+        {
+          "type": "map",
+          "values": "string"
+        }
+      ],
+      "doc": "Field used to propagate metadata like id and timestamp",
+      "default": null
+    },
+    // other event fields
+  ]
+}
+```
+
 
 ## Custom reading internal messages
 
