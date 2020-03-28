@@ -41,7 +41,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistryFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.HermesMessageContentReaderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.BasicMessageContentReaderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaHeaderExtractor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
@@ -106,7 +106,7 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(ConsumerHttpServer.class);
 
         bind(KafkaMessageReceiverFactory.class).in(Singleton.class).to(ReceiverFactory.class);
-        bind(HermesMessageContentReaderFactory.class).in(Singleton.class).to(MessageContentReaderFactory.class);
+        bind(BasicMessageContentReaderFactory.class).in(Singleton.class).to(MessageContentReaderFactory.class);
         bind(MessageBodyInterpolator.class).in(Singleton.class).to(UriInterpolator.class);
         bind(InterpolatingEndpointAddressResolver.class).to(EndpointAddressResolver.class).in(Singleton.class);
         bind(JmsHornetQMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
