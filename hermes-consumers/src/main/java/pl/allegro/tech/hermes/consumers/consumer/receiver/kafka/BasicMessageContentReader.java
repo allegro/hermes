@@ -7,13 +7,13 @@ import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 
-public class BasicMessageContentReader implements MessageContentReader {
+class BasicMessageContentReader implements MessageContentReader {
 
     private final MessageContentWrapper messageContentWrapper;
     private final KafkaHeaderExtractor kafkaHeaderExtractor;
     private final Topic topic;
 
-    public BasicMessageContentReader(MessageContentWrapper messageContentWrapper,
+    BasicMessageContentReader(MessageContentWrapper messageContentWrapper,
                                      KafkaHeaderExtractor kafkaHeaderExtractor,
                                      Topic topic) {
         this.messageContentWrapper = messageContentWrapper;
