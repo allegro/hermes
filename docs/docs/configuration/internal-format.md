@@ -56,10 +56,12 @@ Hermes metadata is stored in `__metadata` field, which is specified as map of op
 }
 ```
 
-
 ## Custom reading internal messages
 
 Hermes allows to provide custom implementation of reading Kafka records, for example for reading metadata from Kafka headers.
+
+To do this, implement the interfaces `MessageContentReader` and `MessageContentReaderFactory`
+and inject the implementation of `MessageContentReaderFactory` into the builder.
 
 ```java
 class CustomMessageContentReader implements MessageContentReader {
@@ -76,7 +78,7 @@ class CustomMessageContentReaderFactory implements MessageContentReaderFactory {
     }
 }
 
-class CustomHermesConsumers {
+public class CustomHermesConsumers {
     public static void main(String[] args) {
         MessageContentReaderFactory factory = new CustomMessageContentReaderFactory();
         HermesConsumers hermesConsumers = HermesConsumers.consumers()
