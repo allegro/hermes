@@ -237,28 +237,6 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnBadRequestResponseOnMissingMetadataFieldInSchema() {
-        // given
-        Schema schema = AvroUserSchemaLoader.load("/schema/user.avsc");
-        Topic topic = randomTopic("pl.allegro.test", "Topic")
-                .withContentType(AVRO)
-                .build();
-        operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
-
-        Schema schemaWithoutMetadata = AvroUserSchemaLoader.load("/schema/user_no_metadata.avsc");
-        management.schema().save(topic.getQualifiedName(), false, schemaWithoutMetadata.toString());
-
-        // when
-        Response response = publisher.publish(topic.getQualifiedName(), user.asJson());
-
-        // then
-        assertThat(response).hasStatus(BAD_REQUEST);
-        assertThat(response.readEntity(String.class))
-                .isEqualTo("{\"message\":\"Schema does not contain mandatory __metadata field for Hermes internal metadata. " +
-                        "Please fix topic schema.\",\"code\":\"AVRO_SCHEMA_INVALID_METADATA\"}");
-    }
-
-    @Test
     public void shouldPublishJsonIncompatibleWithSchemaWhileJsonToAvroDryRunModeIsEnabled() {
         // given
         Topic topic = randomTopic("jsonToAvroDryRun", "topic")
