@@ -196,24 +196,12 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldGetBadRequestForJsonNotMachingWithAvroSchema() {
         // given
-        Topic topic = topic("pl.allegro", "Foo").withContentType(AVRO).build();
-        String schema = "{\n" +
-                "    \"namespace\": \"pl.allegro\",\n" +
-                "    \"type\": \"record\",\n" +
-                "    \"name\": \"Foo\",\n" +
-                "    \"fields\": [\n" +
-                "        {\n" +
-                "              \"name\": \"__metadata\",\n" +
-                "              \"type\": [\"null\", {\"type\": \"map\", \"values\": \"string\"}],\n" +
-                "              \"default\": null\n" +
-                "        },\n" +
-                "        {\"name\": \"field_int\", \"type\": \"int\"}\n" +
-                "    ]\n" +
-                "}";
-        operations.buildTopicWithSchema(topicWithSchema(topic, schema));
+        Topic topic = topic("pl.allegro", "User").withContentType(AVRO).build();
+        Schema schema = AvroUserSchemaLoader.load("/schema/user.avsc");
+        operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
 
         // when
-        String message = "{\"__metadata\":null,\"field_int\":\"incorrect value\"}";
+        String message = "{\"__metadata\":null,\"name\":\"john\",\"age\":\"string instead of int\"}";
         Response response = publisher.publish(topic.getQualifiedName(), message, singletonMap("Content-Type", AVRO_JSON));
 
         // then
