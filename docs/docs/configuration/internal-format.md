@@ -27,7 +27,64 @@ Messages with metadata have following format:
 }
 ```
 
-## Avro *[incubating]*
+## Avro
 
 Hermes metadata is stored in `__metadata` field, which is specified as map of optional elements. It will always contain
 ``id`` and ``timestamp``.
+
+```json
+{
+  "type": "record",
+  "name": "SomeTopic",
+  "namespace": "pl.allegro.hermes",
+  "doc": "Schema of some event",
+  "fields": [
+    {
+      "name": "__metadata",
+      "type": [
+        "null",
+        {
+          "type": "map",
+          "values": "string"
+        }
+      ],
+      "doc": "Field used to propagate metadata like id and timestamp",
+      "default": null
+    },
+    // other event fields
+  ]
+}
+```
+
+## Custom reading internal messages
+
+Hermes allows to provide custom implementation of reading Kafka records, for example for reading metadata from Kafka headers.
+
+To do this, implement the interfaces `MessageContentReader` and `MessageContentReaderFactory`
+and inject the implementation of `MessageContentReaderFactory` into the builder.
+
+```java
+class CustomMessageContentReader implements MessageContentReader {
+    @Override
+    public UnwrappedMessageContent read(ConsumerRecord<byte[], byte[]> message, ContentType contentType) {
+        // custom implementation of reading consumer record
+    }
+}
+
+class CustomMessageContentReaderFactory implements MessageContentReaderFactory {
+    @Override
+    public MessageContentReader provide(Topic topic) {
+        return new CustomMessageContentReader();
+    }
+}
+
+public class CustomHermesConsumers {
+    public static void main(String[] args) {
+        MessageContentReaderFactory factory = new CustomMessageContentReaderFactory();
+        HermesConsumers hermesConsumers = HermesConsumers.consumers()
+                .withMessageContentReaderFactory(factory)
+                .build();
+        hermesConsumers.start();
+    }
+}
+```
