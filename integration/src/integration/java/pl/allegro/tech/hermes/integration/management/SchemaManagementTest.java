@@ -14,8 +14,6 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopi
 
 public class SchemaManagementTest extends IntegrationTest {
 
-    private static final String EXAMPLE_SCHEMA = "\"string\"";
-
     private static final String SCHEMA_V1 = AvroUserSchemaLoader.load().toString();
 
     private static final String SCHEMA_V2 = AvroUserSchemaLoader.load("/schema/user_v2.avsc").toString();
@@ -46,13 +44,13 @@ public class SchemaManagementTest extends IntegrationTest {
     public void shouldReturnSchemaForTopic() {
         // given
         Topic topic = randomTopic("schemaGroup2", "schemaTopic2").withContentType(AVRO).build();
-        operations.buildTopicWithSchema(topicWithSchema(topic, EXAMPLE_SCHEMA));
+        operations.buildTopicWithSchema(topicWithSchema(topic, SCHEMA_V1));
 
         // when
         Response response = management.schema().get(topic.getQualifiedName());
 
         // then
-        assertThat(response.readEntity(String.class)).isEqualTo(EXAMPLE_SCHEMA);
+        assertThat(response.readEntity(String.class)).isEqualTo(SCHEMA_V1);
     }
 
     @Test
@@ -68,7 +66,7 @@ public class SchemaManagementTest extends IntegrationTest {
     public void shouldSuccessfullyRemoveSchemaWhenSchemaRemovingIsEnabled() {
         // given
         Topic topic = randomTopic("avroGroup", "avroTopic").withContentType(AVRO).build();
-        operations.buildTopicWithSchema(topicWithSchema(topic, EXAMPLE_SCHEMA));
+        operations.buildTopicWithSchema(topicWithSchema(topic, SCHEMA_V1));
 
         // when
         Response response = management.schema().delete(topic.getQualifiedName());
@@ -81,7 +79,7 @@ public class SchemaManagementTest extends IntegrationTest {
     public void shouldNotSaveInvalidAvroSchema() {
         // given
         Topic topic = randomTopic("avroGroup", "avroTopic").withContentType(AVRO).build();
-        operations.buildTopicWithSchema(topicWithSchema(topic, EXAMPLE_SCHEMA));
+        operations.buildTopicWithSchema(topicWithSchema(topic, SCHEMA_V1));
 
         // when
         Response response = management.schema().save(topic.getQualifiedName(), "{");
@@ -96,7 +94,7 @@ public class SchemaManagementTest extends IntegrationTest {
         Topic topic = operations.buildTopic(randomTopic("someGroup", "jsonTopic").build());
 
         // when
-        Response response = management.schema().save(topic.getQualifiedName(), true, EXAMPLE_SCHEMA);
+        Response response = management.schema().save(topic.getQualifiedName(), true, SCHEMA_V1);
 
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
