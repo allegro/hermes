@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
-import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -44,7 +43,6 @@ import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader.load;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PublishingAvroTest extends IntegrationTest {
 
@@ -196,7 +194,7 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldGetBadRequestForJsonNotMachingWithAvroSchema() {
         // given
-        Topic topic = topic("pl.allegro", "User").withContentType(AVRO).build();
+        Topic topic = randomTopic("pl.allegro", "User").withContentType(AVRO).build();
         Schema schema = AvroUserSchemaLoader.load("/schema/user.avsc");
         operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
 
@@ -241,11 +239,14 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldReturnBadRequestResponseOnMissingMetadataFieldInSchema() {
         // given
-        Schema schema = AvroUserSchemaLoader.load("/schema/user_no_metadata.avsc");
+        Schema schema = AvroUserSchemaLoader.load("/schema/user.avsc");
         Topic topic = randomTopic("pl.allegro.test", "Topic")
                 .withContentType(AVRO)
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
+
+        Schema schemaWithoutMetadata = AvroUserSchemaLoader.load("/schema/user_no_metadata.avsc");
+        management.schema().save(topic.getQualifiedName(), false, schemaWithoutMetadata.toString());
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), user.asJson());
