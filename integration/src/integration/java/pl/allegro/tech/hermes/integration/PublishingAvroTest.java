@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
+import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -43,6 +44,7 @@ import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader.load;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PublishingAvroTest extends IntegrationTest {
 
@@ -194,15 +196,30 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldGetBadRequestForJsonNotMachingWithAvroSchema() {
         // given
-        Topic topic = randomTopic("avro.topic", "forinvalidjson").withContentType(AVRO).build();
-        operations.buildTopicWithSchema(topicWithSchema(topic, "{\"type\" : \"record\",\"name\" : \"testSchema\",\"fields\" : [{\"name\" : \"field_integer\",\"type\" : \"int\"}]}\n"));
+        Topic topic = topic("pl.allegro", "Foo").withContentType(AVRO).build();
+        String schema = "{\n" +
+                "    \"namespace\": \"pl.allegro\",\n" +
+                "    \"type\": \"record\",\n" +
+                "    \"name\": \"Foo\",\n" +
+                "    \"fields\": [\n" +
+                "        {\n" +
+                "              \"name\": \"__metadata\",\n" +
+                "              \"type\": [\"null\", {\"type\": \"map\", \"values\": \"string\"}],\n" +
+                "              \"default\": null\n" +
+                "        },\n" +
+                "        {\"name\": \"field_int\", \"type\": \"int\"}\n" +
+                "    ]\n" +
+                "}";
+        operations.buildTopicWithSchema(topicWithSchema(topic, schema));
 
         // when
-        Response response = publisher.publish(topic.getQualifiedName(), "{\"__metadata\":null,\"field_integer\": \"foobar\"}", singletonMap("Content-Type", AVRO_JSON));
+        String message = "{\"__metadata\":null,\"field_int\":\"incorrect value\"}";
+        Response response = publisher.publish(topic.getQualifiedName(), message, singletonMap("Content-Type", AVRO_JSON));
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
-        assertThat(response.readEntity(String.class)).isEqualTo("{\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\",\"code\":\"VALIDATION_ERROR\"}");
+        assertThat(response.readEntity(String.class))
+                .isEqualTo("{\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\",\"code\":\"VALIDATION_ERROR\"}");
     }
 
     @Test
