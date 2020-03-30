@@ -123,7 +123,7 @@ public class TopicService {
 
     private void validateSchema(boolean shouldValidate, TopicWithSchema topicWithSchema, Topic topic) {
         if (shouldValidate) {
-            schemaService.validateSchema(topic.getName(), topicWithSchema.getSchema());
+            schemaService.validateSchema(topic, topicWithSchema.getSchema());
             boolean schemaAlreadyRegistered = schemaService.getSchema(topic.getQualifiedName()).isPresent();
             if (schemaAlreadyRegistered) {
                 throw new TopicSchemaExistsException(topic.getQualifiedName());
@@ -134,7 +134,7 @@ public class TopicService {
     private void registerAvroSchema(boolean shouldRegister, TopicWithSchema topicWithSchema, String createdBy) {
         if (shouldRegister) {
             try {
-                schemaService.registerSchema(topicWithSchema.getTopic(), topicWithSchema.getSchema(), true);
+                schemaService.registerSchema(topicWithSchema.getTopic(), topicWithSchema.getSchema());
             } catch (Exception e) {
                 logger.error("Rolling back topic {} creation due to schema registration error", topicWithSchema.getQualifiedName(), e);
                 removeTopic(topicWithSchema.getTopic(), createdBy);
@@ -194,10 +194,9 @@ public class TopicService {
 
     public void updateTopicWithSchema(TopicName topicName, PatchData patch, String modifiedBy) {
         Topic topic = getTopicDetails(topicName);
-        boolean validateAvroSchema = AVRO.equals(topic.getContentType());
         extractSchema(patch)
                 .ifPresent(schema -> {
-                    schemaService.registerSchema(topic, schema, validateAvroSchema);
+                    schemaService.registerSchema(topic, schema);
                     scheduleTouchTopic(topicName);
                 });
         updateTopic(topicName, patch, modifiedBy);
