@@ -73,7 +73,7 @@ hermesClient.publish(
 );
 ```
 
-Publication reuslts in returning `HermesResponse` object:
+Publication results in returning `HermesResponse` object:
 
 ```java
 CompletableFuture<HermesResponse> result = client.publish("group.topic", "{}");
