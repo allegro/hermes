@@ -2,6 +2,26 @@
 
 ...
 
+## 1.4.4 (31.03.2020)
+
+### Enhancements
+
+#### ([1192](https://github.com/allegro/hermes/pull/1192)) Schema `__metadata` field validation
+
+Hermes Management does not allow to save topic with an invalid Avro schemas:
+- schema without field __metadata
+- schema with field __metadata that declares types other than hermes specifies in documentation, for example `java.avro.string`
+
+#### ([1189](https://github.com/allegro/hermes/pull/1189)) Unwrapping message content interface
+
+This change introduce the interfaces `MessageContentReader` and `MessageContentReaderFactory`.
+
+These interfaces allow to provide custom implementation of reading Kafka records, for example for reading metadata from Kafka headers.
+
+It can be useful when you publish messages directly on Kafka and use only consuming module from Hermes.
+
+For more information, see the [docs](https://hermes-pubsub.readthedocs.io/en/latest/configuration/internal-format/#custom-reading-internal-messages).
+
 ## 1.4.3 (24.03.2020)
 
 ### Enhancements
