@@ -26,6 +26,7 @@ dependencies {
     compile group: 'org.javers', name: 'javers-core', version: '5.2.5'
 
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
 
     testCompile project(':hermes-test-helper')
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.spring

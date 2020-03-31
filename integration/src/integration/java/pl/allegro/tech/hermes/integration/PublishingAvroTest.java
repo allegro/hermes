@@ -194,15 +194,18 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldGetBadRequestForJsonNotMachingWithAvroSchema() {
         // given
-        Topic topic = randomTopic("avro.topic", "forinvalidjson").withContentType(AVRO).build();
-        operations.buildTopicWithSchema(topicWithSchema(topic, "{\"type\" : \"record\",\"name\" : \"testSchema\",\"fields\" : [{\"name\" : \"field_integer\",\"type\" : \"int\"}]}\n"));
+        Topic topic = randomTopic("pl.allegro", "User").withContentType(AVRO).build();
+        Schema schema = AvroUserSchemaLoader.load("/schema/user.avsc");
+        operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
 
         // when
-        Response response = publisher.publish(topic.getQualifiedName(), "{\"__metadata\":null,\"field_integer\": \"foobar\"}", singletonMap("Content-Type", AVRO_JSON));
+        String message = "{\"__metadata\":null,\"name\":\"john\",\"age\":\"string instead of int\"}";
+        Response response = publisher.publish(topic.getQualifiedName(), message, singletonMap("Content-Type", AVRO_JSON));
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
-        assertThat(response.readEntity(String.class)).isEqualTo("{\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\",\"code\":\"VALIDATION_ERROR\"}");
+        assertThat(response.readEntity(String.class))
+                .isEqualTo("{\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\",\"code\":\"VALIDATION_ERROR\"}");
     }
 
     @Test
@@ -231,25 +234,6 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.getStatusCode());
-    }
-
-    @Test
-    public void shouldReturnBadRequestResponseOnMissingMetadataFieldInSchema() {
-        // given
-        Schema schema = AvroUserSchemaLoader.load("/schema/user_no_metadata.avsc");
-        Topic topic = randomTopic("pl.allegro.test", "Topic")
-                .withContentType(AVRO)
-                .build();
-        operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
-
-        // when
-        Response response = publisher.publish(topic.getQualifiedName(), user.asJson());
-
-        // then
-        assertThat(response).hasStatus(BAD_REQUEST);
-        assertThat(response.readEntity(String.class))
-                .isEqualTo("{\"message\":\"Schema does not contain mandatory __metadata field for Hermes internal metadata. " +
-                        "Please fix topic schema.\",\"code\":\"AVRO_SCHEMA_INVALID_METADATA\"}");
     }
 
     @Test
