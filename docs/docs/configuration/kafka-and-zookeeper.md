@@ -88,6 +88,11 @@ kafka:
 
 ### Multiple Hermes on single Kafka cluster
 
-It is also possible to run multiple Hermes clusters on single Kafka cluster, e.g. to separate different test environments. The
-only requirement is to specify different `kafka.namespace` option for each Hermes. This might also be used to distinguish
-Hermes-managed topics on multi-purpose Kafka cluster.clusters
+It’s also possible to run multiple Hermes clusters on a single Kafka cluster, e.g. to separate different test environments.
+To do this, on each Hermes cluster you have to provide different value for:
+* `kafka.namespace` property in **Frontend** and **Consumers**. In **Management** it’s named `kafka.defaultNamespace` and also need to be changed.
+* `zookeeper.root` property in **Frontend** and **Consumers** if you use the same Zookeeper cluster for all Hermes clusters.
+In **Management** it’s named `storage.pathPrefix` and also need to be changed.
+
+`kafka.namespace` property also can used to distinguish Hermes-managed topics on multi-purpose Kafka cluster.
+
