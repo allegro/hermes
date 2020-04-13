@@ -23,6 +23,8 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_RETRY_
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_TYPE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_PROVIDED;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_PROVIDED;
 import static pl.allegro.tech.hermes.common.schema.SchemaRepositoryType.SCHEMA_REGISTRY;
 
 public class ConsumersStarter implements Starter<HermesConsumers> {
@@ -45,6 +47,8 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
         configFactory.overrideProperty(KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG, 10000);
         configFactory.overrideProperty(KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG, 50);
         configFactory.overrideProperty(CONSUMER_USE_TOPIC_MESSAGE_SIZE, true);
+        configFactory.overrideProperty(CONSUMER_SSL_KEYSTORE_PROVIDED, true);
+        configFactory.overrideProperty(CONSUMER_SSL_TRUSTSTORE_PROVIDED, true);
 
         consumers = HermesConsumers.consumers()
             .withKafkaTopicsNamesMapper(

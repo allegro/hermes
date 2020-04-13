@@ -4,7 +4,6 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.http2.client.HTTP2Client;
 import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.util.HttpCookieStore;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 
@@ -26,7 +25,7 @@ public class HttpClientsFactory {
 
     private final ConfigFactory configFactory;
     private final InstrumentedExecutorServiceFactory executorFactory;
-    private final pl.allegro.tech.hermes.common.ssl.SslContextFactory sslContextFactory;
+    private final SslContextFactoryProvider sslContextFactoryProvider;
 
     @Inject
     public HttpClientsFactory(ConfigFactory configFactory,
@@ -34,7 +33,7 @@ public class HttpClientsFactory {
                               SslContextFactoryProvider sslContextFactoryProvider) {
         this.configFactory = configFactory;
         this.executorFactory = executorFactory;
-        this.sslContextFactory = sslContextFactoryProvider.getSslContextFactory();
+        this.sslContextFactoryProvider = sslContextFactoryProvider;
     }
 
     public HttpClient createClientForHttp1(String name) {
@@ -43,7 +42,9 @@ public class HttpClientsFactory {
                 configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE),
                 configFactory.getBooleanProperty(CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING));
 
-        HttpClient client = new HttpClient(createSslContextFactory());
+        HttpClient client = sslContextFactoryProvider.provideSslContextFactory()
+                .map(sslContextFactory -> new HttpClient(sslContextFactory))
+                .orElseGet(() -> new HttpClient());
         client.setMaxConnectionsPerDestination(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION));
         client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_HTTP_CLIENT_MAX_REQUESTS_QUEUED_PER_DESTINATION));
         client.setExecutor(executor);
@@ -63,18 +64,13 @@ public class HttpClientsFactory {
         http2Client.setExecutor(executor);
         HttpClientTransportOverHTTP2 transport = new HttpClientTransportOverHTTP2(http2Client);
 
-        HttpClient client = new HttpClient(transport, createSslContextFactory());
+        HttpClient client = sslContextFactoryProvider.provideSslContextFactory()
+                .map(sslContextFactory -> new HttpClient(transport, sslContextFactory))
+                .orElseThrow(() -> new IllegalStateException("Cannot create http/2 client due to lack of ssl context factory"));
         client.setMaxRequestsQueuedPerDestination(configFactory.getIntProperty(CONSUMER_HTTP2_CLIENT_MAX_REQUESTS_QUEUED_PER_DESTINATION));
         client.setCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(configFactory.getIntProperty(CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT));
         client.setFollowRedirects(configFactory.getBooleanProperty(CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS));
         return client;
-    }
-
-    private SslContextFactory createSslContextFactory() {
-        SslContextFactory sslCtx = new SslContextFactory();
-        sslCtx.setEndpointIdentificationAlgorithm("HTTPS");
-        sslCtx.setSslContext(sslContextFactory.create().getSslContext());
-        return sslCtx;
     }
 }

@@ -7,8 +7,11 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.ssl.JvmKeystoreSslContextFactory;
+import pl.allegro.tech.hermes.common.ssl.DefaultSslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
+import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
+import pl.allegro.tech.hermes.common.ssl.provided.ProvidedKeyManagersProvider;
+import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
@@ -111,9 +114,15 @@ public class ConsumingHttp2Test extends IntegrationTest {
     }
 
     private SSLContext getSslContext() {
-        KeystoreProperties keystore = new KeystoreProperties("classpath:server.keystore", "JKS", "password");
-        KeystoreProperties truststore = new KeystoreProperties("classpath:server.truststore", "JKS", "password");
-        return new JvmKeystoreSslContextFactory("TLS", keystore, truststore).create().getSslContext();
+        String protocol = "TLSv1.2";
+        KeystoreProperties keystoreProperties = new KeystoreProperties("classpath:server.keystore", "JKS", "password");
+        KeystoreProperties truststoreProperties = new KeystoreProperties("classpath:server.truststore", "JKS", "password");
+        SslContextFactory sslContextFactory = new DefaultSslContextFactory(
+                protocol,
+                new ProvidedKeyManagersProvider(keystoreProperties),
+                new ProvidedTrustManagersProvider(truststoreProperties)
+        );
+        return sslContextFactory.create().getSslContext();
     }
 
 }
