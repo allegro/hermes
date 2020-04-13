@@ -114,7 +114,7 @@ public class ConsumingHttp2Test extends IntegrationTest {
     }
 
     private SSLContext getSslContext() {
-        String protocol = "TLSv1.2";
+        String protocol = "TLS";
         KeystoreProperties keystoreProperties = new KeystoreProperties("classpath:server.keystore", "JKS", "password");
         KeystoreProperties truststoreProperties = new KeystoreProperties("classpath:server.truststore", "JKS", "password");
         SslContextFactory sslContextFactory = new DefaultSslContextFactory(

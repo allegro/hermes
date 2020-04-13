@@ -1,9 +1,7 @@
 package pl.allegro.tech.hermes.integration;
 
 import okhttp3.OkHttpClient;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.client.HermesClient;
@@ -15,25 +13,19 @@ import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
 import pl.allegro.tech.hermes.common.ssl.SSLContextHolder;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
-import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.net.ssl.X509TrustManager;
 import java.net.URI;
-import java.util.function.Consumer;
 
-import static java.lang.String.format;
-import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.common.config.Configs.*;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class HermesClientPublishingHttpsTest extends IntegrationTest {
-
-//    private static final int FRONTEND_PORT = Ports.nextAvailable();
 
     private Topic topic;
 
