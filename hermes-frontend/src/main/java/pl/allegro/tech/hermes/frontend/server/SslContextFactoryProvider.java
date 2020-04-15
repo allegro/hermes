@@ -12,7 +12,8 @@ import javax.inject.Inject;
 import java.util.Optional;
 
 import static pl.allegro.tech.hermes.common.config.Configs.*;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_TRUSTSTORE_DEFAULT_JVM;
+import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.JVM_DEFAULT;
+import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
 
 public class SslContextFactoryProvider {
 
@@ -34,33 +35,35 @@ public class SslContextFactoryProvider {
         return new DefaultSslContextFactory(protocol, keyManagersProvider, trustManagersProvider);
     }
 
-    public KeyManagersProvider createKeyManagersProvider() {
-        if (configFactory.getBooleanProperty(FRONTEND_SSL_KEYSTORE_PROVIDED)) {
+    private KeyManagersProvider createKeyManagersProvider() {
+        String keystoreSource = configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_SOURCE);
+        if (PROVIDED.getValue().equals(keystoreSource)) {
             KeystoreProperties properties = new KeystoreProperties(
                     configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_LOCATION),
                     configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_FORMAT),
                     configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_PASSWORD)
             );
             return new ProvidedKeyManagersProvider(properties);
-        } else if (configFactory.getBooleanProperty(FRONTEND_SSL_KEYSTORE_DEFAULT_JVM)) {
-            return new JvmKeyManagersProvider();
-        } else {
-            throw new KeyStoreConfigurationException();
         }
+        if (JVM_DEFAULT.getValue().equals(keystoreSource)) {
+            return new JvmKeyManagersProvider();
+        }
+        throw new KeystoreConfigurationException(keystoreSource);
     }
 
     public TrustManagersProvider createTrustManagersProvider() {
-        if (configFactory.getBooleanProperty(FRONTEND_SSL_TRUSTSTORE_PROVIDED)) {
+        String truststoreSource = configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_SOURCE);
+        if (PROVIDED.getValue().equals(truststoreSource)) {
             KeystoreProperties properties = new KeystoreProperties(
                     configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_LOCATION),
                     configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_FORMAT),
                     configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_PASSWORD)
             );
             return new ProvidedTrustManagersProvider(properties);
-        } else if (configFactory.getBooleanProperty(FRONTEND_SSL_TRUSTSTORE_DEFAULT_JVM)) {
-            return new JvmTrustManagerProvider();
-        } else {
-            throw new TrustStoreConfigurationException();
         }
+        if (JVM_DEFAULT.getValue().equals(truststoreSource)) {
+            return new JvmTrustManagerProvider();
+        }
+        throw new TruststoreConfigurationException(truststoreSource);
     }
 }

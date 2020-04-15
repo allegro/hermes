@@ -84,8 +84,8 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
 
         frontend.overrideProperty(FRONTEND_HTTP2_ENABLED, true);
         frontend.overrideProperty(Configs.FRONTEND_SSL_PORT, sslPort);
-        frontend.overrideProperty(FRONTEND_SSL_KEYSTORE_PROVIDED, true);
-        frontend.overrideProperty(FRONTEND_SSL_TRUSTSTORE_PROVIDED, true);
+        frontend.overrideProperty(FRONTEND_SSL_KEYSTORE_SOURCE, "provided");
+        frontend.overrideProperty(FRONTEND_SSL_TRUSTSTORE_SOURCE, "provided");
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_ENABLED, false);
 
         frontend.start();

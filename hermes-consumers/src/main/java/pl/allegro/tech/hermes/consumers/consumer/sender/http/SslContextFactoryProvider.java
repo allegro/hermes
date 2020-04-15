@@ -7,8 +7,8 @@ import pl.allegro.tech.hermes.common.ssl.KeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.TrustManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
-import pl.allegro.tech.hermes.common.ssl.KeyStoreConfigurationException;
-import pl.allegro.tech.hermes.common.ssl.TrustStoreConfigurationException;
+import pl.allegro.tech.hermes.common.ssl.KeystoreConfigurationException;
+import pl.allegro.tech.hermes.common.ssl.TruststoreConfigurationException;
 import pl.allegro.tech.hermes.common.ssl.jvm.JvmKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.jvm.JvmTrustManagerProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedKeyManagersProvider;
@@ -18,6 +18,8 @@ import javax.inject.Inject;
 import java.util.Optional;
 
 import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.JVM_DEFAULT;
+import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
 
 public class SslContextFactoryProvider {
 
@@ -51,32 +53,34 @@ public class SslContextFactoryProvider {
     }
 
     private KeyManagersProvider createKeyManagersProvider() {
-        if (configFactory.getBooleanProperty(CONSUMER_SSL_KEYSTORE_PROVIDED)) {
+        String keystoreSource = configFactory.getStringProperty(CONSUMER_SSL_KEYSTORE_SOURCE);
+        if (PROVIDED.getValue().equals(keystoreSource)) {
             KeystoreProperties properties = new KeystoreProperties(
                     configFactory.getStringProperty(CONSUMER_SSL_KEYSTORE_LOCATION),
                     configFactory.getStringProperty(CONSUMER_SSL_KEYSTORE_FORMAT),
                     configFactory.getStringProperty(CONSUMER_SSL_KEYSTORE_PASSWORD)
             );
             return new ProvidedKeyManagersProvider(properties);
-        } else if (configFactory.getBooleanProperty(CONSUMER_SSL_KEYSTORE_DEFAULT_JVM)) {
-            return new JvmKeyManagersProvider();
-        } else {
-            throw new KeyStoreConfigurationException();
         }
+        if (JVM_DEFAULT.getValue().equals(keystoreSource)) {
+            return new JvmKeyManagersProvider();
+        }
+        throw new KeystoreConfigurationException(keystoreSource);
     }
 
     public TrustManagersProvider createTrustManagersProvider() {
-        if (configFactory.getBooleanProperty(CONSUMER_SSL_TRUSTSTORE_PROVIDED)) {
+        String truststoreSource = configFactory.getStringProperty(CONSUMER_SSL_TRUSTSTORE_SOURCE);
+        if (PROVIDED.getValue().equals(truststoreSource)) {
             KeystoreProperties properties = new KeystoreProperties(
                     configFactory.getStringProperty(CONSUMER_SSL_TRUSTSTORE_LOCATION),
                     configFactory.getStringProperty(CONSUMER_SSL_TRUSTSTORE_FORMAT),
                     configFactory.getStringProperty(CONSUMER_SSL_TRUSTSTORE_PASSWORD)
             );
             return new ProvidedTrustManagersProvider(properties);
-        } else if (configFactory.getBooleanProperty(CONSUMER_SSL_TRUSTSTORE_DEFAULT_JVM)) {
-            return new JvmTrustManagerProvider();
-        } else {
-            throw new TrustStoreConfigurationException();
         }
+        if (JVM_DEFAULT.getValue().equals(truststoreSource)) {
+            return new JvmTrustManagerProvider();
+        }
+        throw new TruststoreConfigurationException(truststoreSource);
     }
 }
