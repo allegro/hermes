@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.common.ssl;
 
 public enum KeystoreSource {
-    JVM_DEFAULT("jvmDefault"),
+    JRE("jre"),
     PROVIDED("provided");
 
     KeystoreSource(String value) {

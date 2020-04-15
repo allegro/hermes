@@ -123,12 +123,12 @@ public enum Configs {
     FRONTEND_SSL_CLIENT_AUTH_MODE("frontend.ssl.client.auth.mode", "not_requested"),
     FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
 
-    FRONTEND_SSL_KEYSTORE_SOURCE("frontend.ssl.keystore.source", "jvmDefault"),
+    FRONTEND_SSL_KEYSTORE_SOURCE("frontend.ssl.keystore.source", "jre"),
     FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "classpath:server.keystore"),
     FRONTEND_SSL_KEYSTORE_PASSWORD("frontend.ssl.keystore.password", "password"),
     FRONTEND_SSL_KEYSTORE_FORMAT("frontend.ssl.keystore.format", "JKS"),
 
-    FRONTEND_SSL_TRUSTSTORE_SOURCE("frontend.ssl.truststore.source", "jvmDefault"),
+    FRONTEND_SSL_TRUSTSTORE_SOURCE("frontend.ssl.truststore.source", "jre"),
     FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "classpath:server.truststore"),
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
@@ -136,12 +136,12 @@ public enum Configs {
     CONSUMER_SSL_ENABLED("consumer.ssl.enabled", true),
     CONSUMER_SSL_PROTOCOL("consumer.ssl.protocol", "TLS"),
 
-    CONSUMER_SSL_KEYSTORE_SOURCE("consumer.ssl.keystore.source", "jvmDefault"),
+    CONSUMER_SSL_KEYSTORE_SOURCE("consumer.ssl.keystore.source", "jre"),
     CONSUMER_SSL_KEYSTORE_LOCATION("consumer.ssl.keystore.location", "classpath:client.keystore"),
     CONSUMER_SSL_KEYSTORE_PASSWORD("consumer.ssl.keystore.password", "password"),
     CONSUMER_SSL_KEYSTORE_FORMAT("consumer.ssl.keystore.format", "JKS"),
 
-    CONSUMER_SSL_TRUSTSTORE_SOURCE("consumer.ssl.truststore.source", "jvmDefault"),
+    CONSUMER_SSL_TRUSTSTORE_SOURCE("consumer.ssl.truststore.source", "jre"),
     CONSUMER_SSL_TRUSTSTORE_LOCATION("consumer.ssl.truststore.location", "classpath:client.truststore"),
     CONSUMER_SSL_TRUSTSTORE_PASSWORD("consumer.ssl.truststore.password", "password"),
     CONSUMER_SSL_TRUSTSTORE_FORMAT("consumer.ssl.truststore.format", "JKS"),

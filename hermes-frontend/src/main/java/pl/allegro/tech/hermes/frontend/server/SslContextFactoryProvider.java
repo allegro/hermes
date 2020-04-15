@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import java.util.Optional;
 
 import static pl.allegro.tech.hermes.common.config.Configs.*;
-import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.JVM_DEFAULT;
+import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.JRE;
 import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
 
 public class SslContextFactoryProvider {
@@ -45,7 +45,7 @@ public class SslContextFactoryProvider {
             );
             return new ProvidedKeyManagersProvider(properties);
         }
-        if (JVM_DEFAULT.getValue().equals(keystoreSource)) {
+        if (JRE.getValue().equals(keystoreSource)) {
             return new JvmKeyManagersProvider();
         }
         throw new KeystoreConfigurationException(keystoreSource);
@@ -61,7 +61,7 @@ public class SslContextFactoryProvider {
             );
             return new ProvidedTrustManagersProvider(properties);
         }
-        if (JVM_DEFAULT.getValue().equals(truststoreSource)) {
+        if (JRE.getValue().equals(truststoreSource)) {
             return new JvmTrustManagerProvider();
         }
         throw new TruststoreConfigurationException(truststoreSource);
