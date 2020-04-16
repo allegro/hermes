@@ -34,7 +34,7 @@ public class HermesMockHelper {
         try {
             return objectMapper.readValue(content, clazz);
         } catch (IOException ex) {
-            throw new HermesMockException("Cannot read body " + content.toString() + " as " + clazz.getSimpleName());
+            throw new HermesMockException("Cannot read body " + content.toString() + " as " + clazz.getSimpleName(), ex);
         }
     }
 
@@ -47,7 +47,7 @@ public class HermesMockHelper {
             byte[] json = new JsonAvroConverter().convertToJson(raw, schema);
             return deserializeJson(json, clazz);
         } catch (AvroRuntimeException ex) {
-            throw new HermesMockException("Cannot decode body " + raw + " to " + clazz.getSimpleName());
+            throw new HermesMockException("Cannot decode body " + raw + " to " + clazz.getSimpleName(), ex);
         }
     }
 
