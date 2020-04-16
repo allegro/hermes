@@ -19,7 +19,7 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     contentType: 'JSON',
                     subscriptionPolicy: {
                         messageTtl: 3600,
-                        messageBackoff: 100,
+                        messageBackoff: 1000,
                         sendingDelay: 0
                     },
                     monitoringDetails: {
