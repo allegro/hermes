@@ -44,7 +44,7 @@ Option                               | Description                              
 trackingMode                         | track outgoing messages                             | trackingOff
 subscriptionPolicy.rate              | maximum sending speed in rps (per DC)               | 400
 subscriptionPolicy.messageTtl        | inflight Time To Live in seconds                    | 3600
-subscriptionPolicy.messageBackoff    | backoff time between retry attempts in millis       | 100
+subscriptionPolicy.messageBackoff    | backoff time between retry attempts in millis       | 1000
 subscriptionPolicy.retryClientErrors | retry on receiving 4xx status                       | false
 subscriptionPolicy.requestTimeout    | request timeout in millis                           | 1000
 subscriptionPolicy.socketTimeout     | maximum time of inactivity between two data packets | infinity

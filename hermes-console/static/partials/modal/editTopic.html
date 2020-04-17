@@ -122,11 +122,12 @@
                 <label for="topicOfflineRetention" class="col-md-3 control-label">Offline retention time</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" ng-min="topic.offlineStorage.enabled && !topic.offlineStorage.retentionTime.infinite ? 1 : false" max="120"
+                        <input type="number" ng-min="topic.offlineStorage.enabled && !topic.offlineStorage.retentionTime.infinite ? 1 : false"
                                ng-required="topic.offlineStorage.enabled && !topic.offlineStorage.retentionTime.infinite" class="form-control"
                                id="topicOfflineRetention" name="topicOfflineRetention" ng-model="topic.offlineStorage.retentionTime.duration"
                                placeholder="how long should it be stored in offline storage?"/>
                         <span class="input-group-addon">days</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip='When publishing personal data on a topic, remember to correctly indicate fields with personal data in the Avro schema.'>?</span>
                     </div>
                 </div>
             </div>
