@@ -12,11 +12,16 @@ All Hermes modules support secure transport in their own way:
 
 ## Consumers SSL
 
-Consumers by default support sending traffic to `https` endpoints. They use JRE trust store to verify the certificates.
-It is possible to change it using the custom `consumer.ssl.truststore.*` options:
+Consumers by default support sending traffic to `https` endpoints.
+By default hermes uses JRE trust store (located in `$JAVA_HOME/jre/lib/security/`) to verify the certificates.
+It loads file `jssecacerts` if exists, otherwise it loads file `cacerts`.
+In case of lack of both files the `FileNotFoundException` is thrown.
 
-Option                           | Description
--------------------------------- | --------------------------
-consumer.ssl.truststore.location | path to custom trust store
-consumer.ssl.truststore.format   | trust store format
-consumer.ssl.truststore.password | password to trust store
+It is possible to use custom trust store by setting the property `consumer.ssl.truststore.source` to `provided`, which by default is set to `jre`.
+In case of provided trust store it is required to specify additional properties:
+
+Option                           | Description                | Default value
+-------------------------------- | -------------------------- | -----------------------
+consumer.ssl.truststore.location | path to custom trust store (it could be the classpath or a path in a file system) | `classpath:server.truststore`
+consumer.ssl.truststore.format   | trust store format | `JKS`
+consumer.ssl.truststore.password | password to trust store | `password`
