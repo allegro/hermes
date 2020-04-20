@@ -2,6 +2,18 @@
 
 ...
 
+## 1.4.5 (20.04.2020)
+
+### Enhancements
+
+#### ([#1199](https://github.com/allegro/hermes/pull/1199)) Remove limits for offline retention time
+
+#### ([#1198](https://github.com/allegro/hermes/pull/1198))  Adds deserialization root cause exception in Hermes-mock
+
+### Fixes
+
+#### ([#1194](https://github.com/allegro/hermes/pull/1194)) Fix typo in docs 
+
 ## 1.4.4 (31.03.2020)
 
 ### Enhancements
