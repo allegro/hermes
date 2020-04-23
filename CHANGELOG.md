@@ -2,6 +2,22 @@
 
 ...
 
+## 1.4.6 (24.04.2020)
+
+### Enhancements
+
+#### ([#1196](https://github.com/allegro/hermes/pull/1196)) Hermes supports JRE truststore
+
+Hermes supports using trust store provided by JRE (located in `$JAVA_HOME/jre/lib/security/`).
+
+This change introduces new properties `{consumers,frontend}.ssl.{key,trust}store.source` which can be set to `jre` or `provided`.
+
+Additionally the property `consumer.ssl.enabled` is enabled by default.
+
+### Fixes
+
+#### ([#1197](https://github.com/allegro/hermes/pull/1197)) Remove logback files from hermes-consumers and hermes-frontend
+
 ## 1.4.5 (20.04.2020)
 
 ### Enhancements
