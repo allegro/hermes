@@ -18,7 +18,7 @@ public class DependenciesResolverTest extends ZookeeperBaseTest {
     private static MutableConfigFactory configFactory;
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() {
         configFactory = new MutableConfigFactory();
         configFactory.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, zookeeperServer.getConnectString());
         configFactory.overrideProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING, zookeeperServer.getConnectString());
