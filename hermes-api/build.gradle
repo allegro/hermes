@@ -9,9 +9,9 @@ dependencies {
     compile group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: versions.jackson
     compile group: 'com.google.guava', name: 'guava', version: versions.guava
     compile group: 'com.damnhandy', name: 'handy-uri-templates', version: '2.0.2'
-    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.11'
-    compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.2.11'
-    compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.2.11'
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+    compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'
+    compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.3'
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testCompile project(':hermes-test-helper')
