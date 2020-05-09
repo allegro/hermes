@@ -110,7 +110,7 @@ Hermes Console is a simple Single Page Application served using NodeJS. It accep
 The `config.json` file is mandatory, Hermes Console will crash when unable to read it. See
 [configuring Hermes Console](/configuration/console) section for more information.
 
-Hermes Console has no dependencies and will run out of box on Linux machines. To run it, use provided script:
+Hermes Console has no dependencies and will run out of the box on Linux machines. To run it, use provided script:
 
 ```
 ./run.sh -p 8000 -c /etc/hermes-console/config.json
