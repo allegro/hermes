@@ -32,7 +32,7 @@ Hermes Console supports two types of authorization, which can be enabled at the 
     contain the `Authorization` header with the token
 * header-based - this is the simple method, if passing tokens/passwords around is okay
 
-**Note** none of above mentioned authorization methods are available in Management out of box at the moment, you need to
+**Note** none of above mentioned authorization methods are available in Management out of the box at the moment, you need to
 provide the implementation.
 
 Option                   | Description
