@@ -31,12 +31,13 @@ public class RawSchemaClientFactory implements Factory<RawSchemaClient> {
     @Override
     public RawSchemaClient provide() {
         String schemaRepositoryType = configFactory.getStringProperty(Configs.SCHEMA_REPOSITORY_TYPE).toUpperCase();
+        boolean subjectSuffixEnabled = configFactory.getBooleanProperty(Configs.SCHEMA_REPOSITORY_SUBJECT_SUFFIX_ENABLED);
         SchemaRepositoryType repoType = SchemaRepositoryType.valueOf(schemaRepositoryType);
         switch (repoType) {
             case SCHEMA_REPO:
-                return createMetricsTrackingClient(new SchemaRepoRawSchemaClient(resolver), repoType);
+                return createMetricsTrackingClient(new SchemaRepoRawSchemaClient(resolver, subjectSuffixEnabled), repoType);
             case SCHEMA_REGISTRY:
-                return createMetricsTrackingClient(new SchemaRegistryRawSchemaClient(resolver, objectMapper), repoType);
+                return createMetricsTrackingClient(new SchemaRegistryRawSchemaClient(resolver, objectMapper, subjectSuffixEnabled), repoType);
             default:
                 throw new IllegalStateException("Unknown schema repository type " + schemaRepositoryType);
         }

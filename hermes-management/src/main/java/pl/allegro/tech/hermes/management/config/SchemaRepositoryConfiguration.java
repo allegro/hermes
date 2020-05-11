@@ -55,7 +55,7 @@ public class SchemaRepositoryConfiguration {
     @ConditionalOnMissingBean(RawSchemaClient.class)
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_repo")
     public RawSchemaClient schemaRepoRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver) {
-        return new SchemaRepoRawSchemaClient(schemaRepositoryInstanceResolver);
+        return new SchemaRepoRawSchemaClient(schemaRepositoryInstanceResolver, schemaRepositoryProperties.isSubjectSuffixEnabled());
     }
 
     @Bean
@@ -66,7 +66,8 @@ public class SchemaRepositoryConfiguration {
             ObjectMapper objectMapper
     ) {
         return new SchemaRegistryRawSchemaClient(schemaRepositoryInstanceResolver, objectMapper,
-                schemaRepositoryProperties.isValidationEnabled(), schemaRepositoryProperties.getDeleteSchemaPathSuffix());
+                schemaRepositoryProperties.isValidationEnabled(), schemaRepositoryProperties.getDeleteSchemaPathSuffix(),
+                schemaRepositoryProperties.isSubjectSuffixEnabled());
     }
 
     @Bean

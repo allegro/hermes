@@ -6,11 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
-import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
-import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.*;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
@@ -22,13 +19,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class SchemaRepoRawSchemaClient implements RawSchemaClient {
+public class SchemaRepoRawSchemaClient extends SubjectNamingStrategyRawSchemaClient {
 
     private static final Logger logger = LoggerFactory.getLogger(SchemaRepoRawSchemaClient.class);
 
     private final SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver;
 
-    public SchemaRepoRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver) {
+    public SchemaRepoRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
+                                     boolean suffixedSubjectNameStrategy) {
+        super(suffixedSubjectNameStrategy);
         this.schemaRepositoryInstanceResolver = schemaRepositoryInstanceResolver;
     }
 
