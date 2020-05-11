@@ -40,12 +40,16 @@ class SchemaRepoRawSchemaClientTest extends Specification {
 
     @Shared @Subject RawSchemaClient client
 
+    // client with enabled suffixed subject naming strategy
+    @Shared @Subject RawSchemaClient suffixedClient
+
     def setupSpec() {
         def port = Ports.nextAvailable()
         wireMock = new WireMockServer(new WireMockConfiguration().port(port).usingFilesUnderClasspath("schema-repo-stub"))
         wireMock.start()
         resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port/schema-repo"))
-        client = new SchemaRepoRawSchemaClient(resolver)
+        client = new SchemaRepoRawSchemaClient(resolver, false)
+        suffixedClient = new SchemaRepoRawSchemaClient(resolver, true)
     }
 
     def cleanupSpec() {
@@ -74,6 +78,23 @@ class SchemaRepoRawSchemaClientTest extends Specification {
                 .withRequestBody(equalTo(rawSchema.value())))
     }
 
+    def "should register subject and schema for subject with suffixed name"() {
+        given:
+        wireMock.stubFor(get(subjectUrl(topicName, true)).willReturn(notFoundResponse()))
+        wireMock.stubFor(put(subjectUrl(topicName, true)).willReturn(okResponse()))
+        wireMock.stubFor(put(registerSchemaUrl(topicName, true)).willReturn(okResponse()))
+
+        when:
+        suffixedClient.registerSchema(topicName, rawSchema)
+
+        then:
+        wireMock.verify(1, getRequestedFor(subjectUrl(topicName, true)))
+        wireMock.verify(1, putRequestedFor(subjectUrl(topicName, true)))
+        wireMock.verify(1, putRequestedFor(registerSchemaUrl(topicName, true))
+                .withHeader("Content-type", equalTo(MediaType.TEXT_PLAIN))
+                .withRequestBody(equalTo(rawSchema.value())))
+    }
+
     def "should register schema for existing subject"() {
         given:
         wireMock.stubFor(get(subjectUrl(topicName)).willReturn(okResponse()))
@@ -86,6 +107,22 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         wireMock.verify(1, getRequestedFor(subjectUrl(topicName)))
         wireMock.verify(0, putRequestedFor(subjectUrl(topicName)))
         wireMock.verify(1, putRequestedFor(registerSchemaUrl(topicName))
+                .withHeader("Content-type", equalTo(MediaType.TEXT_PLAIN))
+                .withRequestBody(equalTo(rawSchema.value())))
+    }
+
+    def "should register schema for existing subject for schema with suffixed subject"() {
+        given:
+        wireMock.stubFor(get(subjectUrl(topicName, true)).willReturn(okResponse()))
+        wireMock.stubFor(put(registerSchemaUrl(topicName, true)).willReturn(okResponse()))
+
+        when:
+        suffixedClient.registerSchema(topicName, rawSchema)
+
+        then:
+        wireMock.verify(1, getRequestedFor(subjectUrl(topicName, true)))
+        wireMock.verify(0, putRequestedFor(subjectUrl(topicName, true)))
+        wireMock.verify(1, putRequestedFor(registerSchemaUrl(topicName, true))
                 .withHeader("Content-type", equalTo(MediaType.TEXT_PLAIN))
                 .withRequestBody(equalTo(rawSchema.value())))
     }
@@ -135,6 +172,14 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         !schema.isPresent()
     }
 
+    def "should return empty optional when latest schema with suffixed name does not exist"() {
+        when:
+        def schema = suffixedClient.getLatestSchema(topicName)
+
+        then:
+        !schema.isPresent()
+    }
+
     def "should throw exception when not able to fetch latest schema"() {
         given:
         wireMock.stubFor(get(latestSchemaUrl(topicName)).willReturn(internalErrorResponse()))
@@ -157,6 +202,17 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         schema.get().value() == "{}"
     }
 
+    def "should return latest schema of schema with suffixed subject name"() {
+        given:
+        wireMock.stubFor(get(latestSchemaUrl(topicName, true)).willReturn(okResponse().withBody("0\t{}")))
+
+        when:
+        def schema = suffixedClient.getLatestSchema(topicName)
+
+        then:
+        schema.get().value() == "{}"
+    }
+
     def "should return all schema versions"() {
         given:
         wireMock.stubFor(get(allSchemasUrl(topicName)).willReturn(okResponse().withBodyFile("all-schemas-response.json")
@@ -164,6 +220,18 @@ class SchemaRepoRawSchemaClientTest extends Specification {
 
         when:
         def versions = client.getVersions(topicName)
+
+        then:
+        versions.containsAll(SchemaVersion.valueOf(0), SchemaVersion.valueOf(1), SchemaVersion.valueOf(2))
+    }
+
+    def "should return all schema versions for schemas with suffixed subjects"() {
+        given:
+        wireMock.stubFor(get(allSchemasUrl(topicName, true)).willReturn(okResponse().withBodyFile("all-schemas-response.json")
+                .withHeader("Content-Type", "application/json")))
+
+        when:
+        def versions = suffixedClient.getVersions(topicName)
 
         then:
         versions.containsAll(SchemaVersion.valueOf(0), SchemaVersion.valueOf(1), SchemaVersion.valueOf(2))
@@ -200,24 +268,29 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         schema.get().value() == "{}"
     }
 
-    private UrlPattern subjectUrl(TopicName topic) {
-        urlEqualTo("/schema-repo/${topic.qualifiedName()}")
+    private UrlPattern subjectUrl(TopicName topic, boolean addSuffix = false) {
+        urlEqualTo("/schema-repo/${prepareName(topic, addSuffix)}")
     }
 
-    private UrlPattern latestSchemaUrl(TopicName topic) {
-        urlEqualTo("/schema-repo/${topic.qualifiedName()}/latest")
+    private UrlPattern latestSchemaUrl(TopicName topic, boolean addSuffix = false) {
+        urlEqualTo("/schema-repo/${prepareName(topic, addSuffix)}/latest")
     }
 
-    private UrlPattern schemaVersionUrl(TopicName topic, int version) {
-        urlEqualTo("/schema-repo/${topic.qualifiedName()}/id/$version")
+    private UrlPattern schemaVersionUrl(TopicName topic, int version, boolean addSuffix = false) {
+        urlEqualTo("/schema-repo/${prepareName(topic, addSuffix)}/id/$version")
     }
 
-    private UrlPattern allSchemasUrl(TopicName topic) {
-        urlEqualTo("/schema-repo/${topic.qualifiedName()}/all")
+    private UrlPattern allSchemasUrl(TopicName topic, boolean addSuffix = false) {
+        urlEqualTo("/schema-repo/${prepareName(topic, addSuffix)}/all")
     }
 
-    private UrlPattern registerSchemaUrl(TopicName topic) {
-        urlEqualTo("/schema-repo/${topic.qualifiedName()}/register")
+    private UrlPattern registerSchemaUrl(TopicName topic, boolean addSuffix = false) {
+        urlEqualTo("/schema-repo/${prepareName(topic, addSuffix)}/register")
+    }
+
+    private String prepareName(TopicName topic, boolean addSuffix) {
+        if (addSuffix) return topic.qualifiedName() + "-value";
+        return topic.qualifiedName()
     }
 
     private ResponseDefinitionBuilder okResponse() {

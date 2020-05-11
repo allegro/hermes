@@ -33,7 +33,7 @@ public class SchemaRepoRawSchemaClient extends SubjectNamingStrategyRawSchemaCli
 
     @Override
     public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version) {
-        String subject = topic.qualifiedName();
+        String subject = prepareSubjectName(topic.qualifiedName());
         String versionString = Integer.toString(version.value());
         Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
@@ -46,7 +46,7 @@ public class SchemaRepoRawSchemaClient extends SubjectNamingStrategyRawSchemaCli
 
     @Override
     public Optional<RawSchema> getLatestSchema(TopicName topic) {
-        String subject = topic.qualifiedName();
+        String subject = prepareSubjectName(topic.qualifiedName());
         final String version = "latest";
         Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
@@ -72,14 +72,14 @@ public class SchemaRepoRawSchemaClient extends SubjectNamingStrategyRawSchemaCli
 
     @Override
     public List<SchemaVersion> getVersions(TopicName topic) {
-        String subject = topic.qualifiedName();
+        String subject = prepareSubjectName(topic.qualifiedName());
         Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
                 .path("all")
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
                 .get();
-        return extractSchemaVersions(topic.qualifiedName(), response);
+        return extractSchemaVersions(subject, response);
     }
 
     private List<SchemaVersion> extractSchemaVersions(String subject, Response response) {
@@ -102,11 +102,11 @@ public class SchemaRepoRawSchemaClient extends SubjectNamingStrategyRawSchemaCli
 
     @Override
     public void registerSchema(TopicName topic, RawSchema rawSchema) {
-        String topicName = topic.qualifiedName();
-        if (!isSubjectRegistered(topicName)) {
-            registerSubject(topicName);
+        String subject = prepareSubjectName(topic.qualifiedName());
+        if (!isSubjectRegistered(subject)) {
+            registerSubject(subject);
         }
-        registerSchema(topicName, rawSchema.value());
+        registerSchema(subject, rawSchema.value());
     }
 
     private boolean isSubjectRegistered(String subject) {
