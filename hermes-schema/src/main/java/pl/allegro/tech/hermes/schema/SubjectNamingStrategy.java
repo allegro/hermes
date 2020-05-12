@@ -9,7 +9,7 @@ public interface SubjectNamingStrategy {
     SubjectNamingStrategy qualifiedName = TopicName::qualifiedName;
 
     default SubjectNamingStrategy withNamespacePrefixIf(boolean enabled, String namespace) {
-        return enabled ? this : subject -> namespace + "." + subject;
+        return enabled ? subject -> namespace + "." + subject : this;
     }
 
     default SubjectNamingStrategy withValueSuffixIf(boolean valueSuffixEnabled) {
