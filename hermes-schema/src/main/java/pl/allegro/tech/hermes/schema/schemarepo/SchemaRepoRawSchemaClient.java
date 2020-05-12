@@ -19,21 +19,26 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class SchemaRepoRawSchemaClient extends SubjectNamingStrategyRawSchemaClient {
+public class SchemaRepoRawSchemaClient implements RawSchemaClient {
 
     private static final Logger logger = LoggerFactory.getLogger(SchemaRepoRawSchemaClient.class);
 
     private final SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver;
+    private final SubjectNamingStrategy subjectNamingStrategy;
 
     public SchemaRepoRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
-                                     boolean suffixedSubjectNameStrategy) {
-        super(suffixedSubjectNameStrategy);
+                                     SubjectNamingStrategy subjectNameStrategy) {
         this.schemaRepositoryInstanceResolver = schemaRepositoryInstanceResolver;
+        this.subjectNamingStrategy = subjectNameStrategy;
+    }
+
+    String toSubject(TopicName topic) {
+        return topic.qualifiedName();
     }
 
     @Override
     public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version) {
-        String subject = prepareSubjectName(topic.qualifiedName());
+        String subject = subjectNamingStrategy.apply(topic);
         String versionString = Integer.toString(version.value());
         Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
@@ -46,7 +51,7 @@ public class SchemaRepoRawSchemaClient extends SubjectNamingStrategyRawSchemaCli
 
     @Override
     public Optional<RawSchema> getLatestSchema(TopicName topic) {
-        String subject = prepareSubjectName(topic.qualifiedName());
+        String subject = subjectNamingStrategy.apply(topic);
         final String version = "latest";
         Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
@@ -72,7 +77,7 @@ public class SchemaRepoRawSchemaClient extends SubjectNamingStrategyRawSchemaCli
 
     @Override
     public List<SchemaVersion> getVersions(TopicName topic) {
-        String subject = prepareSubjectName(topic.qualifiedName());
+        String subject = subjectNamingStrategy.apply(topic);
         Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path(subject)
                 .path("all")
@@ -102,7 +107,7 @@ public class SchemaRepoRawSchemaClient extends SubjectNamingStrategyRawSchemaCli
 
     @Override
     public void registerSchema(TopicName topic, RawSchema rawSchema) {
-        String subject = prepareSubjectName(topic.qualifiedName());
+        String subject = subjectNamingStrategy.apply(topic);
         if (!isSubjectRegistered(subject)) {
             registerSubject(subject);
         }

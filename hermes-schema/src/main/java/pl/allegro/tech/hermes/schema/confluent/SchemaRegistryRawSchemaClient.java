@@ -26,7 +26,7 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
  * This implementation of RawSchemaClient is compatible with Confluent Schema Registry API
  * except for the deleteAllSchemaVersions and validation endpoint which are not fully supported by the Confluent project
  */
-public class SchemaRegistryRawSchemaClient extends SubjectNamingStrategyRawSchemaClient {
+public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
     private static final Logger logger = LoggerFactory.getLogger(SchemaRegistryRawSchemaClient.class);
 
@@ -37,25 +37,26 @@ public class SchemaRegistryRawSchemaClient extends SubjectNamingStrategyRawSchem
     private final ObjectMapper objectMapper;
     private final boolean validationEndpointEnabled;
     private final String deleteSchemaPathSuffix;
+    private final SubjectNamingStrategy subjectNamingStrategy;
 
     public SchemaRegistryRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver, ObjectMapper objectMapper,
-                                         boolean suffixedSubjectNamingStrategy) {
-        this(schemaRepositoryInstanceResolver, objectMapper, false, "versions", suffixedSubjectNamingStrategy);
+                                         SubjectNamingStrategy subjectNamingStrategy) {
+        this(schemaRepositoryInstanceResolver, objectMapper, false, "versions", subjectNamingStrategy);
     }
 
     public SchemaRegistryRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver, ObjectMapper objectMapper,
-                                         boolean validationEndpointEnabled, String deleteSchemaPathSuffix, boolean suffixedSubjectNamingStrategy) {
-        super(suffixedSubjectNamingStrategy);
+                                         boolean validationEndpointEnabled, String deleteSchemaPathSuffix, SubjectNamingStrategy subjectNamingStrategy) {
         this.schemaRepositoryInstanceResolver = schemaRepositoryInstanceResolver;
         this.validationEndpointEnabled = validationEndpointEnabled;
         this.deleteSchemaPathSuffix = deleteSchemaPathSuffix;
         this.objectMapper = objectMapper;
+        this.subjectNamingStrategy = subjectNamingStrategy;
     }
 
     @Override
     public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion schemaVersion) {
         String version = Integer.toString(schemaVersion.value());
-        String subject = prepareSubjectName(topic.qualifiedName());
+        String subject = subjectNamingStrategy.apply(topic);
         Response response = getSchema(subject, version);
         return extractSchema(subject, version, response).map(RawSchema::valueOf);
     }
@@ -63,7 +64,7 @@ public class SchemaRegistryRawSchemaClient extends SubjectNamingStrategyRawSchem
     @Override
     public Optional<RawSchema> getLatestSchema(TopicName topic) {
         final String version = "latest";
-        String subject = prepareSubjectName(topic.qualifiedName());
+        String subject = subjectNamingStrategy.apply(topic);
         Response response = getSchema(subject, version);
         return extractSchema(subject, version, response).map(RawSchema::valueOf);
     }
@@ -96,7 +97,7 @@ public class SchemaRegistryRawSchemaClient extends SubjectNamingStrategyRawSchem
 
     @Override
     public List<SchemaVersion> getVersions(TopicName topic) {
-        String subject = prepareSubjectName(topic.qualifiedName());
+        String subject = subjectNamingStrategy.apply(topic);
         Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path("subjects")
                 .path(subject)
@@ -125,7 +126,7 @@ public class SchemaRegistryRawSchemaClient extends SubjectNamingStrategyRawSchem
 
     @Override
     public void registerSchema(TopicName topic, RawSchema rawSchema) {
-        String subject = prepareSubjectName(topic.qualifiedName());
+        String subject = subjectNamingStrategy.apply(topic);
         Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path("subjects")
                 .path(subject)
@@ -151,7 +152,7 @@ public class SchemaRegistryRawSchemaClient extends SubjectNamingStrategyRawSchem
 
     @Override
     public void deleteAllSchemaVersions(TopicName topic) {
-        String subject = prepareSubjectName(topic.qualifiedName());
+        String subject = subjectNamingStrategy.apply(topic);
         Response response = schemaRepositoryInstanceResolver.resolve(subject)
                 .path("subjects")
                 .path(subject)
@@ -179,7 +180,7 @@ public class SchemaRegistryRawSchemaClient extends SubjectNamingStrategyRawSchem
 
     @Override
     public void validateSchema(TopicName topic, RawSchema schema) {
-        String subject = prepareSubjectName(topic.qualifiedName());
+        String subject = subjectNamingStrategy.apply(topic);
         checkCompatibility(subject, schema);
         if (validationEndpointEnabled) {
             checkValidation(subject, schema);

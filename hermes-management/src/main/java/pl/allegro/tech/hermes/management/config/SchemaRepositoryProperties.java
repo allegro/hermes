@@ -19,6 +19,8 @@ public class SchemaRepositoryProperties {
 
     private boolean subjectSuffixEnabled = Configs.SCHEMA_REPOSITORY_SUBJECT_SUFFIX_ENABLED.getDefaultValue();
 
+    private boolean subjectNamespaceEnabled = Configs.SCHEMA_REPOSITORY_SUBJECT_NAMESPACE_ENABLED.getDefaultValue();
+
     public String getType() {
         return type;
     }
@@ -73,5 +75,13 @@ public class SchemaRepositoryProperties {
 
     public void setSubjectSuffixEnabled(boolean subjectSuffixEnabled) {
         this.subjectSuffixEnabled = subjectSuffixEnabled;
+    }
+
+    public boolean isSubjectNamespaceEnabled() {
+        return subjectNamespaceEnabled;
+    }
+
+    public void setSubjectNamespaceEnabled(boolean subjectNamespaceEnabled) {
+        this.subjectNamespaceEnabled = subjectNamespaceEnabled;
     }
 }

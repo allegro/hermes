@@ -13,14 +13,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
-import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
-import pl.allegro.tech.hermes.schema.DirectSchemaVersionsRepository;
-import pl.allegro.tech.hermes.schema.RawSchemaClient;
-import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
-import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
+import pl.allegro.tech.hermes.schema.*;
 import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
 import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
@@ -52,10 +47,17 @@ public class SchemaRepositoryConfiguration {
     }
 
     @Bean
+    public SubjectNamingStrategy subjectNamingStrategy(KafkaClustersProperties kafkaClustersProperties) {
+        return SubjectNamingStrategy.qualifiedName
+                .withNamespacePrefixIf(true, kafkaClustersProperties.getDefaultNamespace())
+                .withValueSuffixIf(schemaRepositoryProperties.isSubjectSuffixEnabled());
+    }
+
+    @Bean
     @ConditionalOnMissingBean(RawSchemaClient.class)
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_repo")
-    public RawSchemaClient schemaRepoRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver) {
-        return new SchemaRepoRawSchemaClient(schemaRepositoryInstanceResolver, schemaRepositoryProperties.isSubjectSuffixEnabled());
+    public RawSchemaClient schemaRepoRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver, SubjectNamingStrategy subjectNamingStrategy) {
+        return new SchemaRepoRawSchemaClient(schemaRepositoryInstanceResolver, subjectNamingStrategy);
     }
 
     @Bean
@@ -63,11 +65,12 @@ public class SchemaRepositoryConfiguration {
     @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_registry")
     public RawSchemaClient schemaRegistryRawSchemaClient(
             SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            SubjectNamingStrategy subjectNamingStrategy
     ) {
         return new SchemaRegistryRawSchemaClient(schemaRepositoryInstanceResolver, objectMapper,
                 schemaRepositoryProperties.isValidationEnabled(), schemaRepositoryProperties.getDeleteSchemaPathSuffix(),
-                schemaRepositoryProperties.isSubjectSuffixEnabled());
+                subjectNamingStrategy);
     }
 
     @Bean
