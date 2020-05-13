@@ -9,10 +9,10 @@ public interface SubjectNamingStrategy {
     SubjectNamingStrategy qualifiedName = TopicName::qualifiedName;
 
     default SubjectNamingStrategy withNamespacePrefixIf(boolean enabled, String namespace) {
-        return enabled ? subject -> namespace + "." + subject : this;
+        return enabled ? topicName -> namespace + "." + this.apply(topicName) : this;
     }
 
     default SubjectNamingStrategy withValueSuffixIf(boolean valueSuffixEnabled) {
-        return valueSuffixEnabled ? subject -> subject + "-value" : this;
+        return valueSuffixEnabled ? topicName -> this.apply(topicName) + "-value" : this;
     }
 }
