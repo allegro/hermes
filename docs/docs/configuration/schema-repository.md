@@ -40,8 +40,8 @@ Option                                   | Description                          
 ---------------------------------------- | ------------------------------------------------------------------ | -------------
 schema.repository.type                   | Available options: `schema_registry` or `schema_repo`              | `schema_registry`
 schema.repository.serverUrl              | URL of a repository                                                | `http://localhost:8888/`
-schema.repository.subjectSuffixEnabled   | Add `-value` suffix to every subject name                          | `false`
-schema.repository.subjectNamespaceEnabled| Add `kafka.namespace` property value as a prefix to every subject name | `false`
+schema.repository.subject.suffix.enabled | Add `-value` suffix to every subject name                          | `false`
+schema.repository.subject.namespace.enabled | Add `kafka.namespace` property value as a prefix to every subject name | `false`
 schema.cache.refresh.after.write.minutes | schema cache background refresh period in minutes                  | 10
 schema.cache.reload.thread.pool.size     | how many backgound threads should maintain the cache               | 2
 schema.cache.expire.after.write.minutes  | if schema can't be refreshed, it will be deleted after this period | 60 * 24 (day)

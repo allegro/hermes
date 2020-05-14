@@ -28,6 +28,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import static com.github.tomakehurst.wiremock.client.WireMock.put
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import static pl.allegro.tech.hermes.schema.SubjectNamingStrategy.qualifiedName
 
 class SchemaRepoRawSchemaClientTest extends Specification {
 
@@ -49,10 +50,10 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         wireMock.start()
         resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port/schema-repo"))
         subjectNamingStrategies = [
-                SubjectNamingStrategy.qualifiedName,
-                SubjectNamingStrategy.qualifiedName.withValueSuffixIf(true),
-                SubjectNamingStrategy.qualifiedName.withNamespacePrefixIf(true, "test"),
-                SubjectNamingStrategy.qualifiedName.withValueSuffixIf(true).withNamespacePrefixIf(true, "test")
+                qualifiedName,
+                qualifiedName.withValueSuffixIf(true),
+                qualifiedName.withNamespacePrefixIf(true, "test"),
+                qualifiedName.withValueSuffixIf(true).withNamespacePrefixIf(true, "test")
         ]
         clients = subjectNamingStrategies.collect { new SchemaRepoRawSchemaClient(resolver, it) }
     }

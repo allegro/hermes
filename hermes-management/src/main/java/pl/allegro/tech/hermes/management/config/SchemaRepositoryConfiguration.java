@@ -25,6 +25,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.net.URI;
 
+import static pl.allegro.tech.hermes.schema.SubjectNamingStrategy.qualifiedName;
+
 @Configuration
 @EnableConfigurationProperties({SchemaRepositoryProperties.class})
 public class SchemaRepositoryConfiguration {
@@ -48,7 +50,7 @@ public class SchemaRepositoryConfiguration {
 
     @Bean
     public SubjectNamingStrategy subjectNamingStrategy(KafkaClustersProperties kafkaClustersProperties) {
-        return SubjectNamingStrategy.qualifiedName
+        return qualifiedName
                 .withNamespacePrefixIf(schemaRepositoryProperties.isSubjectNamespaceEnabled(), kafkaClustersProperties.getDefaultNamespace())
                 .withValueSuffixIf(schemaRepositoryProperties.isSubjectSuffixEnabled());
     }

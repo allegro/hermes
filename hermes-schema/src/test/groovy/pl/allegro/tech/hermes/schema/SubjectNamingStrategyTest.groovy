@@ -1,10 +1,11 @@
 package pl.allegro.tech.hermes.schema
 
-import pl.allegro.tech.hermes.api.RawSchema
+
 import pl.allegro.tech.hermes.api.TopicName
-import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient
 import spock.lang.Specification
 import spock.lang.Subject
+
+import static pl.allegro.tech.hermes.schema.SubjectNamingStrategy.qualifiedName
 
 @Subject(SubjectNamingStrategy)
 class SubjectNamingStrategyTest extends Specification {
@@ -18,13 +19,13 @@ class SubjectNamingStrategyTest extends Specification {
 
         where:
         subjectNamingStrategy << [
-                SubjectNamingStrategy.qualifiedName,
-                SubjectNamingStrategy.qualifiedName.withValueSuffixIf(true),
-                SubjectNamingStrategy.qualifiedName.withNamespacePrefixIf(true, "ns"),
-                SubjectNamingStrategy.qualifiedName
+                qualifiedName,
+                qualifiedName.withValueSuffixIf(true),
+                qualifiedName.withNamespacePrefixIf(true, "ns"),
+                qualifiedName
                         .withValueSuffixIf(true)
                         .withNamespacePrefixIf(true, "ns"),
-                SubjectNamingStrategy.qualifiedName
+                qualifiedName
                         .withNamespacePrefixIf(true, "ns")
                         .withValueSuffixIf(true)
         ]
