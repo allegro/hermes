@@ -5,7 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.schema.*;
+import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
+import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
+import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
+import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
 import javax.ws.rs.client.Entity;
