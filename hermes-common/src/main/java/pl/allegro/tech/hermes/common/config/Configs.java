@@ -298,6 +298,8 @@ public enum Configs {
     SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS("schema.repository.http.connect.timeout.ms", 2000),
     SCHEMA_REPOSITORY_ONLINE_CHECK_PERMITS_PER_SECOND("schema.repository.online.check.permits.per.second", 100.0),
     SCHEMA_REPOSITORY_ONLINE_CHECK_ACQUIRE_WAIT_MS("schema.repository.online.check.acquire.wait.ms", 500),
+    SCHEMA_REPOSITORY_SUBJECT_SUFFIX_ENABLED("schema.repository.subject.suffix.enabled", false),
+    SCHEMA_REPOSITORY_SUBJECT_NAMESPACE_ENABLED("schema.repository.subject.namespace.enabled", false),
 
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 

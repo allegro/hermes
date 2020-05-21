@@ -17,6 +17,10 @@ public class SchemaRepositoryProperties {
     private int socketTimeoutMillis = 3000;
     private String deleteSchemaPathSuffix = "versions";
 
+    private boolean subjectSuffixEnabled = Configs.SCHEMA_REPOSITORY_SUBJECT_SUFFIX_ENABLED.getDefaultValue();
+
+    private boolean subjectNamespaceEnabled = Configs.SCHEMA_REPOSITORY_SUBJECT_NAMESPACE_ENABLED.getDefaultValue();
+
     public String getType() {
         return type;
     }
@@ -63,5 +67,21 @@ public class SchemaRepositoryProperties {
 
     public void setSocketTimeoutMillis(int socketTimeoutMillis) {
         this.socketTimeoutMillis = socketTimeoutMillis;
+    }
+
+    public boolean isSubjectSuffixEnabled() {
+        return subjectSuffixEnabled;
+    }
+
+    public void setSubjectSuffixEnabled(boolean subjectSuffixEnabled) {
+        this.subjectSuffixEnabled = subjectSuffixEnabled;
+    }
+
+    public boolean isSubjectNamespaceEnabled() {
+        return subjectNamespaceEnabled;
+    }
+
+    public void setSubjectNamespaceEnabled(boolean subjectNamespaceEnabled) {
+        this.subjectNamespaceEnabled = subjectNamespaceEnabled;
     }
 }
