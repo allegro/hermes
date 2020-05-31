@@ -51,6 +51,8 @@ Creating workload constraints for topic:
 }
 ```
 
+A workload constraint specified for a topic is in fact the constraint for all subscriptions in this topic.
+
 Creating workload constraints for subscriptions:
 
 `PUT /workload-constraints/subscription`
