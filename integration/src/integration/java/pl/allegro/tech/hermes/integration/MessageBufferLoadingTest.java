@@ -82,12 +82,6 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         frontend.overrideProperty(KAFKA_AUTHORIZATION_PROTOCOL, "SASL_PLAINTEXT");
         frontend.overrideProperty(KAFKA_AUTHORIZATION_USERNAME, "hermes");
         frontend.overrideProperty(KAFKA_AUTHORIZATION_PASSWORD, "alice-secret");
-// TODO
-        //        frontend.overrideProperty("sasl.jaas.config",
-//                "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
-//                        + "username=\"" + getString(KAFKA_AUTHORIZATION_USERNAME) + "\"\n"
-//                        + "password=\"" + getString(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
-//        );
         frontend.overrideProperty(KAFKA_ZOOKEEPER_CONNECT_STRING, KAFKA_ZK_CONNECT_STRING);
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, backupStorageDir);
         frontend.start();

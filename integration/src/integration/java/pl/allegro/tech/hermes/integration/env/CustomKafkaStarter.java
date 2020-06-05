@@ -24,7 +24,6 @@ public class CustomKafkaStarter extends KafkaStarter {
         properties.setProperty("security.protocol", "SASL_PLAINTEXT");
         properties.setProperty("sasl.kerberos.service.name", "SASL_PLAINTEXT");
         properties.setProperty("sasl.enabled.mechanisms", "PLAIN");
-        // TODO: hardcoded
         properties.put("sasl.jaas.config",
                 "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
                         + "username=\"" + "hermes" + "\"\n"
