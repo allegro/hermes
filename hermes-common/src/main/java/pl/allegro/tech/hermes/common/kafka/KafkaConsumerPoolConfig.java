@@ -8,16 +8,20 @@ public class KafkaConsumerPoolConfig {
     private final int fetchMinBytes;
     private final String idPrefix;
     private final String consumerGroupName;
-
+    private final boolean isSaslEnabled;
+    private final String saslJaasConfig;
 
     public KafkaConsumerPoolConfig(int cacheExpirationSeconds, int bufferSize, int fetchMaxWaitMillis,
-                                   int fetchMinBytes, String idPrefix, String consumerGroupName) {
+                                   int fetchMinBytes, String idPrefix, String consumerGroupName,
+                                   boolean isSaslEnabled, String saslJaasConfig) {
         this.cacheExpirationSeconds = cacheExpirationSeconds;
         this.bufferSizeBytes = bufferSize;
         this.fetchMaxWaitMillis = fetchMaxWaitMillis;
         this.fetchMinBytes = fetchMinBytes;
         this.idPrefix = idPrefix;
         this.consumerGroupName = consumerGroupName;
+        this.isSaslEnabled = isSaslEnabled;
+        this.saslJaasConfig = saslJaasConfig;
     }
 
     public int getCacheExpirationSeconds() {
@@ -42,5 +46,13 @@ public class KafkaConsumerPoolConfig {
 
     public int getFetchMinBytes() {
         return fetchMinBytes;
+    }
+
+    public boolean isSaslEnabled() {
+        return isSaslEnabled;
+    }
+
+    public String getSaslJaasConfig() {
+        return saslJaasConfig;
     }
 }

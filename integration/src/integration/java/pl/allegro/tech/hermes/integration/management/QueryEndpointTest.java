@@ -31,6 +31,7 @@ import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class QueryEndpointTest extends IntegrationTest {
@@ -136,7 +137,7 @@ public class QueryEndpointTest extends IntegrationTest {
     @Test(dataProvider = "subscriptionData")
     public void shouldQuerySubscription(String query, List<Integer> positions) {
         // given
-        Topic topic = operations.buildTopic("NotWise", "NotUsed");
+        Topic topic = operations.buildTopic(randomTopic("NotWise", "NotUsed").build());
 
         Subscription subscription1 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription1"), "http://endpoint1"));
         Subscription subscription2 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription2"), "http://endpoint2"));

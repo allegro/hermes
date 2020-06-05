@@ -17,7 +17,13 @@ import pl.allegro.tech.hermes.tracker.mongo.frontend.MongoLogRepository;
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.TEN_SECONDS;
 import static javax.ws.rs.core.Response.Status.OK;
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_FIXED_MAX;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_TYPE;
+import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_TYPE;
 import static pl.allegro.tech.hermes.common.schema.SchemaRepositoryType.SCHEMA_REGISTRY;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 

@@ -43,6 +43,8 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
 
     @Override
     public void start() throws Exception {
+        System.setProperty("java.security.auth.login.config", "./kafka_server_jaas.conf");
+
         logger.info("Starting in-memory Kafka");
 
         createZkBasePathIfNeeded(kafkaConfig.zkConnect());
@@ -82,6 +84,8 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
     @Override
     public void stop() throws Exception {
         if (running) {
+            System.clearProperty("java.security.auth.login.config");
+
             logger.info("Stopping in-memory Kafka");
             kafka.shutdown();
             kafka.awaitShutdown();
@@ -96,7 +100,7 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
         return kafka;
     }
 
-    private void cleanLogs()  {
+    private void cleanLogs() {
         try {
             FileUtils.deleteDirectory(new File(kafkaConfig.logDirs().head()));
         } catch (IOException e) {
@@ -107,9 +111,9 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
 
     private CuratorFramework startZookeeperClient(String connectString) throws InterruptedException {
         CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
-            .connectString(connectString)
-            .retryPolicy(new ExponentialBackoffRetry(1000, 3))
-            .build();
+                .connectString(connectString)
+                .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+                .build();
         zookeeperClient.start();
         zookeeperClient.blockUntilConnected();
         return zookeeperClient;

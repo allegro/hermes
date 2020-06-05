@@ -19,6 +19,7 @@ import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
+import pl.allegro.tech.hermes.management.config.kafka.KafkaProperties
 import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Shared
@@ -67,7 +68,7 @@ class KafkaConsumerGroupManagerSpec extends Specification {
     }
 
     def setup() {
-        consumerGroupManager = new KafkaConsumerGroupManager(kafkaNamesMapper, "primary", kafkaContainer.bootstrapServers)
+        consumerGroupManager = new KafkaConsumerGroupManager(kafkaNamesMapper, "primary", kafkaContainer.bootstrapServers, new KafkaProperties())
     }
 
     def "should create consumer group with offset equal to last topic offset"() {
@@ -185,6 +186,6 @@ class KafkaConsumerGroupManagerSpec extends Specification {
         assert describeTopicsResult[0].name() == kafkaTopicName
         assert describeTopicsResult[0].partitions()
                 .collect { it.partition() }
-                .containsAll(0..(partitionsNumber-1))
+                .containsAll(0..(partitionsNumber - 1))
     }
 }

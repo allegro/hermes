@@ -94,6 +94,8 @@ dependencies {
     testCompile(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
+    testCompile group: 'org.testcontainers', name: 'spock', version: '1.14.1'
+    testCompile group: 'org.testcontainers', name: 'kafka', version: '1.14.1'
 
     testCompile group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
     alpnboot group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: getAlpnVersion()

@@ -6,7 +6,6 @@ import kafka.zookeeper.ZooKeeperClient;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
-import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.common.utils.Time;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +50,10 @@ import java.util.stream.Collectors;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static java.util.stream.Collectors.toList;
+import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
+import static org.apache.kafka.clients.CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL;
+import static org.apache.kafka.clients.CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG;
+import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
@@ -129,7 +132,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     private ConsumerGroupManager createConsumerGroupManager(KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper) {
         return subscriptionProperties.isCreateConsumerGroupManuallyEnabled() ?
                 new KafkaConsumerGroupManager(kafkaNamesMapper, kafkaProperties.getQualifiedClusterName(),
-                        kafkaProperties.getBootstrapKafkaServer()) :
+                        kafkaProperties.getBootstrapKafkaServer(), kafkaProperties) :
                 new NoOpConsumerGroupManager();
     }
 
@@ -209,15 +212,23 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 kafkaProperties.getKafkaConsumer().getFetchMaxWaitMillis(),
                 kafkaProperties.getKafkaConsumer().getFetchMinBytes(),
                 kafkaProperties.getKafkaConsumer().getNamePrefix(),
-                kafkaProperties.getKafkaConsumer().getConsumerGroupName());
+                kafkaProperties.getKafkaConsumer().getConsumerGroupName(),
+                kafkaProperties.isSaslEnabled(),
+                kafkaProperties.getSaslJaasConfig());
 
         return new KafkaConsumerPool(config, brokerStorage);
     }
 
     private AdminClient brokerAdminClient(KafkaProperties kafkaProperties) {
         Properties props = new Properties();
-        props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapKafkaServer());
-        props.put(CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getKafkaServerRequestTimeoutMillis());
+        props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapKafkaServer());
+        props.put(SECURITY_PROTOCOL_CONFIG, DEFAULT_SECURITY_PROTOCOL);
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getKafkaServerRequestTimeoutMillis());
+        if (kafkaProperties.isSaslEnabled()) {
+            props.put("sasl.mechanism", kafkaProperties.getSaslMechanism());
+            props.put("security.protocol", kafkaProperties.getSaslProtocol());
+            props.put("sasl.jaas.config", kafkaProperties.getSaslJaasConfig());
+        }
         return AdminClient.create(props);
     }
 }
