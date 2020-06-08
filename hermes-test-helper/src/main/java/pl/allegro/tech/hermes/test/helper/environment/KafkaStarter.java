@@ -43,8 +43,6 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
 
     @Override
     public void start() throws Exception {
-        System.setProperty("java.security.auth.login.config", KafkaStarter.class.getClassLoader().getResource("kafka_server_jaas.conf").getPath());
-
         logger.info("Starting in-memory Kafka");
 
         createZkBasePathIfNeeded(kafkaConfig.zkConnect());

@@ -34,6 +34,8 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     private CuratorFramework zookeeper;
 
     static {
+        System.setProperty("java.security.auth.login.config", HermesIntegrationEnvironment.class.getClassLoader().getResource("kafka_server_jaas.conf").getPath());
+
         STARTERS.put(ZookeeperStarter.class, new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_CONNECT_STRING, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT) + "/groups"));
         STARTERS.put(KafkaStarter.class, new KafkaStarter());
         STARTERS.put(GraphiteMockStarter.class, new GraphiteMockStarter(GRAPHITE_SERVER_PORT));
