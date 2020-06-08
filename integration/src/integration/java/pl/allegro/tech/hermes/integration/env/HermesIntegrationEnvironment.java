@@ -34,9 +34,6 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     private CuratorFramework zookeeper;
 
     static {
-        System.setProperty("zookeeper.sasl.client", "FALSE");
-        System.setProperty("java.security.auth.login.config", HermesIntegrationEnvironment.class.getClassLoader().getResource("kafka_server_jaas.conf").getPath());
-
         STARTERS.put(ZookeeperStarter.class, new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_CONNECT_STRING, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT) + "/groups"));
         STARTERS.put(KafkaStarter.class, new KafkaStarter());
         STARTERS.put(GraphiteMockStarter.class, new GraphiteMockStarter(GRAPHITE_SERVER_PORT));
@@ -53,8 +50,6 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     @BeforeSuite
     public void prepareEnvironment(ITestContext context) throws Exception {
-//        System.setProperty("java.security.auth.login.config", getClass().getResource("src/integration/resources/kafka_server_jaas.conf").getPath());
-
         try {
             for (ITestNGMethod method : context.getAllTestMethods()) {
                 method.setRetryAnalyzer(new Retry());
@@ -94,8 +89,6 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     @AfterSuite(alwaysRun = true)
     public void cleanEnvironment() throws Exception {
-        System.clearProperty("java.security.auth.login.config");
-
         try {
             ArrayList<Starter<?>> reversedStarters = new ArrayList<>(STARTERS.values());
             Collections.reverse(reversedStarters);
