@@ -96,8 +96,8 @@ public class KafkaConsumerPool {
             props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
 
             if (poolConfig.isSaslEnabled()) {
-                props.put(SASL_MECHANISM, "PLAIN");
-                props.put(SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+                props.put(SASL_MECHANISM, poolConfig.getSecurityMechanism());
+                props.put(SECURITY_PROTOCOL_CONFIG, poolConfig.getSecurityProtocol());
                 props.put(SASL_JAAS_CONFIG, poolConfig.getSaslJaasConfig());
             }
             return new KafkaConsumer<>(props);

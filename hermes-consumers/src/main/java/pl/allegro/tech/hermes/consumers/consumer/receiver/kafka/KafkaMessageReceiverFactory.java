@@ -47,6 +47,8 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.REQUEST_TIMEOUT_M
 import static org.apache.kafka.clients.consumer.ConsumerConfig.RETRY_BACKOFF_MS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.SEND_BUFFER_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG;
+import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
+import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_RECEIVER_INITIAL_IDLE_TIME;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_RECEIVER_MAX_IDLE_TIME;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
@@ -136,9 +138,9 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
 
         if (configs.getBooleanProperty(KAFKA_AUTHORIZATION_ENABLED)) {
-            props.put("sasl.mechanism", configs.getStringProperty(KAFKA_AUTHORIZATION_MECHANISM));
+            props.put(SASL_MECHANISM, configs.getStringProperty(KAFKA_AUTHORIZATION_MECHANISM));
             props.put(SECURITY_PROTOCOL_CONFIG, configs.getStringProperty(KAFKA_AUTHORIZATION_PROTOCOL));
-            props.put("sasl.jaas.config",
+            props.put(SASL_JAAS_CONFIG,
                     "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
                             + "username=\"" + configs.getStringProperty(KAFKA_AUTHORIZATION_USERNAME) + "\"\n"
                             + "password=\"" + configs.getStringProperty(KAFKA_AUTHORIZATION_PASSWORD) + "\";"

@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.ACKS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.BATCH_SIZE_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG;
@@ -28,6 +29,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.RETRIES_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.RETRY_BACKOFF_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.SEND_BUFFER_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
+import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_MECHANISM;
@@ -82,8 +84,8 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
 
         if (getBoolean(KAFKA_AUTHORIZATION_ENABLED)) {
             props.put(SASL_MECHANISM, getString(KAFKA_AUTHORIZATION_MECHANISM));
-            props.put("security.protocol", getString(KAFKA_AUTHORIZATION_PROTOCOL));
-            props.put("sasl.jaas.config",
+            props.put(SECURITY_PROTOCOL_CONFIG, getString(KAFKA_AUTHORIZATION_PROTOCOL));
+            props.put(SASL_JAAS_CONFIG,
                     "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
                             + "username=\"" + getString(KAFKA_AUTHORIZATION_USERNAME) + "\"\n"
                             + "password=\"" + getString(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
