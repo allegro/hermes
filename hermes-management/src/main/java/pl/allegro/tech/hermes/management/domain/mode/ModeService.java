@@ -7,10 +7,12 @@ public class ModeService {
 
     public static final String READ_WRITE = "readWrite";
     public static final String READ_ONLY = "readOnly";
+    public static final String READ_ONLY_ADMIN = "readOnlyAdmin";
 
     public enum ManagementMode {
         READ_WRITE(ModeService.READ_WRITE),
-        READ_ONLY(ModeService.READ_ONLY);
+        READ_ONLY(ModeService.READ_ONLY),
+        READ_ONLY_ADMIN(ModeService.READ_ONLY_ADMIN);
 
         private final String text;
 
@@ -35,6 +37,10 @@ public class ModeService {
     }
 
     public boolean isReadOnlyEnabled() {
-        return mode == ManagementMode.READ_ONLY;
+        return mode == ManagementMode.READ_ONLY || mode == ManagementMode.READ_ONLY_ADMIN;
+    }
+
+    public boolean isReadOnlySetByAdmin() {
+        return mode == ManagementMode.READ_ONLY_ADMIN;
     }
 }
