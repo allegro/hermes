@@ -13,7 +13,7 @@
 
 Allow Hermes to connect to the Kafka via secured channel. This feature provides additional configs params:
 
-- `kafka.authorization.enabled` - `true` or `false`
+- `kafka.authorization.enabled` - `true` or `false` (default is `false`)
 - `kafka.authorization.mechanism` - mechanism for authentication (default is `PLAIN`)
 - `kafka.authorization.protocol` - protocol for the communication (default is `SASL_PLAINTEXT`)
 - `kafka.authorization.username` - client's username (default is `username`)
