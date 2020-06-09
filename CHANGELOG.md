@@ -2,6 +2,35 @@
 
 ...
 
+## 1.4.7 (09.06.2020)
+
+### Enhancements
+
+#### ([1208](https://github.com/allegro/hermes/pull/1208)) Schema repository docs improvement
+#### ([1209](https://github.com/allegro/hermes/pull/1209)) Feature/schema subject naming
+#### ([1210](https://github.com/allegro/hermes/pull/1210)) Add missing documentation of workload constraints
+#### ([1203](https://github.com/allegro/hermes/pull/1203)) Hermes secured
+
+Allow Hermes to connect to the Kafka via secured channel. This feature provides additional configs params:
+
+- `kafka.authorization.enabled` - `true` or `false` (default is `false`)
+- `kafka.authorization.mechanism` - mechanism for authentication (default is `PLAIN`)
+- `kafka.authorization.protocol` - protocol for the communication (default is `SASL_PLAINTEXT`)
+- `kafka.authorization.username` - client's username (default is `username`)
+- `kafka.authorization.password` - client's password (default is `password`)
+
+### Fixes
+
+#### ([1202](https://github.com/allegro/hermes/pull/1202)) Fixed Vagrant provisioning
+
+Added fallback to `archive.apache.org` for Kafka distribution.
+
+#### ([1207](https://github.com/allegro/hermes/pull/1207)) java11 fix: jaxb deps upgrade
+
+#### ([1212](https://github.com/allegro/hermes/pull/1212)) Removed duplicated counter for filtered messages
+
+Removed duplicated counter for filtered messages.
+
 ## 1.4.6 (24.04.2020)
 
 ### Enhancements
