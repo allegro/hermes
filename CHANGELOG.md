@@ -6,18 +6,18 @@
 
 ### Enhancements
 
-#### ([1208](https://github.com/allegro/hermes/pull/1208)) Schema repository docs improvemen
+#### ([1208](https://github.com/allegro/hermes/pull/1208)) Schema repository docs improvement
 #### ([1209](https://github.com/allegro/hermes/pull/1209)) Feature/schema subject naming
 #### ([1210](https://github.com/allegro/hermes/pull/1210)) Add missing documentation of workload constraints
 #### ([1203](https://github.com/allegro/hermes/pull/1203)) Hermes secured
 
-Allow Hermes to connecto to the Kafka via secured channel. This feature provides additional configs params:
+Allow Hermes to connect to the Kafka via secured channel. This feature provides additional configs params:
 
 - `kafka.authorization.enabled` - `true` or `false`
-- `kafka.authorization.mechanism` - mechanism for authentication
-- `kafka.authorization.protocol` - protocol for the communication
-- `kafka.authorization.username` - client's username 
-- `kafka.authorization.password` - client's password
+- `kafka.authorization.mechanism` - mechanism for authentication (default is `PLAIN`)
+- `kafka.authorization.protocol` - protocol for the communication (default is `SASL_PLAINTEXT`)
+- `kafka.authorization.username` - client's username (default is `username`)
+- `kafka.authorization.password` - client's password (default is `password`)
 
 ### Fixes
 
