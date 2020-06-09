@@ -11,7 +11,6 @@ public class Counters {
             UNPUBLISHED = "unpublished." + GROUP + "." + TOPIC,
             DELIVERED = "delivered." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
             DISCARDED = "discarded." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
-            FILTERED = "filtered." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
             INFLIGHT = "inflight." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
             EXECUTOR_RUNNING = "executors." + EXECUTOR_NAME + ".running",
             SCHEDULED_EXECUTOR_OVERRUN = "executors." + EXECUTOR_NAME + ".overrun",
