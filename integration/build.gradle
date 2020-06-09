@@ -119,6 +119,8 @@ project.sourceSets {
 }
 
 task integrationTest(type: Test) {
+    logging.captureStandardOutput LogLevel.INFO
+
     def args = []
     if(JavaVersion.current() == JavaVersion.VERSION_1_8){
         args = ["-Xbootclasspath/p:${project.configurations.alpnboot.asPath}"]

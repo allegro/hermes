@@ -86,6 +86,12 @@ public enum Configs {
     KAFKA_PRODUCER_REPORT_NODE_METRICS("kafka.producer.report.node.metrics", false),
     KAFKA_STREAM_COUNT("kafka.stream.count", 1),
 
+    KAFKA_AUTHORIZATION_ENABLED("kafka.authorization.enabled", false),
+    KAFKA_AUTHORIZATION_MECHANISM("kafka.authorization.mechanism", "PLAIN"),
+    KAFKA_AUTHORIZATION_PROTOCOL("kafka.authorization.protocol", "SASL_PLAINTEXT"),
+    KAFKA_AUTHORIZATION_USERNAME("kafka.authorization.username", "username"),
+    KAFKA_AUTHORIZATION_PASSWORD("kafka.authorization.password", "password"),
+
     FRONTEND_PORT("frontend.port", 8080),
     FRONTEND_HOST("frontend.host", "0.0.0.0"),
     FRONTEND_IDLE_TIMEOUT("frontend.idle.timeout", 65),

@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.management.config.kafka.KafkaProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
 
 import java.util.Map;
@@ -19,10 +20,16 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.DEFAULT_API_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG;
+import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
+import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 
 public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
@@ -31,13 +38,16 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
     private final KafkaNamesMapper kafkaNamesMapper;
     private final String clusterName;
     private final String bootstrapKafkaServer;
+    private final KafkaProperties kafkaProperties;
 
     public KafkaConsumerGroupManager(KafkaNamesMapper kafkaNamesMapper,
                                      String clusterName,
-                                     String bootstrapKafkaServer) {
+                                     String bootstrapKafkaServer,
+                                     KafkaProperties kafkaProperties) {
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.clusterName = clusterName;
         this.bootstrapKafkaServer = bootstrapKafkaServer;
+        this.kafkaProperties = kafkaProperties;
     }
 
     @Override
@@ -81,9 +91,14 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, 5000);
-        props.put("default.api.timeout.ms", 5000);
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        props.put(DEFAULT_API_TIMEOUT_MS_CONFIG, 5000);
+        props.put(KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+        if (kafkaProperties.isSaslEnabled()) {
+            props.put(SASL_MECHANISM, kafkaProperties.getSaslMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSaslProtocol());
+            props.put(SASL_JAAS_CONFIG, kafkaProperties.getSaslJaasConfig());
+        }
         return props;
     }
 }

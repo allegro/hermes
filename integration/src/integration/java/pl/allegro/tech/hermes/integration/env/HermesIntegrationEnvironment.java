@@ -12,12 +12,12 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
-import pl.allegro.tech.hermes.test.helper.retry.Retry;
 import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.test.helper.environment.WireMockStarter;
 import pl.allegro.tech.hermes.test.helper.environment.ZookeeperStarter;
+import pl.allegro.tech.hermes.test.helper.retry.Retry;
+import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +34,8 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     private CuratorFramework zookeeper;
 
     static {
+        System.setProperty("java.security.auth.login.config", HermesIntegrationEnvironment.class.getClassLoader().getResource("kafka_server_jaas.conf").getPath());
+
         STARTERS.put(ZookeeperStarter.class, new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_CONNECT_STRING, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT) + "/groups"));
         STARTERS.put(KafkaStarter.class, new KafkaStarter());
         STARTERS.put(GraphiteMockStarter.class, new GraphiteMockStarter(GRAPHITE_SERVER_PORT));
@@ -42,8 +44,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         STARTERS.put(OAuthServerMockStarter.class, new OAuthServerMockStarter());
         STARTERS.put(CustomKafkaStarter.class, new CustomKafkaStarter(SECONDARY_KAFKA_PORT, SECONDARY_ZK_KAFKA_CONNECT));
         STARTERS.put(JmsStarter.class, new JmsStarter());
-        STARTERS.put(ConfluentSchemaRegistryStarter.class, new ConfluentSchemaRegistryStarter(SCHEMA_REPO_PORT,
-                SECONDARY_ZK_KAFKA_CONNECT));
+        STARTERS.put(ConfluentSchemaRegistryStarter.class, new ConfluentSchemaRegistryStarter(SCHEMA_REPO_PORT, SECONDARY_ZK_KAFKA_CONNECT));
         STARTERS.put(ConsumersStarter.class, new ConsumersStarter());
         STARTERS.put(FrontendStarter.class, new FrontendStarter(FRONTEND_PORT));
         STARTERS.put(ManagementStarter.class, new ManagementStarter(MANAGEMENT_PORT, "integration"));
@@ -87,7 +88,6 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         zookeeperClient.start();
         return zookeeperClient;
     }
-
 
     @AfterSuite(alwaysRun = true)
     public void cleanEnvironment() throws Exception {

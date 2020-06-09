@@ -34,6 +34,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_MECHANISM;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PROTOCOL;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_ZOOKEEPER_CONNECT_STRING;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
@@ -72,6 +77,11 @@ public class MessageBufferLoadingTest extends IntegrationTest {
 
         FrontendStarter frontend = new FrontendStarter(frontendPort, false);
         frontend.overrideProperty(KAFKA_BROKER_LIST, "localhost:" + kafkaPort);
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, true);
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_MECHANISM, "PLAIN");
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_PROTOCOL, "SASL_PLAINTEXT");
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_USERNAME, "hermes");
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_PASSWORD, "alice-secret");
         frontend.overrideProperty(KAFKA_ZOOKEEPER_CONNECT_STRING, KAFKA_ZK_CONNECT_STRING);
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, backupStorageDir);
         frontend.start();

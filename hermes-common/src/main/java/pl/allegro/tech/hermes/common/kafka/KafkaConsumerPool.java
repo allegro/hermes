@@ -6,22 +6,25 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.UncheckedExecutionException;
-import java.util.Properties;
 import kafka.common.TopicAndPartition;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import pl.allegro.tech.hermes.common.broker.BrokerDetails;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.FETCH_MIN_BYTES_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.RECEIVE_BUFFER_CONFIG;
+import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
+import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 
 
 /**
@@ -58,7 +61,7 @@ public class KafkaConsumerPool {
             throw new KafkaConsumerPoolException(message, e);
         } catch (UncheckedExecutionException e) {
             if (e.getCause() instanceof BrokerNotFoundForPartitionException) {
-                throw (BrokerNotFoundForPartitionException)e.getCause();
+                throw (BrokerNotFoundForPartitionException) e.getCause();
             }
             throw e;
         }
@@ -91,6 +94,12 @@ public class KafkaConsumerPool {
             props.put(FETCH_MIN_BYTES_CONFIG, poolConfig.getFetchMinBytes());
             props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
             props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
+
+            if (poolConfig.isSaslEnabled()) {
+                props.put(SASL_MECHANISM, poolConfig.getSecurityMechanism());
+                props.put(SECURITY_PROTOCOL_CONFIG, poolConfig.getSecurityProtocol());
+                props.put(SASL_JAAS_CONFIG, poolConfig.getSaslJaasConfig());
+            }
             return new KafkaConsumer<>(props);
         }
     }
@@ -101,7 +110,5 @@ public class KafkaConsumerPool {
             notification.getValue().close();
         }
     }
-
-
 }
 
