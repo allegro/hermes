@@ -57,13 +57,10 @@ class HealthCheckTask implements Runnable {
     }
 
     private void updateMode(List<HealthCheckResult> healthCheckResults) {
-        /* ReadOnly set by admin can be changed to ReadWrite only by admin */
-        if (!modeService.isReadOnlySetByAdmin()) {
-            if (healthCheckResults.contains(HealthCheckResult.UNHEALTHY)) {
-                modeService.setMode(ModeService.ManagementMode.READ_ONLY);
-            } else {
-                modeService.setMode(ModeService.ManagementMode.READ_WRITE);
-            }
+        if (healthCheckResults.contains(HealthCheckResult.UNHEALTHY)) {
+            modeService.compareAndSwapMode(ModeService.ManagementMode.READ_WRITE, ModeService.ManagementMode.READ_ONLY);
+        } else {
+            modeService.compareAndSwapMode(ModeService.ManagementMode.READ_ONLY, ModeService.ManagementMode.READ_WRITE);
         }
     }
 
