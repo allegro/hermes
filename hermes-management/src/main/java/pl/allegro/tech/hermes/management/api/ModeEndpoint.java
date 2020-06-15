@@ -17,8 +17,8 @@ import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static pl.allegro.tech.hermes.management.domain.mode.ModeService.ManagementMode.READ_ONLY;
 import static pl.allegro.tech.hermes.management.domain.mode.ModeService.ManagementMode.READ_WRITE;
+import static pl.allegro.tech.hermes.management.domain.mode.ModeService.ManagementMode.READ_ONLY_ADMIN;
 
 @Component
 @Path("/mode")
@@ -48,10 +48,11 @@ public class ModeEndpoint {
         }
         switch (mode) {
             case ModeService.READ_WRITE:
-                modeService.setMode(READ_WRITE);
+                modeService.setModeByAdmin(READ_WRITE);
                 break;
             case ModeService.READ_ONLY:
-                modeService.setMode(READ_ONLY);
+            case ModeService.READ_ONLY_ADMIN:
+                modeService.setModeByAdmin(READ_ONLY_ADMIN);
                 break;
             default:
                 return Response.status(Response.Status.BAD_REQUEST).build();
