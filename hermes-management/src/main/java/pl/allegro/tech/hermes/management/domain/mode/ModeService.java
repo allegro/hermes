@@ -32,7 +32,7 @@ public class ModeService {
         return mode;
     }
 
-    public synchronized void setMode(ManagementMode mode) {
+    public synchronized void setModeByAdmin(ManagementMode mode) {
         this.mode = mode;
     }
 
@@ -40,9 +40,10 @@ public class ModeService {
         return mode == ManagementMode.READ_ONLY || mode == ManagementMode.READ_ONLY_ADMIN;
     }
 
-    public synchronized void compareAndSwapMode(ManagementMode expectedMode, ManagementMode newMode) {
-        if (mode.equals(expectedMode)) {
-            setMode(newMode);
+    public synchronized void setMode(ManagementMode newMode) {
+        /* READ_ONLY_ADMIN is a flag that can be changed only by admin */
+        if (!mode.equals(ManagementMode.READ_ONLY_ADMIN)) {
+            this.mode = newMode;
         }
     }
 }

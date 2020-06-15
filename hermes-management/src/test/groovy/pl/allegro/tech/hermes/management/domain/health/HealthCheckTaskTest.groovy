@@ -92,10 +92,9 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
 
     def "should not change status to READ_WRITE if READ_ONLY is set by admin"() {
         given:
-        modeService.setMode(ModeService.ManagementMode.READ_ONLY_ADMIN)
+        modeService.setModeByAdmin(ModeService.ManagementMode.READ_ONLY_ADMIN)
 
         when:
-        zookeeper1.start()
         healthCheckTask.run()
 
         then:
@@ -107,17 +106,16 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
 
     def "should change status from READ_ONLY_ADMIN to READ_WRITE only by admin"() {
         given:
-        modeService.setMode(ModeService.ManagementMode.READ_ONLY_ADMIN)
+        modeService.setModeByAdmin(ModeService.ManagementMode.READ_ONLY_ADMIN)
 
         when:
-        zookeeper1.start()
         healthCheckTask.run()
 
         then:
         modeService.readOnlyEnabled
 
         when:
-        modeService.setMode(ModeService.ManagementMode.READ_WRITE)
+        modeService.setModeByAdmin(ModeService.ManagementMode.READ_WRITE)
 
         then:
         !modeService.readOnlyEnabled

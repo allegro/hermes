@@ -48,10 +48,11 @@ public class ModeEndpoint {
         }
         switch (mode) {
             case ModeService.READ_WRITE:
-                modeService.setMode(READ_WRITE);
+                modeService.setModeByAdmin(READ_WRITE);
                 break;
             case ModeService.READ_ONLY:
-                modeService.setMode(READ_ONLY_ADMIN);
+            case ModeService.READ_ONLY_ADMIN:
+                modeService.setModeByAdmin(READ_ONLY_ADMIN);
                 break;
             default:
                 return Response.status(Response.Status.BAD_REQUEST).build();
