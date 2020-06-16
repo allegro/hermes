@@ -23,7 +23,7 @@ public class FullDrainMpscQueue<T> implements MpscQueue<T> {
 
     /**
      * The {@link MpscArrayQueue#drain(MessagePassingQueue.Consumer)} method may skip items with allocated slots
-     * by producers (who won CAS) but were not added to the queue yet. This may happend to broken elements chain.
+     * by producers (who won CAS) but were not added to the queue yet. This may happen to broken elements chain.
      * See explanation at http://psy-lob-saw.blogspot.com/2014/07/poll-me-maybe.html
      *
      * This is an alternative approach which waits for all items to become available
