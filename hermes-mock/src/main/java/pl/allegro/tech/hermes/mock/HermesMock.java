@@ -53,7 +53,7 @@ public class HermesMock {
         public Builder() {
             port = wireMockConfig().portNumber();
             awaitSeconds = 5;
-            objectMapper = new ObjectMapper();
+            objectMapper = new ObjectMapper().findAndRegisterModules();
         }
 
         public HermesMock.Builder withPort(int port) {
