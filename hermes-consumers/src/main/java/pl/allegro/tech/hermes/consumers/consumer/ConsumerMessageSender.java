@@ -187,7 +187,7 @@ public class ConsumerMessageSender {
         List<URI> succeededUris = result.getSucceededUris(ConsumerMessageSender.this::messageSentSucceeded);
         message.incrementRetryCounter(succeededUris);
 
-        long retryDelay = extractRetryDelay(result);
+        long retryDelay = extractRetryDelay(message, result);
         if (shouldAttemptResending(message, result, retryDelay)) {
             retrySingleThreadExecutor.schedule(() -> resend(message, result), retryDelay, TimeUnit.MILLISECONDS);
         } else {
@@ -199,8 +199,8 @@ public class ConsumerMessageSender {
         return !willExceedTtl(message, retryDelay) && shouldResendMessage(result);
     }
 
-    private long extractRetryDelay(MessageSendingResult result) {
-        long defaultBackoff = subscription.getSerialSubscriptionPolicy().getMessageBackoff();
+    private long extractRetryDelay(Message message, MessageSendingResult result) {
+        long defaultBackoff = message.updateAndGetCurrentMessageBackoff(subscription.getSerialSubscriptionPolicy());
         long ttl = TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
         return result.getRetryAfterMillis().map(delay -> Math.min(delay, ttl)).orElse(defaultBackoff);
     }
