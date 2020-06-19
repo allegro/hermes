@@ -30,50 +30,7 @@ public class KafkaProperties {
 
     private KafkaConsumer kafkaConsumer = new KafkaConsumer();
 
-    private SaslConfig saslConfig = new SaslConfig();
-
-    public static final class SaslConfig {
-        private boolean isEnabled = false;
-        private String mechanism = "PLAIN";
-        private String protocol = "SASL_PLAINTEXT";
-        private String username = "admin";
-        private String password = "admin-secret";
-        private String jaasConfig;
-
-        public boolean isEnabled() {
-            return isEnabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            isEnabled = enabled;
-        }
-
-        public String getMechanism() {
-            return mechanism;
-        }
-
-        public void setMechanism(String mechanism) {
-            this.mechanism = mechanism;
-        }
-
-        public String getProtocol() {
-            return protocol;
-        }
-
-        public void setProtocol(String Protocol) {
-            this.protocol = protocol;
-        }
-
-        public String getJaasConfig() {
-            return "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
-                    + "username=\"" + username + "\"\n"
-                    + "password=\"" + password + "\";";
-        }
-
-        public void setJaasConfig(String jaasConfig) {
-            this.jaasConfig = jaasConfig;
-        }
-    }
+    private KafkaSaslProperties sasl = new KafkaSaslProperties();
 
     public static final class KafkaConsumer {
 
@@ -198,12 +155,12 @@ public class KafkaProperties {
         this.kafkaConsumer = kafkaConsumer;
     }
 
-    public SaslConfig getSaslConfig() {
-        return saslConfig;
+    public KafkaSaslProperties getSasl() {
+        return sasl;
     }
 
-    public void setSaslConfig(SaslConfig saslConfig) {
-        this.saslConfig = saslConfig;
+    public void setSasl(KafkaSaslProperties sasl) {
+        this.sasl = sasl;
     }
 
     public String getDatacenter() {
