@@ -94,10 +94,10 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
         props.put(DEFAULT_API_TIMEOUT_MS_CONFIG, 5000);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        if (kafkaProperties.isSaslEnabled()) {
-            props.put(SASL_MECHANISM, kafkaProperties.getSaslMechanism());
-            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSaslProtocol());
-            props.put(SASL_JAAS_CONFIG, kafkaProperties.getSaslJaasConfig());
+        if (kafkaProperties.getSaslConfig().isEnabled()) {
+            props.put(SASL_MECHANISM, kafkaProperties.getSaslConfig().getMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSaslConfig().getProtocol());
+            props.put(SASL_JAAS_CONFIG, kafkaProperties.getSaslConfig().getJaasConfig());
         }
         return props;
     }
