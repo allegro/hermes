@@ -2,6 +2,28 @@
 
 ...
 
+## 1.4.8 (19.06.2020)
+
+### Enhancements
+
+#### ([1214](https://github.com/allegro/hermes/pull/1214)) Read only mode persistence
+
+Read only mode set by an admin (READ_ONLY_ADMIN) in Hermes Management will be not overwritten by healthcheck task.
+
+#### ([1215](https://github.com/allegro/hermes/pull/1215)) Return error response when owner not found
+
+Instead of `200 OK` with empty list it returns `404 Not Found` `{"message":"Owner of id 'yyyy' not found in source xxx","code":"OWNER_NOT_FOUND"}` when owner not found.
+
+#### ([1216](https://github.com/allegro/hermes/pull/1216)) Fix typo: happend -> happen
+
+#### ([1217](https://github.com/allegro/hermes/pull/1217)) Adding modules find and register by default
+
+It is required to use annotations like `@JsonCreator` / `@JsonProperty` for classes written in Kotlin.
+
+This patch fixes redundant Jackson annotations.
+
+#### ([1218](https://github.com/allegro/hermes/pull/1218)) Update Hermes management config structure
+
 ## 1.4.7 (09.06.2020)
 
 ### Enhancements
