@@ -424,6 +424,65 @@ public class ConsumerMessageSenderTest {
         assertThat(sendingTime).isLessThan(300);
     }
 
+    @Test
+    public void shouldIncreaseRetryBackoffExponentially() throws InterruptedException {
+        // given
+        final int backoff = 500;
+        final double multiplier = 2;
+        Subscription subscription = subscriptionWithExponentialRetryBackoff(backoff, multiplier);
+        setUpMetrics(subscription);
+        Message message = message();
+        doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
+        ConsumerMessageSender sender = consumerMessageSender(subscription);
+
+        // when
+        sender.sendAsync(message);
+        Thread.sleep(backoff + (long) multiplier * backoff - 100);
+
+        // then
+        verifyZeroInteractions(successHandler);
+        verifyRateLimiterFailedSendingCountedTimes(2);
+    }
+
+    @Test
+    public void shouldIgnoreExponentialRetryBackoffWithRetryAfter() {
+        // given
+        final int retrySeconds = 1;
+        final int backoff = 5000;
+        final double multiplier = 3;
+        Subscription subscription = subscriptionWithExponentialRetryBackoff(backoff, multiplier);
+        setUpMetrics(subscription);
+        Message message = message();
+        doReturn(backoff(retrySeconds)).doReturn(backoff(retrySeconds)).doReturn(success()).when(messageSender).send(message);
+        ConsumerMessageSender sender = consumerMessageSender(subscription);
+
+        // when
+        sender.sendAsync(message);
+
+        //then
+        verify(successHandler, timeout(retrySeconds * 1000 * 2 + 500 ))
+                .handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
+    }
+
+    @Test
+    public void shouldIgnoreExponentialRetryBackoffAfterExceededTtl() throws InterruptedException {
+        final int backoff = 1000;
+        final double multiplier = 2;
+        final int ttl = 2;
+        Subscription subscription = subscriptionWithExponentialRetryBackoff(backoff, multiplier, ttl);
+        setUpMetrics(subscription);
+        Message message = message();
+        doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
+        ConsumerMessageSender sender = consumerMessageSender(subscription);
+
+        // when
+        sender.sendAsync(message);
+        Thread.sleep(backoff + (long) multiplier * backoff + 1000);
+
+        //then
+        verifyZeroInteractions(successHandler);
+    }
+
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
         when(messageSenderFactory.create(subscription)).thenReturn(messageSender);
         ConsumerMessageSender sender = new ConsumerMessageSender(
@@ -510,6 +569,20 @@ public class ConsumerMessageSenderTest {
 
     private Subscription subscriptionWithRequestTimeout(int timeout) {
         return subscriptionBuilderWithTestValues().withRequestTimeout(timeout).build();
+    }
+
+    private Subscription subscriptionWithExponentialRetryBackoff(int messageBackoff, double backoffMultiplier) {
+        return subscriptionWithExponentialRetryBackoff(messageBackoff, backoffMultiplier, 3600);
+    }
+    
+    private Subscription subscriptionWithExponentialRetryBackoff(int messageBackoff, double backoffMultiplier, int ttl) {
+        return subscriptionBuilderWithTestValues()
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
+                        .withMessageBackoff(messageBackoff)
+                        .withBackoffMultiplier(backoffMultiplier)
+                        .withMessageTtl(ttl)
+                        .build())
+                .build();
     }
 
     private SubscriptionBuilder subscriptionBuilderWithTestValues() {
