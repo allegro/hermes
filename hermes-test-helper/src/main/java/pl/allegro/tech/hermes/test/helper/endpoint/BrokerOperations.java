@@ -38,11 +38,12 @@ public class BrokerOperations {
         this(kafkaZkConnection, configFactory.getIntProperty(Configs.ZOOKEEPER_SESSION_TIMEOUT),
                 configFactory.getIntProperty(Configs.ZOOKEEPER_CONNECTION_TIMEOUT),
                 configFactory.getIntProperty(Configs.ZOOKEEPER_MAX_INFLIGHT_REQUESTS),
-                configFactory.getStringProperty(Configs.KAFKA_NAMESPACE));
+                configFactory.getStringProperty(Configs.KAFKA_NAMESPACE),
+                configFactory.getStringProperty(Configs.KAFKA_NAMESPACE_SEPARATOR));
     }
 
     private BrokerOperations(Map<String, String> kafkaZkConnection, int sessionTimeout, int connectionTimeout,
-                             int maxInflightRequests, String namespace) {
+                             int maxInflightRequests, String namespace, String namespaceSeparator) {
         zkClients = kafkaZkConnection.entrySet().stream()
                 .collect(toMap(Map.Entry::getKey,
                                e -> {
@@ -52,7 +53,7 @@ public class BrokerOperations {
 
                                    return new KafkaZkClient(zooKeeperClient, false, Time.SYSTEM);
                                }));
-        kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(namespace);
+        kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(namespace, namespaceSeparator);
     }
 
     public void createTopic(String topicName) {

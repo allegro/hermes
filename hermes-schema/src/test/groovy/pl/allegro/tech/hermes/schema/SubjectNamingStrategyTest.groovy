@@ -10,6 +10,8 @@ import static pl.allegro.tech.hermes.schema.SubjectNamingStrategy.qualifiedName
 @Subject(SubjectNamingStrategy)
 class SubjectNamingStrategyTest extends Specification {
 
+    static def namespace = new SubjectNamingStrategy.Namespace("ns", "_")
+
     def "should create proper subject names"() {
         given:
         def topicName = new TopicName("group", "name")
@@ -21,20 +23,20 @@ class SubjectNamingStrategyTest extends Specification {
         subjectNamingStrategy << [
                 qualifiedName,
                 qualifiedName.withValueSuffixIf(true),
-                qualifiedName.withNamespacePrefixIf(true, "ns"),
+                qualifiedName.withNamespacePrefixIf(true, namespace),
                 qualifiedName
                         .withValueSuffixIf(true)
-                        .withNamespacePrefixIf(true, "ns"),
+                        .withNamespacePrefixIf(true, namespace),
                 qualifiedName
-                        .withNamespacePrefixIf(true, "ns")
+                        .withNamespacePrefixIf(true, namespace)
                         .withValueSuffixIf(true)
         ]
         subject << [
                 "group.name",
                 "group.name-value",
-                "ns.group.name",
-                "ns.group.name-value",
-                "ns.group.name-value"
+                "ns_group.name",
+                "ns_group.name-value",
+                "ns_group.name-value"
         ]
     }
 }

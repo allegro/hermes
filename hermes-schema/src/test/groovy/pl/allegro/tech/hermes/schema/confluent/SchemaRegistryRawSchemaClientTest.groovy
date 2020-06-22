@@ -54,11 +54,12 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         wireMock = new WireMockServer(port)
         wireMock.start()
         resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
+        def namespace = new SubjectNamingStrategy.Namespace("test", "_")
         subjectNamingStrategies = [
                 qualifiedName,
                 qualifiedName.withValueSuffixIf(true),
-                qualifiedName.withNamespacePrefixIf(true, "test"),
-                qualifiedName.withValueSuffixIf(true).withNamespacePrefixIf(true, "test")
+                qualifiedName.withNamespacePrefixIf(true, namespace),
+                qualifiedName.withValueSuffixIf(true).withNamespacePrefixIf(true, namespace)
         ]
         clients = subjectNamingStrategies.collect { new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), it) }
     }

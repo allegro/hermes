@@ -35,6 +35,7 @@ public enum Configs {
     KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary-dc"),
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
     KAFKA_NAMESPACE("kafka.namespace", ""),
+    KAFKA_NAMESPACE_SEPARATOR("kafka.namespace.separator", "_"),
 
     KAFKA_HEADER_NAME_MESSAGE_ID("kafka.header.name.message.id", "id"),
     KAFKA_HEADER_NAME_TIMESTAMP("kafka.header.name.timestamp", "ts"),
