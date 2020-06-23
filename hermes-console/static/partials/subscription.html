@@ -146,6 +146,7 @@
                         <span uib-popover='Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p><strong>Message delivery tracking:</strong> {{ trackingModeName[subscription.trackingMode] }}</p>
+                    <hr/>
                     <p>
                         <strong>Retry on 4xx status:</strong> {{subscription.subscriptionPolicy.retryClientErrors}}
                         <span uib-popover='If false, message will not be retried when service responds with 4xx status (i.e. Bad Request).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
@@ -154,6 +155,15 @@
                         <strong>Retry backoff:</strong> {{subscription.subscriptionPolicy.messageBackoff}} milliseconds
                         <span uib-popover='Minimum amount of time between consecutive message retries.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
+                    <p>
+                        <strong>Retry backoff multiplier:</strong> {{subscription.subscriptionPolicy.backoffMultiplier}}
+                        <span uib-popover='Delay multiplier between consecutive send attempts of failed requests' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p ng-show="subscription.subscriptionPolicy.backoffMultiplier > 1">
+                        <strong>Retry backoff max interval:</strong> {{subscription.subscriptionPolicy.backoffMaxIntervalInSec}} seconds
+                        <span uib-popover='Maximum value of delay backoff when using exponential calculation' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <hr/>
                     <p>
                         <strong>Monitoring severity:</strong> {{subscription.monitoringDetails.severity}}
                         <span uib-popover="How important should be the subscription's health for the monitoring." popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>

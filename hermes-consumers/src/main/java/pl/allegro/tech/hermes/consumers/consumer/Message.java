@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import org.apache.commons.lang.ArrayUtils;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
+import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
@@ -43,6 +44,8 @@ public class Message {
     private List<Header> additionalHeaders = Collections.emptyList();
 
     private Set<String> succeededUris = Sets.newHashSet();
+
+    private long currentMessageBackoff = -1;
 
     private Message() {}
 
@@ -135,6 +138,16 @@ public class Message {
 
     public List<Header> getAdditionalHeaders() {
         return Collections.unmodifiableList(additionalHeaders);
+    }
+
+    public long updateAndGetCurrentMessageBackoff(SubscriptionPolicy subscriptionPolicy) {
+        if (currentMessageBackoff == -1) {
+            currentMessageBackoff = subscriptionPolicy.getMessageBackoff();
+        } else {
+            currentMessageBackoff = Math.min(subscriptionPolicy.getBackoffMaxIntervalMillis(),
+                    (long) (currentMessageBackoff * subscriptionPolicy.getBackoffMultiplier()));
+        }
+        return currentMessageBackoff;
     }
 
     @Override

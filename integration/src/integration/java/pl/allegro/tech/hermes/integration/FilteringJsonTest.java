@@ -32,7 +32,7 @@ public class FilteringJsonTest extends IntegrationTest {
     final static AvroUser ALICE_GREY = new AvroUser("Alice", 20, "grey");
     final static AvroUser BOB_GREY = new AvroUser("Bob", 50, "grey");
 
-    private final static SubscriptionPolicy SUBSCRIPTION_POLICY = new SubscriptionPolicy(100, 2000, 1000, 1000, true, 100, 100, 0);
+    private final static SubscriptionPolicy SUBSCRIPTION_POLICY = new SubscriptionPolicy(100, 2000, 1000, 1000, true, 100, 100, 0, 1, 600);
 
     @BeforeMethod
     public void initializeAlways() {

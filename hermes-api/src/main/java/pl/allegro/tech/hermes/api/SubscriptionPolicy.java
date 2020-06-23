@@ -18,6 +18,8 @@ public class SubscriptionPolicy {
     private static final int DEFAULT_SOCKET_TIMEOUT = 0;
     private static final int DEFAULT_INFLIGHT_SIZE = 100;
     private static final int DEFAULT_SENDING_DELAY = 0;
+    private static final double DEFAULT_BACKOFF_MULTIPLIER = 1;
+    private static final int DEFAULT_BACKOFF_MAX_INTERVAL = 600;
 
     @Min(1)
     private int rate = DEFAULT_RATE;
@@ -44,6 +46,14 @@ public class SubscriptionPolicy {
     @Max(5000)
     private int sendingDelay = DEFAULT_SENDING_DELAY;
 
+    @Min(1)
+    @Max(10)
+    private double backoffMultiplier = DEFAULT_BACKOFF_MULTIPLIER;
+
+    @Min(1)
+    @Max(600)
+    private int backoffMaxIntervalInSec = DEFAULT_BACKOFF_MAX_INTERVAL;
+
     private boolean retryClientErrors = false;
 
     private SubscriptionPolicy() {
@@ -56,7 +66,9 @@ public class SubscriptionPolicy {
                               boolean retryClientErrors,
                               int messageBackoff,
                               Integer inflightSize,
-                              int sendingDelay) {
+                              int sendingDelay,
+                              double backoffMultiplier,
+                              int backoffMaxIntervalInSec) {
         this.rate = rate;
         this.messageTtl = messageTtl;
         this.requestTimeout = requestTimeout;
@@ -65,6 +77,8 @@ public class SubscriptionPolicy {
         this.messageBackoff = messageBackoff;
         this.inflightSize = inflightSize;
         this.sendingDelay = sendingDelay;
+        this.backoffMultiplier = backoffMultiplier;
+        this.backoffMaxIntervalInSec = backoffMaxIntervalInSec;
     }
 
     @JsonCreator
@@ -77,14 +91,17 @@ public class SubscriptionPolicy {
                 (Boolean) properties.getOrDefault("retryClientErrors", false),
                 (Integer) properties.getOrDefault("messageBackoff", DEFAULT_MESSAGE_BACKOFF),
                 (Integer) properties.getOrDefault("inflightSize", DEFAULT_INFLIGHT_SIZE),
-                (Integer) properties.getOrDefault("sendingDelay", DEFAULT_SENDING_DELAY)
+                (Integer) properties.getOrDefault("sendingDelay", DEFAULT_SENDING_DELAY),
+                ((Number) properties.getOrDefault("backoffMultiplier", DEFAULT_BACKOFF_MULTIPLIER)).doubleValue(),
+                (Integer) properties.getOrDefault("backoffMaxIntervalInSec", DEFAULT_BACKOFF_MAX_INTERVAL)
         );
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(rate, messageTtl, messageBackoff, retryClientErrors,
-                requestTimeout, socketTimeout, inflightSize, sendingDelay);
+                requestTimeout, socketTimeout, inflightSize, sendingDelay, backoffMultiplier,
+                backoffMaxIntervalInSec);
     }
 
     @Override
@@ -103,7 +120,9 @@ public class SubscriptionPolicy {
                 && Objects.equals(this.requestTimeout, other.requestTimeout)
                 && Objects.equals(this.socketTimeout, other.socketTimeout)
                 && Objects.equals(this.inflightSize, other.inflightSize)
-                && Objects.equals(this.sendingDelay, other.sendingDelay);
+                && Objects.equals(this.sendingDelay, other.sendingDelay)
+                && Objects.equals(this.backoffMultiplier, other.backoffMultiplier)
+                && Objects.equals(this.backoffMaxIntervalInSec, other.backoffMaxIntervalInSec);
     }
 
     @Override
@@ -117,6 +136,8 @@ public class SubscriptionPolicy {
                 .add("retryClientErrors", retryClientErrors)
                 .add("inflightSize", inflightSize)
                 .add("sendingDelay", sendingDelay)
+                .add("backoffMultiplier", backoffMultiplier)
+                .add("backoffMaxIntervalInSec", backoffMaxIntervalInSec)
                 .toString();
     }
 
@@ -156,6 +177,18 @@ public class SubscriptionPolicy {
         return sendingDelay;
     }
 
+    public Double getBackoffMultiplier() {
+        return backoffMultiplier;
+    }
+
+    public Integer getBackoffMaxIntervalInSec() {
+        return backoffMaxIntervalInSec;
+    }
+
+    public Long getBackoffMaxIntervalMillis() {
+        return backoffMaxIntervalInSec * 1000L;
+    }
+
     public static class Builder {
 
         private SubscriptionPolicy subscriptionPolicy;
@@ -167,6 +200,7 @@ public class SubscriptionPolicy {
         public Builder applyDefaults() {
             subscriptionPolicy.rate = DEFAULT_RATE;
             subscriptionPolicy.messageTtl = DEFAULT_MESSAGE_TTL;
+            subscriptionPolicy.backoffMultiplier = DEFAULT_BACKOFF_MULTIPLIER;
             return this;
         }
 
@@ -207,6 +241,16 @@ public class SubscriptionPolicy {
 
         public Builder withSendingDelay(int sendingDelay) {
             subscriptionPolicy.sendingDelay = sendingDelay;
+            return this;
+        }
+
+        public Builder withBackoffMultiplier(double backoffMultiplier) {
+            subscriptionPolicy.backoffMultiplier = backoffMultiplier;
+            return this;
+        }
+
+        public Builder withBackoffMaxIntervalInSec(int backoffMaxIntervalInSec) {
+            subscriptionPolicy.backoffMaxIntervalInSec = backoffMaxIntervalInSec;
             return this;
         }
 
