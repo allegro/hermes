@@ -170,11 +170,11 @@
                     </div>
                 </div>
             </div>
-            <div class="form-group {{subscriptionForm.subscriptionBackoffMaxInterval.$valid ? '' : 'has-error'}}" ng-show="subscription.subscriptionPolicy.backoffMultiplier > 1">
-                <label for="subscriptionBackoffMaxInterval" class="col-md-3 control-label">Retry backoff max interval</label>
+            <div class="form-group {{subscriptionForm.subscriptionBackoffMaxIntervalInSec.$valid ? '' : 'has-error'}}" ng-show="subscription.subscriptionPolicy.backoffMultiplier > 1">
+                <label for="subscriptionBackoffMaxIntervalInSec" class="col-md-3 control-label">Retry backoff max interval</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="1" max="600" step="1" required class="form-control" id="subscriptionBackoffMaxInterval" name="subscriptionBackoffMaxInterval" placeholder="Maximum value of delay backoff" ng-model="subscription.subscriptionPolicy.backoffMaxInterval" ng-pattern="/^\d+$/"/>
+                        <input type="number" min="1" max="600" step="1" required class="form-control" id="subscriptionBackoffMaxIntervalInSec" name="subscriptionBackoffMaxIntervalInSec" placeholder="Maximum value of delay backoff" ng-model="subscription.subscriptionPolicy.backoffMaxIntervalInSec" ng-pattern="/^\d+$/"/>
                         <span class="input-group-addon">seconds</span>
                         <span class="input-group-addon helpme-addon" uib-tooltip="Maximum value of delay backoff when using exponential calculation">?</span>
                     </div>

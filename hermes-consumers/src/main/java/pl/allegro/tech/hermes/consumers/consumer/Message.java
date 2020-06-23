@@ -141,9 +141,12 @@ public class Message {
     }
 
     public long updateAndGetCurrentMessageBackoff(SubscriptionPolicy subscriptionPolicy) {
-        currentMessageBackoff = currentMessageBackoff == -1 ? subscriptionPolicy.getMessageBackoff() :
-                Math.min(subscriptionPolicy.getBackoffMaxIntervalMillis(),
-                        (long) (currentMessageBackoff * subscriptionPolicy.getBackoffMultiplier()));
+        if (currentMessageBackoff == -1) {
+            currentMessageBackoff = subscriptionPolicy.getMessageBackoff();
+        } else {
+            currentMessageBackoff = Math.min(subscriptionPolicy.getBackoffMaxIntervalMillis(),
+                    (long) (currentMessageBackoff * subscriptionPolicy.getBackoffMultiplier()));
+        }
         return currentMessageBackoff;
     }
 

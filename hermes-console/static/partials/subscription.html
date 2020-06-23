@@ -160,7 +160,7 @@
                         <span uib-popover='Delay multiplier between consecutive send attempts of failed requests' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p ng-show="subscription.subscriptionPolicy.backoffMultiplier > 1">
-                        <strong>Retry backoff max interval:</strong> {{subscription.subscriptionPolicy.backoffMaxInterval}} seconds
+                        <strong>Retry backoff max interval:</strong> {{subscription.subscriptionPolicy.backoffMaxIntervalInSec}} seconds
                         <span uib-popover='Maximum value of delay backoff when using exponential calculation' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <hr/>
