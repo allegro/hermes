@@ -80,11 +80,11 @@ dependencies {
     testCompile group: 'org.schemarepo', name: 'schema-repo-common', version: '0.1.3'
     testCompile group: 'io.confluent', name: 'kafka-schema-registry', version: '4.1.2'
     if (isAlpnRequired()) {
-        testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: versions.jetty
-        testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: versions.jetty
+        testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.27.v20200227'
+        testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.27.v20200227'
         alpnboot group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: getAlpnVersion()
     } else {
-        testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-java-server', version: versions.jetty
+        testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.28.v20200408'
     }
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
