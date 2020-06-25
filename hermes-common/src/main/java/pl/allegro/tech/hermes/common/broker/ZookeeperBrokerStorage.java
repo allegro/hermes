@@ -8,6 +8,7 @@ import kafka.cluster.Broker;
 import kafka.common.TopicAndPartition;
 import kafka.zk.KafkaZkClient;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.network.ListenerName;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.exception.BrokerInfoNotAvailableException;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 import pl.allegro.tech.hermes.common.exception.PartitionsNotFoundForGivenTopicException;
+import scala.Option;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,17 +30,18 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperBrokerStorage.class);
 
-    private static final String BROKER_LISTENER_NAME = "plaintext";
     private static final String PARTITIONS = "/brokers/topics/%s/partitions";
 
     private final CuratorFramework curatorFramework;
     private final KafkaZkClient kafkaZkClient;
+    private final ListenerName brokerListenerName;
 
     @Inject
     public ZookeeperBrokerStorage(@Named(CuratorType.KAFKA) CuratorFramework curatorFramework,
-                                  KafkaZkClient kafkaZkClient) {
+                                  KafkaZkClient kafkaZkClient, String brokerListenerName) {
         this.curatorFramework = curatorFramework;
         this.kafkaZkClient = kafkaZkClient;
+        this.brokerListenerName = ListenerName.normalised(brokerListenerName);
     }
 
     @Override
@@ -46,7 +49,7 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
     public int readLeaderForPartition(TopicAndPartition topicAndPartition) {
         try {
             TopicPartition topicPartition = new TopicPartition(topicAndPartition.topic(), topicAndPartition.partition());
-            return (int)kafkaZkClient.getLeaderForPartition(topicPartition).get();
+            return (int) kafkaZkClient.getLeaderForPartition(topicPartition).get();
         } catch (Exception exception) {
             throw new BrokerNotFoundForPartitionException(topicAndPartition.topic(), topicAndPartition.partition(), exception);
         }
@@ -71,8 +74,9 @@ public class ZookeeperBrokerStorage implements BrokerStorage {
     public BrokerDetails readBrokerDetails(Integer brokerId) {
         try {
             Broker broker = kafkaZkClient.getBroker(brokerId).get();
-            String host = broker.getNode(ListenerName.normalised(BROKER_LISTENER_NAME)).get().host();
-            int port = broker.getNode(ListenerName.normalised(BROKER_LISTENER_NAME)).get().port();
+            Option<Node> node = broker.getNode(brokerListenerName);
+            String host = node.get().host();
+            int port = node.get().port();
             return new BrokerDetails(host, port);
         } catch (Exception exception) {
             throw new BrokerInfoNotAvailableException(brokerId, exception);

@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import java.util.Collections;
-import java.util.HashMap;
 import kafka.common.TopicAndPartition;
 import org.junit.After;
 import org.junit.Test;
@@ -14,6 +12,8 @@ import pl.allegro.tech.hermes.common.exception.BrokerInfoNotAvailableException;
 import pl.allegro.tech.hermes.common.exception.PartitionsNotFoundForGivenTopicException;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.googlecode.catchexception.CatchException.catchException;
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
 
     private final ZookeeperBrokerStorage brokerStorage =
-            new ZookeeperBrokerStorage(zookeeperClient, kafkaZkClient);
+            new ZookeeperBrokerStorage(zookeeperClient, kafkaZkClient, "PLAINTEXT");
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -113,7 +113,7 @@ public class ZookeeperBrokerStorageTest extends ZookeeperBaseTest {
     }
 
     private void createPartitionsForTopic(String topicName, List<Integer> partitions) throws Exception {
-        for (Integer partitionId: partitions) {
+        for (Integer partitionId : partitions) {
             String path = String.format("/brokers/topics/%s/partitions/%s", topicName, partitionId);
             zookeeperClient.create().creatingParentsIfNeeded().forPath(path);
         }
