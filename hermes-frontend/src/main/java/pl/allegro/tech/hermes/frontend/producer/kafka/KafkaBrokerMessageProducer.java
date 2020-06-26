@@ -13,10 +13,12 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
@@ -54,21 +56,29 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     private ProducerRecord<byte[], byte[]> createProducerRecord(Message message, CachedTopic cachedTopic) {
         String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
         Optional<SchemaVersion> schemaVersion = message.<Schema>getCompiledSchema().map(CompiledSchema::getVersion);
+        Optional<SchemaId> schemaId = message.<Schema>getCompiledSchema().map(CompiledSchema::getId);
 
-        Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaVersion);
+        Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaId, schemaVersion);
 
         return new ProducerRecord<byte[], byte[]>(kafkaTopicName, null, null, message.getData(), headers);
     }
 
-    private Iterable<Header> createRecordHeaders(String id, long timestamp, Optional<SchemaVersion> schemaVersion) {
-        return schemaVersion
-                .map(sv -> asList(
-                        kafkaHeaderFactory.messageId(id),
-                        kafkaHeaderFactory.timestamp(timestamp),
-                        kafkaHeaderFactory.schemaVersion(sv.value())))
-                .orElse(asList(
-                        kafkaHeaderFactory.messageId(id),
-                        kafkaHeaderFactory.timestamp(timestamp)));
+    private Iterable<Header> createRecordHeaders(String id, long timestamp, Optional<SchemaId> schemaId, Optional<SchemaVersion> schemaVersion) {
+        List<Header> headers = schemaVersion
+            .map(sv -> asList(
+                kafkaHeaderFactory.messageId(id),
+                kafkaHeaderFactory.timestamp(timestamp),
+                kafkaHeaderFactory.schemaVersion(sv.value())))
+            .orElse(asList(
+                kafkaHeaderFactory.messageId(id),
+                kafkaHeaderFactory.timestamp(timestamp)));
+
+        return schemaId
+            .map(sid -> {
+                headers.add(kafkaHeaderFactory.schemaId(sid.value()));
+                return headers;
+            })
+            .orElse(headers);
     }
 
     @Override

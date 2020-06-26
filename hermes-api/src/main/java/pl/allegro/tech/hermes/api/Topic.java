@@ -54,7 +54,7 @@ public class Topic {
 
     private boolean migratedFromJsonType = false;
 
-    private boolean schemaVersionAwareSerializationEnabled = false;
+    private boolean schemaIdAwareSerializationEnabled = false;
 
     private boolean subscribingRestricted = false;
 
@@ -68,7 +68,7 @@ public class Topic {
 
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
-                 boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
+                 boolean jsonToAvroDryRunEnabled, boolean schemaIdAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
                  TopicDataOfflineStorage offlineStorage, Instant createdAt, Instant modifiedAt) {
         this.name = name;
@@ -80,7 +80,7 @@ public class Topic {
         this.migratedFromJsonType = migratedFromJsonType;
         this.contentType = contentType;
         this.jsonToAvroDryRunEnabled = jsonToAvroDryRunEnabled;
-        this.schemaVersionAwareSerializationEnabled = schemaVersionAwareSerializationEnabled;
+        this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
         this.maxMessageSize = maxMessageSize;
         this.publishingAuth = publishingAuth;
         this.subscribingRestricted = subscribingRestricted;
@@ -99,7 +99,7 @@ public class Topic {
             @JsonProperty("ack") Ack ack,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
-            @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
+            @JsonProperty("schemaIdAwareSerializationEnabled") boolean schemaIdAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType,
             @JsonProperty("maxMessageSize") Integer maxMessageSize,
             @JsonProperty("auth") PublishingAuth publishingAuth,
@@ -109,7 +109,7 @@ public class Topic {
             @JsonProperty("modifiedAt") Instant modifiedAt
     ) {
         this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
-                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
+                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled,
                 maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize,
                 publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
                 subscribingRestricted,
@@ -125,7 +125,7 @@ public class Topic {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize, publishingAuth, subscribingRestricted,
+                jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled, maxMessageSize, publishingAuth, subscribingRestricted,
                 offlineStorage);
     }
 
@@ -146,7 +146,7 @@ public class Topic {
                 && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
-                && Objects.equals(this.schemaVersionAwareSerializationEnabled, other.schemaVersionAwareSerializationEnabled)
+                && Objects.equals(this.schemaIdAwareSerializationEnabled, other.schemaIdAwareSerializationEnabled)
                 && Objects.equals(this.ack, other.ack)
                 && Objects.equals(this.contentType, other.contentType)
                 && Objects.equals(this.maxMessageSize, other.maxMessageSize)
@@ -200,8 +200,8 @@ public class Topic {
         return getAck() == Ack.ALL;
     }
 
-    public boolean isSchemaVersionAwareSerializationEnabled() {
-        return schemaVersionAwareSerializationEnabled;
+    public boolean isSchemaIdAwareSerializationEnabled() {
+        return schemaIdAwareSerializationEnabled;
     }
 
     public int getMaxMessageSize() {

@@ -25,6 +25,7 @@ class BasicMessageContentReader implements MessageContentReader {
     public UnwrappedMessageContent read(ConsumerRecord<byte[], byte[]> message, ContentType contentType) {
         if (contentType == ContentType.AVRO) {
             Integer schemaVersion = kafkaHeaderExtractor.extractSchemaVersion(message.headers());
+            Integer schemaId = kafkaHeaderExtractor.extractSchemaId(message.headers());
             return messageContentWrapper.unwrapAvro(message.value(), topic, schemaVersion);
         } else if (contentType == ContentType.JSON) {
             return messageContentWrapper.unwrapJson(message.value());

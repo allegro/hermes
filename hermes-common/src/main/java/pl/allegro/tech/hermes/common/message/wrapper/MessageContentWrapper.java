@@ -24,7 +24,7 @@ public class MessageContentWrapper {
     @Inject
     public MessageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
                                  AvroMessageContentWrapper avroMessageContentWrapper,
-                                 AvroMessageSchemaVersionAwareContentWrapper schemaVersionAwareContentWrapper,
+                                 AvroMessageSchemaIdAwareContentWrapper schemaVersionAwareContentWrapper,
                                  AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
                                  AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper) {
 
@@ -54,7 +54,7 @@ public class MessageContentWrapper {
 
     public byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema, Map<String, String> externalMetadata) {
         byte[] wrapped = avroMessageContentWrapper.wrapContent(data, id, timestamp, schema.getSchema(), externalMetadata);
-        return topic.isSchemaVersionAwareSerializationEnabled() ? SchemaAwareSerDe.serialize(schema.getId(), wrapped) : wrapped;
+        return topic.isSchemaIdAwareSerializationEnabled() ? SchemaAwareSerDe.serialize(schema.getId(), wrapped) : wrapped;
     }
 
     public byte[] wrapJson(byte[] data, String id, long timestamp, Map<String, String> externalMetadata) {

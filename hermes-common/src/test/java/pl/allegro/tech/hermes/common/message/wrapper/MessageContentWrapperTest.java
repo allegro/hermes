@@ -50,8 +50,8 @@ public class MessageContentWrapperTest {
             new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, rateLimiter, avroWrapper, metrics);
     private final AvroMessageHeaderSchemaVersionContentWrapper headerSchemaWrapper =
             new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, metrics);
-    private final AvroMessageSchemaVersionAwareContentWrapper schemaAwareWrapper =
-            new AvroMessageSchemaVersionAwareContentWrapper(schemaRepository, avroWrapper, metrics);
+    private final AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
+            new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metrics);
 
     private final MessageContentWrapper messageContentWrapper = new MessageContentWrapper(jsonWrapper, avroWrapper, schemaAwareWrapper,
             headerSchemaWrapper, anySchemaWrapper);
@@ -414,12 +414,12 @@ public class MessageContentWrapperTest {
                                int usingSchemaVersionAware,
                                int usingAnySchemaVersion,
                                int usingHeaderSchemaVersion) {
-        assertThat(metrics.missedSchemaVersionInPayload().getCount()).isEqualTo(missedSchemaVersionInPayload);
-        assertThat(metrics.errorsForSchemaVersionAwarePayload().getCount()).isEqualTo(errorsForPayloadWithSchemaVersion);
+        assertThat(metrics.missedSchemaIdInPayload().getCount()).isEqualTo(missedSchemaVersionInPayload);
+        assertThat(metrics.errorsForSchemaIdAwarePayload().getCount()).isEqualTo(errorsForPayloadWithSchemaVersion);
         assertThat(metrics.errorsForAnySchemaVersion().getCount()).isEqualTo(errorsForAnySchemaVersion);
         assertThat(metrics.errorsForAnyOnlineSchemaVersion().getCount()).isEqualTo(errorsForAnyOnlineSchemaVersion);
         assertThat(metrics.errorsForHeaderSchemaVersion().getCount()).isEqualTo(errorsForHeaderSchemaVersion);
-        assertThat(metrics.usingSchemaVersionAware().getCount()).isEqualTo(usingSchemaVersionAware);
+        assertThat(metrics.usingSchemaIdAware().getCount()).isEqualTo(usingSchemaVersionAware);
         assertThat(metrics.usingAnySchemaVersion().getCount()).isEqualTo(usingAnySchemaVersion);
         assertThat(metrics.usingHeaderSchemaVersion().getCount()).isEqualTo(usingHeaderSchemaVersion);
     }

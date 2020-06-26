@@ -34,7 +34,7 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
     }
 
     private byte[] convertAvroToJson(Topic topic, byte[] bytes) {
-        if (topic.isSchemaVersionAwareSerializationEnabled()) {
+        if (topic.isSchemaIdAwareSerializationEnabled()) {
             SchemaAwarePayload payload = SchemaAwareSerDe.deserialize(bytes);
             return converter.convertToJson(payload.getPayload(), schemaRepository.getAvroSchema(payload.getSchemaId()).getSchema());
         }
