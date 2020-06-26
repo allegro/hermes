@@ -7,11 +7,7 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.schema.CompiledSchema;
-import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
-import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
+import pl.allegro.tech.hermes.schema.*;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 import java.time.Clock;
@@ -38,6 +34,9 @@ public class MessageContentWrapperTest {
     private static final int VERSION_ONE = 1;
     private static final int VERSION_TWO = 2;
     private static final int VERSION_THREE = 3;
+    private static final int ID_ONE = 1;
+    private static final int ID_THREE = 3;
+    private static final int ID_FIVE = 5;
     private static final String EMPTY_SCHEMA = "{}";
 
     private final MetricRegistry metricRegistry = new MetricRegistry();
@@ -57,9 +56,9 @@ public class MessageContentWrapperTest {
     private final MessageContentWrapper messageContentWrapper = new MessageContentWrapper(jsonWrapper, avroWrapper, schemaAwareWrapper,
             headerSchemaWrapper, anySchemaWrapper);
 
-    private static CompiledSchema<Schema> schema1 = new CompiledSchema<>(load("/schema/user.avsc"), createSchemaVersion(VERSION_ONE));
-    private static CompiledSchema<Schema> schema2 = new CompiledSchema<>(load("/schema/user_v2.avsc"), createSchemaVersion(VERSION_TWO));
-    private static CompiledSchema<Schema> schema3 = new CompiledSchema<>(load("/schema/user_v3.avsc"), createSchemaVersion(VERSION_THREE));
+    private static CompiledSchema<Schema> schema1 = CompiledSchema.of(load("/schema/user.avsc"), ID_ONE, VERSION_ONE);
+    private static CompiledSchema<Schema> schema2 = CompiledSchema.of(load("/schema/user_v2.avsc"), ID_THREE, VERSION_TWO);
+    private static CompiledSchema<Schema> schema3 = CompiledSchema.of(load("/schema/user_v3.avsc"), ID_FIVE, VERSION_THREE);
 
     static SchemaVersionsRepository schemaVersionsRepository = new SchemaVersionsRepository() {
         @Override
@@ -74,18 +73,36 @@ public class MessageContentWrapperTest {
         }
     };
 
-    static CompiledSchemaRepository<Schema> compiledSchemaRepository = (topic, version, online) -> {
-        switch (version.value()) {
-            case 1:
-                return schema1;
-            case 2:
-                return schema2;
-            case 3:
-                return schema3;
-            default:
-                throw new RuntimeException("sry");
+    static CompiledSchemaRepository<Schema> compiledSchemaRepository = new CompiledSchemaRepository<Schema>() {
+        @Override
+        public CompiledSchema<Schema> getSchema(Topic topic, SchemaVersion version, boolean online) {
+            switch (version.value()) {
+                case VERSION_ONE:
+                    return schema1;
+                case VERSION_TWO:
+                    return schema2;
+                case VERSION_THREE:
+                    return schema3;
+                default:
+                    throw new RuntimeException("sry");
+            }
+        }
+
+        @Override
+        public CompiledSchema<Schema> getSchema(SchemaId id, boolean online) {
+            switch (id.value()) {
+                case ID_ONE:
+                    return schema1;
+                case ID_THREE:
+                    return schema2;
+                case ID_FIVE:
+                    return schema3;
+                default:
+                    throw new RuntimeException("sry");
+            }
         }
     };
+
     static SchemaRepository schemaRepository = new SchemaRepository(schemaVersionsRepository, compiledSchemaRepository);
 
     @Before
@@ -423,5 +440,4 @@ public class MessageContentWrapperTest {
     private static SchemaVersion createSchemaVersion(int schemaVersionValue) {
         return SchemaVersion.valueOf(schemaVersionValue);
     }
-
 }

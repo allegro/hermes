@@ -5,12 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.SchemaData;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
-import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
-import pl.allegro.tech.hermes.schema.RawSchemaClient;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
-import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
+import pl.allegro.tech.hermes.schema.*;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
 import javax.ws.rs.client.Entity;
@@ -59,6 +56,18 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
                 .request()
                 .get();
         return extractSchema(subject, version, response).map(RawSchema::valueOf);
+    }
+
+    @Override
+    public Optional<SchemaData> getSchemaData(TopicName topic, SchemaVersion version) {
+        //TODO: Implement this
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<SchemaData> getLatestSchemaData(TopicName topic) {
+        //TODO: Implement this
+        return Optional.empty();
     }
 
     private Optional<String> extractSchema(String subject, String version, Response response) {

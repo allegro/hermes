@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.SchemaData;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
 import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
@@ -73,6 +74,22 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
         return extractSchema(subject, version, response).map(RawSchema::valueOf);
     }
 
+    @Override
+    public Optional<SchemaData> getSchemaData(TopicName topic, SchemaVersion schemaVersion) {
+        String version = Integer.toString(schemaVersion.value());
+        String subject = subjectNamingStrategy.apply(topic);
+        Response response = getSchema(subject, version);
+        return extractSchemaData(subject, version, response);
+    }
+
+    @Override
+    public Optional<SchemaData> getLatestSchemaData(TopicName topic) {
+        final String version = "latest";
+        String subject = subjectNamingStrategy.apply(topic);
+        Response response = getSchema(subject, version);
+        return extractSchemaData(subject, version, response);
+    }
+
     private Response getSchema(String subject, String version) {
         return schemaRepositoryInstanceResolver.resolve(subject)
                 .path("subjects")
@@ -95,6 +112,24 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
             case SERVER_ERROR:
             default:
                 logger.error("Could not find schema for subject {} at version {}, reason: {}", subject, version, response.getStatus());
+                throw new InternalSchemaRepositoryException(subject, response);
+        }
+    }
+
+    private Optional<SchemaData> extractSchemaData(String subject, String version, Response response) {
+        switch (response.getStatusInfo().getFamily()) {
+            case SUCCESSFUL:
+                logger.info("Found schema data for subject {} at version {}", subject,  version);
+                String schema = response.readEntity(SchemaRegistryResponse.class).getSchema();
+                int schemaId = response.readEntity(SchemaRegistryResponse.class).getId();
+                int schemaVersion = response.readEntity(SchemaRegistryResponse.class).getVersion();
+                return Optional.of(SchemaData.valueOf(schema, schemaId, schemaVersion));
+            case CLIENT_ERROR:
+                logger.error("Could not find schema data for subject {} at version {}, reason: {}", subject, version, response.getStatus());
+                return Optional.empty();
+            case SERVER_ERROR:
+            default:
+                logger.error("Could not find schema data for subject {} at version {}, reason: {}", subject, version, response.getStatus());
                 throw new InternalSchemaRepositoryException(subject, response);
         }
     }

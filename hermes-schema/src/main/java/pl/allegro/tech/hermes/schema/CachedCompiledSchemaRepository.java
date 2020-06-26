@@ -12,15 +12,23 @@ import java.util.stream.Collectors;
 
 public class CachedCompiledSchemaRepository<T> implements CompiledSchemaRepository<T> {
 
-    private final LoadingCache<TopicAndSchemaVersion, CompiledSchema<T>> cache;
+    private final LoadingCache<TopicAndSchemaVersion, CompiledSchema<T>> topicVersionCache;
+    private final LoadingCache<SchemaId, CompiledSchema<T>> idCache;
     private final CompiledSchemaRepository<T> compiledSchemaRepository;
 
     public CachedCompiledSchemaRepository(CompiledSchemaRepository<T> delegate, long maximumCacheSize, int expireAfterAccessMinutes) {
-        this.cache = CacheBuilder
+        this.topicVersionCache = CacheBuilder
                 .newBuilder()
                 .maximumSize(maximumCacheSize)
                 .expireAfterAccess(expireAfterAccessMinutes, TimeUnit.MINUTES)
                 .build(new CompiledSchemaLoader<>(delegate));
+
+        this.idCache = CacheBuilder
+            .newBuilder()
+            .maximumSize(maximumCacheSize)
+            .expireAfterAccess(expireAfterAccessMinutes, TimeUnit.MINUTES)
+            .build(new CompiledSchemaIdLoader<>(delegate));
+
         this.compiledSchemaRepository = delegate;
     }
 
@@ -29,20 +37,34 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         try {
             if (online) {
                 CompiledSchema<T> compiledSchema = compiledSchemaRepository.getSchema(topic, version);
-                cache.put(new TopicAndSchemaVersion(topic, version), compiledSchema);
+                topicVersionCache.put(new TopicAndSchemaVersion(topic, version), compiledSchema);
                 return compiledSchema;
             }
-            return cache.get(new TopicAndSchemaVersion(topic, version));
+            return topicVersionCache.get(new TopicAndSchemaVersion(topic, version));
+        } catch (Exception e) {
+            throw new CouldNotLoadSchemaException(e);
+        }
+    }
+
+    @Override
+    public CompiledSchema<T> getSchema(SchemaId id,  boolean online) {
+        try {
+            if (online) {
+                CompiledSchema<T> compiledSchema = compiledSchemaRepository.getSchema(id);
+                idCache.put(id, compiledSchema);
+                return compiledSchema;
+            }
+            return idCache.get(id);
         } catch (Exception e) {
             throw new CouldNotLoadSchemaException(e);
         }
     }
 
     public void removeFromCache(Topic topic) {
-        Set<TopicAndSchemaVersion> topicWithSchemas = cache.asMap().keySet().stream()
+        Set<TopicAndSchemaVersion> topicWithSchemas = topicVersionCache.asMap().keySet().stream()
                 .filter(topicWithSchema -> topicWithSchema.topic.equals(topic))
                 .collect(Collectors.toSet());
-        cache.invalidateAll(topicWithSchemas);
+        topicVersionCache.invalidateAll(topicWithSchemas);
     }
 
     private static class CompiledSchemaLoader<T> extends CacheLoader<TopicAndSchemaVersion, CompiledSchema<T>> {
@@ -56,6 +78,20 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         @Override
         public CompiledSchema<T> load(TopicAndSchemaVersion key) {
             return delegate.getSchema(key.topic, key.schemaVersion);
+        }
+    }
+
+    private static class CompiledSchemaIdLoader<T> extends CacheLoader<SchemaId, CompiledSchema<T>> {
+
+        private final CompiledSchemaRepository<T>  delegate;
+
+        public CompiledSchemaIdLoader(CompiledSchemaRepository<T> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public CompiledSchema<T> load(SchemaId key) {
+            return delegate.getSchema(key);
         }
     }
 

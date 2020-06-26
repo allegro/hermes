@@ -40,7 +40,7 @@ class AvroPathMessageFilterSpec extends Specification {
         def msg = MessageBuilder
                 .withTestMessage()
                 .withContent(avro)
-                .withSchema(schema, 0)
+                .withSchema(schema, 1, 0)
                 .withContentType(ContentType.AVRO)
                 .build()
 
@@ -103,7 +103,7 @@ class AvroPathMessageFilterSpec extends Specification {
         def msg = MessageBuilder
             .withTestMessage()
             .withContent(avro)
-            .withSchema(schema, 0)
+            .withSchema(schema, 1, 0)
             .withContentType(ContentType.AVRO)
             .build()
 
@@ -169,7 +169,7 @@ class AvroPathMessageFilterSpec extends Specification {
                 .test(MessageBuilder
                 .withTestMessage()
                 .withContent(invalidContent)
-                .withSchema(schema, 0)
+                .withSchema(schema, 1,0)
                 .build())
 
         then:

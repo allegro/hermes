@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import java.nio.charset.Charset;
@@ -69,8 +70,8 @@ public final class MessageBuilder {
         return this;
     }
 
-    public MessageBuilder withSchema(Schema schema, int version) {
-        this.schema = Optional.of(new CompiledSchema<Object>(schema, SchemaVersion.valueOf(version)));
+    public MessageBuilder withSchema(Schema schema, int id, int version) {
+        this.schema = Optional.of(new CompiledSchema<>(schema, SchemaId.valueOf(id), SchemaVersion.valueOf(version)));
         return this;
     }
 

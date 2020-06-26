@@ -9,4 +9,10 @@ public interface CompiledSchemaRepository<T> {
     }
 
     CompiledSchema<T> getSchema(Topic topic, SchemaVersion version, boolean online);
+
+    CompiledSchema<T> getSchema(SchemaId id, boolean online);
+
+    default CompiledSchema<T> getSchema(SchemaId id) {
+        return getSchema(id, false);
+    }
 }

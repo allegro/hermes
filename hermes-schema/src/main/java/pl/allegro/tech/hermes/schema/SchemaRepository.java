@@ -32,6 +32,16 @@ public class SchemaRepository {
         return getCompiledSchemaAtVersion(topic, version);
     }
 
+    public CompiledSchema<Schema> getAvroSchema(SchemaId id) {
+        CompiledSchema<Schema> schema = compiledAvroSchemaRepository.getSchema(id);
+
+        if (schema == null) {
+            throw new SchemaNotFoundException(id);
+        }
+
+        return schema;
+    }
+
     /**
      * This method should be used only for cache-backed repository implementations
      * where we have possibly stale versions-cache and are 100% sure the requested version exists.

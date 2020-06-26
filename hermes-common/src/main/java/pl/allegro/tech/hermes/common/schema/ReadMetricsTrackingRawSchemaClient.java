@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.common.schema;
 
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.SchemaData;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
@@ -34,6 +35,16 @@ public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
     @Override
     public Optional<RawSchema> getLatestSchema(TopicName topic) {
         return timedSchema(() -> rawSchemaClient.getLatestSchema(topic));
+    }
+
+    @Override
+    public Optional<SchemaData> getSchemaData(TopicName topic, SchemaVersion version) {
+        return timedSchema(() -> rawSchemaClient.getSchemaData(topic, version));
+    }
+
+    @Override
+    public Optional<SchemaData> getLatestSchemaData(TopicName topic) {
+        return timedSchema(() -> rawSchemaClient.getLatestSchemaData(topic));
     }
 
     @Override

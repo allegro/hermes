@@ -53,7 +53,7 @@ public class FrontendEnvironment {
                 .withDisabledGlobalShutdownHook()
                 .withDisabledFlushLogsShutdownHook()
                 .withBinding(
-                        new InMemorySchemaClient(fromQualifiedName("bench.topic"), loadMessageResource("schema")),
+                        new InMemorySchemaClient(fromQualifiedName("bench.topic"), loadMessageResource("schema"), 1),
                         RawSchemaClient.class)
                 .build();
         hermesFrontend.start();

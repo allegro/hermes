@@ -5,6 +5,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -30,7 +31,7 @@ public class AvroUser {
     }
 
     public AvroUser(String name, int age, String favouriteColour) {
-        this(new CompiledSchema<>(AvroUserSchemaLoader.load(), SchemaVersion.valueOf(1)), name, age, favouriteColour);
+        this(new CompiledSchema<>(AvroUserSchemaLoader.load(), SchemaId.valueOf(1), SchemaVersion.valueOf(1)), name, age, favouriteColour);
     }
 
     public AvroUser(CompiledSchema<Schema> schema, String name, int age, String favouriteColour) {
