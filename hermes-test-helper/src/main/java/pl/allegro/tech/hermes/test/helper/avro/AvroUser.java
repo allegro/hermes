@@ -31,7 +31,7 @@ public class AvroUser {
     }
 
     public AvroUser(String name, int age, String favouriteColour) {
-        this(new CompiledSchema<>(AvroUserSchemaLoader.load(), SchemaId.valueOf(1), SchemaVersion.valueOf(1)), name, age, favouriteColour);
+        this(CompiledSchema.of(AvroUserSchemaLoader.load(), 1, 1), name, age, favouriteColour);
     }
 
     public AvroUser(CompiledSchema<Schema> schema, String name, int age, String favouriteColour) {

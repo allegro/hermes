@@ -158,9 +158,9 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         subjectNamingStrategy << subjectNamingStrategies
     }
 
-    def "should return empty optional when latest schema does not exist"() {
+    def "should return empty optional when latest schemaWithId does not exist"() {
         when:
-        def schema = client.getLatestSchema(topicName)
+        def schema = client.getLatestSchemaWithId(topicName)
 
         then:
         !schema.isPresent()
@@ -169,12 +169,12 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         client << clients
     }
 
-    def "should throw exception when not able to fetch latest schema"() {
+    def "should throw exception when not able to fetch latest schemaWithId"() {
         given:
         wireMock.stubFor(get(latestSchemaUrl(topicName, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getLatestSchema(topicName)
+        client.getLatestSchemaWithId(topicName)
 
         then:
         thrown(InternalSchemaRepositoryException)
@@ -184,15 +184,17 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         subjectNamingStrategy << subjectNamingStrategies
     }
 
-    def "should return latest schema"() {
+    def "should return latest schemaWithId"() {
         given:
-        wireMock.stubFor(get(latestSchemaUrl(topicName, subjectNamingStrategy)).willReturn(okResponse().withBody("0\t{}")))
+        wireMock.stubFor(get(latestSchemaUrl(topicName, subjectNamingStrategy)).willReturn(okResponse().withBody("{\"id\": 1, \"schema\": \"{}\"}")
+                .withHeader("Content-Type", "application/json")))
 
         when:
-        def schema = client.getLatestSchema(topicName)
+        def schemaWithId = client.getLatestSchemaWithId(topicName)
 
         then:
-        schema.get().value() == "{}"
+        schemaWithId.get().getId() == 1
+        schemaWithId.get().getSchema() == RawSchema.valueOf("{}")
 
         where:
         client << clients
@@ -241,16 +243,18 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         subjectNamingStrategy << subjectNamingStrategies
     }
 
-    def "should return schema at specified version"() {
+    def "should return schemaWitId at specified version"() {
         given:
         def version = 5
-        wireMock.stubFor(get(schemaVersionUrl(topicName, version, subjectNamingStrategy)).willReturn(okResponse().withBody("0\t{}")))
+        wireMock.stubFor(get(schemaVersionUrl(topicName, version, subjectNamingStrategy)).willReturn(okResponse().withBody("{\"id\": \"1\", \"schema\": \"{}\"}")
+                .withHeader("Content-Type", "application/json")))
 
         when:
-        def schema = client.getSchema(topicName, SchemaVersion.valueOf(version))
+        def schemaWitId = client.getSchemaWithId(topicName, SchemaVersion.valueOf(version))
 
         then:
-        schema.get().value() == "{}"
+        schemaWitId.get().getId() == 1
+        schemaWitId.get().getSchema() == RawSchema.valueOf("{}")
 
         where:
         client << clients

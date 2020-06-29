@@ -1,11 +1,9 @@
 package pl.allegro.tech.hermes.schema.schemarepo;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
-import pl.allegro.tech.hermes.api.SchemaData;
+import pl.allegro.tech.hermes.api.SchemaWithId;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.schema.*;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
@@ -32,54 +30,34 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
         this.schemaRepositoryInstanceResolver = schemaRepositoryInstanceResolver;
         this.subjectNamingStrategy = subjectNameStrategy;
     }
-
+    
     @Override
-    public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version) {
+    public Optional<SchemaWithId> getSchemaWithId(TopicName topic, SchemaVersion version) {
         String subject = subjectNamingStrategy.apply(topic);
         String versionString = Integer.toString(version.value());
-        Response response = schemaRepositoryInstanceResolver.resolve(subject)
-                .path(subject)
-                .path("id")
-                .path(versionString)
-                .request()
-                .get();
-        return extractSchema(subject, versionString, response).map(RawSchema::valueOf);
+        Response response = getSchemaResponse(subject, versionString);
+        return extractSchemaWithId(subject, versionString, response);
     }
 
     @Override
-    public Optional<RawSchema> getLatestSchema(TopicName topic) {
+    public Optional<SchemaWithId> getLatestSchemaWithId(TopicName topic) {
         String subject = subjectNamingStrategy.apply(topic);
-        final String version = "latest";
-        Response response = schemaRepositoryInstanceResolver.resolve(subject)
-                .path(subject)
-                .path(version)
-                .request()
-                .get();
-        return extractSchema(subject, version, response).map(RawSchema::valueOf);
+        Response response = getLatestSchemaResponse(subject);
+        return extractSchemaWithId(subject, "latest", response);
     }
 
-    @Override
-    public Optional<SchemaData> getSchemaData(TopicName topic, SchemaVersion version) {
-        //TODO: Implement this
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<SchemaData> getLatestSchemaData(TopicName topic) {
-        //TODO: Implement this
-        return Optional.empty();
-    }
-
-    private Optional<String> extractSchema(String subject, String version, Response response) {
+    private Optional<SchemaWithId> extractSchemaWithId(String subject, String version, Response response) {
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
-                String schema = parseSchema(response.readEntity(String.class));
-                return Optional.of(schema);
+                logger.info("Found schema data for subject {} at version {}", subject, version);
+                SchemaRepoResponse schemaRepoResponse = response.readEntity(SchemaRepoResponse.class);
+                return Optional.of(schemaRepoResponse.toSchemaWithId());
             case CLIENT_ERROR:
-                logger.error("Could not find schema for subject {}, reason: {}", subject, response.getStatus());
+                logger.error("Could not find schema data for subject {} at version {}, reason: {}", subject, version, response.getStatus());
                 return Optional.empty();
             case SERVER_ERROR:
             default:
+                logger.error("Could not find schema data for subject {} at version {}, reason: {}", subject, version, response.getStatus());
                 throw new InternalSchemaRepositoryException(subject, response);
         }
     }
@@ -96,13 +74,30 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
         return extractSchemaVersions(subject, response);
     }
 
+    private Response getSchemaResponse(String subject, String version) {
+        return schemaRepositoryInstanceResolver.resolve(subject)
+            .path(subject)
+            .path("id")
+            .path(version)
+            .request()
+            .get();
+    }
+
+    private Response getLatestSchemaResponse(String subject) {
+        return schemaRepositoryInstanceResolver.resolve(subject)
+            .path(subject)
+            .path("latest")
+            .request()
+            .get();
+    }
+
     private List<SchemaVersion> extractSchemaVersions(String subject, Response response) {
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
-                List<SchemaWithId> schemasWithIds = Optional.ofNullable(response.readEntity(new GenericType<List<SchemaWithId>>() {}))
+                List<SchemaRepoResponse> schemasWithIds = Optional.ofNullable(response.readEntity(new GenericType<List<SchemaRepoResponse>>() {}))
                         .orElseGet(Collections::emptyList);
                 return schemasWithIds.stream()
-                        .map(SchemaWithId::getId)
+                        .map(SchemaRepoResponse::getId)
                         .sorted(Comparator.reverseOrder())
                         .map(SchemaVersion::valueOf)
                         .collect(Collectors.toList());
@@ -182,29 +177,5 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     @Override
     public void validateSchema(TopicName topic, RawSchema rawSchema) {
         // not implemented, let pass through
-    }
-
-    private String parseSchema(String schemaResponse) {
-        return schemaResponse.substring(1 + schemaResponse.indexOf('\t'));
-    }
-
-    private static class SchemaWithId {
-
-        private final int id;
-        private final String schema;
-
-        @JsonCreator
-        SchemaWithId(@JsonProperty("id") int id, @JsonProperty("schema") String schema) {
-            this.id = id;
-            this.schema = schema;
-        }
-
-        int getId() {
-            return id;
-        }
-
-        String getSchema() {
-            return schema;
-        }
     }
 }

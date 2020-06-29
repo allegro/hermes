@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
-import pl.allegro.tech.hermes.api.SchemaData;
+import pl.allegro.tech.hermes.api.SchemaWithId;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
 import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
@@ -59,35 +59,19 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     }
 
     @Override
-    public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion schemaVersion) {
+    public Optional<SchemaWithId> getSchemaWithId(TopicName topic, SchemaVersion schemaVersion) {
         String version = Integer.toString(schemaVersion.value());
         String subject = subjectNamingStrategy.apply(topic);
         Response response = getSchema(subject, version);
-        return extractSchema(subject, version, response).map(RawSchema::valueOf);
+        return extractSchemaWithId(subject, version, response);
     }
 
     @Override
-    public Optional<RawSchema> getLatestSchema(TopicName topic) {
+    public Optional<SchemaWithId> getLatestSchemaWithId(TopicName topic) {
         final String version = "latest";
         String subject = subjectNamingStrategy.apply(topic);
         Response response = getSchema(subject, version);
-        return extractSchema(subject, version, response).map(RawSchema::valueOf);
-    }
-
-    @Override
-    public Optional<SchemaData> getSchemaData(TopicName topic, SchemaVersion schemaVersion) {
-        String version = Integer.toString(schemaVersion.value());
-        String subject = subjectNamingStrategy.apply(topic);
-        Response response = getSchema(subject, version);
-        return extractSchemaData(subject, version, response);
-    }
-
-    @Override
-    public Optional<SchemaData> getLatestSchemaData(TopicName topic) {
-        final String version = "latest";
-        String subject = subjectNamingStrategy.apply(topic);
-        Response response = getSchema(subject, version);
-        return extractSchemaData(subject, version, response);
+        return extractSchemaWithId(subject, version, response);
     }
 
     private Response getSchema(String subject, String version) {
@@ -100,30 +84,12 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
                 .get();
     }
 
-    private Optional<String> extractSchema(String subject, String version, Response response) {
-        switch (response.getStatusInfo().getFamily()) {
-            case SUCCESSFUL:
-                logger.info("Found schema for subject {} at version {}", subject,  version);
-                String schema = response.readEntity(SchemaRegistryResponse.class).getSchema();
-                return Optional.of(schema);
-            case CLIENT_ERROR:
-                logger.error("Could not find schema for subject {} at version {}, reason: {}", subject, version, response.getStatus());
-                return Optional.empty();
-            case SERVER_ERROR:
-            default:
-                logger.error("Could not find schema for subject {} at version {}, reason: {}", subject, version, response.getStatus());
-                throw new InternalSchemaRepositoryException(subject, response);
-        }
-    }
-
-    private Optional<SchemaData> extractSchemaData(String subject, String version, Response response) {
+    private Optional<SchemaWithId> extractSchemaWithId(String subject, String version, Response response) {
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
                 logger.info("Found schema data for subject {} at version {}", subject,  version);
-                String schema = response.readEntity(SchemaRegistryResponse.class).getSchema();
-                int schemaId = response.readEntity(SchemaRegistryResponse.class).getId();
-                int schemaVersion = response.readEntity(SchemaRegistryResponse.class).getVersion();
-                return Optional.of(SchemaData.valueOf(schema, schemaId, schemaVersion));
+                SchemaRegistryResponse schemaRegistryResponse = response.readEntity(SchemaRegistryResponse.class);
+                return Optional.of(schemaRegistryResponse.toSchemaWithId());
             case CLIENT_ERROR:
                 logger.error("Could not find schema data for subject {} at version {}, reason: {}", subject, version, response.getStatus());
                 return Optional.empty();

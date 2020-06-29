@@ -33,7 +33,7 @@ public class AvroMessageHeaderSchemaVersionContentWrapper implements AvroMessage
     }
 
     @Override
-    public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, Integer schemaVersion) {
+    public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
         try {
             deserializationUsingHeaderSchemaVersion.inc();
             CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(schemaVersion));
@@ -51,7 +51,7 @@ public class AvroMessageHeaderSchemaVersionContentWrapper implements AvroMessage
     }
 
     @Override
-    public boolean isApplicable(byte[] data, Topic topic, Integer schemaVersion) {
+    public boolean isApplicable(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
         return schemaVersion != null;
     }
 }

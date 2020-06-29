@@ -4,29 +4,24 @@ import com.google.common.base.MoreObjects;
 
 import java.util.Objects;
 
-public final class SchemaData {
+public final class SchemaWithId {
 
     private final RawSchema schema;
 
     private final int id;
 
-    private final int version;
-
-    private SchemaData(RawSchema schema, int id, int version) {
+    private SchemaWithId(RawSchema schema, int id) {
         this.schema = schema;
         this.id = id;
-        this.version = version;
     }
 
-    public static SchemaData valueOf(String schema, int id, int version) {
-        return new SchemaData(RawSchema.valueOf(schema), id, version);
+    public static SchemaWithId valueOf(String schema, int id) {
+        return new SchemaWithId(RawSchema.valueOf(schema), id);
     }
 
     public RawSchema getSchema() { return schema; }
 
     public int getId() { return id; }
-
-    public int getVersion() { return version; }
 
     @Override
     public boolean equals(Object o) {
@@ -37,9 +32,9 @@ public final class SchemaData {
             return false;
         }
 
-        SchemaData that = (SchemaData) o;
+        SchemaWithId that = (SchemaWithId) o;
 
-        return Objects.equals(id, that.id) && schema.equals(that.schema) && Objects.equals(version, that.version);
+        return Objects.equals(id, that.id) && schema.equals(that.schema);
     }
 
     @Override
@@ -47,12 +42,11 @@ public final class SchemaData {
         return MoreObjects.toStringHelper(this)
             .add("schema", schema)
             .add("id", id)
-            .add("version", version)
             .toString();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(schema, id, version);
+        return Objects.hash(schema, id);
     }
 }

@@ -34,7 +34,7 @@ public class AvroMessageSchemaIdAwareContentWrapper implements AvroMessageConten
     }
 
     @Override
-    public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, Integer schemaVersionFromHeader) {
+    public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, Integer schemaIdFromHeader, Integer schemaVersionFromHeader) {
         try {
             deserializationUsingSchemaIdAware.inc();
 
@@ -52,7 +52,7 @@ public class AvroMessageSchemaIdAwareContentWrapper implements AvroMessageConten
     }
 
     @Override
-    public boolean isApplicable(byte[] data, Topic topic, Integer schemaVersion) {
+    public boolean isApplicable(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
         return isPayloadAwareOfSchemaId(data, topic);
     }
 

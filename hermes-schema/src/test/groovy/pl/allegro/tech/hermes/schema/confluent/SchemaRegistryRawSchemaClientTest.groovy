@@ -129,10 +129,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
                 .withBody("""{"subject":"someGroup.someTopic","id":100,"version":$version,"schema":"{}"}""")))
 
         when:
-        def schema = client.getSchema(topicName, SchemaVersion.valueOf(version))
+        def schemaWithId = client.getSchemaWithId(topicName, SchemaVersion.valueOf(version))
 
         then:
-        schema.get() == rawSchema
+        schemaWithId.get().getSchema() == rawSchema
 
         where:
         client << clients
@@ -145,7 +145,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         wireMock.stubFor(get(schemaVersionUrl(topicName, version, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getSchema(topicName, SchemaVersion.valueOf(version))
+        client.getSchemaWithId(topicName, SchemaVersion.valueOf(version))
 
         then:
         thrown(InternalSchemaRepositoryException)
@@ -162,10 +162,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
                 .withBody("""{"subject":"someGroup.someTopic","id":200,"version":20,"schema":"{}"}""")))
 
         when:
-        def schema = client.getLatestSchema(topicName)
+        def schemaWithId = client.getLatestSchemaWithId(topicName)
 
         then:
-        schema.get() == rawSchema
+        schemaWithId.get().getSchema() == rawSchema
 
         where:
         client << clients
@@ -174,10 +174,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should return empty optional when latest schema does not exist"() {
         when:
-        def schema = client.getLatestSchema(topicName)
+        def schemaWithId = client.getLatestSchemaWithId(topicName)
 
         then:
-        !schema.isPresent()
+        !schemaWithId.isPresent()
 
         where:
         client << clients
@@ -189,7 +189,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         wireMock.stubFor(get(schemaLatestVersionUrl(topicName, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getLatestSchema(topicName)
+        client.getLatestSchemaWithId(topicName)
 
         then:
         def e = thrown(InternalSchemaRepositoryException)

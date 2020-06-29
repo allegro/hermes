@@ -6,13 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageAnySchemaVersionContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
-import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.*;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.time.Clock;
@@ -45,8 +39,11 @@ public class MessageConfiguration {
         AvroMessageAnySchemaVersionContentWrapper anySchemaWrapper =
                 new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, () -> true, avroWrapper, metrics);
 
-        AvroMessageHeaderSchemaVersionContentWrapper headerSchemaWrapper =
+        AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionWrapper =
                 new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, metrics);
+
+        AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdWrapper =
+            new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics);
 
         AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
                 new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metrics);
@@ -55,7 +52,8 @@ public class MessageConfiguration {
                 jsonWrapper,
                 avroWrapper,
                 schemaAwareWrapper,
-                headerSchemaWrapper,
+                headerSchemaVersionWrapper,
+                headerSchemaIdWrapper,
                 anySchemaWrapper);
     }
 

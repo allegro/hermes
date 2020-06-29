@@ -339,7 +339,7 @@ public class PublishingAvroTest extends IntegrationTest {
         // given
         Topic topic = randomTopic("explicitSchemaVersion", "topic")
                 .withContentType(AVRO)
-                .withSchemaVersionAwareSerialization()
+                .withSchemaIdAwareSerialization()
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
@@ -365,7 +365,7 @@ public class PublishingAvroTest extends IntegrationTest {
         // given
         Topic topic = randomTopic("explicitSchemaVersion", "topic")
                 .withContentType(AVRO)
-                .withSchemaVersionAwareSerialization()
+                .withSchemaIdAwareSerialization()
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);

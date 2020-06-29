@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Header
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.schema.CompiledSchema
+import pl.allegro.tech.hermes.schema.SchemaId
 import pl.allegro.tech.hermes.schema.SchemaVersion
 
 class TestMessages {
@@ -17,7 +18,7 @@ class TestMessages {
     }
 
     static Message messageWithSchemaVersion() {
-        new Message("123", null, null, ContentType.JSON, Optional.of(new CompiledSchema<>(1, SchemaVersion.valueOf(1))), 0l, 0l, null, 0l, Collections.emptyMap(), Collections.emptyList(), null, false)
+        new Message("123", null, null, ContentType.JSON, Optional.of(CompiledSchema.of(1, 1, 1)), 0l, 0l, null, 0l, Collections.emptyMap(), Collections.emptyList(), null, false)
     }
 
     static Message messageWithAdditionalHeaders() {

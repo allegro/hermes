@@ -24,24 +24,25 @@ public class MessageContentWrapper {
     @Inject
     public MessageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
                                  AvroMessageContentWrapper avroMessageContentWrapper,
-                                 AvroMessageSchemaIdAwareContentWrapper schemaVersionAwareContentWrapper,
+                                 AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
                                  AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
+                                 AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
                                  AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper) {
 
         this.jsonMessageContentWrapper = jsonMessageContentWrapper;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
         this.avroMessageContentUnwrappers =
-                asList(schemaVersionAwareContentWrapper, headerSchemaVersionContentWrapper, anySchemaVersionContentWrapper);
+                asList(schemaIdAwareContentWrapper, headerSchemaVersionContentWrapper, headerSchemaIdContentWrapper, anySchemaVersionContentWrapper);
     }
 
     public UnwrappedMessageContent unwrapJson(byte[] data) {
         return jsonMessageContentWrapper.unwrapContent(data);
     }
 
-    public UnwrappedMessageContent unwrapAvro(byte[] data, Topic topic, Integer schemaVersion) {
+    public UnwrappedMessageContent unwrapAvro(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
         for (AvroMessageContentUnwrapper unwrapper : avroMessageContentUnwrappers) {
-            if (unwrapper.isApplicable(data, topic, schemaVersion)) {
-                AvroMessageContentUnwrapperResult result = unwrapper.unwrap(data, topic, schemaVersion);
+            if (unwrapper.isApplicable(data, topic, schemaId, schemaVersion)) {
+                AvroMessageContentUnwrapperResult result = unwrapper.unwrap(data, topic, schemaId, schemaVersion);
                 if (result.getStatus() == SUCCESS) {
                     return result.getContent();
                 }

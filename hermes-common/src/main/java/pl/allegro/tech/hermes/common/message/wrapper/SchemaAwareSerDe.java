@@ -14,10 +14,10 @@ public class SchemaAwareSerDe {
     private SchemaAwareSerDe() {
     }
 
-    public static byte[] serialize(SchemaId id, byte[] binaryAvro) {
+    public static byte[] serialize(SchemaId schemaId, byte[] binaryAvro) {
         ByteBuffer buffer = ByteBuffer.allocate(HEADER_SIZE + binaryAvro.length);
         buffer.put(MAGIC_BYTE_VALUE);
-        buffer.putInt(id.value());
+        buffer.putInt(schemaId.value());
         buffer.put(binaryAvro);
         return buffer.array();
     }

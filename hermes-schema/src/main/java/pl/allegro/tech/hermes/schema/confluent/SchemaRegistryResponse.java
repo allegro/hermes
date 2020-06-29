@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.schema.confluent;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import pl.allegro.tech.hermes.api.SchemaWithId;
 
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
@@ -65,5 +66,9 @@ class SchemaRegistryResponse {
     @Override
     public int hashCode() {
         return Objects.hash(subject, version, id, schema);
+    }
+
+    SchemaWithId toSchemaWithId() {
+        return SchemaWithId.valueOf(schema, id);
     }
 }

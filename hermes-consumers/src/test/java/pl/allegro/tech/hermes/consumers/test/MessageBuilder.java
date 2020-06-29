@@ -71,7 +71,7 @@ public final class MessageBuilder {
     }
 
     public MessageBuilder withSchema(Schema schema, int id, int version) {
-        this.schema = Optional.of(new CompiledSchema<>(schema, SchemaId.valueOf(id), SchemaVersion.valueOf(version)));
+        this.schema = Optional.of(CompiledSchema.of(schema, id, version));
         return this;
     }
 

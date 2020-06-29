@@ -42,12 +42,12 @@ public class AvroMessageAnySchemaVersionContentWrapper implements AvroMessageCon
     }
 
     @Override
-    public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, @Nullable Integer headerVersion) {
+    public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, @Nullable Integer headerId, @Nullable Integer headerVersion) {
         return unwrap(data, topic);
     }
 
     @Override
-    public boolean isApplicable(byte[] data, Topic topic, Integer schemaVersion) {
+    public boolean isApplicable(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
         return true;
     }
 

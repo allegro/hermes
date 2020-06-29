@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidatio
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
 import pl.allegro.tech.hermes.schema.CompiledSchema
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException
+import pl.allegro.tech.hermes.schema.SchemaId
 import pl.allegro.tech.hermes.schema.SchemaRepository
 import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
@@ -146,7 +147,7 @@ class TopicValidatorTest extends Specification {
         given:
         def jsonTopic = topic('group.topic').withContentType(ContentType.JSON).build()
         def migratedTopic = topic('group.topic').withContentType(ContentType.AVRO).migratedFromJsonType().build()
-        schemaRepository.getLatestAvroSchema(migratedTopic) >> new CompiledSchema<Schema>(new AvroUser().schema, SchemaVersion.valueOf(1))
+        schemaRepository.getLatestAvroSchema(migratedTopic) >> CompiledSchema.of(new AvroUser().schema, 1, 1)
 
         when:
         topicValidator.ensureUpdatedTopicIsValid(migratedTopic, jsonTopic)

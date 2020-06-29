@@ -19,6 +19,10 @@ public class DeserializationMetrics {
         return metricRegistry.counter(name(deserializationErrorsPath(), "headerSchemaVersion"));
     }
 
+    public Counter errorsForHeaderSchemaId() {
+        return metricRegistry.counter(name(deserializationErrorsPath(), "headerSchemaId"));
+    }
+
     public Counter errorsForSchemaIdAwarePayload() {
         return metricRegistry.counter(name(deserializationErrorsPath(), "payloadWithSchemaId"));
     }
@@ -37,6 +41,10 @@ public class DeserializationMetrics {
 
     public Counter usingHeaderSchemaVersion() {
         return metricRegistry.counter(name(deserializationPath(), "using", "headerSchemaVersion"));
+    }
+
+    public Counter usingHeaderSchemaId() {
+        return metricRegistry.counter(name(deserializationPath(), "using", "headerSchemaId"));
     }
 
     public Counter usingSchemaIdAware() {
