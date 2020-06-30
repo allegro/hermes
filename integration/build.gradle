@@ -13,7 +13,6 @@ project.configurations {
     alpnboot
 }
 
-
 /*
     This is required for proper http2 integration testing. We only need one version at a time but it's rather
     impossible to know which update of Java8 developers are running so we're trying to support all common use cases;
@@ -22,10 +21,9 @@ project.configurations {
 
 def getAlpnVersion() {
     def javaVersion = System.getProperty("java.version")
-    def matcher = (javaVersion =~ /_(\d+)(-.*)?/)
-    def version = matcher.find() ? Integer.parseInt(matcher.group(1)) : 0
+    def updateVersion = getJavaUpdateVersion()
     def alpnVersion = {
-        switch (version) {
+        switch (updateVersion) {
             case 0..24:
                 return '8.1.0.v20141016'
             case 25..30:
@@ -53,7 +51,7 @@ def getAlpnVersion() {
             case 191..242:
                 return '8.1.13.v20181017'
             default:
-                throw new IllegalStateException("ALPN version not defined for Java version: ${javaVersion}; extracted minor version: ${version}")
+                throw new IllegalStateException("ALPN version not defined for Java version: ${javaVersion}; extracted update version: ${updateVersion}")
         }
     }()
     project.logger.quiet("Resolved ALPN version ${alpnVersion} for Java ${javaVersion}")
@@ -81,11 +79,13 @@ dependencies {
     testCompile group: 'org.freemarker', name: 'freemarker', version: '2.3.21'
     testCompile group: 'org.schemarepo', name: 'schema-repo-common', version: '0.1.3'
     testCompile group: 'io.confluent', name: 'kafka-schema-registry', version: '4.1.2'
-    if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-        testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: versions.jetty
-        testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: versions.jetty
+    if (isAlpnRequired()) {
+        testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.27.v20200227'
+        testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.27.v20200227'
+        alpnboot group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: getAlpnVersion()
     } else {
-        testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-java-server', version: versions.jetty
+        testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.28.v20200408'
+        testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-client', version: '9.4.30.v20200611'
     }
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
@@ -96,7 +96,6 @@ dependencies {
     }
 
     testCompile group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
-    alpnboot group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: getAlpnVersion()
 }
 
 project.sourceSets {
@@ -122,7 +121,7 @@ task integrationTest(type: Test) {
     logging.captureStandardOutput LogLevel.INFO
 
     def args = []
-    if(JavaVersion.current() == JavaVersion.VERSION_1_8){
+    if(isAlpnRequired()){
         args = ["-Xbootclasspath/p:${project.configurations.alpnboot.asPath}"]
     }
     if (project.hasProperty('tests.timeout.multiplier')) {
@@ -144,5 +143,15 @@ task integrationTest(type: Test) {
         exceptionFormat = 'full'
         events "passed", "skipped", "failed", "standardError", "standardOut"
     }
+}
+
+def isAlpnRequired() {
+    JavaVersion.current() == JavaVersion.VERSION_1_8 && getJavaUpdateVersion() < 252
+}
+
+def getJavaUpdateVersion() {
+    def javaVersion = System.getProperty("java.version")
+    def matcher = (javaVersion =~ /_(\d+)(-.*)?/)
+    matcher.find() ? Integer.parseInt(matcher.group(1)) : 0
 }
 
