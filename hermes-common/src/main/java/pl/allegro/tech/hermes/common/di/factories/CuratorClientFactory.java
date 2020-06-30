@@ -15,7 +15,11 @@ import java.util.Optional;
 import java.util.concurrent.ThreadFactory;
 
 import static java.time.Duration.ofSeconds;
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_BASE_SLEEP_TIME;
+import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_CONNECTION_TIMEOUT;
+import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_MAX_RETRIES;
+import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_MAX_SLEEP_TIME_IN_SECONDS;
+import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_SESSION_TIMEOUT;
 
 public class CuratorClientFactory {
 

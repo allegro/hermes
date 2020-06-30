@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config.storage;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties
+@ConfigurationProperties(prefix = "authorization")
 public class StorageAuthorizationProperties {
 
     private String scheme;
