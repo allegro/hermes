@@ -85,6 +85,7 @@ dependencies {
         alpnboot group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version: getAlpnVersion()
     } else {
         testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.28.v20200408'
+        testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-client', version: '9.4.30.v20200611'
     }
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
