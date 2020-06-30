@@ -99,7 +99,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             AdminZkClient adminZkClient = adminZkClient(kafkaZkClient);
             AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
 
-            BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties), kafkaZkClient);
+            BrokerStorage storage = brokersStorage(curatorFramework(kafkaProperties), kafkaZkClient, kafkaProperties);
 
             BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, adminZkClient, kafkaZkClient, kafkaNamesMapper);
 
@@ -203,8 +203,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
         return curator;
     }
 
-    private BrokerStorage brokersStorage(CuratorFramework curatorFramework, KafkaZkClient kafkaZkClient) {
-        return new ZookeeperBrokerStorage(curatorFramework, kafkaZkClient);
+    private BrokerStorage brokersStorage(CuratorFramework curatorFramework, KafkaZkClient kafkaZkClient, KafkaProperties kafkaProperties) {
+        return new ZookeeperBrokerStorage(curatorFramework, kafkaZkClient, kafkaProperties.getSasl().getProtocol());
     }
 
     private KafkaConsumerPool kafkaConsumersPool(KafkaProperties kafkaProperties, BrokerStorage brokerStorage) {

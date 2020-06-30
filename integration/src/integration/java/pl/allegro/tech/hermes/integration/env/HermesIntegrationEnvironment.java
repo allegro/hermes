@@ -34,8 +34,12 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     private CuratorFramework zookeeper;
 
     static {
+        // set properties before any other test initialization
+        System.setProperty("zookeeper.sasl.client", "false");
         System.setProperty("java.security.auth.login.config", HermesIntegrationEnvironment.class.getClassLoader().getResource("kafka_server_jaas.conf").getPath());
+    }
 
+    static {
         STARTERS.put(ZookeeperStarter.class, new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_CONNECT_STRING, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT) + "/groups"));
         STARTERS.put(KafkaStarter.class, new KafkaStarter());
         STARTERS.put(GraphiteMockStarter.class, new GraphiteMockStarter(GRAPHITE_SERVER_PORT));
@@ -99,6 +103,10 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
                 starter.stop();
             }
             zookeeper.close();
+
+            System.clearProperty("zookeeper.sasl.client");
+            System.clearProperty("java.security.auth.login.config");
+
             logger.info("Environment cleaned");
         } catch (Exception e) {
             logger.error("Exception during environment cleaning", e);

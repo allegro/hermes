@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class KafkaSaslProperties {
     private boolean isEnabled = false;
     private String mechanism = "PLAIN";
-    private String protocol = "SASL_PLAINTEXT";
+    private String protocol = "PLAINTEXT";
     private String username = "admin";
     private String password = "admin-secret";
     private String jaasConfig;
