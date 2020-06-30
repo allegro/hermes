@@ -58,7 +58,9 @@ public class SchemaRepositoryConfiguration {
     @Bean
     public SubjectNamingStrategy subjectNamingStrategy(KafkaClustersProperties kafkaClustersProperties) {
         return qualifiedName
-                .withNamespacePrefixIf(schemaRepositoryProperties.isSubjectNamespaceEnabled(), kafkaClustersProperties.getDefaultNamespace())
+                .withNamespacePrefixIf(
+                        schemaRepositoryProperties.isSubjectNamespaceEnabled(),
+                        new SubjectNamingStrategy.Namespace(kafkaClustersProperties.getDefaultNamespace(), kafkaClustersProperties.getNamespaceSeparator()))
                 .withValueSuffixIf(schemaRepositoryProperties.isSubjectSuffixEnabled());
     }
 

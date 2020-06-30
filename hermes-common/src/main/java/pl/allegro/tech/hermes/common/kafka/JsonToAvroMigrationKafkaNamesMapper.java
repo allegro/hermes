@@ -11,6 +11,10 @@ public class JsonToAvroMigrationKafkaNamesMapper extends NamespaceKafkaNamesMapp
         super(namespace);
     }
 
+    public JsonToAvroMigrationKafkaNamesMapper(String namespace, String namespaceSeparator) {
+        super(namespace, namespaceSeparator);
+    }
+
     public KafkaTopics toKafkaTopics(Topic topic) {
         KafkaTopic primary = mapToKafkaTopic.andThen(appendNamespace).andThen(appendContentTypeSuffix).apply(topic);
 

@@ -35,7 +35,9 @@ public class RawSchemaClientFactory implements Factory<RawSchemaClient> {
                 .withValueSuffixIf(configFactory.getBooleanProperty(Configs.SCHEMA_REPOSITORY_SUBJECT_SUFFIX_ENABLED))
                 .withNamespacePrefixIf(
                         configFactory.getBooleanProperty(Configs.SCHEMA_REPOSITORY_SUBJECT_NAMESPACE_ENABLED),
-                        configFactory.getStringProperty(Configs.KAFKA_NAMESPACE));
+                        new SubjectNamingStrategy.Namespace(
+                                configFactory.getStringProperty(Configs.KAFKA_NAMESPACE),
+                                configFactory.getStringProperty(Configs.KAFKA_NAMESPACE_SEPARATOR)));
         String schemaRepositoryType = configFactory.getStringProperty(Configs.SCHEMA_REPOSITORY_TYPE).toUpperCase();
         SchemaRepositoryType repoType = SchemaRepositoryType.valueOf(schemaRepositoryType);
         switch (repoType) {

@@ -44,7 +44,7 @@ public class KafkaBrokerMessageProducerTest {
     private Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, configFactory);
 
     private KafkaBrokerMessageProducer producer;
-    private KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns");
+    private KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
     private KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(configFactory);
 
     @Mock

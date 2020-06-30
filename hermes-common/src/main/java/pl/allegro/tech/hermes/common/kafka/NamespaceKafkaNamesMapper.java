@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.common.kafka;
 import com.google.common.base.Joiner;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.Configs;
 
 import java.util.function.Function;
 
@@ -10,12 +11,16 @@ import static pl.allegro.tech.hermes.api.helpers.Replacer.replaceInAll;
 
 public class NamespaceKafkaNamesMapper implements KafkaNamesMapper {
 
-    private static final String SEPARATOR = "_";
-
     private final String namespace;
+    private final String namespaceSeparator;
 
     public NamespaceKafkaNamesMapper(String namespace) {
+        this(namespace, Configs.KAFKA_NAMESPACE_SEPARATOR.getDefaultValue());
+    }
+
+    public NamespaceKafkaNamesMapper(String namespace, String namespaceSeparator) {
         this.namespace = namespace;
+        this.namespaceSeparator = namespaceSeparator;
     }
 
     @Override
@@ -47,6 +52,6 @@ public class NamespaceKafkaNamesMapper implements KafkaNamesMapper {
     }
 
     private String appendNamespace(String name) {
-        return namespace.isEmpty() ? name : namespace + SEPARATOR + name;
+        return namespace.isEmpty() ? name : namespace + namespaceSeparator + name;
     }
 }

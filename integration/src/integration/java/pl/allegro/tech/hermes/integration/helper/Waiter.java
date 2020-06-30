@@ -54,7 +54,7 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         this.zookeeper = zookeeper;
         this.brokerOperations = brokerOperations;
         this.clusterName = clusterName;
-        this.kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(kafkaNamespace);
+        this.kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(kafkaNamespace, "_");
     }
 
     public void untilHermesZookeeperNodeCreation(final String path) {
