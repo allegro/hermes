@@ -69,6 +69,6 @@ class SchemaRegistryResponse {
     }
 
     SchemaWithId toSchemaWithId() {
-        return SchemaWithId.valueOf(schema, id);
+        return SchemaWithId.of(schema, id);
     }
 }

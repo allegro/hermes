@@ -17,7 +17,7 @@ public class InMemorySchemaClient implements RawSchemaClient {
 
     public InMemorySchemaClient(TopicName schemaTopicName, String schemaSource, int id) {
         this.schemaTopicName = schemaTopicName;
-        schemaWithId = SchemaWithId.valueOf(schemaSource, id);
+        schemaWithId = SchemaWithId.of(schemaSource, id);
     }
 
     @Override

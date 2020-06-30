@@ -18,10 +18,9 @@ import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.List;
 import java.util.Optional;
-
-import static java.util.Arrays.asList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Singleton
 public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
@@ -64,21 +63,17 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     }
 
     private Iterable<Header> createRecordHeaders(String id, long timestamp, Optional<SchemaId> schemaId, Optional<SchemaVersion> schemaVersion) {
-        List<Header> headers = schemaVersion
-            .map(sv -> asList(
-                kafkaHeaderFactory.messageId(id),
-                kafkaHeaderFactory.timestamp(timestamp),
-                kafkaHeaderFactory.schemaVersion(sv.value())))
-            .orElse(asList(
-                kafkaHeaderFactory.messageId(id),
-                kafkaHeaderFactory.timestamp(timestamp)));
+        Stream<Optional<Header>> headers = Stream.of(
+            Optional.of(kafkaHeaderFactory.messageId(id)),
+            Optional.of(kafkaHeaderFactory.timestamp(timestamp)),
+            schemaVersion.map(sv -> kafkaHeaderFactory.schemaVersion(sv.value())),
+            schemaId.map(sid -> kafkaHeaderFactory.schemaId(sid.value()))
+        );
 
-        return schemaId
-            .map(sid -> {
-                headers.add(kafkaHeaderFactory.schemaId(sid.value()));
-                return headers;
-            })
-            .orElse(headers);
+        return headers
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
     }
 
     @Override

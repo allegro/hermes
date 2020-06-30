@@ -13,7 +13,7 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
 
     def rawSchemaClient = Stub(RawSchemaClient)
     def schemaCompiler = {
-        it.getSchema().value().toUpperCase()
+        it.getSchemaString().toUpperCase()
     }
     def repository = new DirectCompiledSchemaRepository(rawSchemaClient, schemaCompiler)
 
@@ -21,7 +21,7 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
 
     def "should provide schema from source of given version"() {
         given:
-        rawSchemaClient.getSchemaWithId(topic.getName(), v1) >> Optional.of(SchemaWithId.valueOf("stuff", id1.value()))
+        rawSchemaClient.getSchemaWithId(topic.getName(), v1) >> Optional.of(SchemaWithId.of("stuff", id1.value()))
 
         expect:
         repository.getSchema(topic, v1) == new CompiledSchema('STUFF', id1, v1)
@@ -54,7 +54,7 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
 
     def "should fail to provide schema if schema compilation failed"() {
         given:
-        rawSchemaClient.getSchemaWithId(topic.getName(), v1) >> Optional.of(SchemaWithId.valueOf("stuff", id1.value()))
+        rawSchemaClient.getSchemaWithId(topic.getName(), v1) >> Optional.of(SchemaWithId.of("stuff", id1.value()))
         def repository = new DirectCompiledSchemaRepository(rawSchemaClient, {
             throw new RuntimeException("compilation failed")
         })

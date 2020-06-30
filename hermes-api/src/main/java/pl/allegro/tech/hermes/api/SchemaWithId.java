@@ -15,11 +15,15 @@ public final class SchemaWithId {
         this.id = id;
     }
 
-    public static SchemaWithId valueOf(String schema, int id) {
+    public static SchemaWithId of(String schema, int id) {
         return new SchemaWithId(RawSchema.valueOf(schema), id);
     }
 
     public RawSchema getSchema() { return schema; }
+
+    public String getSchemaString() {
+        return schema.value();
+    }
 
     public int getId() { return id; }
 
