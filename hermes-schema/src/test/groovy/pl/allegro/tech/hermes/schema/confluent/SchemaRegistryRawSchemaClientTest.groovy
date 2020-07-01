@@ -129,10 +129,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
                 .withBody("""{"subject":"someGroup.someTopic","id":100,"version":$version,"schema":"{}"}""")))
 
         when:
-        def schemaWithId = client.getSchemaWithId(topicName, SchemaVersion.valueOf(version))
+        def schemaMetadata = client.getSchemaMetadata(topicName, SchemaVersion.valueOf(version))
 
         then:
-        schemaWithId.get().getSchema() == rawSchema
+        schemaMetadata.get().getSchema() == rawSchema
 
         where:
         client << clients
@@ -145,7 +145,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         wireMock.stubFor(get(schemaVersionUrl(topicName, version, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getSchemaWithId(topicName, SchemaVersion.valueOf(version))
+        client.getSchemaMetadata(topicName, SchemaVersion.valueOf(version))
 
         then:
         thrown(InternalSchemaRepositoryException)
@@ -162,10 +162,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
                 .withBody("""{"subject":"someGroup.someTopic","id":200,"version":20,"schema":"{}"}""")))
 
         when:
-        def schemaWithId = client.getLatestSchemaWithId(topicName)
+        def getSchemaMetadata = client.getLatestSchemaMetadata(topicName)
 
         then:
-        schemaWithId.get().getSchema() == rawSchema
+        getSchemaMetadata.get().getSchema() == rawSchema
 
         where:
         client << clients
@@ -174,10 +174,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should return empty optional when latest schema does not exist"() {
         when:
-        def schemaWithId = client.getLatestSchemaWithId(topicName)
+        def metadata = client.getLatestSchemaMetadata(topicName)
 
         then:
-        !schemaWithId.isPresent()
+        !metadata.isPresent()
 
         where:
         client << clients
@@ -189,7 +189,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         wireMock.stubFor(get(schemaLatestVersionUrl(topicName, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getLatestSchemaWithId(topicName)
+        client.getLatestSchemaMetadata(topicName)
 
         then:
         def e = thrown(InternalSchemaRepositoryException)

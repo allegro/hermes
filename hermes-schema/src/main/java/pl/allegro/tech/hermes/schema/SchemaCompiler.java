@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.schema;
 
-import pl.allegro.tech.hermes.api.SchemaWithId;
+import pl.allegro.tech.hermes.api.SchemaMetadata;
 
 @FunctionalInterface
 public interface SchemaCompiler<T> {
 
-    T compile(SchemaWithId schemaWithId);
+    T compile(SchemaMetadata schemaMetadata);
 
 }

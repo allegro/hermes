@@ -39,7 +39,7 @@ public class AvroMessageSchemaIdAwareContentWrapper implements AvroMessageConten
             deserializationUsingSchemaIdAware.inc();
 
             SchemaAwarePayload payload = SchemaAwareSerDe.deserialize(data);
-            CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(payload.getSchemaId());
+            CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(topic, payload.getSchemaId());
 
             return AvroMessageContentUnwrapperResult.success(avroMessageContentWrapper.unwrapContent(payload.getPayload(), avroSchema));
         } catch (Exception ex) {

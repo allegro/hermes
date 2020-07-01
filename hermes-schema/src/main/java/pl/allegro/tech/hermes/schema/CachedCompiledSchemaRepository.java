@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class CachedCompiledSchemaRepository<T> implements CompiledSchemaRepository<T> {
 
     private final LoadingCache<TopicAndSchemaVersion, CompiledSchema<T>> topicVersionCache;
-    private final LoadingCache<SchemaId, CompiledSchema<T>> idCache;
+    private final LoadingCache<TopicAndSchemaId, CompiledSchema<T>> topicIdCache;
     private final CompiledSchemaRepository<T> compiledSchemaRepository;
 
     public CachedCompiledSchemaRepository(CompiledSchemaRepository<T> delegate, long maximumCacheSize, int expireAfterAccessMinutes) {
@@ -23,7 +23,7 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
                 .expireAfterAccess(expireAfterAccessMinutes, TimeUnit.MINUTES)
                 .build(new CompiledSchemaLoader<>(delegate));
 
-        this.idCache = CacheBuilder
+        this.topicIdCache = CacheBuilder
             .newBuilder()
             .maximumSize(maximumCacheSize)
             .expireAfterAccess(expireAfterAccessMinutes, TimeUnit.MINUTES)
@@ -38,6 +38,7 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
             if (online) {
                 CompiledSchema<T> compiledSchema = compiledSchemaRepository.getSchema(topic, version);
                 topicVersionCache.put(new TopicAndSchemaVersion(topic, version), compiledSchema);
+                topicIdCache.put(new TopicAndSchemaId(topic, compiledSchema.getId()), compiledSchema);
                 return compiledSchema;
             }
             return topicVersionCache.get(new TopicAndSchemaVersion(topic, version));
@@ -47,14 +48,14 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
     }
 
     @Override
-    public CompiledSchema<T> getSchema(SchemaId id,  boolean online) {
+    public CompiledSchema<T> getSchema(Topic topic, SchemaId id,  boolean online) {
         try {
             if (online) {
-                CompiledSchema<T> compiledSchema = compiledSchemaRepository.getSchema(id);
-                idCache.put(id, compiledSchema);
+                CompiledSchema<T> compiledSchema = compiledSchemaRepository.getSchema(topic, id);
+                topicIdCache.put(new TopicAndSchemaId(topic, id), compiledSchema);
                 return compiledSchema;
             }
-            return idCache.get(id);
+            return topicIdCache.get(new TopicAndSchemaId(topic, id));
         } catch (Exception e) {
             throw new CouldNotLoadSchemaException(e);
         }
@@ -64,7 +65,13 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         Set<TopicAndSchemaVersion> topicWithSchemas = topicVersionCache.asMap().keySet().stream()
                 .filter(topicWithSchema -> topicWithSchema.topic.equals(topic))
                 .collect(Collectors.toSet());
+
+        Set<TopicAndSchemaId> topicAndSchemaIds = topicIdCache.asMap().keySet().stream()
+            .filter(topicAndSchemaId -> topicAndSchemaId.topic.equals(topic))
+            .collect(Collectors.toSet());
+
         topicVersionCache.invalidateAll(topicWithSchemas);
+        topicIdCache.invalidateAll(topicAndSchemaIds);
     }
 
     private static class CompiledSchemaLoader<T> extends CacheLoader<TopicAndSchemaVersion, CompiledSchema<T>> {
@@ -81,7 +88,7 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         }
     }
 
-    private static class CompiledSchemaIdLoader<T> extends CacheLoader<SchemaId, CompiledSchema<T>> {
+    private static class CompiledSchemaIdLoader<T> extends CacheLoader<TopicAndSchemaId, CompiledSchema<T>> {
 
         private final CompiledSchemaRepository<T>  delegate;
 
@@ -90,8 +97,8 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         }
 
         @Override
-        public CompiledSchema<T> load(SchemaId key) {
-            return delegate.getSchema(key);
+        public CompiledSchema<T> load(TopicAndSchemaId key) {
+            return delegate.getSchema(key.topic, key.schemaId);
         }
     }
 
@@ -124,4 +131,32 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         }
     }
 
+    private static class TopicAndSchemaId {
+
+        private final Topic topic;
+        private final SchemaId schemaId;
+
+        TopicAndSchemaId(Topic topic, SchemaId schemaId) {
+            this.topic = topic;
+            this.schemaId = schemaId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            TopicAndSchemaId that = (TopicAndSchemaId) o;
+            return Objects.equals(schemaId, that.schemaId) &&
+                Objects.equals(topic, that.topic);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(topic, schemaId);
+        }
+    }
 }

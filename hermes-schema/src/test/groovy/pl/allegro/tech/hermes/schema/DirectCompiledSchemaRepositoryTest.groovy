@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.schema
 
 
-import pl.allegro.tech.hermes.api.SchemaWithId
+import pl.allegro.tech.hermes.api.SchemaMetadata
 import spock.lang.Specification
 
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
@@ -21,7 +21,7 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
 
     def "should provide schema from source of given version"() {
         given:
-        rawSchemaClient.getSchemaWithId(topic.getName(), v1) >> Optional.of(SchemaWithId.of("stuff", id1.value()))
+        rawSchemaClient.getSchemaMetadata(topic.getName(), v1) >> Optional.of(SchemaMetadata.of("stuff", id1.value(), v1.value()))
 
         expect:
         repository.getSchema(topic, v1) == new CompiledSchema('STUFF', id1, v1)
@@ -29,7 +29,7 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
 
     def "should fail to provide schema if schema source is missing"() {
         given:
-        rawSchemaClient.getSchemaWithId(topic.getName(), v1) >> Optional.empty()
+        rawSchemaClient.getSchemaMetadata(topic.getName(), v1) >> Optional.empty()
 
         when:
         repository.getSchema(topic, v1)
@@ -40,7 +40,7 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
 
     def "should fail to provide schema if loading schema source failed"() {
         given:
-        rawSchemaClient.getSchemaWithId(topic.getName(), v1) >> {
+        rawSchemaClient.getSchemaMetadata(topic.getName(), v1) >> {
             throw new InternalSchemaRepositoryException(topic.qualifiedName, 500, "Unexpected failure")
         }
 
@@ -54,7 +54,7 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
 
     def "should fail to provide schema if schema compilation failed"() {
         given:
-        rawSchemaClient.getSchemaWithId(topic.getName(), v1) >> Optional.of(SchemaWithId.of("stuff", id1.value()))
+        rawSchemaClient.getSchemaMetadata(topic.getName(), v1) >> Optional.of(SchemaMetadata.of("stuff", id1.value(), v1.value()))
         def repository = new DirectCompiledSchemaRepository(rawSchemaClient, {
             throw new RuntimeException("compilation failed")
         })

@@ -37,7 +37,7 @@ public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageConte
     public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
         try {
             deserializationUsingHeaderSchemaId.inc();
-            CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(SchemaId.valueOf(schemaId));
+            CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(topic, SchemaId.valueOf(schemaId));
 
             return AvroMessageContentUnwrapperResult.success(avroMessageContentWrapper.unwrapContent(data, avroSchema));
         } catch (Exception ex) {

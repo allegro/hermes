@@ -92,7 +92,7 @@ public class MessageContentWrapperTest {
         }
 
         @Override
-        public CompiledSchema<Schema> getSchema(SchemaId id, boolean online) {
+        public CompiledSchema<Schema> getSchema(Topic topic, SchemaId id, boolean online) {
             switch (id.value()) {
                 case ID_ONE:
                     return schema1;
@@ -208,7 +208,7 @@ public class MessageContentWrapperTest {
 
         SchemaId schemaId = createSchemaId(ID_FIVE);
         Topic topic = createTopicWithSchemaIdAwarePayload();
-        AvroUser user = createAvroUser(schemaId);
+        AvroUser user = createAvroUser(schemaId, topic);
 
         byte[] wrapped =
                 messageContentWrapper.wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
@@ -231,7 +231,7 @@ public class MessageContentWrapperTest {
 
         // starts with magic byte, will be handled by schemaVersionAwareWrapper
         Topic topicToWrap = createTopic();
-        AvroUser user = createAvroUser(schemaId);
+        AvroUser user = createAvroUser(schemaId, topicToWrap);
 
         byte[] wrapped = messageContentWrapper
                 .wrapAvro(user.asBytes(), messageId, messageTimestamp, topicToWrap, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
@@ -257,7 +257,7 @@ public class MessageContentWrapperTest {
         // does not start with magic byte, will not be handled by schemaVersionAwareWrapper
         SchemaId schemaId = createSchemaId(VERSION_THREE);
         Topic topicToWrap = createTopic();
-        AvroUser user = createAvroUser(schemaId);
+        AvroUser user = createAvroUser(schemaId, topicToWrap);
 
         byte[] wrapped = messageContentWrapper
                 .wrapAvro(user.asBytes(), messageId, messageTimestamp, topicToWrap, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
@@ -325,7 +325,7 @@ public class MessageContentWrapperTest {
 
         SchemaId schemaId = createSchemaId(ID_THREE);
         Topic topic = createTopic();
-        AvroUser user = createAvroUser(schemaId);
+        AvroUser user = createAvroUser(schemaId, topic);
 
         byte[] wrapped =
             messageContentWrapper.wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
@@ -346,7 +346,7 @@ public class MessageContentWrapperTest {
 
         SchemaId schemaId = createSchemaId(ID_THREE);
         Topic topic = createTopicWithSchemaIdAwarePayload();
-        AvroUser user = createAvroUser(schemaId);
+        AvroUser user = createAvroUser(schemaId, topic);
         CompiledSchema<Schema> schema = user.getCompiledSchema();
 
         byte[] wrapped =
@@ -479,8 +479,8 @@ public class MessageContentWrapperTest {
         return new AvroUser(schema, "user-1", 15, "colour-1");
     }
 
-    private AvroUser createAvroUser(SchemaId id) {
-        CompiledSchema<Schema> schema = schemaRepository.getAvroSchema(id);
+    private AvroUser createAvroUser(SchemaId id, Topic topic) {
+        CompiledSchema<Schema> schema = schemaRepository.getAvroSchema(topic, id);
         return new AvroUser(schema, "user-1", 15, "colour-1");
     }
 

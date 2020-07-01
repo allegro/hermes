@@ -32,8 +32,8 @@ public class SchemaRepository {
         return getCompiledSchemaAtVersion(topic, version);
     }
 
-    public CompiledSchema<Schema> getAvroSchema(SchemaId id) {
-        CompiledSchema<Schema> schema = compiledAvroSchemaRepository.getSchema(id);
+    public CompiledSchema<Schema> getAvroSchema(Topic topic, SchemaId id) {
+        CompiledSchema<Schema> schema = compiledAvroSchemaRepository.getSchema(topic, id);
 
         if (schema == null) {
             throw new SchemaNotFoundException(id);

@@ -3,9 +3,14 @@ package pl.allegro.tech.hermes.schema.schemarepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
-import pl.allegro.tech.hermes.api.SchemaWithId;
+import pl.allegro.tech.hermes.api.SchemaMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.schema.*;
+import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
+import pl.allegro.tech.hermes.schema.SchemaId;
+import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
+import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException;
+import pl.allegro.tech.hermes.schema.BadSchemaRequestException;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
 import javax.ws.rs.client.Entity;
@@ -18,6 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * SchemaRepo doesn't support versions.. We simulate it by set version as id..
+ */
 public class SchemaRepoRawSchemaClient implements RawSchemaClient {
 
     private static final Logger logger = LoggerFactory.getLogger(SchemaRepoRawSchemaClient.class);
@@ -32,32 +40,40 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     }
     
     @Override
-    public Optional<SchemaWithId> getSchemaWithId(TopicName topic, SchemaVersion version) {
+    public Optional<SchemaMetadata> getSchemaMetadata(TopicName topic, SchemaVersion version) {
         String subject = subjectNamingStrategy.apply(topic);
-        String versionString = Integer.toString(version.value());
-        Response response = getSchemaResponse(subject, versionString);
-        return extractSchemaWithId(subject, versionString, response);
+        String idString = Integer.toString(version.value());
+        Response response = getSchemaResponse(subject, idString);
+        return extractSchemaMetadata(subject, idString, response);
     }
 
     @Override
-    public Optional<SchemaWithId> getLatestSchemaWithId(TopicName topic) {
+    public Optional<SchemaMetadata> getLatestSchemaMetadata(TopicName topic) {
         String subject = subjectNamingStrategy.apply(topic);
         Response response = getLatestSchemaResponse(subject);
-        return extractSchemaWithId(subject, "latest", response);
+        return extractSchemaMetadata(subject, "latest", response);
     }
 
-    private Optional<SchemaWithId> extractSchemaWithId(String subject, String version, Response response) {
+    @Override
+    public Optional<SchemaMetadata> getSchemaMetadata(TopicName topic, SchemaId schemaId) {
+        String subject = subjectNamingStrategy.apply(topic);
+        String idString = Integer.toString(schemaId.value());
+        Response response = getSchemaResponse(subject, idString);
+        return extractSchemaMetadata(subject, idString, response);
+    }
+
+    private Optional<SchemaMetadata> extractSchemaMetadata(String subject, String schemaId, Response response) {
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
-                logger.info("Found schema data for subject {} at version {}", subject, version);
+                logger.info("Found schema metadata for subject {} at id {}", subject, schemaId);
                 SchemaRepoResponse schemaRepoResponse = response.readEntity(SchemaRepoResponse.class);
-                return Optional.of(schemaRepoResponse.toSchemaWithId());
+                return Optional.of(schemaRepoResponse.toSchemaMetadata());
             case CLIENT_ERROR:
-                logger.error("Could not find schema data for subject {} at version {}, reason: {}", subject, version, response.getStatus());
+                logger.error("Could not find schema metadata for subject {} at id {}, reason: {}", subject, schemaId, response.getStatus());
                 return Optional.empty();
             case SERVER_ERROR:
             default:
-                logger.error("Could not find schema data for subject {} at version {}, reason: {}", subject, version, response.getStatus());
+                logger.error("Could not find schema metadata for subject {} at id {}, reason: {}", subject, schemaId, response.getStatus());
                 throw new InternalSchemaRepositoryException(subject, response);
         }
     }
@@ -74,11 +90,11 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
         return extractSchemaVersions(subject, response);
     }
 
-    private Response getSchemaResponse(String subject, String version) {
+    private Response getSchemaResponse(String subject, String id) {
         return schemaRepositoryInstanceResolver.resolve(subject)
             .path(subject)
             .path("id")
-            .path(version)
+            .path(id)
             .request()
             .get();
     }

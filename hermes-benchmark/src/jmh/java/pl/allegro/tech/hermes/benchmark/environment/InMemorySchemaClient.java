@@ -2,37 +2,46 @@ package pl.allegro.tech.hermes.benchmark.environment;
 
 import com.google.common.collect.ImmutableList;
 import pl.allegro.tech.hermes.api.RawSchema;
-import pl.allegro.tech.hermes.api.SchemaWithId;
+import pl.allegro.tech.hermes.api.SchemaMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class InMemorySchemaClient implements RawSchemaClient {
 
     private final TopicName schemaTopicName;
-    private final SchemaWithId schemaWithId;
+    private final SchemaMetadata schemaMetadata;
 
-    public InMemorySchemaClient(TopicName schemaTopicName, String schemaSource, int id) {
+    public InMemorySchemaClient(TopicName schemaTopicName, String schemaSource, int id, int version) {
         this.schemaTopicName = schemaTopicName;
-        schemaWithId = SchemaWithId.of(schemaSource, id);
+        schemaMetadata = SchemaMetadata.of(schemaSource, id, version);
     }
 
     @Override
-    public Optional<SchemaWithId> getSchemaWithId(TopicName topic, SchemaVersion version) {
-        return getLatestSchemaWithId(topic);
+    public Optional<SchemaMetadata> getSchemaMetadata(TopicName topic, SchemaVersion version) {
+        return schemaTopicName.equals(topic) && Objects.equals(schemaMetadata.getVersion(), version) ?
+            Optional.of(schemaMetadata) : Optional.empty();
     }
 
     @Override
-    public Optional<SchemaWithId> getLatestSchemaWithId(TopicName topic) {
-        return  schemaTopicName.equals(topic) ? Optional.of(schemaWithId) : Optional.empty();
+    public Optional<SchemaMetadata> getLatestSchemaMetadata(TopicName topic) {
+        return schemaTopicName.equals(topic) ? Optional.of(schemaMetadata) : Optional.empty();
+    }
+
+    @Override
+    public Optional<SchemaMetadata> getSchemaMetadata(TopicName topic, SchemaId schemaId) {
+        return schemaTopicName.equals(topic) && Objects.equals(schemaMetadata.getId(), schemaId) ?
+            Optional.of(schemaMetadata) : Optional.empty();
     }
 
     @Override
     public List<SchemaVersion> getVersions(TopicName topic) {
-        return ImmutableList.of(SchemaVersion.valueOf(0));
+        return ImmutableList.of(SchemaVersion.valueOf(schemaMetadata.getVersion()));
     }
 
     @Override

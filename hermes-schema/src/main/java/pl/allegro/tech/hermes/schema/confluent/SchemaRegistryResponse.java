@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.schema.confluent;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import pl.allegro.tech.hermes.api.SchemaWithId;
+import pl.allegro.tech.hermes.api.SchemaMetadata;
 
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
@@ -68,7 +68,5 @@ class SchemaRegistryResponse {
         return Objects.hash(subject, version, id, schema);
     }
 
-    SchemaWithId toSchemaWithId() {
-        return SchemaWithId.of(schema, id);
-    }
+    SchemaMetadata toSchemaMetadata() { return SchemaMetadata.of(schema, id, version); }
 }

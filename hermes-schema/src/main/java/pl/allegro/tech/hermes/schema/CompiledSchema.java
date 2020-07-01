@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.schema;
 
 import com.google.common.base.MoreObjects;
+import pl.allegro.tech.hermes.api.SchemaMetadata;
 
 import java.util.Objects;
 
@@ -20,13 +21,15 @@ public class CompiledSchema<T> {
         return new CompiledSchema<>(schema, SchemaId.valueOf(id), SchemaVersion.valueOf(version));
     }
 
+    static public <T> CompiledSchema<T> of(SchemaCompiler<T> schemaCompiler, SchemaMetadata schemaMetadata) {
+        return CompiledSchema.of(schemaCompiler.compile(schemaMetadata), schemaMetadata.getId(), schemaMetadata.getVersion());
+    }
+
     public T getSchema() {
         return schema;
     }
 
-    public SchemaVersion getVersion() {
-        return version;
-    }
+    public SchemaVersion getVersion() { return version; }
 
     public SchemaId getId() { return id; }
 
