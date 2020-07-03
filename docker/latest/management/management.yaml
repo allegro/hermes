@@ -1,5 +1,14 @@
-application:
-  name: hermes-management
+zookeeper:
+  enabled: false
+
+
+storage:
+  pathPrefix: /run/hermes
+  clusters:
+    -
+      datacenter: dc
+      clusterName: zk
+      connectionString: zk:2181
 
 kafka:
   clusters:
@@ -8,17 +17,46 @@ kafka:
       clusterName: primary
       connectionString: zk:2181
       connectionTimeout: 3000
+      bootstrapKafkaServer: kafka:9092
 
-storage:
-  pathPrefix: /run/hermes
-  connectionString: zk:2181
+server:
+  port: 8090
 
-topic:
-  replicationFactor: 1
+spring:
+  jersey:
+    type: filter
 
-metrics:
-  graphite:
-    host: graphite
-  graphiteHttpUri: http://graphite:80
-  enabled: true
+management:
+  endpoints:
+    web:
+      base-path: /
+  rest-template:
+    connect-timeout: 2000
+    read-timeout: 2000
+  server:
+    servlet:
+      context-path: /
+  health:
+    periodSeconds: 30
+    enabled: true
+  consumer-groups:
+    create-manually: true
 
+schema.repository.type: schema_registry
+
+audit.enabled: false
+
+topicOwnerCache:
+  refreshRateInSeconds: 300 # 5 minutes
+
+subscriptionOwnerCache:
+  refreshRateInSeconds: 300
+
+schema.repository:
+  type: schema_registry
+  serverUrl: http://schema-registry:8081
+  validationEnabled: true
+
+console:
+  configurationLocation: console/config-local.json
+  configurationType: classpath_resource
