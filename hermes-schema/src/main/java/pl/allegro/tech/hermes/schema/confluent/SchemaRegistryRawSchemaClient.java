@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
-import pl.allegro.tech.hermes.api.SchemaMetadata;
+import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
@@ -60,33 +60,33 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     }
 
     @Override
-    public Optional<SchemaMetadata> getSchemaMetadata(TopicName topic, SchemaVersion schemaVersion) {
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion schemaVersion) {
         String version = Integer.toString(schemaVersion.value());
         String subject = subjectNamingStrategy.apply(topic);
-        Response response = getSchemaMetadataResponse(subject, version);
-        return extractSchemaMetadata(subject, version, response);
+        Response response = getRawSchemaWithMetadataResponse(subject, version);
+        return extractRawSchemaWithMetadata(subject, version, response);
     }
 
     @Override
-    public Optional<SchemaMetadata> getLatestSchemaMetadata(TopicName topic) {
+    public Optional<RawSchemaWithMetadata> getLatestRawSchemaWithMetadata(TopicName topic) {
         final String version = "latest";
         String subject = subjectNamingStrategy.apply(topic);
-        Response response = getSchemaMetadataResponse(subject, version);
-        return extractSchemaMetadata(subject, version, response);
+        Response response = getRawSchemaWithMetadataResponse(subject, version);
+        return extractRawSchemaWithMetadata(subject, version, response);
     }
 
     @Override
-    public Optional<SchemaMetadata> getSchemaMetadata(TopicName topic, SchemaId schemaId) {
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
         String subject = subjectNamingStrategy.apply(topic);
         Optional<RawSchema> schema = getRawSchema(subject, schemaId);
 
         return schema
-            .map(sc -> getSchemaMetadataResponse(subject, sc))
-            .map(response -> extractSchemaMetadata(subject, schemaId, response))
+            .map(sc -> getRawSchemaWithMetadataResponse(subject, sc))
+            .map(response -> extractRawSchemaWithMetadata(subject, schemaId, response))
             .map(Optional::get);
     }
 
-    private Response getSchemaMetadataResponse(String subject, String version) {
+    private Response getRawSchemaWithMetadataResponse(String subject, String version) {
         return schemaRepositoryInstanceResolver.resolve(subject)
                 .path("subjects")
                 .path(subject)
@@ -96,7 +96,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
                 .get();
     }
 
-    private Response getSchemaMetadataResponse(String subject, RawSchema schema) {
+    private Response getRawSchemaWithMetadataResponse(String subject, RawSchema schema) {
         return schemaRepositoryInstanceResolver.resolve(subject)
             .path("subjects")
             .path(subject)
@@ -134,12 +134,12 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
         }
     }
 
-    private Optional<SchemaMetadata> extractSchemaMetadata(String subject, String version, Response response) {
+    private Optional<RawSchemaWithMetadata> extractRawSchemaWithMetadata(String subject, String version, Response response) {
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
                 logger.info("Found schema metadata for subject {} at version {}", subject, version);
                 SchemaRegistryResponse schemaRegistryResponse = response.readEntity(SchemaRegistryResponse.class);
-                return Optional.of(schemaRegistryResponse.toSchemaMetadata());
+                return Optional.of(schemaRegistryResponse.toRawSchemaWithMetadata());
             case CLIENT_ERROR:
                 logger.error("Could not find schema metadata for subject {} at version {}, reason: {}", subject, version, response.getStatus());
                 return Optional.empty();
@@ -150,13 +150,13 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
         }
     }
 
-    private Optional<SchemaMetadata> extractSchemaMetadata(String subject, SchemaId schemaId, Response response) {
+    private Optional<RawSchemaWithMetadata> extractRawSchemaWithMetadata(String subject, SchemaId schemaId, Response response) {
         Integer id = schemaId.value();
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
                 logger.info("Found schema metadata for subject {} and id {}", subject, id);
                 SchemaRegistryResponse schemaRegistryResponse = response.readEntity(SchemaRegistryResponse.class);
-                return Optional.of(schemaRegistryResponse.toSchemaMetadata());
+                return Optional.of(schemaRegistryResponse.toRawSchemaWithMetadata());
             case CLIENT_ERROR:
                 logger.error("Could not find schema metadata for subject {} and id {}, reason: {}", subject, id, response.getStatus());
                 return Optional.empty();

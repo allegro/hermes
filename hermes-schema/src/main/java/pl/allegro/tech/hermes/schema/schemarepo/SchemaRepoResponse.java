@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.schema.schemarepo;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import pl.allegro.tech.hermes.api.SchemaMetadata;
+import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 
 /**
  * SchemaRepo SchemaEntry: https://github.com/schema-repo/schema-repo/blob/master/common/src/main/java/org/schemarepo/SchemaEntry.java
@@ -27,5 +27,5 @@ class SchemaRepoResponse {
         return schema;
     }
 
-    SchemaMetadata toSchemaMetadata() { return SchemaMetadata.of(schema, id, id); }
+    RawSchemaWithMetadata toRawSchemaWithMetadata() { return RawSchemaWithMetadata.of(schema, id, id); }
 }

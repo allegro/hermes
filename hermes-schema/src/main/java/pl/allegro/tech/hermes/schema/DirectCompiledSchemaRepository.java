@@ -15,15 +15,15 @@ public class DirectCompiledSchemaRepository<T> implements CompiledSchemaReposito
 
     @Override
     public CompiledSchema<T> getSchema(Topic topic, SchemaVersion version, boolean online) {
-        return rawSchemaClient.getSchemaMetadata(topic.getName(), version)
-                .map(schemaMetadata -> CompiledSchema.of(schemaCompiler, schemaMetadata))
+        return rawSchemaClient.getRawSchemaWithMetadata(topic.getName(), version)
+                .map(rawSchemaWithMetadata -> CompiledSchema.of(schemaCompiler, rawSchemaWithMetadata))
                 .orElseThrow(() -> new SchemaNotFoundException(topic, version));
     }
 
     @Override
-    public CompiledSchema<T> getSchema(Topic topic, SchemaId id, boolean online) {
-        return rawSchemaClient.getSchemaMetadata(topic.getName(), id)
-            .map(schemaMetadata -> CompiledSchema.of(schemaCompiler, schemaMetadata))
+    public CompiledSchema<T> getSchema(Topic topic, SchemaId id) {
+        return rawSchemaClient.getRawSchemaWithMetadata(topic.getName(), id)
+            .map(rawSchemaWithMetadata -> CompiledSchema.of(schemaCompiler, rawSchemaWithMetadata))
             .orElseThrow(() -> new SchemaNotFoundException(id));
     }
 }

@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.management.domain.topic.schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.RawSchema;
-import pl.allegro.tech.hermes.api.SchemaMetadata;
+import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidator;
@@ -34,8 +34,8 @@ public class SchemaService {
 
     public Optional<RawSchema> getSchema(String qualifiedTopicName) {
         return rawSchemaClient
-            .getLatestSchemaMetadata(fromQualifiedName(qualifiedTopicName))
-            .map(SchemaMetadata::getSchema);
+            .getLatestRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName))
+            .map(RawSchemaWithMetadata::getSchema);
     }
 
     public void registerSchema(Topic topic, String schema) {
@@ -53,8 +53,8 @@ public class SchemaService {
 
     public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaVersion version) {
         return rawSchemaClient
-            .getSchemaMetadata(fromQualifiedName(qualifiedTopicName), version)
-            .map(SchemaMetadata::getSchema);
+            .getRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName), version)
+            .map(RawSchemaWithMetadata::getSchema);
     }
 
     public void deleteAllSchemaVersions(String qualifiedTopicName) {

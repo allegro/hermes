@@ -48,13 +48,8 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
     }
 
     @Override
-    public CompiledSchema<T> getSchema(Topic topic, SchemaId id,  boolean online) {
+    public CompiledSchema<T> getSchema(Topic topic, SchemaId id) {
         try {
-            if (online) {
-                CompiledSchema<T> compiledSchema = compiledSchemaRepository.getSchema(topic, id);
-                topicIdCache.put(new TopicAndSchemaId(topic, id), compiledSchema);
-                return compiledSchema;
-            }
             return topicIdCache.get(new TopicAndSchemaId(topic, id));
         } catch (Exception e) {
             throw new CouldNotLoadSchemaException(e);

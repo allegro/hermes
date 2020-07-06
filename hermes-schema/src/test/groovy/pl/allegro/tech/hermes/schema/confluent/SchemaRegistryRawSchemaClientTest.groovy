@@ -129,7 +129,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
                 .withBody("""{"subject":"someGroup.someTopic","id":100,"version":$version,"schema":"{}"}""")))
 
         when:
-        def schemaMetadata = client.getSchemaMetadata(topicName, SchemaVersion.valueOf(version))
+        def schemaMetadata = client.getRawSchemaWithMetadata(topicName, SchemaVersion.valueOf(version))
 
         then:
         schemaMetadata.get().getSchema() == rawSchema
@@ -145,7 +145,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         wireMock.stubFor(get(schemaVersionUrl(topicName, version, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getSchemaMetadata(topicName, SchemaVersion.valueOf(version))
+        client.getRawSchemaWithMetadata(topicName, SchemaVersion.valueOf(version))
 
         then:
         thrown(InternalSchemaRepositoryException)
@@ -162,10 +162,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
                 .withBody("""{"subject":"someGroup.someTopic","id":200,"version":20,"schema":"{}"}""")))
 
         when:
-        def getSchemaMetadata = client.getLatestSchemaMetadata(topicName)
+        def getRawSchemaWithMetadata = client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
-        getSchemaMetadata.get().getSchema() == rawSchema
+        getRawSchemaWithMetadata.get().getSchema() == rawSchema
 
         where:
         client << clients
@@ -174,7 +174,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should return empty optional when latest schema does not exist"() {
         when:
-        def metadata = client.getLatestSchemaMetadata(topicName)
+        def metadata = client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
         !metadata.isPresent()
@@ -189,7 +189,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         wireMock.stubFor(get(schemaLatestVersionUrl(topicName, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getLatestSchemaMetadata(topicName)
+        client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
         def e = thrown(InternalSchemaRepositoryException)

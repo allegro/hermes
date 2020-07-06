@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.schema.schemarepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
-import pl.allegro.tech.hermes.api.SchemaMetadata;
+import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
@@ -40,34 +40,34 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
     }
     
     @Override
-    public Optional<SchemaMetadata> getSchemaMetadata(TopicName topic, SchemaVersion version) {
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion version) {
         String subject = subjectNamingStrategy.apply(topic);
         String idString = Integer.toString(version.value());
         Response response = getSchemaResponse(subject, idString);
-        return extractSchemaMetadata(subject, idString, response);
+        return extractRawSchemaWithMetadata(subject, idString, response);
     }
 
     @Override
-    public Optional<SchemaMetadata> getLatestSchemaMetadata(TopicName topic) {
+    public Optional<RawSchemaWithMetadata> getLatestRawSchemaWithMetadata(TopicName topic) {
         String subject = subjectNamingStrategy.apply(topic);
         Response response = getLatestSchemaResponse(subject);
-        return extractSchemaMetadata(subject, "latest", response);
+        return extractRawSchemaWithMetadata(subject, "latest", response);
     }
 
     @Override
-    public Optional<SchemaMetadata> getSchemaMetadata(TopicName topic, SchemaId schemaId) {
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
         String subject = subjectNamingStrategy.apply(topic);
         String idString = Integer.toString(schemaId.value());
         Response response = getSchemaResponse(subject, idString);
-        return extractSchemaMetadata(subject, idString, response);
+        return extractRawSchemaWithMetadata(subject, idString, response);
     }
 
-    private Optional<SchemaMetadata> extractSchemaMetadata(String subject, String schemaId, Response response) {
+    private Optional<RawSchemaWithMetadata> extractRawSchemaWithMetadata(String subject, String schemaId, Response response) {
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
                 logger.info("Found schema metadata for subject {} at id {}", subject, schemaId);
                 SchemaRepoResponse schemaRepoResponse = response.readEntity(SchemaRepoResponse.class);
-                return Optional.of(schemaRepoResponse.toSchemaMetadata());
+                return Optional.of(schemaRepoResponse.toRawSchemaWithMetadata());
             case CLIENT_ERROR:
                 logger.error("Could not find schema metadata for subject {} at id {}, reason: {}", subject, schemaId, response.getStatus());
                 return Optional.empty();

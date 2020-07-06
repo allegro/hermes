@@ -92,7 +92,7 @@ public class MessageContentWrapperTest {
         }
 
         @Override
-        public CompiledSchema<Schema> getSchema(Topic topic, SchemaId id, boolean online) {
+        public CompiledSchema<Schema> getSchema(Topic topic, SchemaId id) {
             switch (id.value()) {
                 case ID_ONE:
                     return schema1;

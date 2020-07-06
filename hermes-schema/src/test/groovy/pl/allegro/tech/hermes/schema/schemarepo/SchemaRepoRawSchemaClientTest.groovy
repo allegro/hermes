@@ -160,7 +160,7 @@ class SchemaRepoRawSchemaClientTest extends Specification {
 
     def "should return empty optional when latest metadata does not exist"() {
         when:
-        def metadata = client.getLatestSchemaMetadata(topicName)
+        def metadata = client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
         !metadata.isPresent()
@@ -174,7 +174,7 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         wireMock.stubFor(get(latestSchemaUrl(topicName, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getLatestSchemaMetadata(topicName)
+        client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
         thrown(InternalSchemaRepositoryException)
@@ -190,7 +190,7 @@ class SchemaRepoRawSchemaClientTest extends Specification {
                 .withHeader("Content-Type", "application/json")))
 
         when:
-        def metadata = client.getLatestSchemaMetadata(topicName)
+        def metadata = client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
         metadata.get().getId() == 1
@@ -250,7 +250,7 @@ class SchemaRepoRawSchemaClientTest extends Specification {
                 .withHeader("Content-Type", "application/json")))
 
         when:
-        def metadata = client.getSchemaMetadata(topicName, SchemaVersion.valueOf(version))
+        def metadata = client.getRawSchemaWithMetadata(topicName, SchemaVersion.valueOf(version))
 
         then:
         metadata.get().getId() == 1

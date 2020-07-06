@@ -4,7 +4,7 @@ import com.google.common.base.MoreObjects;
 
 import java.util.Objects;
 
-public final class SchemaMetadata {
+public final class RawSchemaWithMetadata {
 
     private final RawSchema schema;
 
@@ -12,14 +12,14 @@ public final class SchemaMetadata {
 
     private final int version;
 
-    private SchemaMetadata(RawSchema schema, int id, int version) {
+    private RawSchemaWithMetadata(RawSchema schema, int id, int version) {
         this.schema = schema;
         this.id = id;
         this.version = version;
     }
 
-    public static SchemaMetadata of(String schema, int id, int version) {
-        return new SchemaMetadata(RawSchema.valueOf(schema), id, version);
+    public static RawSchemaWithMetadata of(String schema, int id, int version) {
+        return new RawSchemaWithMetadata(RawSchema.valueOf(schema), id, version);
     }
 
     public RawSchema getSchema() { return schema; }
@@ -41,7 +41,7 @@ public final class SchemaMetadata {
             return false;
         }
 
-        SchemaMetadata that = (SchemaMetadata) o;
+        RawSchemaWithMetadata that = (RawSchemaWithMetadata) o;
 
         return schema.equals(that.schema) && Objects.equals(id, that.id) && Objects.equals(version, that.version);
     }
