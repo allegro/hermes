@@ -161,20 +161,20 @@
                     </div>
                 </div>
             </div>
-            <div class="form-group {{subscriptionForm.subscriptionBackoffMultiplier.$valid ? '' : 'has-error'}}">
+            <div class="form-group {{subscriptionForm.subscriptionBackoffMultiplier.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'SERIAL'">
                 <label for="subscriptionBackoffMultiplier" class="col-md-3 control-label">Retry backoff multiplier</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="1.0" max="10.0" step="0.1" required class="form-control" id="subscriptionBackoffMultiplier" name="subscriptionBackoffMultiplier" placeholder="Delay multiplier between consecutive send attempts of failed requests" ng-model="subscription.subscriptionPolicy.backoffMultiplier" ng-pattern="/^\d+(\.[0-9])?$/"/>
+                        <input type="number" min="1.0" max="10.0" step="0.1" ng-required="subscription.deliveryType === 'SERIAL'" class="form-control" id="subscriptionBackoffMultiplier" name="subscriptionBackoffMultiplier" placeholder="Delay multiplier between consecutive send attempts of failed requests" ng-model="subscription.subscriptionPolicy.backoffMultiplier" ng-pattern="/^\d+(\.[0-9])?$/"/>
                         <span class="input-group-addon helpme-addon" uib-tooltip="Rate between consecutive message retries. The value above 1 signifies proportionally longer time lapses between retries.">?</span>
                     </div>
                 </div>
             </div>
-            <div class="form-group {{subscriptionForm.subscriptionBackoffMaxIntervalInSec.$valid ? '' : 'has-error'}}" ng-show="subscription.subscriptionPolicy.backoffMultiplier > 1">
+            <div class="form-group {{subscriptionForm.subscriptionBackoffMaxIntervalInSec.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'SERIAL' && subscription.subscriptionPolicy.backoffMultiplier > 1">
                 <label for="subscriptionBackoffMaxIntervalInSec" class="col-md-3 control-label">Retry backoff max interval</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="1" max="600" step="1" required class="form-control" id="subscriptionBackoffMaxIntervalInSec" name="subscriptionBackoffMaxIntervalInSec" placeholder="Maximum value of delay backoff" ng-model="subscription.subscriptionPolicy.backoffMaxIntervalInSec" ng-pattern="/^\d+$/"/>
+                        <input type="number" min="1" max="600" step="1" ng-required="subscription.deliveryType === 'SERIAL'" class="form-control" id="subscriptionBackoffMaxIntervalInSec" name="subscriptionBackoffMaxIntervalInSec" placeholder="Maximum value of delay backoff" ng-model="subscription.subscriptionPolicy.backoffMaxIntervalInSec" ng-pattern="/^\d+$/"/>
                         <span class="input-group-addon">seconds</span>
                         <span class="input-group-addon helpme-addon" uib-tooltip="Maximum value of delay backoff when using exponential calculation">?</span>
                     </div>
