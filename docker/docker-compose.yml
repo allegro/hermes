@@ -20,9 +20,8 @@ services:
     depends_on:
       - zk
     environment:
-      KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zk:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -44,7 +43,7 @@ services:
       - statsd_data:/opt/statsd
 
   frontend:
-    image: allegro/hermes-frontend:docker-update
+    image: allegro/hermes-frontend
     ports:
       - "8080:8080"
     depends_on:
@@ -53,14 +52,14 @@ services:
       - graphite
 
   consumers:
-    image: allegro/hermes-consumers:docker-update
+    image: allegro/hermes-consumers
     depends_on:
       - zk
       - kafka
       - graphite
 
   management:
-    image: allegro/hermes-management:docker-update
+    image: allegro/hermes-management
     ports:
       - "8090:8090"
     depends_on:

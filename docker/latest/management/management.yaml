@@ -1,7 +1,6 @@
 zookeeper:
   enabled: false
 
-
 storage:
   pathPrefix: /run/hermes
   clusters:
@@ -18,6 +17,11 @@ kafka:
       connectionString: zk:2181
       connectionTimeout: 3000
       bootstrapKafkaServer: kafka:9092
+
+metrics:
+  graphiteHttpUri: graphite:8082
+  graphite:
+    enabled: true
 
 server:
   port: 8090
