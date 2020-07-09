@@ -49,6 +49,8 @@ subscriptionPolicy.retryClientErrors | retry on receiving 4xx status            
 subscriptionPolicy.requestTimeout    | request timeout in millis                           | 1000
 subscriptionPolicy.socketTimeout     | maximum time of inactivity between two data packets | infinity
 subscriptionPolicy.inflightSize      | max number of pending requests                      | 100
+subscriptionPolicy.backoffMultiplier | backoff multiplier for calcaulting message backoff  | 1
+subscriptionPolicy.backoffMaxIntervalInSec | maximal retry backoff in seconds              | 600
 headers                              | additional HTTP request headers                     | [] (array of headers)
 filters                              | used for skipping unwanted messages                 | [] (array of filters)
 endpointAddressResolverMetadata      | additional address resolver metadata                | {} (map)
@@ -81,7 +83,9 @@ Request that specifies all available options:
         "messageBackoff": 100,
         "requestTimeout": 1000,
         "socketTimeout": 500,
-        "inflightSize": 100
+        "inflightSize": 100,
+        "backoffMultiplier": 1.0,
+        "backoffMaxIntervalInSec": 600
     },
     "headers": [
         {"name": "SOME_HEADER", "value": "ABC"},
@@ -138,15 +142,16 @@ flag on subscription.
 ## Retries
 
 Hermes Consumers have been optimized towards maximizing chances of successful message delivery. Retry policy is
-simple for the client to grasp, as it is configured using only two parameters: **Inflight Time To Live (TTL)**
-and **Retry backoff**.
+fairly simple for the client to grasp, as it is configured using four parameters: **Inflight Time To Live (TTL)**,
+ **Retry backoff**, **Backoff multiplier** and **Maximum backoff**.
 
 **Inflight TTL** is specified in seconds and it limits for how long the message will be kept inflight - read out of
 Kafka, but not delivered to subscriber yet. During this period of time Hermes Consumers tries to deliver the message.
 In case of failure, next delivery is scheduled after minimum of **retry backoff** time, which is specified in milliseconds.
 Message offset will not be committed to broker unless it's retry limit has been exhausted (it has been delivered or discarded).
 
-How many times a message can be retried? Very rough calculation can be made using this formula:
+How many times a message can be retried? Very rough calculation can be made using this formula (applies only for constant
+retry backoff):
 
 ```
 retries = to_millis(inflight_ttl) / retry_backoff
@@ -160,6 +165,26 @@ failure the rescue team has one hour to fix the problem before any event will be
 
 By default inflight TTL is set to 3600 seconds (an hour) and retry backoff is set to 100ms.
 We set a hard limit for the inflight TTL to 7200 seconds (two hours).
+
+
+### Constant and exponential retry backoff
+
+Retry backoff is calculated using the following formula:
+
+```
+current_backoff = previous_backoff * backoff_multiplier
+```
+This has the following consequences:
+
+Backoff multiplier               | Retry policy type                                      
+---------------------------------|--------------------------------
+1                                | Constant retry backoff
+  above 1                        | Exponential retry backoff
+  
+  
+The hard limit to current backoff is defined by maximum backoff parameter and by default is equal to 600 s. 
+
+It is worth mentioning that the calculation of current backoff is ignored when the  **Retry-After** header is used.                    
 
 ### Retries counter
 
