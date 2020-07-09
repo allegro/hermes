@@ -1,21 +1,22 @@
-FROM jeanblanchard/java:8
+FROM gradle:5.6.2-jdk11 AS builder
 
-MAINTAINER Allegro
+COPY --chown=gradle:gradle . /home/gradle/src/
+WORKDIR /home/gradle/src/
+RUN ./gradlew clean distZip -Pdistribution
+
+FROM adoptopenjdk/openjdk11:alpine-jre
 
 RUN apk update \
   && apk add unzip wget bash \
   && rm -rf /var/cache/apk/*
 
-ENV ARCHIVE_NAME="hermes-frontend-latest.zip"
-ENV URL="http://box.allegro.tech/hermes/${ARCHIVE_NAME}"
+RUN mkdir /app
 
-RUN wget -nv "${URL}" -O "/tmp/${ARCHIVE_NAME}" \
-  && unzip -q "/tmp/${ARCHIVE_NAME}" -d /opt \
-  && rm "/tmp/${ARCHIVE_NAME}" \
-  && mv /opt/hermes-frontend-* /opt/hermes-frontend
+COPY --from=builder /home/gradle/src/hermes-frontend/build/distributions/*.zip /app/hermes-frontend.zip
+RUN unzip /app/hermes-frontend.zip && mv /hermes-frontend-* /hermes-frontend
 
+ADD docker/latest/frontend/frontend.properties /etc/hermes/frontend.properties
+ADD docker/latest/frontend/logback.xml /etc/hermes/logback.xml
 ENV HERMES_FRONTEND_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/hermes/frontend.properties -Dlogback.configurationFile=/etc/hermes/logback.xml"
-ADD frontend.properties /etc/hermes/frontend.properties
-ADD logback.xml /etc/hermes/logback.xml
 
-CMD /opt/hermes-frontend/bin/hermes-frontend
+CMD /hermes-frontend/bin/hermes-frontend
