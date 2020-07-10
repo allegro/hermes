@@ -17,7 +17,7 @@ class TestMessages {
         new Message("123", "topic1", null, ContentType.JSON, Optional.empty(), 0l, 0l, null, 0l, Collections.emptyMap(), Collections.emptyList(), "subscription1", true)
     }
 
-    static Message messageWithSchemaVersion() {
+    static Message messageWithSchemaData() {
         new Message("123", null, null, ContentType.JSON, Optional.of(CompiledSchema.of(1, 1, 1)), 0l, 0l, null, 0l, Collections.emptyMap(), Collections.emptyList(), null, false)
     }
 

@@ -53,6 +53,6 @@ public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageConte
 
     @Override
     public boolean isApplicable(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
-        return schemaId != null;
+        return topic.isSchemaIdHeaderEnabled() && schemaId != null;
     }
 }

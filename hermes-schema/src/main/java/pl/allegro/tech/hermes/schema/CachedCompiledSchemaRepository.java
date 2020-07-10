@@ -21,13 +21,13 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
                 .newBuilder()
                 .maximumSize(maximumCacheSize)
                 .expireAfterAccess(expireAfterAccessMinutes, TimeUnit.MINUTES)
-                .build(new CompiledSchemaLoader<>(delegate));
+                .build(new CompiledSchemaByVersionLoader<>(delegate));
 
         this.topicIdCache = CacheBuilder
             .newBuilder()
             .maximumSize(maximumCacheSize)
             .expireAfterAccess(expireAfterAccessMinutes, TimeUnit.MINUTES)
-            .build(new CompiledSchemaIdLoader<>(delegate));
+            .build(new CompiledSchemaByIdLoader<>(delegate));
 
         this.compiledSchemaRepository = delegate;
     }
@@ -69,11 +69,11 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         topicIdCache.invalidateAll(topicAndSchemaIds);
     }
 
-    private static class CompiledSchemaLoader<T> extends CacheLoader<TopicAndSchemaVersion, CompiledSchema<T>> {
+    private static class CompiledSchemaByVersionLoader<T> extends CacheLoader<TopicAndSchemaVersion, CompiledSchema<T>> {
 
         private final CompiledSchemaRepository<T> delegate;
 
-        public CompiledSchemaLoader(CompiledSchemaRepository<T> delegate) {
+        public CompiledSchemaByVersionLoader(CompiledSchemaRepository<T> delegate) {
             this.delegate = delegate;
         }
 
@@ -83,11 +83,11 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         }
     }
 
-    private static class CompiledSchemaIdLoader<T> extends CacheLoader<TopicAndSchemaId, CompiledSchema<T>> {
+    private static class CompiledSchemaByIdLoader<T> extends CacheLoader<TopicAndSchemaId, CompiledSchema<T>> {
 
         private final CompiledSchemaRepository<T>  delegate;
 
-        public CompiledSchemaIdLoader(CompiledSchemaRepository<T> delegate) {
+        public CompiledSchemaByIdLoader(CompiledSchemaRepository<T> delegate) {
             this.delegate = delegate;
         }
 

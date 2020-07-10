@@ -55,11 +55,18 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     private ProducerRecord<byte[], byte[]> createProducerRecord(Message message, CachedTopic cachedTopic) {
         String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
         Optional<SchemaVersion> schemaVersion = message.<Schema>getCompiledSchema().map(CompiledSchema::getVersion);
-        Optional<SchemaId> schemaId = message.<Schema>getCompiledSchema().map(CompiledSchema::getId);
-
+        Optional<SchemaId> schemaId = createSchemaId(message, cachedTopic);
         Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaId, schemaVersion);
 
         return new ProducerRecord<byte[], byte[]>(kafkaTopicName, null, null, message.getData(), headers);
+    }
+
+    private Optional<SchemaId> createSchemaId(Message message, CachedTopic cachedTopic) {
+        if (cachedTopic.getTopic().isSchemaIdHeaderEnabled()) {
+            return message.<Schema>getCompiledSchema().map(CompiledSchema::getId);
+        }
+
+        return Optional.empty();
     }
 
     private Iterable<Header> createRecordHeaders(String id, long timestamp, Optional<SchemaId> schemaId, Optional<SchemaVersion> schemaVersion) {

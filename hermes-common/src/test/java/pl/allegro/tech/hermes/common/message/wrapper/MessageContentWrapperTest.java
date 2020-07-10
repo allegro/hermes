@@ -324,7 +324,7 @@ public class MessageContentWrapperTest {
         int messageTimestamp = MESSAGE_TIMESTAMP;
 
         SchemaId schemaId = createSchemaId(ID_THREE);
-        Topic topic = createTopic();
+        Topic topic = createTopicWithSchemaIHeaderEnabled();
         AvroUser user = createAvroUser(schemaId, topic);
 
         byte[] wrapped =
@@ -468,6 +468,10 @@ public class MessageContentWrapperTest {
 
     private Topic createTopic() {
         return topic("group", "topic").build();
+    }
+
+    private Topic createTopicWithSchemaIHeaderEnabled() {
+        return topic("group", "topic").withSchemaIdHeaderEnabled().build();
     }
 
     private Topic createTopicWithSchemaIdAwarePayload() {
