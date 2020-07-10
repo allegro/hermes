@@ -7,6 +7,8 @@ import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroInvalidMetadataException;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
@@ -44,6 +46,7 @@ public class MessageFactory {
     private final HeadersPropagator headersPropagator;
     private final MessageContentWrapper messageContentWrapper;
     private final Clock clock;
+    private final ConfigFactory configFactory;
 
     @Inject
     public MessageFactory(MessageValidators validators,
@@ -51,13 +54,15 @@ public class MessageFactory {
                           SchemaRepository schemaRepository,
                           HeadersPropagator headersPropagator,
                           MessageContentWrapper messageContentWrapper,
-                          Clock clock) {
+                          Clock clock,
+                          ConfigFactory configFactory) {
         this.validators = validators;
         this.enforcer = enforcer;
         this.messageContentWrapper = messageContentWrapper;
         this.schemaRepository = schemaRepository;
         this.headersPropagator = headersPropagator;
         this.clock = clock;
+        this.configFactory = configFactory;
     }
 
     public Message create(HeaderMap headerMap, AttachmentContent attachment) {
@@ -108,7 +113,7 @@ public class MessageFactory {
     }
 
     private CompiledSchema<Schema> getCompiledSchema(HeaderMap headerMap, Topic topic) {
-        return extractSchemaId(headerMap, topic)
+        return extractSchemaId(headerMap)
             .map(id -> schemaRepository.getAvroSchema(topic, id))
             .orElseGet(() -> getCompiledSchemaBySchemaVersion(headerMap, topic));
     }
@@ -141,8 +146,8 @@ public class MessageFactory {
         }
     }
 
-    private Optional<SchemaId> extractSchemaId(HeaderMap headerMap, Topic topic) {
-        if (!topic.isSchemaIdHeaderEnabled()) {
+    private Optional<SchemaId> extractSchemaId(HeaderMap headerMap) {
+        if (!configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)) {
             return Optional.empty();
         }
 

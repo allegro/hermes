@@ -2,10 +2,12 @@ package pl.allegro.tech.hermes.management.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageAnySchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
@@ -37,6 +39,9 @@ public class MessageConfiguration {
     @Autowired
     MetricRegistry metricRegistry;
 
+    @Mock
+    private ConfigFactory configFactory;
+
     @Bean
     MessageContentWrapper messageContentWrapper() {
         DeserializationMetrics metrics = new DeserializationMetrics(metricRegistry);
@@ -50,7 +55,7 @@ public class MessageConfiguration {
                 new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, metrics);
 
         AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdWrapper =
-            new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics);
+            new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics, configFactory);
 
         AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
                 new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metrics);

@@ -56,8 +56,6 @@ public class Topic {
 
     private boolean schemaIdAwareSerializationEnabled = false;
 
-    private boolean schemaIdHeaderEnabled = false;
-
     private boolean subscribingRestricted = false;
 
     private PublishingAuth publishingAuth;
@@ -70,7 +68,7 @@ public class Topic {
 
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
-                 boolean jsonToAvroDryRunEnabled, boolean schemaIdAwareSerializationEnabled, boolean schemaIdHeaderEnabled,
+                 boolean jsonToAvroDryRunEnabled, boolean schemaIdAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
                  TopicDataOfflineStorage offlineStorage, Instant createdAt, Instant modifiedAt) {
         this.name = name;
@@ -83,7 +81,6 @@ public class Topic {
         this.contentType = contentType;
         this.jsonToAvroDryRunEnabled = jsonToAvroDryRunEnabled;
         this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
-        this.schemaIdHeaderEnabled = schemaIdHeaderEnabled;
         this.maxMessageSize = maxMessageSize;
         this.publishingAuth = publishingAuth;
         this.subscribingRestricted = subscribingRestricted;
@@ -103,7 +100,6 @@ public class Topic {
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
             @JsonProperty("schemaIdAwareSerializationEnabled") boolean schemaIdAwareSerializationEnabled,
-            @JsonProperty("schemaIdHeaderEnabled") boolean schemaIdHeaderEnabled,
             @JsonProperty("contentType") ContentType contentType,
             @JsonProperty("maxMessageSize") Integer maxMessageSize,
             @JsonProperty("auth") PublishingAuth publishingAuth,
@@ -113,7 +109,7 @@ public class Topic {
             @JsonProperty("modifiedAt") Instant modifiedAt
     ) {
         this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
-                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled, schemaIdHeaderEnabled,
+                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled,
                 maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize,
                 publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
                 subscribingRestricted,
@@ -129,7 +125,7 @@ public class Topic {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
-                jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled, schemaIdHeaderEnabled, maxMessageSize,
+                jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled, maxMessageSize,
                 publishingAuth, subscribingRestricted, offlineStorage);
     }
 
@@ -151,7 +147,6 @@ public class Topic {
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
                 && Objects.equals(this.schemaIdAwareSerializationEnabled, other.schemaIdAwareSerializationEnabled)
-                && Objects.equals(this.schemaIdHeaderEnabled, other.schemaIdHeaderEnabled)
                 && Objects.equals(this.ack, other.ack)
                 && Objects.equals(this.contentType, other.contentType)
                 && Objects.equals(this.maxMessageSize, other.maxMessageSize)
@@ -255,8 +250,6 @@ public class Topic {
     public void setModifiedAt(Long modifiedAt) {
         this.modifiedAt = Instant.ofEpochMilli(modifiedAt);
     }
-
-    public boolean isSchemaIdHeaderEnabled() { return schemaIdHeaderEnabled; }
 
     @Override
     public String toString() {

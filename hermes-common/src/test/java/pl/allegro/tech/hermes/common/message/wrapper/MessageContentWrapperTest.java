@@ -7,6 +7,8 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.schema.*;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
@@ -47,12 +49,14 @@ public class MessageContentWrapperTest {
 
     private final SchemaOnlineChecksRateLimiter rateLimiter = mock(SchemaOnlineChecksRateLimiter.class);
 
+    private final ConfigFactory configFactory = mock(ConfigFactory.class);
+
     private final AvroMessageAnySchemaVersionContentWrapper anySchemaWrapper =
             new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, rateLimiter, avroWrapper, metrics);
     private final AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionWrapper =
             new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, metrics);
     private final AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdWrapper =
-        new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics);
+        new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics, configFactory);
     private final AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
             new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metrics);
 
@@ -108,8 +112,10 @@ public class MessageContentWrapperTest {
 
     static SchemaRepository schemaRepository = new SchemaRepository(schemaVersionsRepository, compiledSchemaRepository);
 
+
     @Before
     public void clean() {
+        when(configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)).thenReturn(false);
         metricRegistry.getCounters().forEach((s, counter) -> counter.dec(counter.getCount()));
     }
 
@@ -323,8 +329,9 @@ public class MessageContentWrapperTest {
         String messageId = MESSAGE_ID;
         int messageTimestamp = MESSAGE_TIMESTAMP;
 
+        when(configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)).thenReturn(true);
         SchemaId schemaId = createSchemaId(ID_THREE);
-        Topic topic = createTopicWithSchemaIHeaderEnabled();
+        Topic topic = createTopic();
         AvroUser user = createAvroUser(schemaId, topic);
 
         byte[] wrapped =
@@ -468,10 +475,6 @@ public class MessageContentWrapperTest {
 
     private Topic createTopic() {
         return topic("group", "topic").build();
-    }
-
-    private Topic createTopicWithSchemaIHeaderEnabled() {
-        return topic("group", "topic").withSchemaIdHeaderEnabled().build();
     }
 
     private Topic createTopicWithSchemaIdAwarePayload() {

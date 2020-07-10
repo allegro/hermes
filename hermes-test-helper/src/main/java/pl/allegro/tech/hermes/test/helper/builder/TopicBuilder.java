@@ -35,8 +35,6 @@ public class TopicBuilder {
 
     private boolean schemaIdAwareSerialization = false;
 
-    private boolean schemaIdHeaderEnabled = false;
-
     private int maxMessageSize = 1024 * 1024;
 
     private List<String> publishers = new ArrayList<>();
@@ -72,7 +70,7 @@ public class TopicBuilder {
     public Topic build() {
         return new Topic(
                 name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
-                jsonToAvroDryRunEnabled, schemaIdAwareSerialization, schemaIdHeaderEnabled, maxMessageSize,
+                jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
                 new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
                 offlineStorage, null, null
         );
@@ -125,11 +123,6 @@ public class TopicBuilder {
 
     public TopicBuilder withSchemaIdAwareSerialization() {
         this.schemaIdAwareSerialization = true;
-        return this;
-    }
-
-    public TopicBuilder withSchemaIdHeaderEnabled() {
-        this.schemaIdHeaderEnabled = true;
         return this;
     }
 

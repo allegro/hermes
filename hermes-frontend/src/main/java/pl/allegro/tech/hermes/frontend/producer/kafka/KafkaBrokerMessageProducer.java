@@ -7,6 +7,8 @@ import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
@@ -29,14 +31,17 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     private final Producers producers;
     private final HermesMetrics metrics;
     private final KafkaHeaderFactory kafkaHeaderFactory;
+    private final ConfigFactory configFactory;
 
     @Inject
     public KafkaBrokerMessageProducer(Producers producers,
                                       HermesMetrics metrics,
-                                      KafkaHeaderFactory kafkaHeaderFactory) {
+                                      KafkaHeaderFactory kafkaHeaderFactory,
+                                      ConfigFactory configFactory) {
         this.producers = producers;
         this.metrics = metrics;
         this.kafkaHeaderFactory = kafkaHeaderFactory;
+        this.configFactory = configFactory;
         producers.registerGauges(metrics);
     }
 
@@ -55,14 +60,14 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     private ProducerRecord<byte[], byte[]> createProducerRecord(Message message, CachedTopic cachedTopic) {
         String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
         Optional<SchemaVersion> schemaVersion = message.<Schema>getCompiledSchema().map(CompiledSchema::getVersion);
-        Optional<SchemaId> schemaId = createSchemaId(message, cachedTopic);
+        Optional<SchemaId> schemaId = createSchemaId(message);
         Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaId, schemaVersion);
 
         return new ProducerRecord<byte[], byte[]>(kafkaTopicName, null, null, message.getData(), headers);
     }
 
-    private Optional<SchemaId> createSchemaId(Message message, CachedTopic cachedTopic) {
-        if (cachedTopic.getTopic().isSchemaIdHeaderEnabled()) {
+    private Optional<SchemaId> createSchemaId(Message message) {
+        if (configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)) {
             return message.<Schema>getCompiledSchema().map(CompiledSchema::getId);
         }
 
