@@ -21,10 +21,13 @@ import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.NoOpSubscriptionLagSource;
 import java.time.Clock;
+import pl.allegro.tech.hermes.api.Topic;
 
 @Configuration
 @EnableConfigurationProperties({TopicProperties.class, MetricsProperties.class, HttpClientProperties.class})
 public class ManagementConfiguration {
+
+    public static String MAPPER_DEFAULT_SCHEMA_ID_ENABLED_NAMESPACE = "";
 
     @Autowired
     TopicProperties topicProperties;
@@ -38,7 +41,7 @@ public class ManagementConfiguration {
         mapper.registerModule(new JavaTimeModule());
 
         final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues
-            .Std().addValue("defaultSchemaIdAwareSerializationEnabled", topicProperties.isDefaultSchemaIdAwareSerializationEnabled());
+            .Std().addValue(MAPPER_DEFAULT_SCHEMA_ID_ENABLED_NAMESPACE, topicProperties.isDefaultSchemaIdAwareSerializationEnabled());
 
         mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 

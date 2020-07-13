@@ -69,7 +69,7 @@ public class TopicTest {
         ObjectMapper mapper = new ObjectMapper();
 
         final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues
-            .Std().addValue("defaultSchemaIdAwareSerializationEnabled", true);
+            .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, true);
 
         mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);

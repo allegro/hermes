@@ -1,6 +1,11 @@
 package pl.allegro.tech.hermes.api;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import com.fasterxml.jackson.annotation.JacksonInject;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -38,6 +43,7 @@ public class Topic {
     public static final int MIN_MESSAGE_SIZE = 1024;
     public static final int MAX_MESSAGE_SIZE = 2 * 1024 * 1024;
     private static final int DEFAULT_MAX_MESSAGE_SIZE = 50 * 1024;
+    public static final String DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY = "defaultSchemaIdAwareSerializationEnabled";
 
     public enum Ack {
         NONE, LEADER, ALL
@@ -65,7 +71,7 @@ public class Topic {
 
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
-                 @JacksonInject(value = "defaultSchemaIdAwareSerializationEnabled", useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
+                 @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
                  TopicDataOfflineStorage offlineStorage, Instant createdAt, Instant modifiedAt) {
         this.name = name;
@@ -96,7 +102,7 @@ public class Topic {
             @JsonProperty("ack") Ack ack,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
-            @JsonProperty("schemaIdAwareSerializationEnabled") @JacksonInject(value = "defaultSchemaIdAwareSerializationEnabled", useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
+            @JsonProperty("schemaIdAwareSerializationEnabled") @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType,
             @JsonProperty("maxMessageSize") Integer maxMessageSize,
             @JsonProperty("auth") PublishingAuth publishingAuth,

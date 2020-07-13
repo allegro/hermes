@@ -1,9 +1,14 @@
 package pl.allegro.tech.hermes.api;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
 
 import java.time.Instant;
 import java.util.Objects;
+import pl.allegro.tech.hermes.api.Topic.Ack;
 
 public class TopicWithSchema extends Topic {
 
@@ -29,7 +34,7 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("ack") Ack ack,
                            @JsonProperty("trackingEnabled") boolean trackingEnabled,
                            @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
-                           @JsonProperty("schemaIdAwareSerializationEnabled") @JacksonInject(value = "defaultSchemaIdAwareSerializationEnabled", useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
+                           @JsonProperty("schemaIdAwareSerializationEnabled") @JacksonInject(value = Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
                            @JsonProperty("contentType") ContentType contentType,
                            @JsonProperty("maxMessageSize") Integer maxMessageSize,
                            @JsonProperty("auth") PublishingAuth publishingAuth,
