@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.inject.Inject;
 
@@ -30,12 +29,24 @@ public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageConte
                                                    AvroMessageContentWrapper avroMessageContentWrapper,
                                                    DeserializationMetrics deserializationMetrics,
                                                    ConfigFactory configFactory) {
+        this(
+            schemaRepository,
+            avroMessageContentWrapper,
+            deserializationMetrics,
+            configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)
+        );
+    }
+
+    public AvroMessageHeaderSchemaIdContentWrapper(SchemaRepository schemaRepository,
+                                                   AvroMessageContentWrapper avroMessageContentWrapper,
+                                                   DeserializationMetrics deserializationMetrics,
+                                                   boolean schemaIdHeaderEnabled) {
         this.schemaRepository = schemaRepository;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
 
         this.deserializationWithErrorsUsingHeaderSchemaId = deserializationMetrics.errorsForHeaderSchemaId();
         this.deserializationUsingHeaderSchemaId = deserializationMetrics.usingHeaderSchemaId();
-        this.schemaIdHeaderEnabled = configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED);
+        this.schemaIdHeaderEnabled = schemaIdHeaderEnabled;
     }
 
     @Override

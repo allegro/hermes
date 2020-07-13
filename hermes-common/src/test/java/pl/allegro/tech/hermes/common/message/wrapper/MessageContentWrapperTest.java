@@ -49,8 +49,6 @@ public class MessageContentWrapperTest {
 
     private final SchemaOnlineChecksRateLimiter rateLimiter = mock(SchemaOnlineChecksRateLimiter.class);
 
-    private final ConfigFactory configFactory = mock(ConfigFactory.class);
-
     private final AvroMessageAnySchemaVersionContentWrapper anySchemaWrapper =
             new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, rateLimiter, avroWrapper, metrics);
     private final AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionWrapper =
@@ -63,10 +61,9 @@ public class MessageContentWrapperTest {
     private static CompiledSchema<Schema> schema3 = CompiledSchema.of(load("/schema/user_v3.avsc"), ID_FIVE, VERSION_THREE);
 
     private MessageContentWrapper createMessageContentWrapper(boolean schemaHeaderIdEnabled) {
-        when(configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)).thenReturn(schemaHeaderIdEnabled);
 
         final AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdWrapper =
-            new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics, configFactory);
+            new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics, schemaHeaderIdEnabled);
 
         return new MessageContentWrapper(jsonWrapper, avroWrapper, schemaAwareWrapper,
             headerSchemaVersionWrapper, headerSchemaIdWrapper, anySchemaWrapper);

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageAnySchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
@@ -38,9 +37,6 @@ public class MessageConfiguration {
     @Autowired
     MetricRegistry metricRegistry;
 
-    @Autowired
-    ConfigFactory configFactory;
-
     @Bean
     MessageContentWrapper messageContentWrapper() {
         DeserializationMetrics metrics = new DeserializationMetrics(metricRegistry);
@@ -54,7 +50,7 @@ public class MessageConfiguration {
                 new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, metrics);
 
         AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdWrapper =
-            new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics, configFactory);
+            new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics, messageProperties.isSchemaIdHeaderEnabled());
 
         AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
                 new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metrics);
