@@ -23,7 +23,7 @@ public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageConte
 
     private final Counter deserializationWithErrorsUsingHeaderSchemaId;
     private final Counter deserializationUsingHeaderSchemaId;
-    private final ConfigFactory configFactory;
+    private final boolean schemaIdHeaderEnabled;
 
     @Inject
     public AvroMessageHeaderSchemaIdContentWrapper(SchemaRepository schemaRepository,
@@ -35,7 +35,7 @@ public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageConte
 
         this.deserializationWithErrorsUsingHeaderSchemaId = deserializationMetrics.errorsForHeaderSchemaId();
         this.deserializationUsingHeaderSchemaId = deserializationMetrics.usingHeaderSchemaId();
-        this.configFactory = configFactory;
+        this.schemaIdHeaderEnabled = configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED);
     }
 
     @Override
@@ -58,6 +58,6 @@ public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageConte
 
     @Override
     public boolean isApplicable(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
-        return configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED) && schemaId != null;
+        return schemaIdHeaderEnabled && schemaId != null;
     }
 }

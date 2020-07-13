@@ -31,7 +31,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     private final Producers producers;
     private final HermesMetrics metrics;
     private final KafkaHeaderFactory kafkaHeaderFactory;
-    private final ConfigFactory configFactory;
+    private final boolean schemaIdHeaderEnabled;
 
     @Inject
     public KafkaBrokerMessageProducer(Producers producers,
@@ -41,7 +41,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         this.producers = producers;
         this.metrics = metrics;
         this.kafkaHeaderFactory = kafkaHeaderFactory;
-        this.configFactory = configFactory;
+        this.schemaIdHeaderEnabled = configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED);
         producers.registerGauges(metrics);
     }
 
@@ -67,7 +67,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     }
 
     private Optional<SchemaId> createSchemaId(Message message) {
-        if (configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)) {
+        if (schemaIdHeaderEnabled) {
             return message.<Schema>getCompiledSchema().map(CompiledSchema::getId);
         }
 

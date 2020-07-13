@@ -46,7 +46,7 @@ public class MessageFactory {
     private final HeadersPropagator headersPropagator;
     private final MessageContentWrapper messageContentWrapper;
     private final Clock clock;
-    private final ConfigFactory configFactory;
+    private final boolean schemaIdHeaderEnabled;
 
     @Inject
     public MessageFactory(MessageValidators validators,
@@ -62,7 +62,7 @@ public class MessageFactory {
         this.schemaRepository = schemaRepository;
         this.headersPropagator = headersPropagator;
         this.clock = clock;
-        this.configFactory = configFactory;
+        this.schemaIdHeaderEnabled = configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED);
     }
 
     public Message create(HeaderMap headerMap, AttachmentContent attachment) {
@@ -147,7 +147,7 @@ public class MessageFactory {
     }
 
     private Optional<SchemaId> extractSchemaId(HeaderMap headerMap) {
-        if (!configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)) {
+        if (!schemaIdHeaderEnabled) {
             return Optional.empty();
         }
 

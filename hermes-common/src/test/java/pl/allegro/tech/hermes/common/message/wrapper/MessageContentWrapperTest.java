@@ -55,17 +55,24 @@ public class MessageContentWrapperTest {
             new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, rateLimiter, avroWrapper, metrics);
     private final AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionWrapper =
             new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, metrics);
-    private final AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdWrapper =
-        new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics, configFactory);
     private final AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
             new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metrics);
-
-    private final MessageContentWrapper messageContentWrapper = new MessageContentWrapper(jsonWrapper, avroWrapper, schemaAwareWrapper,
-        headerSchemaVersionWrapper, headerSchemaIdWrapper, anySchemaWrapper);
 
     private static CompiledSchema<Schema> schema1 = CompiledSchema.of(load("/schema/user.avsc"), ID_ONE, VERSION_ONE);
     private static CompiledSchema<Schema> schema2 = CompiledSchema.of(load("/schema/user_v2.avsc"), ID_THREE, VERSION_TWO);
     private static CompiledSchema<Schema> schema3 = CompiledSchema.of(load("/schema/user_v3.avsc"), ID_FIVE, VERSION_THREE);
+
+    private MessageContentWrapper createMessageContentWrapper(boolean schemaHeaderIdEnabled) {
+        when(configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)).thenReturn(schemaHeaderIdEnabled);
+
+        final AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdWrapper =
+            new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics, configFactory);
+
+        return new MessageContentWrapper(jsonWrapper, avroWrapper, schemaAwareWrapper,
+            headerSchemaVersionWrapper, headerSchemaIdWrapper, anySchemaWrapper);
+    }
+
+    private final MessageContentWrapper messageContentWrapper = createMessageContentWrapper(false);
 
     static SchemaVersionsRepository schemaVersionsRepository = new SchemaVersionsRepository() {
         @Override
@@ -115,7 +122,6 @@ public class MessageContentWrapperTest {
 
     @Before
     public void clean() {
-        when(configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)).thenReturn(false);
         metricRegistry.getCounters().forEach((s, counter) -> counter.dec(counter.getCount()));
     }
 
@@ -326,19 +332,20 @@ public class MessageContentWrapperTest {
     @Test
     public void shouldUnwrapUsingHeaderSchemaIdIfHeaderPresent() {
         // given
+        MessageContentWrapper messageContentWrapperWithHeaderEnabled = createMessageContentWrapper(true);
         String messageId = MESSAGE_ID;
         int messageTimestamp = MESSAGE_TIMESTAMP;
 
-        when(configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)).thenReturn(true);
         SchemaId schemaId = createSchemaId(ID_THREE);
         Topic topic = createTopic();
         AvroUser user = createAvroUser(schemaId, topic);
 
-        byte[] wrapped =
-            messageContentWrapper.wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
+        byte[] wrapped = messageContentWrapperWithHeaderEnabled
+            .wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
 
         // when
-        UnwrappedMessageContent unwrappedMessageContent = messageContentWrapper.unwrapAvro(wrapped, topic, schemaId.value(), NO_VERSION_IN_HEADER);
+        UnwrappedMessageContent unwrappedMessageContent = messageContentWrapperWithHeaderEnabled
+            .unwrapAvro(wrapped, topic, schemaId.value(), NO_VERSION_IN_HEADER);
 
         // then
         assertResult(unwrappedMessageContent, schemaId, user.asBytes(), messageId, messageTimestamp);
