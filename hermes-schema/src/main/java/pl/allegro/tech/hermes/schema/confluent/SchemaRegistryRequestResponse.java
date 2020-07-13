@@ -6,17 +6,17 @@ import pl.allegro.tech.hermes.api.RawSchema;
 
 import java.util.Objects;
 
-class SchemaRegistryRequest {
+class SchemaRegistryRequestResponse {
 
     private final String schema;
 
     @JsonCreator
-    SchemaRegistryRequest(@JsonProperty("schema") String schema) {
+    SchemaRegistryRequestResponse(@JsonProperty("schema") String schema) {
         this.schema = schema;
     }
 
-    static SchemaRegistryRequest fromRawSchema(RawSchema rawSchema) {
-        return new SchemaRegistryRequest(rawSchema.value());
+    static SchemaRegistryRequestResponse fromRawSchema(RawSchema rawSchema) {
+        return new SchemaRegistryRequestResponse(rawSchema.value());
     }
 
     public String getSchema() {
@@ -31,7 +31,7 @@ class SchemaRegistryRequest {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        SchemaRegistryRequest that = (SchemaRegistryRequest) o;
+        SchemaRegistryRequestResponse that = (SchemaRegistryRequestResponse) o;
         return Objects.equals(schema, that.schema);
     }
 

@@ -9,7 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageAnySchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionAwareContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
@@ -45,17 +46,21 @@ public class MessageConfiguration {
         AvroMessageAnySchemaVersionContentWrapper anySchemaWrapper =
                 new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, () -> true, avroWrapper, metrics);
 
-        AvroMessageHeaderSchemaVersionContentWrapper headerSchemaWrapper =
+        AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionWrapper =
                 new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, metrics);
 
-        AvroMessageSchemaVersionAwareContentWrapper schemaAwareWrapper =
-                new AvroMessageSchemaVersionAwareContentWrapper(schemaRepository, avroWrapper, metrics);
+        AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdWrapper =
+            new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics, messageProperties.isSchemaIdHeaderEnabled());
+
+        AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
+                new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metrics);
 
         return new MessageContentWrapper(
                 jsonWrapper,
                 avroWrapper,
                 schemaAwareWrapper,
-                headerSchemaWrapper,
+                headerSchemaVersionWrapper,
+                headerSchemaIdWrapper,
                 anySchemaWrapper);
     }
 

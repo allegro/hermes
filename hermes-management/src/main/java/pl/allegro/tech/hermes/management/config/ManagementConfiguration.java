@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import static javax.servlet.DispatcherType.REQUEST;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -17,10 +18,7 @@ import pl.allegro.tech.hermes.management.api.ReadOnlyFilter;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.NoOpSubscriptionLagSource;
-
-import javax.servlet.DispatcherType;
 import java.time.Clock;
-import java.util.EnumSet;
 
 @Configuration
 @EnableConfigurationProperties({TopicProperties.class, MetricsProperties.class, HttpClientProperties.class})

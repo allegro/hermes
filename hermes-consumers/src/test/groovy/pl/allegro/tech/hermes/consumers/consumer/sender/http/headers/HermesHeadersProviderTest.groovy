@@ -11,7 +11,7 @@ import static java.util.Collections.singletonMap
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestHttpRequestData.requestData
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.message
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.messageWithAdditionalHeaders
-import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.messageWithSchemaVersion
+import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.messageWithSchemaData
 import static pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.TestMessages.messageWithSubscriptionData
 
 class HermesHeadersProviderTest extends Specification {
@@ -45,17 +45,18 @@ class HermesHeadersProviderTest extends Specification {
         headers.get("Hermes-Subscription-Name") == "subscription1"
     }
 
-    def "should contain schema version header when schema is present"() {
+    def "should contain schema version and schema id header when schema is present"() {
         given:
         HttpHeadersProvider hermesHeadersProvider = new HermesHeadersProvider(emptyList())
 
         when:
         Map<String, String> headers =
-                hermesHeadersProvider.getHeaders(messageWithSchemaVersion(), requestData()).asMap()
+                hermesHeadersProvider.getHeaders(messageWithSchemaData(), requestData()).asMap()
 
         then:
-        headers.size() == 3
+        headers.size() == 4
         headers.get("Schema-Version") == "1"
+        headers.get("Schema-Id") == "1"
     }
 
     def "should contain additional headers when they are present"() {

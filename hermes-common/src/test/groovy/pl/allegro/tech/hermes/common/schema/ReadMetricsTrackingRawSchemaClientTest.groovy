@@ -39,11 +39,11 @@ class ReadMetricsTrackingRawSchemaClientTest extends Specification {
         schemaLatencyTimer.count == 0
 
         when:
-        readMetricsTrackingClient.getSchema(topicName, schemaVersion)
+        readMetricsTrackingClient.getRawSchemaWithMetadata(topicName, schemaVersion)
 
         then:
         1 * hermesMetrics.schemaTimer(Timers.GET_SCHEMA_LATENCY, SCHEMA_REGISTRY) >> schemaLatencyTimer
-        1 * rawSchemaClient.getSchema(topicName, schemaVersion)
+        1 * rawSchemaClient.getRawSchemaWithMetadata(topicName, schemaVersion)
         schemaLatencyTimer.count == 1
     }
 
@@ -52,11 +52,11 @@ class ReadMetricsTrackingRawSchemaClientTest extends Specification {
         schemaLatencyTimer.count == 0
 
         when:
-        readMetricsTrackingClient.getLatestSchema(topicName)
+        readMetricsTrackingClient.getLatestRawSchemaWithMetadata(topicName)
 
         then:
         1 * hermesMetrics.schemaTimer(Timers.GET_SCHEMA_LATENCY, SCHEMA_REGISTRY) >> schemaLatencyTimer
-        1 * rawSchemaClient.getLatestSchema(topicName)
+        1 * rawSchemaClient.getLatestRawSchemaWithMetadata(topicName)
         schemaLatencyTimer.count == 1
     }
 

@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -343,7 +342,7 @@ public class PublishingAvroTest extends IntegrationTest {
         // given
         Topic topic = randomTopic("explicitSchemaVersion", "topic")
                 .withContentType(AVRO)
-                .withSchemaVersionAwareSerialization()
+                .withSchemaIdAwareSerialization()
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
@@ -369,7 +368,7 @@ public class PublishingAvroTest extends IntegrationTest {
         // given
         Topic topic = randomTopic("explicitSchemaVersion", "topic")
                 .withContentType(AVRO)
-                .withSchemaVersionAwareSerialization()
+                .withSchemaIdAwareSerialization()
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
@@ -407,7 +406,7 @@ public class PublishingAvroTest extends IntegrationTest {
         remoteService.reset();
 
         Schema schemaV2 = load("/schema/user_v2.avsc");
-        AvroUser userV2 = new AvroUser(new CompiledSchema<>(schemaV2, SchemaVersion.valueOf(2)), "Bob", 50, "blue");
+        AvroUser userV2 = new AvroUser(CompiledSchema.of(schemaV2, 2, 2), "Bob", 50, "blue");
         HermesMessage messageV2 = hermesMessage(topic.getQualifiedName(), userV2.asBytes()).withContentType(AVRO_BINARY).build();
 
         // when

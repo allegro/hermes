@@ -13,8 +13,9 @@ class CachedCompiledSchemaRepositoryTest extends Specification {
 
     def "should provide schema from source of given version"() {
         given:
+        def id = SchemaId.valueOf(1)
         def version = SchemaVersion.valueOf(1)
-        def schema = new CompiledSchema('stuff', version)
+        def schema = new CompiledSchema('stuff', id, version)
         delegate.getSchema(topic, version) >> schema
 
         expect:
@@ -23,9 +24,10 @@ class CachedCompiledSchemaRepositoryTest extends Specification {
 
     def "should provide previously compiled schema without reloading its schema source"() {
         given:
+        def id = SchemaId.valueOf(1)
         def version = SchemaVersion.valueOf(1)
-        def firstSchema = new CompiledSchema('stuff', version)
-        def secondSchema = new CompiledSchema('other stuff', version)
+        def firstSchema = new CompiledSchema('stuff', id, version)
+        def secondSchema = new CompiledSchema('other stuff', id, version)
 
         delegate.getSchema(topic, version) >>> [firstSchema, secondSchema]
         repository.getSchema(topic, version)
@@ -48,9 +50,10 @@ class CachedCompiledSchemaRepositoryTest extends Specification {
 
     def "should remove schema from cache on topic removal"() {
         given:
+        def id = SchemaId.valueOf(1)
         def version = SchemaVersion.valueOf(1)
-        def firstSchema = new CompiledSchema('stuff', version)
-        def secondSchema = new CompiledSchema('other stuff', version)
+        def firstSchema = new CompiledSchema('stuff', id, version)
+        def secondSchema = new CompiledSchema('other stuff', id, version)
 
         delegate.getSchema(topic, version) >>> [firstSchema, secondSchema]
 

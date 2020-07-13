@@ -55,7 +55,7 @@ public class KafkaBrokerMessageProducerTest {
     @Before
     public void before() {
         cachedTopic = new CachedTopic(TOPIC, hermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
-        producer = new KafkaBrokerMessageProducer(producers, hermesMetrics, kafkaHeaderFactory);
+        producer = new KafkaBrokerMessageProducer(producers, hermesMetrics, kafkaHeaderFactory, configFactory);
     }
 
     @After

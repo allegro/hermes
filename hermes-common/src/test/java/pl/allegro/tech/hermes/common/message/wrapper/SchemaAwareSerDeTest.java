@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
+import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 import java.io.IOException;
@@ -14,10 +14,10 @@ public class SchemaAwareSerDeTest {
     @Test
     public void shouldSerialize() throws IOException {
         // given
-        SchemaVersion version = SchemaVersion.valueOf(8);
+        SchemaId id = SchemaId.valueOf(8);
 
         // when
-        byte[] serialized = SchemaAwareSerDe.serialize(version, avro.asBytes());
+        byte[] serialized = SchemaAwareSerDe.serialize(id, avro.asBytes());
 
         // then
         assertThat(serialized).startsWith((byte)0);
@@ -26,13 +26,13 @@ public class SchemaAwareSerDeTest {
     @Test
     public void shouldDeserialize() throws IOException {
         // given
-        byte[] serialized = SchemaAwareSerDe.serialize(SchemaVersion.valueOf(8), avro.asBytes());
+        byte[] serialized = SchemaAwareSerDe.serialize(SchemaId.valueOf(8), avro.asBytes());
 
         // when
         SchemaAwarePayload deserialized = SchemaAwareSerDe.deserialize(serialized);
 
         // then
-        assertThat(deserialized.getSchemaVersion().value()).isEqualTo(8);
+        assertThat(deserialized.getSchemaId().value()).isEqualTo(8);
         assertThat(deserialized.getPayload()).isEqualTo(avro.asBytes());
     }
 

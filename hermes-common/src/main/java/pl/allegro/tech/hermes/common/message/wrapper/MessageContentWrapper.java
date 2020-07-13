@@ -24,24 +24,25 @@ public class MessageContentWrapper {
     @Inject
     public MessageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
                                  AvroMessageContentWrapper avroMessageContentWrapper,
-                                 AvroMessageSchemaVersionAwareContentWrapper schemaVersionAwareContentWrapper,
+                                 AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
                                  AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
+                                 AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
                                  AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper) {
 
         this.jsonMessageContentWrapper = jsonMessageContentWrapper;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
         this.avroMessageContentUnwrappers =
-                asList(schemaVersionAwareContentWrapper, headerSchemaVersionContentWrapper, anySchemaVersionContentWrapper);
+                asList(schemaIdAwareContentWrapper, headerSchemaVersionContentWrapper, headerSchemaIdContentWrapper, anySchemaVersionContentWrapper);
     }
 
     public UnwrappedMessageContent unwrapJson(byte[] data) {
         return jsonMessageContentWrapper.unwrapContent(data);
     }
 
-    public UnwrappedMessageContent unwrapAvro(byte[] data, Topic topic, Integer schemaVersion) {
+    public UnwrappedMessageContent unwrapAvro(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
         for (AvroMessageContentUnwrapper unwrapper : avroMessageContentUnwrappers) {
-            if (unwrapper.isApplicable(data, topic, schemaVersion)) {
-                AvroMessageContentUnwrapperResult result = unwrapper.unwrap(data, topic, schemaVersion);
+            if (unwrapper.isApplicable(data, topic, schemaId, schemaVersion)) {
+                AvroMessageContentUnwrapperResult result = unwrapper.unwrap(data, topic, schemaId, schemaVersion);
                 if (result.getStatus() == SUCCESS) {
                     return result.getContent();
                 }
@@ -54,7 +55,7 @@ public class MessageContentWrapper {
 
     public byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema, Map<String, String> externalMetadata) {
         byte[] wrapped = avroMessageContentWrapper.wrapContent(data, id, timestamp, schema.getSchema(), externalMetadata);
-        return topic.isSchemaVersionAwareSerializationEnabled() ? SchemaAwareSerDe.serialize(schema.getVersion(), wrapped) : wrapped;
+        return topic.isSchemaIdAwareSerializationEnabled() ? SchemaAwareSerDe.serialize(schema.getId(), wrapped) : wrapped;
     }
 
     public byte[] wrapJson(byte[] data, String id, long timestamp, Map<String, String> externalMetadata) {

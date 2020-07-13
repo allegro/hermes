@@ -14,12 +14,14 @@ public class KafkaHeaderFactory {
     private final String messageIdHeaderName;
     private final String timestampHeaderName;
     private final String schemaVersionHeaderName;
+    private final String schemaIdHeaderName;
 
     @Inject
     public KafkaHeaderFactory(ConfigFactory configFactory) {
         this.messageIdHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_MESSAGE_ID);
         this.timestampHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_TIMESTAMP);
         this.schemaVersionHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_VERSION);
+        this.schemaIdHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_ID);
     }
 
     Header messageId(String messageId) {
@@ -32,5 +34,9 @@ public class KafkaHeaderFactory {
 
     Header schemaVersion(int schemaVersion) {
         return new RecordHeader(schemaVersionHeaderName, Ints.toByteArray(schemaVersion));
+    }
+
+    Header schemaId(int schemaId) {
+        return new RecordHeader(schemaIdHeaderName, Ints.toByteArray(schemaId));
     }
 }

@@ -26,12 +26,13 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageAnySchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksWaitingRateLimiter;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
@@ -74,8 +75,9 @@ public class CommonBinder extends AbstractBinder {
         bindSingleton(JsonMessageContentWrapper.class);
         bindSingleton(AvroMessageContentWrapper.class);
         bindSingleton(AvroMessageAnySchemaVersionContentWrapper.class);
-        bindSingleton(AvroMessageSchemaVersionAwareContentWrapper.class);
+        bindSingleton(AvroMessageSchemaIdAwareContentWrapper.class);
         bindSingleton(AvroMessageHeaderSchemaVersionContentWrapper.class);
+        bindSingleton(AvroMessageHeaderSchemaIdContentWrapper.class);
         bind(SchemaOnlineChecksWaitingRateLimiter.class).in(Singleton.class).to(SchemaOnlineChecksRateLimiter.class);
 
         bindSingletonFactory(HermesCuratorClientFactory.class).named(CuratorType.HERMES);

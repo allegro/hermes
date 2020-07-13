@@ -15,6 +15,11 @@ public class InternalSchemaRepositoryException extends SchemaException {
                 subject, statusCode, responseBody));
     }
 
+    public InternalSchemaRepositoryException(SchemaId schemaId, Response response) {
+        super(String.format("Internal schema repository error for id %s request, server response: %d %s",
+            schemaId.value(), response.getStatus(), response.readEntity(String.class)));
+    }
+
     @Override
     public ErrorCode getCode() {
         return ErrorCode.SCHEMA_REPOSITORY_INTERNAL_ERROR;

@@ -7,19 +7,22 @@ import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Optional;
-
-import static java.util.Arrays.asList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Singleton
 public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
@@ -28,14 +31,17 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     private final Producers producers;
     private final HermesMetrics metrics;
     private final KafkaHeaderFactory kafkaHeaderFactory;
+    private final boolean schemaIdHeaderEnabled;
 
     @Inject
     public KafkaBrokerMessageProducer(Producers producers,
                                       HermesMetrics metrics,
-                                      KafkaHeaderFactory kafkaHeaderFactory) {
+                                      KafkaHeaderFactory kafkaHeaderFactory,
+                                      ConfigFactory configFactory) {
         this.producers = producers;
         this.metrics = metrics;
         this.kafkaHeaderFactory = kafkaHeaderFactory;
+        this.schemaIdHeaderEnabled = configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED);
         producers.registerGauges(metrics);
     }
 
@@ -54,21 +60,32 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     private ProducerRecord<byte[], byte[]> createProducerRecord(Message message, CachedTopic cachedTopic) {
         String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
         Optional<SchemaVersion> schemaVersion = message.<Schema>getCompiledSchema().map(CompiledSchema::getVersion);
-
-        Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaVersion);
+        Optional<SchemaId> schemaId = createSchemaId(message);
+        Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaId, schemaVersion);
 
         return new ProducerRecord<byte[], byte[]>(kafkaTopicName, null, null, message.getData(), headers);
     }
 
-    private Iterable<Header> createRecordHeaders(String id, long timestamp, Optional<SchemaVersion> schemaVersion) {
-        return schemaVersion
-                .map(sv -> asList(
-                        kafkaHeaderFactory.messageId(id),
-                        kafkaHeaderFactory.timestamp(timestamp),
-                        kafkaHeaderFactory.schemaVersion(sv.value())))
-                .orElse(asList(
-                        kafkaHeaderFactory.messageId(id),
-                        kafkaHeaderFactory.timestamp(timestamp)));
+    private Optional<SchemaId> createSchemaId(Message message) {
+        if (schemaIdHeaderEnabled) {
+            return message.<Schema>getCompiledSchema().map(CompiledSchema::getId);
+        }
+
+        return Optional.empty();
+    }
+
+    private Iterable<Header> createRecordHeaders(String id, long timestamp, Optional<SchemaId> schemaId, Optional<SchemaVersion> schemaVersion) {
+        Stream<Optional<Header>> headers = Stream.of(
+            Optional.of(kafkaHeaderFactory.messageId(id)),
+            Optional.of(kafkaHeaderFactory.timestamp(timestamp)),
+            schemaVersion.map(sv -> kafkaHeaderFactory.schemaVersion(sv.value())),
+            schemaId.map(sid -> kafkaHeaderFactory.schemaId(sid.value()))
+        );
+
+        return headers
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
     }
 
     @Override

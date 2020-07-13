@@ -10,6 +10,8 @@ public class MessageProperties {
 
     private String metadataContentRoot = Configs.METADATA_CONTENT_ROOT.getDefaultValue();
 
+    private boolean schemaIdHeaderEnabled = Configs.SCHEMA_ID_HEADER_ENABLED.getDefaultValue();
+
     public String getContentRoot() {
         return contentRoot;
     }
@@ -25,4 +27,8 @@ public class MessageProperties {
     public void setMetadataContentRoot(String metadataContentRoot) {
         this.metadataContentRoot = metadataContentRoot;
     }
+
+    public boolean isSchemaIdHeaderEnabled() { return schemaIdHeaderEnabled; }
+
+    public void setSchemaIdHeaderEnabled(boolean schemaIdHeaderEnabled) { this.schemaIdHeaderEnabled = schemaIdHeaderEnabled; }
 }

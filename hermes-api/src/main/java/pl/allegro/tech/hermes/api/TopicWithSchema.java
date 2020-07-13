@@ -16,7 +16,7 @@ public class TopicWithSchema extends Topic {
     public TopicWithSchema(Topic topic, String schema) {
         this(schema, topic.getQualifiedName(), topic.getDescription(), topic.getOwner(), topic.getRetentionTime(),
                 topic.isJsonToAvroDryRunEnabled(), topic.getAck(), topic.isTrackingEnabled(), topic.wasMigratedFromJsonType(),
-                topic.isSchemaVersionAwareSerializationEnabled(), topic.getContentType(), topic.getMaxMessageSize(),
+                topic.isSchemaIdAwareSerializationEnabled(), topic.getContentType(), topic.getMaxMessageSize(),
                 topic.getPublishingAuth(), topic.isSubscribingRestricted(), topic.getOfflineStorage(), topic.getCreatedAt(),
                 topic.getModifiedAt());
     }
@@ -31,7 +31,7 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("ack") Ack ack,
                            @JsonProperty("trackingEnabled") boolean trackingEnabled,
                            @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
-                           @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
+                           @JsonProperty("schemaIdAwareSerializationEnabled") boolean schemaIdAwareSerializationEnabled,
                            @JsonProperty("contentType") ContentType contentType,
                            @JsonProperty("maxMessageSize") Integer maxMessageSize,
                            @JsonProperty("auth") PublishingAuth publishingAuth,
@@ -40,7 +40,7 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("createdAt") Instant createdAt,
                            @JsonProperty("modifiedAt") Instant modifiedAt) {
         super(qualifiedName, description, owner, retentionTime, jsonToAvroDryRunEnabled, ack, trackingEnabled,
-                migratedFromJsonType, schemaVersionAwareSerializationEnabled, contentType, maxMessageSize,
+                migratedFromJsonType, schemaIdAwareSerializationEnabled, contentType, maxMessageSize,
                 publishingAuth, subscribingRestricted, offlineStorage, createdAt, modifiedAt);
         this.topic = convertToTopic();
         this.schema = schema;
@@ -57,7 +57,7 @@ public class TopicWithSchema extends Topic {
     private Topic convertToTopic() {
         return new Topic(this.getQualifiedName(), this.getDescription(), this.getOwner(), this.getRetentionTime(),
                 this.isJsonToAvroDryRunEnabled(), this.getAck(), this.isTrackingEnabled(), this.wasMigratedFromJsonType(),
-                this.isSchemaVersionAwareSerializationEnabled(), this.getContentType(), this.getMaxMessageSize(),
+                this.isSchemaIdAwareSerializationEnabled(), this.getContentType(), this.getMaxMessageSize(),
                 this.getPublishingAuth(), this.isSubscribingRestricted(), this.getOfflineStorage(), this.getCreatedAt(),
                 this.getModifiedAt());
     }

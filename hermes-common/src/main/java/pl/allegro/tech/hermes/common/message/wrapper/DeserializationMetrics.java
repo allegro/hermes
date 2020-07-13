@@ -19,8 +19,12 @@ public class DeserializationMetrics {
         return metricRegistry.counter(name(deserializationErrorsPath(), "headerSchemaVersion"));
     }
 
-    public Counter errorsForSchemaVersionAwarePayload() {
-        return metricRegistry.counter(name(deserializationErrorsPath(), "payloadWithSchemaVersion"));
+    public Counter errorsForHeaderSchemaId() {
+        return metricRegistry.counter(name(deserializationErrorsPath(), "headerSchemaId"));
+    }
+
+    public Counter errorsForSchemaIdAwarePayload() {
+        return metricRegistry.counter(name(deserializationErrorsPath(), "payloadWithSchemaId"));
     }
 
     public Counter errorsForAnySchemaVersion() {
@@ -31,16 +35,20 @@ public class DeserializationMetrics {
         return metricRegistry.counter(name(deserializationErrorsPath(), "anyOnlineSchemaVersion"));
     }
 
-    public Counter missedSchemaVersionInPayload() {
-        return metricRegistry.counter(name(deserializationPath(), "missed", "schemaVersionInPayload"));
+    public Counter missedSchemaIdInPayload() {
+        return metricRegistry.counter(name(deserializationPath(), "missed", "schemaIdInPayload"));
     }
 
     public Counter usingHeaderSchemaVersion() {
         return metricRegistry.counter(name(deserializationPath(), "using", "headerSchemaVersion"));
     }
 
-    public Counter usingSchemaVersionAware() {
-        return metricRegistry.counter(name(deserializationPath(), "using", "schemaVersionAware"));
+    public Counter usingHeaderSchemaId() {
+        return metricRegistry.counter(name(deserializationPath(), "using", "headerSchemaId"));
+    }
+
+    public Counter usingSchemaIdAware() {
+        return metricRegistry.counter(name(deserializationPath(), "using", "schemaIdAware"));
     }
 
     public Counter usingAnySchemaVersion() {

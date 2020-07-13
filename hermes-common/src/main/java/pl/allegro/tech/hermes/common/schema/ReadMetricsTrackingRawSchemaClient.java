@@ -2,10 +2,12 @@ package pl.allegro.tech.hermes.common.schema;
 
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import java.util.List;
@@ -27,13 +29,18 @@ public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
     }
 
     @Override
-    public Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version) {
-        return timedSchema(() -> rawSchemaClient.getSchema(topic, version));
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion version) {
+        return timedSchema(() -> rawSchemaClient.getRawSchemaWithMetadata(topic, version));
     }
 
     @Override
-    public Optional<RawSchema> getLatestSchema(TopicName topic) {
-        return timedSchema(() -> rawSchemaClient.getLatestSchema(topic));
+    public Optional<RawSchemaWithMetadata> getLatestRawSchemaWithMetadata(TopicName topic) {
+        return timedSchema(() -> rawSchemaClient.getLatestRawSchemaWithMetadata(topic));
+    }
+
+    @Override
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
+        return timedSchema(() -> rawSchemaClient.getRawSchemaWithMetadata(topic, schemaId));
     }
 
     @Override

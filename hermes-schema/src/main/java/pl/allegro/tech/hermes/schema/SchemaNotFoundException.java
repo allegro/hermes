@@ -13,6 +13,10 @@ public class SchemaNotFoundException extends SchemaException {
         super("No schema source for topic " + topic.getQualifiedName());
     }
 
+    SchemaNotFoundException(SchemaId id) {
+        super("No schema source for id " + id.value());
+    }
+
     @Override
     public ErrorCode getCode() {
         return ErrorCode.OTHER;

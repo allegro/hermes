@@ -1,21 +1,21 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import pl.allegro.tech.hermes.schema.SchemaVersion;
+import pl.allegro.tech.hermes.schema.SchemaId;
 
 public class SchemaAwarePayload {
     private final byte[] payload;
-    private final SchemaVersion schemaVersion;
+    private final SchemaId schemaId;
 
-    public SchemaAwarePayload(byte[] payload, SchemaVersion schemaVersion) {
+    public SchemaAwarePayload(byte[] payload, SchemaId schemaId) {
         this.payload = payload;
-        this.schemaVersion = schemaVersion;
+        this.schemaId = schemaId;
     }
 
     public byte[] getPayload() {
         return payload;
     }
 
-    public SchemaVersion getSchemaVersion() {
-        return schemaVersion;
+    public SchemaId getSchemaId() {
+        return schemaId;
     }
 }

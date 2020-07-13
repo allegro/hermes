@@ -158,23 +158,23 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         subjectNamingStrategy << subjectNamingStrategies
     }
 
-    def "should return empty optional when latest schema does not exist"() {
+    def "should return empty optional when latest metadata does not exist"() {
         when:
-        def schema = client.getLatestSchema(topicName)
+        def metadata = client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
-        !schema.isPresent()
+        !metadata.isPresent()
 
         where:
         client << clients
     }
 
-    def "should throw exception when not able to fetch latest schema"() {
+    def "should throw exception when not able to fetch latest metadata"() {
         given:
         wireMock.stubFor(get(latestSchemaUrl(topicName, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getLatestSchema(topicName)
+        client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
         thrown(InternalSchemaRepositoryException)
@@ -184,15 +184,17 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         subjectNamingStrategy << subjectNamingStrategies
     }
 
-    def "should return latest schema"() {
+    def "should return latest metadata"() {
         given:
-        wireMock.stubFor(get(latestSchemaUrl(topicName, subjectNamingStrategy)).willReturn(okResponse().withBody("0\t{}")))
+        wireMock.stubFor(get(latestSchemaUrl(topicName, subjectNamingStrategy)).willReturn(okResponse().withBody("{\"id\": 1, \"schema\": \"{}\"}")
+                .withHeader("Content-Type", "application/json")))
 
         when:
-        def schema = client.getLatestSchema(topicName)
+        def metadata = client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
-        schema.get().value() == "{}"
+        metadata.get().getId() == 1
+        metadata.get().getSchema() == RawSchema.valueOf("{}")
 
         where:
         client << clients
@@ -241,16 +243,18 @@ class SchemaRepoRawSchemaClientTest extends Specification {
         subjectNamingStrategy << subjectNamingStrategies
     }
 
-    def "should return schema at specified version"() {
+    def "should return metadata at specified version"() {
         given:
         def version = 5
-        wireMock.stubFor(get(schemaVersionUrl(topicName, version, subjectNamingStrategy)).willReturn(okResponse().withBody("0\t{}")))
+        wireMock.stubFor(get(schemaVersionUrl(topicName, version, subjectNamingStrategy)).willReturn(okResponse().withBody("{\"id\": \"1\", \"schema\": \"{}\"}")
+                .withHeader("Content-Type", "application/json")))
 
         when:
-        def schema = client.getSchema(topicName, SchemaVersion.valueOf(version))
+        def metadata = client.getRawSchemaWithMetadata(topicName, SchemaVersion.valueOf(version))
 
         then:
-        schema.get().value() == "{}"
+        metadata.get().getId() == 1
+        metadata.get().getSchema() == RawSchema.valueOf("{}")
 
         where:
         client << clients

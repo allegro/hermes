@@ -7,6 +7,8 @@ import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroInvalidMetadataException;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
@@ -18,11 +20,13 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
 import javax.inject.Inject;
+import javax.swing.text.html.Option;
 import java.time.Clock;
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +46,7 @@ public class MessageFactory {
     private final HeadersPropagator headersPropagator;
     private final MessageContentWrapper messageContentWrapper;
     private final Clock clock;
+    private final boolean schemaIdHeaderEnabled;
 
     @Inject
     public MessageFactory(MessageValidators validators,
@@ -49,13 +54,15 @@ public class MessageFactory {
                           SchemaRepository schemaRepository,
                           HeadersPropagator headersPropagator,
                           MessageContentWrapper messageContentWrapper,
-                          Clock clock) {
+                          Clock clock,
+                          ConfigFactory configFactory) {
         this.validators = validators;
         this.enforcer = enforcer;
         this.messageContentWrapper = messageContentWrapper;
         this.schemaRepository = schemaRepository;
         this.headersPropagator = headersPropagator;
         this.clock = clock;
+        this.schemaIdHeaderEnabled = configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED);
     }
 
     public Message create(HeaderMap headerMap, AttachmentContent attachment) {
@@ -99,10 +106,20 @@ public class MessageFactory {
         return message.withDataReplaced(wrapped);
     }
 
+    private CompiledSchema<Schema> getCompiledSchemaBySchemaVersion(HeaderMap headerMap, Topic topic) {
+        return extractSchemaVersion(headerMap)
+            .map(version -> schemaRepository.getAvroSchema(topic, version))
+            .orElseGet(() -> schemaRepository.getLatestAvroSchema(topic));
+    }
+
+    private CompiledSchema<Schema> getCompiledSchema(HeaderMap headerMap, Topic topic) {
+        return extractSchemaId(headerMap)
+            .map(id -> schemaRepository.getAvroSchema(topic, id))
+            .orElseGet(() -> getCompiledSchemaBySchemaVersion(headerMap, topic));
+    }
+
     private AvroMessage createAvroMessage(HeaderMap headerMap, Topic topic, String messageId, byte[] messageContent, long timestamp) {
-        CompiledSchema<Schema> schema = extractSchemaVersion(headerMap)
-                .map(version -> schemaRepository.getAvroSchema(topic, version))
-                .orElseGet(() -> schemaRepository.getLatestAvroSchema(topic));
+        CompiledSchema<Schema> schema = getCompiledSchema(headerMap, topic);
 
         AvroMessage message = new AvroMessage(
                 messageId,
@@ -118,11 +135,30 @@ public class MessageFactory {
 
     private Optional<SchemaVersion> extractSchemaVersion(HeaderMap headerMap) {
         String schemaVersion = headerMap.getFirst(MessageMetadataHeaders.SCHEMA_VERSION.getName());
+
         if (schemaVersion == null) {
             return Optional.empty();
         }
         try {
             return of(SchemaVersion.valueOf(Integer.parseInt(schemaVersion)));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<SchemaId> extractSchemaId(HeaderMap headerMap) {
+        if (!schemaIdHeaderEnabled) {
+            return Optional.empty();
+        }
+
+        String schemaId = headerMap.getFirst(MessageMetadataHeaders.SCHEMA_ID.getName());
+
+        if (schemaId == null) {
+            return Optional.empty();
+        }
+
+        try {
+            return of(SchemaId.valueOf(Integer.parseInt(schemaId)));
         } catch (NumberFormatException e) {
             return Optional.empty();
         }
