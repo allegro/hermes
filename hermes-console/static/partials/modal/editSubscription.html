@@ -44,13 +44,12 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" ng-hide="subscription.deliveryType === 'SERIAL' && operation === 'EDIT'">
                 <label for="subscriptionType" class="col-md-3 control-label">Delivery type</label>
                 <div class="col-md-9">
                     <div class="input-group">
                         <select required class="form-control" id="deliveryType" name="deliveryType" ng-model="subscription.deliveryType">
-                            <option value="SERIAL">SERIAL</option>
-                            <option value="BATCH" ng-disabled="subscription.subscriptionType === 'AVRO'">BATCH (incubating feature)</option>
+                            <option ng-repeat="deliveryType in config.deliveryTypes" value="{{deliveryType.value}}" ng-disabled="deliveryType.value == 'BATCH' && subscription.subscriptionType === 'AVRO'">{{deliveryType.label}}</option>
                         </select>
                         <span class="input-group-addon helpme-addon" uib-tooltip="Hermes can deliver messages in SERIAL (one message at a time) or in BATCH (group of messages at a time).">?</span>
                     </div>
@@ -174,7 +173,7 @@
                 <label for="subscriptionBackoffMaxIntervalInSec" class="col-md-3 control-label">Retry backoff max interval</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="1" max="600" step="1" ng-required="subscription.deliveryType === 'SERIAL'" class="form-control" id="subscriptionBackoffMaxIntervalInSec" name="subscriptionBackoffMaxIntervalInSec" placeholder="Maximum value of delay backoff" ng-model="subscription.subscriptionPolicy.backoffMaxIntervalInSec" ng-pattern="/^\d+$/"/>
+                        <input type="number" min="1" max="600" step="1" ng-required="subscription.deliveryType === 'SERIAL' && subscription.subscriptionPolicy.backoffMultiplier > 1" class="form-control" id="subscriptionBackoffMaxIntervalInSec" name="subscriptionBackoffMaxIntervalInSec" placeholder="Maximum value of delay backoff" ng-model="subscription.subscriptionPolicy.backoffMaxIntervalInSec" ng-pattern="/^\d+$/"/>
                         <span class="input-group-addon">seconds</span>
                         <span class="input-group-addon helpme-addon" uib-tooltip="Maximum value of delay backoff when using exponential calculation">?</span>
                     </div>

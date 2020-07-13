@@ -482,6 +482,10 @@ public class ConsoleProperties {
         private Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata = new HashMap<>();
         private boolean showHeadersFilter = false;
         private DefaultSubscriptionView defaults = new DefaultSubscriptionView();
+        private List<SubscriptionDeliveryType> deliveryTypes = Lists.newArrayList(
+                new SubscriptionDeliveryType("SERIAL", "SERIAL"),
+                new SubscriptionDeliveryType("BATCH", "BATCH")
+        );
 
         public Map<String, EndpointAddressResolverMetadata> getEndpointAddressResolverMetadata() {
             return endpointAddressResolverMetadata;
@@ -505,6 +509,14 @@ public class ConsoleProperties {
 
         public void setDefaults(DefaultSubscriptionView defaults) {
             this.defaults = defaults;
+        }
+
+        public List<SubscriptionDeliveryType> getDeliveryTypes() {
+            return deliveryTypes;
+        }
+
+        public void setDeliveryTypes(List<SubscriptionDeliveryType> deliveryTypes) {
+            this.deliveryTypes = deliveryTypes;
         }
     }
 
@@ -540,6 +552,7 @@ public class ConsoleProperties {
 
     public static final class DefaultSubscriptionView {
         private SubscriptionPolicy subscriptionPolicy = new SubscriptionPolicy();
+        private String deliveryType = "SERIAL";
 
         public SubscriptionPolicy getSubscriptionPolicy() {
             return subscriptionPolicy;
@@ -547,6 +560,14 @@ public class ConsoleProperties {
 
         public void setSubscriptionPolicy(SubscriptionPolicy subscriptionPolicy) {
             this.subscriptionPolicy = subscriptionPolicy;
+        }
+
+        public String getDeliveryType() {
+            return deliveryType;
+        }
+
+        public void setDeliveryType(String deliveryType) {
+            this.deliveryType = deliveryType;
         }
     }
 
@@ -559,6 +580,35 @@ public class ConsoleProperties {
 
         public void setMessageTtl(int messageTtl) {
             this.messageTtl = messageTtl;
+        }
+    }
+
+    public static final class SubscriptionDeliveryType {
+        private String value = "";
+        private String label = "";
+
+        public SubscriptionDeliveryType() {
+        }
+
+        public SubscriptionDeliveryType(String value, String label) {
+            this.value = value;
+            this.label = label;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
         }
     }
 }

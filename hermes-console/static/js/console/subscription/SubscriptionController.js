@@ -18,6 +18,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
+        $scope.config = config;
 
         subscriptionRepository.get(topicName, subscriptionName).$promise
                 .then(function(subscription) {
@@ -254,15 +255,17 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
-    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'topicContentType', 'showHeadersFilter',
+    'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'topicContentType',
+    'showHeadersFilter', 'SUBSCRIPTION_CONFIG',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
-              endpointAddressResolverMetadataConfig, topicContentType, showHeadersFilter) {
+              endpointAddressResolverMetadataConfig, topicContentType, showHeadersFilter, subscriptionConfig) {
         $scope.topicName = topicName;
         $scope.topicContentType = topicContentType;
         $scope.subscription = _.cloneDeep(subscription);
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
         $scope.showHeadersFilter = showHeadersFilter;
+        $scope.config = subscriptionConfig;
 
         $scope.save = function () {
             var promise;
