@@ -27,8 +27,6 @@ import pl.allegro.tech.hermes.api.Topic;
 @EnableConfigurationProperties({TopicProperties.class, MetricsProperties.class, HttpClientProperties.class})
 public class ManagementConfiguration {
 
-    public static String MAPPER_DEFAULT_SCHEMA_ID_ENABLED_NAMESPACE = "";
-
     @Autowired
     TopicProperties topicProperties;
 
@@ -41,7 +39,7 @@ public class ManagementConfiguration {
         mapper.registerModule(new JavaTimeModule());
 
         final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues
-            .Std().addValue(MAPPER_DEFAULT_SCHEMA_ID_ENABLED_NAMESPACE, topicProperties.isDefaultSchemaIdAwareSerializationEnabled());
+            .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, topicProperties.isDefaultSchemaIdAwareSerializationEnabled());
 
         mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 
