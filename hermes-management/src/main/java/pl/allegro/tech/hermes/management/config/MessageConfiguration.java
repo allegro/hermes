@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -39,8 +38,8 @@ public class MessageConfiguration {
     @Autowired
     MetricRegistry metricRegistry;
 
-    @Mock
-    private ConfigFactory configFactory;
+    @Autowired
+    ConfigFactory configFactory;
 
     @Bean
     MessageContentWrapper messageContentWrapper() {
