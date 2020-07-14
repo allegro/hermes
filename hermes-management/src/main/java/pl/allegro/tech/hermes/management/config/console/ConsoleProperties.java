@@ -303,6 +303,7 @@ public class ConsoleProperties {
         private DefaultTopicView defaults = new DefaultTopicView();
         private String buttonsExtension = "";
         private boolean removeSchema = false;
+        private boolean schemaIdAwareSerializationEnabled = false;
         private List<TopicContentType> contentTypes = Lists.newArrayList(
                 new TopicContentType("AVRO", "AVRO"),
                 new TopicContentType("JSON", "JSON")
@@ -362,6 +363,12 @@ public class ConsoleProperties {
 
         public void setRemoveSchema(boolean removeSchema) {
             this.removeSchema = removeSchema;
+        }
+
+        public boolean isSchemaIdAwareSerializationEnabled() { return schemaIdAwareSerializationEnabled; }
+
+        public void setSchemaIdAwareSerializationEnabled(boolean schemaIdAwareSerializationEnabled) {
+            this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
         }
     }
 

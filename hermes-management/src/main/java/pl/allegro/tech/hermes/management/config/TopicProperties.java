@@ -27,6 +27,8 @@ public class TopicProperties {
 
     private int subscriptionsAssignmentsCompletedTimeoutSeconds = 30;
 
+    private boolean defaultSchemaIdAwareSerializationEnabled = false;
+
     /**
      * Introduced in Kafka 0.11.0.0 mechanism of splitting oversized batches does not respect configuration of maximum
      * message size which broker can accept. It can cause an infinite loop of resending the same records in one batch.
@@ -118,5 +120,13 @@ public class TopicProperties {
 
     public void setMaxMessageSize(int maxMessageSize) {
         this.maxMessageSize = maxMessageSize;
+    }
+
+    public void setDefaultSchemaIdAwareSerializationEnabled(boolean defaultSchemaIdAwareSerializationEnabled) {
+        this.defaultSchemaIdAwareSerializationEnabled = defaultSchemaIdAwareSerializationEnabled;
+    }
+
+    public boolean isDefaultSchemaIdAwareSerializationEnabled() {
+        return defaultSchemaIdAwareSerializationEnabled;
     }
 }

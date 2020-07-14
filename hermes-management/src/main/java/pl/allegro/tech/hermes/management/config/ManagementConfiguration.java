@@ -3,11 +3,13 @@ package pl.allegro.tech.hermes.management.config;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import static javax.servlet.DispatcherType.REQUEST;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -19,10 +21,14 @@ import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.NoOpSubscriptionLagSource;
 import java.time.Clock;
+import pl.allegro.tech.hermes.api.Topic;
 
 @Configuration
 @EnableConfigurationProperties({TopicProperties.class, MetricsProperties.class, HttpClientProperties.class})
 public class ManagementConfiguration {
+
+    @Autowired
+    TopicProperties topicProperties;
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -31,6 +37,12 @@ public class ManagementConfiguration {
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
         mapper.registerModule(new JavaTimeModule());
+
+        final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues
+            .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, topicProperties.isDefaultSchemaIdAwareSerializationEnabled());
+
+        mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
+
         return mapper;
     }
 
