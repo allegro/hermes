@@ -66,6 +66,19 @@ services:
       - zk
       - kafka
       - graphite
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:5.1.0
+    depends_on:
+      - zk
+      - kafka
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zk:2181
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    ports:
+      - "8081:8081"
+
 volumes:
   graphite_conf:
   graphite_data:
