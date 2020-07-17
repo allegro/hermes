@@ -1,6 +1,6 @@
 {
   "name": "hermes-console",
-  "version": "1.4.13",
+  "version": "1.4.14",
   "description": "Console for Hermes Management",
   "repository": "https://github.com/allegro/hermes",
   "main": "serve.js",
