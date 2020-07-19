@@ -26,7 +26,6 @@ import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
 import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
 import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
-import pl.allegro.tech.hermes.schema.schemarepo.SchemaRepoRawSchemaClient;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -66,14 +65,6 @@ public class SchemaRepositoryConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(RawSchemaClient.class)
-    @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_repo")
-    public RawSchemaClient schemaRepoRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver, SubjectNamingStrategy subjectNamingStrategy) {
-        return new SchemaRepoRawSchemaClient(schemaRepositoryInstanceResolver, subjectNamingStrategy);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(RawSchemaClient.class)
-    @ConditionalOnProperty(value = "schema.repository.type", havingValue = "schema_registry")
     public RawSchemaClient schemaRegistryRawSchemaClient(
             SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
             ObjectMapper objectMapper,

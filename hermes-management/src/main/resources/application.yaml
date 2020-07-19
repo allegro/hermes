@@ -39,8 +39,6 @@ management:
     periodSeconds: 30
     enabled: true
 
-schema.repository.type: schema_registry
-
 audit.enabled: false
 
 topicOwnerCache:

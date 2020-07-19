@@ -6,8 +6,6 @@ import pl.allegro.tech.hermes.common.config.Configs;
 @ConfigurationProperties(prefix = "schema.repository")
 public class SchemaRepositoryProperties {
 
-    private String type = Configs.SCHEMA_REPOSITORY_TYPE.getDefaultValue();
-
     private String serverUrl = Configs.SCHEMA_REPOSITORY_SERVER_URL.getDefaultValue();
 
     private boolean validationEnabled = false;
@@ -20,14 +18,6 @@ public class SchemaRepositoryProperties {
     private boolean subjectSuffixEnabled = Configs.SCHEMA_REPOSITORY_SUBJECT_SUFFIX_ENABLED.getDefaultValue();
 
     private boolean subjectNamespaceEnabled = Configs.SCHEMA_REPOSITORY_SUBJECT_NAMESPACE_ENABLED.getDefaultValue();
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
 
     public String getServerUrl() {
         return serverUrl;
