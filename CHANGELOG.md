@@ -2,38 +2,44 @@
 
 ...
 
+## 1.4.14 (17.07.2020)
+
+### Fixes
+
+#### ([1243](https://github.com/allegro/hermes/pull/1243)) Fix for serialization with schema id
+
 ## 1.4.13 (15.07.2020)
 
 ### Enhancements
 
-####([1232](https://github.com/allegro/hermes/pull/1232)) Serialization with schema id
+#### ([1232](https://github.com/allegro/hermes/pull/1232)) Serialization with schema id
 
 Issues resolved: [1225 - Confluent message serialization and deserialization compataibility](https://github.com/allegro/hermes/issues/1225)
 and [682 - Avro messages does not contain header](https://github.com/allegro/hermes/issues/682).
 
-####([1235](https://github.com/allegro/hermes/pull/1235)) Docker update
+#### ([1235](https://github.com/allegro/hermes/pull/1235)) Docker update
 
 Dockerfiles have been updated. The project is now automatically built by dockerhub.
 
-####([1236](https://github.com/allegro/hermes/pull/1236)) Batch subscription disabled in hermes console
+#### ([1236](https://github.com/allegro/hermes/pull/1236)) Batch subscription disabled in hermes console
 
-####([1237](https://github.com/allegro/hermes/pull/1237)) Feature: default schema id serialization
+#### ([1237](https://github.com/allegro/hermes/pull/1237)) Feature: default schema id serialization
 
-####([1238](https://github.com/allegro/hermes/pull/1238)) Hermes docs update
+#### ([1238](https://github.com/allegro/hermes/pull/1238)) Hermes docs update
 
 Exponential retry policy and docker guide added to docs.
 
-####([1240](https://github.com/allegro/hermes/pull/1240)) Schema registry added to docker
+#### ([1240](https://github.com/allegro/hermes/pull/1240)) Schema registry added to docker
 
 ### Fixes
 
-####([1239](https://github.com/allegro/hermes/pull/1239)) Old vagrant file removed from docker dir
+#### ([1239](https://github.com/allegro/hermes/pull/1239)) Old vagrant file removed from docker dir
 
 ## 1.4.12 (07.07.2020)
 
 ### Fixes
 
-####([1234](https://github.com/allegro/hermes/pull/1234)) Fix for exponential retry policy
+#### ([1234](https://github.com/allegro/hermes/pull/1234)) Fix for exponential retry policy
 
 Fixed hermes console for batch subscription.
 
@@ -41,17 +47,17 @@ Fixed hermes console for batch subscription.
 
 ### Enhancements
 
-####([1223](https://github.com/allegro/hermes/pull/1223)) Remove ALPN for jdk 1.8.0_252+
+#### ([1223](https://github.com/allegro/hermes/pull/1223)) Remove ALPN for jdk 1.8.0_252+
 
 Removing APLN for jdk 1.8.0_252. More info [here](https://webtide.com/jetty-alpn-java-8u252/).
 
-####([1224](https://github.com/allegro/hermes/pull/1224)) Handle proper broker listener name
+#### ([1224](https://github.com/allegro/hermes/pull/1224)) Handle proper broker listener name
 
-####([1228](https://github.com/allegro/hermes/pull/1228)) Kafka libraries upgraded to version 2.2.2
+#### ([1228](https://github.com/allegro/hermes/pull/1228)) Kafka libraries upgraded to version 2.2.2
 
 ### Fixes
 
-####([1222](https://github.com/allegro/hermes/pull/1222)) Configurable namespace operator
+#### ([1222](https://github.com/allegro/hermes/pull/1222)) Configurable namespace operator
 
 Namespace operators are now cofigurable. Fix for [1209 - Feature/schema subject naming](https://github.com/allegro/hermes/pull/1209).
 
