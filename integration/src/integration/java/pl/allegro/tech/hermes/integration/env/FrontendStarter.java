@@ -23,8 +23,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_FIXED_MAX;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_TYPE;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_TYPE;
-import static pl.allegro.tech.hermes.common.schema.SchemaRepositoryType.SCHEMA_REGISTRY;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class FrontendStarter implements Starter<HermesFrontend> {
@@ -41,7 +39,6 @@ public class FrontendStarter implements Starter<HermesFrontend> {
         this.port = port;
         configFactory = new MutableConfigFactory();
         configFactory.overrideProperty(FRONTEND_PORT, port);
-        configFactory.overrideProperty(SCHEMA_REPOSITORY_TYPE, SCHEMA_REGISTRY.name());
         configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, true);
         configFactory.overrideProperty(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
         configFactory.overrideProperty(FRONTEND_THROUGHPUT_TYPE, "fixed");

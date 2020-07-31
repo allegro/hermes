@@ -46,8 +46,6 @@ management:
   consumer-groups:
     create-manually: true
 
-schema.repository.type: schema_registry
-
 audit.enabled: false
 
 topicOwnerCache:

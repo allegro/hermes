@@ -17,15 +17,12 @@ import java.util.function.Supplier;
 public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
     private final RawSchemaClient rawSchemaClient;
     private final HermesMetrics hermesMetrics;
-    private final SchemaRepositoryType schemaRepoType;
 
     public ReadMetricsTrackingRawSchemaClient(
             RawSchemaClient rawSchemaClient,
-            HermesMetrics hermesMetrics,
-            SchemaRepositoryType schemaRepoType) {
+            HermesMetrics hermesMetrics) {
         this.rawSchemaClient = rawSchemaClient;
         this.hermesMetrics = hermesMetrics;
-        this.schemaRepoType = schemaRepoType;
     }
 
     @Override
@@ -78,7 +75,7 @@ public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
     }
 
     private Timer.Context startLatencyTimer(String schemaReadLatency) {
-        return hermesMetrics.schemaTimer(schemaReadLatency, schemaRepoType).time();
+        return hermesMetrics.schemaTimer(schemaReadLatency).time();
     }
 
 }

@@ -1,9 +1,9 @@
 # Schema repository
 
 Hermes requires an external schema repository in order to allow [publishing messages in Avro format](/user/publishing-avro).
-Currently, there are two implementations of message schema store available out of the box.
+Currently, there is only one implementation of message schema store available out of the box.
 
-## Schema repository integrations
+## Schema repository integration
 
 ### Confluent schema registry
 
@@ -15,17 +15,7 @@ Confluent schema registry is the recommended schema repository for Avro topics.
 > that handle schema storage and retrieval for Kafka messages that are sent in the Avro format.
 > - [Schema Registry documentation](https://github.com/confluentinc/schema-registry)
 
-Set schema repository type to `schema_registry` when using this schema repository.
-
 Confluent schema registry is the default schema repository in Hermes.
-
-### Schema-repo store
-
-This is another specialized schema repository, which has an option to append additional validations and checks when publishing
-or updating schema (e.g. backwards compatibility, naming convention etc). Documentation can be found at
-[project page](http://schemarepo.org).
-
-Set schema repository type to `schema_repo` when using this schema repository.
 
 ## Configuration
 
@@ -38,7 +28,6 @@ Frontend and Consumers modules have the same configuration options.
 
 Option                                   | Description                                                        | Default value
 ---------------------------------------- | ------------------------------------------------------------------ | -------------
-schema.repository.type                   | Available options: `schema_registry` or `schema_repo`              | `schema_registry`
 schema.repository.serverUrl              | URL of a repository                                                | `http://localhost:8888/`
 schema.repository.subject.suffix.enabled | Add `-value` suffix to every subject name                          | `false`
 schema.repository.subject.namespace.enabled | Add `kafka.namespace` property value as a prefix to every subject name | `false`
@@ -50,7 +39,6 @@ schema.cache.expire.after.write.minutes  | if schema can't be refreshed, it will
 
 Option                                   | Description                                                        | Default value
 ---------------------------------------- | ------------------------------------------------------------------ | -------------
-schema.repository.type                   | Available options: `schema_registry` or `schema_repo`              | `schema_registry`
 schema.repository.serverUrl              | URL of a repository                                                | `http://localhost:8888/`
 schema.repository.validationEnabled      | Allows to use validation API in schema repository                  | `false`
 schema.repository.connectionTimeoutMillis| Connection timeout used in http client (specified in milliseconds) | 1000
