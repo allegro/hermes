@@ -45,14 +45,14 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
             if (online) {
                 List<SchemaVersion> v = rawSchemaClient.getVersions(topic.getName());
                 versionsCache.put(topic, v);
-                return SchemaVersionsResponse.success(v);
+                return SchemaVersionsResponse.succeeded(v);
             } else {
                 List<SchemaVersion> versions = versionsCache.get(topic);
-                return SchemaVersionsResponse.success(versions);
+                return SchemaVersionsResponse.succeeded(versions);
             }
         } catch (Exception e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
-            return SchemaVersionsResponse.failure();
+            return SchemaVersionsResponse.failed();
         }
     }
 

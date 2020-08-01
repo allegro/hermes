@@ -8,15 +8,15 @@ public class SchemaVersionsResponse {
     private final Status status;
     private final List<SchemaVersion> versions;
 
-    public static SchemaVersionsResponse success(List<SchemaVersion> versions) {
+    public static SchemaVersionsResponse succeeded(List<SchemaVersion> versions) {
         return new SchemaVersionsResponse(Status.SUCCESS, versions);
     }
 
-    public static SchemaVersionsResponse failure() {
+    public static SchemaVersionsResponse failed() {
         return new SchemaVersionsResponse(Status.FAILURE, emptyList());
     }
 
-    SchemaVersionsResponse(Status status, List<SchemaVersion> versions) {
+    private SchemaVersionsResponse(Status status, List<SchemaVersion> versions) {
         this.status = status;
         this.versions = versions;
     }

@@ -20,10 +20,10 @@ public class DirectSchemaVersionsRepository implements SchemaVersionsRepository 
     public SchemaVersionsResponse versions(Topic topic, boolean online) {
         try {
             List<SchemaVersion> versions = rawSchemaClient.getVersions(topic.getName());
-            return SchemaVersionsResponse.success(versions);
+            return SchemaVersionsResponse.succeeded(versions);
         } catch (Exception e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
-            return SchemaVersionsResponse.failure();
+            return SchemaVersionsResponse.failed();
         }
     }
 

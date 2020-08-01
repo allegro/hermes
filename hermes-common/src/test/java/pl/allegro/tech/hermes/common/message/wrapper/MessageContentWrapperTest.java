@@ -75,8 +75,8 @@ public class MessageContentWrapperTest {
             List<SchemaVersion> onlineVersions = asList(schema3.getVersion(), schema2.getVersion(), schema1.getVersion());
             List<SchemaVersion> cachedVersions = asList(schema2.getVersion(), schema1.getVersion());
             return online
-                    ? SchemaVersionsResponse.success(onlineVersions)
-                    : SchemaVersionsResponse.success(cachedVersions);
+                    ? SchemaVersionsResponse.succeeded(onlineVersions)
+                    : SchemaVersionsResponse.succeeded(cachedVersions);
         }
 
         @Override

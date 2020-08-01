@@ -89,7 +89,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         SchemaVersionsRepository schemaVersionsRepository = [
                 versions: { Topic topic ->
                     topic == avroTopic1
-                            ? SchemaVersionsResponse.success([version])
+                            ? SchemaVersionsResponse.succeeded([version])
                             : schemaVersionsRepositoryForTopicsWithoutSchema.versions(topic)
                 }
         ] as SchemaVersionsRepository
@@ -143,8 +143,8 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         [
             versions: { Topic topic ->
                 topic.contentType == ContentType.AVRO
-                        ? SchemaVersionsResponse.success([version])
-                        : SchemaVersionsResponse.success([])
+                        ? SchemaVersionsResponse.succeeded([version])
+                        : SchemaVersionsResponse.succeeded([])
             }
         ] as SchemaVersionsRepository
     }
