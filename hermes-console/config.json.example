@@ -1,17 +1,17 @@
 {
     "console": {
-        "title": "hermes console",
-        "footer": "<a href=\"http://hermes.allegro.tech\">hermes.allegro.tech</a>"
+        "title": "hermes console" // page title
+        "footer": "<a href=\"http://hermes.allegro.tech\">hermes.allegro.tech</a>" // page footer
     },
     "dashboard": {
-        "metrics": "",
-        "docs": "http://hermes-pubsub.rtfd.org"
+        "metrics": "", // link to metrics dashboard
+        "docs": "http://hermes-pubsub.rtfd.org" // link to documentation
     },
     "hermes": {
         "discovery": {
             "type": "simple",
             "simple": {
-                "url": "http://localhost:8090"
+                "url": "http://localhost:8080"
             },
             "consul": {
                 "serviceName": "hermes-management",
@@ -20,7 +20,7 @@
         }
     },
     "metrics": {
-        "type": "graphite",
+        "type": "graphite", // active metric store type
         "graphite": {
             "url": "localhost:8091",
             "prefix": "hermes"
@@ -48,10 +48,10 @@
                 "duration": 1
             }
         },
-        "contentTypes": [
+        "contentTypes": {
             {"value": "AVRO", "label": "AVRO"},
             {"value": "JSON", "label": "JSON"}
-        ],
+        },
         "removeSchema": false,
         "buttonsExtension": "<a class=\"btn btn-info {{topic.contentType === 'JSON' ? 'ng-show' : 'ng-hide'}}\" ng-href='http://migrator.example/topics/{{topic.name}}'>Migrate to AVRO</a>",
         "offlineClientsEnabled": false
@@ -77,7 +77,11 @@
                     "b": "Another option"
                 }
             }
-        }
+        },
+        "deliveryTypes": [
+              {"value": "SERIAL", "label": "SERIAL"},
+              {"value": "BATCH", "label": "BATCH"}
+        ]
     },
     "owner": {
         "sources": [
