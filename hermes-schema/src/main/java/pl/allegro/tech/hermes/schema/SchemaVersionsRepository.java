@@ -3,28 +3,27 @@ package pl.allegro.tech.hermes.schema;
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 
 public interface SchemaVersionsRepository {
 
     default boolean schemaVersionExists(Topic topic, SchemaVersion version) {
-        return versions(topic).contains(version);
+        return versions(topic).get().contains(version);
     }
 
     default Optional<SchemaVersion> latestSchemaVersion(Topic topic) {
-        return versions(topic).stream().max(Comparator.comparingInt(SchemaVersion::value));
+        return versions(topic).get().stream().max(Comparator.comparingInt(SchemaVersion::value));
     }
 
     default Optional<SchemaVersion> onlineLatestSchemaVersion(Topic topic) {
-        return versions(topic, true).stream().max(Comparator.comparingInt(SchemaVersion::value));
+        return versions(topic, true).get().stream().max(Comparator.comparingInt(SchemaVersion::value));
     }
 
-    default List<SchemaVersion> versions(Topic topic) {
+    default SchemaVersionsResponse versions(Topic topic) {
         return versions(topic, false);
     }
 
-    List<SchemaVersion> versions(Topic topic, boolean online);
+    SchemaVersionsResponse versions(Topic topic, boolean online);
 
     void close();
 }

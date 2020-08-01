@@ -26,7 +26,10 @@ public class SchemaRepository {
     }
 
     public CompiledSchema<Schema> getAvroSchema(Topic topic, SchemaVersion version) {
-        if (!schemaVersionsRepository.schemaVersionExists(topic, version)) {
+        SchemaVersionsResponse response = schemaVersionsRepository.versions(topic);
+        if (response.isSuccess() && !response.versionExists(version)) {
+            throw new SchemaVersionDoesNotExistException(topic, version);
+        } else if (response.isFailure()) {
             throw new SchemaNotFoundException(topic, version);
         }
         return getCompiledSchemaAtVersion(topic, version);
@@ -63,6 +66,6 @@ public class SchemaRepository {
     }
 
     public List<SchemaVersion> getVersions(Topic topic, boolean online) {
-        return schemaVersionsRepository.versions(topic, online);
+        return schemaVersionsRepository.versions(topic, online).get();
     }
 }

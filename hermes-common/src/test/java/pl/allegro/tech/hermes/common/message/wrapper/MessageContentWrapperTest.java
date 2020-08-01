@@ -7,8 +7,6 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.schema.*;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
@@ -73,10 +71,12 @@ public class MessageContentWrapperTest {
 
     static SchemaVersionsRepository schemaVersionsRepository = new SchemaVersionsRepository() {
         @Override
-        public List<SchemaVersion> versions(Topic topic, boolean online) {
-            return online ?
-                    asList(schema3.getVersion(), schema2.getVersion(), schema1.getVersion())
-                    : asList(schema2.getVersion(), schema1.getVersion());
+        public SchemaVersionsResponse versions(Topic topic, boolean online) {
+            List<SchemaVersion> onlineVersions = asList(schema3.getVersion(), schema2.getVersion(), schema1.getVersion());
+            List<SchemaVersion> cachedVersions = asList(schema2.getVersion(), schema1.getVersion());
+            return online
+                    ? SchemaVersionsResponse.success(onlineVersions)
+                    : SchemaVersionsResponse.success(cachedVersions);
         }
 
         @Override
