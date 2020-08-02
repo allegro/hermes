@@ -27,10 +27,11 @@ public class SchemaRepository {
 
     public CompiledSchema<Schema> getAvroSchema(Topic topic, SchemaVersion version) {
         SchemaVersionsResponse response = schemaVersionsRepository.versions(topic);
-        if (response.isSuccess() && !response.versionExists(version)) {
-            throw new SchemaVersionDoesNotExistException(topic, version);
-        } else if (response.isFailure()) {
+        if (response.isFailure()) {
             throw new SchemaNotFoundException(topic, version);
+        }
+        if (!response.versionExists(version)) {
+            throw new SchemaVersionDoesNotExistException(topic, version);
         }
         return getCompiledSchemaAtVersion(topic, version);
     }
