@@ -19,11 +19,11 @@ public interface SchemaVersionsRepository {
         return versions(topic, true).get().stream().max(Comparator.comparingInt(SchemaVersion::value));
     }
 
-    default SchemaVersionsResponse versions(Topic topic) {
+    default SchemaVersionsResult versions(Topic topic) {
         return versions(topic, false);
     }
 
-    SchemaVersionsResponse versions(Topic topic, boolean online);
+    SchemaVersionsResult versions(Topic topic, boolean online);
 
     void close();
 }

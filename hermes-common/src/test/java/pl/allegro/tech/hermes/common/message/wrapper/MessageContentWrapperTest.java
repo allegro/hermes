@@ -71,12 +71,12 @@ public class MessageContentWrapperTest {
 
     static SchemaVersionsRepository schemaVersionsRepository = new SchemaVersionsRepository() {
         @Override
-        public SchemaVersionsResponse versions(Topic topic, boolean online) {
+        public SchemaVersionsResult versions(Topic topic, boolean online) {
             List<SchemaVersion> onlineVersions = asList(schema3.getVersion(), schema2.getVersion(), schema1.getVersion());
             List<SchemaVersion> cachedVersions = asList(schema2.getVersion(), schema1.getVersion());
             return online
-                    ? SchemaVersionsResponse.succeeded(onlineVersions)
-                    : SchemaVersionsResponse.succeeded(cachedVersions);
+                    ? SchemaVersionsResult.succeeded(onlineVersions)
+                    : SchemaVersionsResult.succeeded(cachedVersions);
         }
 
         @Override

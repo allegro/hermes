@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.schema.CompiledSchemaRepository
 import pl.allegro.tech.hermes.schema.SchemaRepository
 import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.schema.SchemaVersionsRepository
-import pl.allegro.tech.hermes.schema.SchemaVersionsResponse
+import pl.allegro.tech.hermes.schema.SchemaVersionsResult
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Shared
@@ -89,7 +89,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         SchemaVersionsRepository schemaVersionsRepository = [
                 versions: { Topic topic ->
                     topic == avroTopic1
-                            ? SchemaVersionsResponse.succeeded([version])
+                            ? SchemaVersionsResult.succeeded([version])
                             : schemaVersionsRepositoryForTopicsWithoutSchema.versions(topic)
                 }
         ] as SchemaVersionsRepository
@@ -143,8 +143,8 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         [
             versions: { Topic topic ->
                 topic.contentType == ContentType.AVRO
-                        ? SchemaVersionsResponse.succeeded([version])
-                        : SchemaVersionsResponse.succeeded([])
+                        ? SchemaVersionsResult.succeeded([version])
+                        : SchemaVersionsResult.succeeded([])
             }
         ] as SchemaVersionsRepository
     }

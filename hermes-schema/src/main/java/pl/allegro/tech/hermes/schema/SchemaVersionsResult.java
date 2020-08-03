@@ -4,19 +4,19 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-public class SchemaVersionsResponse {
+public class SchemaVersionsResult {
     private final Status status;
     private final List<SchemaVersion> versions;
 
-    public static SchemaVersionsResponse succeeded(List<SchemaVersion> versions) {
-        return new SchemaVersionsResponse(Status.SUCCESS, versions);
+    public static SchemaVersionsResult succeeded(List<SchemaVersion> versions) {
+        return new SchemaVersionsResult(Status.SUCCESS, versions);
     }
 
-    public static SchemaVersionsResponse failed() {
-        return new SchemaVersionsResponse(Status.FAILURE, emptyList());
+    public static SchemaVersionsResult failed() {
+        return new SchemaVersionsResult(Status.FAILURE, emptyList());
     }
 
-    private SchemaVersionsResponse(Status status, List<SchemaVersion> versions) {
+    private SchemaVersionsResult(Status status, List<SchemaVersion> versions) {
         this.status = status;
         this.versions = versions;
     }

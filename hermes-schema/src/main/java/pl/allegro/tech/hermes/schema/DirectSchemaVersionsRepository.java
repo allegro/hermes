@@ -17,13 +17,13 @@ public class DirectSchemaVersionsRepository implements SchemaVersionsRepository 
     }
 
     @Override
-    public SchemaVersionsResponse versions(Topic topic, boolean online) {
+    public SchemaVersionsResult versions(Topic topic, boolean online) {
         try {
             List<SchemaVersion> versions = rawSchemaClient.getVersions(topic.getName());
-            return SchemaVersionsResponse.succeeded(versions);
+            return SchemaVersionsResult.succeeded(versions);
         } catch (Exception e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
-            return SchemaVersionsResponse.failed();
+            return SchemaVersionsResult.failed();
         }
     }
 
