@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
 import pl.allegro.tech.hermes.schema.SchemaVersionDoesNotExistException;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
+import static java.lang.String.format;
 import static pl.allegro.tech.hermes.api.ErrorCode.AVRO_SCHEMA_INVALID_METADATA;
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
@@ -60,7 +61,7 @@ class MessageCreateHandler implements HttpHandler {
                     exchange,
                     attachment.getTopic(),
                     attachment.getMessageId(),
-                    error("Given schema version does not exist", SCHEMA_VERSION_DOES_NOT_EXIST),
+                    error(format("Given schema version '%s' does not exist", exception.getSchemaVersion().value()), SCHEMA_VERSION_DOES_NOT_EXIST),
                     exception);
         } catch (AvroInvalidMetadataException exception) {
             attachment.removeTimeout();

@@ -7,8 +7,15 @@ import static java.lang.String.format;
 
 public class SchemaVersionDoesNotExistException extends SchemaException {
 
+    private final SchemaVersion schemaVersion;
+
     SchemaVersionDoesNotExistException(Topic topic, SchemaVersion schemaVersion) {
         super(format("Schema version %s for topic %s does not exist", schemaVersion.value(), topic.getQualifiedName()));
+        this.schemaVersion = schemaVersion;
+    }
+
+    public SchemaVersion getSchemaVersion() {
+        return schemaVersion;
     }
 
     @Override

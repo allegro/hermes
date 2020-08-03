@@ -234,7 +234,7 @@ public class PublishingAvroTest extends IntegrationTest {
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
         assertThat(response.readEntity(String.class))
-                .isEqualTo("{\"message\":\"Given schema version does not exist\",\"code\":\"SCHEMA_VERSION_DOES_NOT_EXIST\"}");
+                .isEqualTo("{\"message\":\"Given schema version '2' does not exist\",\"code\":\"SCHEMA_VERSION_DOES_NOT_EXIST\"}");
     }
 
     @Test
