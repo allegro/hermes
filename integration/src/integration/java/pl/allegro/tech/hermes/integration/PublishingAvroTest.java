@@ -220,7 +220,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnServerInternalErrorResponseOnMissingSchemaAtSpecifiedVersion() {
+    public void shouldReturnBadRequestOnMissingSchemaAtSpecifiedVersion() {
         Topic topic = randomTopic("avro", "topicWithoutSchemaAtSpecifiedVersion").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
 
@@ -232,7 +232,9 @@ public class PublishingAvroTest extends IntegrationTest {
         Response response = publisher.publishAvro(topic.getQualifiedName(), message.getBody(), message.getHeaders());
 
         // then
-        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.getStatusCode());
+        assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+        assertThat(response.readEntity(String.class))
+                .isEqualTo("{\"message\":\"Given schema version '2' does not exist\",\"code\":\"SCHEMA_VERSION_DOES_NOT_EXIST\"}");
     }
 
     @Test

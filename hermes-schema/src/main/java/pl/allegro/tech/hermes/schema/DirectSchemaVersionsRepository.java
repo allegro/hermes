@@ -6,8 +6,6 @@ import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.List;
 
-import static java.util.Collections.emptyList;
-
 public class DirectSchemaVersionsRepository implements SchemaVersionsRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(DirectSchemaVersionsRepository.class);
@@ -19,12 +17,13 @@ public class DirectSchemaVersionsRepository implements SchemaVersionsRepository 
     }
 
     @Override
-    public List<SchemaVersion> versions(Topic topic, boolean online) {
+    public SchemaVersionsResult versions(Topic topic, boolean online) {
         try {
-            return rawSchemaClient.getVersions(topic.getName());
+            List<SchemaVersion> versions = rawSchemaClient.getVersions(topic.getName());
+            return SchemaVersionsResult.succeeded(versions);
         } catch (Exception e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
-            return emptyList();
+            return SchemaVersionsResult.failed();
         }
     }
 
