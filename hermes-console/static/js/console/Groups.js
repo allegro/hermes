@@ -3,6 +3,7 @@ var groups = angular.module('hermes.groups', ['hermes.topic', 'hermes.discovery'
 groups.controller('GroupsController', ['GroupRepository', '$scope', '$uibModal',
     function (groupRepository, $scope, $modal) {
         $scope.fetching = true;
+        $scope.search = groupRepository.getSearchFilter();
 
         function loadGroups() {
             groupRepository.list().then(function (groups) {
@@ -30,6 +31,10 @@ groups.controller('GroupsController', ['GroupRepository', '$scope', '$uibModal',
                 loadGroups();
             });
         };
+
+        $scope.storeSearchFilter = function () {
+            groupRepository.storeSearchFilter($scope.search);
+        }
     }]);
 
 groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope', '$location', '$stateParams', '$uibModal', 'toaster', 'ConfirmationModal', 'PasswordService',
@@ -156,6 +161,8 @@ groups.factory('GroupRepository', ['$resource', '$q', '$location', 'TopicReposit
             });
         };
 
+        var searchFilter = '';
+
         return {
             list: function () {
                 return $q.all([listing.query().$promise, topicRepository.list().$promise]).then(function (data) {
@@ -187,6 +194,12 @@ groups.factory('GroupRepository', ['$resource', '$q', '$location', 'TopicReposit
             },
             listSubscriptions: function(topicName) {
                 return topicRepository.listSubscriptions(topicName).$promise;
+            },
+            storeSearchFilter: function (filter) {
+                searchFilter = filter;
+            },
+            getSearchFilter: function () {
+                return searchFilter;
             }
         };
     }]);
