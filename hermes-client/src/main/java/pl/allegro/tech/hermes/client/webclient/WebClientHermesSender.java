@@ -4,6 +4,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.HermesSender;
+import pl.allegro.tech.hermes.client.ReactiveHermesSender;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -14,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import static java.util.stream.Collectors.toMap;
 import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 
-public class WebClientHermesSender implements HermesSender {
+public class WebClientHermesSender implements HermesSender, ReactiveHermesSender {
 
     private final static Mono<String> NO_BODY = Mono.just("");
     private final WebClient webClient;
@@ -24,10 +25,10 @@ public class WebClientHermesSender implements HermesSender {
     }
 
     @Override
-    public CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
+    public Mono<HermesResponse> sendReactively(URI uri, HermesMessage message) {
         return webClient.post()
                 .uri(uri)
-                .syncBody(message.getBody())
+                .syncBody(message.getBody()) // TODO reactively?
                 .headers(httpHeaders -> httpHeaders.setAll(message.getHeaders()))
                 .exchange()
                 .flatMap(response -> response
@@ -38,8 +39,12 @@ public class WebClientHermesSender implements HermesSender {
                                 .withHttpStatus(response.rawStatusCode())
                                 .withHeaderSupplier(header ->
                                         convertToCaseInsensitiveMap(response.headers().asHttpHeaders().toSingleValueMap()).get(header))
-                                .build()))
-                .toFuture();
+                                .build()));
+    }
+
+    @Override
+    public CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
+        return sendReactively(uri, message).toFuture();
     }
 
     private TreeMap<String, String> convertToCaseInsensitiveMap(Map<String, String> hashMap) {

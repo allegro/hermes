@@ -9,6 +9,7 @@ dependencies {
     compileOnly group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 
     compile group: 'net.jodah', name: 'failsafe', version: versions.failsafe
+    compile group: 'io.projectreactor.addons', name: 'reactor-extra', version: '3.3.3.RELEASE'
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testCompile group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: versions.wiremock
