@@ -2,6 +2,20 @@
 
 ...
 
+## 1.5.0 (18.08.2020)
+
+### Enhancements
+
+#### ([1244](https://github.com/allegro/hermes/pull/1244)) Remove support for schema-repo
+
+#### ([1247](https://github.com/allegro/hermes/pull/1247)) Preserving filter value in groups list
+
+### Fixes
+
+#### ([1246](https://github.com/allegro/hermes/pull/1246)) Fix SchemaNotFoundException returns 5xx
+
+#### ([1248](https://github.com/allegro/hermes/pull/1248)) Subscription name validation fixed
+
 ## 1.4.14 (17.07.2020)
 
 ### Fixes
