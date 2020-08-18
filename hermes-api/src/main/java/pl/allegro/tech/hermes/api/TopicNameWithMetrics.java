@@ -24,7 +24,7 @@ public class TopicNameWithMetrics {
             @JsonProperty("subscriptions") int subscriptions,
             @JsonProperty("throughput") MetricDecimalValue throughput,
             @JsonProperty("volume") long volume,
-            @JsonProperty("qualifiedName") String qualifiedName
+            @JsonProperty("name") String qualifiedName
     ) {
         this.published = published;
         this.rate = rate;
@@ -71,6 +71,7 @@ public class TopicNameWithMetrics {
         return throughput;
     }
 
+    @JsonProperty("name")
     public String getQualifiedName() {
         return topicName.qualifiedName();
     }

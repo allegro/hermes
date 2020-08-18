@@ -18,7 +18,7 @@ public class SubscriptionNameWithMetrics {
 
     @JsonCreator
     public SubscriptionNameWithMetrics(
-            @JsonProperty("topicQualifiedName") String topicQualifiedName,
+            @JsonProperty("topicName") String topicQualifiedName,
             @JsonProperty("name") String name,
             @JsonProperty("delivered") long delivered,
             @JsonProperty("discarded") long discarded,
@@ -45,6 +45,7 @@ public class SubscriptionNameWithMetrics {
                 metrics.getRate(), metrics.getThroughput());
     }
 
+    @JsonProperty("topicName")
     public String getTopicQualifiedName() {
         return topicQualifiedName;
     }

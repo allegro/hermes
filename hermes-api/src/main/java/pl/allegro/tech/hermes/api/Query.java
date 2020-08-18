@@ -10,4 +10,10 @@ public interface Query<T> {
     default Stream<T> filter(Collection<T> input) {
         return filter(input.stream());
     }
+
+    <K> Stream<K> filterNames(Stream<K> input);
+
+    default <K> Stream<K> filterNames(Collection<K> input) {
+        return filterNames(input.stream());
+    }
 }

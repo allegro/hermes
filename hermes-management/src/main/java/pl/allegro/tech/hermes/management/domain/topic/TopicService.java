@@ -45,6 +45,7 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
@@ -374,12 +375,14 @@ public class TopicService {
     }
 
     public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
-        return query.filter(getTopicsMetrics())
+        List<Topic> filteredNames = query.filterNames(getAllTopics())
+                .collect(Collectors.toList());
+        return query.filter(getTopicsMetrics(filteredNames))
                 .collect(toList());
     }
 
-    private List<TopicNameWithMetrics> getTopicsMetrics() {
-        return getAllTopics()
+    private List<TopicNameWithMetrics> getTopicsMetrics(List<Topic> topics) {
+        return topics
                 .stream()
                 .map(t -> {
                     TopicMetrics metrics = metricRepository.loadMetrics(t.getName());

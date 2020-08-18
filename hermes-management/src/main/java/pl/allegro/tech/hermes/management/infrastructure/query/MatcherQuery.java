@@ -29,7 +29,12 @@ public class MatcherQuery<T> implements Query<T> {
         return input.filter(getPredicate());
     }
 
-    public Predicate<T> getPredicate() {
+    @Override
+    public <K> Stream<K> filterNames(Stream<K> input) {
+        return input.filter(getPredicate());
+    }
+
+    public <K> Predicate<K> getPredicate() {
         return (value) -> {
             try {
                 return matcher.match(convertToMap(value));
@@ -45,7 +50,7 @@ public class MatcherQuery<T> implements Query<T> {
 
     @SuppressWarnings("unchecked")
     //workaround for type which is not java bean
-    private Map convertToMap(T value) {
+    private <K> Map convertToMap(K value) {
         return objectMapper.convertValue(value, Map.class);
     }
 

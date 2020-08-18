@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -246,7 +247,9 @@ public class SubscriptionService {
     }
 
     public List<SubscriptionNameWithMetrics> querySubscriptionsMetrics(Query<SubscriptionNameWithMetrics> query) {
-        return query.filter(getSubscriptionsMetrics())
+        List<Subscription> filteredSubscriptions = query.filterNames(getAllSubscriptions())
+                .collect(Collectors.toList());
+        return query.filter(getSubscriptionsMetrics(filteredSubscriptions))
                 .collect(toList());
     }
 
@@ -320,8 +323,8 @@ public class SubscriptionService {
         return subscriptionHealthChecker.checkHealth(subscription, topicMetrics, subscriptionMetrics);
     }
 
-    private List<SubscriptionNameWithMetrics> getSubscriptionsMetrics() {
-        return getAllSubscriptions().stream()
+    private List<SubscriptionNameWithMetrics> getSubscriptionsMetrics(List<Subscription> subscriptions) {
+        return subscriptions.stream()
                 .map(s -> {
                     SubscriptionMetrics metrics = metricsRepository.loadMetrics(s.getTopicName(), s.getName());
                     return SubscriptionNameWithMetrics.from(metrics, s.getName(), s.getQualifiedTopicName());
