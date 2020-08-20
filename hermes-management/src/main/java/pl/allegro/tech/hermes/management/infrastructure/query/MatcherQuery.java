@@ -31,10 +31,10 @@ public class MatcherQuery<T> implements Query<T> {
 
     @Override
     public <K> Stream<K> filterNames(Stream<K> input) {
-        return input.filter(getPredicate());
+        return input.filter(getSoftPredicate());
     }
 
-    public <K> Predicate<K> getPredicate() {
+    public Predicate<T> getPredicate() {
         return (value) -> {
             try {
                 return matcher.match(convertToMap(value));
@@ -44,6 +44,20 @@ public class MatcherQuery<T> implements Query<T> {
             } catch (MatcherInputException e) {
                 logger.error("Not existing query property", e);
                 throw new IllegalArgumentException(e);
+            }
+        };
+    }
+
+    public <K> Predicate<K> getSoftPredicate() {
+        return (value) -> {
+            try {
+                return matcher.match(convertToMap(value));
+            } catch (MatcherException e) {
+                logger.info("Failed to match {}, skipping", value, e);
+                return false;
+            } catch (MatcherInputException e) {
+                //Non-existing property is normal when querying objects with non-default class
+                return true;
             }
         };
     }
