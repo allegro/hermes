@@ -61,7 +61,8 @@ allprojects {
             okhttp            : '3.9.1',
             undertow          : '2.0.29.Final',
             spring_web        : '5.1.5.RELEASE',
-            failsafe          : '2.3.1'
+            failsafe          : '2.3.1',
+            junit_jupiter     : '5.4.2'
     ]
 
     repositories {
