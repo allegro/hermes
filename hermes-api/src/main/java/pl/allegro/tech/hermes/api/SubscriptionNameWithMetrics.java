@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 public class SubscriptionNameWithMetrics {
-    private final String topicQualifiedName;
+    private final String topicName;
     private final String name;
     private final long delivered;
     private final long discarded;
@@ -18,7 +18,7 @@ public class SubscriptionNameWithMetrics {
 
     @JsonCreator
     public SubscriptionNameWithMetrics(
-            @JsonProperty("topicName") String topicQualifiedName,
+            @JsonProperty("topicName") String topicName,
             @JsonProperty("name") String name,
             @JsonProperty("delivered") long delivered,
             @JsonProperty("discarded") long discarded,
@@ -28,7 +28,7 @@ public class SubscriptionNameWithMetrics {
             @JsonProperty("rate") MetricDecimalValue rate,
             @JsonProperty("throughput") MetricDecimalValue throughput
     ) {
-        this.topicQualifiedName = topicQualifiedName;
+        this.topicName = topicName;
         this.name = name;
         this.delivered = delivered;
         this.discarded = discarded;
@@ -45,9 +45,8 @@ public class SubscriptionNameWithMetrics {
                 metrics.getRate(), metrics.getThroughput());
     }
 
-    @JsonProperty("topicName")
-    public String getTopicQualifiedName() {
-        return topicQualifiedName;
+    public String getTopicName() {
+        return topicName;
     }
 
     public String getName() {
@@ -93,7 +92,7 @@ public class SubscriptionNameWithMetrics {
 
         SubscriptionNameWithMetrics that = (SubscriptionNameWithMetrics) o;
 
-        return Objects.equals(this.topicQualifiedName, that.topicQualifiedName)
+        return Objects.equals(this.topicName, that.topicName)
                 && Objects.equals(this.name, that.name)
                 && Objects.equals(this.delivered, that.delivered)
                 && Objects.equals(this.discarded, that.discarded)
@@ -106,7 +105,7 @@ public class SubscriptionNameWithMetrics {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.topicQualifiedName, this.name, this.delivered, this.discarded,
+        return Objects.hash(this.topicName, this.name, this.delivered, this.discarded,
                 this.timeouts, this.lag, this.rate, this.throughput, this.volume);
     }
 }

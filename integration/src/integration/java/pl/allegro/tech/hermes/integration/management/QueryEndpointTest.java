@@ -312,7 +312,7 @@ public class QueryEndpointTest extends IntegrationTest {
 
     private void assertTopicMetricsMatchesToNames(List<TopicNameWithMetrics> found, List<String> expectedQualifiedNames) {
         List<String> foundQualifiedNames = found.stream()
-                .map(TopicNameWithMetrics::getQualifiedName)
+                .map(TopicNameWithMetrics::getName)
                 .collect(Collectors.toList());
 
         assertThat(foundQualifiedNames).containsAll(expectedQualifiedNames);
@@ -322,7 +322,7 @@ public class QueryEndpointTest extends IntegrationTest {
                                                                        Subscription ... expectedSubscriptions) {
 
         Map<String, String> foundSubscriptionsAndTheirTopicNames = found.stream()
-                .collect(Collectors.toMap(SubscriptionNameWithMetrics::getName, SubscriptionNameWithMetrics::getTopicQualifiedName));
+                .collect(Collectors.toMap(SubscriptionNameWithMetrics::getName, SubscriptionNameWithMetrics::getTopicName));
 
         for (Subscription subscription: expectedSubscriptions) {
             assertThat(foundSubscriptionsAndTheirTopicNames).containsKeys(subscription.getName());

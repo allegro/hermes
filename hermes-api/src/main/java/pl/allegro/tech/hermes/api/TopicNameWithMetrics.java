@@ -72,7 +72,7 @@ public class TopicNameWithMetrics {
     }
 
     @JsonProperty("name")
-    public String getQualifiedName() {
+    public String getName() {
         return topicName.qualifiedName();
     }
 
