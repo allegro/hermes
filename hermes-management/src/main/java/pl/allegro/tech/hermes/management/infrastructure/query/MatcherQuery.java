@@ -29,6 +29,11 @@ public class MatcherQuery<T> implements Query<T> {
         return input.filter(getPredicate());
     }
 
+    @Override
+    public <K> Stream<K> filterNames(Stream<K> input) {
+        return input.filter(getSoftPredicate());
+    }
+
     public Predicate<T> getPredicate() {
         return (value) -> {
             try {
@@ -43,9 +48,23 @@ public class MatcherQuery<T> implements Query<T> {
         };
     }
 
+    public <K> Predicate<K> getSoftPredicate() {
+        return (value) -> {
+            try {
+                return matcher.match(convertToMap(value));
+            } catch (MatcherException e) {
+                logger.info("Failed to match {}, skipping", value, e);
+                return false;
+            } catch (MatcherInputException e) {
+                //Non-existing property is normal when querying objects with non-default class
+                return true;
+            }
+        };
+    }
+
     @SuppressWarnings("unchecked")
     //workaround for type which is not java bean
-    private Map convertToMap(T value) {
+    private <K> Map convertToMap(K value) {
         return objectMapper.convertValue(value, Map.class);
     }
 

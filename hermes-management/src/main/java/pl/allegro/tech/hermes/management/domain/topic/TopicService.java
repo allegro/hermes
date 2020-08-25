@@ -374,12 +374,14 @@ public class TopicService {
     }
 
     public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
-        return query.filter(getTopicsMetrics())
+        List<Topic> filteredNames = query.filterNames(getAllTopics())
+                .collect(toList());
+        return query.filter(getTopicsMetrics(filteredNames))
                 .collect(toList());
     }
 
-    private List<TopicNameWithMetrics> getTopicsMetrics() {
-        return getAllTopics()
+    private List<TopicNameWithMetrics> getTopicsMetrics(List<Topic> topics) {
+        return topics
                 .stream()
                 .map(t -> {
                     TopicMetrics metrics = metricRepository.loadMetrics(t.getName());

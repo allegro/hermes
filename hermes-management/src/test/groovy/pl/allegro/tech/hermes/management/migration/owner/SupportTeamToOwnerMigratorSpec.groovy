@@ -96,10 +96,10 @@ class SupportTeamToOwnerMigratorSpec extends Specification {
                 createSubscription("group.success", "success")
         ]
 
-        topicService.updateTopic({ it.qualifiedName().contains("invalid") }, _, _) >> {
+        topicService.updateTopic({ it.getName().contains("invalid") }, _, _) >> {
             throw new ConstraintViolationException("invalid", Collections.emptySet())
         }
-        topicService.updateTopic({ it.qualifiedName().contains("error") }, _, _) >> {
+        topicService.updateTopic({ it.getName().contains("error") }, _, _) >> {
             throw new RuntimeException("error")
         }
         subscriptionService.updateSubscription(_, { it.contains("invalid") }, _, _) >> {
