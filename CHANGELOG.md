@@ -1,8 +1,17 @@
 ## [Unreleased]
 
 ...
+## 1.5.2 (25.08.2020)
 
-## 1.5.0 (18.08.2020)
+### Enhancements
+
+#### ([1250](https://github.com/allegro/hermes/pull/1250)) Optimizing graphite metrics queries
+
+### Fixes
+
+#### ([1251](https://github.com/allegro/hermes/pull/1251)) Fix HermesMockExtension stops wiremock server after first test class
+
+## 1.5.1 (18.08.2020)
 
 ### Enhancements
 
