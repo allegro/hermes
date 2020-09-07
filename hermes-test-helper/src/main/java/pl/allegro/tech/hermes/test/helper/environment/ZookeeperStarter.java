@@ -1,36 +1,42 @@
 package pl.allegro.tech.hermes.test.helper.environment;
 
 import com.google.common.io.Files;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.InstanceSpec;
-import org.apache.curator.test.TestingServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.Network;
 
 import java.io.File;
 
-public class ZookeeperStarter implements Starter<TestingServer> {
+public class ZookeeperStarter implements Starter<FixedHostPortGenericContainer> {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperStarter.class);
 
-    private TestingServer zookeeperServer;
+    private final FixedHostPortGenericContainer zookeeperServer;
 
     private final int port;
     private final String connectString;
     private final String[] pathsToInitialize;
 
-    public ZookeeperStarter(int port, String connectString, String... pathsToInitialize) {
+    public ZookeeperStarter(Network network, int port, String connectString, String... pathsToInitialize) {
         this.port = port;
         this.connectString = connectString;
         this.pathsToInitialize = pathsToInitialize;
+        this.zookeeperServer = new FixedHostPortGenericContainer<>("confluentinc/cp-zookeeper")
+                .withNetwork(network)
+                .withFixedExposedPort(port, 2181)
+                .withEnv("ZOOKEEPER_CLIENT_PORT", "2181")
+                .withCreateContainerCmdModifier(it -> it.withName("zookeeper"));
     }
 
     @Override
     public void start() throws Exception {
-        logger.info("Running in-memory Zookeeper at port {}", port);
-        zookeeperServer = new TestingServer(config(port), true);
+        logger.info("Running Zookeeper in a docker container at port {}", port);
+        zookeeperServer.start();
 
         String[] zkConnectStringSplitted = connectString.split("/", 2);
 
@@ -46,12 +52,12 @@ public class ZookeeperStarter implements Starter<TestingServer> {
 
     @Override
     public void stop() throws Exception {
-        logger.info("Stopping in-memory Zookeeper");
-        zookeeperServer.close();
+        logger.info("Stopping Zookeeper");
+        zookeeperServer.stop();
     }
 
     @Override
-    public TestingServer instance() {
+    public FixedHostPortGenericContainer instance() {
         return zookeeperServer;
     }
 

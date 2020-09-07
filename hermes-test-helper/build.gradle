@@ -39,6 +39,7 @@ dependencies {
     compile group: 'org.apache.oltu.oauth2', name: 'org.apache.oltu.oauth2.authzserver', version: '1.0.2'
     compile group: 'org.apache.oltu.oauth2', name: 'org.apache.oltu.oauth2.resourceserver', version: '1.0.2'
     compile group: 'io.undertow', name: 'undertow-servlet', version: versions.undertow
+    compile group: 'org.testcontainers', name: 'testcontainers', version: '1.14.3'
 
     testCompile group: 'org.apache.oltu.oauth2', name: 'org.apache.oltu.oauth2.client', version: '1.0.2'
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock

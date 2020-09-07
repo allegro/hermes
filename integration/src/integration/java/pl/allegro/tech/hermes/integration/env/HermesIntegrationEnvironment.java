@@ -5,6 +5,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.Network;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
 import org.testng.annotations.AfterSuite;
@@ -31,6 +32,8 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     private static final Map<Class<?>, Starter<?>> STARTERS = new LinkedHashMap<>();
 
+    private static final Network network = Network.newNetwork();
+
     private CuratorFramework zookeeper;
 
     static {
@@ -40,7 +43,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     }
 
     static {
-        STARTERS.put(ZookeeperStarter.class, new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_CONNECT_STRING, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT) + "/groups"));
+        STARTERS.put(ZookeeperStarter.class, new ZookeeperStarter(network, ZOOKEEPER_PORT, ZOOKEEPER_CONNECT_STRING, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT) + "/groups"));
         STARTERS.put(KafkaStarter.class, new KafkaStarter());
         STARTERS.put(GraphiteMockStarter.class, new GraphiteMockStarter(GRAPHITE_SERVER_PORT));
         STARTERS.put(WireMockStarter.class, new WireMockStarter(HTTP_ENDPOINT_PORT));
