@@ -28,8 +28,9 @@ public class ZookeeperStarter implements Starter<FixedHostPortGenericContainer> 
         this.pathsToInitialize = pathsToInitialize;
         this.zookeeperServer = new FixedHostPortGenericContainer<>("confluentinc/cp-zookeeper")
                 .withNetwork(network)
-                .withFixedExposedPort(port, 2181)
-                .withEnv("ZOOKEEPER_CLIENT_PORT", "2181")
+                .withFixedExposedPort(port, port)
+                .withExposedPorts(port)
+                .withEnv("ZOOKEEPER_CLIENT_PORT", String.valueOf(port))
                 .withCreateContainerCmdModifier(it -> it.withName("zookeeper"));
     }
 
