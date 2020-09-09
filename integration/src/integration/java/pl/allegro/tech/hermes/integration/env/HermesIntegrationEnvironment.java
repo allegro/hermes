@@ -44,14 +44,15 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     static {
         STARTERS.put(ZookeeperStarter.class, new ZookeeperStarter(network, ZOOKEEPER_PORT, ZOOKEEPER_CONNECT_STRING, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT) + "/groups"));
-        STARTERS.put(KafkaStarter.class, new KafkaStarter());
+        STARTERS.put(KafkaStarter.class, new KafkaStarter(network, ZOOKEEPER_PORT, "kafka", 9093, 9092, "kafka_1"));
         STARTERS.put(GraphiteMockStarter.class, new GraphiteMockStarter(GRAPHITE_SERVER_PORT));
         STARTERS.put(WireMockStarter.class, new WireMockStarter(HTTP_ENDPOINT_PORT));
         STARTERS.put(GraphiteHttpMockStarter.class, new GraphiteHttpMockStarter());
         STARTERS.put(OAuthServerMockStarter.class, new OAuthServerMockStarter());
-        STARTERS.put(CustomKafkaStarter.class, new CustomKafkaStarter(SECONDARY_KAFKA_PORT, SECONDARY_ZK_KAFKA_CONNECT));
+        // TODO: Poprawić porty!!!
+        STARTERS.put(CustomKafkaStarter.class, new CustomKafkaStarter(network, ZOOKEEPER_PORT, "secondaryKafka", SECONDARY_KAFKA_PORT, SECONDARY_KAFKA_PORT + 1, "kafka_2"));
         STARTERS.put(JmsStarter.class, new JmsStarter());
-        STARTERS.put(ConfluentSchemaRegistryStarter.class, new ConfluentSchemaRegistryStarter(SCHEMA_REPO_PORT, SECONDARY_ZK_KAFKA_CONNECT));
+        STARTERS.put(ConfluentSchemaRegistryStarter.class, new ConfluentSchemaRegistryStarter(network, SCHEMA_REPO_PORT, ZOOKEEPER_PORT));
         STARTERS.put(ConsumersStarter.class, new ConsumersStarter());
         STARTERS.put(FrontendStarter.class, new FrontendStarter(FRONTEND_PORT));
         STARTERS.put(ManagementStarter.class, new ManagementStarter(MANAGEMENT_PORT, "integration"));

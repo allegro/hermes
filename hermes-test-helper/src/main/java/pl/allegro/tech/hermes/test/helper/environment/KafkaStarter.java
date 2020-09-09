@@ -1,90 +1,78 @@
 package pl.allegro.tech.hermes.test.helper.environment;
 
-import com.jayway.awaitility.Duration;
-import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
-import org.apache.commons.io.FileUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.util.Properties;
-
-import static com.jayway.awaitility.Awaitility.await;
+import org.testcontainers.containers.FixedHostPortGenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 public class KafkaStarter implements Starter<KafkaServerStartable> {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaStarter.class);
 
-    private final KafkaConfig kafkaConfig;
-    private KafkaServerStartable kafka;
     private boolean running;
+    private final FixedHostPortGenericContainer kafkaContainer;
+    private final int zkPort;
+    private final String basePath;
 
-    public KafkaStarter() {
-        kafkaConfig = new KafkaConfig(loadProperties("/kafkalocal.properties"));
-        cleanLogs();
-    }
+    public KafkaStarter(Network network, int zkPort, String basePath, int port, int saslPort, String hostname) {
+        this.zkPort = zkPort;
+        this.basePath = basePath;
+        this.kafkaContainer = new FixedHostPortGenericContainer<>("confluentinc/cp-kafka")
+                .withNetwork(network)
+                .withCreateContainerCmdModifier(it -> it.withName(hostname))
+//                .withExposedPorts(9092)
+                .withFixedExposedPort(port, 9092)
+//                .withExposedPorts(9092, 9093)
+//                .withFixedExposedPort(saslPort, 9092)
+//                .withEnv("KAFKA_SASL_MECHANISM", "PLAIN")
+//                .withEnv("KAFKA_SECURITY_PROTOCOL", "SASL_PLAINTEXT")
+//                .withEnv("KAFKA_SASL_ENABLED_MECHANISM", "PLAIN")
+//                .withEnv("KAFKA_LISTENERS", "PLAINTEXT://:9093,SASL_PLAINTEXT://:9092")
+//                .withEnv("KAFKA_ADVERTISED_LISTENERS", String.format("PLAINTEXT://%s:9093,SASL_PLAINTEXT://%s:9092", hostname, hostname))
+//                .withEnv("KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND", "true")
 
-    public KafkaStarter(Properties kafkaProperties) {
-        kafkaConfig = new KafkaConfig(kafkaProperties);
-        cleanLogs();
-    }
+                .withNetworkAliases(hostname)
+                .withExtraHost(hostname, "127.0.0.1")
 
-    public KafkaStarter(String configPath) {
-        kafkaConfig = new KafkaConfig(loadProperties(configPath));
-        cleanLogs();
+                .withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT")
+                .withEnv("KAFKA_ADVERTISED_LISTENERS", String.format("PLAINTEXT://%s:9092,PLAINTEXT_HOST://localhost:%s", hostname, port))
+
+//                .withEnv("KAFKA_ADVERTISED_LISTENERS", String.format("PLAINTEXT://%s:9092", hostname))
+                .withEnv("KAFKA_BROKER_ID", "0")
+                .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1")
+                .withEnv("KAFKA_ZOOKEEPER_CONNECT", String.format("zookeeper:%s/%s", zkPort, basePath))
+                .waitingFor(Wait.forListeningPort());
+
+//        sasl.mechanism=PLAIN
+//        security.protocol=SASL_PLAINTEXT
+//        sasl.enabled.mechanisms=PLAIN
+//        listeners=PLAINTEXT://:9093,SASL_PLAINTEXT://:9092
+//        advertised.listeners=PLAINTEXT://localhost:9093,SASL_PLAINTEXT://localhost:9092
+//        allow.everyone.if.no.acl.found=true
+
+//                .waitingFor(Wait.defaultWaitStrategy());
     }
 
     @Override
     public void start() throws Exception {
         logger.info("Starting in-memory Kafka");
 
-        createZkBasePathIfNeeded(kafkaConfig.zkConnect());
+        createZkBasePathIfNeeded();
+        kafkaContainer.start();
 
-        kafka = new KafkaServerStartable(kafkaConfig);
-        kafka.startup();
-
-        waitForStartup(kafkaConfig.port());
         running = true;
-    }
-
-    private Properties loadProperties(String resourcesPath) {
-        Properties properties = new Properties();
-        try {
-            logger.info("Loading kafka properties file: {}", resourcesPath);
-            properties.load(this.getClass().getResourceAsStream(resourcesPath));
-        } catch (IOException e) {
-            throw new IllegalStateException("Error while loading kafka properties", e);
-        }
-        return properties;
-    }
-
-    private void waitForStartup(int port) {
-        final InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", port);
-
-        await().atMost(Duration.FIVE_SECONDS).until(() -> {
-            try {
-                Socket socket = new Socket();
-                socket.connect(inetSocketAddress, 1000);
-                return socket.isConnected();
-            } catch (IOException e) {
-                return false;
-            }
-        });
     }
 
     @Override
     public void stop() throws Exception {
         if (running) {
             logger.info("Stopping in-memory Kafka");
-            kafka.shutdown();
-            kafka.awaitShutdown();
+            kafkaContainer.stop();
             running = false;
         } else {
             logger.info("In-memory Kafka is not running");
@@ -93,21 +81,12 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
 
     @Override
     public KafkaServerStartable instance() {
-        return kafka;
+        return null;
     }
 
-    private void cleanLogs() {
-        try {
-            FileUtils.deleteDirectory(new File(kafkaConfig.logDirs().head()));
-        } catch (IOException e) {
-            logger.info("Error while removing kafka logs", e);
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private CuratorFramework startZookeeperClient(String connectString) throws InterruptedException {
+    private CuratorFramework startZookeeperClient(int zkPort) throws InterruptedException {
         CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
-                .connectString(connectString)
+                .connectString(String.format("localhost:%s", zkPort))
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
                 .build();
         zookeeperClient.start();
@@ -115,16 +94,12 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
         return zookeeperClient;
     }
 
-    private void createZkBasePathIfNeeded(String connectString) throws Exception {
-        String[] zkConnectStringSplitted = connectString.split("/", 2);
-
-        if (zkConnectStringSplitted.length > 1) {
-            CuratorFramework curator = startZookeeperClient(zkConnectStringSplitted[0]);
-            if (curator.checkExists().forPath("/" + zkConnectStringSplitted[1]) == null) {
-                curator.create().forPath("/" + zkConnectStringSplitted[1]);
-            }
-            curator.close();
+    private void createZkBasePathIfNeeded() throws Exception {
+        CuratorFramework curator = startZookeeperClient(zkPort);
+        if (curator.checkExists().forPath("/" + basePath) == null) {
+            curator.create().forPath("/" + basePath);
         }
+        curator.close();
     }
 
 }

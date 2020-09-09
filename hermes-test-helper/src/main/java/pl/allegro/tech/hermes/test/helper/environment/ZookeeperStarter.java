@@ -9,6 +9,7 @@ import org.apache.curator.test.InstanceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
 
@@ -31,7 +32,8 @@ public class ZookeeperStarter implements Starter<FixedHostPortGenericContainer> 
                 .withFixedExposedPort(port, port)
                 .withExposedPorts(port)
                 .withEnv("ZOOKEEPER_CLIENT_PORT", String.valueOf(port))
-                .withCreateContainerCmdModifier(it -> it.withName("zookeeper"));
+                .withCreateContainerCmdModifier(it -> it.withName("zookeeper"))
+                .waitingFor(Wait.defaultWaitStrategy());
     }
 
     @Override

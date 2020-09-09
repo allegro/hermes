@@ -1,14 +1,15 @@
 package pl.allegro.tech.hermes.integration.env;
 
 import com.google.common.io.Files;
+import org.testcontainers.containers.Network;
 import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 
 import java.util.Properties;
 
 public class CustomKafkaStarter extends KafkaStarter {
 
-    public CustomKafkaStarter(int port, String zkConnect) {
-        super(loadConfig(port, zkConnect));
+    public CustomKafkaStarter(Network network, int zkPort, String basePath, int port, int saslPort, String hostname) {
+        super(network, zkPort, basePath, port, saslPort, hostname);
     }
 
     private static Properties loadConfig(int port, String zkConnect) {
