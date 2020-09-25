@@ -33,6 +33,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimit
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksWaitingRateLimiter;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
@@ -78,6 +79,7 @@ public class CommonBinder extends AbstractBinder {
         bindSingleton(AvroMessageSchemaIdAwareContentWrapper.class);
         bindSingleton(AvroMessageHeaderSchemaVersionContentWrapper.class);
         bindSingleton(AvroMessageHeaderSchemaIdContentWrapper.class);
+        bindSingleton(AvroMessageSchemaVersionTruncationContentWrapper.class);
         bind(SchemaOnlineChecksWaitingRateLimiter.class).in(Singleton.class).to(SchemaOnlineChecksRateLimiter.class);
 
         bindSingletonFactory(HermesCuratorClientFactory.class).named(CuratorType.HERMES);

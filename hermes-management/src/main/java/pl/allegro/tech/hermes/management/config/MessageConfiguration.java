@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
@@ -55,13 +56,17 @@ public class MessageConfiguration {
         AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
                 new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metrics);
 
+        AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper =
+                new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroWrapper, metrics, messageProperties.isSchemaVersionTruncationEnabled());
+
         return new MessageContentWrapper(
                 jsonWrapper,
                 avroWrapper,
                 schemaAwareWrapper,
                 headerSchemaVersionWrapper,
                 headerSchemaIdWrapper,
-                anySchemaWrapper);
+                anySchemaWrapper,
+                schemaVersionTruncationContentWrapper);
     }
 
     private JsonMessageContentWrapper jsonMessageContentWrapper() {
