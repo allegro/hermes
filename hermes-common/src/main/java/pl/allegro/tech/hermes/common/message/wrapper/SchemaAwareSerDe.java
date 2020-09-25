@@ -40,4 +40,11 @@ public class SchemaAwareSerDe {
             throw new DeserializationException(format("Could not deserialize payload, unknown magic byte: \'%s\'.", magicByte));
         }
     }
+
+    public  static byte[] trimMagicByteAndSchemaVersion(byte[] data) {
+        int length = data.length - HEADER_SIZE;
+        byte[] dataWithoutMagicByteAndSchemaVersion = new byte[length];
+        System.arraycopy(data, HEADER_SIZE, dataWithoutMagicByteAndSchemaVersion, 0, length);
+        return dataWithoutMagicByteAndSchemaVersion;
+    }
 }

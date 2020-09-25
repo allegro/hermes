@@ -16,7 +16,6 @@ import javax.inject.Inject;
 public class AvroMessageSchemaVersionTruncationContentWrapper implements AvroMessageContentUnwrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(AvroMessageSchemaVersionTruncationContentWrapper.class);
-    private static final int NUMBER_OF_BYTES_TO_TRIM = 5;
 
     private final SchemaRepository schemaRepository;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
@@ -56,7 +55,7 @@ public class AvroMessageSchemaVersionTruncationContentWrapper implements AvroMes
         try {
             deserializationWithSchemaVersionTruncation.inc();
 
-            byte[] dataWithoutMagicByteAndSchemaId = trimMagicByteAndSchemaVersion(data);
+            byte[] dataWithoutMagicByteAndSchemaId = SchemaAwareSerDe.trimMagicByteAndSchemaVersion(data);
             CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(schemaVersion));
 
             return AvroMessageContentUnwrapperResult.success(avroMessageContentWrapper.unwrapContent(dataWithoutMagicByteAndSchemaId, avroSchema));
@@ -78,12 +77,5 @@ public class AvroMessageSchemaVersionTruncationContentWrapper implements AvroMes
 
     private boolean containsSchemaVersionInMagicByteAndInHeader(byte[] data, Integer schemaVersion) {
         return SchemaAwareSerDe.startsWithMagicByte(data) && schemaVersion != null;
-    }
-
-    private byte[] trimMagicByteAndSchemaVersion(byte[] data) {
-        int length = data.length - NUMBER_OF_BYTES_TO_TRIM;
-        byte[] dataWithoutMagicByteAndSchemaVersion = new byte[length];
-        System.arraycopy(data, NUMBER_OF_BYTES_TO_TRIM, dataWithoutMagicByteAndSchemaVersion, 0, length);
-        return dataWithoutMagicByteAndSchemaVersion;
     }
 }
