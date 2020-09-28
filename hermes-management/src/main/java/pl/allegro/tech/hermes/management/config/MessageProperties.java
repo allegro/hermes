@@ -12,6 +12,8 @@ public class MessageProperties {
 
     private boolean schemaIdHeaderEnabled = Configs.SCHEMA_ID_HEADER_ENABLED.getDefaultValue();
 
+    private boolean schemaVersionTruncationEnabled = Configs.SCHEMA_VERSION_TRUNCATION_ENABLED.getDefaultValue();
+
     public String getContentRoot() {
         return contentRoot;
     }
@@ -31,4 +33,12 @@ public class MessageProperties {
     public boolean isSchemaIdHeaderEnabled() { return schemaIdHeaderEnabled; }
 
     public void setSchemaIdHeaderEnabled(boolean schemaIdHeaderEnabled) { this.schemaIdHeaderEnabled = schemaIdHeaderEnabled; }
+
+    public boolean isSchemaVersionTruncationEnabled() {
+        return schemaVersionTruncationEnabled;
+    }
+
+    public void setSchemaVersionTruncationEnabled(boolean schemaVersionTruncationEnabled) {
+        this.schemaVersionTruncationEnabled = schemaVersionTruncationEnabled;
+    }
 }

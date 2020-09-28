@@ -35,6 +35,10 @@ public class DeserializationMetrics {
         return metricRegistry.counter(name(deserializationErrorsPath(), "anyOnlineSchemaVersion"));
     }
 
+    public Counter errorsForSchemaVersionTruncation() {
+        return metricRegistry.counter(name(deserializationErrorsPath(), "schemaVersionTruncation"));
+    }
+
     public Counter missedSchemaIdInPayload() {
         return metricRegistry.counter(name(deserializationPath(), "missed", "schemaIdInPayload"));
     }
@@ -53,6 +57,10 @@ public class DeserializationMetrics {
 
     public Counter usingAnySchemaVersion() {
         return metricRegistry.counter(name(deserializationPath(), "using", "anySchemaVersion"));
+    }
+
+    public Counter usingSchemaVersionTruncation() {
+        return metricRegistry.counter(name(deserializationPath(), "using", "schemaVersionTruncation"));
     }
 
     private String deserializationErrorsPath() {

@@ -27,12 +27,13 @@ public class MessageContentWrapper {
                                  AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
                                  AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
                                  AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
-                                 AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper) {
+                                 AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper,
+                                 AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
 
         this.jsonMessageContentWrapper = jsonMessageContentWrapper;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
         this.avroMessageContentUnwrappers =
-                asList(schemaIdAwareContentWrapper, headerSchemaVersionContentWrapper, headerSchemaIdContentWrapper, anySchemaVersionContentWrapper);
+                asList(schemaIdAwareContentWrapper, schemaVersionTruncationContentWrapper, headerSchemaVersionContentWrapper, headerSchemaIdContentWrapper, anySchemaVersionContentWrapper);
     }
 
     public UnwrappedMessageContent unwrapJson(byte[] data) {
