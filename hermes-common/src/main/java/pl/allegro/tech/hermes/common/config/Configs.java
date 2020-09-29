@@ -27,8 +27,6 @@ public enum Configs {
     ZOOKEEPER_CACHE_THREAD_POOL_SIZE("zookeeper.cache.thread.pool.size", 5),
     ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE("zookeeper.cache.processing.thread.pool.size", 5),
 
-    KAFKA_ZOOKEEPER_CONNECT_STRING("kafka.zookeeper.connect.string", "localhost:2181"),
-
     ENVIRONMENT_NAME("environment.name", "dev"),
     HOSTNAME("hostname", new InetAddressHostnameResolver().resolve()),
 

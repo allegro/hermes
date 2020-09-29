@@ -66,9 +66,8 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             }
 
             this.zookeeper = startZookeeperClient();
-            CuratorFramework kafkaZookeeper = startKafkaZookeeperClient();
 
-            SharedServices.initialize(STARTERS, zookeeper, kafkaZookeeper);
+            SharedServices.initialize(STARTERS, zookeeper);
             logger.info("Environment was prepared");
         } catch (Exception e) {
             logger.error("Exception during environment preparation", e);
@@ -77,16 +76,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     private CuratorFramework startZookeeperClient() throws InterruptedException {
         final CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
-                .connectString(CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_CONNECT_STRING))
-                .retryPolicy(new ExponentialBackoffRetry(1000, 3))
-                .build();
-        zookeeperClient.start();
-        return zookeeperClient;
-    }
-
-    private CuratorFramework startKafkaZookeeperClient() throws InterruptedException {
-        final CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
-                .connectString(CONFIG_FACTORY.getStringProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING))
+                .connectString(ZOOKEEPER_CONNECT_STRING)
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
                 .build();
         zookeeperClient.start();

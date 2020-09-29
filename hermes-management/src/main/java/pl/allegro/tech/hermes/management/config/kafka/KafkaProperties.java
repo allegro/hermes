@@ -6,8 +6,6 @@ public class KafkaProperties {
 
     private String clusterName = "primary";
 
-    private String connectionString = "localhost:2181";
-
     private String bootstrapKafkaServer = "localhost:9093";
 
     private int kafkaServerRequestTimeoutMillis = 3000;
@@ -105,14 +103,6 @@ public class KafkaProperties {
         public int getFetchMinBytes() {
             return fetchMinBytes;
         }
-    }
-
-    public String getConnectionString() {
-        return connectionString;
-    }
-
-    public void setConnectionString(String connectionString) {
-        this.connectionString = connectionString;
     }
 
     public int getSessionTimeoutMillis() {
