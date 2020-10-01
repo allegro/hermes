@@ -115,6 +115,7 @@ public class SubscriptionService {
     }
 
     public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights, String qualifiedTopicName) {
+        auditor.beforeObjectCreation(createdBy, subscription);
         subscriptionValidator.checkCreation(subscription, creatorRights);
 
         Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
@@ -166,6 +167,7 @@ public class SubscriptionService {
     }
 
     public void removeSubscription(TopicName topicName, String subscriptionName, String removedBy) {
+        auditor.beforeObjectRemoval(removedBy, Subscription.class.getSimpleName(), subscriptionName);
         multiDcExecutor.execute(new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName));
         auditor.objectRemoved(removedBy, Subscription.class.getSimpleName(), subscriptionName);
         subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
@@ -175,6 +177,8 @@ public class SubscriptionService {
                                    String subscriptionName,
                                    PatchData patch,
                                    String modifiedBy) {
+        auditor.beforeObjectUpdate(modifiedBy, Subscription.class.getSimpleName(), new SubscriptionName(subscriptionName, topicName), patch);
+
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         Subscription.State oldState = retrieved.getState();
         Subscription updated = Patch.apply(retrieved, patch);
@@ -195,11 +199,15 @@ public class SubscriptionService {
     }
 
     public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state, String modifiedBy) {
-        Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
-        if (state != Subscription.State.PENDING && !retrieved.getState().equals(state)) {
-            Subscription updated = Patch.apply(retrieved, PatchData.patchData().set("state", state).build());
-            multiDcExecutor.execute(new UpdateSubscriptionRepositoryCommand(updated));
-            auditor.objectUpdated(modifiedBy, retrieved, updated);
+        if (state != Subscription.State.PENDING) {
+            PatchData patchData = PatchData.patchData().set("state", state).build();
+            auditor.beforeObjectUpdate(modifiedBy, Subscription.class.getSimpleName(), new SubscriptionName(subscriptionName, topicName), patchData);
+            Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+            if (!retrieved.getState().equals(state)) {
+                Subscription updated = Patch.apply(retrieved, patchData);
+                multiDcExecutor.execute(new UpdateSubscriptionRepositoryCommand(updated));
+                auditor.objectUpdated(modifiedBy, retrieved, updated);
+            }
         }
     }
 
