@@ -86,12 +86,12 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     public void removeTopic(TopicName topicName) {
         ensureTopicExists(topicName);
         ensureTopicIsEmpty(topicName);
-
         logger.info("Removing topic: " + topicName);
         remove(paths.topicPath(topicName));
     }
 
-    private void ensureTopicIsEmpty(TopicName topicName) {
+    @Override
+    public void ensureTopicIsEmpty(TopicName topicName) {
         List<String> children = childrenOf(paths.subscriptionsPath(topicName));
         boolean anyNodeNotEmpty = children.stream()
                 .anyMatch(sub -> !isEmpty(paths.subscriptionsPath(topicName) + "/" + sub));
