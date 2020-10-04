@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering;
+package pl.allegro.tech.hermes.domain.filtering;
 
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 

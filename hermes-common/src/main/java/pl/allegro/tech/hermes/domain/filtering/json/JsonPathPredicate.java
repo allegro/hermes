@@ -1,12 +1,12 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering.json;
+package pl.allegro.tech.hermes.domain.filtering.json;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MatchingStrategy;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.UnsupportedMatchingStrategyException;
+import pl.allegro.tech.hermes.domain.filtering.Filterable;
+import pl.allegro.tech.hermes.domain.filtering.FilteringException;
+import pl.allegro.tech.hermes.domain.filtering.MatchingStrategy;
+import pl.allegro.tech.hermes.domain.filtering.UnsupportedMatchingStrategyException;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -14,19 +14,15 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException.check;
+import static pl.allegro.tech.hermes.domain.filtering.FilteringException.check;
 
-public class JsonPathPredicate implements Predicate<Message> {
-    private Configuration configuration;
-    private String path;
-    private Pattern matcher;
-    private MatchingStrategy matchingStrategy;
+class JsonPathPredicate implements Predicate<Filterable> {
+    private final Configuration configuration;
+    private final String path;
+    private final Pattern matcher;
+    private final MatchingStrategy matchingStrategy;
 
-    public JsonPathPredicate(String path, Pattern matcher, Configuration configuration) {
-       this(path, matcher, configuration, MatchingStrategy.ALL);
-    }
-
-    public JsonPathPredicate(String path, Pattern matcher, Configuration configuration, MatchingStrategy matchingStrategy) {
+    JsonPathPredicate(String path, Pattern matcher, Configuration configuration, MatchingStrategy matchingStrategy) {
         this.path = path;
         this.matcher = matcher;
         this.configuration = configuration;
@@ -34,7 +30,7 @@ public class JsonPathPredicate implements Predicate<Message> {
     }
 
     @Override
-    public boolean test(Message message) {
+    public boolean test(Filterable message) {
         check(message.getContentType() == ContentType.JSON, "This filter supports only JSON contentType.");
         try {
             List<Object> result = JsonPath.parse(new ByteArrayInputStream(message.getData()), configuration).read(path);

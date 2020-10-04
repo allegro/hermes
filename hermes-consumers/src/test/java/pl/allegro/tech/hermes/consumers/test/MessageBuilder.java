@@ -7,8 +7,6 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
-import pl.allegro.tech.hermes.schema.SchemaId;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -33,7 +31,7 @@ public final class MessageBuilder {
     private byte[] content;
     private Map<String, String> externalMetadata;
     private List<Header> additionalHeaders;
-    private Optional<CompiledSchema<Object>> schema = Optional.empty();
+    private Optional<CompiledSchema<Schema>> schema = Optional.empty();
     private String subscription;
     private boolean hasSubscriptionIdentityHeaders;
 

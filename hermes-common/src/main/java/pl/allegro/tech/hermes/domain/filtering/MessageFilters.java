@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering;
+package pl.allegro.tech.hermes.domain.filtering;
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 
@@ -9,8 +9,8 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
 public class MessageFilters implements MessageFilterSource {
-    private Map<String, SubscriptionMessageFilterCompiler> filters;
-    private List<MessageFilter> globalFilters;
+    private final Map<String, SubscriptionMessageFilterCompiler> filters;
+    private final List<MessageFilter> globalFilters;
 
     public MessageFilters(List<MessageFilter> globalFilters,
                           List<SubscriptionMessageFilterCompiler> subscriptionFilterCompilers) {

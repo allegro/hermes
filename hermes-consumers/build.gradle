@@ -27,7 +27,6 @@ dependencies {
     }
 
     compile group: 'org.agrona', name: 'agrona', version: '1.0.6'
-    compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
 
     compile(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'

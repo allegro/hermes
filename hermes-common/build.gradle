@@ -29,6 +29,7 @@ dependencies {
 
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
     compile group: 'org.apache.avro', name: 'avro', version: versions.avro
+    compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
 
     compile group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: versions.dropwizard_metrics
     compile group: 'io.dropwizard.metrics', name: 'metrics-jvm', version: versions.dropwizard_metrics

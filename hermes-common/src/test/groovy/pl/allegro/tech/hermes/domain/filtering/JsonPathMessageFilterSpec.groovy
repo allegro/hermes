@@ -1,12 +1,11 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering
+package pl.allegro.tech.hermes.domain.filtering
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification
-import pl.allegro.tech.hermes.consumers.consumer.filtering.json.JsonPathSubscriptionMessageFilterCompiler
+import pl.allegro.tech.hermes.domain.filtering.json.JsonPathSubscriptionMessageFilterCompiler
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import static java.nio.charset.Charset.defaultCharset
-import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage
 
 class JsonPathMessageFilterSpec extends Specification {
 
@@ -47,7 +46,7 @@ class JsonPathMessageFilterSpec extends Specification {
 
         expect:
         result == new JsonPathSubscriptionMessageFilterCompiler().compile(spec)
-                .test(withTestMessage()
+                .test(FilterableBuilder.withTestMessage()
                 .withContent(json, defaultCharset())
                 .build())
 

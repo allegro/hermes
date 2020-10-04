@@ -1,15 +1,11 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering
+package pl.allegro.tech.hermes.domain.filtering
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification
-import pl.allegro.tech.hermes.consumers.consumer.Message
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory
+import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory
 import spock.lang.Specification
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Predicate
-
-import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.testMessage
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 
 class FilterChainSpec extends Specification {
 
@@ -26,11 +22,10 @@ class FilterChainSpec extends Specification {
 
     def "should apply global filters before subscription specific"() {
         given:
-        def subscription = subscription("g.topic", "subscription")
-                .withFilter(new MessageFilterSpecification(["type":"$subscriptionFilter1.type".toString()])).build()
+        def filters = [new MessageFilterSpecification(["type":"$subscriptionFilter1.type".toString()])]
 
         when:
-        def result = new FilterChainFactory(filterSource).create(subscription).apply(testMessage())
+        def result = new FilterChainFactory(filterSource).create(filters).apply(FilterableBuilder.testMessage())
 
         then:
         !result.filtered
@@ -42,21 +37,18 @@ class FilterChainSpec extends Specification {
 
     def "should throw exception for non-existing filter"() {
         given:
-        def subscription = subscription("g.topic", "subscription").withFilter(new MessageFilterSpecification(["type":"foo"])).build()
+        def filters = [new MessageFilterSpecification(["type":"foo"])]
 
         when:
-        new FilterChainFactory(filterSource).create(subscription).apply(testMessage())
+        new FilterChainFactory(filterSource).create(filters).apply(FilterableBuilder.testMessage())
 
         then:
         thrown NoSuchFilterException
     }
 
     def "should apply global filters even without subscription specific"() {
-        given:
-        def subscription = subscription("g.topic", "subscription").build()
-
         when:
-        def result = new FilterChainFactory(filterSource).create(subscription).apply(testMessage())
+        def result = new FilterChainFactory(filterSource).create([]).apply(FilterableBuilder.testMessage())
 
         then:
         !result.filtered
@@ -69,13 +61,13 @@ class FilterChainSpec extends Specification {
     def "should apply subscription specific filters if no global filters are declared"() {
         given:
         def filterSource = new MessageFilters([], [subscriptionFilter1, subscriptionFilter2])
-        def subscription = subscription("g.topic", "subscription")
-                .withFilter(new MessageFilterSpecification(["type":"$subscriptionFilter1.type".toString()]))
-                .withFilter(new MessageFilterSpecification(["type":"$subscriptionFilter2.type".toString()]))
-                .build();
+        def filters = [
+                new MessageFilterSpecification(["type":"$subscriptionFilter1.type".toString()]),
+                new MessageFilterSpecification(["type":"$subscriptionFilter2.type".toString()])
+        ]
 
         when:
-        new FilterChainFactory(filterSource).create(subscription).apply(testMessage())
+        new FilterChainFactory(filterSource).create(filters).apply(FilterableBuilder.testMessage())
 
         then:
         subscriptionFilter1.tested && subscriptionFilter1.order == 0
@@ -85,19 +77,17 @@ class FilterChainSpec extends Specification {
     def "should pass message for no filters"() {
         given:
         def filterSource = new MessageFilters([], [])
-        def subscription = subscription("g.topic", "subscription").build()
 
         expect:
-        new FilterChainFactory(filterSource).create(subscription).apply(testMessage())
+        new FilterChainFactory(filterSource).create([]).apply(FilterableBuilder.testMessage())
     }
 
     def "should not pass message if filter is throwing exception"() {
         given:
         def filterSource = new MessageFilters([brokenFilter], [])
-        def subscription = subscription("g.topic", "subscription").build()
 
         when:
-        def result = new FilterChainFactory(filterSource).create(subscription).apply(testMessage())
+        def result = new FilterChainFactory(filterSource).create([]).apply(FilterableBuilder.testMessage())
 
         then:
         result.filtered
@@ -107,11 +97,10 @@ class FilterChainSpec extends Specification {
     def "should break on first filter that is failing"() {
         given:
         def filterSource = new MessageFilters([globalFilter1, brokenFilter], [subscriptionFilter1, subscriptionFilter2])
-        def subscription = subscription("g.topic", "subscription")
-                .withFilter(new MessageFilterSpecification(["type":"$subscriptionFilter1.type".toString()])).build()
+        def filters = [new MessageFilterSpecification(["type":"$subscriptionFilter1.type".toString()])]
 
         when:
-        def result = new FilterChainFactory(filterSource).create(subscription).apply(testMessage())
+        def result = new FilterChainFactory(filterSource).create(filters).apply(FilterableBuilder.testMessage())
 
         then:
         result.filtered
@@ -134,13 +123,13 @@ class FilterChainSpec extends Specification {
         }
 
         @Override
-        Predicate<Message> compile(MessageFilterSpecification specification) {
+        Predicate<Filterable> compile(MessageFilterSpecification specification) {
             compiled = true
             this
         }
 
         @Override
-        boolean test(Message message) {
+        boolean test(Filterable message) {
             order = counter.getAndIncrement()
             tested = true
             tested
@@ -153,7 +142,7 @@ class FilterChainSpec extends Specification {
         }
 
         @Override
-        boolean test(Message message) {
+        boolean test(Filterable message) {
             super.test(message)
             throw new IllegalStateException()
         }

@@ -1,9 +1,9 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering.avro;
+package pl.allegro.tech.hermes.domain.filtering.avro;
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
-import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MatchingStrategy;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.SubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.domain.filtering.Filterable;
+import pl.allegro.tech.hermes.domain.filtering.MatchingStrategy;
+import pl.allegro.tech.hermes.domain.filtering.SubscriptionMessageFilterCompiler;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -16,7 +16,7 @@ public class AvroPathSubscriptionMessageFilterCompiler implements SubscriptionMe
     }
 
     @Override
-    public Predicate<Message> compile(MessageFilterSpecification specification) {
+    public Predicate<Filterable> compile(MessageFilterSpecification specification) {
         return new AvroPathPredicate(
             specification.getPath(),
             Pattern.compile(specification.getMatcher()),
