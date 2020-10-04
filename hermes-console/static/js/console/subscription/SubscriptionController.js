@@ -6,15 +6,16 @@ var subscriptions = angular.module('hermes.subscription', [
     'hermes.subscription.metrics',
     'hermes.subscription.factory',
     'hermes.topic.metrics',
+    'hermes.filters.debugger',
     'hermes.owner'
 ]);
 
 subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'SubscriptionHealth', 'SubscriptionMetrics',
     'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', '$q', 'ConfirmationModal',
-    'toaster', 'PasswordService', 'MessagePreviewModal', 'SUBSCRIPTION_CONFIG',
+    'toaster', 'PasswordService', 'MessagePreviewModal', 'FiltersDebuggerModalFactory', 'SUBSCRIPTION_CONFIG',
     function (subscriptionRepository, subscriptionHealth, subscriptionMetrics, topicRepository, topicMetrics,
               $scope, $location, $stateParams, $modal, $q, confirmationModal, toaster, passwordService,
-              messagePreviewModal, config) {
+              messagePreviewModal, filtersDebuggerModal, config) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
@@ -81,14 +82,14 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
           return filtered;
         };
 
-        $scope.edit = function () {
+        $scope.edit = function (subscription) {
             $modal.open({
                 templateUrl: 'partials/modal/editSubscription.html',
                 controller: 'SubscriptionEditController',
                 size: 'lg',
                 resolve: {
                     subscription: function () {
-                        return $scope.subscription;
+                        return _.cloneDeep(subscription);
                     },
                     topicName: function () {
                         return topicName;
@@ -250,6 +251,15 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                 });
         };
 
+        $scope.debugFilters = function () {
+            filtersDebuggerModal.open(topicName, $scope.subscription.filters)
+                .then(function (result) {
+                    var subscription = _.cloneDeep($scope.subscription);
+                    subscription.filters = result.messageFilters;
+                    $scope.edit(subscription);
+                });
+        };
+
         $scope.trackingModeName = {"trackingOff": "No tracking", "discardedOnly": "Track message discarding only", "trackingAll": "Track everything"};
 
     }]);
@@ -293,24 +303,6 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
                     .finally(function () {
                         passwordService.reset();
                     });
-        };
-
-        $scope.addFilter = function () {
-            if (!$scope.filter.path || !$scope.filter.matcher) {
-                return;
-            }
-
-            $scope.subscription.filters.push({
-                type: $scope.topicContentType === "JSON" ? "jsonpath" : "avropath",
-                path: $scope.filter.path,
-                matcher: $scope.filter.matcher,
-                matchingStrategy: $scope.filter.matchingStrategy
-            });
-            $scope.filter = {};
-        };
-
-        $scope.delFilter = function (index) {
-            $scope.subscription.filters.splice(index, 1);
         };
 
         $scope.addHeader = function() {

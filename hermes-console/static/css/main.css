@@ -107,3 +107,7 @@ footer {
     text-align: center;
     color: #b9b9b9;
 }
+
+.full-width {
+    display: block;
+}

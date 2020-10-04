@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.endpoints.BlacklistEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.FilterEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.MigrationEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.ModeEndpoint;
@@ -46,6 +47,8 @@ public class HermesEndpoints {
 
     private final ModeEndpoint modeEndpoint;
 
+    private final FilterEndpoint filterEndpoint;
+
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
@@ -60,6 +63,7 @@ public class HermesEndpoints {
         this.migrationEndpoint = hermes.createMigrationEndpoint();
         this.unhealthyEndpoint = hermes.unhealthyEndpoint();
         this.modeEndpoint = hermes.modeEndpoint();
+        this.filterEndpoint = hermes.createFilterEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
@@ -130,6 +134,10 @@ public class HermesEndpoints {
 
     public ConsumerEndpoint consumer() {
         return consumerEndpoint;
+    }
+
+    public FilterEndpoint filter() {
+        return filterEndpoint;
     }
 }
 

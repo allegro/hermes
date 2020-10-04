@@ -5,15 +5,16 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
 import pl.allegro.tech.hermes.api.endpoints.BlacklistEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.FilterEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.MigrationEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.ModeEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OAuthProviderEndpoint;
-import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OwnerEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.UnhealthyEndpoint;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
@@ -121,6 +122,10 @@ public class Hermes {
 
     public BlacklistEndpoint createBlacklistEndpoint() {
         return createProxy(url, BlacklistEndpoint.class, managementConfig);
+    }
+
+    public FilterEndpoint createFilterEndpoint() {
+        return createProxy(url, FilterEndpoint.class, managementConfig);
     }
 
     public AsyncMessagePublisher createAsyncMessagePublisher() {
