@@ -21,7 +21,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         $scope.offlineClientsFetching = true;
         $scope.showMessageSchema = false;
         $scope.config = topicConfig;
-        $scope.showHeadersFilter = subscriptionConfig.showHeadersFilter;
+        $scope.showFixedHeaders = subscriptionConfig.showFixedHeaders;
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema;
@@ -216,8 +216,8 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                     topicContentType: function () {
                         return $scope.topic.contentType;
                     },
-                    showHeadersFilter: function () {
-                        return $scope.showHeadersFilter;
+                    showFixedHeaders: function () {
+                        return $scope.showFixedHeaders;
                     }
                 }
             }).result.then(function () {

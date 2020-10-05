@@ -313,19 +313,19 @@
         <div class="col-md-12">
             <div class="panel">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Subscription http header filters</h3>
+                    <h3 class="panel-title">Fixed HTTP headers</h3>
                 </div>
                 <table class="table">
                     <tr>
                         <th>#</th>
                         <th>Name</th>
-                        <th>Pattern</th>
+                        <th>Value</th>
                         <th> </th>
                     </tr>
-                    <tr ng-repeat="filter in subscription.headers">
+                    <tr ng-repeat="header in subscription.headers">
                         <td>{{$index + 1}}</td>
-                        <td>{{filter.name}}</td>
-                        <td>{{filter.value}}</td>
+                        <td>{{header.name}}</td>
+                        <td>{{header.value}}</td>
                     </tr>
                 </table>
             </div>
