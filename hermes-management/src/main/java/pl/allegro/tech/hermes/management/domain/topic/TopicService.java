@@ -171,7 +171,7 @@ public class TopicService {
     }
 
     public void removeTopicWithSchema(Topic topic, String removedBy) {
-        topicRepository.ensureTopicIsEmpty(topic.getName());
+        topicRepository.ensureTopicHasNoSubscriptions(topic.getName());
         removeSchema(topic);
         if (!topicProperties.isAllowRemoval()) {
             throw new TopicRemovalDisabledException(topic);

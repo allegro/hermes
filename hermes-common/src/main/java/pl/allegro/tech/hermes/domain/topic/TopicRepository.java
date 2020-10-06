@@ -30,5 +30,5 @@ public interface TopicRepository {
 
     boolean isSubscribingRestricted(TopicName topicName);
 
-    void ensureTopicIsEmpty(TopicName topicName);
+    void ensureTopicHasNoSubscriptions(TopicName topicName);
 }
