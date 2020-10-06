@@ -36,7 +36,7 @@ class AvroPathMessageFilterSpec extends Specification {
 
         def avro = new JsonAvroConverter().convertToAvro(json.bytes, schema)
         def spec = new MessageFilterSpecification([path: path, matcher: matcher])
-        def msg = FilterableBuilder
+        def msg = FilterableMessageBuilder
                 .withTestMessage()
                 .withContent(avro)
                 .withSchema(schema, 1, 0)
@@ -99,7 +99,7 @@ class AvroPathMessageFilterSpec extends Specification {
 
         def avro = new JsonAvroConverter().convertToAvro(json.bytes, schema)
         def spec = new MessageFilterSpecification([path: path, matcher: matcher, matchingStrategy: matchingStrategy])
-        def msg = FilterableBuilder
+        def msg = FilterableMessageBuilder
             .withTestMessage()
             .withContent(avro)
             .withSchema(schema, 1, 0)
@@ -165,7 +165,7 @@ class AvroPathMessageFilterSpec extends Specification {
 
         when:
         new AvroPathSubscriptionMessageFilterCompiler().compile(new MessageFilterSpecification([path: ".id", matcher: "0001"]))
-                .test(FilterableBuilder
+                .test(FilterableMessageBuilder
                 .withTestMessage()
                 .withContent(invalidContent)
                 .withSchema(schema, 1,0)

@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.domain.filtering.header;
 
-import pl.allegro.tech.hermes.domain.filtering.Filterable;
+import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-class HeaderPredicate implements Predicate<Filterable> {
+class HeaderPredicate implements Predicate<FilterableMessage> {
 
     private final String name;
     private final Pattern valuePattern;
@@ -16,7 +16,7 @@ class HeaderPredicate implements Predicate<Filterable> {
     }
 
     @Override
-    public boolean test(Filterable message) {
+    public boolean test(FilterableMessage message) {
         return message.getExternalMetadata()
                 .entrySet().stream()
                 .filter(h -> h.getKey().equals(name))

@@ -2,17 +2,17 @@ package pl.allegro.tech.hermes.domain.filtering;
 
 import java.util.function.Predicate;
 
-public class MessageFilter implements Predicate<Filterable> {
+public class MessageFilter implements Predicate<FilterableMessage> {
     private final String type;
-    private final Predicate<Filterable> predicate;
+    private final Predicate<FilterableMessage> predicate;
 
-    public MessageFilter(String type, Predicate<Filterable> predicate) {
+    public MessageFilter(String type, Predicate<FilterableMessage> predicate) {
         this.type = type;
         this.predicate = predicate;
     }
 
     @Override
-    public boolean test(Filterable message) {
+    public boolean test(FilterableMessage message) {
         return predicate.test(message);
     }
 

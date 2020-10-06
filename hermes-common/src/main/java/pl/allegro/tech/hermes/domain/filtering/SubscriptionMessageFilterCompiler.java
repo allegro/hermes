@@ -6,7 +6,7 @@ import java.util.function.Predicate;
 
 public interface SubscriptionMessageFilterCompiler {
     String getType();
-    Predicate<Filterable> compile(MessageFilterSpecification specification);
+    Predicate<FilterableMessage> compile(MessageFilterSpecification specification);
 
     default MessageFilter getMessageFilter(MessageFilterSpecification specification) {
         return new MessageFilter(getType(), compile(specification));

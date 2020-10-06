@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import java.util.Map;
 import java.util.Optional;
 
-public interface Filterable {
+public interface FilterableMessage {
 
     ContentType getContentType();
 

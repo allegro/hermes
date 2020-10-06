@@ -46,7 +46,7 @@ class JsonPathMessageFilterSpec extends Specification {
 
         expect:
         result == new JsonPathSubscriptionMessageFilterCompiler().compile(spec)
-                .test(FilterableBuilder.withTestMessage()
+                .test(FilterableMessageBuilder.withTestMessage()
                 .withContent(json, defaultCharset())
                 .build())
 

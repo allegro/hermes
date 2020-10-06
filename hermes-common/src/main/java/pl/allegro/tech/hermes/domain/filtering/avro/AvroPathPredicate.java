@@ -4,7 +4,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericRecord;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.domain.filtering.Filterable;
+import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 import pl.allegro.tech.hermes.domain.filtering.FilteringException;
 import pl.allegro.tech.hermes.domain.filtering.MatchingStrategy;
 import pl.allegro.tech.hermes.domain.filtering.UnsupportedMatchingStrategyException;
@@ -27,7 +27,7 @@ import static org.apache.commons.lang.StringUtils.strip;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
 import static pl.allegro.tech.hermes.domain.filtering.FilteringException.check;
 
-class AvroPathPredicate implements Predicate<Filterable> {
+class AvroPathPredicate implements Predicate<FilterableMessage> {
     private static final String WILDCARD_IDX = "*";
     private static final String GROUP_SELECTOR = "selector";
     private static final String GROUP_IDX = "index";
@@ -46,7 +46,7 @@ class AvroPathPredicate implements Predicate<Filterable> {
     }
 
     @Override
-    public boolean test(final Filterable message) {
+    public boolean test(final FilterableMessage message) {
         check(message.getContentType() == ContentType.AVRO, "This filter supports only AVRO contentType.");
         try {
             List<Object> result = select(message);
@@ -58,7 +58,7 @@ class AvroPathPredicate implements Predicate<Filterable> {
         }
     }
 
-    private List<Object> select(final Filterable message) throws IOException {
+    private List<Object> select(final FilterableMessage message) throws IOException {
         CompiledSchema<Schema> compiledSchema = message.<Schema>getSchema().get();
         return select(bytesToRecord(message.getData(), compiledSchema.getSchema()));
     }

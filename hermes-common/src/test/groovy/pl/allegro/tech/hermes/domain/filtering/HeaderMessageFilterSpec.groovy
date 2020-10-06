@@ -11,7 +11,7 @@ class HeaderMessageFilterSpec extends Specification {
     def "should filter message by headers"() {
         given:
             def spec = new MessageFilterSpecification([header: "a", matcher: matcher])
-            def msg = FilterableBuilder
+            def msg = FilterableMessageBuilder
                     .withTestMessage()
                     .withExternalMetadata(headers)
                     .build()

@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.domain.filtering.json;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.domain.filtering.Filterable;
+import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 import pl.allegro.tech.hermes.domain.filtering.FilteringException;
 import pl.allegro.tech.hermes.domain.filtering.MatchingStrategy;
 import pl.allegro.tech.hermes.domain.filtering.UnsupportedMatchingStrategyException;
@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.domain.filtering.FilteringException.check;
 
-class JsonPathPredicate implements Predicate<Filterable> {
+class JsonPathPredicate implements Predicate<FilterableMessage> {
     private final Configuration configuration;
     private final String path;
     private final Pattern matcher;
@@ -30,7 +30,7 @@ class JsonPathPredicate implements Predicate<Filterable> {
     }
 
     @Override
-    public boolean test(Filterable message) {
+    public boolean test(FilterableMessage message) {
         check(message.getContentType() == ContentType.JSON, "This filter supports only JSON contentType.");
         try {
             List<Object> result = JsonPath.parse(new ByteArrayInputStream(message.getData()), configuration).read(path);

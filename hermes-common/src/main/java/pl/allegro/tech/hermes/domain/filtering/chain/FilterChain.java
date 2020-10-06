@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.domain.filtering.chain;
 
-import pl.allegro.tech.hermes.domain.filtering.Filterable;
+import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ public final class FilterChain {
         this.messageFilters = new ArrayList<>(messageFilters);
     }
 
-    public FilterResult apply(final Filterable message) {
+    public FilterResult apply(final FilterableMessage message) {
         for (MessageFilter filter : messageFilters) {
             try {
                 if (!filter.test(message)) {

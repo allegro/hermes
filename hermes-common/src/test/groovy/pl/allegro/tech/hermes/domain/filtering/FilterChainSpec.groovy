@@ -25,7 +25,7 @@ class FilterChainSpec extends Specification {
         def filters = [new MessageFilterSpecification(["type":"$subscriptionFilter1.type".toString()])]
 
         when:
-        def result = new FilterChainFactory(filterSource).create(filters).apply(FilterableBuilder.testMessage())
+        def result = new FilterChainFactory(filterSource).create(filters).apply(FilterableMessageBuilder.testMessage())
 
         then:
         !result.filtered
@@ -40,7 +40,7 @@ class FilterChainSpec extends Specification {
         def filters = [new MessageFilterSpecification(["type":"foo"])]
 
         when:
-        new FilterChainFactory(filterSource).create(filters).apply(FilterableBuilder.testMessage())
+        new FilterChainFactory(filterSource).create(filters).apply(FilterableMessageBuilder.testMessage())
 
         then:
         thrown NoSuchFilterException
@@ -48,7 +48,7 @@ class FilterChainSpec extends Specification {
 
     def "should apply global filters even without subscription specific"() {
         when:
-        def result = new FilterChainFactory(filterSource).create([]).apply(FilterableBuilder.testMessage())
+        def result = new FilterChainFactory(filterSource).create([]).apply(FilterableMessageBuilder.testMessage())
 
         then:
         !result.filtered
@@ -67,7 +67,7 @@ class FilterChainSpec extends Specification {
         ]
 
         when:
-        new FilterChainFactory(filterSource).create(filters).apply(FilterableBuilder.testMessage())
+        new FilterChainFactory(filterSource).create(filters).apply(FilterableMessageBuilder.testMessage())
 
         then:
         subscriptionFilter1.tested && subscriptionFilter1.order == 0
@@ -79,7 +79,7 @@ class FilterChainSpec extends Specification {
         def filterSource = new MessageFilters([], [])
 
         expect:
-        new FilterChainFactory(filterSource).create([]).apply(FilterableBuilder.testMessage())
+        new FilterChainFactory(filterSource).create([]).apply(FilterableMessageBuilder.testMessage())
     }
 
     def "should not pass message if filter is throwing exception"() {
@@ -87,7 +87,7 @@ class FilterChainSpec extends Specification {
         def filterSource = new MessageFilters([brokenFilter], [])
 
         when:
-        def result = new FilterChainFactory(filterSource).create([]).apply(FilterableBuilder.testMessage())
+        def result = new FilterChainFactory(filterSource).create([]).apply(FilterableMessageBuilder.testMessage())
 
         then:
         result.filtered
@@ -100,7 +100,7 @@ class FilterChainSpec extends Specification {
         def filters = [new MessageFilterSpecification(["type":"$subscriptionFilter1.type".toString()])]
 
         when:
-        def result = new FilterChainFactory(filterSource).create(filters).apply(FilterableBuilder.testMessage())
+        def result = new FilterChainFactory(filterSource).create(filters).apply(FilterableMessageBuilder.testMessage())
 
         then:
         result.filtered
@@ -123,13 +123,13 @@ class FilterChainSpec extends Specification {
         }
 
         @Override
-        Predicate<Filterable> compile(MessageFilterSpecification specification) {
+        Predicate<FilterableMessage> compile(MessageFilterSpecification specification) {
             compiled = true
             this
         }
 
         @Override
-        boolean test(Filterable message) {
+        boolean test(FilterableMessage message) {
             order = counter.getAndIncrement()
             tested = true
             tested
@@ -142,7 +142,7 @@ class FilterChainSpec extends Specification {
         }
 
         @Override
-        boolean test(Filterable message) {
+        boolean test(FilterableMessage message) {
             super.test(message)
             throw new IllegalStateException()
         }

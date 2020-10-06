@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.domain.filtering.Filterable;
+import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.net.URI;
@@ -24,7 +24,7 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
-public class Message implements Filterable {
+public class Message implements FilterableMessage {
 
     private String id;
     private PartitionOffset partitionOffset;

@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.domain.filtering.header;
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
-import pl.allegro.tech.hermes.domain.filtering.Filterable;
+import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 import pl.allegro.tech.hermes.domain.filtering.SubscriptionMessageFilterCompiler;
 
 import java.util.function.Predicate;
@@ -15,7 +15,7 @@ public class HeaderSubscriptionMessageFilterCompiler implements SubscriptionMess
     }
 
     @Override
-    public Predicate<Filterable> compile(MessageFilterSpecification specification) {
+    public Predicate<FilterableMessage> compile(MessageFilterSpecification specification) {
         return new HeaderPredicate(specification.getHeader(), Pattern.compile(specification.getMatcher()));
 
     }
