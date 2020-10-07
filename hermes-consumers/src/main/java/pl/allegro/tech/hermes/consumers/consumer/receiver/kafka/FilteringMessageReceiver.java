@@ -4,9 +4,9 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChain;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
+import pl.allegro.tech.hermes.domain.filtering.chain.FilterChain;
+import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.domain.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 
@@ -30,7 +30,7 @@ public class FilteringMessageReceiver implements MessageReceiver {
         this.filteredMessageHandler = filteredMessageHandler;
         this.filterChainFactory = filterChainFactory;
         this.subscription = subscription;
-        this.filterChain = filterChainFactory.create(subscription);
+        this.filterChain = filterChainFactory.create(subscription.getFilters());
     }
 
     @Override
@@ -54,7 +54,7 @@ public class FilteringMessageReceiver implements MessageReceiver {
     @Override
     public void update(Subscription newSubscription) {
         if (!Objects.equals(subscription.getFilters(), newSubscription.getFilters())) {
-            this.filterChain = filterChainFactory.create(newSubscription);
+            this.filterChain = filterChainFactory.create(newSubscription.getFilters());
         }
         this.subscription = newSubscription;
         this.receiver.update(newSubscription);

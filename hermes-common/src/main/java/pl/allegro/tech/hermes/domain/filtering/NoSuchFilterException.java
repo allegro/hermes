@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering;
+package pl.allegro.tech.hermes.domain.filtering;
 
 public class NoSuchFilterException extends FilteringException {
     public NoSuchFilterException(Throwable throwable) {

@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering;
+package pl.allegro.tech.hermes.domain.filtering;
 
 public class UnsupportedMatchingStrategyException extends FilteringException {
     public UnsupportedMatchingStrategyException(String filterType, MatchingStrategy strategy) {
