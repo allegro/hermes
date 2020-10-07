@@ -35,12 +35,4 @@ public interface Auditor {
         objectUpdated(username, (Object) oldObject.anonymize(), (Object) newObject.anonymize());
     }
 
-    static Auditor noOpAuditor() {
-        return new NoOpAuditor();
-    }
-
-    class NoOpAuditor implements Auditor {
-        private NoOpAuditor() {
-        }
-    }
 }
