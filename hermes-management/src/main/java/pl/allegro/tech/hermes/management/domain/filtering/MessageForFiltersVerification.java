@@ -2,14 +2,14 @@ package pl.allegro.tech.hermes.management.domain.filtering;
 
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.domain.filtering.Filterable;
+import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-class MessageForFiltersVerification implements Filterable {
+class MessageForFiltersVerification implements FilterableMessage {
     private final byte[] data;
     private final ContentType contentType;
     private final CompiledSchema<Schema> schema;

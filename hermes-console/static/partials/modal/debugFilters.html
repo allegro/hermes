@@ -15,7 +15,8 @@
                         <span ng-if="verificationStatus=='NOT_MATCHED'" class="label label-warning full-width">Not Matched</span>
                         <span ng-if="verificationStatus=='ERROR'" class="label label-danger full-width">Error</span>
                     </h2>
-                    <div ng-if="verificationStatus=='ERROR'" class="alert alert-danger">{{errorMessage}}</div>
+                    <div ng-if="verificationStatus=='ERROR'"
+                         class="alert alert-danger pre-scrollable" style="height: 284px; margin-bottom: 0">{{errorMessage}}</div>
                 </div>
             </div>
             <div class="form-group">
