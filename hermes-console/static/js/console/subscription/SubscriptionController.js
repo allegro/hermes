@@ -36,7 +36,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
 
         $scope.retransmissionLoading = false;
 
-        $scope.showHeadersFilter = config.showHeadersFilter;
+        $scope.showFixedHeaders = config.showFixedHeaders;
 
         $scope.endpointAddressResolverMetadataConfig = config.endpointAddressResolverMetadata;
 
@@ -102,8 +102,8 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     topicContentType: function () {
                         return $scope.topicContentType;
                     },
-                    showHeadersFilter: function () {
-                        return $scope.showHeadersFilter;
+                    showFixedHeaders: function () {
+                        return $scope.showFixedHeaders;
                     }
                 }
             }).result.then(function(response){
@@ -132,8 +132,8 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     topicContentType: function () {
                         return $scope.topicContentType;
                     },
-                    showHeadersFilter: function () {
-                        return $scope.showHeadersFilter;
+                    showFixedHeaders: function () {
+                        return $scope.showFixedHeaders;
                     }
                 }
             }).result.then(function(response){
@@ -256,15 +256,15 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
     'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'topicContentType',
-    'showHeadersFilter', 'SUBSCRIPTION_CONFIG',
+    'showFixedHeaders', 'SUBSCRIPTION_CONFIG',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
-              endpointAddressResolverMetadataConfig, topicContentType, showHeadersFilter, subscriptionConfig) {
+              endpointAddressResolverMetadataConfig, topicContentType, showFixedHeaders, subscriptionConfig) {
         $scope.topicName = topicName;
         $scope.topicContentType = topicContentType;
         $scope.subscription = _.cloneDeep(subscription);
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
-        $scope.showHeadersFilter = showHeadersFilter;
+        $scope.showFixedHeaders = showFixedHeaders;
         $scope.config = subscriptionConfig;
 
         $scope.save = function () {

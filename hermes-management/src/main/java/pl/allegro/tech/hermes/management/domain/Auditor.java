@@ -1,8 +1,22 @@
 package pl.allegro.tech.hermes.management.domain;
 
 import pl.allegro.tech.hermes.api.Anonymizable;
+import pl.allegro.tech.hermes.api.PatchData;
 
 public interface Auditor {
+
+    default void beforeObjectCreation(String username, Object createdObject) {
+    }
+
+    default void beforeObjectCreation(String username, Anonymizable createdObject) {
+        beforeObjectCreation(username, (Object) createdObject.anonymize());
+    }
+
+    default void beforeObjectRemoval(String username, String removedObjectType, String removedObjectName) {
+    }
+
+    default void beforeObjectUpdate(String username, String objectClassName, Object objectName, PatchData patchData) {
+    }
 
     default void objectCreated(String username, Object createdObject) {
     }

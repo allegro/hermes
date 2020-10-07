@@ -104,6 +104,7 @@ public class TopicService {
 
     public void createTopicWithSchema(TopicWithSchema topicWithSchema, String createdBy, CreatorRights isAllowedToManage) {
         Topic topic = topicWithSchema.getTopic();
+        auditor.beforeObjectCreation(createdBy, topic);
         topicValidator.ensureCreatedTopicIsValid(topic, isAllowedToManage);
         ensureTopicDoesNotExist(topic);
 
@@ -171,6 +172,7 @@ public class TopicService {
     }
 
     public void removeTopicWithSchema(Topic topic, String removedBy) {
+        auditor.beforeObjectRemoval(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
         topicRepository.ensureTopicHasNoSubscriptions(topic.getName());
         removeSchema(topic);
         if (!topicProperties.isAllowRemoval()) {
@@ -208,6 +210,7 @@ public class TopicService {
     }
 
     public void updateTopic(TopicName topicName, PatchData patch, String modifiedBy) {
+        auditor.beforeObjectUpdate(modifiedBy, Topic.class.getSimpleName(), topicName, patch);
         groupService.checkGroupExists(topicName.getGroupName());
 
         Topic retrieved = getTopicDetails(topicName);

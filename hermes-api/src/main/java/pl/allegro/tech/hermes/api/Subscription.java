@@ -445,7 +445,7 @@ public class Subscription implements Anonymizable {
 
     @Override
     public Subscription anonymize() {
-        if (getEndpoint().containsCredentials() || hasOAuthPolicy()) {
+        if (getEndpoint() != null && getEndpoint().containsCredentials() || hasOAuthPolicy()) {
             return new Subscription(
                     topicName,
                     name,

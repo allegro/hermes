@@ -1,9 +1,8 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering
+package pl.allegro.tech.hermes.domain.filtering
 
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.MessageFilterSpecification
-import pl.allegro.tech.hermes.consumers.consumer.filtering.avro.AvroPathSubscriptionMessageFilterCompiler
-import pl.allegro.tech.hermes.consumers.test.MessageBuilder
+import pl.allegro.tech.hermes.domain.filtering.avro.AvroPathSubscriptionMessageFilterCompiler
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -37,7 +36,7 @@ class AvroPathMessageFilterSpec extends Specification {
 
         def avro = new JsonAvroConverter().convertToAvro(json.bytes, schema)
         def spec = new MessageFilterSpecification([path: path, matcher: matcher])
-        def msg = MessageBuilder
+        def msg = FilterableMessageBuilder
                 .withTestMessage()
                 .withContent(avro)
                 .withSchema(schema, 1, 0)
@@ -100,7 +99,7 @@ class AvroPathMessageFilterSpec extends Specification {
 
         def avro = new JsonAvroConverter().convertToAvro(json.bytes, schema)
         def spec = new MessageFilterSpecification([path: path, matcher: matcher, matchingStrategy: matchingStrategy])
-        def msg = MessageBuilder
+        def msg = FilterableMessageBuilder
             .withTestMessage()
             .withContent(avro)
             .withSchema(schema, 1, 0)
@@ -166,7 +165,7 @@ class AvroPathMessageFilterSpec extends Specification {
 
         when:
         new AvroPathSubscriptionMessageFilterCompiler().compile(new MessageFilterSpecification([path: ".id", matcher: "0001"]))
-                .test(MessageBuilder
+                .test(FilterableMessageBuilder
                 .withTestMessage()
                 .withContent(invalidContent)
                 .withSchema(schema, 1,0)

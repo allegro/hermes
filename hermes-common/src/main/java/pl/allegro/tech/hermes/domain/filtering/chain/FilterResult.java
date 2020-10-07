@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering.chain;
+package pl.allegro.tech.hermes.domain.filtering.chain;
 
 import com.google.common.base.Joiner;
 

@@ -1,13 +1,13 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering.avro;
+package pl.allegro.tech.hermes.domain.filtering.avro;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericRecord;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MatchingStrategy;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.UnsupportedMatchingStrategyException;
+import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
+import pl.allegro.tech.hermes.domain.filtering.FilteringException;
+import pl.allegro.tech.hermes.domain.filtering.MatchingStrategy;
+import pl.allegro.tech.hermes.domain.filtering.UnsupportedMatchingStrategyException;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.io.IOException;
@@ -25,9 +25,9 @@ import static java.util.Collections.emptyListIterator;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang.StringUtils.strip;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
-import static pl.allegro.tech.hermes.consumers.consumer.filtering.FilteringException.check;
+import static pl.allegro.tech.hermes.domain.filtering.FilteringException.check;
 
-public class AvroPathPredicate implements Predicate<Message> {
+class AvroPathPredicate implements Predicate<FilterableMessage> {
     private static final String WILDCARD_IDX = "*";
     private static final String GROUP_SELECTOR = "selector";
     private static final String GROUP_IDX = "index";
@@ -35,22 +35,18 @@ public class AvroPathPredicate implements Predicate<Message> {
     private static final String ARRAY_PATTERN_IDX_PART = "\\[(?<"+GROUP_IDX+">\\"+ WILDCARD_IDX +"|\\d+)]";
     private static final Pattern ARRAY_PATTERN = Pattern.compile(ARRAY_PATTERN_SELECTOR_PART + ARRAY_PATTERN_IDX_PART);
     private static final String NULL_AS_STRING = "null";
-    private List<String> path;
-    private Pattern pattern;
-    private MatchingStrategy matchingStrategy;
+    private final List<String> path;
+    private final Pattern pattern;
+    private final MatchingStrategy matchingStrategy;
 
-    public AvroPathPredicate(String path, Pattern pattern) {
-        this(path, pattern, MatchingStrategy.ALL);
-    }
-
-    public AvroPathPredicate(String path, Pattern pattern, MatchingStrategy matchingStrategy) {
+    AvroPathPredicate(String path, Pattern pattern, MatchingStrategy matchingStrategy) {
         this.path = Arrays.asList(strip(path, ".").split("\\."));
         this.pattern = pattern;
         this.matchingStrategy = matchingStrategy;
     }
 
     @Override
-    public boolean test(final Message message) {
+    public boolean test(final FilterableMessage message) {
         check(message.getContentType() == ContentType.AVRO, "This filter supports only AVRO contentType.");
         try {
             List<Object> result = select(message);
@@ -62,7 +58,7 @@ public class AvroPathPredicate implements Predicate<Message> {
         }
     }
 
-    private List<Object> select(final Message message) throws IOException {
+    private List<Object> select(final FilterableMessage message) throws IOException {
         CompiledSchema<Schema> compiledSchema = message.<Schema>getSchema().get();
         return select(bytesToRecord(message.getData(), compiledSchema.getSchema()));
     }

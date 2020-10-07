@@ -269,23 +269,23 @@
                 </div>
             </div>
 
-            <div class="form-group" ng-show="showHeadersFilter">
-                <label class="col-md-3 control-label">HTTP Header Filter</label>
+            <div class="form-group" ng-show="showFixedHeaders">
+                <label class="col-md-3 control-label">Fixed HTTP headers</label>
                 <div class="col-md-9">
                     <table class="table borderless">
                         <tr>
                             <th>Name</th>
-                            <th>Pattern</th>
+                            <th>Value</th>
                             <th></th>
                         </tr>
-                        <tr ng-repeat="filter in subscription.headers">
+                        <tr ng-repeat="header in subscription.headers">
                             <td>
-                                <input ng-model="filter.name"
-                                       class="form-control col-md-1" placeholder="{{filter.name}}"/>
+                                <input ng-model="header.name"
+                                       class="form-control col-md-1" placeholder="{{header.name}}"/>
                             </td>
                             <td>
-                                <input ng-model="filter.value"
-                                       class="form-control col-md-1" placeholder="{{filter.value}}"/>
+                                <input ng-model="header.value"
+                                       class="form-control col-md-1" placeholder="{{header.value}}"/>
                             </td>
                             <td>
                                 <button class="btn btn-danger" ng-click="delHeader($index)">Delete</button>

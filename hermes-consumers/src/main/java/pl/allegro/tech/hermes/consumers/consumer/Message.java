@@ -3,12 +3,14 @@ package pl.allegro.tech.hermes.consumers.consumer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import org.apache.avro.Schema;
 import org.apache.commons.lang.ArrayUtils;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.net.URI;
@@ -22,7 +24,7 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
-public class Message {
+public class Message implements FilterableMessage {
 
     private String id;
     private PartitionOffset partitionOffset;
@@ -31,7 +33,7 @@ public class Message {
     private String subscription;
     private boolean hasSubscriptionIdentityHeaders;
     private ContentType contentType;
-    private Optional<CompiledSchema<Object>> schema;
+    private Optional<CompiledSchema<Schema>> schema;
 
     private long publishingTimestamp;
     private long readingTimestamp;
@@ -53,7 +55,7 @@ public class Message {
                    String topic,
                    byte[] content,
                    ContentType contentType,
-                   Optional<CompiledSchema<Object>> schema,
+                   Optional<CompiledSchema<Schema>> schema,
                    long publishingTimestamp,
                    long readingTimestamp,
                    PartitionOffset partitionOffset,
@@ -93,10 +95,12 @@ public class Message {
         return partitionAssignmentTerm;
     }
 
+    @Override
     public byte[] getData() {
         return data;
     }
 
+    @Override
     public ContentType getContentType() {
         return contentType;
     }
@@ -123,15 +127,16 @@ public class Message {
         return retryCounter;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> Optional<CompiledSchema<T>> getSchema() {
-        return schema.map(schema -> (CompiledSchema<T>)schema);
+    @Override
+    public Optional<CompiledSchema<Schema>> getSchema() {
+        return schema;
     }
 
     public String getId() {
         return id;
     }
 
+    @Override
     public Map<String, String> getExternalMetadata() {
         return Collections.unmodifiableMap(externalMetadata);
     }
@@ -226,7 +231,7 @@ public class Message {
             return this;
         }
 
-        public Builder withSchema(CompiledSchema<Object> schema) {
+        public Builder withSchema(CompiledSchema<Schema> schema) {
             this.message.schema = Optional.of(schema);
             return this;
         }

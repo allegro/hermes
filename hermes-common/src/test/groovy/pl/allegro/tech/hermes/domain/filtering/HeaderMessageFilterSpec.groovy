@@ -1,8 +1,7 @@
-package pl.allegro.tech.hermes.consumers.consumer.filtering
+package pl.allegro.tech.hermes.domain.filtering
 
 import pl.allegro.tech.hermes.api.MessageFilterSpecification
-import pl.allegro.tech.hermes.consumers.consumer.filtering.header.HeaderSubscriptionMessageFilterCompiler
-import pl.allegro.tech.hermes.consumers.test.MessageBuilder
+import pl.allegro.tech.hermes.domain.filtering.header.HeaderSubscriptionMessageFilterCompiler
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -12,7 +11,7 @@ class HeaderMessageFilterSpec extends Specification {
     def "should filter message by headers"() {
         given:
             def spec = new MessageFilterSpecification([header: "a", matcher: matcher])
-            def msg = MessageBuilder
+            def msg = FilterableMessageBuilder
                     .withTestMessage()
                     .withExternalMetadata(headers)
                     .build()
