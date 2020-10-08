@@ -87,7 +87,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
     @Bean
     MultiDCAwareService multiDCAwareService(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
-                                            Clock clock) {
+                                            Clock clock, JsonAvroConverter jsonAvroConverter) {
         List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
                 zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
 
@@ -115,7 +115,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     consumerPool,
                     kafkaNamesMapper
             );
-            KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, new JsonAvroConverter());
+            KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
             return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper,
                     new OffsetsAvailableChecker(consumerPool, storage),

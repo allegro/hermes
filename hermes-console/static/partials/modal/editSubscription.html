@@ -198,74 +198,11 @@
             <div class="form-group">
                 <label class="col-md-3 control-label">Filter</label>
                 <div class="col-md-9">
-                    <table class="table borderless">
-                        <tr>
-                            <th>Type</th>
-                            <th>Path</th>
-                            <th>Matcher</th>
-                            <th>Matching strategy</th>
-                            <th></th>
-                        </tr>
-                        <tr ng-repeat="filter in subscription.filters">
-                            <td>
-                                <label readonly ng-model="filter.type" style="top: 8px;"
-                                       class="col-sm-2 col-form-label form-control-plaintext">{{filter.type}}</label>
-                            </td>
-                            <td>
-                                <input ng-model="filter.path"
-                                       class="form-control col-md-1 {{filter.path.$valid ? '' : 'has-error'}}"
-                                       id="subscriptionFilterPathEdit"
-                                       name="subscriptionFilterPathInput" placeholder="{{filter.path}}"/>
-                            </td>
-                            <td>
-                                <input ng-model="filter.matcher"
-                                       class="form-control col-md-1 {{filter.matcher.$valid ? '' : 'has-error'}}"
-                                       id="subscriptionFilterMatcherEdit"
-                                       name="subscriptionFilterMatcherInput" placeholder="{{filter.matcher}}"/>
-                            </td>
-                            <td>
-                                <select ng-model="filter.matchingStrategy"
-                                        class="form-control col-md-1"
-                                        id="subscriptionFilterMatchingStrategyEdit"
-                                        name="subscriptionFilterMatchingStrategySelect">
-                                    <option value="all">all (default)</option>
-                                    <option value="any">any</option>
-                                </select>
-                            </td>
-                            <td>
-                                <button class="btn btn-danger" ng-click="delFilter($index)">Delete</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="col-sm-2"></td>
-                            <td>
-                                <input ng-model="filter.path"
-                                       class="form-control col-md-1 {{filter.path.$valid ? '' : 'has-error'}}"
-                                       id="subscriptionFilterPath"
-                                       name="subscriptionFilterPathInput" placeholder="Path for filter"/>
-                            </td>
-                            <td>
-                                <input ng-model="filter.matcher"
-                                       class="form-control col-md-1 {{filter.matcher.$valid ? '' : 'has-error'}}"
-                                       id="subscriptionFilterMatcher"
-                                       name="subscriptionFilterMatcherInput" placeholder="Matcher for filter"/>
-                            </td>
-                            <td>
-                                <select ng-model="filter.matchingStrategy" ng-init="filter.matchingStrategy='all'"
-                                        class="form-control col-md-1"
-                                        id="subscriptionFilterMatchingStrategy"
-                                        name="subscriptionFilterMatchingStrategySelect">
-                                    <option value="all">all (default)</option>
-                                    <option value="any">any</option>
-                                </select>
-                            </td>
-                            <td>
-                                <div class="col-md-1 subscription-add-subscription-filter">
-                                    <button class="btn btn-success" ng-click="addFilter()">Add</button>
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
+                    <filters-editor form="subscriptionForm"
+                                    topic-content-type="topicContentType"
+                                    filters="subscription.filters"
+                                    with-debugger="true"
+                                    topic-name="topicName"></filters-editor>
                 </div>
             </div>
 
