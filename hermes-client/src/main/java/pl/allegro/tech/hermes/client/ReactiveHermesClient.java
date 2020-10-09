@@ -104,30 +104,28 @@ public class ReactiveHermesClient {
 
     private Mono<HermesResponse> publishWithRetries(HermesMessage message) {
         currentlySending.incrementAndGet();
+        Mono<Result> sendOnceResult = sendOnce(message)
+                .flatMap(this::testRetryCondition)
+                .onErrorResume(this::mapExceptionToFailedAttempt)
+                .subscribeOn(scheduler);
 
-        Retry retry = prepareRetry(message);
-
-        return sendOnce(message)
-                .flatMap(response -> getNextAttempt()
-                        .map(attempt -> {
-                            if (retryCondition.test(response)) {
-                                return Result.failure(new ShouldRetryException(response), attempt);
-                            } else {
-                                return Result.attempt(response, attempt);
-                            }
-                        })
-                )
-                .onErrorResume(throwable -> getNextAttempt().map(attempt -> Result.failure(throwable, attempt)))
-                .subscribeOn(scheduler)
-                .flatMap(result -> {
-                    if (result instanceof Failed) {
-                        Failed failed = (Failed) result;
-                        return Mono.error(new RetryFailedException(failed.attempt, failed.cause));
+        return retry(message, sendOnceResult)
+                .doOnSuccess(hr -> {
+                    if (hr.response.isSuccess()) {
+                        handleSuccessfulRetry(message, hr.getAttempt());
                     } else {
-                        return Mono.just((Attempt) result);
+                        handleFailure(message, hr.getAttempt());
                     }
                 })
-                .retryWhen(retry)
+                .map(result -> result.response)
+                .doFinally(s -> currentlySending.decrementAndGet());
+    }
+
+    private Mono<Attempt> retry(HermesMessage message, Mono<Result> sendOnceResult) {
+        Retry retrySpec = prepareRetrySpec(message);
+        return sendOnceResult
+                .flatMap(this::unwrapFailedAttemptAsException)
+                .retryWhen(retrySpec)
                 .subscriberContext(ctx -> ctx.put(RETRY_CONTEXT_KEY, HermesRetryContext.emptyRetryContext()))
                 .onErrorResume(Exception.class, exception -> {
                     if (isRetryExhausted(exception)) {
@@ -141,19 +139,34 @@ public class ReactiveHermesClient {
                         handleFailure(message, rfe.getAttempt());
                     }
                     return Mono.error(exception);
-                })
-                .doOnSuccess(hr -> {
-                    if (hr.response.isSuccess()) {
-                        handleSuccessfulRetry(message, hr.getAttempt());
-                    } else {
-                        handleFailure(message, hr.getAttempt());
-                    }
-                })
-                .map(result -> result.response)
-                .doFinally(s -> currentlySending.decrementAndGet());
+                });
     }
 
-    private Retry prepareRetry(HermesMessage message) {
+    private Mono<Attempt> unwrapFailedAttemptAsException(Result result) {
+        if (result instanceof Failed) {
+            Failed failed = (Failed) result;
+            return Mono.error(new RetryFailedException(failed.attempt, failed.cause));
+        } else {
+            return Mono.just((Attempt) result);
+        }
+    }
+
+    private Mono<Result> mapExceptionToFailedAttempt(Throwable throwable) {
+        return getNextAttempt().map(attempt -> Result.failure(throwable, attempt));
+    }
+
+    private Mono<Result> testRetryCondition(HermesResponse response) {
+        return getNextAttempt()
+                .map(attempt -> {
+                    if (retryCondition.test(response)) {
+                        return Result.failure(new ShouldRetryException(response), attempt);
+                    } else {
+                        return Result.attempt(response, attempt);
+                    }
+                });
+    }
+
+    private Retry prepareRetrySpec(HermesMessage message) {
         if (!retrySleep.isZero()) {
             return Retry.max(maxRetries)
                     .doAfterRetry(signal -> handleFailedAttempt(message, signal.totalRetries() + 1));

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.client
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -60,6 +61,7 @@ class ReactiveHermesClientTest extends Specification {
         response.httpStatus == 202
     }
 
+    @Unroll
     def "should interpret message as failed for status different than 201 or 202"() {
         given:
         ReactiveHermesClient client = hermesClient({uri, msg -> statusFuture(msg, status)})
@@ -78,7 +80,7 @@ class ReactiveHermesClientTest extends Specification {
         status << [203, 204, 400, 401, 404, 500]
     }
 
-
+    @Unroll
     def "should retry on http failure"() {
         given:
         CountDownLatch latch = new CountDownLatch(5)
