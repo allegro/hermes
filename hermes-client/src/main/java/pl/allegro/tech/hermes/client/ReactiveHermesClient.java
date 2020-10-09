@@ -19,9 +19,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
-
 import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
-import static reactor.core.Exceptions.*;
+import static reactor.core.Exceptions.isRetryExhausted;
 
 
 public class ReactiveHermesClient {
@@ -155,16 +154,14 @@ public class ReactiveHermesClient {
     }
 
     private Retry prepareRetry(HermesMessage message) {
-        Retry retry;
         if (!retrySleep.isZero()) {
-            retry = Retry.max(maxRetries)
+            return Retry.max(maxRetries)
                     .doAfterRetry(signal -> handleFailedAttempt(message, signal.totalRetries() + 1));
         } else {
-            retry = Retry.backoff(maxRetries, retrySleep)
+            return Retry.backoff(maxRetries, retrySleep)
                     .maxBackoff(maxRetrySleep)
                     .doAfterRetry(signal -> handleFailedAttempt(message, signal.totalRetries() + 1));
         }
-        return retry;
     }
 
     private Mono<Integer> getNextAttempt() {
