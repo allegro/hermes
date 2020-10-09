@@ -28,7 +28,7 @@ public class WebClientHermesSender implements HermesSender, ReactiveHermesSender
     public Mono<HermesResponse> sendReactively(URI uri, HermesMessage message) {
         return webClient.post()
                 .uri(uri)
-                .syncBody(message.getBody()) // TODO reactively?
+                .syncBody(message.getBody())
                 .headers(httpHeaders -> httpHeaders.setAll(message.getHeaders()))
                 .exchange()
                 .flatMap(response -> response
