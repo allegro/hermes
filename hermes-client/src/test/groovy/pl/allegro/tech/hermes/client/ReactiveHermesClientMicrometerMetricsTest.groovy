@@ -75,35 +75,6 @@ class ReactiveHermesClientMicrometerMetricsTest extends Specification {
                 .withRetries(retries)
                 .withMetrics(metricsProvider).build()
 
-
-        client.addMessageDeliveryListener(new MessageDeliveryListener() {
-            @Override
-            void onSend(HermesResponse response, long latency) {
-                println("onSend: $latency")
-            }
-
-            @Override
-            void onFailure(HermesMessage message, int attemptCount) {
-                println("onFailure $attemptCount")
-            }
-
-            @Override
-            void onFailedRetry(HermesMessage message, int attemptCount) {
-                println("onFailedRetry $attemptCount")
-            }
-
-            @Override
-            void onSuccessfulRetry(HermesMessage message, int attemptCount) {
-                println("onSuccessfulRetry $attemptCount")
-            }
-
-            @Override
-            void onMaxRetriesExceeded(HermesMessage message, int attemptCount) {
-                println("onMaxRetriesExceeded $attemptCount")
-            }
-        })
-
-
         when:
         silence({ client.publish("com.group.topic", "123").block() })
 
