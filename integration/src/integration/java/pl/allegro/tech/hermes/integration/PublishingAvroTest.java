@@ -29,7 +29,6 @@ import static java.util.Collections.singletonMap;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
@@ -191,7 +190,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldGetBadRequestForJsonNotMachingWithAvroSchema() {
+    public void shouldGetBadRequestForJsonNotMachingWithAvroSchemaAndAvroContentType() {
         // given
         Topic topic = randomTopic("pl.allegro", "User").withContentType(AVRO).build();
         Schema schema = AvroUserSchemaLoader.load("/schema/user.avsc");
@@ -203,12 +202,16 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
-        assertThat(response.readEntity(String.class))
-                .isEqualTo("{\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\",\"code\":\"VALIDATION_ERROR\"}");
+        assertThat(response.readEntity(String.class)).isEqualTo(
+                "{" +
+                "\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\"," +
+                "\"code\":\"VALIDATION_ERROR\"" +
+                "}"
+        );
     }
 
     @Test
-    public void shouldGetBadRequestForJsonNotMachingWithAvroSchema2() {
+    public void shouldGetBadRequestForJsonNotMachingWithAvroSchemaAndJsonContentType() {
         // given
         Topic topic = randomTopic("pl.allegro", "User").withContentType(AVRO).build();
         Schema schema = AvroUserSchemaLoader.load("/schema/user.avsc");
@@ -220,8 +223,12 @@ public class PublishingAvroTest extends IntegrationTest {
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
-        assertThat(response.readEntity(String.class))
-                .isEqualTo("{\"message\":\"Invalid message: Failed to convert JSON to Avro: Field age is expected to be type: java.lang.Number\",\"code\":\"VALIDATION_ERROR\"}");
+        assertThat(response.readEntity(String.class)).isEqualTo(
+                "{" +
+                "\"message\":\"Invalid message: Failed to convert JSON to Avro: Field age is expected to be type: java.lang.Number\"," +
+                "\"code\":\"VALIDATION_ERROR\"" +
+                "}"
+        );
     }
 
     @Test
