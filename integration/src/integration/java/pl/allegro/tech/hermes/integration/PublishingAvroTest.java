@@ -208,6 +208,23 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldGetBadRequestForJsonNotMachingWithAvroSchema2() {
+        // given
+        Topic topic = randomTopic("pl.allegro", "User").withContentType(AVRO).build();
+        Schema schema = AvroUserSchemaLoader.load("/schema/user.avsc");
+        operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
+
+        // when
+        String message = "{\"__metadata\":null,\"name\":\"john\",\"age\":\"string instead of int\"}";
+        Response response = publisher.publish(topic.getQualifiedName(), message, singletonMap("Content-Type", "application/json"));
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+        assertThat(response.readEntity(String.class))
+                .isEqualTo("{\"message\":\"Invalid message: Failed to convert JSON to Avro: Field age is expected to be type: java.lang.Number\",\"code\":\"VALIDATION_ERROR\"}");
+    }
+
+    @Test
     public void shouldGetBadRequestForInvalidJsonWithAvroSchema() {
         Topic topic = randomTopic("avro", "invalidJson").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
