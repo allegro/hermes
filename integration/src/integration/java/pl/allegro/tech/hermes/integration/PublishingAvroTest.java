@@ -218,7 +218,7 @@ public class PublishingAvroTest extends IntegrationTest {
         operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
 
         // when
-        String message = "{\"__metadata\":null,\"name\":\"john\",\"age\":\"string instead of int\"}";
+        String message = "{\"name\":\"john\",\"age\":\"string instead of int\"}";
         Response response = publisher.publish(topic.getQualifiedName(), message, singletonMap("Content-Type", "application/json"));
 
         // then
