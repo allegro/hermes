@@ -32,6 +32,13 @@ to zookeeper will be present (kafka-clients library is free of transitive zookee
 
 #### ([1268](https://github.com/allegro/hermes/pull/1268)) Fixed http headers now have a dedicated pane in console 
 
+## 1.5.3 (28.08.2020)
+
+### Enhancements
+
+#### ([1263](https://github.com/allegro/hermes/pull/1263)) Magic byte truncation for schema version
+Ignoring magic byte and schema version when schema version present in a header
+
 ## 1.5.2 (25.08.2020)
 
 ### Enhancements
