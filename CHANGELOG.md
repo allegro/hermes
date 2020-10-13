@@ -19,7 +19,7 @@
 
 #### ([1276](https://github.com/allegro/hermes/pull/1276)) Downgraded kafka to 2.1.1
 
-Kafka dependencies need to be kept in this version due to bug that occurs when using kafka dependencies in versions 
+Kafka dependency needs to be kept in this version due to bug that occurs when using kafka dependency in versions 
 2.2.0 - 2.3.1 and brokers in versions before 2.4.0 (https://issues.apache.org/jira/browse/KAFKA-9212). 
 
 Ideally, we would bump kafka dependency up to 2.3.2, which according to the issue above is no longer affected by this bug,
