@@ -1,6 +1,44 @@
 ## [Unreleased]
 
 ...
+## 1.5.4 (13.10.2020)
+
+### Enhancements
+
+#### ([1270](https://github.com/allegro/hermes/pull/1270)) A topic change updates its all cached schemas
+
+#### ([1271](https://github.com/allegro/hermes/pull/1271)) Audit logs for unsuccessful topic and subscription operations
+
+#### ([1273](https://github.com/allegro/hermes/pull/1273)) Topic removal is forbidden if the topic contains any subscription
+
+#### ([1274](https://github.com/allegro/hermes/pull/1274)) Moved filtering to hermes-common
+
+#### ([1275](https://github.com/allegro/hermes/pull/1275)) Added message filters debugger
+
+### Fixes
+
+#### ([1276](https://github.com/allegro/hermes/pull/1276)) Downgraded kafka to 2.1.1
+
+Kafka dependency needs to be kept in this version due to bug that occurs when using kafka dependency in versions 
+2.2.0 - 2.3.1 and brokers in versions before 2.4.0 (https://issues.apache.org/jira/browse/KAFKA-9212). 
+
+Ideally, we would bump kafka dependency up to 2.3.2, which according to the issue above is no longer affected by this bug,
+but it's nowhere to be found :(. Since 2.4.0 version bumps transitive dependency for a zookeeper client library, it would introduce
+further incompatibility if Hermes Zookeeper is in lower version than Zookeeper used in Kafka, as these two are independent
+of each other.
+
+This needs to be revisited after Hermes is completely independent of kafka library, as no transitive dependency 
+to zookeeper will be present (kafka-clients library is free of transitive zookeeper dependency).
+
+#### ([1268](https://github.com/allegro/hermes/pull/1268)) Fixed http headers now have a dedicated pane in console 
+
+## 1.5.3 (28.08.2020)
+
+### Enhancements
+
+#### ([1263](https://github.com/allegro/hermes/pull/1263)) Magic byte truncation for schema version
+Ignoring magic byte and schema version when schema version present in a header
+
 ## 1.5.2 (25.08.2020)
 
 ### Enhancements
