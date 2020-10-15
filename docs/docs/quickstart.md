@@ -75,7 +75,7 @@ All hermes images can be found under these links:
 If you want to run a specific hermes release simply add a given version to the image name inside the docker-compose file, for example:
 
 ```yaml
-image: allegro/hermes-management:[specific version tag]
+image: allegro/hermes-management:hermes-[specific version tag]
 ```
 
 ## Creating group and topic
@@ -164,3 +164,36 @@ To restart it run:
 ```bash
 docker-compose restart
 ```
+
+## Building your own docker image
+
+You can build your own docker image for a specific module and later test it for example in `docker-compose.yml`.
+Simply run this command from a hermes project root directory:
+
+```bash
+docker build --tag [your tag name] -f ./docker/latest/[hermes module]/Dockerfile .
+```
+
+For example:
+
+```bash
+docker build --tag hermes-management-test -f ./docker/latest/management/Dockerfile .
+```
+
+The built image can be tested directly in docker-compose. 
+You need to replace image name with your tag name in ``docker-compose.yml``:
+
+```yaml
+[...]
+management:
+    image: [your tag name]
+    ports:
+      - "8090:8090"
+    depends_on:
+      - zk
+      - kafka
+      - graphite
+[...]
+```
+
+Docker files for specific hermes modules can be found in `docker/latest` directory.
