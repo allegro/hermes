@@ -67,7 +67,6 @@ public class MultipleKafkaTest extends IntegrationTest {
     private ConsumersStarter setupConsumers() throws Exception {
         ConsumersStarter consumers = new ConsumersStarter();
         consumers.overrideProperty(Configs.KAFKA_BROKER_LIST, SECONDARY_KAFKA_CONNECT);
-        consumers.overrideProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING, SECONDARY_ZK_KAFKA_CONNECT);
         consumers.overrideProperty(Configs.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         consumers.overrideProperty(Configs.CONSUMER_HEALTH_CHECK_PORT, 7454);
         consumers.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
@@ -84,7 +83,6 @@ public class MultipleKafkaTest extends IntegrationTest {
         frontend.overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false);
         frontend.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, SECONDARY_KAFKA_CONNECT);
-        frontend.overrideProperty(Configs.KAFKA_ZOOKEEPER_CONNECT_STRING, SECONDARY_ZK_KAFKA_CONNECT);
         frontend.overrideProperty(Configs.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         frontend.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
         frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);

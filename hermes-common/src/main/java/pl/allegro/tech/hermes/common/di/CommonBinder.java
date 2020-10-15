@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.GraphiteWebTargetFactory;
 import pl.allegro.tech.hermes.common.di.factories.GroupRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.KafkaCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MessagePreviewRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
@@ -83,7 +82,6 @@ public class CommonBinder extends AbstractBinder {
         bind(SchemaOnlineChecksWaitingRateLimiter.class).in(Singleton.class).to(SchemaOnlineChecksRateLimiter.class);
 
         bindSingletonFactory(HermesCuratorClientFactory.class).named(CuratorType.HERMES);
-        bindSingletonFactory(KafkaCuratorClientFactory.class).named(CuratorType.KAFKA);
         bindSingletonFactory(GraphiteWebTargetFactory.class);
         bindSingletonFactory(ObjectMapperFactory.class);
         bindSingletonFactory(SharedCounterFactory.class);
