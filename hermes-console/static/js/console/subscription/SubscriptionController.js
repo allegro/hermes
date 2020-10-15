@@ -19,6 +19,8 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
+        var subscriptionDraft;
+
         $scope.config = config;
 
         subscriptionRepository.get(topicName, subscriptionName).$promise
@@ -33,6 +35,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                         modifiedAt.setUTCSeconds(subscription.modifiedAt);
                         $scope.subscription.modifiedAt = modifiedAt;
                     }
+                    subscriptionDraft = _.cloneDeep($scope.subscription);
                 });
 
         $scope.retransmissionLoading = false;
@@ -82,14 +85,14 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
           return filtered;
         };
 
-        $scope.edit = function (subscription) {
+        $scope.edit = function () {
             $modal.open({
                 templateUrl: 'partials/modal/editSubscription.html',
                 controller: 'SubscriptionEditController',
                 size: 'lg',
                 resolve: {
                     subscription: function () {
-                        return _.cloneDeep(subscription);
+                        return subscriptionDraft;
                     },
                     topicName: function () {
                         return topicName;
@@ -109,6 +112,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                 }
             }).result.then(function(response){
                 $scope.subscription = response.subscription;
+                subscriptionDraft = _.cloneDeep(response.subscription);
             });
         };
 
@@ -271,7 +275,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
               endpointAddressResolverMetadataConfig, topicContentType, showFixedHeaders, subscriptionConfig) {
         $scope.topicName = topicName;
         $scope.topicContentType = topicContentType;
-        $scope.subscription = _.cloneDeep(subscription);
+        $scope.subscription = subscription;
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
         $scope.showFixedHeaders = showFixedHeaders;
