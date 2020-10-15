@@ -308,6 +308,7 @@ public class ConsoleProperties {
                 new TopicContentType("AVRO", "AVRO"),
                 new TopicContentType("JSON", "JSON")
         );
+        private boolean readOnlyModeEnabled = false;
 
         public boolean isMessagePreviewEnabled() {
             return messagePreviewEnabled;
@@ -369,6 +370,14 @@ public class ConsoleProperties {
 
         public void setSchemaIdAwareSerializationEnabled(boolean schemaIdAwareSerializationEnabled) {
             this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
+        }
+
+        public boolean isReadOnlyModeEnabled() {
+            return readOnlyModeEnabled;
+        }
+
+        public void setReadOnlyModeEnabled(boolean readOnlyModeEnabled) {
+            this.readOnlyModeEnabled = readOnlyModeEnabled;
         }
     }
 

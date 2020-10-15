@@ -10,7 +10,7 @@
     <div class="pull-right">
         <span ng-show="disabled" uib-popover='Sign in to edit the topic' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
         <span bind-html="config.buttonsExtension"></span>
-        <button class="btn btn-primary" ng-disabled="disabled" ng-click="edit()">Edit</button>
+        <button class="btn btn-primary" ng-disabled="disabled || config.readOnlyModeEnabled" ng-click="edit()">Edit</button>
         <button class="btn btn-primary" ng-disabled="disabled" ng-click="clone()">Clone</button>
         <button class="btn btn-warning" ng-disabled="disabled" ng-show="admin && !isBlacklisted" ng-click="blacklist()" >Blacklist</button>
         <button class="btn btn-default" ng-disabled="disabled" ng-show="admin && isBlacklisted"ng-click="unblacklist()" >Unblacklist</button>
@@ -27,6 +27,10 @@
         <div uib-popover="Currently anyone is allowed to publish on this topic without authentication. Consider enabling authorisation." popover-trigger="mouseenter"
              ng-show="topic && !topic.auth.enabled || topic.auth.unauthenticatedAccessEnabled" class="ng-hide badge alert-warning">
             Unauthenticated access allowed <span class="glyphicon glyphicon-alert"></span>
+        </div>
+        <div uib-popover="Topic editing is disabled. Contact administrator for more details." popover-trigger="mouseenter"
+             ng-show="topic && config.readOnlyModeEnabled" class="ng-hide badge alert-warning">
+            Read only mode <span class="glyphicon glyphicon-alert"></span>
         </div>
     </div>
 
