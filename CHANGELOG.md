@@ -1,6 +1,15 @@
 ## [Unreleased]
 
 ...
+## 1.6.0 (15.10.2020)
+
+### Enhancements
+
+#### ([1277](https://github.com/allegro/hermes/pull/1277)) Removed usage of all Kafka Zookeeper clients
+
+It's now possible not to define connectionString for Kafka Zookeeper in Hermes configuration, as all usages
+of Kafka Zookeeper clients have been removed.
+
 ## 1.5.4 (13.10.2020)
 
 ### Enhancements
