@@ -6,7 +6,7 @@ metadata. Metadata format depends on data format (Avro, JSON) - please see forma
 
 Currently metadata holds two fields:
 
-* **id** - string containing Hermes-Message-Id as UUID v4
+* **messageId** - string containing Hermes-Message-Id as UUID v4
 * **timestamp** - Unix epoch timestamp in milliseconds holding date of reception
 
 There is no guarantee that this metadata won't be extended.
@@ -18,7 +18,7 @@ Messages with metadata have following format:
 ```json
 {
     "metadata": {
-        "id": "b0838e5f-c3d1-47b3-8949-abe7a1f65202",
+        "messageId": "b0838e5f-c3d1-47b3-8949-abe7a1f65202",
         "timestamp": 1439129947000
     },
     "message": {
@@ -29,8 +29,8 @@ Messages with metadata have following format:
 
 ## Avro
 
-Hermes metadata is stored in `__metadata` field, which is specified as map of optional elements. It will always contain
-``id`` and ``timestamp``.
+Hermes metadata is stored in `__metadata` field, which is specified as map of optional elements. It will always contain at least
+``messageId`` and ``timestamp``.
 
 ```json
 {
@@ -48,7 +48,7 @@ Hermes metadata is stored in `__metadata` field, which is specified as map of op
           "values": "string"
         }
       ],
-      "doc": "Field used to propagate metadata like id and timestamp",
+      "doc": "Field used to propagate metadata like messageId and timestamp",
       "default": null
     },
     // other event fields
