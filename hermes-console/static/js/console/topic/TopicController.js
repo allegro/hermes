@@ -224,6 +224,17 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 loadSubscriptions();
             });
         };
+
+        $scope.copyToClipboard = function () {
+            var tempElement = document.createElement('textarea');
+            tempElement.value = $scope.messageSchema;
+            document.body.appendChild(tempElement);
+            tempElement.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempElement);
+
+            toaster.pop('info', 'Info', 'Message schema has been copied to clipboard');
+        };
     }]);
 
 topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$scope', '$uibModalInstance', 'PasswordService',

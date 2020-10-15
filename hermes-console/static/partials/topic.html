@@ -120,10 +120,9 @@
 
     <div class="row" ng-show="topic.contentType == 'AVRO'">
         <div class="col-md-12">
-            <div class="panel panel-default">
-                <div style="position: relative">
-                    <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showMessageSchema = !showMessageSchema"></span>
-                </div>
+            <div class="panel panel-default" style="position: relative">
+                <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showMessageSchema = !showMessageSchema"></span>
+                <button class="btn btn-default pull-right" style="padding: 4px; margin-top: 4px" ng-click="copyToClipboard()">Copy to clipboard</button>
                 <div class="panel-heading" ng-click="showMessageSchema = !showMessageSchema">
                     <h3 class="panel-title">Message schema</h3>
                 </div>
@@ -136,10 +135,8 @@
 
     <div class="row" ng-show="config.messagePreviewEnabled">
         <div class="col-md-12">
-            <div class="panel panel-default">
-                <div style="position: relative">
-                    <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showPreview = !showPreview"></span>
-                </div>
+            <div class="panel panel-default" style="position: relative">
+                <span class="btn pull-right glyphicon {{showPreview ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showPreview = !showPreview"></span>
                 <div class="panel-heading" ng-click="showPreview = !showPreview">
                     <h3 class="panel-title">Topic messages preview</h3>
                 </div>
