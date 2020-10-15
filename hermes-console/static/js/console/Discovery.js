@@ -7,5 +7,5 @@ discovery.factory('DiscoveryService', ['HERMES_URLS', function(urls) {
             resolve: function(path) {
                 return urls[counter++ % urls.length] + path;
             }
-        }
+        };
     }]);

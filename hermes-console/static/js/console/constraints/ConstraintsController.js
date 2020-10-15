@@ -91,7 +91,7 @@ constraints.controller('ConstraintsAddController', ['ConstraintsRepository', '$s
                     $modalInstance.close();
                 });
             }
-        }
+        };
     }]);
 
 constraints.controller('ConstraintsEditController', ['ConstraintsRepository', '$scope', '$uibModal', '$uibModalInstance',
@@ -167,6 +167,6 @@ constraints.controller('ConstraintsRemoveController', ['ConstraintsRepository', 
         $scope.constraintsName = constraintsName;
         $scope.constraintsType = constraintsType;
         $scope.remove = function () {
-            $modalInstance.close('REMOVE')
+            $modalInstance.close('REMOVE');
         };
     }]);

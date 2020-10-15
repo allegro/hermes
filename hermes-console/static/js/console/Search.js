@@ -22,7 +22,7 @@ search.controller('SearchController', ['$scope', '$stateParams', 'SearchReposito
             $scope.items = postProcess($scope.entity, items);
             $scope.fetching = false;
             $scope.state.notSearched = false;
-            $scope.state.noResults = !items || items.length == 0;
+            $scope.state.noResults = !items || items.length === 0;
         });
     };
 

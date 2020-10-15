@@ -34,7 +34,7 @@ groups.controller('GroupsController', ['GroupRepository', '$scope', '$uibModal',
 
         $scope.storeSearchFilter = function () {
             groupRepository.storeSearchFilter($scope.search);
-        }
+        };
     }]);
 
 groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope', '$location', '$stateParams', '$uibModal', 'toaster', 'ConfirmationModal', 'PasswordService',
