@@ -12,6 +12,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -136,7 +137,7 @@ public class Topic {
     public int hashCode() {
         return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
                 jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled, maxMessageSize,
-                publishingAuth, subscribingRestricted, offlineStorage);
+                publishingAuth, subscribingRestricted, offlineStorage, labels);
     }
 
     @Override
@@ -247,7 +248,7 @@ public class Topic {
     }
 
     public Set<TopicLabel> getLabels() {
-        return labels;
+        return Collections.unmodifiableSet(labels);
     }
 
     public Instant getCreatedAt() {
