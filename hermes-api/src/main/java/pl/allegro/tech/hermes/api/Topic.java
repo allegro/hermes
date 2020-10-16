@@ -12,10 +12,8 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(value = {"createdAt", "modifiedAt"}, allowGetters = true)
 public class Topic {
