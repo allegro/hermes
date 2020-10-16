@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Set;
+
 import pl.allegro.tech.hermes.api.Topic.Ack;
 
 public class TopicWithSchema extends Topic {
@@ -20,8 +22,8 @@ public class TopicWithSchema extends Topic {
         this(schema, topic.getQualifiedName(), topic.getDescription(), topic.getOwner(), topic.getRetentionTime(),
                 topic.isJsonToAvroDryRunEnabled(), topic.getAck(), topic.isTrackingEnabled(), topic.wasMigratedFromJsonType(),
                 topic.isSchemaIdAwareSerializationEnabled(), topic.getContentType(), topic.getMaxMessageSize(),
-                topic.getPublishingAuth(), topic.isSubscribingRestricted(), topic.getOfflineStorage(), topic.getCreatedAt(),
-                topic.getModifiedAt());
+                topic.getPublishingAuth(), topic.isSubscribingRestricted(), topic.getOfflineStorage(), topic.getLabels(),
+                topic.getCreatedAt(), topic.getModifiedAt());
     }
 
     @JsonCreator
@@ -40,11 +42,12 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("auth") PublishingAuth publishingAuth,
                            @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
                            @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
+                           @JsonProperty("labels") Set<TopicLabel> labels,
                            @JsonProperty("createdAt") Instant createdAt,
                            @JsonProperty("modifiedAt") Instant modifiedAt) {
         super(qualifiedName, description, owner, retentionTime, jsonToAvroDryRunEnabled, ack, trackingEnabled,
                 migratedFromJsonType, schemaIdAwareSerializationEnabled, contentType, maxMessageSize,
-                publishingAuth, subscribingRestricted, offlineStorage, createdAt, modifiedAt);
+                publishingAuth, subscribingRestricted, offlineStorage, labels, createdAt, modifiedAt);
         this.topic = convertToTopic();
         this.schema = schema;
     }
@@ -61,8 +64,8 @@ public class TopicWithSchema extends Topic {
         return new Topic(this.getQualifiedName(), this.getDescription(), this.getOwner(), this.getRetentionTime(),
                 this.isJsonToAvroDryRunEnabled(), this.getAck(), this.isTrackingEnabled(), this.wasMigratedFromJsonType(),
                 this.isSchemaIdAwareSerializationEnabled(), this.getContentType(), this.getMaxMessageSize(),
-                this.getPublishingAuth(), this.isSubscribingRestricted(), this.getOfflineStorage(), this.getCreatedAt(),
-                this.getModifiedAt());
+                this.getPublishingAuth(), this.isSubscribingRestricted(), this.getOfflineStorage(), this.getLabels(),
+                this.getCreatedAt(), this.getModifiedAt());
     }
 
     public String getSchema() {

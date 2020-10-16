@@ -23,6 +23,17 @@
                     <input class="form-control" required id="topicDescription" name="topicDescription" placeholder="what type of messages you publish?" ng-model="topic.description"/>
                 </div>
             </div>
+            <div class="form-group">
+                <label for="topicLabels" class="col-md-3 control-label">Labels</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <select id="topicLabels" class="form-control" ng-model="topic.labelValues" multiple="true">
+                            <option ng-repeat="label in config.allowedTopicLabels" value="{{label}}">{{label}}</option>
+                        </select>
+                        <span class="input-group-addon helpme-addon" uib-tooltip='Topic labels. Multiple values can be selected'>?</span>
+                    </div>
+                </div>
+            </div>
 
             <owner-selector form="topicForm" source="topic.owner.source" owner="topic.owner.id"></owner-selector>
 

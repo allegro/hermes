@@ -3,9 +3,11 @@ package pl.allegro.tech.hermes.management.config.console;
 import com.google.common.collect.Lists;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class could have a much better structure, however it has this one due to compatibility with old JSON config file format.
@@ -308,6 +310,7 @@ public class ConsoleProperties {
                 new TopicContentType("AVRO", "AVRO"),
                 new TopicContentType("JSON", "JSON")
         );
+        private Set<String> allowedTopicLabels = Collections.emptySet();
 
         public boolean isMessagePreviewEnabled() {
             return messagePreviewEnabled;
@@ -347,6 +350,14 @@ public class ConsoleProperties {
 
         public void setContentTypes(List<TopicContentType> contentTypes) {
             this.contentTypes = contentTypes;
+        }
+
+        public Set<String> getAllowedTopicLabels() {
+            return allowedTopicLabels;
+        }
+
+        public void setAllowedTopicLabels(Set<String> allowedTopicLabels) {
+            this.allowedTopicLabels = allowedTopicLabels;
         }
 
         public String getButtonsExtension() {

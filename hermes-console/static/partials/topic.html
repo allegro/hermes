@@ -64,6 +64,12 @@
                         <strong>Content type:</strong> {{topic.contentType}}
                     </p>
                     <p>
+                        <strong>Labels:</strong>
+                        <span ng-repeat="label in topic.labelValues">
+                            <span class="label label-info"> {{label}} </span>
+                        </span>
+                    </p>
+                    <p>
                         <strong>Acknowlegment:</strong> {{topic.ack == 'ALL' ? 'all brokers' : 'leader only'}}
                         <span uib-popover='Specifies the strength of guarantees that acknowledged message was indeed persisted. In "Leader" mode ACK is required only from topic leader, which is fast and gives 99.99999% guarantee. It might be not enough when cluster is unstable. "All" mode means message needs to be saved on all replicas before sending ACK, which is quite slow but gives 100% guarantee that message has been persisted.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>

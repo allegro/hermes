@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.management;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
@@ -9,6 +10,7 @@ import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
@@ -16,6 +18,8 @@ import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -402,5 +406,117 @@ public class TopicManagementTest extends IntegrationTest {
 
         // then
         assertThat(management.topic().get(topic.getQualifiedName()).getTopic().getOfflineStorage().isEnabled()).isTrue();
+    }
+
+    @Test
+    public void shouldCreateTopicWithLabels() {
+        //given
+        operations.createGroup("topicWithLabelGroup");
+
+        //when
+        Topic topic = TopicBuilder.topic("topicWithLabelGroup", "topicWithLabels")
+                .withLabels(ImmutableSet.of(
+                        new TopicLabel("label-1"),
+                        new TopicLabel("label-2"),
+                        new TopicLabel("label-3")
+                ))
+                .build();
+
+        assertThat(management.topic().create(topicWithSchema(topic))).hasStatus(CREATED);
+
+        //then
+        assertThat(management.topic().get(topic.getQualifiedName()).getTopic().getLabels()).containsAll(
+                ImmutableSet.of(
+                        new TopicLabel("label-1"),
+                        new TopicLabel("label-2"),
+                        new TopicLabel("label-3")
+                )
+        );
+    }
+
+    @Test
+    public void shouldUpdateTopicWithLabels() {
+        //given
+        Topic topic = TopicBuilder.topic("topicWithLabelGroup", "topicWithLabels")
+                .withLabels(ImmutableSet.of(
+                        new TopicLabel("label-1"),
+                        new TopicLabel("label-3")
+                ))
+                .build();
+
+        operations.buildTopic(topic);
+
+        //when
+        PatchData newLabels = PatchData.from(ImmutableMap.of(
+                "labels", ImmutableSet.of(
+                        new TopicLabel("label-1"),
+                        new TopicLabel("label-2"),
+                        new TopicLabel("label-3")
+                ))
+        );
+        assertThat(management.topic().update(topic.getQualifiedName(), newLabels)).hasStatus(OK);
+
+        //then
+        assertThat(management.topic().get(topic.getQualifiedName()).getTopic().getLabels()).containsAll(
+                ImmutableSet.of(
+                        new TopicLabel("label-1"),
+                        new TopicLabel("label-2"),
+                        new TopicLabel("label-3")
+                )
+        );
+    }
+
+    @Test
+    public void shouldNotCreateTopicWithDisallowedLabels() {
+        // given
+        operations.createGroup("topicWithLabelGroup");
+
+        Topic topic = TopicBuilder.topic("topicWithLabelGroup", "topicWithLabels")
+                .withLabels(ImmutableSet.of(
+                        new TopicLabel("some-random-label"),
+                        new TopicLabel("label-2"),
+                        new TopicLabel("label-3")
+                ))
+                .build();
+
+        //when
+        Response response = management.topic().create(topicWithSchema(topic));
+
+        //then
+        assertThat(response).hasStatus(BAD_REQUEST).hasErrorCode(ErrorCode.VALIDATION_ERROR);
+        assertThat(management.topic().list("topicWithLabelGroup", false)).isEmpty();
+    }
+
+    @Test
+    public void shouldNotUpdateTopicWithDisallowedLabels() {
+        // given
+        Topic topic = TopicBuilder.topic("topicWithLabelGroup", "topicWithLabels")
+                .withLabels(ImmutableSet.of(
+                        new TopicLabel("label-1"),
+                        new TopicLabel("label-3")
+                ))
+                .build();
+
+        operations.buildTopic(topic);
+
+        PatchData newLabels = PatchData.from(ImmutableMap.of(
+                "labels", ImmutableSet.of(
+                        new TopicLabel("some-random-label"),
+                        new TopicLabel("label-2"),
+                        new TopicLabel("label-3")
+                ))
+        );
+
+        //when
+        Response response = management.topic().update(topic.getQualifiedName(), newLabels);
+
+        //then
+        assertThat(response).hasStatus(BAD_REQUEST).hasErrorCode(ErrorCode.VALIDATION_ERROR);
+        assertThat(management.topic().get(topic.getQualifiedName()).getTopic().getLabels()).containsAll(
+                ImmutableSet.of(
+                        new TopicLabel("label-1"),
+                        new TopicLabel("label-3")
+                )
+        );
     }
 }
