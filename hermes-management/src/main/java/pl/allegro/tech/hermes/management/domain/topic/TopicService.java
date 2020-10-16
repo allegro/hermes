@@ -146,7 +146,6 @@ public class TopicService {
 
     private void createTopic(Topic topic, String createdBy, CreatorRights creatorRights) {
         topicValidator.ensureCreatedTopicIsValid(topic, creatorRights);
-        multiDcExecutor.execute(new CreateTopicRepositoryCommand(topic));
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
@@ -155,6 +154,8 @@ public class TopicService {
         } else {
             logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
         }
+
+        multiDcExecutor.execute(new CreateTopicRepositoryCommand(topic));
     }
 
     private void createTopicInBrokers(Topic topic) {
