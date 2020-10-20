@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
@@ -37,7 +38,7 @@ public class ReactiveHermesClient {
     private final Duration maxRetrySleep;
     private final Scheduler scheduler;
     private volatile boolean shutdown = false;
-    private final List<MessageDeliveryListener> messageDeliveryListeners = new ArrayList<>();
+    private final List<MessageDeliveryListener> messageDeliveryListeners;
 
     ReactiveHermesClient(ReactiveHermesSender sender,
                          URI uri,
@@ -55,6 +56,7 @@ public class ReactiveHermesClient {
         this.retrySleep = Duration.ofMillis(retrySleepInMillis);
         this.maxRetrySleep = Duration.ofMillis(maxRetrySleepInMillis);
         this.scheduler = Schedulers.fromExecutor(scheduler);
+        this.messageDeliveryListeners = new ArrayList<>();
     }
 
     private String createUri(URI uri) {
@@ -127,19 +129,21 @@ public class ReactiveHermesClient {
                 .flatMap(this::unwrapFailedAttemptAsException)
                 .retryWhen(retrySpec)
                 .subscriberContext(ctx -> ctx.put(RETRY_CONTEXT_KEY, HermesRetryContext.emptyRetryContext()))
-                .onErrorResume(Exception.class, exception -> {
-                    if (isRetryExhausted(exception)) {
-                        RetryFailedException rfe = (RetryFailedException) (exception.getCause());
-                        handleMaxRetriesExceeded(message, rfe.attempt);
-                        Throwable cause = rfe.getCause();
-                        if (cause instanceof ShouldRetryException) {
-                            ShouldRetryException sre = (ShouldRetryException) cause;
-                            return Mono.just((Attempt) Result.attempt(sre.hermesResponse, rfe.attempt));
-                        }
-                        handleFailure(message, rfe.getAttempt());
-                    }
-                    return Mono.error(exception);
-                });
+                .onErrorResume(Exception.class, exception -> unwrapRetryExhaustedException(message, exception));
+    }
+
+    private Mono<Attempt> unwrapRetryExhaustedException(HermesMessage message, Exception exception) {
+        if (isRetryExhausted(exception)) {
+            RetryFailedException rfe = (RetryFailedException) (exception.getCause());
+            handleMaxRetriesExceeded(message, rfe.attempt);
+            Throwable cause = rfe.getCause();
+            if (cause instanceof ShouldRetryException) {
+                ShouldRetryException sre = (ShouldRetryException) cause;
+                return Mono.just((Attempt) Result.attempt(sre.hermesResponse, rfe.attempt));
+            }
+            handleFailure(message, rfe.getAttempt());
+        }
+        return Mono.error(exception);
     }
 
     private Mono<Attempt> unwrapFailedAttemptAsException(Result result) {
@@ -169,12 +173,16 @@ public class ReactiveHermesClient {
     private Retry prepareRetrySpec(HermesMessage message) {
         if (!retrySleep.isZero()) {
             return Retry.max(maxRetries)
-                    .doAfterRetry(signal -> handleFailedAttempt(message, signal.totalRetries() + 1));
+                    .doAfterRetry(handleRetryAttempt(message));
         } else {
             return Retry.backoff(maxRetries, retrySleep)
                     .maxBackoff(maxRetrySleep)
-                    .doAfterRetry(signal -> handleFailedAttempt(message, signal.totalRetries() + 1));
+                    .doAfterRetry(handleRetryAttempt(message));
         }
+    }
+
+    private Consumer<Retry.RetrySignal> handleRetryAttempt(HermesMessage message) {
+        return signal -> handleFailedAttempt(message, signal.totalRetries() + 1);
     }
 
     private Mono<Integer> getNextAttempt() {
