@@ -34,5 +34,8 @@
     "sources": [
       {"name": "Crowd", "placeholder": "Crowd group (or groups separated by ',')"}
     ]
+  },
+  "consistency": {
+    "maxGroupBatchSize": 10
   }
 }
