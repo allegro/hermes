@@ -14,6 +14,10 @@ body {
     margin-top: 4em;
 }
 
+.margin-right-4 {
+    margin-right: 4px;
+}
+
 .margin-top-10 {
     margin-top: 10px;
 }
