@@ -75,3 +75,7 @@ topicOwnerCache:
 
 subscriptionOwnerCache:
   refreshRateInSeconds: 300
+
+#audit:
+#  enabled: true
+#  eventUrl: "https://webhook.site/db3f1559-9ada-4585-85ab-2985fbf39cac"
