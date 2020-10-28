@@ -217,7 +217,7 @@ class MessageReadHandler implements HttpHandler {
                     try {
                         exchange.setStatusCode(500);
                     } catch (RuntimeException e) {
-                        logger.warn("Exception has been thrown during an exchange status modification", e);
+                        logger.error("Exception has been thrown during an exchange status modification", e);
                     }
                 }
                 return !responseNotSimulatedOnlyOnce.compareAndSet(false, true);
