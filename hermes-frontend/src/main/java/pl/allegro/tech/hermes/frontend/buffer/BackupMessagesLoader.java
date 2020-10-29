@@ -124,7 +124,8 @@ public class BackupMessagesLoader {
         int sentCounter = 0;
         int discardedCounter = 0;
         for (BackupMessage backupMessage : messages) {
-            Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp());
+            // what's about this case
+            Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), null);
             String topicQualifiedName = backupMessage.getQualifiedTopicName();
             Optional<CachedTopic> optionalCachedTopic = topicsCache.getTopic(topicQualifiedName);
             if (sendMessageIfNeeded(message, topicQualifiedName, optionalCachedTopic, "sending")) {

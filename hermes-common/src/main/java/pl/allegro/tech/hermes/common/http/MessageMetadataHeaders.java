@@ -8,7 +8,8 @@ public enum MessageMetadataHeaders {
     SUBSCRIPTION_NAME("Hermes-Subscription-Name"),
     RETRY_COUNT("Hermes-Retry-Count"),
     SCHEMA_VERSION("Schema-Version"),
-    SCHEMA_ID("Schema-Id");
+    SCHEMA_ID("Schema-Id"),
+    PARTITION_KEY("Partition-Key"); // is it a proper place for this header?
 
     private final String headerName;
 

@@ -100,7 +100,7 @@ public class MessageFactory {
     }
 
     private JsonMessage createJsonMessage(HeaderMap headerMap, String messageId, byte[] messageContent, long timestamp) {
-        JsonMessage message = new JsonMessage(messageId, messageContent, timestamp);
+        JsonMessage message = new JsonMessage(messageId, messageContent, timestamp, extractPartitionKey(headerMap));
         byte[] wrapped = messageContentWrapper
                 .wrapJson(message.getData(), message.getId(), message.getTimestamp(), headersPropagator.extract(toHeadersMap(headerMap)));
         return message.withDataReplaced(wrapped);
@@ -125,7 +125,8 @@ public class MessageFactory {
                 messageId,
                 enforcer.enforceAvro(headerMap.getFirst(Headers.CONTENT_TYPE_STRING), messageContent, schema.getSchema(), topic),
                 timestamp,
-                schema);
+                schema,
+                extractPartitionKey(headerMap));
 
         validators.check(topic, message);
         byte[] wrapped = messageContentWrapper.wrapAvro(message.getData(), message.getId(), message.getTimestamp(),
@@ -161,6 +162,14 @@ public class MessageFactory {
             return of(SchemaId.valueOf(Integer.parseInt(schemaId)));
         } catch (NumberFormatException e) {
             return Optional.empty();
+        }
+    }
+
+    private Integer extractPartitionKey(HeaderMap headerMap) {
+        try {
+            return Integer.parseInt(headerMap.getFirst(MessageMetadataHeaders.PARTITION_KEY.getName()));
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 

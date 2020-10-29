@@ -14,6 +14,8 @@ public interface Message {
 
     ContentType getContentType();
 
+    Integer getPartitionKey();
+
     default <T> Optional<CompiledSchema<T>> getCompiledSchema() { return Optional.empty(); }
 
     default <T> T getSchema() {

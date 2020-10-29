@@ -63,7 +63,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         Optional<SchemaId> schemaId = createSchemaId(message);
         Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaId, schemaVersion);
 
-        return new ProducerRecord<byte[], byte[]>(kafkaTopicName, null, null, message.getData(), headers);
+        return new ProducerRecord<byte[], byte[]>(kafkaTopicName, message.getPartitionKey(), null, message.getData(), headers);
     }
 
     private Optional<SchemaId> createSchemaId(Message message) {
@@ -74,6 +74,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         return Optional.empty();
     }
 
+    // should we add partition-key to headerFactory?
     private Iterable<Header> createRecordHeaders(String id, long timestamp, Optional<SchemaId> schemaId, Optional<SchemaVersion> schemaVersion) {
         Stream<Optional<Header>> headers = Stream.of(
             Optional.of(kafkaHeaderFactory.messageId(id)),

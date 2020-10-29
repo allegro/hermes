@@ -132,6 +132,6 @@ public class ChronicleMapMessageRepositoryTest {
     private Message generateMessage(String content, long timestamp) {
         byte[] messageContent = content.getBytes();
         String id = MessageIdGenerator.generate();
-        return new JsonMessage(id, messageContent, timestamp);
+        return new JsonMessage(id, messageContent, timestamp, null);
     }
 }
