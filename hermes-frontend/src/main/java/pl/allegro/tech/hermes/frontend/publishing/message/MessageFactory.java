@@ -26,7 +26,6 @@ import pl.allegro.tech.hermes.schema.SchemaVersion;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
 import javax.inject.Inject;
-import javax.swing.text.html.Option;
 import java.time.Clock;
 import java.util.Map;
 import java.util.Optional;
@@ -128,6 +127,7 @@ public class MessageFactory {
                 schema,
                 extractPartitionKey(headerMap));
 
+        // why do we validate message only for avro content-type?
         validators.check(topic, message);
         byte[] wrapped = messageContentWrapper.wrapAvro(message.getData(), message.getId(), message.getTimestamp(),
                 topic, schema, headersPropagator.extract(toHeadersMap(headerMap)));

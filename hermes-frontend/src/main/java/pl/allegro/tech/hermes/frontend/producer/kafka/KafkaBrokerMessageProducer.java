@@ -63,6 +63,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         Optional<SchemaId> schemaId = createSchemaId(message);
         Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaId, schemaVersion);
 
+        // should we throw exception for invalid partitionKey?
         return new ProducerRecord<byte[], byte[]>(kafkaTopicName, message.getPartitionKey(), null, message.getData(), headers);
     }
 

@@ -32,10 +32,11 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 public class KafkaBrokerMessageProducerTest {
 
     private static final Long TIMESTAMP = 1L;
+    private static final Integer PARTITION_KEY = 2;
     private static final String MESSAGE_ID = "id";
     private static final Topic TOPIC = topic("group.topic").build();
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);
-    private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP, null);
+    private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP, PARTITION_KEY);
 
     private ByteArraySerializer serializer = new ByteArraySerializer();
     private MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
@@ -73,6 +74,19 @@ public class KafkaBrokerMessageProducerTest {
         List<ProducerRecord<byte[], byte[]>> records = leaderConfirmsProducer.history();
         assertThat(records.size()).isEqualTo(1);
         assertThat(records.get(0).topic()).isEqualTo("ns_group.topic");
+    }
+
+    @Test
+    public void shouldPublishOnTheSamePartition() {
+        //when
+        producer.send(MESSAGE, cachedTopic, new DoNothing());
+        producer.send(MESSAGE, cachedTopic, new DoNothing());
+        producer.send(MESSAGE, cachedTopic, new DoNothing());
+
+        //then
+        List<ProducerRecord<byte[], byte[]>> records = leaderConfirmsProducer.history();
+        assertThat(records.size()).isEqualTo(3);
+        assertThat(records.stream().filter(record -> PARTITION_KEY.equals(record.partition())).count()).isEqualTo(3);
     }
 
     @Test
