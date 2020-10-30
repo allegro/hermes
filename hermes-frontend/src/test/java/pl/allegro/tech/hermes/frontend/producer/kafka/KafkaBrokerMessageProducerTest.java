@@ -86,7 +86,7 @@ public class KafkaBrokerMessageProducerTest {
         //then
         List<ProducerRecord<byte[], byte[]>> records = leaderConfirmsProducer.history();
         assertThat(records.size()).isEqualTo(3);
-        assertThat(records.stream().filter(record -> PARTITION_KEY.equals(record.partition())).count()).isEqualTo(3);
+        assertThat(records.stream().filter(record -> PARTITION_KEY.equals(new String(record.key()))).count()).isEqualTo(3);
     }
 
     @Test

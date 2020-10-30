@@ -7,8 +7,7 @@ import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.clients.producer.RecordMetadata
+import org.apache.kafka.common.TopicPartition
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.spock.Testcontainers
@@ -33,7 +32,6 @@ import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Shared
 import spock.lang.Specification
 
-import java.util.concurrent.CountDownLatch
 import java.util.stream.Collectors
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*
@@ -110,7 +108,6 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         Message message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, "partition-key")
         CachedTopic cachedTopic = CachedTopicsTestHelper.cachedTopic(topic)
 
-
         when:
         1.upto(10) {
             brokerMessageProducer.send(message, cachedTopic, null)
@@ -119,20 +116,19 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         then:
         createConsumer(consumerGroupId, kafkaTopicName)
 
-        List<kafka.common.OffsetAndMetadata> metadata = adminClient
+        List<kafka.common.OffsetAndMetadata> partitionsWithMessagesData = adminClient
                 .listConsumerGroupOffsets(consumerGroupId.asString())
                 .partitionsToOffsetAndMetadata()
                 .get().values().stream()
                 .filter {metadata -> metadata.offset() != 0}
                 .collect(Collectors.toList())
 
-
-        metadata.size() == 1
-        metadata.get(0).offset() == 10
+        partitionsWithMessagesData.size() == 1
+        partitionsWithMessagesData.get(0).offset() == 10
     }
 
     def "should publish messages with random distribiution when pratition-key is not present"() {
-        Topic topic = createAvroTopic("pl.allegro.test.Foo")
+        Topic topic = createAvroTopic("pl.allegro.test.randomFoo")
         Subscription subscription = createTestSubscription(topic, "test-subscription")
         String kafkaTopicName = topic.getName().toString()
         ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription.qualifiedName)
@@ -142,7 +138,6 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         Message message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null)
         CachedTopic cachedTopic = CachedTopicsTestHelper.cachedTopic(topic)
 
-
         when:
         1.upto(10) {
             brokerMessageProducer.send(message, cachedTopic, null)
@@ -151,30 +146,14 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         then:
         createConsumer(consumerGroupId, kafkaTopicName)
 
-        List<kafka.common.OffsetAndMetadata> metadata = adminClient
+        List<kafka.common.OffsetAndMetadata> partitionsWithMessagesData = adminClient
                 .listConsumerGroupOffsets(consumerGroupId.asString())
                 .partitionsToOffsetAndMetadata()
                 .get().values().stream()
                 .filter {metadata -> metadata.offset() != 0}
                 .collect(Collectors.toList())
 
-
-        metadata.size() == 3
-    }
-
-    private def publishOnPartition(String kafkaTopicName, int partition, int messages) {
-        CountDownLatch countDownLatch = new CountDownLatch(messages)
-        for (int i = 0; i < messages; i++) {
-            leaderConfirms.send(new ProducerRecord<byte[], byte[]>(kafkaTopicName, partition, "key-$partition-$i".bytes,
-                    "val-$partition-$i".bytes), { RecordMetadata metadata, Exception exception ->
-                if (exception == null) {
-                    countDownLatch.countDown();
-                } else {
-                    throw new RuntimeException("Exception during message publishing", exception)
-                }
-            })
-        }
-        countDownLatch.await()
+        partitionsWithMessagesData.size() == 3
     }
 
     private def createTestSubscription(Topic topic, String subscriptionName) {
@@ -210,17 +189,14 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
         KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
 
-        Set<org.apache.kafka.common.TopicPartition> topicPartitions = kafkaConsumer.partitionsFor(kafkaTopicName)
-                .collect { new org.apache.kafka.common.TopicPartition(it.topic(), it.partition()) }
-
+        Set<TopicPartition> topicPartitions = kafkaConsumer.partitionsFor(kafkaTopicName)
+                .collect { new TopicPartition(it.topic(), it.partition()) }
         kafkaConsumer.assign(topicPartitions);
-
-        Map<org.apache.kafka.common.TopicPartition, OffsetAndMetadata> topicPartitionByOffset = topicPartitions.stream()
+        Map<TopicPartition, OffsetAndMetadata> topicPartitionByOffset = topicPartitions.stream()
                 .collect({
                     long offset = kafkaConsumer.position(it);
                     return ImmutablePair.of(it, new OffsetAndMetadata(offset));
                 }).collectEntries()
-
         kafkaConsumer.commitSync(topicPartitionByOffset);
         kafkaConsumer.close();
 
