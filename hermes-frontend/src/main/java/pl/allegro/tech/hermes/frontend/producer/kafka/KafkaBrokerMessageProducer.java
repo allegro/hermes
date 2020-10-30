@@ -77,7 +77,6 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         return Optional.empty();
     }
 
-    // should we add partition-key to headerFactory?
     private Iterable<Header> createRecordHeaders(String id, long timestamp, Optional<SchemaId> schemaId, Optional<SchemaVersion> schemaVersion) {
         Stream<Optional<Header>> headers = Stream.of(
             Optional.of(kafkaHeaderFactory.messageId(id)),

@@ -120,7 +120,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
                 .listConsumerGroupOffsets(consumerGroupId.asString())
                 .partitionsToOffsetAndMetadata()
                 .get().values().stream()
-                .filter {metadata -> metadata.offset() != 0}
+                .filter { metadata -> metadata.offset() != 0 }
                 .collect(Collectors.toList())
 
         partitionsWithMessagesData.size() == 1
@@ -150,7 +150,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
                 .listConsumerGroupOffsets(consumerGroupId.asString())
                 .partitionsToOffsetAndMetadata()
                 .get().values().stream()
-                .filter {metadata -> metadata.offset() != 0}
+                .filter { metadata -> metadata.offset() != 0 }
                 .collect(Collectors.toList())
 
         partitionsWithMessagesData.size() == 3
@@ -202,6 +202,4 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
         return kafkaConsumer
     }
-
-
 }
