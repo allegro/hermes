@@ -54,6 +54,7 @@ class KafkaConsumerGroupManagerSpec extends Specification {
 
     ConsumerGroupManager consumerGroupManager
 
+    // klaska spec w hermes frontent
     def setupSpec() {
         kafkaContainer.start()
         kafkaContainer.waitingFor(Wait.forHealthcheck())

@@ -23,6 +23,8 @@ dependencies {
     testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
         exclude group: 'com.jayway.jsonpath', module: 'json-path'
     }
+    testCompile group: 'org.testcontainers', name: 'spock', version: '1.15.0-rc2'
+    testCompile group: 'org.testcontainers', name: 'kafka', version: '1.15.0-rc2'
 }
 
 if (project.hasProperty('distribution')) {

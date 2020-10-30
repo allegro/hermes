@@ -165,12 +165,8 @@ public class MessageFactory {
         }
     }
 
-    private Integer extractPartitionKey(HeaderMap headerMap) {
-        try {
-            return Integer.parseInt(headerMap.getFirst(MessageMetadataHeaders.PARTITION_KEY.getName()));
-        } catch (NumberFormatException e) {
-            return null;
-        }
+    private String extractPartitionKey(HeaderMap headerMap) {
+        return headerMap.getFirst(MessageMetadataHeaders.PARTITION_KEY.getName());
     }
 
     private Map<String, String> toHeadersMap(HeaderMap headerMap) {

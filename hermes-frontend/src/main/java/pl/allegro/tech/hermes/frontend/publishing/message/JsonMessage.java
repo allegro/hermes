@@ -7,9 +7,9 @@ public class JsonMessage implements Message {
     private final String id;
     private final byte[] data;
     private final long timestamp;
-    private final Integer partitionKey;
+    private final String partitionKey;
 
-    public JsonMessage(String id, byte[] data, long timestamp, Integer partitionKey) {
+    public JsonMessage(String id, byte[] data, long timestamp, String partitionKey) {
         this.id = id;
         this.data = data;
         this.timestamp = timestamp;
@@ -37,7 +37,7 @@ public class JsonMessage implements Message {
     }
 
     @Override
-    public Integer getPartitionKey() {
+    public String getPartitionKey() {
         return partitionKey;
     }
 

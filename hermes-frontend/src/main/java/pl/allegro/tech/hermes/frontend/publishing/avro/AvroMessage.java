@@ -13,13 +13,13 @@ public class AvroMessage implements Message {
     private final byte[] data;
     private final long timestamp;
     private final CompiledSchema<Schema> schema;
-    private final Integer partitionKey;
+    private final String partitionKey;
 
     public AvroMessage(String id,
                        byte[] data,
                        long timestamp,
                        CompiledSchema<Schema> schema,
-                       Integer partitionKey) {
+                       String partitionKey) {
         this.id = id;
         this.data = data;
         this.timestamp = timestamp;
@@ -48,7 +48,7 @@ public class AvroMessage implements Message {
     }
 
     @Override
-    public Integer getPartitionKey() {
+    public String getPartitionKey() {
         return partitionKey;
     }
 

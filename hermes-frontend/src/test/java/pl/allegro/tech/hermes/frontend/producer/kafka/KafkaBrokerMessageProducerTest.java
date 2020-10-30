@@ -32,7 +32,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 public class KafkaBrokerMessageProducerTest {
 
     private static final Long TIMESTAMP = 1L;
-    private static final Integer PARTITION_KEY = 2;
+    private static final String PARTITION_KEY = "partition-key";
     private static final String MESSAGE_ID = "id";
     private static final Topic TOPIC = topic("group.topic").build();
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);

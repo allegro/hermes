@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Optional.ofNullable;
+
 @Singleton
 public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
@@ -63,8 +65,11 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         Optional<SchemaId> schemaId = createSchemaId(message);
         Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaId, schemaVersion);
 
+        // todo move to a 'better' place
+        byte[] partitionKey = ofNullable(message.getPartitionKey()).map(String::getBytes).orElse(null);
+
         // should we throw exception for invalid partitionKey?
-        return new ProducerRecord<byte[], byte[]>(kafkaTopicName, message.getPartitionKey(), null, message.getData(), headers);
+        return new ProducerRecord<byte[], byte[]>(kafkaTopicName, null, partitionKey, message.getData(), headers);
     }
 
     private Optional<SchemaId> createSchemaId(Message message) {
