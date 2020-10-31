@@ -4,15 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.metamodel.clazz.EntityDefinitionBuilder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -35,13 +33,10 @@ public class AuditConfiguration {
     }
 
     @Bean
-    @ConditionalOnExpression("${audit.enabled} and ${audit.eventUrl} != null")
-    public EventAuditor eventAuditor(ObjectMapper objectMapper, AuditProperties auditProperties) {
-        WebClient webClient = WebClient.builder()
-                .baseUrl(auditProperties.getEventUrl().toString())
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
-        return new EventAuditor(javers(), webClient, objectMapper);
+    @ConditionalOnProperty(prefix = "audit", value = "eventUrl")
+    public EventAuditor eventAuditor(AuditProperties auditProperties, RestTemplateBuilder restTemplateBuilder) {
+        RestTemplate restTemplate = restTemplateBuilder.build();
+        return new EventAuditor(javers(), restTemplate, auditProperties.getEventUrl().toString());
     }
 
     @Bean

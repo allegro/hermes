@@ -6,7 +6,7 @@ dependencies {
     compile project(':hermes-tracker')
     compile project(':hermes-schema')
 
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: versions.spring
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.spring
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.spring
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-jersey', version: versions.spring
     compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.8'

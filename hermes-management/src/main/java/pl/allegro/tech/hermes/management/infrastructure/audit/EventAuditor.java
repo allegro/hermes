@@ -1,12 +1,10 @@
 package pl.allegro.tech.hermes.management.infrastructure.audit;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javers.core.Javers;
+import org.javers.core.diff.Diff;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-import pl.allegro.tech.hermes.api.PatchData;
+import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.infrastructure.audit.pojo.AuditEvent;
 import pl.allegro.tech.hermes.management.infrastructure.audit.pojo.AuditEventType;
@@ -19,53 +17,39 @@ public class EventAuditor implements Auditor {
 
     private final Javers javers;
 
-    private final WebClient webClient;
+    private final RestTemplate restTemplate;
 
-    private final ObjectMapper objectMapper;
+    private final String eventDestination;
 
-    public EventAuditor(Javers javers, WebClient webClient, ObjectMapper objectMapper) {
+    public EventAuditor(Javers javers, RestTemplate restTemplate, String eventDestination) {
         this.javers = checkNotNull(javers);
-        this.webClient = checkNotNull(webClient);
-        this.objectMapper = checkNotNull(objectMapper);
+        this.restTemplate = checkNotNull(restTemplate);
+        this.eventDestination = eventDestination;
     }
 
-    @Override
-    public void beforeObjectCreation(String username, Object createdObject) {
-        ignoringExceptions(() -> {
-
-        });
-    }
-
-    @Override
-    public void beforeObjectRemoval(String username, String removedObjectType, String removedObjectName) {
-        logger.info("User {} tries removing {} {}.", username, removedObjectType, removedObjectName);
-    }
-
-    @Override
-    public void beforeObjectUpdate(String username, String objectClassName, Object objectName, PatchData patchData) {
-        ignoringExceptions(() -> {
-        });
-    }
 
     @Override
     public void objectCreated(String username, Object createdObject) {
         ignoringExceptions(() -> {
-            AuditEvent event = new AuditEvent(AuditEventType.CREATED, createdObject);
-            webClient.post()
-                    .body(BodyInserters.fromObject(event))
-                    .exchange()
-                    .doOnNext(clientResponse -> logger.info("Emitted creation event"));
+            AuditEvent event = new AuditEvent(AuditEventType.CREATED, createdObject, username);
+            restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }
 
     @Override
     public void objectRemoved(String username, String removedObjectType, String removedObjectName) {
-        logger.info("User {} has removed {} {}.", username, removedObjectType, removedObjectName);
+        ignoringExceptions(() -> {
+            AuditEvent event = new AuditEvent(AuditEventType.REMOVED, removedObjectName, Class.forName(removedObjectType), username);
+            restTemplate.postForObject(eventDestination, event, Void.class);
+        });
     }
 
     @Override
     public void objectUpdated(String username, Object oldObject, Object newObject) {
         ignoringExceptions(() -> {
+            Diff diff = javers.compare(oldObject, newObject);
+            AuditEvent event = new AuditEvent(AuditEventType.UPDATED, diff, newObject.getClass(), username);
+            restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }
 
