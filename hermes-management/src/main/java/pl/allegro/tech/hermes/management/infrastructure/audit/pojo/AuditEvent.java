@@ -2,20 +2,20 @@ package pl.allegro.tech.hermes.management.infrastructure.audit.pojo;
 
 public class AuditEvent {
     private final AuditEventType eventType;
-    private final Class<?> resourceClass;
+    private final String resourceName;
     private final Class<?> payloadClass;
     private final Object payload;
     private final String username;
 
     public AuditEvent(AuditEventType eventType, Object payload, String username) {
-        this(eventType, payload, payload.getClass(), username);
+        this(eventType, payload, payload.getClass().getSimpleName(), username);
     }
 
-    public AuditEvent(AuditEventType eventType, Object payload, Class<?> resourceClass, String username){
+    public AuditEvent(AuditEventType eventType, Object payload, String resourceName, String username){
         this.eventType = eventType;
         this.payload = payload;
         this.payloadClass = payload.getClass();
-        this.resourceClass = resourceClass;
+        this.resourceName = resourceName;
         this.username = username;
     }
 
@@ -35,7 +35,7 @@ public class AuditEvent {
         return username;
     }
 
-    public Class<?> getResourceClass() {
-        return resourceClass;
+    public String getResourceName() {
+        return resourceName;
     }
 }

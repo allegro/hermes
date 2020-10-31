@@ -39,7 +39,7 @@ public class EventAuditor implements Auditor {
     @Override
     public void objectRemoved(String username, String removedObjectType, String removedObjectName) {
         ignoringExceptions(() -> {
-            AuditEvent event = new AuditEvent(AuditEventType.REMOVED, removedObjectName, Class.forName(removedObjectType), username);
+            AuditEvent event = new AuditEvent(AuditEventType.REMOVED, removedObjectName, removedObjectType, username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }
@@ -48,7 +48,7 @@ public class EventAuditor implements Auditor {
     public void objectUpdated(String username, Object oldObject, Object newObject) {
         ignoringExceptions(() -> {
             Diff diff = javers.compare(oldObject, newObject);
-            AuditEvent event = new AuditEvent(AuditEventType.UPDATED, diff, newObject.getClass(), username);
+            AuditEvent event = new AuditEvent(AuditEventType.UPDATED, diff, newObject.getClass().getSimpleName(), username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }
