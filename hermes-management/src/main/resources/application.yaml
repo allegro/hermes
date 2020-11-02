@@ -49,3 +49,6 @@ subscriptionOwnerCache:
 console:
   configurationLocation: console/config-local.json
   configurationType: classpath_resource
+
+consistencyChecker:
+  threadPoolSize: 2

@@ -1,0 +1,67 @@
+<section ng-controller="GroupConsistencyController">
+
+    <ol class="breadcrumb">
+        <li><a href="#/">home</a></li>
+        <li><a href="#/consistency">consistency</a></li>
+        <li class="active">{{groupName}}</li>
+    </ol>
+
+    <h1><small>Group:</small> {{groupName}}</h1>
+
+    <div class="row container" ng-if="group.inconsistentMetadata.length > 0">
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h3 class="panel-title">Inconsistent metadata</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th class="col-md-6" ng-repeat="metadata in group.inconsistentMetadata">
+                            {{metadata.datacenter}}
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody style="overflow-y: scroll">
+                    <tr>
+                        <td class="col-md-6" ng-repeat="metadata in group.inconsistentMetadata">
+                            <pre class="content">{{metadata.content | prettyJson}}</pre>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row text-center" ng-if="group.inconsistentMetadata.length === 0">
+        <div class="col-md-12">
+            <p class="alert alert-success">Group metadata are consistent.</p>
+        </div>
+    </div>
+
+    <div class="row container" ng-if="group.inconsistentTopics.length > 0">
+        <div class="list-group">
+            <div class="list-group-item list-group-item-warning">
+                <h4>Inconsistent topics</h4>
+            </div>
+            <a class="list-group-item" ng-repeat="topic in group.inconsistentTopics | orderBy:'name'"
+               ng-href="#/consistency/{{groupName}}/topics/{{topic.name}}">
+                <div>
+                    <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                    <strong>{{topic.name}}</strong>
+                    <div class="pull-right">
+                        <span class="glyphicon glyphicon-chevron-right"></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row text-center" ng-if="group.inconsistentTopics.length === 0">
+        <div class="col-md-12">
+            <p class="alert alert-success">All topics are consistent.</p>
+        </div>
+    </div>
+
+</section>
