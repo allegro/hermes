@@ -8,7 +8,7 @@
 
 #### ([1296](https://github.com/allegro/hermes/pull/1296)) Consistency checking in hermes-console
 
-From now on Hermes operator can check consistency between two Hermes Zookeeper clusters via Hermes-console.
+From now on Hermes operator can check consistency between multiple Hermes Zookeeper clusters via Hermes-console.
 Inconsistency can occur when one Zookeeper cluster is down for a while.
 
 #### ([1294](https://github.com/allegro/hermes/pull/1294)) Hermes frontend occasionally returns incorrect status 200
