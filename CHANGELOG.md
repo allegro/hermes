@@ -1,6 +1,29 @@
 ## [Unreleased]
 
 ...
+
+## 1.6.1 (2.11.2020)
+
+### Enhancements
+
+#### ([1296](https://github.com/allegro/hermes/pull/1296)) Consistency checking in hermes-console
+
+From now on Hermes operator can check consistency between multiple Hermes Zookeeper clusters via Hermes-console.
+Inconsistency can occur when one Zookeeper cluster is down for a while.
+
+#### ([1294](https://github.com/allegro/hermes/pull/1294)) Hermes frontend occasionally returns incorrect status 200
+
+In Hermes-frontend there are only two [status codes](https://hermes-pubsub.readthedocs.io/en/latest/user/publishing/#response-codes)
+representing success, these are 201 and 202. Unfortunately, Hermes-frontend occasionally returned 200.
+It’s because it’s built on Undertow http server which returns 200 http status code as default one when response isn’t set.
+Thanks this enhancement instead of 200, 500 is returned. 500 means error and can be retried by a client.
+
+#### ([1256](https://github.com/allegro/hermes/pull/1256)) Readonly mode for Kafka topics configuration
+
+#### ([1279](https://github.com/allegro/hermes/pull/1279)) Button for copying schema of a topic
+
+#### ([1283](https://github.com/allegro/hermes/pull/1283)) Changed order of operations on topic creation
+
 ## 1.6.0 (15.10.2020)
 
 ### Enhancements
