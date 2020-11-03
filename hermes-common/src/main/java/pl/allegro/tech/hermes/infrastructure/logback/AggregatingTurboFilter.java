@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.LongAdder;
  * that logs the messages asynchronously.
  *
  * Example logback configuration:
+ * <pre>{@code
  *  <configuration>
  *      ...
  *      <turboFilter class="pl.allegro.tech.hermes.infrastructure.logback.AggregatingTurboFilter">
@@ -45,6 +46,7 @@ import java.util.concurrent.atomic.LongAdder;
  *      </turboFilter>
  *      ...
  * </configuration>
+ * }</pre>
  */
 public class AggregatingTurboFilter extends TurboFilter {
 
