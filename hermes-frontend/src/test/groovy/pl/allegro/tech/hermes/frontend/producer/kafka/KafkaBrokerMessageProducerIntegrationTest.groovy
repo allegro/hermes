@@ -24,7 +24,6 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
-import pl.allegro.tech.hermes.frontend.publishing.message.Message
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
@@ -40,6 +39,8 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 
 @Testcontainers
 class KafkaBrokerMessageProducerIntegrationTest extends Specification {
+
+    static Integer NUMBER_OF_PARTITION = 3
 
     @Shared
     KafkaContainer kafkaContainer = new KafkaContainer()
@@ -102,15 +103,12 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         Subscription subscription = createTestSubscription(topic, "test-subscription")
         String kafkaTopicName = topic.getName().toString()
         ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription.qualifiedName)
-        createTopicInKafka(kafkaTopicName, 3)
-
-        def avroUser = new AvroUser()
-        Message message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, "partition-key")
+        createTopicInKafka(kafkaTopicName, NUMBER_OF_PARTITION)
         CachedTopic cachedTopic = CachedTopicsTestHelper.cachedTopic(topic)
 
         when:
         1.upto(10) {
-            brokerMessageProducer.send(message, cachedTopic, null)
+            brokerMessageProducer.send(generateAvroMessage("partition-key"), cachedTopic, null)
         }
 
         then:
@@ -132,15 +130,12 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         Subscription subscription = createTestSubscription(topic, "test-subscription")
         String kafkaTopicName = topic.getName().toString()
         ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription.qualifiedName)
-        createTopicInKafka(kafkaTopicName, 3)
-
-        def avroUser = new AvroUser()
-        Message message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null)
+        createTopicInKafka(kafkaTopicName, NUMBER_OF_PARTITION)
         CachedTopic cachedTopic = CachedTopicsTestHelper.cachedTopic(topic)
 
         when:
         1.upto(10) {
-            brokerMessageProducer.send(message, cachedTopic, null)
+            brokerMessageProducer.send(generateAvroMessage(null), cachedTopic, null)
         }
 
         then:
@@ -153,7 +148,12 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
                 .filter { metadata -> metadata.offset() != 0 }
                 .collect(Collectors.toList())
 
-        partitionsWithMessagesData.size() == 3
+        partitionsWithMessagesData.size() == NUMBER_OF_PARTITION
+    }
+
+    private AvroMessage generateAvroMessage(String partitionKey) {
+        def avroUser = new AvroUser()
+        return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema, partitionKey)
     }
 
     private def createTestSubscription(Topic topic, String subscriptionName) {
