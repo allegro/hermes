@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.management.domain.consistency;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.InconsistentGroup;
@@ -17,6 +16,7 @@ import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
+import pl.allegro.tech.hermes.management.config.ConsistencyCheckerProperties;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 
@@ -46,13 +46,13 @@ public class ConsistencyService {
 
     public ConsistencyService(RepositoryManager repositoryManager,
                               ObjectMapper objectMapper,
-                              @Value("${consistencyChecker.threadPoolSize}") int threadPoolSize) {
+                              ConsistencyCheckerProperties properties) {
         this.groupRepositories = repositoryManager.getRepositories(GroupRepository.class);
         this.topicRepositories = repositoryManager.getRepositories(TopicRepository.class);
         this.subscriptionRepositories = repositoryManager.getRepositories(SubscriptionRepository.class);
         this.objectMapper = objectMapper;
         this.executor = Executors.newFixedThreadPool(
-                threadPoolSize,
+                properties.getThreadPoolSize(),
                 new ThreadFactoryBuilder()
                         .setNameFormat("consistency-checker-%d")
                         .build()
