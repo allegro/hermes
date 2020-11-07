@@ -258,9 +258,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         $scope.debugFilters = function () {
             filtersDebuggerModal.open(topicName, $scope.subscription.filters)
                 .then(function (result) {
-                    var subscription = _.cloneDeep($scope.subscription);
-                    subscription.filters = result.messageFilters;
-                    $scope.edit(subscription);
+                    subscriptionDraft = _.cloneDeep($scope.subscription);
+                    subscriptionDraft.filters = result.messageFilters;
+                    $scope.edit();
                 });
         };
 
