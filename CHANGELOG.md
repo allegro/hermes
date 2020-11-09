@@ -2,6 +2,14 @@
 
 ...
 
+## 1.6.2 (9.11.2020)
+
+### Fixes
+
+#### ([1305](https://github.com/allegro/hermes/pull/1305)) Moved `consistency checker` config to Properties class
+
+#### ([1300](https://github.com/allegro/hermes/pull/1300)) Fixed publish to Sonatype by use of `Nexus Publish Plugin`
+
 ## 1.6.1 (2.11.2020)
 
 ### Enhancements

@@ -36,8 +36,8 @@ dependencies {
 
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
 
-    testCompile group: 'org.testcontainers', name: 'spock', version: '1.14.1'
-    testCompile group: 'org.testcontainers', name: 'kafka', version: '1.14.1'
+    testCompile group: 'org.testcontainers', name: 'spock', version: '1.15.0'
+    testCompile group: 'org.testcontainers', name: 'kafka', version: '1.15.0'
 }
 
 if (project.hasProperty('distribution')) {
