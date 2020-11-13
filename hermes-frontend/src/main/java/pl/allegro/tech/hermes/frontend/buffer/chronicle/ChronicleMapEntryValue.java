@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class ChronicleMapEntryValue implements Serializable {
+    static final long serialVersionUID = -2149667159974528954L;
 
     private final byte[] data;
     private final long timestamp;

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka
 
 import com.codahale.metrics.MetricRegistry
+import com.jayway.awaitility.Awaitility
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.NewTopic
@@ -31,9 +32,14 @@ import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.time.Duration
 import java.util.stream.Collectors
 
-import static org.apache.kafka.clients.consumer.ConsumerConfig.*
+import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG
+import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG
+import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG
+import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG
 
@@ -105,14 +111,16 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription.qualifiedName)
         createTopicInKafka(kafkaTopicName, NUMBER_OF_PARTITION)
         CachedTopic cachedTopic = CachedTopicsTestHelper.cachedTopic(topic)
+        KafkaConsumer consumer = createConsumer(consumerGroupId, kafkaTopicName)
 
         when:
         1.upto(10) {
             brokerMessageProducer.send(generateAvroMessage("partition-key"), cachedTopic, null)
+            waitForRecordPublishing(consumer)
         }
 
         then:
-        createConsumer(consumerGroupId, kafkaTopicName)
+        consumer.close()
 
         List<kafka.common.OffsetAndMetadata> partitionsWithMessagesData = adminClient
                 .listConsumerGroupOffsets(consumerGroupId.asString())
@@ -132,14 +140,16 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription.qualifiedName)
         createTopicInKafka(kafkaTopicName, NUMBER_OF_PARTITION)
         CachedTopic cachedTopic = CachedTopicsTestHelper.cachedTopic(topic)
+        KafkaConsumer consumer = createConsumer(consumerGroupId, kafkaTopicName)
 
         when:
         1.upto(10) {
             brokerMessageProducer.send(generateAvroMessage(null), cachedTopic, null)
+            waitForRecordPublishing(consumer)
         }
 
         then:
-        createConsumer(consumerGroupId, kafkaTopicName)
+        consumer.close()
 
         List<kafka.common.OffsetAndMetadata> partitionsWithMessagesData = adminClient
                 .listConsumerGroupOffsets(consumerGroupId.asString())
@@ -167,6 +177,15 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
                 .migratedFromJsonType()
                 .withContentType(ContentType.AVRO)
                 .build()
+    }
+
+    private static def waitForRecordPublishing(KafkaConsumer consumer) {
+        Awaitility.await()
+                .pollInterval(200, MILLISECONDS)
+                .atMost(1000, MILLISECONDS)
+                .until {
+                    consumer.poll(Duration.ofMillis(150)).count() == 1
+                }
     }
 
     private def createTopicInKafka(String kafkaTopicName, int partitionsNumber) {
@@ -198,7 +217,6 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
                     return ImmutablePair.of(it, new OffsetAndMetadata(offset));
                 }).collectEntries()
         kafkaConsumer.commitSync(topicPartitionByOffset);
-        kafkaConsumer.close();
 
         return kafkaConsumer
     }
