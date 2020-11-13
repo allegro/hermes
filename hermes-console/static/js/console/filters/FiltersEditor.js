@@ -22,7 +22,7 @@ angular.module('hermes.filters')
             };
 
             $scope.debugFilters = function () {
-                filtersDebuggerModal.open($scope.topicName, $scope.filters)
+                filtersDebuggerModal.open($scope.topicName, $scope.filters, $scope.topicContentType)
                     .then(function (result) {
                         $scope.filters = result.messageFilters;
                     });
