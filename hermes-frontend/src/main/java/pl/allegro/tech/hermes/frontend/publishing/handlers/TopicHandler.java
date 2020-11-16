@@ -47,6 +47,7 @@ class TopicHandler implements HttpHandler {
         onRequestValid(exchange, messageId, cachedTopic -> {
             exchange.addExchangeCompleteListener(new ExchangeMetrics(cachedTopic));
             exchange.putAttachment(AttachmentContent.KEY, new AttachmentContent(cachedTopic, new MessageState(), messageId));
+            exchange.setStatusCode(500);
             try {
                 next.handleRequest(exchange);
             } catch (Exception e) {
