@@ -252,7 +252,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         };
 
         $scope.debugFilters = function () {
-            filtersDebuggerModal.open(topicName, $scope.subscription.filters)
+            filtersDebuggerModal.open(topicName, $scope.subscription.filters, $scope.topicContentType)
                 .then(function (result) {
                     var subscription = _.cloneDeep($scope.subscription);
                     subscription.filters = result.messageFilters;
