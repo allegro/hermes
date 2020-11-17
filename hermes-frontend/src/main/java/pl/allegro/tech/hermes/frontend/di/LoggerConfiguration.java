@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 public class LoggerConfiguration {
     public static final String UNDERTOW_ERROR_RESPONSE_LOGGER = "io.undertow.request.error-response";
 
-    public static void disableResponseDebugLogger() {
+    public static void disableResponseErrorLogger() {
         ((Logger) LoggerFactory.getLogger(UNDERTOW_ERROR_RESPONSE_LOGGER))
                 .setLevel(Level.INFO);
     }

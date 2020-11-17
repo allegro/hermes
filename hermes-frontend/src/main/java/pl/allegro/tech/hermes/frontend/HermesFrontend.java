@@ -91,7 +91,7 @@ public final class HermesFrontend {
             hooksHandler.addShutdownHook(new FlushLogsShutdownHook());
         }
         if (!config.getBooleanProperty(FRONTEND_RESPONSE_ERROR_LOGGER_ENABLED)) {
-            LoggerConfiguration.disableResponseDebugLogger();
+            LoggerConfiguration.disableResponseErrorLogger();
         }
     }
 
