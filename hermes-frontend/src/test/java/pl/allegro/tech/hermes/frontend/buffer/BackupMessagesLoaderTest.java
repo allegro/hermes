@@ -6,6 +6,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -24,11 +25,12 @@ import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import static java.time.LocalDateTime.now;
 import static java.time.ZoneOffset.UTC;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -154,31 +156,42 @@ public class BackupMessagesLoaderTest {
     }
 
     @Test
-    public void shouldReadV2MessagesFromTemporaryFile2() throws IOException {
-        // given
-        // after 1_000_000 hours please regenerate `backup/hermes-buffer-12345.dat-v2-old.tmp` with `backup-message-migrator`
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(1000000);
-        when(producer.isTopicAvailable(cachedTopic)).thenReturn(true);
-        when(topicsCache.getTopic(any())).thenReturn(Optional.of(cachedTopic));
+    public void shouldSendMessageWithAllArgumentsFromBackupMessage() {
+        //given
+        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(8);
+        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(2);
+
+        MessageRepository messageRepository = new ChronicleMapMessageRepository(
+                new File(tempDir.getAbsoluteFile(), "messages.dat"),
+                ENTRIES,
+                AVERAGE_MESSAGE_SIZE
+        );
 
         BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
 
-        // and
-        ClassLoader classLoader = getClass().getClassLoader();
-        File temporaryBackup1 = new File(classLoader.getResource("backup/hermes-buffer-12345.dat-v2-old.tmp").getFile());
+        messageRepository.save(messageOfAge(1), topic);
 
         //when
-        backupMessagesLoader.loadFromTemporaryBackupV2File(temporaryBackup1);
+        List<BackupMessage> backupMessages = messageRepository.findAll();
+        backupMessagesLoader.loadMessages(backupMessages);
 
         //then
-        verify(producer, times(20)).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
+        ArgumentCaptor<Message> messageArgument = ArgumentCaptor.forClass(Message.class);
+
+        verify(producer, times(1)).send(messageArgument.capture(), eq(cachedTopic), any(PublishingCallback.class));
+        Message sendMessage = messageArgument.getValue();
+        assertThat(sendMessage.getPartitionKey()).isEqualTo(backupMessages.get(0).getPartitionKey());
+        assertThat(sendMessage.getData()).isEqualTo(backupMessages.get(0).getData());
+        assertThat(sendMessage.getId()).isEqualTo(backupMessages.get(0).getMessageId());
+        assertThat(sendMessage.getTimestamp()).isEqualTo(backupMessages.get(0).getTimestamp());
     }
 
     private Message messageOfAge(int ageHours) {
         return new JsonMessage(
                 MessageIdGenerator.generate(),
                 "{'a':'b'}".getBytes(),
-                now().minusHours(ageHours).toInstant(UTC).toEpochMilli()
+                now().minusHours(ageHours).toInstant(UTC).toEpochMilli(),
+                "partition-key"
         );
     }
 }

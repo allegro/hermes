@@ -7,11 +7,13 @@ public class JsonMessage implements Message {
     private final String id;
     private final byte[] data;
     private final long timestamp;
+    private final String partitionKey;
 
-    public JsonMessage(String id, byte[] data, long timestamp) {
+    public JsonMessage(String id, byte[] data, long timestamp, String partitionKey) {
         this.id = id;
         this.data = data;
         this.timestamp = timestamp;
+        this.partitionKey = partitionKey;
     }
 
     @Override
@@ -34,8 +36,13 @@ public class JsonMessage implements Message {
         return ContentType.JSON;
     }
 
+    @Override
+    public String getPartitionKey() {
+        return partitionKey;
+    }
+
     public JsonMessage withDataReplaced(byte[] newData) {
-        return new JsonMessage(id, newData, timestamp);
+        return new JsonMessage(id, newData, timestamp, partitionKey);
     }
 
 }
