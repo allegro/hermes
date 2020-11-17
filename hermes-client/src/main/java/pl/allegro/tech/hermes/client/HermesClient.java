@@ -158,23 +158,20 @@ public class HermesClient {
         }
 
         HermesMessage message = event.getResult().getHermesMessage();
-        messageDeliveryListeners.forEach(l -> l.onMaxRetriesExceeded(message, event.getAttemptCount()));
+        messageDeliveryListeners.forEach(l -> l.onMaxRetriesExceeded(event.getResult(), event.getAttemptCount()));
         logger.error("Failed to send message to topic {} after {} attempts",
                 message.getTopic(), event.getAttemptCount());
     }
 
     private void handleFailedAttempt(ExecutionAttemptedEvent<HermesResponse> event) {
-        HermesMessage message = event.getLastResult().getHermesMessage();
-        messageDeliveryListeners.forEach(l -> l.onFailedRetry(message, event.getAttemptCount()));
+        messageDeliveryListeners.forEach(l -> l.onFailedRetry(event.getLastResult(), event.getAttemptCount()));
     }
 
     private void handleFailure(ExecutionCompletedEvent<HermesResponse> event) {
-        HermesMessage message = event.getResult().getHermesMessage();
-        messageDeliveryListeners.forEach(l -> l.onFailure(message, event.getAttemptCount()));
+        messageDeliveryListeners.forEach(l -> l.onFailure(event.getResult(), event.getAttemptCount()));
     }
 
     private void handleSuccessfulRetry(ExecutionCompletedEvent<HermesResponse> event) {
-        HermesMessage message = event.getResult().getHermesMessage();
-        messageDeliveryListeners.forEach(l -> l.onSuccessfulRetry(message, event.getAttemptCount()));
+        messageDeliveryListeners.forEach(l -> l.onSuccessfulRetry(event.getResult(), event.getAttemptCount()));
     }
 }
