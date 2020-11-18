@@ -8,7 +8,7 @@
 
 #### ([1299](https://github.com/allegro/hermes/pull/1299)) Add new meaningful metrics to MetricsMessageDeliveryListener
 
-New metrics take into account also application level errors which are represented by http status codes.
+New hermes-client metrics take into account also application level errors which are represented by http status codes.
 
 `Topic.publish.finally.success:` Message has been accepted by Hermes
 
