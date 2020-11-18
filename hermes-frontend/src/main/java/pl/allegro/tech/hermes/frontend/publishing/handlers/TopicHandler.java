@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.frontend.server.auth.Roles;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static io.undertow.util.StatusCodes.INTERNAL_SERVER_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorCode.AUTH_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_BLACKLISTED;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
@@ -47,6 +48,7 @@ class TopicHandler implements HttpHandler {
         onRequestValid(exchange, messageId, cachedTopic -> {
             exchange.addExchangeCompleteListener(new ExchangeMetrics(cachedTopic));
             exchange.putAttachment(AttachmentContent.KEY, new AttachmentContent(cachedTopic, new MessageState(), messageId));
+            setDefaultResponseCode(exchange);
             try {
                 next.handleRequest(exchange);
             } catch (Exception e) {
@@ -114,5 +116,11 @@ class TopicHandler implements HttpHandler {
                 error("Topic blacklisted: " + qualifiedTopicName, TOPIC_BLACKLISTED),
                 messageId,
                 qualifiedTopicName);
+    }
+
+    // Default Undertow's response code (200) was changed in order to avoid situations in which something wrong happens and Hermes-Frontend does not publish message but return code 200
+    // Since the default code is 500, clients have information that they should retry publishing
+    private void setDefaultResponseCode(HttpServerExchange exchange) {
+        exchange.setStatusCode(INTERNAL_SERVER_ERROR);
     }
 }
