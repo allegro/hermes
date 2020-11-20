@@ -2,6 +2,44 @@
 
 ...
 
+## 1.7.0 (18.11.2020)
+
+### Enhancements
+
+#### ([1299](https://github.com/allegro/hermes/pull/1299)) Add new meaningful metrics to MetricsMessageDeliveryListener
+
+New hermes-client metrics take into account also application level errors which are represented by http status codes.
+
+`Topic.publish.finally.success:` Message has been accepted by Hermes
+
+`topic.publish.finally.failure:` Message has been rejected by Hermes or there was transport level issue. 
+
+`topic.publish.failure:` Number of failures including retries.
+
+`topic.publish.attempts:` Number of publish attempt. Does not include retries.
+
+`topic.publish.retry.success:` Number of successful publications after one or more retry.
+
+`topic.publish.retry.failure:` Number of failures after retries have been exhausted.
+
+`topic.publish.retry.attempt:` Number of publications where retry was involved.
+
+
+#### ([1301](https://github.com/allegro/hermes/pull/1301)) partition-key HTTP header
+
+Added ability to publish messages to the specific partition
+
+
+#### ([1310](https://github.com/allegro/hermes/pull/1310)) hermes-frontend change default response http status
+
+This improvement is related to this [enhancement](https://github.com/allegro/hermes/blob/master/CHANGELOG.md#1294-hermes-frontend-occasionally-returns-incorrect-status-200).
+Now hermes-frontend changes default response status from 200 to 500 for every exchange. 
+
+### Fixes
+
+#### ([1304](https://github.com/allegro/hermes/issues/1304)) Json validation fix in debugging filters in hermes-console
+
+
 ## 1.6.2 (9.11.2020)
 
 ### Fixes
